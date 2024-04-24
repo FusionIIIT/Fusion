@@ -18,24 +18,9 @@
         <a class="item" href="{% url 'programme_curriculum:view_all_batches' %}">Batches
             <i class="right floated chevron right icon"></i>
         </a>
-        <div class="ui dropdown">
-            <div class="item" >Course Proposal Form&nbsp<i class="dropdown icon"></i></div>
-            
-            <div class="menu">
-              <a class="item" href="{% url 'programme_curriculum:view_course_proposal_forms' %}">Course Proposal Form
-                <i class="right floated chevron right icon"></i>
-              </a>
-              <a class="item" href="{% url 'programme_curriculum:outward_files' %}">Course Proposal Tracking
-                <i class="right floated chevron right icon"></i>
-              </a>
-              <a class="item" href="{% url 'programme_curriculum:inward_files' %}">Inward Files
-                <i class="right floated chevron right icon"></i>
-              </a>
-            </div>
-          </div>
-          <script>
-            $('.ui.dropdown').dropdown();
-          </script>
+        <a class="item" href="{% url 'programme_curriculum:view_course_proposal_forms' %}">Course Proposal Form
+            <i class="right floated chevron right icon"></i>
+        </a>
     </div>
 {% endblock %} 
 
@@ -59,32 +44,22 @@
         <div class="field">
             {% if form.name.errors or form.code.errors or form.credit.errors %}
             <div class="ui error message">
-                <p>{{ form.designation.errors }}</p>
-                <p>{{ form.uploader.errors }}</p>
-                <p>{{ form.subject.errors }}</p>
-                <p>{{ form.description.errors }}</p>
+                <p>{{ form.faculty_name.errors }}</p>
+                <p>{{ form.faculty_code.errors }}</p>
                 <p>{{ form.name.errors }}</p>
                 <p>{{ form.code.errors }}</p>
                 <p>{{ form.credit.errors }}</p>
             </div>
             {% endif %}
         </div>
-        <div class="fields">
-            <div class="two wide field">
-                <label for="{{ form.uploader.id_for_label }}">Uploader:</label>
-                {{form.uploader}}
-            </div>
-            <div class="six wide field">
-                <label for="{{ form.designation.id_for_label }}">Designation:</label>
-                {{form.designation}}
-            </div>
+        <div class="field">
+            <label for="{{ form.faculty_name.id_for_label }}">Faculty Name:</label>
+            {{ form.faculty_name }}
         </div>
         <div class="field">
-            <label for="{{ form.subject.id_for_label }}">Title:</label>
-            {{ form.subject }}
-        </div><div class="field">
-            <label for="{{ form.description.id_for_label }}">Description:</label>
-            {{ form.description }}
+            <label for="{{ form.faculty_code.id_for_label }}">Faculty Code:</label>
+            {{ form.faculty_code }}
+        </div>
         <div class="field">
             <label for="{{ form.name.id_for_label }}">Name:</label>
             {{ form.name }}
@@ -134,7 +109,7 @@
                 {{ form.project_hours }}
             </div>
         </div>
-        {% comment %} <div class="field">
+        <div class="field">
             {% if form.disciplines.errors %}
             <div class="ui error message">
                 {{ form.disciplines.errors }}
@@ -142,7 +117,7 @@
             {% endif %}
             <label for="{{ form.disciplines.id_for_label }}">From Discipline(s):</label>
             {{ form.disciplines }}
-        </div> {% endcomment %}
+        </div>
         <div class="field">
             {% if form.pre_requisits.errors %}
             <div class="ui error message">
@@ -178,6 +153,15 @@
             {% endif %}
             <label for="{{ form.ref_books.id_for_label }}">References & Books:</label>
             {{ form.ref_books }}
+        </div>
+        <div class="field">
+            {% if form.status.errors %}
+            <div class="ui error message">
+                {{ form.status.errors }}
+            </div>
+            {% endif %} 
+            <label for="{{ form.status.id_for_label }}">Status:</label>
+            {{ form.status }}
         </div>
         <div class="field">
             {% if form.percent_quiz_1.errors %}
@@ -230,11 +214,7 @@
             <div class="ui large right floated buttons">
                 <a class="ui button" href="{% url 'programme_curriculum:view_course_proposal_forms' %}">Cancel</a>
                 <div class="or"></div>
-                {% comment %} <a class="ui primary button" href="{% url 'programme_curriculum:filetracking' courseProposal.id%}">Submit</a> {% endcomment %}
-                {% comment %} <a class="ui primary button" href="{% url 'programme_curriculum:view_course_proposal_forms'%}">Submit</a>
-                 {% endcomment %}
                 <input class="ui primary button" type="Submit" name="Submit">
-                {% comment %} <input class="ui primary button" type="Submit" name="Submit"> {% endcomment %}
             </div>
         </td>
     </form>

@@ -26,9 +26,5 @@ def mark_as_read_and_redirect(request, slug=None):
     if(notification.data['module'] == 'Complaint System'):     
         complaint_id=notification.description
         return HttpResponseRedirect(reverse(notification.data['url'],kwargs={'detailcomp_id1':complaint_id}))
-    elif(notification.data['module'] == 'Course Management'):
-        course_code = notification.data['course_code']
-        print(course_code)
-        return HttpResponseRedirect(reverse(notification.data['url'],kwargs={'course_code': course_code}))
     else:
         return HttpResponseRedirect(reverse(notification.data['url']))

@@ -52,7 +52,6 @@ function request(event)
     var request_to = $('input[name="request_to"]').val();
     var request_details =  $('input[name="request_details"]').val();
 
-
     if(request_type=="" || request_to=="" || request_details =="" )
     {
         alert("Please fill all the details!");
@@ -60,8 +59,7 @@ function request(event)
     }
     else
     {
-        // event.preventDefault();
-        alert("please wait we are processing your request.");
+        event.preventDefault();
         $.ajax({
             type : 'POST',
             url : '.',
@@ -75,11 +73,11 @@ function request(event)
                 alert("Request successfully made!!");
                 setTimeout(function() {
             window.location.reload();
-        }, 0);
+        }, 1500);
 
             },
             error : function (data,err){
-                alert('Request not created');
+                alert('Request successfully made ... ');
 
             }
         });

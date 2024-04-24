@@ -206,14 +206,12 @@
 
 
 
-
 <div class="ui {% for d in desig %} {% if d.designation.name == 'mess_warden' %} active {% endif %} {% endfor %} tab" data-tab="regList">
   {% block reg_list %}
     {% include 'messModule/reg_list.html' %}
     {% endblock %}
 </div>
 <br />
-
 
 <div class="ui {% for d in desig %} {% if d.designation.name == 'mess_manager' %} active {% endif %} {% endfor %} tab" data-tab="add_remove">
   {% block add_remove %}

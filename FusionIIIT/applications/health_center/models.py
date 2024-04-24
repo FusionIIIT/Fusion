@@ -1,7 +1,6 @@
 
 from django.db import models
 from datetime import date
-from django.contrib.auth.models import User
 
 from applications.globals.models import ExtraInfo
 
@@ -33,7 +32,7 @@ class Constants:
     )
 
 class Doctor(models.Model):
-    doctor_name = models.CharField(max_length=50)
+    doctor_name = models.CharField(choices=Constants.NAME_OF_DOCTOR, max_length=50)
     doctor_phone = models.CharField(max_length=15)
     specialization = models.CharField(max_length=100)
     active = models.BooleanField(default=True)
@@ -42,7 +41,7 @@ class Doctor(models.Model):
         return self.doctor_name
 
 class Pathologist(models.Model):
-    pathologist_name = models.CharField(max_length=50)
+    pathologist_name = models.CharField(choices=Constants.NAME_OF_PATHOLOGIST, max_length=50)
     pathologist_phone = models.CharField(max_length=15)
     specialization = models.CharField(max_length=100)
     active = models.BooleanField(default=True)
@@ -208,7 +207,10 @@ class Hospital_admit(models.Model):
 class Announcements(models.Model):
     anno_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE, related_name='announcements_made')
     ann_date = models.DateTimeField(default="04-04-2021")
-    message = models.CharField(max_length=200)   
+    message = models.CharField(max_length=200)
+    batch = models.CharField(max_length=40,default="Year-1")
+    department = models.CharField(max_length=40,default="ALL")
+    programme = models.CharField(max_length=10)
     upload_announcement = models.FileField(upload_to='health_center/upload_announcement', null=True, default=" ")
     def __str__(self):
         return str(self.anno_id.user.username)
@@ -234,26 +236,3 @@ class medical_relief(models.Model):
     compounder_forward_flag = models.BooleanField(default=False)
     acc_admin_forward_flag = models.BooleanField(default=False)
     
-    
-class MedicalProfile(models.Model):
-    user_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE, null=True) 
-    date_of_birth = models.DateField()
-    gender_choices = [
-        ('M', 'Male'),
-        ('F', 'Female'),
-        ('O', 'Other'),
-    ]
-    gender = models.CharField(max_length=1, choices=gender_choices)
-    blood_type_choices = [
-        ('A+', 'A+'),
-        ('A-', 'A-'),
-        ('B+', 'B+'),
-        ('B-', 'B-'),
-        ('AB+', 'AB+'),
-        ('AB-', 'AB-'),
-        ('O+', 'O+'),
-        ('O-', 'O-'),
-    ]
-    blood_type = models.CharField(max_length=3, choices=blood_type_choices)
-    height = models.DecimalField(max_digits=5, decimal_places=2)  
-    weight = models.DecimalField(max_digits=5, decimal_places=2)  

@@ -14,16 +14,16 @@ from django.contrib.auth.models import User
 from .utils import render_to_pdf
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
-from .forms import MinuteForm, MessInfoForm,RegistrationRequest,UpdatePaymentRequest
+from .forms import MinuteForm, MessInfoForm,RegistrationRequest
 from .tasks import *
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
                     Payments, Rebate, 
-                     Special_request, Vacation_food, MessBillBase,Registration_Request, Reg_records ,Reg_main,Deregistration_Request,Semdates,Update_Payment)
+                     Special_request, Vacation_food, MessBillBase,Registration_Request, Reg_records ,Reg_main,Deregistration_Request,Semdates)
 from .handlers import (add_mess_feedback, add_sem_dates, add_vacation_food_request,
                        add_menu_change_request, handle_menu_change_response, handle_vacation_food_request,
                        add_mess_registration_time, add_leave_request, add_mess_meeting_invitation,
-                       handle_rebate_response, add_special_food_request, handle_update_payment_response,
+                       handle_rebate_response, add_special_food_request,
                        handle_special_request, add_bill_base_amount, add_mess_committee,  handle_reg_response, handle_dreg_response, update_month_bill,handle_add_reg)
 
 from notification.views import central_mess_notif
@@ -59,7 +59,7 @@ def mess(request):
     holds_designations = HoldsDesignation.objects.select_related().filter(user=user)
     desig = holds_designations
     form = MinuteForm()
-    # mess_reg = Mess_reg.objects.select_related().last()
+    mess_reg = Mess_reg.objects.select_related().last()
     count1 = 0
     count2 = 0
     count3 = 0
@@ -82,14 +82,11 @@ def mess(request):
         splrequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=student).order_by('-app_date') 
         
         reg_form = RegistrationRequest()
-        update_form=UpdatePaymentRequest()
 
         reg_request = Registration_Request.objects.filter(student_id=student)
-        update_payment_request = Update_Payment.objects.filter(student_id=student)
+
         de_reg_request = Deregistration_Request.objects.filter(student_id=student)
-
         menu_data = Menu.objects.all()
-
 
         try:
             mess_optn = Reg_main.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student)
@@ -130,21 +127,20 @@ def mess(request):
         #         monthly_bill[i].due_amount=(-tot_am)
         #     tot_am+=monthly_bill[i].total_bill
         # amount_due=-payments[0].amount_paid
-        # amount_due = 0
+        amount_due = 0
         ## adding the batch of student if btech or bdes then value of programme is 1 or else 0, holds value of phd and mtech.
         
-        # if student.programme == 'B.Tech' or student.programme == 'B.Des':
-        #     programme = 1
-        # else:
-        #     programme = 0
-        # meeting = Mess_meeting.objects.all()
-        # minutes = Mess_minutes.objects.all()
-        # count = 0
+        if student.programme == 'B.Tech' or student.programme == 'B.Des':
+            programme = 1
+        else:
+            programme = 0
+        meeting = Mess_meeting.objects.all()
+        minutes = Mess_minutes.objects.all()
+        count = 0
 
         # try:
         #     mess_optn = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student)
         #     y = Menu.objects.filter(mess_option=mess_optn.mess_option)
-
 
         
             # bill = Monthly_bill.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(Q(student_id=student) & Q(month=month_g_l) & Q(year=year_g))
@@ -186,175 +182,169 @@ def mess(request):
         #     mess_optn={'mess_option':'no-mess'}
         #     y = Menu.objects.filter(mess_option="mess1")
 
-        # for d in desig:
-        #     if d.designation.name == 'mess_committee' or d.designation.name == 'mess_convener':
-        #         newmenu = Menu_change_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department','dish').filter(dish__mess_option='mess1').order_by('-app_date')
-        #         meeting = Mess_meeting.objects.all()
-        #         minutes = Mess_minutes.objects.select_related().all()
-        #         feed = Feedback.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(mess='mess1').order_by('-fdate')
-        #         feed2 = Feedback.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(mess='mess2').order_by('-fdate')
-        #         sprequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='1').order_by('-app_date')
-        #         sprequest_past = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='2').order_by('-app_date')
-        #         menuchangerequest= Menu_change_request.objects.select_related('student_id').filter().order_by('-app_date')
+        for d in desig:
+            if d.designation.name == 'mess_committee' or d.designation.name == 'mess_convener':
+                newmenu = Menu_change_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department','dish').filter(dish__mess_option='mess1').order_by('-app_date')
+                meeting = Mess_meeting.objects.all()
+                minutes = Mess_minutes.objects.select_related().all()
+                feed = Feedback.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(mess='mess1').order_by('-fdate')
+                feed2 = Feedback.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(mess='mess2').order_by('-fdate')
+                sprequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='1').order_by('-app_date')
+                sprequest_past = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='2').order_by('-app_date')
+                menuchangerequest= Menu_change_request.objects.select_related('student_id').filter().order_by('-app_date')
+                # menu_data = Menu.objects.all()
+                for f in feed:
+                    if f.feedback_type == 'Maintenance' :
+                        count1 += 1
 
-        #         # menu_data = Menu.objects.all()
+                    elif f.feedback_type == 'Food' :
+                        count2 += 1
 
-        #         for f in feed:
-        #             if f.feedback_type == 'Maintenance' :
-        #                 count1 += 1
+                    elif f.feedback_type == 'Cleanliness' :
+                        count3 += 1
 
-        #             elif f.feedback_type == 'Food' :
-        #                 count2 += 1
+                    elif f.feedback_type == 'Others' :
+                        count4 += 1
+                count5=0
+                count6=0
+                count7=0
+                count8=0
 
-        #             elif f.feedback_type == 'Cleanliness' :
-        #                 count3 += 1
-
-        #             elif f.feedback_type == 'Others' :
-        #                 count4 += 1
-        #         count5=0
-        #         count6=0
-        #         count7=0
-        #         count8=0
-
-        #         context = {
-        #             'menu': menu_data,
-        #             'reg_menu': y,
-        #             'messinfo': mess_optn,
-        #             'newmenu': newmenu,
-        #             'monthly_bill': monthly_bill,
-        #             'total_due': amount_due,
+                context = {
+                    'menu': menu_data,
+                    'reg_menu': y,
+                    'messinfo': mess_optn,
+                    'newmenu': newmenu,
+                    'monthly_bill': monthly_bill,
+                    'total_due': amount_due,
                     
-        #             'vaca': vaca_obj,
-        #             'info': extrainfo,
-        #             'feedback': feedback_obj,
-        #             'feed1': feed,
-        #             'feed2':'',
-        #             'student': student,
-        #             'mess_reg': mess_reg,
-        #             'current_date': current_date,
-        #             'count': count,
-        #             'rebates': rebates,
-        #             'meeting': meeting,
-        #             'minutes': minutes,
-        #             'sprequest': sprequest,
-        #             'splrequest': splrequest,
-        #             'sprequest_past': sprequest_past,
-        #             'menuchangerequest':menuchangerequest,
-        #             'programme':programme,
-        #             'count1': count1,
-        #             'count2': count2,
-        #             'count3': count3,
-        #             'count4': count4,
-        #             'count5': count5,
-        #             'count6': count6,
-        #             'count7': count7,
-        #             'count8': count8,
-        #             'form': form,
-        #             'desig': desig,
-        #             'reg_form':reg_form,
-        #             'reg_request':reg_request,
-        #             'reg_main':mess_optn,
-        #             'reg_record':reg_record,
-        #             'de_reg_request':de_reg_request,
+                    'vaca': vaca_obj,
+                    'info': extrainfo,
+                    'feedback': feedback_obj,
+                    'feed1': feed,
+                    'feed2':'',
+                    'student': student,
+                    'mess_reg': mess_reg,
+                    'current_date': current_date,
+                    'count': count,
+                    'rebates': rebates,
+                    'meeting': meeting,
+                    'minutes': minutes,
+                    'sprequest': sprequest,
+                    'splrequest': splrequest,
+                    'sprequest_past': sprequest_past,
+                    'menuchangerequest':menuchangerequest,
+                    'programme':programme,
+                    'count1': count1,
+                    'count2': count2,
+                    'count3': count3,
+                    'count4': count4,
+                    'count5': count5,
+                    'count6': count6,
+                    'count7': count7,
+                    'count8': count8,
+                    'form': form,
+                    'desig': desig,
+                    'reg_form':reg_form,
+                    'reg_request':reg_request,
+                    'reg_main':mess_optn,
+                    'reg_record':reg_record,
+                    'de_reg_request':de_reg_request,
 
-        #         }
-        #         return render(request, "messModule/mess.html", context)
+                }
+                return render(request, "messModule/mess.html", context)
 
-        #     if d.designation.name == 'mess_committee_mess2' or d.designation.name == 'mess_convener_mess2':
-        #         newmenu = Menu_change_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department','dish').filter(dish__mess_option='mess2').order_by('-app_date')
-        #         meeting = Mess_meeting.objects.all()
-        #         minutes = Mess_minutes.objects.select_related().all()
-        #         feed = Feedback.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(mess='mess2').order_by('-fdate')
-        #         feed2 = Feedback.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(mess='mess1').order_by('-fdate')
-        #         sprequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='1').order_by('-app_date')
-        #         sprequest_past = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='2').order_by('-app_date')
-        #         menuchangerequest= Menu_change_request.objects.select_related('student_id').filter().order_by('-app_date')
+            if d.designation.name == 'mess_committee_mess2' or d.designation.name == 'mess_convener_mess2':
+                newmenu = Menu_change_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department','dish').filter(dish__mess_option='mess2').order_by('-app_date')
+                meeting = Mess_meeting.objects.all()
+                minutes = Mess_minutes.objects.select_related().all()
+                feed = Feedback.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(mess='mess2').order_by('-fdate')
+                feed2 = Feedback.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(mess='mess1').order_by('-fdate')
+                sprequest = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='1').order_by('-app_date')
+                sprequest_past = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='2').order_by('-app_date')
+                menuchangerequest= Menu_change_request.objects.select_related('student_id').filter().order_by('-app_date')
+                # menu_data = Menu.objects.all().order_by()
+                count5=0
+                count6=0
+                count7=0
+                count8=0
+                for f in feed:
+                    if f.feedback_type == 'Maintenance' :
+                        count1 += 1
 
-        #         # menu_data = Menu.objects.all().order_by()
+                    elif f.feedback_type == 'Food' :
+                        count2 += 1
 
-        #         count5=0
-        #         count6=0
-        #         count7=0
-        #         count8=0
-        #         for f in feed:
-        #             if f.feedback_type == 'Maintenance' :
-        #                 count1 += 1
+                    elif f.feedback_type == 'Cleanliness' :
+                        count3 += 1
 
-        #             elif f.feedback_type == 'Food' :
-        #                 count2 += 1
+                    elif f.feedback_type == 'Others' :
+                        count4 += 1
 
-        #             elif f.feedback_type == 'Cleanliness' :
-        #                 count3 += 1
-
-        #             elif f.feedback_type == 'Others' :
-        #                 count4 += 1
-
-        #         context = {
-        #             'menu': menu_data,
-        #             'reg_menu': y,
-        #             'messinfo': mess_optn,
-        #             'newmenu': newmenu,
-        #             'monthly_bill': monthly_bill,
-        #             'total_due': amount_due,
-        #             'vaca': vaca_obj,
-        #             'info': extrainfo,
-        #             'feedback': feedback_obj,
-        #             'feed2': feed,
-        #             'feed1':'',
-        #             'student': student,
-        #             # 'data': data,
-        #             'mess_reg': mess_reg,
-        #             'current_date': current_date,
-        #             'count': count,
-        #             'rebates': rebates,
-        #             'programme': programme,
-        #             'meeting': meeting,
-        #             'minutes': minutes,
-        #             'splrequest': splrequest,
-        #             'sprequest': sprequest,
-        #             'sprequest_past': sprequest_past,
-        #             'menuchangerequest':menuchangerequest,  
-        #             'count1': count1,
-        #             'count2': count2,
-        #             'count3': count3,
-        #             'count4': count4,
-        #             'count5': count5,
-        #             'count6': count6,
-        #             'count7': count7,
-        #             'count8': count8,
-        #             'form': form,
-        #             'desig': desig,
-        #             'reg_form':reg_form,
-        #             'reg_request':reg_request,
-        #             'reg_main':mess_optn,
-        #             'reg_record':reg_record,
-        #             'de_reg_request':de_reg_request,
-        #         }
-        #         return render(request, "messModule/mess.html", context)
+                context = {
+                    'menu': menu_data,
+                    'reg_menu': y,
+                    'messinfo': mess_optn,
+                    'newmenu': newmenu,
+                    'monthly_bill': monthly_bill,
+                    'total_due': amount_due,
+                    'vaca': vaca_obj,
+                    'info': extrainfo,
+                    'feedback': feedback_obj,
+                    'feed2': feed,
+                    'feed1':'',
+                    'student': student,
+                    # 'data': data,
+                    'mess_reg': mess_reg,
+                    'current_date': current_date,
+                    'count': count,
+                    'rebates': rebates,
+                    'programme': programme,
+                    'meeting': meeting,
+                    'minutes': minutes,
+                    'splrequest': splrequest,
+                    'sprequest': sprequest,
+                    'sprequest_past': sprequest_past,
+                    'menuchangerequest':menuchangerequest,  
+                    'count1': count1,
+                    'count2': count2,
+                    'count3': count3,
+                    'count4': count4,
+                    'count5': count5,
+                    'count6': count6,
+                    'count7': count7,
+                    'count8': count8,
+                    'form': form,
+                    'desig': desig,
+                    'reg_form':reg_form,
+                    'reg_request':reg_request,
+                    'reg_main':mess_optn,
+                    'reg_record':reg_record,
+                    'de_reg_request':de_reg_request,
+                }
+                return render(request, "messModule/mess.html", context)
 
         context = {
                     'menu': menu_data,
-                #    'reg_menu': y,
-                #    'messinfo': mess_optn,
+                   'reg_menu': y,
+                   'messinfo': mess_optn,
                    'monthly_bill': monthly_bill,
-                #    'total_due': amount_due,
+                   'total_due': amount_due,
                    'vaca': vaca_obj,
                    'info': extrainfo,
                    'feedback': feedback_obj,
                    'student': student,
-                #    'mess_reg': mess_reg,
+                   'mess_reg': mess_reg,
                    'current_date': current_date,
-                #    'count': count,
+                   'count': count,
                    'rebates': rebates,
                    'splrequest': splrequest,
                    'form': form,
-                #    'programme': programme,
+                   'programme': programme,
                    'desig': desig,
-                #    'minutes': minutes,
-                #    'meeting': meeting,
+                   'minutes': minutes,
+                   'meeting': meeting,
                    'reg_form':reg_form,
-                   'update_form':update_form,
-                   'update_payment_request':update_payment_request,
                    'reg_main_stud':mess_optn,
                    'reg_request':reg_request,
                    'reg_record':reg_record,
@@ -373,12 +363,7 @@ def mess(request):
     elif extrainfo.user_type == 'staff':
         for d in desig:
             if(d.designation.name == 'mess_manager'):
-                try:
-                    current_bill = MessBillBase.objects.latest('timestamp')
-                except:
-                    new_entry = MessBillBase(bill_amount=150)
-                    new_entry.save()
-                    current_bill = MessBillBase.objects.latest('timestamp')
+                current_bill = MessBillBase.objects.latest('timestamp')
                 newmenu = Menu_change_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department','dish').all().order_by('-app_date')
                 vaca_all = Vacation_food.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').all().order_by('-app_date')
                 members_mess = HoldsDesignation.objects.select_related().filter(Q(designation__name__contains='mess_convener')
@@ -386,8 +371,8 @@ def mess(request):
                 y = Menu.objects.all()
                 leave = Rebate.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='1').order_by('-app_date')
                 leave_past = Rebate.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='2').order_by('-app_date')
-                # meeting = Mess_meeting.objects.all()
-                # minutes = Mess_minutes.objects.all()
+                meeting = Mess_meeting.objects.all()
+                minutes = Mess_minutes.objects.all()
                 feed1 = Feedback.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(mess='mess1').order_by('-fdate')
                 feed2 = Feedback.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(mess='mess2').order_by('-fdate')
                         
@@ -421,7 +406,6 @@ def mess(request):
                 sprequest_past = Special_request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(status='2').order_by('-app_date')
 
                 reg_request = Registration_Request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').all().filter(status='pending')
-                update_pay_request=Update_Payment.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').all().filter(status='pending')
                 de_reg_request = Deregistration_Request.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').all().filter(status='pending')
                 reg_main = Reg_main.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').filter(current_mess_status='Registered')
                 reg_record = Reg_records.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').all()
@@ -439,10 +423,10 @@ def mess(request):
                     'leave': leave,
                     'leave_past': leave_past,
                     'current_date': current_date,
-                    # 'mess_reg': mess_reg,
+                    'mess_reg': mess_reg,
                     'desig': desig,
-                    # 'meeting': meeting,
-                    # 'minutes': minutes,
+                    'meeting': meeting,
+                    'minutes': minutes,
                     'sprequest': sprequest,
                     'sprequest_past': sprequest_past,
                     'count1': count1,
@@ -452,8 +436,7 @@ def mess(request):
                     'reg_request':reg_request,'reg_record':reg_record,'reg_main':reg_main,
                     'de_reg_request':de_reg_request,
                     'bill': bills,
-                    'reg_form':reg_form,
-                    'update_pay_request':update_pay_request
+                    'reg_form':reg_form
                 }
                 return render(request, "messModule/mess.html", context)
 
@@ -505,7 +488,6 @@ def mess(request):
                     'reg_record':reg_record,'reg_main':reg_main,'bill': bills,
                 }
                 return render(request, 'messModule/mess.html', context)
-
 
 @login_required
 @transaction.atomic
@@ -959,13 +941,25 @@ class MenuPDF(View):
         extra_info = ExtraInfo.objects.select_related().get(user=user)
         y = Menu.objects.all()
 
-        context = {
-            'menu': y,
-            'mess_option': 'mess2',
-            'date':str(today_g.date())
-        }
-        return render_to_pdf('messModule/menudownloadable2.html', context)
-    # return HttpResponse(pdf, content_type='application/pdf')
+        if extra_info.user_type=='student':
+            student = Student.objects.select_related('id','id__user','id__department').get(id=extra_info)
+            mess_info = Messinfo.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student)
+            mess_option = mess_info.mess_option
+            context = {
+                'menu': y,
+                'mess_option': mess_option
+            }
+            if mess_option=='mess2':
+                return render_to_pdf('messModule/menudownloadable2.html', context)
+            else:
+                return render_to_pdf('messModule/menudownloadable1.html', context)
+        else:
+            context = {
+                'menu': y,
+                'mess_option': 'mess2'
+            }
+            return render_to_pdf('messModule/menudownloadable2.html', context)
+        # return HttpResponse(pdf, content_type='application/pdf')
 
 
 class MenuPDF1(View):
@@ -985,8 +979,7 @@ class MenuPDF1(View):
         y = Menu.objects.all()
         context = {
             'menu': y,
-            'mess_option': 'mess1',
-            'date':str(today_g.date())
+            'mess_option': 'mess1'
         }
         return render_to_pdf('messModule/menudownloadable1.html', context)
     
@@ -1007,7 +1000,6 @@ class BillPDFStudent(View):
                 return HttpResponseRedirect('/mess')
         except:
             return HttpResponseRedirect('/mess')
-
 
 
 def menu_change_request(request):
@@ -1561,21 +1553,6 @@ def respond_to_reg(request):
                 data = handle_dreg_response(request)    
     return JsonResponse(data)
     
-@csrf_exempt
-@login_required
-def respond_to_update_payment(request):
-    data = {
-        'status': 1
-    }
-    user = request.user
-    designation = HoldsDesignation.objects.select_related().filter(user=user)
-    for d in designation:
-        if d.designation.name == 'mess_manager':
-            data = handle_update_payment_response(request)
-            
-    return JsonResponse(data)
-
-
 
 def reg_request(request):
 
@@ -1606,18 +1583,6 @@ def reg_request(request):
                 return HttpResponseRedirect("/mess")  
 
             
-def update_payment(request):
-    user = request.user
-    extra_info = ExtraInfo.objects.select_related().get(user=user)    
-    student = Student.objects.select_related('id','id__user','id__department').get(id=extra_info)
-    if request.method == 'POST':
-        form = UpdatePaymentRequest(request.POST, request.FILES)
-
-        if form.is_valid():
-            temp=form.save(commit=False)
-            temp.student_id=student
-            temp.save()
-            return HttpResponseRedirect("/mess")
 
 @csrf_exempt
 def update_bill_excel(request):

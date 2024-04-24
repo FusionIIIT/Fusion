@@ -15,6 +15,7 @@ class IndentFile(models.Model):
     estimated_cost=models.IntegerField(null=True, blank=False)
     purpose=models.CharField(max_length=250,blank=False )
     specification=models.CharField(max_length=250)
+    grade = models.CharField(max_length=1, choices=[('A', 'A'), ('B', 'B'), ('C', 'C')],default='A')
     item_type=models.CharField(max_length=250)
     nature=models.BooleanField(default = False)
     indigenous= models.BooleanField(default = False)
@@ -33,11 +34,14 @@ class IndentFile(models.Model):
 
 class Constants:
     Locations = (
-        ('SR1', 'LHTC'),
-        ('SR2', 'Computer Center'),
-        ('SR3', 'Panini Hostel'),
-        ('SR4', 'Lab complex'),
-        ('SR5', 'Admin Block'),
+        ('H1', 'Vashistha Hostel'),
+        ('H4', 'Vivekananda Hostel'),
+        ('H3', 'AryaBhatta Hostel'),
+        ('SR1', 'Storage Room 1'),
+        ('SR2', 'Storage Room 2'),
+        ('SR3', 'Storage Room 3'),
+        ('SR4', 'Storage Room 4'),
+        ('SR5', 'Storage Room 5'),
     )
 
 class StockEntry(models.Model):

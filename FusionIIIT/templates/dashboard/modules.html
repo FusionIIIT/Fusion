@@ -226,7 +226,7 @@
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
-                            <a class="ui large label "  style="height: 120px; width:100%" href="/research_procedures">
+                            <a class="ui large label disabled"  style="height: 120px; width:100%" href="/research_procedures">
                                 <div class="ui centered grid">
                                     <div class="row">
                                         <i class="ui university icon big"></i>
@@ -295,7 +295,7 @@
                             </a>
                         </div>
                         {% endif %}
-                        <!-- {% if request.user.extrainfo.user_type != "student"  %}
+                        {% if request.user.extrainfo.user_type != "student"  %}
                             <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
@@ -311,9 +311,9 @@
                                     </div>
                                 </a>
                             </div>
-                        {% endif %} -->
+                        {% endif %}
                  
-                    <!-- {% comment %}A single modules row ends here!{% endcomment %} -->
+                    {% comment %}A single modules row ends here!{% endcomment %}
 
                   
                         {% if request.user.extrainfo.user_type == "faculty" or  "acadadmin" == global_var  %}
@@ -411,27 +411,6 @@
                         {% endif %}
                    
                     {% comment %}A single modules row ends here!{% endcomment %}
-
-                    {% if request.user.extrainfo.user_type != ""  %}
-                    <div style="width: calc(50% - 10px);
-                margin: 5px;
-                box-sizing: border-box;">
-                        <a class="ui large label" style="height: 120px; width:100%" href="/hr2/dashboard">
-                            <div class="ui centered grid">
-                                <div class="row">
-                                    <i class="ui file icon big"></i>
-                                </div>
-
-                                <div class="row">
-                                    <span class="ui sub header centered">Human Resource</span>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                {% endif %}
-        
-            {% comment %}A single modules row ends here!{% endcomment %}
-
                 </div>
             {% comment %}
             <a class="ui bottom attached blue label">

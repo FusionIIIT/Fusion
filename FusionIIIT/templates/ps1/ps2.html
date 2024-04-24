@@ -35,32 +35,30 @@
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
-                <a href="/purchase-and-store/entry" class="item {% if request.path == '/purchase-and-store/entry/' %}active{% endif %}">
+                <a href="/purchase-and-store/entry" class="item">
                     Add Stock
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a href="/purchase-and-store/stock_entry_view" class="item {% if request.path == '/purchase-and-store/stock_entry_view/' %}active{% endif %}">
+                <a href="/purchase-and-store/stock_entry_view" class="item">
                     Stock Enteries
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a href="/purchase-and-store/current_stock_view" class="item {% if request.path == '/purchase-and-store/current_stock_view/' %}active{% endif %}">
+                <a href="/purchase-and-store/current_stock_view" class="item">
                     Current Stock Situation
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a href="/purchase-and-store/view_transfer" class="item {% if request.path == '/purchase-and-store/view_transfer/' %}active{% endif %}">
+                <a href="/purchase-and-store/view_transfer" class="item">
                     Transfer Stock View
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a href="/purchase-and-store/inwardIndent" class="item {% if '/purchase-and-store/indentview2/' in request.path %}active{% endif %}">
-                    Indent Page
+                <a href="/purchase-and-store/create_proposal" class="item">
+                    Back
                     <i class="right floated chevron right icon"></i>
                 </a>
-                
-
 
                 <!-- <a href="/purchase-and-store/generate_report" class="item">
                     Generate Report
@@ -115,9 +113,6 @@
                 {% comment %}
                     TODO: the right rail!
                 {% endcomment %}
-                <!-- {% block sidepanel%} 
-                {% include 'notifications/ps1_sidepanel.html' %} 
-                {% endblock %}   -->
             </div>
         </div>
         {% comment %}The right-rail segment ends here!{% endcomment %}
