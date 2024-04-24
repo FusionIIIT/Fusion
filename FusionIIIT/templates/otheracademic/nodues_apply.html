@@ -1,0 +1,108 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+    Leave Management
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <div class="ui stackable doubling grid">
+        <div class="column"></div>
+
+        <div class="three wide column">
+            {% include 'globals/usercard.html' %}
+
+            <div class="ui divider"></div>
+
+            <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+                <a href="/otheracademic/nodues_apply" class="active item">No Dues Form
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/otheracademic/nodues_status" class="item">No Dues Status
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+            </div>
+        </div>
+   
+        <div class="eight wide column">
+            <div class="ui active tab segment" data-tab="leave_form" id="leave_form">
+                <h2 class="ui header">No Dues Apply</h2>
+                    <form class="ui form" id="noDuesForm" enctype="multipart/form-data" method="POST" action="{% url 'otheracademic:submit_nodues_form' %}">
+
+                        {% csrf_token %}
+                        <div class="field">
+                            <label>Roll no. (In Capital Letter)</label>
+                            <input type="text" name="roll_no" placeholder="Enter Roll no." required>
+                        </div>
+                        <div class="field">
+                            <label>Student Name</label>
+                            <input type="text" name="name" placeholder="Enter Student Name" required>
+                        </div>
+                        <div class="field">
+                            <label>PBI/BTP/Thesis Superviser (Credential)</label>
+                            <input type="text" name="btp_credential" placeholder="Enter PBI Credential" required>
+                        </div>
+                        <div class="field">
+                            <label>Hostel (Credential)</label>
+                            <input type="text" name="hostel_credential" placeholder="Enter Hostel Credential" required>
+                        </div>
+                        <div class="field">
+                            <label>Bank (Credential)</label>
+                            <input type="text" name="bank_credential" placeholder="Enter Bank (Credential)" required>
+                        </div>
+                        <div class="field">
+                            <label>CSE Office(Credential)</label>
+                            <input type="text" name="cse_credential" placeholder="Enter CSE Office Credential" required>
+                        </div>
+                        <div class="field">
+                            <label>Design Office (Credential)</label>
+                            <input type="text" name="design_credential" placeholder="Enter Design Office Credential" required>
+                        </div>
+                        <div class="field">
+                            <label>Acad (Credential)</label>
+                            <input type="text" name="acad_credential" placeholder="Enter Acad Credential" required>
+                        </div>
+                        <div class="field">
+                            <label>ECE Office (Credential)</label>
+                            <input type="text" name="ece_credential" placeholder="Enter ECE Credential" required>
+                        </div>
+                        <div class="field">
+                            <label>Library (Credential)</label>
+                            <input type="text" name="library_credential" placeholder="Enter Library Credential" required>
+                        </div>
+                        <div class="field">
+                            <label>ME Office (Credential)</label>
+                            <input type="text" name="me_credential" placeholder="Enter ME Credential" required>
+                        </div>
+                        <div class="field">
+                            <label>Mess (Credential)</label>
+                            <input type="text" name="mess_credential" placeholder="Enter Mess Credential" required>
+                        </div>
+                        <div class="field">
+                            <label>Physics Office - NS (Credential)</label>
+                            <input type="text" name="physics_credential" placeholder="Enter Physics Credential" required>
+                        </div>
+                        <div class="field">
+                            <label>Discipline Office (Credential)</label>
+                            <input type="text" name="discipline_credential" placeholder="Enter Physics Credential" required>
+                        </div>
+                        
+                        <button class="ui blue button" type="submit">Apply</button>
+                    </form>
+            </div>
+
+            
+        </div>
+
+        <div class="three wide column">
+            <!-- Right rail content -->
+        </div>
+
+        <div class="column"></div>
+    </div>
+{% endblock %}
