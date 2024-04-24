@@ -13,9 +13,9 @@ from django.contrib.auth.models import User
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from applications.academic_information.models import Spi, Student
 from applications.globals.models import (Designation, ExtraInfo,
-                                         HoldsDesignation,Faculty)
+                                         HoldsDesignation,Faculty,DepartmentInfo)
 from applications.eis.models import (faculty_about, emp_research_projects)
-
+from .models import Information
 from notification.views import department_notif
 from .models import SpecialRequest, Announcements , Information
 from jsonschema import validate
@@ -290,6 +290,8 @@ def staff_view(request):
         
         
     # update_department_info(request)
+    #find the name of designation in the table designation
+    # required_designation = Designation.objects.all().
         
     context = browse_announcements()
     
@@ -297,12 +299,58 @@ def staff_view(request):
         51: 'department/csedep_request.html',
         30: 'department/ecedep_request.html',
         37: 'department/medep_request.html',
-        53: 'department/smdep_request.html'
-    }
+        53: 'department/smdep_request.html',
+
+    } 
     default_template = 'department/dep_request.html'
     
-    template_name = department_templates.get(user_departmentid, default_template)
+    desig=request.session.get('currentDesignationSelected', 'default_value')
+    if desig=='deptadmin_cse':
+        template_name = 'department/admin_cse.html'
     
+        return render(request, template_name, {
+            "user_designation": user_info.user_type,
+            "announcements": context,
+            "request_to": requests_received,
+            "fac_list": context_f
+        }) 
+    elif desig=='deptadmin_ece':
+        template_name = 'department/admin_ece.html'
+        return render(request, template_name, {
+            "user_designation": user_info.user_type,
+            "announcements": context,
+            "request_to": requests_received,
+            "fac_list": context_f
+        }) 
+    elif desig=='deptadmin_me':
+        template_name = 'department/admin_me.html'
+        return render(request, template_name, {
+            "user_designation": user_info.user_type,
+            "announcements": context,
+            "request_to": requests_received,
+            "fac_list": context_f
+        }) 
+    elif desig=='deptadmin_sm':
+        template_name = 'department/admin_sm.html'
+        return render(request, template_name, {
+            "user_designation": user_info.user_type,
+            "announcements": context,
+            "request_to": requests_received,
+            "fac_list": context_f
+        }) 
+         
+    # if  desig == 'deptadmin_cse':
+    #     return render(request, 'admin_cse.html')
+    # elif desig == 'deptadmin_ece':
+    #     return render(request, 'admin_ece.html')
+    # elif desig == 'deptadmin_sm':
+    #     return render(request, 'admin_sm.html')
+    # elif desig == 'deptadmin_me':
+    #     return render(request, 'admin_me.html')
+    # else:
+    #     return render(request, 'default.html')
+
+    template_name = department_templates.get(user_departmentid, default_template)
     return render(request, template_name, {
         "user_designation": user_info.user_type,
         "announcements": context,
@@ -343,6 +391,9 @@ def all_students(request, bid):
             return {'programme': programme, 'batch': batch}
         except (IndexError, KeyError):
             return None  # Handle malformed bid values
+    # Get sort parameter from the request
+    sort_by = request.GET.get('sort_by', None)  # No default sort
+    last_sort = request.session.get('last_sort', None)
 
     # Decode bid into filter criteria
     filter_criteria = decode_bid(bid)
@@ -352,10 +403,27 @@ def all_students(request, bid):
     # Apply additional department filter since it seems fixed 
     filter_criteria['id__department__name'] = 'CSE'
 
-    student_list1 = Student.objects.order_by('id').filter(
-        id__user_type='student',
-        **filter_criteria
-    ).select_related('id')
+    # Apply sort parameter to the queryset
+    if sort_by:
+        if last_sort == sort_by:
+            sort_by = '-' + sort_by  # Reverse the order
+        try:
+            student_list1 = Student.objects.order_by(sort_by).filter(
+                id__user_type='student',
+                **filter_criteria
+            ).select_related('id')
+        except:
+            # If the sort field doesn't exist or isn't sortable, ignore the sort parameter
+            student_list1 = Student.objects.filter(
+                id__user_type='student',
+                **filter_criteria
+            ).select_related('id')
+        request.session['last_sort'] = sort_by  # Save the sort parameter for the next request
+    else:
+        student_list1 = Student.objects.filter(
+            id__user_type='student',
+            **filter_criteria
+        ).select_related('id')
 
     paginator = Paginator(student_list1, 25, orphans=5)
     page_number = request.GET.get('page')
@@ -363,7 +431,6 @@ def all_students(request, bid):
     id_dict = {'student_list': student_list}
     return render(request, 'department/AllStudents.html', context=id_dict)
 
-    
 
 def faculty():
     """

@@ -232,7 +232,7 @@
                     {% comment %}A single modules row ends here!{% endcomment %}
 
                     
-                        {% if request.user.extrainfo.user_type != "staff"   %}
+                        {% if request.user.extrainfo.user_type == "staff" or "faculty" or "student"  %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
@@ -448,4 +448,5 @@
         </div>
     </div>
 </div>
+{% endblock %}
 {% comment %}The Modules End here!{% endcomment %}
