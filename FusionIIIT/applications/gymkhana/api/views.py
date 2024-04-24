@@ -1,6 +1,7 @@
 import genericpath
 import json
 import tempfile
+from datetime import datetime
 from venv import logger
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
@@ -111,33 +112,103 @@ class ClubMemberDeleteAPIView(APIView):
 
         return Response({"message": "Club member deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
-class UpdateClubDetailsAPIView(APIView):
-    def post(self, request, *args, **kwargs):
-        club_name = request.data.get('club_name')
-        co_coordinator = request.data.get('co_coordinator')
-        co_ordinator = request.data.get('co_ordinator')
+# class UpdateClubDetailsAPIView(APIView):
+#     def post(self, request, *args, **kwargs):
+#         club_name = request.data.get('club_name')
+#         co_coordinator = request.data.get('co_coordinator')
+#         co_ordinator = request.data.get('co_ordinator')
         
-        print(f"Received request data: club_name={club_name}, co_coordinator={co_coordinator}, co_ordinator={co_ordinator}")
+#         print(f"Received request data: club_name={club_name}, co_coordinator={co_coordinator}, co_ordinator={co_ordinator}")
 
-        # Retrieve the Club_info object by club_name
+#         # Retrieve the Club_info object by club_name
+#         try:
+#             club_info = Club_info.objects.get(club_name=club_name)
+#         except Club_info.DoesNotExist:
+#             return Response({"message": "Club not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+#         print(f"Found Club_info object: {club_info}")
+        
+#         # Update the details provided in the request
+#         serializer = Club_infoSerializer(instance=club_info, data={'co_coordinator': co_coordinator, 'co_ordinator': co_ordinator}, partial=True)
+#         if serializer.is_valid():
+#             print("Serializer is valid. Saving...")
+#             serializer.save()
+#             print("Data saved successfully.")
+#             return Response(serializer.data)
+#         else:
+#             print(f"Serializer errors: {serializer.errors}")
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ChangeHeadAPIView(APIView):
+    def post(self, request):
+        club = request.data.get("club_name")
+        co_ordinator = request.data.get('co_ordinator')
+        co_coordinator = request.data.get('co_coordinator')
+
+        if not club or (not co_ordinator and not co_coordinator):
+            return JsonResponse({'status': 'error', 'message': 'Invalid request parameters'})
+
         try:
-            club_info = Club_info.objects.get(club_name=club_name)
+            club_info = Club_info.objects.get(club_name=club)
         except Club_info.DoesNotExist:
-            return Response({"message": "Club not found"}, status=status.HTTP_404_NOT_FOUND)
-        
-        print(f"Found Club_info object: {club_info}")
-        
-        # Update the details provided in the request
-        serializer = Club_infoSerializer(instance=club_info, data={'co_coordinator': co_coordinator, 'co_ordinator': co_ordinator}, partial=True)
-        if serializer.is_valid():
-            print("Serializer is valid. Saving...")
-            serializer.save()
-            print("Data saved successfully.")
-            return Response(serializer.data)
-        else:
-            print(f"Serializer errors: {serializer.errors}")
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+            return JsonResponse({'status': 'error', 'message': 'Club not found'})
+
+        message = ""
+
+        if co_ordinator:
+            if not Club_member.objects.filter(club_id=club, member_id=co_ordinator).exists():
+                return JsonResponse({'status': 'error', 'message': 'Selected student is not a member of the club'})
+            
+            try:
+                co_ordinator_student = Student.objects.get(id_id=co_ordinator)
+                old_co_ordinator = club_info.co_ordinator_id
+                club_info.co_ordinator_id = co_ordinator_student
+                
+                new_co_ordinator = HoldsDesignation(
+                    user=User.objects.get(username=co_ordinator),
+                    working=User.objects.get(username=co_ordinator),
+                    designation=Designation.objects.get(name="co-ordinator")
+                )
+                new_co_ordinator.save()
+
+                HoldsDesignation.objects.filter(
+                    user__username=old_co_ordinator,
+                    designation=Designation.objects.get(name="co-ordinator")
+                ).delete()
+
+                message += "Successfully changed co-ordinator !!!"
+            except Student.DoesNotExist:
+                return JsonResponse({'status': 'error', 'message': 'Selected student not found'})
+
+        if co_coordinator:
+            if not Club_member.objects.filter(club_id=club, member_id=co_coordinator).exists():
+                return JsonResponse({'status': 'error', 'message': 'Selected student is not a member of the club'})
+
+            try:
+                co_coordinator_student = Student.objects.get(id_id=co_coordinator)
+                old_co_coordinator = club_info.co_coordinator_id
+                club_info.co_coordinator_id = co_coordinator_student
+                
+                new_co_coordinator = HoldsDesignation(
+                    user=User.objects.get(username=co_coordinator),
+                    working=User.objects.get(username=co_coordinator),
+                    designation=Designation.objects.get(name="co co-ordinator")
+                )
+                new_co_coordinator.save()
+
+                HoldsDesignation.objects.filter(
+                    user__username=old_co_coordinator,
+                    designation=Designation.objects.get(name="co co-ordinator")
+                ).delete()
+
+                message += "Successfully changed co-coordinator !!!"
+            except Student.DoesNotExist:
+                return JsonResponse({'status': 'error', 'message': 'Selected student not found'})
+
+        club_info.head_changed_on = timezone.now()
+        club_info.save()
+
+        return JsonResponse({'status': "success", 'message': message})
 class AddMemberToClub(APIView):
     def post(self, request):
         serializer = Club_memberSerializer(data=request.data)
@@ -308,51 +379,76 @@ class NewEventAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+    
 
-class DeleteEventsView(APIView):
-    """
-    API endpoint to delete events.
-    """
 
-    def post(self, request):
-        """
-        Handle POST requests to delete events.
-        """
-        try:
-            events_deleted = []
-            events_not_found = []
+# class DeleteEventsView(APIView):
+#     """
+#     API endpoint to delete events.
+#     """
+
+#     def post(self, request):
+#         """
+#         Handle POST requests to delete events.
+#         """
+#         try:
+#             events_deleted = []
+#             events_not_found = []
             
-            # Ensure that request.data is a dictionary
-            event_data_list = request.data if isinstance(request.data, list) else []
+#             # Ensure that request.data is a dictionary
+#             event_data_list = request.data if isinstance(request.data, list) else []
 
-            for event_data in event_data_list:
-                name = event_data.get('event_name')
-                venue = event_data.get('venue')
-                incharge = event_data.get('incharge')
-                date = event_data.get('date')
+#             for event_data in event_data_list:
+#                 name = event_data.get('event_name')
+#                 venue = event_data.get('venue')
+#                 incharge = event_data.get('incharge')
+#                 date = event_data.get('date')
+#                 event_id = event_data.get('id')
 
-                # Query Event_info based on the provided parameters
-                event = Event_info.objects.filter(
-                    event_name=name,
-                    venue=venue,
-                    incharge=incharge,
-                    date=date
-                ).first()
+#                 # Query Event_info based on the provided parameters
+#                 event = Event_info.objects.filter(
+#                     event_name=name,
+#                     venue=venue,
+#                     incharge=incharge,
+#                     date=date,
+#                     event_id=id,
+#                 ).first()
 
-                if event:
-                    event.delete()
-                    events_deleted.append(event_data)
-                else:
-                    events_not_found.append(event_data)
+#                 if event:
+#                     event.delete()
+#                     events_deleted.append(event_data)
+#                 else:
+#                     events_not_found.append(event_data)
 
-            response_data = {
-                "events_deleted": events_deleted,
-                "events_not_found": events_not_found
-            }
+#             response_data = {
+#                 "events_deleted": events_deleted,
+#                 "events_not_found": events_not_found
+#             }
 
-            return Response(response_data, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+#             return Response(response_data, status=status.HTTP_200_OK)
+#         except Exception as e:
+#             return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class EventDeleteAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        # Retrieve data from request
+        event_data = request.data
+
+        # Check if 'id' parameter is provided
+        if 'id' not in event_data:
+            return Response({'error': 'The "id" parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Get the event by id
+        event_id = event_data['id']
+        try:
+            event = Event_info.objects.get(id=event_id)
+        except Event_info.DoesNotExist:
+            return Response({'error': 'Event not found with the provided id'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Delete the event
+        event.delete()
+
+        return Response({'message': 'Event deleted successfully'}, status=status.HTTP_200_OK)
 
 
 class SessionUpdateAPIView(APIView):
@@ -556,23 +652,200 @@ class DeleteClubAPIView(APIView):
         return Response({"message": "Club deleted successfully"}, status=status.HTTP_200_OK)
     
 
-class ClubCreateAPIView(APIView):
-    def post(self, request, format=None):
-        data = {
-            'club_name': request.data.get('club_name'),
-            'category': request.data.get('category'),
-            'co_ordinator': request.data.get('co_ordinator'),
-            'co_coordinator': request.data.get('co_coordinator'),
-            'faculty_incharge': request.data.get('faculty_incharge'),
-            'club_file': request.data.get('club_file'),
-            'activity_calender': request.data.get('activity_calender'),
-            'description': request.data.get('description'),
-            'status': request.data.get('status'),
-            'head_changed_on': request.data.get('head_changed_on'),
-            'created_on': request.data.get('created_on')
-        }
-        serializer = Club_infoSerializer(data=data)
+# class ClubCreateAPIView(APIView):
+#     def post(self, request, format=None):
+#         data = {
+#             'club_name': request.data.get('club_name'),
+#             'category': request.data.get('category'),
+#             'co_ordinator': request.data.get('co_ordinator'),
+#             'co_coordinator': request.data.get('co_coordinator'),
+#             'faculty_incharge': request.data.get('faculty_incharge'),
+#             'club_file': request.data.get('club_file'),
+#             'activity_calender': request.data.get('activity_calender'),
+#             'description': request.data.get('description'),
+#             'status': request.data.get('status'),
+#             'head_changed_on': request.data.get('head_changed_on'),
+#             'created_on': request.data.get('created_on'),
+#         }
+#         serializer = Club_infoSerializer(data=data,partial=True)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CreateClubAPIView(APIView):
+    def post(self, request):
+        # Get the string representation of the file content for club_file
+        club_file_content = request.data.get('club_file')
+
+        # Convert the string to a file object for club_file
+        club_file_obj = None
+        if club_file_content:
+            club_file_obj = ContentFile(club_file_content.encode(), name='club_file.txt')
+
+        # Update the request data with the file object for club_file
+        request.data['club_file'] = club_file_obj
+
+        # Get the string representation of the file content for activity_calendar
+        description = request.data.get('description')
+
+        # Initialize the serializer with the modified request data
+        serializer = Club_infoSerializer(data=request.data)
+
+        # Validate and save the serializer data
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class UpdateClubStatusAPIView(APIView):
+    def post(self, request):
+        # Retrieve data from request
+        club_data = request.data
+
+        # Extract fields for filtering
+        club_name = club_data.get('club_name')
+        co_ordinator = club_data.get('co_ordinator')
+        co_coordinator = club_data.get('co_coordinator')
+        faculty_incharge = club_data.get('faculty_incharge')
+
+        # Check if all required fields are provided
+        if not all([club_name, co_ordinator, co_coordinator, faculty_incharge]):
+            return Response({"error": "Missing required fields"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Try to find the club based on provided fields
+        try:
+            club = Club_info.objects.get(
+                club_name=club_name,
+                co_ordinator=co_ordinator,
+                co_coordinator=co_coordinator,
+                faculty_incharge=faculty_incharge
+            )
+        except Club_info.DoesNotExist:
+            return Response({"error": "Club not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Update the status of the club
+        club.status = 'confirmed'
+        club.save()
+
+        return Response({"message": "Club status updated to 'confirmed' successfully"}, status=status.HTTP_200_OK)
+    
+
+ 
+
+
+
+# class UpdateClubNameAPIView(APIView):
+#     def post(self, request):
+#         # Retrieve data from request
+#         club_data = request.data
+
+#         # Extract fields for filtering
+#         club_name = club_data.get('club_name')
+#         co_ordinator = club_data.get('co_ordinator')
+#         co_coordinator = club_data.get('co_coordinator')
+#         faculty_incharge = club_data.get('faculty_incharge')
+#         new_club = club_data.get('new_club')
+
+#         # Check if all required fields are provided
+#         if not all([club_name, co_ordinator, co_coordinator, faculty_incharge]):
+#             return Response({"error": "Missing required fields"}, status=status.HTTP_400_BAD_REQUEST)
+
+#         # Try to find the club based on provided fields
+#         try:
+#             club = Club_info.objects.get(
+#                 club_name=club_name,
+#                 co_ordinator=co_ordinator,
+#                 co_coordinator=co_coordinator,
+#                 faculty_incharge=faculty_incharge
+#             )
+#         except Club_info.DoesNotExist:
+#             return Response({"error": "Club not found"}, status=status.HTTP_404_NOT_FOUND)
+
+#         # Update the status of the club
+#         club.club_name = new_club
+#         club.save()
+
+#         return Response({"message": "Club name updated  successfully"}, status=status.HTTP_200_OK)
+
+
+
+class UpdateClubNameAPIView(APIView):
+    def post(self, request):
+        # Retrieve data from request
+        club_data = request.data
+
+        # Extract fields for filtering
+        club_name = club_data.get('club_name')
+        co_ordinator = club_data.get('co_ordinator')
+        co_coordinator = club_data.get('co_coordinator')
+        faculty_incharge = club_data.get('faculty_incharge')
+        new_club = club_data.get('new_club')
+
+        # Check if all required fields are provided
+        if not all([club_name, co_ordinator, co_coordinator, faculty_incharge, new_club]):
+            return Response({"error": "Missing required fields"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Try to find the club based on provided fields
+        try:
+            club = Club_info.objects.get(
+                club_name=club_name,
+                co_ordinator=co_ordinator,
+                co_coordinator=co_coordinator,
+                faculty_incharge=faculty_incharge
+            )
+        except Club_info.DoesNotExist:
+            return Response({"error": "Club not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Check if a club with the new name already exists
+        if Club_info.objects.filter(club_name=new_club).exists():
+            return Response({"error": f"A club with the name '{new_club}' already exists"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Update the status of the club
+        club.club_name = new_club
+        club.save()
+
+        # Delete the original club entry
+        Club_info.objects.filter(club_name=club_name).delete()
+
+        return Response({"message": "Club name updated successfully"}, status=status.HTTP_200_OK)
+    
+
+
+class ApproveEvent(APIView):
+    def post(self, request):
+        # Retrieve data from request
+        event_data = request.data
+
+        # Extract fields for filtering
+        event_name = event_data.get('event_name')
+        incharge = event_data.get('incharge')
+        date = event_data.get('date')
+        venue = event_data.get('venue')
+        event_id = event_data.get('id')
+        # status = event_data.get('status')
+
+        # Check if all required fields are provided
+        if not all([event_name, incharge, date, venue, event_id]):
+            return Response({"error": "Missing required fields"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Try to find the event based on provided fields
+        try:
+            event = Event_info.objects.get(
+                event_name=event_name,
+                incharge=incharge,
+                date=date,
+                venue=venue,
+                id=event_id
+            )
+        except Event_info.DoesNotExist:
+            return Response({"error": "Event not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Update the status of the event
+        event.status = 'confirmed'
+        event.save()
+
+        return Response({"message": "event status updated successfully"}, status=status.HTTP_200_OK)   
