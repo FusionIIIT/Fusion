@@ -35,7 +35,7 @@
         <tr>
                 <th>Nomenclature</th>
                 <th>Item Name</th>
-                <th>Current Department</th>
+                <th>Current Department/Section</th>
                 <th >Current Location</th>
                 <th >Transferred</th>
                 <th >InUse</th>
@@ -49,7 +49,7 @@
             <tr>
                 <td> {{s.nomenclature}} </td>
                 <td> {{s.StockEntryId.item_id.item_name}} </td>
-                <td>{{s.department}}</td>
+                <td>{{s.department.name}}</td>
                 <td>{{s.location}}</td>
                 <td>{{s.isTransferred}}</td>
                     <td><input type="checkbox" value="{{s.id}}" name="selected_stock_item" {% if s.inUse %}checked{% endif %}></td>

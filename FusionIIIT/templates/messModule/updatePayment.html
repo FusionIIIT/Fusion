@@ -1,0 +1,76 @@
+{#{% extends 'globals/base.html'%}#}
+{% load static %}
+{#{% block body %}#}
+{% block updatePayment%}
+    {% comment %}The tab menu starts here!{% endcomment %}
+
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="updatePayment_request">
+            Update Balance Request
+        </a>
+        <a class="item" data-tab="update_req_status">
+            Request status
+        </a>
+    </div>
+    <div class="ui active tab" data-tab="updatePayment_request">
+        <div class="ui vertical strip segment">
+            {% comment %}Form Tag starts here!{% endcomment %}
+                <form method = "post" action="updatePaymentReq" enctype="multipart/form-data" class="ui form">
+
+                {% csrf_token %}
+                {{ update_form.as_p }}
+                <button class="ui primary fluid button" type="submit" style="width: '40px';">Submit</button>
+              </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+        </div>
+        
+    </div>
+
+    <div class="ui tab" data-tab="update_req_status">
+        <div class="ui vertical strip segment">
+    
+                <table class="ui single line table" style="margin: auto;">
+                  <thead>
+                    <tr>
+                      <th>Txn_no</th>
+                      <th>image</th>
+                      <th>Amount</th>
+                      <th>Remark</th>
+                      <th>status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                {% for var in update_payment_request %}
+                    <tr>
+                        <td>
+                            {{var.Txn_no}}
+                        </td>
+                        <td>
+                            <a href="media/{{var.img}}" target="_blank">
+                                receipt
+                            </a>
+                        </td>
+                        <td>
+                            {{var.amount}}
+                        </td>
+                        <td>
+                            {{var.update_remark}}
+                        </td>
+                        <td>
+                            {{var.status}}
+                        </td>
+                    </tr>
+   
+            {% endfor %}
+        </tbody>
+        </table>
+
+    </tbody>
+</table>
+</div>
+
+</div>
+{% endblock %}
+
+
+

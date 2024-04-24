@@ -2,7 +2,7 @@ from django.conf.urls import url
 from django.urls import path, include
 from . import views
 from django.contrib import admin
-
+from applications.programme_curriculum.api import views as v2
 app_name = 'programme_curriculum'
 
 urlpatterns = [
@@ -19,6 +19,7 @@ urlpatterns = [
     path('course/<course_id>/', views.view_a_course, name='view_a_course'),
     path('disciplines/', views.view_all_discplines, name='view_all_discplines'),
     path('batches/', views.view_all_batches, name='view_all_batches'),
+    
 
     path('admin_programmes/', views.admin_view_all_programmes, name='admin_view_all_programmes'),
     path('admin_working_curriculums/', views.admin_view_all_working_curriculums, name='admin_view_all_working_curriculums'),
@@ -70,4 +71,12 @@ urlpatterns = [
     path('file_archive/<FileId>/',views.file_archive,name='file_archive'),
     path('file_unarchive/<FileId>/',views.file_unarchive,name='file_unarchive'),
     
+
+    # urls for api view
+    path('api/programmes_ug/', v2.view_ug_programmes, name='view_ug_programmes_api'),
+    path('api/programmes_pg/', v2.view_pg_programmes, name='view_pg_programmes_api'),
+    path('api/programmes_phd/', v2.view_phd_programmes, name='view_phd_programmes_api'),
+    path('api/programme_info/', v2.get_programme_info, name='programme_info_api'),
+    path('api/curriculumns/', v2.view_curriculumns, name='curriculumns_api'),
+    path('api/add_programme/', v2.create_programme, name='add_programme_api'),
 ]
