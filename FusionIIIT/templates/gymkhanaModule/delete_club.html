@@ -1,10 +1,10 @@
 {% load static %}
-{% block memberrequests %}
+{% block deleteclub %}
 
     {% comment %}The tab menu starts here!{% endcomment %}
     
-    {% for i in Club_member %}
-    {% if i.status == "open" %}
+    {% comment %} {% for i in Club_info%}
+    {% if i.status == "confirmed" %}
         <div class="ui small modal {{ i.member.id.id }}{{ i.club.club_name}}" >
             <i class="close icon"></i>
             <div class="header">
@@ -29,27 +29,26 @@
             </div>
         </div>
     {% endif %}
-{% endfor %}
+{% endfor %} {% endcomment %}
 
     
     <!-- modal script enable -->
-    <script type="text/javascript">
+    {% comment %} <script type="text/javascript">
         function view(a,b) {
             // body...
             //$('.ui.modal').find("input").val({'name':id}); 
             var id = '.ui.small.modal.'+a+b;
             $(id).modal('show');
         }
-    </script>
+    </script> {% endcomment %}
 
     
 
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="memberrequests">
-            Member Requests
+            Delete Club
         </a>
     </div>
-
     <div class="ui active tab" data-tab="memberrequests">
         <div class="ui vertical segment">
         <form method="post" action="" id="memberrequest">
@@ -63,14 +62,6 @@
                     <th>
                     </th>
 
-                    <th class="four wide column">
-                        Student
-                    </th>
-
-                    <th>
-                        Roll No.
-                    </th>
-
                     <th>
                         Club
                     </th>
@@ -78,41 +69,45 @@
                     <th>
                         Category
                     </th>
-
                     <th>
-                        Remarks
+                        Co-ordinator
                     </th>
+                    <th>
+                        co co-ordinator
+                    </th>
+                    <th>
+                        Faculty incharge
+                    </th>
+
+                    
                 </tr>
                 </thead>
                 {% comment %} <tr>{{club_details}}</tr> {% endcomment %}
-                {% for i in Club_member %}
+                {% for i in Club_name %}
                     {% comment %} <tr>{{i.club.club_id}}</tr> {% endcomment %}
-                    {% if i.status == "open" and i.club_id == club_details.club_name %}
+                    {% if i.status == "confirmed" %}
                     <tr >
                         <td class="collapsing">
                             <div class="ui fitted checkbox">
-                                <input type="checkbox" id="{{ i.member.id }}" value="{{ i.member.id }},{{ i.club }}" name="check" > <label></label>
+                                <input type="checkbox" id="{{ i.club_name }}" value="{{ i.club_name }}" name="check" > <label></label>
                             </div>
                         </td>
-                        <td onclick="view('{{ i.member.id.id }}','{{ i.club.club_name }}')">
-                            {{ i.member.id.id }}
+                        <td>
+                            {{ i.club_name}}
                         </td>
 
                         <td>
-                            {{ i.member.id.user.username }}
+                            {{ i.category }}
                         </td>
-
                         <td>
-                            {{ i.club.club_name}}
+                            {{ i.co_ordinator_id }}
                         </td>
-
                         <td>
-                            {{ i.club.category }}
+                            {{ i.co_coordinator_id }}
                         </td>
-
                         <td>
-                            <textarea rows="1" name="remarks{{ i.member.id }},{{ i.club }}"></textarea>
-                        </td> 
+                            {{ i.faculty_incharge_id }}
+                        </td>
                     </tr>
                     {% endif %}
                 {% endfor %}
@@ -124,16 +119,16 @@
 
             <br>
 
-            <div class="field">
+            {% comment %} <div class="field">
                 <button class="ui primary button right floated" type="submit" formaction="/gymkhana/approve/">
-                    Approve
+                    Approve Selected
                 </button>
-            </div>
+            </div> {% endcomment %}
             <div class="field">
-                <button class="ui red button right floated" type="submit" formaction="/gymkhana/reject/">
-                    Reject
+                <button class="ui red button right floated" type="submit" formaction="/gymkhana/del_club/">
+                    Delete
                 </button>
-            </div>
+            </div> 
             <br>
             <br>
         </form>

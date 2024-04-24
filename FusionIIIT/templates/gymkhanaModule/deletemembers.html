@@ -1,10 +1,10 @@
 {% load static %}
-{% block memberrequests %}
+{% block delete %}
 
     {% comment %}The tab menu starts here!{% endcomment %}
     
     {% for i in Club_member %}
-    {% if i.status == "open" %}
+    {% if i.status == "confirm" %}
         <div class="ui small modal {{ i.member.id.id }}{{ i.club.club_name}}" >
             <i class="close icon"></i>
             <div class="header">
@@ -46,10 +46,9 @@
 
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="memberrequests">
-            Member Requests
+            Club Members
         </a>
     </div>
-
     <div class="ui active tab" data-tab="memberrequests">
         <div class="ui vertical segment">
         <form method="post" action="" id="memberrequest">
@@ -87,7 +86,7 @@
                 {% comment %} <tr>{{club_details}}</tr> {% endcomment %}
                 {% for i in Club_member %}
                     {% comment %} <tr>{{i.club.club_id}}</tr> {% endcomment %}
-                    {% if i.status == "open" and i.club_id == club_details.club_name %}
+                    {% if i.status == "confirmed" and i.club_id == club_details.club_name and i.member != club_details.co_ordinator and  i.member != club_details.co_coordinator %}
                     <tr >
                         <td class="collapsing">
                             <div class="ui fitted checkbox">
@@ -124,16 +123,16 @@
 
             <br>
 
-            <div class="field">
+            {% comment %} <div class="field">
                 <button class="ui primary button right floated" type="submit" formaction="/gymkhana/approve/">
-                    Approve
+                    Approve Selected
                 </button>
-            </div>
+            </div> {% endcomment %}
             <div class="field">
                 <button class="ui red button right floated" type="submit" formaction="/gymkhana/reject/">
-                    Reject
+                    Delete
                 </button>
-            </div>
+            </div> 
             <br>
             <br>
         </form>

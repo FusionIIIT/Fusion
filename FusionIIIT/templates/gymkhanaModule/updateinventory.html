@@ -1,4 +1,4 @@
-{% block newsession %}
+ {% block updateinventory %}
     {% comment %}The tab menu starts here!{% endcomment %}
     <script type="text/javascript">
         function ValidateExtension2() {
@@ -17,12 +17,12 @@
         }
 
     </script>
-    <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="newsession">Update Activity Calender</a>
+ <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="newsession">Update Inventory</a>
     </div>
     <div class="ui active tab" data-tab="eventReport">
         <div class="ui vertical segment">
-            <form method="Post" id="activity_calender" enctype="multipart/form-data">
+            <form method="Post" id="update_inventory" enctype="multipart/form-data">
                 {% csrf_token %}
                 {% comment %}The add a new skill Accordian starts here!{% endcomment %}
                 <div class="ui form"
@@ -37,7 +37,7 @@
                                 Select
                             </option>
                             {% for i in Club_name %}
-                                {% if request.user.username in i.co_ordinator|stringformat:"s" %}
+                                {% if request.user.username in i.faculty_incharge_id|stringformat:"s" %}
                                     <option value="{{ i.club_name }}">
                                         {{ i.club_name }}
                                     </option>
@@ -46,7 +46,7 @@
                         </select>
                     </div>
                     <div class="eight wide field">
-                        <label>Activity Calender</label>
+                        <label>Inventory</label>
                         <input type="File"
                                id="fileUpload22"
                                class="ui large input"
@@ -60,7 +60,7 @@
                 <div class="field">
                     <button class="ui primary button right floated"
                             type="submit"
-                            onclick="form_submit('act_calender','activity_calender',event)">
+                            onclick="form_submit('act_calender','update_inventory',event)">
                         Submit
                     </button>
                 </div>
@@ -69,7 +69,7 @@
         <br>
         <br>
     </div>
-    <br>
+        <br>
     <div class="extra content"></div>
 </div>
 {% endblock %}
