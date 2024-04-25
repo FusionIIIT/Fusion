@@ -36,8 +36,8 @@
                     Browse Announcement
                     <i class="right floated chevron right icon"></i>
                 </a>
-                <a class="item" data-tab="third" id="CSE_Dep">
-                    CSE Department
+                <a class="item" data-tab="third" id="SM_Dep">
+                    SM Department
                     <i class="right floated chevron right icon"></i>
                 </a>
 
@@ -45,23 +45,22 @@
                     Other Departments
                     <i class="dropdown icon"></i>
                     <div class="menu">
-                        <a class="item" data-tab="fourth" id="ECE_Dep">
+                        <a class="item" data-tab="fourth" id="CSE_Dep">
+                            CSE Department
+                        </a>
+                        <a class="item" data-tab="fifth" id="ECE_Dep">
                             ECE Department
                         </a>
-                        <a class="item" data-tab="fifth" id="ME_Dep">
+                        <a class="item" data-tab="sixth" id="ME_Dep">
                             ME Department
-                        </a>
-                        <a class="item" data-tab="sixth" id="SM_Dep">
-                            SM Department
                         </a>
                     </div>
                 </div>
-                <!-- <a class="active item" data-tab="seventh" id="update_department_info">
+                <a class="item" data-tab="seventh" id="update_department_info">
                     Update Department Information
                     <i class="right floated chevron right icon"></i>
-                </a> -->
+                </a>
             </div>
-            
             {# The Tab-Menu ends here! #}
         </div>
         {# The left-rail segment ends here! #}
@@ -94,24 +93,24 @@
 
             {# CSE Department! #}
             <div class="ui tab segment" data-tab="third">
-                {% block CSE_Dep %}
-                    {% include "department/cse_dep.html" %}
+                {% block SM_Dep %}
+                    {% include "department/sm_dep.html" %}
                 {% endblock %}
             </div>
             {# CSE Department! #}
             <div class="ui tab segment" data-tab="fourth">
+                {% block CSE_Dep %}
+                    {% include "department/cse_dep.html" %}
+                {% endblock %}
+            </div>
+            <div class="ui tab segment" data-tab="fifth">
                 {% block ECE_Dep %}
                     {% include "department/ece_dep.html" %}
                 {% endblock %}
             </div>
-            <div class="ui tab segment" data-tab="fifth">
+            <div class="ui tab segment" data-tab="sixth">
                 {% block ME_Dep %}
                     {% include "department/me_dep.html" %}
-                {% endblock %}
-            </div>
-            <div class="ui tab segment" data-tab="sixth">
-                {% block SM_Dep %}
-                    {% include "department/sm_dep.html" %}
                 {% endblock %}
             </div>
 

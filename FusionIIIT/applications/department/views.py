@@ -13,15 +13,30 @@ from django.contrib.auth.models import User
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from applications.academic_information.models import Spi, Student
 from applications.globals.models import (Designation, ExtraInfo,
-                                         HoldsDesignation,Faculty)
+                                         HoldsDesignation,Faculty,DepartmentInfo)
 from applications.eis.models import (faculty_about, emp_research_projects)
-
+from .models import Information
 from notification.views import department_notif
 from .models import SpecialRequest, Announcements , Information
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 
 
+def department_information(request):
+
+    cse_info = Information.objects.filter(department_id=51).first()
+    ece_info = Information.objects.filter(department_id=30).first()
+    me_info = Information.objects.filter(department_id=37).first()
+    sm_info = Information.objects.filter(department_id=28).first()
+    department_context = {
+        "cse_info" : cse_info,
+        "ece_info" : ece_info,
+        "me_info" : me_info,
+        "sm_info" : sm_info
+    }
+    # print(department_context)
+    # print(me_info.phone_number,me_info.email,me_info.department_id)
+    return department_context
 
 def browse_announcements():
     """
@@ -50,7 +65,7 @@ def browse_announcements():
         "sm" : sm_ann,
         "all" : all_ann
     }
-
+    # print(context)
     return context
 
 def get_make_request(user_id):
@@ -107,7 +122,10 @@ def dep_main(request):
     context = browse_announcements()
     context_f = faculty()
     user_designation = ""
-    
+
+
+    department_context = department_information(request)
+
     if fac_view:
         user_designation = "faculty"
     elif student:
@@ -143,7 +161,9 @@ def dep_main(request):
         return render(request, template_name, {
             "announcements": context,
             "fac_list": context_f,
-            "requests_made": requests_made
+            "requests_made": requests_made,
+            "department_info": department_context
+
         })
        
     elif user_designation=="faculty":
@@ -173,6 +193,7 @@ def faculty_view(request):
     ann_maker_id = user_info.id
     requests_received = get_to_request(usrnm)
     user_departmentid = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id).department_id
+    department_context = department_information(request)
     
     if request.method == 'POST':
         batch = request.POST.get('batch', '')
@@ -211,7 +232,8 @@ def faculty_view(request):
         "user_designation": user_info.user_type,
         "announcements": context,
         "request_to": requests_received,
-        "fac_list": context_f
+        "fac_list": context_f,
+        "department_info": department_context
     })
     
 
@@ -235,6 +257,8 @@ def staff_view(request):
     num = 1
     ann_maker_id = user_info.id
     user_departmentid = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id).department_id
+
+    department_context = department_information(request)
     
     requests_received = get_to_request(usrnm)
     if request.method == 'POST':
@@ -288,26 +312,75 @@ def staff_view(request):
                 )
             
         
-        
-    # update_department_info(request)
-        
     context = browse_announcements()
+    
     
     department_templates = {
         51: 'department/csedep_request.html',
         30: 'department/ecedep_request.html',
         37: 'department/medep_request.html',
-        53: 'department/smdep_request.html'
-    }
+        53: 'department/smdep_request.html',
+
+    } 
     default_template = 'department/dep_request.html'
     
-    template_name = department_templates.get(user_departmentid, default_template)
+    desig=request.session.get('currentDesignationSelected', 'default_value')
+    if desig=='deptadmin_cse':
+        template_name = 'department/admin_cse.html'
     
+        return render(request, template_name, {
+            "user_designation": user_info.user_type,
+            "announcements": context,
+            "request_to": requests_received,
+            "fac_list": context_f,
+            "department_info": department_context
+        }) 
+    elif desig=='deptadmin_ece':
+        template_name = 'department/admin_ece.html'
+        return render(request, template_name, {
+            "user_designation": user_info.user_type,
+            "announcements": context,
+            "request_to": requests_received,
+            "fac_list": context_f,
+            "department_info": department_context
+        }) 
+    elif desig=='deptadmin_me':
+        template_name = 'department/admin_me.html'
+        return render(request, template_name, {
+            "user_designation": user_info.user_type,
+            "announcements": context,
+            "request_to": requests_received,
+            "fac_list": context_f,
+            "department_info": department_context
+        }) 
+    elif desig=='deptadmin_sm':
+        template_name = 'department/admin_sm.html'
+        return render(request, template_name, {
+            "user_designation": user_info.user_type,
+            "announcements": context,
+            "request_to": requests_received,
+            "fac_list": context_f,
+            "department_info": department_context
+        }) 
+         
+    # if  desig == 'deptadmin_cse':
+    #     return render(request, 'admin_cse.html')
+    # elif desig == 'deptadmin_ece':
+    #     return render(request, 'admin_ece.html')
+    # elif desig == 'deptadmin_sm':
+    #     return render(request, 'admin_sm.html')
+    # elif desig == 'deptadmin_me':
+    #     return render(request, 'admin_me.html')
+    # else:
+    #     return render(request, 'default.html')
+
+    template_name = department_templates.get(user_departmentid, default_template)
     return render(request, template_name, {
         "user_designation": user_info.user_type,
         "announcements": context,
         "request_to": requests_received,
-        "fac_list": context_f
+        "fac_list": context_f,
+        "department_info": department_context
     })
     
    
@@ -343,6 +416,9 @@ def all_students(request, bid):
             return {'programme': programme, 'batch': batch}
         except (IndexError, KeyError):
             return None  # Handle malformed bid values
+    # Get sort parameter from the request
+    sort_by = request.GET.get('sort_by', None)  # No default sort
+    last_sort = request.session.get('last_sort', None)
 
     # Decode bid into filter criteria
     filter_criteria = decode_bid(bid)
@@ -352,10 +428,27 @@ def all_students(request, bid):
     # Apply additional department filter since it seems fixed 
     filter_criteria['id__department__name'] = 'CSE'
 
-    student_list1 = Student.objects.order_by('id').filter(
-        id__user_type='student',
-        **filter_criteria
-    ).select_related('id')
+    # Apply sort parameter to the queryset
+    if sort_by:
+        if last_sort == sort_by:
+            sort_by = '-' + sort_by  # Reverse the order
+        try:
+            student_list1 = Student.objects.order_by(sort_by).filter(
+                id__user_type='student',
+                **filter_criteria
+            ).select_related('id')
+        except:
+            # If the sort field doesn't exist or isn't sortable, ignore the sort parameter
+            student_list1 = Student.objects.filter(
+                id__user_type='student',
+                **filter_criteria
+            ).select_related('id')
+        request.session['last_sort'] = sort_by  # Save the sort parameter for the next request
+    else:
+        student_list1 = Student.objects.filter(
+            id__user_type='student',
+            **filter_criteria
+        ).select_related('id')
 
     paginator = Paginator(student_list1, 25, orphans=5)
     page_number = request.GET.get('page')
@@ -363,7 +456,6 @@ def all_students(request, bid):
     id_dict = {'student_list': student_list}
     return render(request, 'department/AllStudents.html', context=id_dict)
 
-    
 
 def faculty():
     """
@@ -397,6 +489,7 @@ def faculty():
     }
     # print(cse_f)
     return context_f
+
 
 def alumni(request):
     """
@@ -438,6 +531,7 @@ def approved(request):
         SpecialRequest.objects.filter(id=request_id).update(status="Approved", remarks=remark)
     request.method = ''
     return redirect('/dep/facView/')
+
 
 def deny(request):
     """
