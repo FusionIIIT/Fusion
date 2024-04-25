@@ -1,10 +1,10 @@
 from django.conf.urls import url
 from django.urls import path
 from rest_framework.urlpatterns import format_suffix_patterns
-from applications.gymkhana.api.views import AddClub_BudgetAPIView, AddMemberToClub, ClubCreateAPIView, ClubMemberAPIView, ClubMemberApproveView, ClubMemberDeleteAPIView, CreateVotingPollAPIView, DeleteClubAPIView, DeleteClubBudgetAPIView, DeleteEventsView, EventUpdateAPIView, SessionUpdateAPIView, UpdateClubBudgetAPIView, UpdateClubDetailsAPIView, UploadActivityCalendarAPIView
+from applications.gymkhana.api.views import AddClub_BudgetAPIView, AddMemberToClub, ApproveEvent, ChangeHeadAPIView,   ClubMemberAPIView, ClubMemberApproveView, ClubMemberDeleteAPIView, CreateClubAPIView,  DeleteClubAPIView, DeleteClubBudgetAPIView,  EventDeleteAPIView, EventUpdateAPIView, SessionUpdateAPIView, UpdateClubBudgetAPIView, UpdateClubNameAPIView, UpdateClubStatusAPIView, UploadActivityCalendarAPIView
 from applications.gymkhana.api.views import clubname,Club_Details,club_events,club_budgetinfo,Fest_Budget,club_report,Registraion_form
 from applications.gymkhana.api.views import session_details
-from applications.gymkhana.api.views import DeleteSessionsView, NewEventAPIView, NewSessionAPIView, ShowVotingChoicesAPIView, VoteIncrementAPIView, Voting_Polls, VotingPollsDeleteAPIView
+from applications.gymkhana.api.views import DeleteSessionsView, NewEventAPIView, NewSessionAPIView, ShowVotingChoicesAPIView, VoteIncrementAPIView,  VotingPollsDeleteAPIView
 from . import views
 from rest_framework.authtoken.views import obtain_auth_token
 
@@ -101,9 +101,9 @@ urlpatterns = [
     
     url(r'^api/update_clubBudget/$', UpdateClubBudgetAPIView.as_view(), name='update budget'),
     url(r'^api/add_clubBudget/$', AddClub_BudgetAPIView.as_view(), name='edit event'),
-    url(r'^api/update_coordinator/$', UpdateClubDetailsAPIView.as_view(), name = 'update coordinator'),
+    url(r'^api/update_coordinator/$', ChangeHeadAPIView.as_view(), name = 'update coordinator'),
     url(r'^api/activity_calender/$', UploadActivityCalendarAPIView.as_view(), name='update activity calendder'),
-    url(r'^api/delete_event/$', DeleteEventsView.as_view(), name='delete_events_api'),
+    url(r'^api/delete_event/$', EventDeleteAPIView.as_view(), name='delete_events_api'),
     url(r'^api/delete_sessions/$', DeleteSessionsView.as_view(), name='delete_sessions_api'),
     url(r'^api/new_session/$',NewSessionAPIView.as_view(), name='new_session_api'),
     url(r'^api/new_event/$',NewEventAPIView.as_view(), name='new_event_api'),
@@ -117,10 +117,11 @@ urlpatterns = [
     url(r'^api/vote/$', VoteIncrementAPIView.as_view(), name='give vote'),
     url(r'^api/edit_session/$', SessionUpdateAPIView.as_view(), name='edit session'),
     url(r'^api/edit_event/$', EventUpdateAPIView.as_view(), name='edit event'),
-    url(r'^session_details/$',session_details.as_view()),
     url(r'^api/delete_budget/$',DeleteClubBudgetAPIView.as_view(), name='delete budget'),
     url(r'^api/upload_activitycalender/$', UploadActivityCalendarAPIView.as_view(), name='calender'),
-    url(r'^api/createClub/$', ClubCreateAPIView.as_view(), name='create new Club'),
-    url(r'^api/create_poll/$', CreateVotingPollAPIView.as_view(), name='create poll'),
+    url(r'^api/create_club/$',  CreateClubAPIView.as_view(), name='new club'),
+    url(r'^api/update_clubStatus/$', UpdateClubStatusAPIView.as_view(),name = 'update club status' ),
+    url(r'^api/updateClubName/$', UpdateClubNameAPIView.as_view(), name = 'update club name'),
+    url(r'^api/approve_event/$', ApproveEvent.as_view(), name = 'approve event'),
    
 ]

@@ -37,7 +37,7 @@ class Core_teamSerializer(serializers.ModelSerializer):
 class Club_DetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model=Club_info
-        fields=['club_name',"co_ordinator","co_coordinator","activity_calender","category",'faculty_incharge']
+        fields=['club_name',"co_ordinator","co_coordinator","activity_calender","category",'faculty_incharge',"club_file", "status"]
 
 class Session_infoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -50,7 +50,7 @@ class event_infoserializer(serializers.ModelSerializer):
 
     class Meta:
         model=Event_info
-        fields=['club','event_name','incharge','date','venue','start_time','id','details']
+        fields=['club','event_name','incharge','date','venue','start_time','id','details','status']
 
 class club_budgetserializer(serializers.ModelSerializer):
 
