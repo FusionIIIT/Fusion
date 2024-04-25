@@ -50,10 +50,50 @@
                     }
                 });
             });
+
+        function add_copis(event){
+            event.preventDefault();
+            var co_project_investigator_id = document.getElementById('co_project_investigator_id');
+            var clonedcopis = co_project_investigator_id.cloneNode(true);
+            var clonedcopis_id = 'co_project_investigator_id';
+            var count = document.querySelectorAll('.co_project_investigator_id').length + 1;
+            var newcopis = 'co_project_investigator_id-' + count;
+            clonedcopis.setAttribute('id',newcopis);
+            clonedcopis.setAttribute('name',newcopis);
+            var co_pi_container = document.getElementById('co_pi_container');
+            co_pi_container.appendChild(clonedcopis);
+            var remove_copis = document.getElementById('remove_copis');
+            remove_copis.setAttribute('class','remove_copis');
+
+        }
+
+        function remove_copis(event){
+            event.preventDefault();
+            var co_project_investigator_id = document.getElementById('co_project_investigator_id');
+            var count = document.querySelectorAll('.co_project_investigator_id').length;
+            if(count > 1){
+                var lastcopis = document.getElementById('co_project_investigator_id-' + count);
+                lastcopis.remove();
+                if(count == 2){
+                    var remove_copis = document.getElementById('remove_copis');
+                    remove_copis.setAttribute('class','remove_copis invisible');
+                }
+            }
+            if(count == 1){
+                var remove_copis = document.getElementById('remove_copis');
+                remove_copis.setAttribute('class','remove_copis invisible');
+            }
+
+        }
+
 </script>
 <style>
     /* Hide the default file input button */
     input[type="file"] {
+        display: none;
+    }
+
+    .invisible {
         display: none;
     }
 
@@ -145,12 +185,26 @@
                                 placeholder="Project Investigator Id" name="project_investigator_id" required
                                 style="width: 100%; border: 1px solid grey;">
                         </div>
-                        <div style="flex: 1;">
+                        
+                    </div>
+                </div>
+                <div style="margin-bottom: 20px; ">
+                    <div style="display: flex; justify-content: space-between;">
+                        
+                        <div style="flex: 1;" id="co_pi_container">
                             <label class="labels1" for="co_project_investigator_id"
                                 style="font-size:18px ;font-weight:bold;text-transform: uppercase">Co-Project Investigator ID:</label>
-                            <input class="input-f1" type="text" id="co_project_investigator_id"
-                                placeholder="Co-Project Investigator ID" name="co_project_investigator_id" required
-                                style="width: 100%; border: 1px solid grey;">
+                            <input class="input-f1 co_project_investigator_id" type="text" id="co_project_investigator_id"
+                                placeholder="Co-Project Investigator ID"  name="co_project_investigator_id-1" required
+                                style="width: 100%; margin-bottom : 10px; border: 1px solid grey;">
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <button onclick={add_copis(event)}>Add</button>
+                      <div id="remove_copis" class="remove_copis invisible">
+
+                          <button onclick={remove_copis(event)}>Remove</button>
+
                         </div>
                     </div>
                 </div>
