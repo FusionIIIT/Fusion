@@ -21,6 +21,7 @@ import json
 
 from django.db.models import Q,Count
 from datetime import datetime
+from datetime import datetime
 
 dept_admin_to_dept = {
     "deptadmin_cse": "CSE",
@@ -30,7 +31,8 @@ dept_admin_to_dept = {
     "deptadmin_design": "Design",
     "deptadmin_liberalarts": "Liberal Arts",
     "deptadmin_ns": "Natural Science",
-    "Admin IWD":"IWD"
+    "Admin IWD":"IWD",
+    "Compounder":"Health Center"
 }
 
 dept_admin_design = ["deptadmin_cse", "deptadmin_ece", "deptadmin_me","deptadmin_sm", "deptadmin_design", "deptadmin_liberalarts","deptadmin_ns" ,"Admin IWD","Compounder"]
