@@ -1734,7 +1734,7 @@ def add_academic_calendar(request):
     user = request.user
     extrainfo = ExtraInfo.objects.select_related().get(user=user)
     
-    if extrainfo.id == 'id_admin':
+    if request.session.get('currentDesignationSelected') == 'acadadmin':
         calendar = Calendar.objects.all()
         context= {
             'academic_calendar' :calendar,
@@ -1786,7 +1786,7 @@ def update_calendar(request):
     user = request.user
     extrainfo = ExtraInfo.objects.select_related().get(user=user)
 
-    if extrainfo.id == 'id_admin':
+    if request.session.get('currentDesignationSelected') == 'acadadmin':
         calendar = Calendar.objects.all()
         context= {
             'academic_calendar' :calendar,
@@ -1831,7 +1831,7 @@ def add_timetable(request):
     user = request.user
     extrainfo = ExtraInfo.objects.select_related().get(user=user)
 
-    if extrainfo.id == 'id_admin':
+    if request.session.get('currentDesignationSelected') == 'acadadmin':
         if request.method == 'POST':
             try:
                 timetable = request.FILES.get('img')
@@ -1879,7 +1879,7 @@ def delete_timetable(request):
     extrainfo = ExtraInfo.objects.select_related().get(user=user)
     
 
-    if extrainfo.id == 'id_admin':
+    if request.session.get('currentDesignationSelected') == 'acadadmin':
         if request.method == "POST":
             pk = request.POST.get('pk')
             t = Timetable.objects.get(pk=pk)
