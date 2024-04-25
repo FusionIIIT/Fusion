@@ -36,7 +36,7 @@ def compounder_view_handler(request):
         Complaint.objects.select_related('user_id','user_id__user','user_id__department').filter(id=pk).update(feedback=feedback)
         data = {'feedback': feedback}
         for cmp in comp_id:
-                healthcare_center_notif(request.user, cmp.user, 'feedback_res')
+                healthcare_center_notif(request.user, cmp.user, 'feedback_res','')
         return JsonResponse(data)
 
     elif 'end' in request.POST:
@@ -358,7 +358,7 @@ def compounder_view_handler(request):
                 status = 0
             Medicine.objects.select_related('patient','patient__user','patient__department').all().delete()
 
-        healthcare_center_notif(request.user, user.user, 'presc')
+        healthcare_center_notif(request.user, user.user, 'presc','')
         data = {'status': status, 'stock': stock}
         return JsonResponse(data)
     elif 'prescribe_b' in request.POST:
@@ -444,7 +444,7 @@ def compounder_view_handler(request):
             Medicine.objects.select_related('patient','patient__user','patient__department').all().delete()
           
 
-        healthcare_center_notif(request.user, user.user, 'presc')
+        healthcare_center_notif(request.user, user.user, 'presc','')
         data = {'status': status}
         return JsonResponse(data)
     elif 'cancel_presc' in request.POST:
@@ -478,7 +478,7 @@ def compounder_view_handler(request):
         medical_relief_instance = medical_relief.objects.get(file_id=request.POST['file_id'])        
         medical_relief_instance.compounder_forward_flag = True
         medical_relief_instance.save()        
-        healthcare_center_notif(request.user,user.user,'rel_approve')      
+        healthcare_center_notif(request.user,user.user,'rel_approve','')      
         data = {'status': 1}
         return JsonResponse(data)
     elif 'comp_announce' in request.POST:
@@ -523,9 +523,9 @@ def student_view_handler(request):
                 reason=reason
             )
         data = {'status': 1}
-        healthcare_center_notif(request.user, request.user, 'amb_request')
+        healthcare_center_notif(request.user, request.user, 'amb_request','')
         for cmp in comp_id:
-                healthcare_center_notif(request.user, cmp.user, 'amb_req')
+                healthcare_center_notif(request.user, cmp.user, 'amb_req','')
 
         return JsonResponse(data)
     elif "amb_submit1" in request.POST:
@@ -548,9 +548,9 @@ def student_view_handler(request):
         data = {
                 'app_time': app_time, 'dt': datei , 'status' : 1
                 }
-        healthcare_center_notif(request.user, request.user, 'appoint')
+        healthcare_center_notif(request.user, request.user, 'appoint','')
         for cmp in comp_id:
-                healthcare_center_notif(request.user, cmp.user, 'appoint_req')
+                healthcare_center_notif(request.user, cmp.user, 'appoint_req','')
 
         return JsonResponse(data)
     
@@ -586,7 +586,7 @@ def student_view_handler(request):
             date=datetime.now()
         )
         data = {'status': 1}
-        healthcare_center_notif(request.user, request.user,'feedback_submitted')
+        healthcare_center_notif(request.user, request.user,'feedback_submitted','')
         
         return JsonResponse(data)
     
@@ -637,7 +637,7 @@ def student_view_handler(request):
             file_extra_JSON={"value": 2},
             attached_file=uploaded_file  
         )  
-        healthcare_center_notif(request.user,user.user,'rel_forward')
+        healthcare_center_notif(request.user,user.user,'rel_forward','')
         request_object.file_id = send_file_id
         request_object.save()
         
@@ -663,7 +663,7 @@ def student_view_handler(request):
         medical_relief_instance.acc_admin_forward_flag = True
         medical_relief_instance.save()
         
-        healthcare_center_notif(request.user,user.user,'rel_approved')
+        healthcare_center_notif(request.user,user.user,'rel_approved','')
         
         return JsonResponse({'status':1})
         
@@ -671,7 +671,7 @@ def student_view_handler(request):
         anno_id = request.POST.get('anno_id')
         Announcements.objects.select_related('user_id','user_id__user','user_id__department', 'message', 'upload_announcement').filter(pk=anno_id).delete()
         data = {'status': 1}
-        healthcare_center_notif(request.user,user.user,'new_announce')
+        healthcare_center_notif(request.user,user.user,'new_announce','')
         return JsonResponse({'status':1})
     
     elif 'medical_profile' in request.POST:
