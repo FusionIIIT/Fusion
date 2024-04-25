@@ -18,6 +18,7 @@ urlpatterns = [
 
     url(r'^acad/view_registrations' , views.acad_view_reigstrations , name='acad_view_registrations'),
     url(r'^acad/verify_registration' , views.verify_registration , name='verify_registration'),
+    url(r'^acad/verify_course' , views.verify_course , name='verify_course'),
     url(r'^acad/get_course_list' , views.get_course_list , name = 'get_course_list' ),
     url(r'^acad/get_all_courses' , views.get_all_courses , name = 'get_all_courses' ),
     url(r'^acad/gen_roll_list' , views.gen_roll_list , name = 'gen_roll_list' ),

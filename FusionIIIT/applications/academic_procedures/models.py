@@ -686,7 +686,7 @@ class course_registration(models.Model):
     # grade = models.CharField(max_length=10)
     #course_registration_year = models.IntegerField()
     def __str__(self):
-        return self.semester_id
+        return str(self.semester_id.semester_no)
     class Meta:
         db_table = 'course_registration'
 
