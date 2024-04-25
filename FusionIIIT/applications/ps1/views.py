@@ -21,6 +21,7 @@ import json
 
 from django.db.models import Q,Count
 from datetime import datetime
+from datetime import datetime
 
 dept_admin_to_dept = {
     "deptadmin_cse": "CSE",
@@ -30,7 +31,8 @@ dept_admin_to_dept = {
     "deptadmin_design": "Design",
     "deptadmin_liberalarts": "Liberal Arts",
     "deptadmin_ns": "Natural Science",
-    "Admin IWD":"IWD"
+    "Admin IWD":"IWD",
+    "Compounder":"Health Center"
 }
 
 dept_admin_design = ["deptadmin_cse", "deptadmin_ece", "deptadmin_me","deptadmin_sm", "deptadmin_design", "deptadmin_liberalarts","deptadmin_ns" ,"Admin IWD","Compounder"]
@@ -1389,11 +1391,12 @@ def generate_report(request):
             StockItems = StockItem.objects.filter(department__in=departments, StockEntryId__recieved_date__range=(start_date, finish_date))
         
 
-        grouped_items = StockItems.values('StockEntryId__item_id__item_type','department').annotate(total_quantity=Count('id'))
+        grouped_items = StockItems.values('StockEntryId__item_id__item_type','StockEntryId__item_id__item_subtype','department').annotate(total_quantity=Count('id'))
 
         grouped_items_list = [
             {
                 'item_type': item['StockEntryId__item_id__item_type'],
+                'item_subtype': item['StockEntryId__item_id__item_subtype'],
                 'department':  DepartmentInfo.objects.values('id','name').get(id=item['department']),
                 'departmentId': item['department'],
                 'total_quantity': item['total_quantity'],
