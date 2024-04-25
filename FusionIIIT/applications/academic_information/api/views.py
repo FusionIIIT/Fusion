@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from applications.globals.models import User,ExtraInfo
 from applications.academic_information.models import Student, Course, Curriculum, Curriculum_Instructor, Student_attendance, Meeting, Calendar, Holiday, Grades, Spi, Timetable, Exam_timetable
 from . import serializers
+from rest_framework.generics import ListCreateAPIView
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -82,7 +83,26 @@ def calendar_api(request):
             'calendar' :calendar_serialized,
         }
         return Response(data=resp,status=status.HTTP_200_OK)
+    
+class ListCalendarView(ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes=[TokenAuthentication]
+    serializer_class = serializers.CalendarSerializers
+    queryset = Calendar.objects.all()
 
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def update_calendar(request):
+    if request.method == "PUT":
+        id = request.data.get("id")
+        instance = Calendar.objects.get(pk = id)
+        instance.from_date = request.data.get("from_date")
+        instance.to_date = request.data.get("to_date")
+        instance.description = request.data.get("description")
+        instance.save()
+        
+        return Response({"message": "Updated successfully!"})
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
