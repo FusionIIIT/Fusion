@@ -3,15 +3,15 @@
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class=" ui active item" data-tab="" id="m1">
-            Menu : Mess2
-        </a>
-        <a class=" ui item" data-tab="" id="m2">
+        <a class=" ui active item" data-tab="m2-tab" id="m1">
             Menu : Mess1
+        </a>
+        <a class=" ui item" data-tab="m1-tab" id="m2">
+            Menu : Mess2
         </a>
     </div>
 
-    <div class="ui active tab" data-tab="" id="m1tab">
+    <div class="ui tab" data-tab="m1-tab" id="m2tab">
         <div class="ui vertical segment">
             <table class="ui definition table" style="margin: auto;">
                 <thead>
@@ -28,21 +28,6 @@
                 <tr>
                     
                     <td>Monday</td>
-                    <!-- {% for item in menu %}
-                        {% if item.mess_option == 'mess2' %}
-                            {% if item.meal_time == 'MB' or item.meal_time == 'ML' or item.meal_time == 'MD' %}
-
-                                {% if item.meal_time == 'MB' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'ML' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'MD' %}
-                                    <td>{{item.dish}}</td>
-                                {% endif %}
-
-                            {% endif %}
-                        {% endif %}
-                    {% endfor %} -->
                     {% for item in menu %}
                         {% if item.mess_option == 'mess2' %}
                             {% if item.meal_time == 'MB' %}
@@ -72,22 +57,6 @@
                 <tr>
                     
                     <td>Tuesday</td>
-                    <!-- {% for item in menu %}
-                        {% if item.mess_option == 'mess2' %}
-
-                            {% if item.meal_time == 'TB' or item.meal_time == 'TL' or item.meal_time == 'TD' %}
-                                
-                                {% if item.meal_time == 'TB' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'TL' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'TD' %}
-                                    <td>{{item.dish}}</td>
-                                {% endif %}    
-
-                            {% endif %}
-                        {% endif %}
-                    {% endfor %} -->
                     {% for item in menu %}
                         {% if item.mess_option == 'mess2' %}
                             {% if item.meal_time == 'TB' %}
@@ -118,21 +87,6 @@
                 <tr>
                     
                     <td>Wednesday</td>
-                    <!-- {% for item in menu %}
-                        {% if item.mess_option == 'mess2' %}
-                            {% if item.meal_time == 'WB' or item.meal_time == 'WL' or item.meal_time == 'WD' %}
-                        
-                                {% if item.meal_time == 'WB' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'WL' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'WD' %}
-                                    <td>{{item.dish}}</td>
-                                {% endif %}
-
-                            {% endif %}
-                        {% endif %}
-                    {% endfor %} -->
                     {% for item in menu %}
                         {% if item.mess_option == 'mess2' %}
                             {% if item.meal_time == 'WB' %}
@@ -161,22 +115,6 @@
                 <tr>
                     
                     <td>Thursday</td>
-                    <!-- {% for item in menu %}
-                        {% if item.mess_option == 'mess2' %}
-                            {% if item.meal_time == 'THB' or item.meal_time == 'THL' or item.meal_time == 'THD' %}
-
-                        
-                                {% if item.meal_time == 'THB' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'THL' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'THD' %}
-                                    <td>{{item.dish}}</td>
-                                {% endif %}
-
-                            {% endif %}
-                        {% endif %}
-                    {% endfor %} -->
                     {% for item in menu %}
                         {% if item.mess_option == 'mess2' %}
                             {% if item.meal_time == 'THB' %}
@@ -206,21 +144,6 @@
                     
 
                     <td>Friday</td>
-                    <!-- {% for item in menu %}
-                        {% if item.mess_option == 'mess2' %}
-                            {% if item.meal_time == 'FB' or item.meal_time == 'FL' or item.meal_time == 'FD' %}
-
-                                {% if item.meal_time == 'FB' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'FL' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'FD' %}
-                                    <td>{{item.dish}}</td>
-                                {% endif %}
-
-                            {% endif %}
-                        {% endif %}
-                    {% endfor %} -->
                     {% for item in menu %}
                         {% if item.mess_option == 'mess2' %}
                             {% if item.meal_time == 'FB' %}
@@ -250,21 +173,6 @@
                 <tr>
                    
                     <td>Saturday</td>
-                    <!-- {% for item in menu %}
-                        {% if item.mess_option == 'mess2' %}
-                            {% if item.meal_time == 'SB' or item.meal_time == 'SL' or item.meal_time == 'SD' %}
-
-                                {% if item.meal_time == 'SB' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'SL' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'SD' %}
-                                    <td>{{item.dish}}</td>
-                                {% endif %}
-
-                            {% endif %}
-                        {% endif %}
-                    {% endfor %} -->
                     {% for item in menu %}
                         {% if item.mess_option == 'mess2' %}
                             {% if item.meal_time == 'SB' %}
@@ -294,21 +202,6 @@
                 <tr>
                     
                     <td>Sunday</td>
-                    <!-- {% for item in menu %}
-                        {% if item.mess_option == 'mess2' %}
-                            {% if item.meal_time == 'SUB' or item.meal_time == 'SUL' or item.meal_time == 'SUD' %}
-
-                                {% if item.meal_time == 'SUB' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'SUL' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'SUD' %}
-                                    <td>{{item.dish}}</td>
-                                {% endif %}
-
-                            {% endif %}
-                        {% endif %}
-                    {% endfor %} -->
                     {% for item in menu %}
                         {% if item.mess_option == 'mess2' %}
                             {% if item.meal_time == 'SUB' %}
@@ -356,7 +249,8 @@
         </div>
     </div>
 
-<div class="ui tab" data-tab="" id="m2tab">
+
+<div class="ui active tab" data-tab="m2-tab" id="m1tab">
         <div class="ui vertical segment">
             <table class="ui definition table" style="margin: auto;">
                 <thead>
@@ -373,21 +267,21 @@
                 <tr>
                     
                     <td>Monday</td>
-                    {% for item in menu %}
-                        {% if item.mess_option == 'mess1' %}
-                            {% if item.meal_time == 'MB' or item.meal_time == 'ML' or item.meal_time == 'MD' %}
-
-                                {% if item.meal_time == 'MB' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'ML' %}
-                                    <td>{{item.dish}}</td>
-                                {% elif item.meal_time == 'MD' %}
-                                    <td>{{item.dish}}</td>
+                        {% for item in menu %}
+                            {% if item.mess_option == 'mess1' %}
+                                {% if item.meal_time == 'MB' or item.meal_time == 'ML' or item.meal_time == 'MD' %}
+    
+                                    {% if item.meal_time == 'MB' %}
+                                        <td>{{item.dish}}</td>      
+                                    {% elif item.meal_time == 'ML' %}
+                                        <td>{{item.dish}}</td>
+                                    {% elif item.meal_time == 'MD' %}
+                                        <td>{{item.dish}}</td>
+                                    {% endif %}
+    
                                 {% endif %}
-
                             {% endif %}
-                        {% endif %}
-                    {% endfor %}
+                        {% endfor %}
 
                 </tr>
 
@@ -540,29 +434,4 @@
             </div>
         </div>
     </div>
-{% endblock %}
-
-{% block javascript %}
-<script>
-$(document).ready(function(){
-     $('#m1').on('click',function(){
-        $(this).addClass('active');
-         $('#m2').removeClass('active');
-         $('#m1tab').show();
-          $('#m2tab').hide();
-
-     });
-
- });
- $(document).ready(function(){
-     $('#m2').on('click',function(){
-        $(this).addClass('active');
-         $('#m1').removeClass('active');
-        $('#m1tab').hide();
-          $('#m2tab').show();
-
-     });
-
- });
-</script>
 {% endblock %}

@@ -28,7 +28,7 @@ from applications.programme_curriculum.models import (CourseSlot, Course as Cour
 
 
 
-from applications.academic_procedures.views import acad_proced_global_context
+from applications.academic_procedures.views import acad_proced_global_context , get_sem_courses
 from applications.programme_curriculum.models import Batch
 
 
@@ -107,9 +107,8 @@ def get_context(request):
     # course_type = Constants.COURSE_TYPE
     # timetable = Timetable.objects.all()
     # exam_t = Exam_timetable.objects.all()
-
     procedures_context = acad_proced_global_context()
-
+    notifs = request.user.notifications.all()
     try:
         examTtForm = ExamTimetableForm()
         acadTtForm = AcademicTimetableForm()
@@ -176,7 +175,8 @@ def get_context(request):
         'batch_branch_data' : procedures_context['batch_branch_data'],
         'assistant_flag' : assistant_flag,
         'hod_flag' : hod_flag,
-        'account_flag' : account_flag
+        'account_flag' : account_flag,
+        'notifications': notifs,
     }
 
     return context
@@ -842,12 +842,16 @@ def generatexlsheet(request):
     """
     if user_check(request):
         return HttpResponseRedirect('/academic-procedures/')
-    
+    # print(request.POST)
     try:
-        batch = request.POST['batch']
-        course = Courses.objects.get(id = request.POST['course'])
+        batch = request.POST['batch']#batch hai year wala (2020 , 21)
+        course_id = int(request.POST['course']) # id of course in integer
+        course = course = Courses.objects.get(id=course_id)
+        
+        # print(course.name)
         obj = course_registration.objects.all().filter(course_id = course)
     except Exception as e:
+        print(str(e))
         batch=""
         course=""
         curr_key=""
@@ -1029,9 +1033,14 @@ def generate_preregistration_report(request):
                 max_width = max(max_width,len(choices_of_current_student))
 
                 for choice in range(1,len(choices_of_current_student)+1):
-                    current_choice = InitialRegistration.objects.get(student_id=student, semester_id__semester_no=sem,course_slot_id = slot,priority = choice)
-                    # #print("current choice is ",current_choice)
-                    z.append(str(current_choice.course_id.code)+"-"+str(current_choice.course_id.name))
+                    try:
+                        current_choice = InitialRegistration.objects.get(student_id=student, semester_id__semester_no=sem, course_slot_id=slot, priority=choice)
+                        z.append(str(current_choice.course_id.code) + "-" + str(current_choice.course_id.name))
+                    except :
+                        z.append("No registration found")
+                    # current_choice = InitialRegistration.objects.get(student_id=student, semester_id__semester_no=sem,course_slot_id = slot,priority = choice)
+                    # # #print("current choice is ",current_choice)
+                    # z.append(str(current_choice.course_id.code)+"-"+str(current_choice.course_id.name))
                 
                 data.append(z)
                 m+=1
@@ -1169,9 +1178,9 @@ def add_new_profile (request):
     }
     if request.method == 'POST' and request.FILES:
         profiles=request.FILES['profiles']
-        excel = xlrd.open_workbook(file_contents=profiles.read())
+        excel = xlrd.open_workbook(profiles.name,file_contents=profiles.read())
         sheet=excel.sheet_by_index(0)
-        for i in range(sheet.nrows):
+        for i in range(1,sheet.nrows):
             roll_no=sheet.cell(i,0).value
             first_name=str(sheet.cell(i,1).value)
             last_name=str(sheet.cell(i,2).value)
@@ -1191,7 +1200,7 @@ def add_new_profile (request):
             category=""
             phone_no=0
             address=""
-            dept=str(sheet.cell(i,12).value)
+            dept=str(sheet.cell(i,11).value)
             specialization=str(sheet.cell(i,12).value)
             hall_no=None
 
@@ -1209,7 +1218,6 @@ def add_new_profile (request):
             batch_year=request.POST['Batch']
 
             batch = Batch.objects.all().filter(name = programme_name, discipline__acronym = dept, year = batch_year).first()
-
             user = User.objects.create_user(
                 username=roll_no,
                 password='hello123',
@@ -1217,6 +1225,7 @@ def add_new_profile (request):
                 last_name=last_name,
                 email=email,
             )
+            
 
             einfo = ExtraInfo.objects.create(
                 id=roll_no,
@@ -1253,6 +1262,11 @@ def add_new_profile (request):
                 working=user,
                 designation=desig,
             )
+            
+            user.save()
+            einfo.save()
+            stud_data.save()
+            hold_des.save()
 
             sem_id = Semester.objects.get(curriculum = batch.curriculum, semester_no = sem)
             course_slots = CourseSlot.objects.all().filter(semester = sem_id)
@@ -2063,14 +2077,15 @@ def view_all_student_data(request):
                     "specailization": student.specialization,
                     "gender" : student.id.sex,
                     "category": student.category,
-                    "pwd_status": student.pwd_status,
+                    # "pwd_status": student.pwd_status,
+                    "pwd_status": False,
                     "Mobile": student.id.phone_no,
                     "dob" : student.id.date_of_birth,
                     "emailid" : student.id.user.email,
                     "father_name": student.father_name,
-                    "father_mobile_no": student.father_mobile_no,
+                    # "father_mobile_no": student.father_mobile_no,
                     "mother_name": student.mother_name,
-                    "mother_mobile_no": student.mother_mobile_no,
+                    # "mother_mobile_no": student.mother_mobile_no,
                     "address": student.id.address
                 }
                 data.append(obj)
@@ -2140,9 +2155,9 @@ def generatestudentxlsheet(request):
         data = None
     else:
         if(request_rollno != ""):
-            students = Student.objects.select_related('batch_id', 'id__user', 'batch_id__discipline', 'id').filter(id = request_rollno).only('batch', 'id__id', 'id__user', 'programme','pwd_status', 'father_mobile_no', 'mother_mobile_no', 'batch_id__discipline__acronym', 'specialization', 'id__sex', 'category', 'id__phone_no', 'id__date_of_birth', 'id__user__first_name', 'id__user__last_name', 'id__user__email', 'father_name', 'mother_name', 'id__address')
+            students = Student.objects.select_related('batch_id', 'id__user', 'batch_id__discipline', 'id').filter(id = request_rollno).only('batch', 'id__id', 'id__user', 'programme', 'batch_id__discipline__acronym', 'specialization', 'id__sex', 'category', 'id__phone_no', 'id__date_of_birth', 'id__user__first_name', 'id__user__last_name', 'id__user__email', 'father_name', 'mother_name', 'id__address')
         else:
-            students = Student.objects.select_related('batch_id', 'id__user', 'batch_id__discipline', 'id').filter(**filter_names).order_by('id').all().only('batch', 'id__id', 'id__user', 'programme','pwd_status', 'father_mobile_no', 'mother_mobile_no', 'batch_id__discipline__acronym', 'specialization', 'id__sex', 'category', 'id__phone_no', 'id__date_of_birth', 'id__user__first_name', 'id__user__last_name', 'id__user__email', 'father_name', 'mother_name', 'id__address')
+            students = Student.objects.select_related('batch_id', 'id__user', 'batch_id__discipline', 'id').filter(**filter_names).order_by('id').all().only('batch', 'id__id', 'id__user', 'programme', 'batch_id__discipline__acronym', 'specialization', 'id__sex', 'category', 'id__phone_no', 'id__date_of_birth', 'id__user__first_name', 'id__user__last_name', 'id__user__email', 'father_name', 'mother_name', 'id__address')
         for i in students:
             obj = []
             obj.append(i.batch)
@@ -2153,14 +2168,17 @@ def generatestudentxlsheet(request):
             obj.append(i.specialization)
             obj.append(i.id.sex)
             obj.append(i.category)
-            obj.append(i.pwd_status)
+            #obj.append(i.pwd_status)
+            obj.append(None)
             obj.append(i.id.phone_no)
             obj.append(i.id.date_of_birth)
             obj.append(i.id.user.email)
             obj.append(i.father_name)
-            obj.append(i.father_mobile_no)
+            #obj.append(i.father_mobile_no)
+            obj.append(None)
             obj.append(i.mother_name)
-            obj.append(i.mother_mobile_no)
+            # obj.append(i.mother_mobile_no)
+            obj.append(None)
             obj.append(i.id.address)
             data.append(obj)
     data.sort()

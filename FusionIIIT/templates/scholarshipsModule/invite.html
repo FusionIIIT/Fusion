@@ -210,6 +210,7 @@
                       <td>{{ i.date_time }}</td>
                       <td>{{ i.programme}} - {{ i.batch }}</td>
                       <td> <button class="ui primary button" id = 'update_release_btn' value='{{ i.id}}'>Update</button> </td>
+                    
                   </tr>
                       {% endfor %}
               </tbody>
@@ -227,6 +228,17 @@
         <div class="ui cancel button">Cancel</div>
       </div>
     </div>
+    <div class="ui modal1">
+        <div class="header">Delete Of Application </div>
+        <div class="content">
+          <button type='date' name = 'updated_enddate' id= "enddate_up" required>
+          <input type="hidden" name="delete_release_id" id= "delete_release_id" value="">
+        </div>
+        <div class="actions">
+          <div class="ui approve button" id = "update_enddate_modal_btn">Update</div>
+          <div class="ui cancel button">Cancel</div>
+        </div>
+      </div>
   </div>
 
 <script>
@@ -237,7 +249,28 @@
           $('.ui.modal')
             .modal('show');
       });
-  $(document).on('click','#update_enddate_modal_btn',function (event) {
+  $(document).on('click','#delete_release_btn',function (event) {
+          event.preventDefault();
+          var x = $(this).val();
+            $.ajax({
+                url: '/spacs/deleteRelease/',
+                type: 'DELETE',
+                data:{
+                    id:x,
+                    },
+                success: function (response) {
+                    if(response.result==='Success'){
+                        location.reload();
+                        console.log(response.result)
+                    }
+                    else{
+                        console.log(response.result);
+                    }
+    
+                }
+            });
+      });
+      $(document).on('click','#update_enddate_modal_btn',function (event) {
           event.preventDefault();
           var x = $('#update_release_id').val();
           var y = $('#enddate_up').val();

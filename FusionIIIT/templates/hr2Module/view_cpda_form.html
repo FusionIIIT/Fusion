@@ -1,0 +1,485 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+Module
+{% endblock %}
+
+
+
+{% block body %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
+
+{% comment %}The grid starts here!{% endcomment %}
+<div class="ui stackable doubling grid">
+
+    {% comment %}The left-margin segment!{% endcomment %}
+    <div class="column"></div>
+
+    {% comment %}
+    The left-rail segment starts here!
+    {% endcomment %}
+    <div class="three wide column">
+
+        {% comment %}The user image card starts here!{% endcomment %}
+
+        <div class="ui large fluid raised card" style="max-width: 320px;">
+
+            <div class="image">
+                {% block usercard %}
+                {% include 'globals/usercard.html' %}
+                {% endblock %}
+
+                <!-- <div class="content"> -->
+                {% comment %}
+                TODO: Add a If-Else here!
+                {% endcomment %}
+
+            </div>
+        </div>
+
+
+        {% comment %}The user image card ends here!{% endcomment %}
+
+        <div class="ui divider"></div>
+
+
+
+    </div>
+    {% comment %}
+    The left-rail segment ends here!
+    {% endcomment %}
+
+
+
+    {% comment %}
+    The central-rail segment starts here!
+    {% endcomment %}
+
+
+
+    <div class="eight wide column">
+        <div class="ui top attached tabular large menu">
+            <div class="ui top attached tabular large menu">
+                <a class="active item" data-tab="first">CPDA Form</a>
+
+            </div>
+
+        </div>
+        <div class="ui bottom attached active tab segment" data-tab="first">
+            <div id="textSegmentDiv">
+                {% comment %}
+                TODO: Loader required?
+                <div class="ui active large text loader" id="loader">
+                    Loading ...
+                </div>
+                {% endcomment %}
+                <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+                    {% block alerts %}
+
+
+
+
+
+                    <div style="margin: 2rem;">
+                        <div class="ui vertical segment">
+
+                            <form method="post" id="editDetail" enctype="multipart/form-data">
+                                {% csrf_token %}
+
+                                
+
+
+                                    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                                        <div class="eight wide field">
+                                            <label for="post_title">Name</label>
+                                            <input type="text" name="name" maxlength="40" required id="name"
+                                                value="{{ cpda_request.name }}" readonly>
+                                        </div>
+                                        <div class="eight wide field">
+                                            <label for="post_title">Designation</label>
+                                            <input type="text" name="designation" maxlength="40" required
+                                                id="designation" value="{{ cpda_request.designation }}" readonly>
+                                        </div>
+                                        <div class="eight wide field">
+                                            <label for="post_title">P.F. No.</label>
+                                            <input type="number" name="pfNo" maxlength="30" required id="pfNo"
+                                                value="{{ cpda_request.pfNo }}" readonly>
+                                        </div>
+                                        <div class="fifteen wide field">
+                                            <label for="post_title">Purpose</label>
+                                            <input type="text" name="purpose" maxlength="40" required id="purpose"
+                                                value="{{ cpda_request.purpose }}" readonly>
+                                        </div>
+                                        <div class="eight wide field">
+                                            <label for="post_title">Amount Required</label>
+                                            <input type="number" name="amountRequired" maxlength="40" required
+                                                id="amountRequired" value="{{ cpda_request.amountRequired }}" readonly>
+                                        </div>
+                                        <div class="eight wide field">
+                                            <label for="post_title">Advance (PDA) due for adjustment, if any</label>
+                                            <input type="number" name="advanceDueAdjustment" maxlength="40" required
+                                                id="advanceDueAdjustment"
+                                                value="{{ cpda_request.advanceDueAdjustment }}" readonly>
+                                        </div>
+
+
+                                        <div class="eight wide field" style="float: right;">
+                                            <div class="eight wide field">
+                                                <label for="post_title">Date</label>
+                                                <input type="date" name="submissionDate" maxlength="40" required
+                                                    id="submissionDate"
+                                                    value="{{ cpda_request.submissionDate|date:'Y-m-d' }}" readonly>
+                                            </div>
+                                        </div>
+                                        <br><br><br><br><br><br><br><br>
+
+                                        <hr>
+
+                                        <div style="text-align: center;">
+                                            <h4><u>Estt. Section</u></h4>
+                                        </div>
+                                        <br><br>
+
+                                        <div class="eight wide field">
+                                            <label for="post_title">Balance available as on date:</label>
+                                            <input type="number" name="balanceAvailable" maxlength="40"
+                                                id="balanceAvailable" value="{{ cpda_request.balanceAvailable}}">
+                                        </div>
+                                        <div class="eight wide field">
+                                            <label for="post_title">Advance amount entered in PDA Register Page
+                                                no.</label>
+                                            <input type="number" name="advanceAmountPDA" maxlength="40"
+                                                id="advanceAmountPDA" value="{{ cpda_request.advanceAmountPDA}}">
+                                        </div>
+                                        <br><br>
+
+                                        <hr>
+
+                                        <div style="text-align: center;">
+                                            <h4><u>Internal Audit</u></h4>
+                                        </div>
+                                        <br><br>
+
+                                        <div class="eight wide field">
+                                            <label for="post_title">Entry checked in PDA Register for Rs.</label>
+                                            <input type="number" name="amountCheckedInPDA" maxlength="40" required
+                                                id="amountCheckedInPDA" value="{{ cpda_request.amountCheckedInPDA }}">
+                                        </div>
+                                        <br><br>
+
+                                        <hr>
+
+                                        {% if button == 1 %}
+                                        <div class="two fields">
+                                            <div class="eight wide field">
+                                                <label for="username_employee">Username:</label>
+                                                <input type="text" name="username_employee" id="username_employee"
+                                                    class="ui search" placeholder="Enter Username">
+                                            </div>
+                                            <div class="eight wide field">
+                                                <label for="designation_employee">Designation:</label>
+                                                <input type="text" name="designation_employee" id="designation_employee"
+                                                    readonly>
+                                            </div>
+                                            <button id="check_button"
+                                                class="ui primary button right floated">Check</button>
+                                        </div>
+                                        <div class="two fields">
+                                            <button id="forward-btn" class="ui primary button right floated"
+                                                type="submit" value="Forward">
+                                                Forward
+                                            </button>
+                                            <button id="reject-btn" class="ui primary red button right floated"
+                                                type="submit" value="Reject">
+                                                Reject
+                                            </button>
+                                            <button id="approve-btn" class="ui primary red button right floated"
+                                                type="submit" value="Approve">
+                                                Approve
+                                            </button>
+                                            <button id="archive-btn" class="ui primary red button right floated"
+                                                type="submit" value="Approve">
+                                                Archive
+                                            </button>
+                                            <button id="getAllForms-btn" class="ui primary red button right floated"
+                                                type="submit" value="getAllForms">
+                                                PreviousForms
+                                            </button>
+
+                                        </div>
+                                        <label>Remarks</label>
+                                        <input id="remark_id" name="remark_id"></input>
+                                        {% endif %}
+
+                                    </div>
+                                    <input type="hidden" id="file_id" name="file_id" value="{{ file_id }}">
+                                    <input type="hidden" id="from_user" name="from_user" value="{{ from_user }}">
+                                    <input type="hidden" id="from_designation" name="from_designation"
+                                        value="{{ from_designation }}">
+                                    <input type="hidden" id="form_id" name="form_id" value="{{ id }}">
+                                    <input type="hidden" id="user_id" name="user_id" value="{{ user_id }}">
+                            </form>
+
+                            <div id="data-of-past">
+
+                            </div>
+
+                            <br>
+                            <br>
+
+
+                        </div>
+                        <br>
+                        <div class="extra content"></div>
+                    </div>
+
+
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+{% comment %}The central-rail segment ends here!{% endcomment %}
+
+{% comment %}The right-rail segment starts here!{% endcomment %}
+<div class="three wide column">
+    <div class="row">
+        {% comment %}The Modules:{% endcomment %}
+        {% block modules %}
+        {% include 'dashboard/modules.html' %}
+        {% endblock %}
+    </div>
+
+</div>
+{% comment %}The right-rail segment ends here!{% endcomment %}
+
+
+
+</div>
+{% comment %}The grid ends here!{% endcomment %}
+
+
+
+{% endblock %}
+
+{% block javascript %}
+<script
+    src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+<script>
+    //----------------------calender--------------------------------
+
+    $('#rangestart').calendar({
+        monthFirst: false,
+        type: 'date',
+        minDate: new Date(getToday().getFullYear(), getToday().getMonth(), getToday().getDate()),
+        formatter: {
+            date: function (date, settings) {
+                if (!date) return '';
+                var day = date.getDate();
+                var month = date.getMonth() + 1;
+                var year = date.getFullYear();
+                return year + '-' + month + '-' + day;
+            }
+        }
+    });
+
+
+</script>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#check_button').click(function (event) {
+            event.preventDefault();
+            var selectedUsername = $('#username_employee').val();
+
+            // Fire query to the URL with selected username
+            $.ajax({
+                url: '/hr2/search_employee/',
+                type: 'GET',
+                data: { search: selectedUsername }, // Pass search text as query parameter
+                success: function (data) {
+                    if (data.designation) {
+                        // Employee exists, update designation
+                        $('#designation_employee').val(data.designation);
+                        alert("Employee exists");
+                    } else {
+                        // Employee doesn't exist, show error message
+                        alert("Employee doesn't exist");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error(error);
+                    // Show error message
+                    alert("An error occurred while processing your request.");
+                }
+            });
+        });
+
+    });
+</script>
+
+<script>
+    $(document).ready(function () {
+        $('#getAllForms-btn').click(function (event) {
+            event.preventDefault();
+
+            var user_id = '{{ user_id }}';
+
+            // var user_id = 5332;
+
+            console.log(user_id)
+
+            var type = 'CPDAAdvance';
+            $.ajax({
+                type: 'GET',
+                
+                url: '/hr2/getformcpdaAdvance/',
+                data: {
+                    'id': user_id,
+                    'type': type
+                },
+                success: function (response) {
+                    // Construct HTML table from response data
+                    var tableHtml = '<table style="border: 1px solid black"><thead><tr><th>S.No</th><th>Full Name</th><th>designation</th><th>submissionDate</th></tr></thead><tbody>';
+                    for (var i = 0; i < response.length; i++) {
+                        var form = response[i];
+                        var approvedColor = form.is_approved ? 'green' : 'red'; // Change color based on is_approved field
+
+                        tableHtml += '<tr style="color: ' + approvedColor + '">';
+                        tableHtml += '<td><input type="number" name="info_' + (i + 1) + '_1" maxlength="40" id="id_info_' + (i + 1) + '_1" value="' + form.id + '" readonly></td>';
+                        tableHtml += '<td><input type="text" name="info_' + (i + 1) + '_2" maxlength="40" id="id_info_' + (i + 1) + '_2" value="' + form.name + '" readonly></td>';
+                        tableHtml += '<td><input type="text" name="info_' + (i + 1) + '_3" maxlength="40" id="id_info_' + (i + 1) + '_3" value="' + form.designation + '" readonly></td>';
+                        tableHtml += '<td><input type="date" name="info_' + (i + 1) + '_3" maxlength="40" id="id_info_' + (i + 1) + '_3" value="' + form.submissionDate + '" readonly></td>';
+                        tableHtml += '</tr>';
+                    }
+                    tableHtml += '</tbody></table>';
+
+                    // Populate data into the specified div and show it
+                    $('#data-of-past').html(tableHtml).show();
+                },
+
+                error: function (xhr, status, error) {
+                    // Handle errors here
+                    console.error(xhr.responseText);
+                }
+            });
+        });
+    });
+
+</script>
+
+<script>
+    $(document).ready(function () {
+
+        // Handle Forward and Reject button clicks
+        $('#forward-btn').click(function (event) {
+            event.preventDefault();
+            // Perform actions for forwarding
+            handleForwardOrReject(0);
+        });
+
+        $('#reject-btn').click(function (event) {
+            event.preventDefault();
+            // Perform actions for rejecting
+            var confirmation = confirm("Do you want to reject the request?")
+
+            if (confirmation) {
+                handleForwardOrReject(1);
+            }
+        });
+
+        $('#approve-btn').click(function (event) {
+            event.preventDefault();
+            // Perform actions for rejecting
+            var confirmation = confirm("Do you want to approve the request?")
+
+            if (confirmation) {
+                handleForwardOrReject(2);
+            }
+        });
+        $('#archive-btn').click(function (event) {
+            event.preventDefault();
+            // Perform actions for rejecting
+            var confirmation = confirm("Do you want to archive the file")
+
+            if (confirmation) {
+                handleForwardOrReject(3);
+            }
+        });
+
+        function handleForwardOrReject(action) {
+            // Prepare the data to be sent to the server
+            var formData = $('#cpdaForm').serialize();
+            formData += '&action=' + action;
+            var file_id = $('#file_id').val();
+            var from_user = $('#from_user').val();
+            var from_designation = $('#from_designation').val();
+            var username_employee = $('#username_employee').val();
+            var designation_employee = $('#designation_employee').val();
+            var form_id = $('#form_id').val();
+
+            var balanceAvailable = $('#balanceAvailable').val();
+            var advanceAmountPDA = $('#advanceAmountPDA').val();
+            var amountCheckedInPDA = $('#amountCheckedInPDA').val();
+            var remark_id = $('#remark_id').val();
+
+            console.log(file_id)
+            formData += '&context=' + JSON.stringify({
+                file_id: file_id,
+                from_user: from_user,
+                from_designation: from_designation,
+                username_employee: username_employee,
+                designation_employee: designation_employee,
+                form_id: form_id,
+                advanceAmountPDA: advanceAmountPDA,
+
+                balanceAvailable: balanceAvailable,
+
+                amountCheckedInPDA: amountCheckedInPDA,
+                remark_id: remark_id
+
+
+            });
+
+            $.ajax({
+                url: '/hr2/file_handle_cpda/',
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                data: formData, // Send the serialized form data
+                success: function (data) {
+
+                    // Handle success response, if needed
+                    alert("Request successful.");
+                    console.log(data);
+                },
+                error: function (xhr, status, error) {
+                    console.error(error);
+                    // Show error message, if needed
+                    alert("An error occurred while processing your request.");
+                }
+            });
+        }
+    });
+</script>
+
+{% endblock %}
+
+
+
+
+
+
+

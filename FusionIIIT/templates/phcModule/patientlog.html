@@ -1,0 +1,357 @@
+{% load static %}
+
+{% block comapproval %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="prescribe">
+            Update Patient log
+        </a>
+       
+        <a class="item" data-tab="prescriptionhistory">
+            History
+        </a>
+
+    </div>
+    <div class="ui active tab" data-tab="prescribe">
+        <div class="ui vertical stripe team segment"
+             style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+            <form class="ui form" method="POST">{% csrf_token %}
+                <p id="usr_b"></p>
+                <div class="two fields">
+                  <div class="field">
+                      <label>Patient</label>
+                      <div class="ui fluid large input">
+                          <input placeholder="Patient Id" id="patient_b" name="patient_b" type="text">
+                      </div>
+                   </div>
+
+                   <div class="field">
+                       <label>Doctor</label>
+                       <select class="ui search fluid dropdown" name="doctor_b" id="doctor_b" required="true">
+                         <option value="" disabled selected>--SELECT--</option>
+                         {% for doctor in doctors %}
+                         <option value="{{doctor.id}}">{{doctor.doctor_name}}</option>
+                         {% endfor %}
+                       </select>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Detail of Disease</label>
+                    <textarea name="details" id="details_b" rows="2"></textarea>
+                </div>
+
+                <div class="two fields">
+                  <div class="field">
+                      <label>Medicine</label>
+
+                        <select class="ui search fluid dropdown" id="medicine_id_b" name="medicine_id_b" required="true">
+                        <option value="" disabled selected>--SELECT--</option>
+                        {% for medicine in stocks %}
+                        <option value="{{medicine.id}}">{{medicine.medicine_name}}</option>
+                        {% endfor %}
+                      </select>
+                  </div>
+
+                   <div class="field">
+                     <label>Quantity</label>
+                     <div class="ui fluid large input">
+                         <input placeholder="Quantity" id="quantity_b" name="quantity_b" type="number">
+
+                     </div>
+                  </div>
+                    <div class="field">
+                      <label>No of days</label>
+                      <div class="ui fluid large input">
+                          <input placeholder="No of days" id="days_b" name="days_b" type="number">
+
+                      </div>
+                     </div>
+                     <div class="field">
+                       <label>Times per day</label>
+                       <div class="ui fluid large input">
+                           <input placeholder="No of times per day" id="times_b" name="times_b" type="number">
+
+                       </div>
+                      </div>
+                     <div class="field">
+                         <label><br></label>
+                         <input type="button" id="medicine_b" name="medicine_b" value="Add"class="ui small left floated primary button" />
+
+                     </div>
+                </div>
+                <table  class="ui very basic collapsing celled small fluid sortable table"
+                       style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;">
+                    <thead>
+                    <tr>
+                        <th class="two wide">
+                            Medicine
+                        </th>
+
+                        <th class="two wide" >
+                            Quantity
+                        </th>
+
+                        <th class="wide">
+                            Days
+                        </th>
+                        <th class="wide">
+                            Times
+                        </th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="sched_b">
+
+                    </tbody>
+                </table>
+                <div class="field">
+                    <label>Tests Suggested</label>
+                    <textarea rows="2" id="tests_b" name="extra_meds"></textarea>
+                </div>
+                <div class="field">
+                    <label for="file">Report</label>
+                    <div class="ui fluid input">
+                        <input type="file" name="file" id="file">
+                    </div>
+                </div>
+                <div class="field">
+                    <label><br></label>
+                    <input type="button" id="prescribe_b" name="prescribe"  value="Submit"class="ui large right floated primary button" />
+                </div>
+
+
+
+            </form></div></div>
+            <script src="{% static 'globals/js/jquery.min.js' %}"></script>
+            <script type="text/javascript">
+                  $('#medicine_b').click(function(e){
+                                                        $("#sched_b tr").remove();
+                                                        var user = document.getElementById('patient_b').value;
+                                                        var quantity = document.getElementById('quantity_b').value;
+                                                        var medicine = document.getElementById('medicine_id_b').value;
+                                                        var days = document.getElementById('days_b').value;
+                                                        var times = document.getElementById('times_b').value;
+                                                        if(user=="" || days=="" || days<0 || times=="" || times<0 || quantity=="" || quantity<0)
+                                                        {
+                                                        $('#usr_b').html("Enter Valid Information");
+                                                        return false;
+                                                        }
+                                                        $.ajax({
+                                                          type:'post',
+                                                          url:'/healthcenter/compounder/',
+                                                          data: {
+                                                          csrfmiddlewaretoken: '{{ csrf_token }}',
+                                                          user:$("#patient_b").val(),
+                                                          quantity:$("#quantity_b").val(),
+                                                          medicine_name_b:$("#medicine_id_b").val(),
+                                                          days:$("#days_b").val(),
+                                                          times:$("#times_b").val()
+                                                        },
+                                                          success: function(data){
+                                                              alert("added medicine");
+                                                              document.getElementById("quantity_b").value="";
+                                                              document.getElementById("medicine_id_b").value="";
+                                                              document.getElementById("days_b").value="";
+                                                              document.getElementById("times_b").value="";
+                                                              var response=JSON.stringify(data);
+                                                               $('#sched_b').empty();
+                                                              $.each(data, function(key, value) {
+                                                               $('#sched_b').append("<tr><td>" + value.medicine + "</td><td>" +
+                                                               value.quantity + "</td><td>" + value.days + "</td><td>" + value.times + "</td></tr>");
+                                                             });
+                                                        }
+                                                      });
+                                                    });
+    </script>
+    <script type="text/javascript">
+                    $('#prescribe_b').click(function(e){
+                                                    var user = document.getElementById('patient_b').value;
+                                                    var details = document.getElementById('details_b').value;
+                                                    var tbl = document.getElementById('sched_b');
+                                                     
+                                                    // Get the file input element
+                                                    var fileInput = document.getElementById('file');
+                                                    
+                                                    // Get the files from the input element
+                                                    var file = fileInput.files[0];
+                                                    
+                                                    // Create a new FormData object
+                                                    var formData = new FormData();
+                                                    if(tbl.rows.length==0){
+                                                    $('#usr_b').html("Please prescribe some medicine!");
+                                                    return false;
+                                                     }
+                                                    if(user=="" || details=="")
+                                                    {
+                                                    $('#usr_b').html("Please enter all the details!");
+                                                    return false;
+                                                    }
+                                                    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}')
+                                                    formData.append('file', file);
+                                                    formData.append('user', $("#patient_b").val());
+                                                    formData.append('doctor', $("#doctor_b").val());
+                                                    formData.append('details', $("#details_b").val());
+                                                    formData.append('tests', $("#tests_b").val());
+                                                    formData.append('prescribe_b', $("#prescribe_b").val());
+                                                    $.ajax({
+                                                      type:'post',
+                                                      url:'/healthcenter/compounder/',
+                                                      data: formData,
+                                                      processData: false, // Don't process the data as a query string
+                                                      contentType: false, // Let the browser set the Content-Type header automatically
+                                                      success: function(data){
+                                                        if (data.status == 1){
+                                                          alert("prescribed medicine");
+                                                          document.getElementById("doctor_b").value="";
+                                                          document.getElementById("details_b").value="";
+                                                          document.getElementById("tests_b").value="";
+                                                          $('#sched_b').empty();
+                                                          window.location.reload();
+                                                        }
+
+                                                        else {
+                                                            if(data.status == 0)
+                                                            alert("Prescription failed!, not enough medicine available in stock");
+                                                            }
+                                                    },
+                                                  });
+                                                  });
+              </script>
+         
+
+
+
+<div class="ui tab" data-tab="prescriptionhistory">
+        <div class="ui vertical segment" >
+            <table  border=1 class="ui very basic collapsing celled large sortable table"
+                  style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;" >
+                <thead>
+                <tr>
+                    <td style="font-weight:bold;color:black;" >
+                        Patient ID
+                    </td>
+
+                    <td style="font-weight:bold;color:black;">
+                        Treated BY
+                    </td>
+
+                    <td style="font-weight:bold;color:black;" >
+                        Date
+                    </td>
+                    <td style="font-weight:bold;color:black;">
+                        Details
+                    </td>
+                    <td style="font-weight:bold;color:black;">
+                        Test
+                    </td>
+                    <td style="font-weight:bold;color:black;">
+                        Report
+                    </td>
+
+                     <td>
+                     <table>
+                                  <tr><td> Medicine</td><td>D</td><td>T</td></tr>
+                      </table>
+                    </td>
+
+                    <td></td>
+
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for pre in presc_hist %}
+                <tr>
+
+                    <td style="white-space:nowrap;">
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                        </h4>
+                        {{pre.user_id}}
+                    </td>
+
+                    <td style="white-space:nowrap;">
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                        </h4>
+                              {{pre.doctor_id}}
+
+
+                    </td>
+
+                    <td style="white-space:nowrap;">
+                        {{pre.date}}
+                    </td>
+
+                    <td>
+                        {{pre.details}}
+                    </td>
+                    <td>
+                        {{pre.test}}
+                    </td>
+                    <td style="white-space:nowrap;">
+                        {% if pre.file %}
+                        <a href="{{ pre.file }}" download>
+                            <i class="ui download icon right floated"></i>
+                        </a>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                     <table>
+                        {% for medicine in medicines_presc %}
+                            {% if medicine.prescription_id.id == pre.id %}
+                                  <tr><td>{{medicine.medicine_id}}</td><td>{{medicine.days}}</td><td>{{medicine.times}}</td></tr>
+                            {% endif %}
+                        {% endfor%}
+                      </table>
+                    </td>
+
+                    <td>
+
+                        <input type="button" onclick="rem1({{pre.id}})" id="{{pre.id}}" name="cancel" value="Cancel"class="ui red button" />
+
+                    </td>
+
+                </tr>
+                {% endfor %}
+               
+
+                </tbody>
+            </table>
+
+        <script>
+
+            
+        function rem1(id){
+
+        var dis = this;
+        var d = window.confirm('Are you sure, you want to cancel the prescription?');
+        if(d == false){
+            return;
+        }
+                $('#'+id).parent().parent().remove();
+                                                    alert("prescription cancelled");
+
+                $.ajax({
+                            type:'post',
+                            url:'/healthcenter/compounder/',
+                        data: {'cancel_presc':id,},
+
+                        beforeSend: function(xhr) {
+            xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+        },
+                        success: function(data){
+                                                }
+                                                });
+
+
+    }
+    </script>
+
+    </div>
+</div>
+
+{% endblock %}

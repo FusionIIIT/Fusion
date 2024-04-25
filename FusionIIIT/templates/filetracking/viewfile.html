@@ -1,0 +1,140 @@
+{% extends 'filetracking/filetracking.html' %}
+{% load static %}
+
+{% block filetracking_tab %}
+<div class="ui pointing secondary menu">
+        <form id="download-form" action="{% url 'filetracking:download_file' file.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="item" style="position:absolute;right:10px; cursor: pointer;">
+                <b style="color:rgb(22, 82, 129)"> Download as ZIP</b>
+            </button>
+        </form>
+        <a class="active item" data-tab="notesheet">
+            Note Sheet
+        </a>
+        <a class="item" data-tab="attachments">
+            Attachments
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="notesheet">
+        <div class="ui two item menu">
+            <a class="item"><b>Created By :-</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.user}}-{{file.designation}}</b></a>
+            <a class="item"><b>File ID :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.department.name}}-{{file.upload_date.year}}-{{file.upload_date.month}}-#{{file.id}}</b></a>
+        </div>
+        <div class="ui large form" method="POST" enctype="multipart/form-data" id="form1">
+        {% csrf_token %}
+            <div class="ui fluid card">
+                <div class="content">
+                    <center><span class="ui header"><b>Subject - {{file.subject}}</b></span></center>
+                    <div class="ui divider"></div>
+                    <div class="content" style=" padding-left: 18px; padding-top: 0.1px; height: auto; overflow-y: auto;">
+                        <div class="item">
+                            <div class="description">
+                                <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';">{{file.description}}</pre>
+                                <div class="ui divider"></div>
+                            </div>
+                            {% for t in track %}
+                            <div class="ui comments" style="max-width: 100%;">
+                                <div class="comment" style="max-width: 100%;">
+                                    <div class="content">
+                                        <a class="author">{{ t.current_design }}
+                                            <a class="metadata">
+                                                <span class="date">{{ t.forward_date }}</span>
+                                            </a>
+                                        </a>
+
+                                        <div class="right floated" style="font-color: black;">
+                                            <b>Received by:</b>&nbsp{{ t.receiver_id }}-{{ t.receive_design }}
+                                        </div>
+
+                                        <div class="text">
+                                            <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';">
+                                            {% if t.remarks %}
+                                                {{ t.remarks }}
+                                            {% else %}
+                                                <span class="meta">No Remarks</span>
+                                            {% endif %}
+                                            </pre>
+                                            {% if t.upload_file %}
+                                            <span class="meta" style="color: grey;">Attachment: {{ t.upload_file }}</span>
+                                            {% else %}
+                                            <span class="meta" style="color: grey;">No attachments</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+
+                            <div class="ui divider"></div>
+                            
+                            <button class="ui large right floated primary button" style="margin-top:20px; float: right;" {% if not forward_enable %} disabled {% endif %}>
+                                <a href="{% url 'filetracking:forward' file.id %}" style="text-decoration: none; color: inherit;"> Forward File <i class="ui send icon right floated"></i> </a>
+                            </button>
+
+                            <button class="ui large right floated primary button" style="margin-top: 22px; float: right; {% if not file.is_read %} display: none; {% endif %}">
+                                <a href="{% url 'filetracking:unarchive' file.id %}" style="text-decoration: none; color: inherit;"> 
+                                    Unarchive <i class="ui archive icon right floated"></i> 
+                                </a>  
+                            </button>
+                                                       
+                            <button class="ui large right floated primary button" style="margin-right:10px; margin-top:20px; float: right;" {% if not archive_enable %} disabled {% endif %}>
+                                <a href="{% url 'filetracking:archive_finish' file.id %}" style="text-decoration: none; color: inherit;">Archive File <i class="ui archive icon right floated"></i> </a>
+                            </button>
+                        </div>
+                        <br>
+
+                    </div>
+                </div>
+            </div>
+            <br><br><br><br>
+        </div>
+        <br>
+    </div>
+
+    <div class="ui tab" data-tab="attachments">
+        <div class="ui two item menu">
+            <a class="item"><b>Created By :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.user}}-{{file.designation}}</b></a>
+            <a class="item"><b>File ID :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.department.name}}-{{file.upload_date.year}}-{{file.upload_date.month}}-#{{file.id}}</b></a>
+        </div>
+        <div class="ui fluid card">
+            <div class="content">
+                <div class="content" style=" padding-left: 18px; padding-top: 0.1px; height: auto; overflow-y: auto;">
+                    <div class="item">
+                        {% for t in track %}
+                        <div class="ui comments" style="max-width: 100%;">
+                            <div class="comment" style="max-width: 100%;">
+                                <div class="content">
+                                        <a class="paperclip icon">
+                                            {% if t.upload_file %}
+                                            <a href="/media/{{t.upload_file}}" class="header" target="_">
+                                                <u class="meta" style="color: #1B1C1D">{{t.upload_file}}</u>
+                                            </a>
+                                            {% else %}
+                                            <span class="meta">No Attachment</span>
+                                            {% endif %}
+                                        </a>
+                                        <div class="right floated content">
+                                            <a class="author">{{t.current_design}}
+                                                <a class="metadata">
+                                                <span class="date">{{t.forward_date}}</span>
+                                                </a>
+                                            </a>
+                                        </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <div class="ui divider"></div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+{% endblock %}
+

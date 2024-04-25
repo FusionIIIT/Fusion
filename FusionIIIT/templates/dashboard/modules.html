@@ -170,7 +170,7 @@
                                     <div class="row">
                                         <i class="ui student icon big"></i>
                                     </div>
-
+                                    
                                     <div class="row">
                                         <span class="ui sub header centered">Scholarship Portal</span>
                                     </div>
@@ -195,6 +195,7 @@
                         </div>
                    
                     {% comment %}A single modules row ends here!{% endcomment %}
+
                   
                         {% if request.user.extrainfo.user_type != "staff" or "administrator" == global_var  %}
                         <div style="width: calc(50% - 10px);
@@ -253,7 +254,7 @@
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
-                            <a class="ui large label disabled"  style="height: 120px; width:100%" href="/research_procedures">
+                            <a class="ui large label "  style="height: 120px; width:100%" href="/research_procedures">
                                 <div class="ui centered grid">
                                     <div class="row">
                                         <i class="ui university icon big"></i>
@@ -322,7 +323,7 @@
                             </a>
                         </div>
                         {% endif %}
-                        {% if request.user.extrainfo.user_type != "student"  %}
+                        <!-- {% if request.user.extrainfo.user_type != "student"  %}
                             <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
@@ -338,9 +339,9 @@
                                     </div>
                                 </a>
                             </div>
-                        {% endif %}
+                        {% endif %} -->
                  
-                    {% comment %}A single modules row ends here!{% endcomment %}
+                    <!-- {% comment %}A single modules row ends here!{% endcomment %} -->
 
                   
                         {% if request.user.extrainfo.user_type == "faculty" or  "acadadmin" == global_var  %}
@@ -419,7 +420,8 @@
                     {% comment %}A single modules row ends here!{% endcomment %}
 
                                      
-                        {% if request.user.extrainfo.user_type == "student"  or  "hall1_caretaker" == global_var or  "hall1_warden" == global_var  or "hall3_caretaker" == global_var  or  "hall3_warden" == global_var or "hall4_caretaker" == global_var  or  "hall4_warden" == global_var %}
+                       {% if request.user.extrainfo.user_type == "student"  or user in hall_caretaker or user in hall_warden or request.user.is_superuser %}
+                        
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
@@ -438,6 +440,27 @@
                         {% endif %}
                    
                     {% comment %}A single modules row ends here!{% endcomment %}
+
+                    {% if request.user.extrainfo.user_type != ""  %}
+                    <div style="width: calc(50% - 10px);
+                margin: 5px;
+                box-sizing: border-box;">
+                        <a class="ui large label" style="height: 120px; width:100%" href="/hr2/dashboard">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui file icon big"></i>
+                                </div>
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Human Resource</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                {% endif %}
+        
+            {% comment %}A single modules row ends here!{% endcomment %}
+
                 </div>
             {% comment %}
             <a class="ui bottom attached blue label">
@@ -450,3 +473,4 @@
 </div>
 {% endblock %}
 {% comment %}The Modules End here!{% endcomment %}
+{% endblock %}
