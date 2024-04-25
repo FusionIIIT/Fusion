@@ -16,6 +16,7 @@ class IndentFile(models.Model):
     purpose=models.CharField(max_length=250,blank=False )
     specification=models.CharField(max_length=250)
     item_type=models.CharField(max_length=250)
+    item_subtype = models.CharField(max_length=250,blank=False,default='computers')
     nature=models.BooleanField(default = False)
     indigenous= models.BooleanField(default = False)
     replaced =models.BooleanField(default = False)

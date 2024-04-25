@@ -50,7 +50,7 @@
     <div class="ui pointing secondary menu">
         <h3>
             <a class="active item" data-tab="composefile">
-            Stocks present in database
+            Detailed Stock Item View
             </a>
         </h3>
     </div>
@@ -62,7 +62,7 @@
     <div class="ui pointing secondary menu" >
         <h3>
             <a class="active item" data-tab="inward">
-           Procuremented  stock entry view
+          Stock Item Details 
             </a>
         </h3>
     
@@ -70,74 +70,16 @@
 
     
     <div class="ui divider"></div>
-    {% if stocks %}
+    {% if item %}
     <div class="table-container"  style="overflow-x: scroll;max-height: 500px;  overflow-y: scroll;">
-        <!-- <div class="row-container">
-            <div class="left-element">
-                <div class="field">
-                    <label>File ID: {{first_stock.StockEntryId.item_id.file_info.id}}</label>
-                </div>
-            </div>
-            <div class="line"></div>
-            <div class="right-element">
-                <div class="field">
-                    <label>Item Type: {{first_stock.StockEntryId.item_id.item_type}}</label>
-                </div>
-            </div>
-        </div>
-        
-        <div class="row-container">
-            <div class="left-element">
-                <div class="field">
-                    <label>Item Name: {{first_stock.StockEntryId.item_id.item_name}}</label>
-                </div>
-            </div>
-            <div class="line"></div>
-            <div class="right-element">
-                <div class="field">
-                    <label>Dealing Assistant: {{first_stock.StockEntryId.dealing_assistant_id}}</label>
-                </div>
-            </div>
-        </div>
-        
+    
         <div class="row-container">
             <div class="left-element">
                 <div class="field">
                     <div style="display: flex;">
-                        <div style="flex: 1.5;"><b>Grade</b></div>
+                        <div style="flex: 1.5;"><b>Item Name</b></div>
                         <div style="flex: 0.1;"><b>:</b></div>
-                        <div style="flex: 2;">{{first_stock.StockEntryId.item_id.grade}}</div>
-                    </div>
-                </div>
-            </div>
-            <div class="line"></div>
-            <div class="right-element">
-                <div class="field">
-                    <label>Vendor Name: {{first_stock.StockEntryId.vendor}}</label>
-                </div>
-            </div>
-        </div>
-        
-        <div class="row-container">
-            <div class="left-element">
-                <div class="field">
-                    <label>Bill: {{first_stock.StockEntryId.bill}}</label>
-                </div>
-            </div>
-            <div class="line"></div>
-            <div class="right-element">
-                <div class="field">
-                    <label>Received Date: {{first_stock.StockEntryId.received_date}}</label>
-                </div>
-            </div>
-        </div> -->
-        <div class="row-container">
-            <div class="left-element">
-                <div class="field">
-                    <div style="display: flex;">
-                        <div style="flex: 1.5;"><b>Stock Name</b></div>
-                        <div style="flex: 0.1;"><b>:</b></div>
-                        <div style="flex: 2;">{{first_stock.StockEntryId.item_id.item_name}}</div>
+                        <div style="flex: 2;">{{item.StockEntryId.item_id.item_name}}</div>
                     </div>
                 </div>
             </div>
@@ -147,7 +89,7 @@
                     <div style="display: flex;">
                         <div style="flex: 1.5;"><b>Item Type</b></div>
                         <div style="flex: 0.1;"><b>:</b></div>
-                        <div style="flex: 2;">{{first_stock.StockEntryId.item_id.item_type}}</div>
+                        <div style="flex: 2;">{{item.StockEntryId.item_id.item_type}}</div>
                     </div>
                 </div>
             </div>
@@ -157,9 +99,9 @@
             <div class="left-element">
                 <div class="field">
                     <div style="display: flex;">
-                        <div style="flex: 1.5;"><b>Item Name</b></div>
+                        <div style="flex: 1.5;"><b>Item SubType</b></div>
                         <div style="flex: 0.1;"><b>:</b></div>
-                        <div style="flex: 2;">{{first_stock.StockEntryId.item_id.item_name}}</div>
+                        <div style="flex: 2;">{{item.StockEntryId.item_id.item_subtype}}</div>
                     </div>
                 </div>
             </div>
@@ -169,29 +111,29 @@
                     <div style="display: flex;">
                         <div style="flex: 1.5;"><b>Dealing Assistant</b></div>
                         <div style="flex: 0.1;"><b>:</b></div>
-                        <div style="flex: 2;">{{first_stock.StockEntryId.dealing_assistant_id}}</div>
+                        <div style="flex: 2;">{{item.StockEntryId.dealing_assistant_id}}</div>
                     </div>
                 </div>
             </div>
         </div>
         
         <div class="row-container">
-            <div class="line"></div>
             <div class="left-element">
                 <div class="field">
                     <div style="display: flex;">
                         <div style="flex: 1.5;"><b>Vendor Name</b></div>
                         <div style="flex: 0.1;"><b>:</b></div>
-                        <div style="flex: 2;">{{first_stock.StockEntryId.vendor}}</div>
+                        <div style="flex: 2;">{{item.StockEntryId.vendor}}</div>
                     </div>
                 </div>
             </div>
+            <div class="line"></div>
             <div class="right-element">
                 <div class="field">
                     <div style="display: flex;">
-                        <div style="flex: 1.5;"><b>Transferred to :</b></div>
+                        <div style="flex: 1.5;"><b> Initially Transferred to </b></div>
                         <div style="flex: 0.1;"><b>:</b></div>
-                        <div style="flex: 2;">{{first_stock.StockEntryId.item_id.file_info.uploader.department.name}}</div>
+                        <div style="flex: 2;">{{item.StockEntryId.item_id.file_info.uploader.department.name}}</div>
                     </div>
                 </div>
             </div>
@@ -205,8 +147,8 @@
                         <div style="flex: 0.1;"><b>:</b></div>
                         <div style="flex: 2;">
                             <!-- {{s.bill}} -->
-                                {% if first_stock.StockEntryId.bill %}
-                                <a href="{{ first_stock.StockEntryId.bill.url }}" download>{{ first_stock.StockEntryId.bill }}</a>
+                                {% if item.StockEntryId.bill %}
+                                <a href="{{ item.StockEntryId.bill.url }}" download>{{ item.StockEntryId.bill }}</a>
                             {% else %}
                                 No bill available
                             {% endif %}
@@ -220,34 +162,46 @@
                     <div style="display: flex;">
                         <div style="flex: 1.5;"><b>Received Date</b></div>
                         <div style="flex: 0.1;"><b>:</b></div>
-                        <div style="flex: 2;">{{first_stock.StockEntryId.recieved_date}}</div>
+                        <div style="flex: 2;">{{item.StockEntryId.recieved_date}}</div>
                     </div>
                 </div>
             </div>
         </div>
+
+    <div class="ui pointing secondary menu" >
+        <h3>
+            <a class="active item" data-tab="inward">
+            Stock Item Transfer History 
+            </a>
+        </h3>
+    
+    </div> 
+    
         
     <table class="ui very basic celled sortable table">
         <thead>
         <tr>
-                <th>Nomenclature</th>
-                <th>Current Department</th>
-                <th >Current Location</th>
-                <th >Transferred</th>
+                <th>File Id</th>
+                <th>Src Department </th>
+                <th >Dest Department </th>
+                <th >Src Location </th>
+                <th >Dest Location </th>
+                <th >Date Time</th>
             
         </tr>
         </thead>
         <!-- -->
         <tbody>
-            {% for s in stocks %}
-                {% if s.StockEntryId.item_id.purchased %}
+            {% for s in transfers %}
             <tr>
-                <td> {{s.nomenclature}} </td>
-                <td>{{s.department.name}}</td>
-                <td>{{s.location}}</td>
-                <td>{{s.isTransferred}}</td>
+                <td> {{s.indent_file.file_info.id}} </td>
+                <td>{{s.src_dept.name}}</td>
+                <td>{{s.dest_dept.name}}</td>
+                <td>{{s.src_location}}</td>
+                <td>{{s.dest_location}}</td>
+                <td>{{s.dateTime}}</td>
             
               </tr>
-              {% endif %}
 
                 {% endfor %}
         </tbody>
