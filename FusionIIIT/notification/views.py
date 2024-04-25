@@ -130,6 +130,7 @@ def healthcare_center_notif(sender, recipient, type, message):
     sender = sender
     recipient = recipient
     verb = ''
+    flag=''
     if type == 'appoint':
         verb = "Your Appointment has been booked"
     elif type == 'amb_request':
