@@ -761,6 +761,7 @@ def forwardindent(request, id):
                     file_attachment=upload_file
                 )
 
+
                 # CREATOR -> HOD -> DIRECTOR/REGISTRAR -> DEPT_ADMIN -> 
                 if((sender_designation_name in ["HOD (CSE)", "HOD (ECE)", "HOD (ME)", "HOD (SM)", "HOD (Design)", "HOD (Liberal Arts)", "HOD (Natural Science)"]) and (str(receive_design) in ["Director","Registrar"])):
                     indent.head_approval=True
@@ -778,8 +779,9 @@ def forwardindent(request, id):
 
                 indent.save()
 
-
+            office_module_notif(request.user, receiver_id)
             messages.success(request, 'Indent File Forwarded successfully')
+            
     extrainfo = ExtraInfo.objects.select_related('user','department').all()
     holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
     designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
