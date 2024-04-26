@@ -186,19 +186,6 @@ class WorkOrder(models.Model):
     alloted_time = models.CharField(max_length=200)
     start_date = models.DateField()
     completion_date = models.DateField()
-
-class Inventory(models.Model):
-    name = models.CharField(max_length=200)
-    quantity = models.IntegerField(default=0)
-    cost = models.IntegerField(default=0)
-
-class UsedItems(models.Model):
-    # requestId = models.IntegerField()
-    request_id = models.ForeignKey(Requests, on_delete=models.CASCADE)
-    itemName = models.CharField(max_length=200)
-    cost = models.IntegerField(default=0)
-    quantity = models.IntegerField(default=0)
-    date = models.DateField(default=date.today)
     
 class Bills(models.Model):
     # requestId = models.IntegerField()

@@ -12,6 +12,16 @@
         {% include 'dashboard/navbar.html' %}
     {% endblock %}
 
+    <script>
+        $('.message .close')
+            .on('click', function() {
+                $(this)
+                    .closest('.message')
+                    .transition('fade')
+                ;
+            });
+    </script>
+
     <div class="ui stackable doubling grid">
 
         {% comment %}The left-margin segment!{% endcomment %}
@@ -56,7 +66,6 @@
 
               <table class="ui orange table">
                   <thead>
-                      <th>Details:-</th>
                     <tr>
                         <th>Id</th>
                         <th>Name</th>
@@ -75,19 +84,7 @@
                         <td>{{f.2}}</td>
                         <td>{{f.4}}</td>
                         <td>
-                            <!-- <form method="POST" action="handleProcessRequests?id={{ f.0 }}"> -->
-                            <form method="POST" action="{% url 'iwdModuleV2:Dean-Process-Requests' %}">
-                                {% csrf_token %}
-                                <select name="designation">
-                                    {% for queryset in holdsDesignations %}
-                                        {% for hd in queryset %}
-                                            <option value="{{ hd.user.username }}">{{ hd.designation }}({{ hd.user.username }})</option>
-                                        {% endfor %}
-                                    {% endfor %}
-                                </select>
-                                <input type="hidden" name="id" value="{{ f.0 }}">
-                                <button type="submit" class="ui small primary button">Process</button>
-                            </form>
+                            <button onclick="window.location='/iwdModuleV2/view_file/{{ f.5 }}/Dean-Process-Requests'" style="margin-left:5px; height:5vh;" class="ui small grey equal-size-button button">View File</button>
                         </td>
                     </tr>
                 </tbody>

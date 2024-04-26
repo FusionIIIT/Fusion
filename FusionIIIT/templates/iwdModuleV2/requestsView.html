@@ -11,6 +11,15 @@ Academic
 {% block navBar %}
 {% include 'dashboard/navbar.html' %}
 {% endblock %}
+<script>
+    $('.message .close')
+        .on('click', function() {
+            $(this)
+                .closest('.message')
+                .transition('fade')
+            ;
+        });
+</script>
 
 <div class="ui stackable doubling grid">
 
@@ -82,7 +91,7 @@ Academic
                         <select name="designation">
                             {% for queryset in holdsDesignations %}
                                 {% for hd in queryset %}
-                                    <option value="{{ hd.user.username }}">{{ hd.designation }}({{ hd.user.username }})</option>
+                                    <option value="{{ hd.user.username }}|{{ hd.designation }}">{{ hd.designation }}({{ hd.user.username }})</option>
                                 {% endfor %}
                             {% endfor %}
                         </select>
