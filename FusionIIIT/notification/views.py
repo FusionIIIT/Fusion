@@ -565,3 +565,16 @@ def otheracademic_notif(sender, recipient, type, otheracademic_id,student,messag
     description = otheracademic_id
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb,description=description)
+def iwd_notif(sender,recipient,type):   
+    module= 'iwdModuleV2'
+    url= 'iwdModuleV2:iwdModuleV2'
+    verb=""
+    if type == "file_forward":
+        verb= "file forwarded from " + sender.username+"."
+    if type == "Request_added":
+        verb= "Request added by "+ sender.username + "."
+    if type == "Request_approved": 
+        verb = "Request approved by " + sender.username + "."
+    if type == "Request_rejected": 
+        verb = "Request rejected by " + sender.username + "." 
+    notify.send(sender=sender,recipient=recipient,url=url,module=module,verb=verb)
