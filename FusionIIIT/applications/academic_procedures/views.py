@@ -26,7 +26,7 @@ from applications.academic_information.models import (Calendar, Course, Student,
                                                       Student_attendance)
                                                       
 from applications.central_mess.models import(Monthly_bill, Payments)
-
+from applications.online_cms.models import (Student_grades)
 from applications.programme_curriculum.models import (CourseSlot, Course as Courses, Batch, Semester , CourseInstructor)
 from applications.globals.models import (DepartmentInfo, Designation,
                                          ExtraInfo, Faculty, HoldsDesignation)
@@ -478,11 +478,11 @@ def academic_procedures_student(request):
         cur_spi='Sem results not available' # To be fetched from db if result uploaded
 
         backlogCourseList = []
-        auto_backlog_courses = list(SemesterMarks.objects.filter(student_id = obj , grade = 'F'))
+        auto_backlog_courses = list(Student_grades.objects.filter(roll_no = obj , grade = 'F'))
         auto_backlog_courses_list = []
         for i in auto_backlog_courses:
-            if not i.curr_id.courseslots.filter(type__contains="Optional").exists():
-                auto_backlog_courses_list.append([i.curr_id.name, i.curr_id.code, i.curr_id.version, i.curr_id.credit , i.grade])
+            if not i.course_id.courseslots.filter(type__contains="Optional").exists():
+                auto_backlog_courses_list.append([i.course_id.name, i.course_id.code, i.course_id.version, i.course_id.credit , i.grade])
 
         backlogCourses = backlog_course.objects.select_related('course_id' , 'student_id' , 'semester_id' ).filter(student_id=obj)
         for i in backlogCourses:
@@ -916,7 +916,7 @@ def gen_course_list(request):
             course_id = request.POST['course']
             course = Courses.objects.get(id = course_id)
             #obj = course_registration.objects.all().filter(course_id = course)
-            obj=course_registration.objects.filter(course_id__id=course_id, student_id__batch=batch).select_related(
+            obj=course_registration.objects.filter(course_id__id=course_id, working_year=batch).select_related(
             'student_id__id__user','student_id__id__department').only('student_id__batch', 
             'student_id__id__user__first_name', 'student_id__id__user__last_name',
             'student_id__id__department__name','student_id__id__user__username')
@@ -924,13 +924,22 @@ def gen_course_list(request):
             batch=""
             course=""
             obj=""
-        students = []
-        for i in obj:
-            students.append({"rollno":i.student_id.id.user.username, 
-            "name":i.student_id.id.user.first_name+" "+i.student_id.id.user.last_name, 
-            "department":i.student_id.id.department.name})
+        verified_students = []
+        for registration in obj:
+            final_registration = FinalRegistration.objects.filter(
+                course_id=course,
+                semester_id=registration.semester_id,
+                student_id=registration.student_id,
+                verified=True
+            ).exists()
+            if final_registration:
+                verified_students.append({
+                    "rollno": registration.student_id.id.user.username,
+                    "name": registration.student_id.id.user.first_name + " " + registration.student_id.id.user.last_name,
+                    "department": registration.student_id.id.department.name
+                })
         html = render_to_string('academic_procedures/gen_course_list.html',
-                                {'students': students, 'batch':batch, 'course':course_id}, request)
+                                {'students': verified_students, 'batch':batch, 'course':course_id}, request)
         maindict = {'html': html}
         obj = json.dumps(maindict)
         return HttpResponse(obj, content_type='application/json')    
@@ -2584,7 +2593,7 @@ def verify_registration(request):
             sem_no = student.curr_semester_no+1
         sem_id = Semester.objects.get(curriculum = curr_id, semester_no = sem_no)
         with transaction.atomic():
-            academicadmin = get_object_or_404(User, username = "acadadmin")
+            academicadmin = get_object_or_404(User, username = request.user.username)
             FinalRegistration.objects.filter(student_id = student_id, verified = False, semester_id = sem_id).delete()
             StudentRegistrationChecks.objects.filter(student_id = student_id, semester_id = sem_id).update(final_registration_flag = False)
             FeePayments.objects.filter(student_id = student_id, semester_id = sem_id).delete()
@@ -2632,7 +2641,7 @@ def auto_verify_registration(request):
             sem_no = student_id.curr_semester_no+1
         sem_id = Semester.objects.get(curriculum = curr_id, semester_no = sem_no)
         with transaction.atomic():
-            academicadmin = get_object_or_404(User, username = "acadadmin")
+            academicadmin = get_object_or_404(User, username = request.user.username)
             # FinalRegistration.objects.filter(student_id = student_id, verified = False, semester_id = sem_id).delete()
             StudentRegistrationChecks.objects.filter(student_id = student_id, semester_id = sem_id).update(final_registration_flag = False)
             FeePayments.objects.filter(student_id = student_id, semester_id = sem_id).delete()
@@ -3775,8 +3784,8 @@ def add_course_to_slot(request):
         course_code = data.get('course_name')
         # print('-----------------------------------------------------------------------------------------' , course_slot_name , course_code)
         try:
-            course_slot = CourseSlot.objects.get(name=course_slot_name)
-            course = Courses.objects.get(code=course_code)
+            course_slot = CourseSlot.objects.filter(name=course_slot_name).first()
+            course = Courses.objects.filter(code=course_code).first()
             course_slot.courses.add(course)
             
             return JsonResponse({'message': f'Course {course_code} added to slot {course_slot_name} successfully.'}, status=200)
@@ -3795,8 +3804,8 @@ def remove_course_from_slot(request):
         course_code = data.get('course_name')
         # print('-----------------------------------------------------------------------------------------' , course_slot_name , course_code)
         try:
-            course_slot = CourseSlot.objects.get(name=course_slot_name)
-            course = Courses.objects.get(code=course_code)
+            course_slot = CourseSlot.objects.filter(name=course_slot_name).first()
+            course = Courses.objects.filter(code=course_code).first()
             course_slot.courses.remove(course)
             return JsonResponse({'message': f'Course {course_code} removed from slot {course_slot_name} successfully.'}, status=200)
         except CourseSlot.DoesNotExist:
