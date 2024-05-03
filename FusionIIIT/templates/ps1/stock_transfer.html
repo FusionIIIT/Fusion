@@ -31,10 +31,10 @@
             <table class="ui very basic celled sortable table" style="overflow-x: scroll;max-height: 500px;  overflow-y: scroll;">
                 <thead>
                 <tr>
-                        <th>Stock Item ID</th>
+                    <th>Nomenclature</th>
                         <th>Item Name</th>
-                        <th>Nomenclature</th>
                         <th>Item Type</th>
+                        <th>Item SubType</th>
                         <th>Current Location</th>
                         <th>Current Department/Section</th>
                         <th>Vendor</th>
@@ -46,13 +46,13 @@
                     <tr>
 
                         <!-- StockEntryId__item_id__item_type -->
-                        <td > {{item.id}}</td>
-                        <td> {{item.StockEntryId.item_id.item_name}} </td>
                         <td> {{item.nomenclature}} </td>
+                        <td> {{item.StockEntryId.item_id.item_name}} </td>
                     
                         <td>{{item.StockEntryId.item_id.item_type}}</td>
+                        <td>{{item.StockEntryId.item_id.item_subtype}}</td>
                         <td>{{item.StockEntryId.location}}</td>
-                        <td>{{item.department}}</td>
+                        <td>{{item.department.name}}</td>
                         <td>{{item.StockEntryId.vendor}}</td>
                         
 
@@ -121,8 +121,11 @@
                     'csrfmiddlewaretoken': '{{csrf_token}}'
                 },
                 success: function (response) {
-                    // Handle success response
-                    console.log("success in sending stock items information");
+                    if (response.success) {
+                            window.location.href = '../view_transfer'; 
+                    } else {
+                            console.log("Request was successful, but response indicates failure.");
+                    }
                 },
                 error: function (xhr, errmsg, err) {
                     // Handle error response
