@@ -61,10 +61,10 @@ def exam(request):
         des - Gets the designation about the looged in user.
     # """
     user_details = ExtraInfo.objects.get(user=request.user)
-    des = HoldsDesignation.objects.all().filter(user=request.user).first()
+    des = HoldsDesignation.objects.all().filter(user=request.user).first() 
     if str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor":
         return HttpResponseRedirect('/examination/updateGrades/')
-    elif str(request.user) == "acadadmin":
+    elif request.session.get("currentDesignationSelected") == "acadadmin":
         return HttpResponseRedirect('/examination/updateGrades/')
 
     return HttpResponseRedirect('/dashboard/')
