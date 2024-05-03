@@ -68,7 +68,8 @@ urlpatterns = [
     url(r'^outboxview/$', views.outboxview, name='outboxview'),
 
 
-    url(r'^update_stock_item_inUse/$', views.updateStockItemInUse, name='outboxview'),
+    url(r'^update_stock_item_inUse/$', views.updateStockItemInUse, name='stockItemInUse'),
+    url(r'^item_detail/(?P<id>\d+)/$', views.item_detail, name='item_detail'),
 
     # BASE API 
     url(r'^api/',include('applications.ps1.api.urls')),
