@@ -14,7 +14,8 @@ urlpatterns = [
 
     # url(r'^meeting',views.meeting_api,name='meeting-get-api'),
 
-    # url(r'^calendar',views.calendar_api,name='calendar-get-api'),
+    url(r'^calendar',views.ListCalendarView.as_view(),name='calendar-get-api'),
+    url(r'^update-calendar',views.update_calendar,name='calendar-update-api'),
 
     # url(r'^holiday',views.holiday_api,name='holiday-get-api'),
 

@@ -30,7 +30,7 @@ from applications.programme_curriculum.models import (CourseSlot, Course as Cour
 
 from applications.academic_procedures.views import acad_proced_global_context , get_sem_courses
 from applications.programme_curriculum.models import Batch
-
+from django.db.models import Q
 
 
 @login_required
@@ -845,6 +845,8 @@ def generatexlsheet(request):
     # print(request.POST)
     try:
         batch = request.POST['batch']#batch hai year wala (2020 , 21)
+        if batch == "":
+            batch = datetime.datetime.now().year
         course_id = int(request.POST['course']) # id of course in integer
         course = course = Courses.objects.get(id=course_id)
         
@@ -858,17 +860,26 @@ def generatexlsheet(request):
         obj=""
 
     registered_courses = []
-    for i in obj:
-        if i.student_id.batch_id.year == int(batch):
-            registered_courses.append(i)
+    registered_courses = course_registration.objects.filter(
+        Q(working_year=int(batch)) &
+        Q(course_id=course) &
+        Q(student_id__finalregistration__verified=True)
+    )
+
+    # for i in obj:
+    #     if i.student_id.batch_id.year == int(batch):
+    #         registered_courses.append(i)
     ans = []
+    student_ids = set()
     for i in registered_courses:
-        k = []
-        k.append(i.student_id.id.id)
-        k.append(i.student_id.id.user.first_name)
-        k.append(i.student_id.id.user.last_name)
-        k.append(i.student_id.id.department)
-        ans.append(k)
+        if i.student_id.id.id not in student_ids:
+            student_ids.add(i.student_id.id.id )
+            k = []
+            k.append(i.student_id.id.id)
+            k.append(i.student_id.id.user.first_name)
+            k.append(i.student_id.id.user.last_name)
+            k.append(i.student_id.id.department)
+            ans.append(k)
     ans.sort()
     output = BytesIO()
 

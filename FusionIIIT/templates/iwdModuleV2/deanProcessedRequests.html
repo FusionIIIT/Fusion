@@ -46,7 +46,6 @@
                     <div class="content">
                         <table class="ui orange table">
                             <thead>
-                                <th>Details:-</th>
                                 <tr>
                                     <th>Id</th>
                                     <th>Name</th>
@@ -65,32 +64,7 @@
                                     <td>{{f.2}}</td>
                                     <td>{{f.4}}</td>
                                     <td>
-                                        <div class="button-container">
-                                            <form method="POST" action="{% url 'iwdModuleV2:Director-Approval-Requests' %}">
-                                                {% csrf_token %}
-                                                <select name="designation">
-                                                    {% for queryset in holdsDesignations %}
-                                                        {% for hd in queryset %}
-                                                            <option value="{{ hd.user.username }}">{{ hd.designation }}({{ hd.user.username }})</option>
-                                                        {% endfor %}
-                                                    {% endfor %}
-                                                </select>
-                                                <input type="hidden" name="id" value="{{ f.0 }}">
-                                                <button type="submit" class="ui small primary button">Approve</button>
-                                            </form>
-                                            <form method="POST" action="{% url 'iwdModuleV2:Director-Rejection-Requests' %}">
-                                                {% csrf_token %}
-                                                <select name="designation">
-                                                    {% for queryset in holdsDesignations %}
-                                                        {% for hd in queryset %}
-                                                            <option value="{{ hd.user.username }}">{{ hd.designation }}({{ hd.user.username }})</option>
-                                                        {% endfor %}
-                                                    {% endfor %}
-                                                </select>
-                                                <input type="hidden" name="id" value="{{ f.0 }}">
-                                                <button type="submit" class="ui small primary button red-button">Reject</button>
-                                            </form>
-                                        </div>
+                                        <button onclick="window.location='/iwdModuleV2/view_file/{{ f.5 }}/Director-Approval-Requests'" style="margin-left:5px; height:5vh;" class="ui small grey equal-size-button button">View File</button>
                                     </td>
                                 </tr>
                             </tbody>

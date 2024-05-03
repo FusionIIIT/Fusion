@@ -12,6 +12,16 @@ Academic
 {% include 'dashboard/navbar.html' %}
 {% endblock %}
 
+<script>
+    $('.message .close')
+        .on('click', function() {
+            $(this)
+                .closest('.message')
+                .transition('fade')
+            ;
+        });
+</script>
+
 <div class="ui stackable doubling grid">
 
     {% comment %}The left-margin segment!{% endcomment %}
@@ -54,7 +64,6 @@ Academic
 
                     <table class="ui orange table">
                         <thead>
-                            <th>Details:-</th>
                             <tr>
                                 <th>Id</th>
                                 <th>Name</th>
