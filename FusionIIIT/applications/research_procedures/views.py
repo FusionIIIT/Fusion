@@ -1048,6 +1048,19 @@ def change_end_date(request,id):
         messages.success(request,"End date changed successfully")
     return redirect("/research_procedures/view_staff_details/"+str(staff_allocation_instance.project_id.project_id))
 
+def AjaxDropdown(request):
+
+    if request.method == 'POST':
+        value = request.POST.get('value')
+        users = User.objects.filter(username__startswith=value)
+        users = serializers.serialize('json', list(users))
+
+        context = {
+            'users': users
+        }
+        return HttpResponse(JsonResponse(context), content_type='application/json')
+
+
 def getDesignation(us):
     user_inst = User.objects.get(username= us)
 
