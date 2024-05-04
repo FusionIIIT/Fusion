@@ -153,11 +153,12 @@ def add_projects(request):
 
     if request.method== "POST":
         obj= request.POST
+
         projectname= obj.get('project_name')
         projecttype= obj.get('project_type')
         fo= obj.get('financial_outlay')
         pid= obj.get('project_investigator_id')
-        copid=obj.get('co_project_investigator_id')
+        copid=obj.get('co_project_investigator_id-1')
         sa= obj.get('sponsored_agency')
         startd= obj.get('start_date')
         subd= obj.get('finish_date')
@@ -165,6 +166,8 @@ def add_projects(request):
         years= obj.get('number_of_years')
         # project_description= obj.get('description')
         project_info_file= request.FILES.get('project_info_file')
+
+
 
         check = User.objects.filter(username=pid) 
 
@@ -191,8 +194,21 @@ def add_projects(request):
                     return render(request,"rs/projects.html")  
 
         
-        obj= projects.objects.all()
 
+        copi_list = []
+
+        for key, value in obj.items():
+            if key.startswith('co_project_investigator_id-' ):
+                if value not in copi_list:
+                    check= HoldsDesignation.objects.filter(user__username= value, designation__name= "Professor") #checking for copid to exist
+                    if not check.exists():
+                        check= HoldsDesignation.objects.filter(user__username=value , designation__name= "Assistant Professor")
+                        if not check.exists():
+                            messages.error(request,"Request not added, no such co project investigator exists ")
+                            return render(request,"rs/projects.html")
+                    copi_list.append(value)
+
+        obj= projects.objects.all()
 
         if len(obj)==0 :
             projectid=1
@@ -205,6 +221,13 @@ def add_projects(request):
                 messages.error(request,"Request not added, project name already exists")
                 return render(request,"rs/projects.html")
         
+
+        for copi in copi_list:
+            if copi == pid:
+                messages.error(request,"Request not added, project investigator and co project investigator cannot be same")
+                return render(request,"rs/projects.html")
+        
+
 
 
         
@@ -227,7 +250,11 @@ def add_projects(request):
             project_info_file=project_info_file
            
         )
-        project_investigator_designation = HoldsDesignation.objects.get(user=userpi_instance).designation
+        pi_designation= HoldsDesignation.objects.get(user=userpi_instance , designation__name="Professor")
+        if not pi_designation:
+            pi_designation= HoldsDesignation.objects.get(user=userpi_instance , designation__name="Assistant Professor")
+        project_investigator_designation= pi_designation.designation
+
 
         file_x= create_file(
             uploader=request.user.username,
@@ -241,6 +268,12 @@ def add_projects(request):
             attached_file= project_info_file, 
         )
         
+            
+        for copi in copi_list:
+            co_pis.objects.create(
+                co_pi= User.objects.get(username=copi),
+                project_id= projects.objects.get(project_id=projectid)
+            )
         research_procedures_notif(request.user, userpi_instance, "Project Added")
 
         tracking_obj = Tracking.objects.get(file_id__id=file_x)
@@ -529,9 +562,10 @@ def view_project_info(request,id):
     obj= projects.objects.get(project_id=id)
 
 
-
+    copis= co_pis.objects.filter(project_id__project_id=id)
     data = {
         "project": obj,
+        "copis": copis
     }
     
     return render(request,"rs/view_project_info.html", context= data)
