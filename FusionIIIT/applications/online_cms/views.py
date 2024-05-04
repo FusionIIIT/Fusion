@@ -401,7 +401,7 @@ def course(request, course_code, version):
             gradingscheme_grades = {}
 
         try:
-            student_grades = Student_grades.objects.select_related().filter(course_id=course)
+            student_grades = Student_grades.objects.select_related().filter(course_id=course).order_by('roll_no')
         except Student_grades.DoesNotExist:
             student_grades = {}
 
