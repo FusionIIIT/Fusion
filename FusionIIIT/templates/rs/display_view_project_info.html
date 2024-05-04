@@ -66,8 +66,14 @@
                                 <div class="description" >{{ project.project_investigator_id }}</div>
                             </div>
                             <div class="content" id="width-half" > 
-                                <div class="header " >CO-PROJECT INVESTIGATOR ID</div>
-                                <div class="description" >{{ project.co_project_investigator_id }}</div>
+                                <div class="header " >CO-PROJECT INVESTIGATORS</div>
+                                <div style="display: flex;">
+
+                                    {% for copi in copis %}                   
+                                    <div class="description" >{{ copi.co_pi.username }},&nbsp; </div>
+                                    {% endfor %}
+                                    
+                                </div>
                             </div>
                         </div>
                     </div>
