@@ -41,4 +41,20 @@ class Migration(migrations.Migration):
                 ('maker_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='globals.extrainfo')),
             ],
         ),
+         migrations.AlterField(
+            model_name='announcements',
+            name='ann_date',
+            field=models.DateTimeField(auto_now_add=True),
+        ),
+        migrations.CreateModel(
+            name='Information',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('phone_number', models.BigIntegerField()),
+                ('email', models.CharField(max_length=200)),
+                ('facilites', models.TextField()),
+                ('labs', models.TextField()),
+                ('department', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='globals.departmentinfo')),
+            ],
+        ),
     ]
