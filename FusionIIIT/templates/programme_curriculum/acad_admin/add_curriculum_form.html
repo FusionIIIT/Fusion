@@ -48,6 +48,13 @@
         {% endif %}
     </div>
     <div class="field">
+        {% if version_error %}
+        <div class="ui error message">
+            <p>{{version_error}}</p>
+        </div>
+        {% endif %}
+    </div> 
+    <div class="field">
         <label for="{{ form.name.id_for_label }}">Curriculum Name:</label>
         {{ form.name }}
     </div>

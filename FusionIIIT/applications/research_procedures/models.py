@@ -88,6 +88,15 @@ class staff_allocations(models.Model):
     class Meta:
         ordering = ['-staff_allocation_id']
 
+class co_pis(models.Model):
+    co_pi= models.ForeignKey(User, on_delete=models.CASCADE)
+    project_id= models.ForeignKey(projects, on_delete=models.CASCADE)
+
+    class Meta:
+        ordering = ['-project_id']
+
+    
+
 class requests(models.Model):
     request_id=models.IntegerField(primary_key=True)
     project_id= models.ForeignKey(projects, on_delete=models.CASCADE)

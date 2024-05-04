@@ -1,0 +1,98 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+    File Tracking
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <div class="ui stackable doubling grid">
+        <div class="column"></div>
+
+        <div class="three wide column">
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            <div class="ui divider"></div>
+            <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+                <a href="/otheracademic/assitantship/hod_approveform" class="item">Assistantship Approve (HOD)
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/otheracademic/assitantship/acad_approveform" class="active item">Assistantship Approve (Acad)
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/otheracademic/approveform" class="item">Assistanship Approve (TA)
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/otheracademic/assitantship/thesis_approveform" class="item">Assistanship Approve (Thesis)
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/otheracademic/assistantship_log/" class="item">Assistanship Log
+                    <i class="right floated chevron right icon"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="eight wide column">
+            <div class="ui active tab segment" data-tab="first">
+                <h2 class="ui header">Assistanship Approve (Acad Admin)</h2>
+                <table class="ui celled table">
+                    <thead>
+                        <tr>
+                            <th>Roll No.</th>
+                            <th>Student Name</th>
+                            <th>Discipline</th>
+                            <th>Date from</th>
+                            <th>Date to</th>
+                            <th>Bank A/C No.</th>
+                            <th>TA Supervisor</th>
+                            <th>Thesis Supervisor</th>
+                            <th>Actions(Acad)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in form_data %}
+                        <tr>
+                            <td>{{ entry.roll_no_id }}</td>
+                            <td>{{ entry.student_name }}</td>
+                            <td>{{ entry.discipline }}</td>
+                            <td>{{ entry.dateFrom }}</td>
+                            <td>{{ entry.dateTo }}</td>
+                            <td>{{ entry.bank_account }}</td>
+                            <td>{{ entry.ta_supervisor }}</td>
+                            <td>{{ entry.thesis_supervisor }}</td>
+                            <td>
+                                {% if entry.Acad_approved%} Approved
+                                {% elif entry.Acad_rejected%} Rejected
+                                {% else%}
+                                <div style="display: flex; flex-direction: column;">
+                                    <form action="{% url 'otheracademic:assistanship_acad_approve' ass_id=entry.id %}" method="post">
+                                        {% csrf_token %}
+                                        <button class="ui green button approve-button" style="margin-bottom: 10px; width: 100%;" type="submit">Approve</button>
+                                    </form>
+                                    <form action="{% url 'otheracademic:assistanship_acad_reject' ass_id=entry.id %}" method="post">
+                                        {% csrf_token %}
+                                        <button class="ui red button forward-button" style="width: 100%;" type="submit">Reject</button>
+                                    </form>
+                                </div>
+                                {% endif%}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="three wide column">
+            <!-- Right rail content -->
+        </div>
+
+        <div class="column"></div>
+    </div>
+
+{% endblock %}
