@@ -1,27 +1,4 @@
 {% extends 'programme_curriculum/acad_admin/common.html' %}
-
-{% block sidetabmenu %}
-    <div class="ui medium fluid vertical pointing menu"
-            style="max-width: 320px;">
-        
-        <a class="active item" href="{% url 'programme_curriculum:admin_view_all_programmes' %}"><B>Programmes & Curriculums</B>
-            <i class="right floated chevron right icon"></i>
-        </a>
-        <a class="item" href="{% url 'programme_curriculum:admin_view_all_working_curriculums' %}">Working Curriculums
-            <i class="right floated chevron right icon"></i>
-        </a>
-        <a class="item" href="{% url 'programme_curriculum:admin_view_all_discplines' %}">Discipline
-            <i class="right floated chevron right icon"></i>
-        </a>
-        <a class="item" href="{% url 'programme_curriculum:admin_view_all_batches' %}">Batch
-            <i class="right floated chevron right icon"></i>
-        </a>
-        <a class="item" href="{% url 'programme_curriculum:admin_view_all_courses' %}">Courses
-            <i class="right floated chevron right icon"></i>
-        </a>
-    </div>
-{% endblock %}
-
 {% block content %}
 
 

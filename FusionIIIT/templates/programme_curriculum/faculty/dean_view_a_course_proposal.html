@@ -1,4 +1,4 @@
-{% extends 'programme_curriculum/common.html' %}
+{% extends 'programme_curriculum/faculty/common.html' %}
 {% block sidetabmenu %}
     <div class="ui huge fluid vertical pointing menu"
         style="max-width: 320px;">
@@ -246,4 +246,7 @@
 {% block rightcontent %}
 <br>
 <br>
+{% block sidepanel%} 
+    {% include 'notifications/programme_curriculum.html' %} 
+    {% endblock %}
 {% endblock %}

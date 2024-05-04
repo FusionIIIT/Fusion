@@ -1,0 +1,55 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+    Alumni_List
+{% endblock %}
+
+{% block body %}
+    <link href="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.css" rel="stylesheet" type="text/css" />
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %} 
+	
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="complaint">
+
+        
+                Alumni List 
+             <a class="active item" href="{% url 'dep:dep' %}"><button style="border: none; float: right; display: block;" class="ui inverted right floated small blue button">
+                            Back
+                        </button></a>
+    
+
+        </a>
+    </div>
+
+    {% comment %} <div class="ui active tab" data-tab="complaint"> {% endcomment %}
+        <div class="ui vertical segment">
+           
+          <table class="ui very basic collapsing celled sortable table"
+       style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+            <thead>
+                <th>Roll</th>
+                <th>Department</th>
+                <th>Programme</th>
+			    <th>Batch</th>
+                <th>Cpi</th>
+			    <th>Category</th>
+                <th>First Name</th>
+			    <th>Last Name</th>
+                <th>Hall No.</th>
+			    <th>Room No.</th>
+                <th>Specialization</th>
+            </thead>
+
+            <div class="ui divider"></div>
+        {% comment %} </div> {% endcomment %}
+    </div>
+
+
+{% comment %} {% endblock %} {% endcomment %}
+
+{% include 'department/alert.html' %}
+{% endblock %}
