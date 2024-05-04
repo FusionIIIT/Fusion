@@ -1,9 +1,11 @@
 from rest_framework.viewsets import ModelViewSet
 from applications.research_procedures.models import *
 from .serializers import *
+from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticatedOrReadOnly 
 from django.shortcuts import redirect, render, get_object_or_404
 from rest_framework.response import Response
+from django.http import JsonResponse
 from django.contrib import messages
 from applications.research_procedures.models import *
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
@@ -137,219 +139,256 @@ from applications.filetracking.sdk.methods import *
 #     messages.success(request,"Successfully created consultancy project")
 #     return redirect(reverse("research_procedures:patent_registration"))
 
-# def add_projects(request):
-#     if request.method== "POST":
-#         obj= request.POST
-#         projectname= obj.get('project_name')
-#         projecttype= obj.get('project_type')
-#         fo= obj.get('financial_outlay')
-#         pid= obj.get('project_investigator_id')
-#         copid=obj.get('co_project_investigator_id')
-#         sa= obj.get('sponsored_agency')
-#         startd= obj.get('start_date')
-#         subd= obj.get('finish_date')
-#         finishd= obj.get('finish_date')
-#         years= obj.get('number_of_years')
-#         # project_description= obj.get('description')
-#         project_info_file= request.FILES.get('project_info_file')
+def add_projects(request):
+    if request.method== "POST":
+        obj= request.POST
+        projectname= obj.get('project_name')
+        projecttype= obj.get('project_type')
+        fo= obj.get('financial_outlay')
+        pid= obj.get('project_investigator_id')
+        copid=obj.get('co_project_investigator_id')
+        sa= obj.get('sponsored_agency')
+        startd= obj.get('start_date')
+        subd= obj.get('finish_date')
+        finishd= obj.get('finish_date')
+        years= obj.get('number_of_years')
+        # project_description= obj.get('description')
+        project_info_file= request.FILES.get('project_info_file')
 
-#         check = User.objects.filter(username=pid) 
-#         # print(check[0].username)
+        check = User.objects.filter(username=pid) 
+        # print(check[0].username)
 
        
         
-#         check= HoldsDesignation.objects.filter(user__username=pid , designation__name= "Professor")
-#         if not check.exists():
-#                 check= HoldsDesignation.objects.filter(user__username=pid , designation__name= "Assistant Professor")
+        check= HoldsDesignation.objects.filter(user__username=pid , designation__name= "Professor")
+        if not check.exists():
+                check= HoldsDesignation.objects.filter(user__username=pid , designation__name= "Assistant Professor")
 
-#                 if not check.exists():
-#                     messages.error(request,"Request not added, no such project investigator exists 2")
-#                     return render(request,"rs/projects.html")  
-
-        
-#         check= HoldsDesignation.objects.filter(user__username=copid , designation__name= "Professor")
-#         if not check.exists():
-#                 check= HoldsDesignation.objects.filter(user__username=copid , designation__name= "Assistant Professor")
-
-#                 if not check.exists():
-#                     messages.error(request,"Request not added, no such project investigator exists 2")
-#                     return render(request,"rs/projects.html")  
+                if not check.exists():
+                    messages.error(request,"Request not added, no such project investigator exists 2")
+                    return render(request,"rs/projects.html")  
 
         
-#         obj= projects.objects.all()
-#         if len(obj)==0 :
-#             projectid=1
+        check= HoldsDesignation.objects.filter(user__username=copid , designation__name= "Professor")
+        if not check.exists():
+                check= HoldsDesignation.objects.filter(user__username=copid , designation__name= "Assistant Professor")
+
+                if not check.exists():
+                    messages.error(request,"Request not added, no such project investigator exists 2")
+                    return render(request,"rs/projects.html")  
+
         
-#         else :
-#             projectid= obj[0].project_id+1
+        obj= projects.objects.all()
+        if len(obj)==0 :
+            projectid=1
+        
+        else :
+            projectid= obj[0].project_id+1
 
-#         userpi_instance = User.objects.get(username=pid)
-#         usercpi_instance = User.objects.get(username=copid)
+        userpi_instance = User.objects.get(username=pid)
+        usercpi_instance = User.objects.get(username=copid)
 
-#         projects.objects.create(
-#             project_id=projectid,
-#             project_name=projectname,
-#             project_type=projecttype, 
-#             status=0,
-#             project_investigator_id=userpi_instance,
-#             co_project_investigator_id=usercpi_instance,
-#             sponsored_agency=sa,
-#             start_date=startd,
-#             submission_date=finishd,
-#             finish_date=finishd,
-#             years=years,
-#             project_info_file=project_info_file
+        projects.objects.create(
+            project_id=projectid,
+            project_name=projectname,
+            project_type=projecttype, 
+            status=0,
+            project_investigator_id=userpi_instance,
+            co_project_investigator_id=usercpi_instance,
+            sponsored_agency=sa,
+            start_date=startd,
+            submission_date=finishd,
+            finish_date=finishd,
+            years=years,
+            project_info_file=project_info_file
            
-#         )
-#         project_investigator_designation = HoldsDesignation.objects.get(user=userpi_instance).designation
+        )
+        project_investigator_designation = HoldsDesignation.objects.get(user=userpi_instance).designation
 
-#         file_x= create_file(
-#             uploader=request.user.username,
-#             uploader_designation="rspc_admin",
-#             receiver= pid,
-#             receiver_designation=project_investigator_designation, 
-#             src_module="research_procedures",
-#             src_object_id= projectid,
-#             file_extra_JSON= { "message": "Project added successfully"},
-#             attached_file= project_info_file, 
-#         )
+        file_x= create_file(
+            uploader=request.user.username,
+            uploader_designation="rspc_admin",
+            receiver= pid,
+            receiver_designation=project_investigator_designation, 
+            src_module="research_procedures",
+            src_object_id= projectid,
+            file_extra_JSON= { "message": "Project added successfully"},
+            attached_file= project_info_file, 
+        )
 
-#         messages.success(request,"Project added successfully")
-#         categories = category.objects.all()
+        messages.success(request,"Project added successfully")
+        categories = category.objects.all()
 
-#         data = {
-#             "pid": pid,
-#             "years": list(range(1, int(years) + 1)),    
-#             "categories": categories,
-#         }
+        data = {
+            "pid": pid,
+            "years": list(range(1, int(years) + 1)),    
+            "categories": categories,
+        }
        
-#         return redirect("/research_procedures/financial_outlay/"+str(projectid))
-#     return render(request,"rs/projects.html")
+        return redirect("/research_procedures/financial_outlay/"+str(projectid))
+    return render(request,"rs/projects.html")
 
-# def add_fund_requests(request,pj_id):
-#     data= {
-#         "pj_id": pj_id
-#     }
-#     return render(request,"rs/add_fund_requests.html",context=data)
+def add_fund_requests(request,pj_id):
+    data= {
+        "pj_id": pj_id
+    }
+    return render(request,"rs/add_fund_requests.html",context=data)
 
-# def add_staff_requests(request,pj_id):
-#     data= {
-#         "pj_id": pj_id  
-#     }
-#     return render(request,"rs/add_staff_requests.html",context=data)
+def add_staff_requests(request,pj_id):
+    data= {
+        "pj_id": pj_id  
+    }
+    return render(request,"rs/add_staff_requests.html",context=data)
 
-# def add_requests(request,id,pj_id):
-#     if request.method == 'POST':
-#         obj=request.POST
+def add_projects(request):
 
+    # designation = getDesignation(request.user.username)
+    # print("designation is " + designation)
+    # if designation != 'rspc_admin':
+    #     messages.error(request, 'Only RSPC Admin can add projects')
+    #     return redirect("/research_procedures")
 
-#         if(id=='0') :  
-#             projectid = pj_id
-#             reqtype = obj.get('request_type')
-#             stats =0
-#             desc= obj.get('description')    
-#             amt= obj.get('amount')
+    if request.method== "POST":
+        obj= request.POST
+        projectname= obj.get('project_name')
+        projecttype= obj.get('project_type')
+        fo= obj.get('financial_outlay')
+        pid= obj.get('project_investigator_id')
+        copid=obj.get('co_project_investigator_id')
+        sa= obj.get('sponsored_agency')
+        startd= obj.get('start_date')
+        subd= obj.get('finish_date')
+        finishd= obj.get('finish_date')
+        years= obj.get('number_of_years')
+        # project_description= obj.get('description')
+        project_info_file= request.FILES.get('project_info_file')
 
-#             check= projects.objects.filter(project_id=projectid)
-#             if not check.exists():
-#                 messages.error(request,"Request not added, no such project exists")
-#                 return render(request,"rs/add_fund_requests.html")
+        check = User.objects.filter(username=pid) 
 
-#             check= projects.objects.filter(project_id= projectid, project_investigator_id__username=pi_id)
-#             if not check.exists():
-#                 messages.error(request,"Request not added, no such project investigator exists")
-#                 return render(request,"rs/add_fund_requests.html")
-
-
-#             pi_id_instance=User.objects.get(username= request.user.username )
-#             project_instance=projects.objects.get(project_id=projectid)
-
-#             obj= requests.objects.all()
-#             if len(obj)==0 :
-#                 requestid=1
-            
-#             else :
-#                 requestid= obj[0].request_id+1
-
-#             requests.objects.create(
-#                 request_id=requestid,
-#                 project_id=project_instance,
-#                 request_type="funds",
-#                 project_investigator_id=pi_id_instance,
-#                 status=stats, description=desc, amount= amt
-#             )
-#             rspc_inventory.objects.create(
-#                 inventory_id=requestid,
-#                 project_id=project_instance,
-#                 project_investigator_id=pi_id_instance,
-#                 status=stats,
-#                 description=desc, amount= amt
-#             )
-#             messages.success(request,"Request added successfully")
-#             return render(request,"rs/add_fund_requests.html")
-
-#         if(id=='1'):
-#             projectid = obj.get('project_id')
-#             pi_id = obj.get('project_investigator_id')
-#             stats = obj.get('status')
-#             desc= obj.get('description')
-
-#             obj= requests.objects.all()
-#             if len(obj)==0 :
-#                 requestid=1
-            
-#             else :
-#                 requestid= obj[0].request_id+1
+        # print(check[0].username)
 
 
-#             check= projects.objects.filter(project_id=projectid)
-#             if not check.exists():
-#                 messages.error(request,"Request not added, no such project exists")
-#                 return render(request,"rs/add_fund_requests.html")
+       
+        
+        check= get_obj_by_username_and_designation(pid, "Professor") #checking for pid to exist
 
-#             check= projects.objects.filter(project_id= projectid, project_investigator_id__username=pi_id)
-#             if not check.exists():
-#                 messages.error(request,"Request not added, no such project investigator exists")
-#                 return render(request,"rs/add_fund_requests.html")
+        if not check.exists():
+                check= HoldsDesignation.objects.filter(user__username=pid , designation__name= "Assistant Professor")
 
-#             pi_id_instance=User.objects.get(username=pi_id)
-#             project_instance=projects.objects.get(project_id=projectid)
+                if not check.exists():
+                    messages.error(request,"Request not added, no such project investigator exists ")
+                    return render(request,"rs/projects.html")  
 
-#             requests.objects.create(
-#                     request_id=requestid,
-#                     project_id=project_instance,
-#                     request_type="staff",
-#                     project_investigator_id=pi_id_instance,
-#                     description=desc
-#                 )
-#         messages.success(request,"Request added successfully")
-#         return redirect("/research_procedures")
-#     return render(request, "rs/add_requests.html")    
+        
+        
+        check= get_obj_by_username_and_designation(copid, "Professor") #checking for copid to exist
+
+        if not check.exists():
+                check= HoldsDesignation.objects.filter(user__username=copid , designation__name= "Assistant Professor")
+
+                if not check.exists():
+                    messages.error(request,"Request not added, no such co project investigator exists ")
+                    return render(request,"rs/projects.html")  
+
+        
+        obj= projects.objects.all()
 
 
+        if len(obj)==0 :
+            projectid=1
+        
+        else :
+            projectid= obj[0].project_id+1
 
+        for project in obj:
+            if project.project_name==projectname:
+                messages.error(request,"Request not added, project name already exists")
+                return render(request,"rs/projects.html")
+        
+
+
+        
+
+        userpi_instance = User.objects.get(username=pid)
+        usercpi_instance = User.objects.get(username=copid)
+
+        projects.objects.create(
+            project_id=projectid,
+            project_name=projectname,
+            project_type=projecttype, 
+            status=0,
+            project_investigator_id=userpi_instance,
+            co_project_investigator_id=usercpi_instance,
+            sponsored_agency=sa,
+            start_date=startd,
+            submission_date=finishd,
+            finish_date=finishd,
+            years=years,
+            project_info_file=project_info_file
+           
+        )
+        project_investigator_designation = HoldsDesignation.objects.get(user=userpi_instance).designation
+
+        file_x= create_file(
+            uploader=request.user.username,
+            uploader_designation="rspc_admin",
+            receiver= pid,
+            receiver_designation=project_investigator_designation, 
+            src_module="research_procedures",
+            src_object_id= projectid,
+            file_extra_JSON= { "message": "Project added successfully"},
+            attached_file= project_info_file, 
+        )
+
+        messages.success(request,"Project added successfully")
+        categories = category.objects.all()
+
+        data = {
+            "pid": pid,
+            "years": list(range(1, int(years) + 1)),    
+            "categories": categories,
+        }
+       
+        return redirect("/research_procedures/financial_outlay/"+str(projectid))
+    return render(request,"rs/projects.html")
+@api_view(['GET'])
 def view_projects(request):
     queryset= projects.objects.all()
-
+    print('---------------------------------------------------------------')
     rspc_admin = HoldsDesignation.objects.get(designation__name="rspc_admin")
     rspc_admin =rspc_admin.user.username
+    data = Project_serializer(queryset, many=True).data
     if request.user.username == rspc_admin:
         data= {
-        "projects": queryset,
+        "projects": data,
         "username": request.user.username,
         }
-        return render(request,"rs/view_projects_rspc.html", context= data)
+        return JsonResponse(data,safe=False)
 
     queryset= projects.objects.filter(project_investigator_id__username= request.user.username)
-   
+    data2 = Project_serializer(queryset, many=True).data
     data= {
-        "projects": queryset,
+        "projects": data2,
         "username": request.user.username,
     }
     # print(data)
     # print(request.user.username)
     
-    return Response(data, status=status.HTTP_200_OK)
+    return JsonResponse(data,safe=False)
+def view_project_info(request,id):
+    id= int(id)
+    obj= projects.objects.filter(project_id=id)
+    data = Project_serializer(obj, many=True).data
+
+
+    # data = {
+    #     "project": obj,
+    # }
+    data = {
+        "project": data,
+    }
+    
+    return JsonResponse(data , safe=False)
 
 # def view_requests(request,id):
         
@@ -382,28 +421,29 @@ def view_projects(request):
     
 #     return render(request,"rs/view_requests.html", context= data)
 
-# def view_financial_outlay(request,pid):
+def view_financial_outlay(request,pid):
 
-#     table_data=financial_outlay.objects.filter(project_id=pid).order_by('category', 'sub_category')
-#     project= projects.objects.get(project_id=pid);
+    table_data=financial_outlay.objects.filter(project_id=pid).order_by('category', 'sub_category')
+    project= projects.objects.get(project_id=pid)
 
-#     years = set(table_data.values_list('year', flat=True))
+    years = set(table_data.values_list('year', flat=True))
+    
+    category_data = {}
+    for category in table_data.values_list('category', flat=True).distinct():
+        category_data[category] = financial_outlay_serializer(table_data.filter(category=category) , many=True).data
+    # category_data =  category_serializer(category_data , many=True).data
+    
 
-#     category_data = {}
-#     for category in table_data.values_list('category', flat=True).distinct():
-#         category_data[category] = table_data.filter(category=category)
+    data = {
+        'table_title': 'Total Budget Outlay',
+        'table_caption': '...',  # Add caption if needed
+        'project_name':project.project_name,
+        'years': list(years),
+        'category_data': category_data,
+    }
 
-
-#     data = {
-#         'table_title': 'Total Budget Outlay',
-#         'table_caption': '...',  # Add caption if needed
-#         'project_name':project.project_name,
-#         'years': list(years),
-#         'category_data': category_data,
-#     }
-
-#     # print(data)
-#     return render(request,"rs/view_financial_outlay.html", context= data)
+    # print(data)
+    return JsonResponse(data , safe=False)
 
 # def submit_closure_report(request,id):
 #     id= int(id)
@@ -421,32 +461,33 @@ def view_projects(request):
 #     }
 #     messages.success(request,"Closure report submitted successfully")
 #     return render(request,"rs/view_projects_rspc.html",context=data)
-
-# def view_project_inventory(request,pj_id):
-#     pj_id=int(pj_id)
-#     queryset= requests.objects.filter(project_id=pj_id,request_type="funds")
-
-
-#     # print(queryset)
+@api_view(['GET'])
+def view_project_inventory(request,pj_id):
+    pj_id=int(pj_id)
+    queryset= (requests.objects.filter(project_id=pj_id,request_type="funds"))
+    queryset = requests_serializer(queryset , many=True).data
     
-#     data= {
-#         "requests": queryset,
-#         "username": request.user.username
-#     }
-#     return render(request,"rs/view_project_inventory.html",context=data)
-
-# def view_project_staff(request,pj_id):
-#     pj_id=int(pj_id)
-#     queryset= requests.objects.filter(project_id=pj_id,request_type="staff")
-
-
-#     # print(queryset)
+    # print(queryset)
     
-#     data= {
-#         "requests": queryset,
-#         "username": request.user.username
-#     }
-#     return render(request,"rs/view_project_staff.html",context=data)
+    data= {
+        "requests": queryset,
+        "username": request.user.username
+    }
+    return JsonResponse(data , safe=True)
+
+def view_project_staff(request,pj_id):
+    pj_id=int(pj_id)
+    queryset= requests.objects.filter(project_id=pj_id,request_type="staff")
+    queryset = requests_serializer(queryset , many = True).data
+
+
+    # print(queryset)
+    
+    data= {
+        "requests": queryset,
+        "username": request.user.username
+    }
+    return JsonResponse(data , safe = True)
 
 # def projectss(request):
 #     return render(request,"rs/projects.html")
@@ -548,36 +589,33 @@ def view_projects(request):
 
 #     return render(request, "rs/add_staff_details.html", context=data)
 
+@api_view(['GET'])
+def view_staff_details(request, pid):
+    staff_records = staff_allocations.objects.filter(project_id=pid)
+    data_by_year = {}
+    project = projects.objects.get(project_id=pid)
+    # project = Project_serializer(project , many=True).data
 
-# def view_staff_details(request,pid):
+    for record in staff_records:
+        year = record.year
+        if year not in data_by_year:
+            data_by_year[year] = []
+        data_by_year[year].append({
+            'staff_id': int(record.staff_id.id),
+            'staff_name': record.staff_name,
+            'qualification': record.qualification,
+            'stipend': record.stipend
+        })
 
-#     staff_records = staff_allocations.objects.filter(project_id=pid)
-    
-#     # Initialize a dictionary to hold data year-wise
-#     data_by_year = {}
-#     project = projects.objects.get(project_id=pid)
+    context = {
+        'data_by_year': data_by_year,
+        'project_name': project.project_name
+        # Add other necessary fields from project here
+    }
 
-#     # Iterate through each staff record
-#     for record in staff_records:
-#         year = record.year
-#         if year not in data_by_year:
-#             data_by_year[year] = []
-#         data_by_year[year].append({
-#             'staff_id' : record.staff_id,
-#             'staff_name': record.staff_name,
-#             'qualification': record.qualification,
-#             'stipend': record.stipend
-#         })
-# # Pass the organized data to the template
-#     context = {
-#         'data_by_year': data_by_year,
-#         'project_name':project.project_name
-#     }
-#     rspc_admin = HoldsDesignation.objects.get(designation__name="rspc_admin")
-    
+    rspc_admin = HoldsDesignation.objects.get(designation__name="rspc_admin")
 
-#     return render(request, "rs/view_staff_details.html", context)
-
+    return JsonResponse(context, safe=True)
 
 
 # def add_financial_outlay(request,pid):
