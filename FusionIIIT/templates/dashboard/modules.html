@@ -7,19 +7,13 @@
         <div class="ui fluid card" style="padding-top: 12px; padding-bottom: 24px; max-width: 18vw;">
             <a class="ui top attached black label">
                 <span class="ui inverted header">Modules</span>
-                <i class="setting icon right floated"></i>
                 <i class="chevron up icon right floated" id="toggleIcon" onclick="toggleContent()"></i>
             </a>
 
             <div class="content modulesContent">
                 <div style="display: flex; flex-wrap: wrap;">
-                    {% comment %}A single modules row starts here!{% endcomment %}
-
-                    {% comment %}A single modules row ends here!{% endcomment %}
-
-                    {% comment %}A single modules row starts here!{% endcomment %}
-                 
-                        {% if request.user.extrainfo.user_type != "staff" or "Acadadmin" == global_var %}
+                        
+                        {% if request.user.extrainfo.user_type != "staff" or "acadadmin" == global_var %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
@@ -36,7 +30,8 @@
                             </a>
                         </div>
                         {% endif %}
-                        {% if request.user.extrainfo.user_type == "student" or "Professor" == global_var or "Dean Academics" == global_var or "Acadadmin" == global_var or "Assistant Professor" == global_var or "Hod" == global_var %}
+                        
+                        {% if request.user.extrainfo.user_type == "student" or "Professor" == global_var or "Dean Academic" == global_var or "acadadmin" == global_var or "Assistant Professor" == global_var or "HOD (CSE)" == global_var  or "HOD (ECE)" == global_var  or "HOD (ME)" == global_var  or "HOD (NS)" == global_var  or "HOD (Design)" == global_var  or "HOD (Liberal Arts)" == global_var %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
@@ -53,13 +48,8 @@
                             </a>
                         </div>
                         {% endif %}
-                    
-
-                    {% comment %}A single modules row ends here!{% endcomment %}
-
-                    {% comment %}A single modules row starts here!{% endcomment %}
                   
-                        {% if request.user.extrainfo.user_type == "student" or "mess_caretaker" == global_var  or "mess_warden" == global_var  %}
+                        {% if request.user.extrainfo.user_type == "student" or "mess_manager" == global_var  or "mess_warden" == global_var  %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
@@ -70,12 +60,14 @@
                                     </div>
 
                                     <div class="row">
-                                        <span class="ui sub header centered">Central Mess</span>
+                                        <span class="ui sub header centered">Mess Management</span>
                                     </div>
                                 </div>
                             </a>
                         </div>
                         {% endif %}
+
+
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
@@ -92,10 +84,7 @@
                             </a>
                         </div>
                   
-                    {% comment %}A single modules row ends here!{% endcomment %}
-
-                    {% comment %}A single modules row starts here!{% endcomment %}
-                        {% if request.user.extrainfo.user_type == "student" or request.user.extrainfo.user_type == "faculty" or request.user.extrainfo.user_type == "staff" or "Compounder" %}
+                  
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
@@ -111,8 +100,8 @@
                                 </div>
                             </a>
                         </div>
-                        {% endif %}
-                        {% if request.user.extrainfo.user_type != "student"  %}
+
+                        {% if request.user.extrainfo.user_type != "student" %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
@@ -130,11 +119,8 @@
                         </div>
                         {% endif %}
                 
-                    {% comment %}A single modules row ends here!{% endcomment %}
 
-                    {% comment %}A single modules row starts here!{% endcomment %}
-               
-                        {% if request.user.extrainfo.user_type == "student" or "SpacsConveyner" == global_var  or "Spacs Assistant" == global_var  %}
+                        {% if request.user.extrainfo.user_type == "student" or "spacsconvenor" == global_var  or "spacsassistant" == global_var  %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
@@ -151,6 +137,8 @@
                             </a>
                         </div>
                         {% endif %}
+
+
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
@@ -167,10 +155,8 @@
                             </a>
                         </div>
                    
-                    {% comment %}A single modules row ends here!{% endcomment %}
-
                   
-                        {% if request.user.extrainfo.user_type != "staff" or "administrator" == global_var  %}
+                        {% if request.user.extrainfo.user_type != "staff" or "placement officer" == global_var or "placement chairman" == global_var  %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
@@ -187,10 +173,12 @@
                             </a>
                         </div>
                         {% endif %}
-                        <div style="width: calc(50% - 10px);
+
+
+                        <!-- <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
-                            <a class="ui large label disabled "  style="height: 120px; width:100%" href="{% url 'estate_module_home' %}">
+                            <a class="ui large label  "  style="height: 120px; width:100%" href="{% url 'estate_module_home' %}">
                                 <div class="ui centered grid">
                                     <div class="row">
                                         <i class="ui line industry icon big"></i>
@@ -201,12 +189,10 @@
                                     </div>
                                 </div>
                             </a>
-                        </div>
+                        </div> -->
                    
-                    {% comment %}A single modules row ends here!{% endcomment %}
-
-                    
-                        {% if request.user.extrainfo.user_type != "staff"   %}
+                  
+ 
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
@@ -222,8 +208,9 @@
                                 </div>
                             </a>
                         </div>
-                        {% endif %}
-                        {% if request.user.extrainfo.user_type == "faculty" or "rspc_admin" == global_var  or "HOD (CSE)" == global_var  or "HOD (ECE)" == global_var  or "HOD (ME)" == global_var  or "HOD (NS)" == global_var  or "HOD (Design)" == global_var  or "HOD (Liberal Arts)" == global_var  or "dean_rspc" == global_var  or "director" == global_var  %}
+
+
+                        {% if request.user.extrainfo.user_type == "faculty" or "rspc_admin" == global_var  or "HOD (CSE)" == global_var  or "HOD (ECE)" == global_var  or "HOD (ME)" == global_var  or "HOD (NS)" == global_var  or "HOD (Design)" == global_var  or "HOD (Liberal Arts)" == global_var  or "dean_rspc" == global_var  or "Director" == global_var  %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
@@ -240,13 +227,12 @@
                             </a>
                         </div>
                         {% endif %}
-                    {% comment %}A single modules row ends here!{% endcomment %}
-
+                   
                                      
-                        <div style="width: calc(50% - 10px);
+                        <!-- <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
-                            <a class="ui large label disabled"  style="height: 120px; width:100%" href="/counselling">
+                            <a class="ui large label"  style="height: 120px; width:100%" href="/counselling">
                                 <div class="ui centered grid">
                                     <div class="row">
                                         <i class="ui edit outline icon big"></i>
@@ -257,15 +243,16 @@
                                     </div>
                                 </div>
                             </a>
-                        </div>
-                        {% if request.user.extrainfo.user_type != "student"  %}
+                        </div> -->
+
+
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/leave">
+                            <a class="ui large label " style="height: 120px; width:100%" href="/leave">
                                 <div class="ui centered grid">
                                     <div class="row">
-                                        <i class="ui file icon big"></i>
+                                        <i class="plane icon big"></i>
                                     </div>
 
                                     <div class="row">
@@ -274,12 +261,10 @@
                                 </div>
                             </a>
                         </div>
-                         {% endif %}
                  
-                    {% comment %}A single modules row ends here!{% endcomment %}
 
                           
-                        {% if request.user.extrainfo.user_type != "student"  %}
+                        {% if request.user.extrainfo.user_type == "faculty"  or "Professor" == global_var  or "Associate Professor" == global_var  or "Director" == global_var  or "HOD (CSE)" == global_var  or "HOD (ECE)" == global_var  or "HOD (ME)" == global_var  or "HOD (NS)" == global_var  or "HOD (Design)" == global_var  or "HOD (Liberal Arts)" == global_var  or "Accounts Admin" == global_var  or "Registrar" == global_var  or "Deputy Registrar" == global_var  or "asst. registrar aud" == global_var  or "asst. registrar fa" == global_var  or "ps_admin" == global_var  or "deptadmin_cse" == global_var  or "deptadmin_ece" == global_var  or "deptadmin_me" == global_var  or "deptadmin_sm" == global_var  or "deptadmin_design" == global_var  or "deptadmin_liberalarts" == global_var  or "deptadmin_ns" == global_var %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
@@ -296,11 +281,12 @@
                             </a>
                         </div>
                         {% endif %}
-                        <!-- {% if request.user.extrainfo.user_type != "student"  %}
+                        
+                        {% if request.user.extrainfo.user_type != "student"  %}
                             <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
-                                <a class="ui large label" style="height: 120px; width:100%" href="/hr2/dashbaord">
+                                <a class="ui large label" style="height: 120px; width:100%" href="/hr2/dashboard">
                                     <div class="ui centered grid">
                                         <div class="row">
                                             <i class="ui file icon big"></i>
@@ -312,16 +298,16 @@
                                     </div>
                                 </a>
                             </div>
-                        {% endif %} -->
+                        {% endif %}
                  
-                    <!-- {% comment %}A single modules row ends here!{% endcomment %} -->
+                  
 
                   
-                        {% if request.user.extrainfo.user_type == "faculty" or  "acadadmin" == global_var  %}
+                        {% if "acadadmin" == global_var  %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/dashboard">
+                            <a class="ui large label" style="height: 120px; width:100%" href="/examination">
                                 <div class="ui centered grid">
                                     <div class="row">
                                         <i class="ui edit outline icon big"></i>
@@ -334,6 +320,8 @@
                             </a>
                         </div>
                         {% endif %}
+
+
                         {% if request.user.extrainfo.user_type != "staff" or "administrator" == global_var %}
                             <div style="width: calc(50% - 10px);
                         margin: 5px;
@@ -341,7 +329,7 @@
                                 <a class="ui large label" style="height: 120px; width:100%" href="/ocms/course_code">
                                     <div class="ui centered grid">
                                         <div class="row">
-                                            <i class="ui file icon big"></i>
+                                            <i class="book icon big"></i>
                                         </div>
 
                                         <div class="row">
@@ -352,7 +340,7 @@
                             </div>
                         {% endif %}
                 
-                    {% comment %}A single modules row ends here!{% endcomment %}
+                  
 
                           
                         {% if request.user.extrainfo.user_type == "student" or  "dean_s" == global_var or request.user.extrainfo.user_type == "faculty" %}
@@ -372,6 +360,8 @@
                             </a>
                         </div>
                         {% endif %}
+
+
                         {% if request.user.extrainfo.user_type != "student" %}
                             <div style="width: calc(50% - 10px);
                         margin: 5px;
@@ -379,7 +369,7 @@
                                 <a class="ui large label" style="height: 120px; width:100%" href="/iwdModuleV2">
                                     <div class="ui centered grid">
                                         <div class="row">
-                                            <i class="ui file icon big"></i>
+                                            <i class="building icon big"></i>
                                         </div>
 
                                         <div class="row">
@@ -390,18 +380,16 @@
                             </div>
                         {% endif %}
                  
-                    {% comment %}A single modules row ends here!{% endcomment %}
 
                                      
-                       {% if request.user.extrainfo.user_type == "student"  or user in hall_caretaker or user in hall_warden or request.user.is_superuser %}
-                        
+                        {% if request.user.extrainfo.user_type == "student"  or user in hall_caretaker or user in hall_warden or request.user.is_superuser %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
                             <a class="ui large label" style="height: 120px; width:100%" href="/hostelmanagement">
                                 <div class="ui centered grid">   
                                     <div class="row">
-                                        <i class="ui edit outline icon big"></i>
+                                        <i class="ui hotel icon big"></i>
                                     </div>
 
                                     <div class="row">
@@ -411,29 +399,22 @@
                             </a>
                         </div>
                         {% endif %}
+                        <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                            <a class="ui large label" style="height: 120px; width:100%" href="/otheracademic">
+                                <div class="ui centered grid">   
+                                    <div class="row">
+                                        <i class="ui university icon big"></i>
+                                    </div>
+
+                                    <div class="row">
+                                        <span class="ui sub header centered">Other Academic Procedure</span>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
                    
-                    {% comment %}A single modules row ends here!{% endcomment %}
-
-                    {% if request.user.extrainfo.user_type != ""  %}
-                    <div style="width: calc(50% - 10px);
-                margin: 5px;
-                box-sizing: border-box;">
-                        <a class="ui large label" style="height: 120px; width:100%" href="/hr2/dashboard">
-                            <div class="ui centered grid">
-                                <div class="row">
-                                    <i class="ui file icon big"></i>
-                                </div>
-
-                                <div class="row">
-                                    <span class="ui sub header centered">Human Resource</span>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                {% endif %}
-        
-            {% comment %}A single modules row ends here!{% endcomment %}
-
                 </div>
             {% comment %}
             <a class="ui bottom attached blue label">
@@ -445,4 +426,20 @@
     </div>
 </div>
 {% comment %}The Modules End here!{% endcomment %}
+
+<script>
+    function toggleContent() {
+        $('.modulesContent').toggle();
+
+        if ($('.modulesContent').is(':visible')) {
+            $('#toggleIcon').removeClass("chevron down");
+            $('#toggleIcon').addClass("chevron up");
+        }
+        else if (!$('.modulesContent').is(':visible')) {
+            $('#toggleIcon').removeClass("chevron up");
+            $('#toggleIcon').addClass("chevron down");
+        }
+    }
+
+    </script>
 {% endblock %}

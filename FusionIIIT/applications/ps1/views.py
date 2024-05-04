@@ -20,6 +20,8 @@ import re
 import json
 
 from django.db.models import Q,Count
+from datetime import datetime
+from datetime import datetime
 
 dept_admin_to_dept = {
     "deptadmin_cse": "CSE",
@@ -29,9 +31,11 @@ dept_admin_to_dept = {
     "deptadmin_design": "Design",
     "deptadmin_liberalarts": "Liberal Arts",
     "deptadmin_ns": "Natural Science",
+    "Admin IWD":"IWD",
+    "Compounder":"Health Center"
 }
 
-dept_admin_design = ["deptadmin_cse", "deptadmin_ece", "deptadmin_me","deptadmin_sm", "deptadmin_design", "deptadmin_liberalarts","deptadmin_ns" ]
+dept_admin_design = ["deptadmin_cse", "deptadmin_ece", "deptadmin_me","deptadmin_sm", "deptadmin_design", "deptadmin_liberalarts","deptadmin_ns" ,"Admin IWD","Compounder"]
 
 
 @login_required(login_url = "/accounts/login/")
@@ -118,6 +122,8 @@ def create_proposal(request):
                 purpose=request.POST.get('purpose')
                 specification=request.POST.get('specification')
                 item_type=request.POST.get('item_type')
+                item_subtype=request.POST.get('item_subtype')
+
                 nature=request.POST.get('nature')
                 indigenous=request.POST.get('indigenous')
                 replaced =request.POST.get('replaced')
@@ -150,6 +156,7 @@ def create_proposal(request):
                     purpose=purpose,
                     specification=specification,
                     item_type=item_type,
+                    item_subtype=item_subtype,
                     nature=nature,
                     indigenous=indigenous, 
                     replaced = replaced ,
@@ -191,6 +198,8 @@ def create_proposal(request):
                 purpose=request.POST.get('purpose')
                 specification=request.POST.get('specification')
                 item_type=request.POST.get('item_type')
+                item_subtype=request.POST.get('item_subtype')
+
                 nature=request.POST.get('nature')
                 indigenous=request.POST.get('indigenous')
                 replaced =request.POST.get('replaced')
@@ -249,6 +258,7 @@ def create_proposal(request):
                     purpose=purpose,
                     specification=specification,
                     item_type=item_type,
+                    item_subtype=item_subtype,
                     nature=nature,
                     indigenous=indigenous, 
                     replaced = replaced ,
@@ -751,6 +761,7 @@ def forwardindent(request, id):
                     file_attachment=upload_file
                 )
 
+
                 # CREATOR -> HOD -> DIRECTOR/REGISTRAR -> DEPT_ADMIN -> 
                 if((sender_designation_name in ["HOD (CSE)", "HOD (ECE)", "HOD (ME)", "HOD (SM)", "HOD (Design)", "HOD (Liberal Arts)", "HOD (Natural Science)"]) and (str(receive_design) in ["Director","Registrar"])):
                     indent.head_approval=True
@@ -768,8 +779,9 @@ def forwardindent(request, id):
 
                 indent.save()
 
-
+            office_module_notif(request.user, receiver_id)
             messages.success(request, 'Indent File Forwarded successfully')
+            
     extrainfo = ExtraInfo.objects.select_related('user','department').all()
     holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
     designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
@@ -1104,11 +1116,12 @@ def current_stock_view(request):
             StockEntryId__item_id__item_type=type
         )
 
-        grouped_items = StockItems.values('StockEntryId__item_id__item_type', 'department').annotate(total_quantity=Count('id'))
+        grouped_items = StockItems.values('StockEntryId__item_id__item_type','StockEntryId__item_id__item_subtype', 'department').annotate(total_quantity=Count('id'))
 
         grouped_items_list = [
             {
                 'item_type': item['StockEntryId__item_id__item_type'],
+                'item_subtype': item['StockEntryId__item_id__item_subtype'],
                 'department': DepartmentInfo.objects.get(id=department),
                 'total_quantity': item['total_quantity']
             }
@@ -1118,6 +1131,7 @@ def current_stock_view(request):
 
         firstStock=StockItems.first()
 
+        print(grouped_items_list)
 
         
         return render(request,'ps1/current_stock_view.html',{'stocks':grouped_items_list,'first_stock':firstStock,
@@ -1135,9 +1149,11 @@ def current_stock_view(request):
         print(dept_admin_to_dept[request.session['currentDesignationSelected']]);
         deptId = DepartmentInfo.objects.values('id', 'name').get(name=dept_admin_to_dept[request.session['currentDesignationSelected']])
 
+
+
         departments=[deptId]
 
-        StockItems = StockItem.objects.filter(department=deptId)
+        StockItems = StockItem.objects.filter(department=deptId['id'])
 
     elif request.session['currentDesignationSelected'] == "ps_admin":
         departments=DepartmentInfo.objects.values('id','name').all()
@@ -1147,11 +1163,12 @@ def current_stock_view(request):
         return redirect('/dashboard')
 
 
-    grouped_items = StockItems.values('StockEntryId__item_id__item_type','department').annotate(total_quantity=Count('id'))
+    grouped_items = StockItems.values('StockEntryId__item_id__item_type','StockEntryId__item_id__item_subtype','department').annotate(total_quantity=Count('id'))
 
     grouped_items_list = [
         {
             'item_type': item['StockEntryId__item_id__item_type'],
+            'item_subtype': item['StockEntryId__item_id__item_subtype'],
             'department':  DepartmentInfo.objects.values('id','name').get(id=item['department']),
             'departmentId': item['department'],
             'total_quantity': item['total_quantity']
@@ -1170,14 +1187,19 @@ def stock_item_view(request):
     if  request.session['currentDesignationSelected'] not in dept_admin_design + ["ps_admin"]:
         return redirect('/dashboard')
 
+    if request.method=="GET":
+        return HttpResponseRedirect('../current_stock_view')
+
     if request.method=="POST":
         departmentId = request.POST.get('departmentId')
         type = request.POST.get('item_type')
+        subtype = request.POST.get('item_subtype')
 
         # StockEntryId__item_id__file_info_grade
         StockItems = StockItem.objects.filter(
             department=departmentId,
-            StockEntryId__item_id__item_type=type
+            StockEntryId__item_id__item_type=type,
+            StockEntryId__item_id__item_subtype=subtype
         )
     
         return render(request,'ps1/stock_item_view.html',{'stocks':StockItems})
@@ -1339,16 +1361,57 @@ def generate_report(request):
 
     if  request.session['currentDesignationSelected'] not in dept_admin_design + ["ps_admin"]:
         return redirect('/dashboard')
+    
 
-    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
-    department = request.user.extrainfo.department.name
+    if request.method =='GET':
+        if  request.session['currentDesignationSelected'] in dept_admin_design:
 
-    if  request.session['currentDesignationSelected'] in dept_admin_design:
-        sto=StockEntry.objects.filter(item_id__file_info__uploader__department__name=dept_admin_to_dept[request.session['currentDesignationSelected']])
-    else:
-        sto=StockEntry.objects.all()
+            deptId = DepartmentInfo.objects.values('id', 'name').get(name=dept_admin_to_dept[request.session['currentDesignationSelected']])
+            departments=[deptId]
 
-    return render(request,'ps1/generate_report.html',{'sto':sto})
+        elif request.session['currentDesignationSelected'] == "ps_admin":
+            departments=DepartmentInfo.objects.values('id','name').all()
+
+        return render(request,'ps1/generate_report_filter.html',{'departments':departments})
+
+
+    if request.method=="POST":
+
+
+        departments = request.POST.getlist('departments')
+        start_date = request.POST.get('start_date');
+        finish_date = request.POST.get('finish_date');
+
+
+
+        start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+        finish_date = datetime.strptime(finish_date, '%Y-%m-%d').date()
+
+        if(departments[0]=='all'):
+            StockItems = StockItem.objects.filter(StockEntryId__recieved_date__range=(start_date, finish_date))
+        else :
+            StockItems = StockItem.objects.filter(department__in=departments, StockEntryId__recieved_date__range=(start_date, finish_date))
+        
+
+        grouped_items = StockItems.values('StockEntryId__item_id__item_type','StockEntryId__item_id__item_subtype','department').annotate(total_quantity=Count('id'))
+
+        grouped_items_list = [
+            {
+                'item_type': item['StockEntryId__item_id__item_type'],
+                'item_subtype': item['StockEntryId__item_id__item_subtype'],
+                'department':  DepartmentInfo.objects.values('id','name').get(id=item['department']),
+                'departmentId': item['department'],
+                'total_quantity': item['total_quantity'],
+                'StockItems': StockItem.objects.filter(
+                department=item['department'],
+                StockEntryId__item_id__item_type=item['StockEntryId__item_id__item_type']
+            )
+            }
+            for item in grouped_items
+        ]
+
+        
+        return render(request,'ps1/generate_report.html',{'departments':departments,'stocks':grouped_items_list})
 
 
 @login_required(login_url = "/accounts/login")
@@ -1447,7 +1510,7 @@ def perform_transfer(request):
                 dest_location=dest_location
             )
 
-            messages.success(request,'Stock Transfer Done Successfully.!')
+        messages.success(request,'Stock Transfer Done Successfully.!')
         # if the quantity required for this indent file is fulfilled we should mark this indentfile as done.
         if(moreStocksRequired<=0):
             myIndent.purchased=True
@@ -1458,7 +1521,7 @@ def perform_transfer(request):
         
         department = request.user.extrainfo.department.name
             
-        return HttpResponseRedirect('../view_transfer') 
+        return JsonResponse({'success':True})
 
 # This is to get the list of all the available stock items for transfer.
 @login_required(login_url = "/accounts/login")
@@ -1537,8 +1600,14 @@ def outboxview(request):
 
 @login_required(login_url="/accounts/login")
 def updateStockItemInUse(request):
+    print("updatestockiteminuse");
+
     if request.session['currentDesignationSelected'] not in dept_admin_design + ["ps_admin"]:
         return redirect('/dashboard')
+    
+    if request.method=="GET":
+        return redirect('../current_stock_view')
+        
 
     if request.method == "POST":
 
@@ -1557,4 +1626,23 @@ def updateStockItemInUse(request):
             stock_item.inUse = checked
             stock_item.save()
 
-        return redirect('/purchase-and-store/current_stock_view')
+        return JsonResponse({'success': True})
+
+        # return HttpResponseRedirect('../current_stock_view')
+
+
+@login_required(login_url="/accounts/login")
+def item_detail(request, id):
+    if request.session['currentDesignationSelected'] not in dept_admin_design + ["ps_admin"]:
+        return redirect('/dashboard')
+
+    stock_transfers = StockTransfer.objects.filter(stockItem=id).order_by('dateTime')
+    stock_item = StockItem.objects.filter(id=id).first();
+    # Do something with the stock_transfers
+
+    context = {
+        'transfers': stock_transfers,
+        'item': stock_item
+    }
+
+    return render(request, 'ps1/stock_item_details.html', context)
