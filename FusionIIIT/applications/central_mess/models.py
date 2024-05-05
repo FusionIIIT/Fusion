@@ -156,8 +156,8 @@ class Payments(models.Model):
     payment_year = models.IntegerField(default = current_year)
     payment_date = models.DateField(default= datetime.date.today())
 
-    class Meta:
-        unique_together = (('student_id',  'payment_date'))
+    # class Meta:
+    #     unique_together = (('student_id',  'payment_date'))
 
     def __str__(self):
         return '{}'.format(self.student_id.id)
