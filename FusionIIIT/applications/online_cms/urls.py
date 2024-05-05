@@ -1,12 +1,13 @@
 from django.conf import settings
 from django.conf.urls.static import static
-from django.conf.urls import url
+from django.conf.urls import url, include
 from . import views
 app_name = 'online_cms' 
 
 urlpatterns = [
     
     url(r'^$', views.viewcourses, name='viewcourses'),
+    url(r'^api/', include('applications.online_cms.api.urls'), name='api'),
     url(r'^(?P<course_code>[A-Za-z0-9]+)/(?P<version>[\d.]+)/$', views.course, name='course'),
     # url(r'^(?P<course_code>[A-Za-z0-9]+)/edit_marks$', views.edit_marks, name='edit_marks'),
     url(r'^(?P<course_code>[A-Za-z0-9]+)/(?P<version>[\d.]+)/get_exam_data$', views.get_exam_data, name='get_exam_data'),
