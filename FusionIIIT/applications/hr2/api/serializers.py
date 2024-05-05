@@ -54,3 +54,12 @@ class LeaveBalanace_serializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return LeaveBalance.objects.create(**validated_data)
+
+
+# class Deignations(serializers.ModelSerializer):
+#     class Meta:
+#         model = Deignations
+#         fields = '__all__'
+
+#     def create(self,validated_data):
+#         return
