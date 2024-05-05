@@ -3,23 +3,24 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 # from rest_framework.decorators import permission_classes, api_view
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from applications.hr2.models import LTCform, CPDAAdvanceform, CPDAReimbursementform, LeaveForm, Appraisalform, LeaveBalance
 from django.contrib.auth import get_user_model
 from django.core.exceptions import MultipleObjectsReturned
 from applications.filetracking.sdk.methods import *
-from applications.globals.models import Designation, HoldsDesignation
+from applications.globals.models import Designation, HoldsDesignation, ExtraInfo
 from applications.filetracking.models import *
 # from django.contrib.auth.models import User
 
 
 class LTC(APIView):
     serializer_class = LTC_serializer
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
 
     def post(self, request):
+        print("hello")
         user_info = request.data[1]
-        print(request.data)
+        print(request.data[1])
         serializer = self.serializer_class(data=request.data[0])
         if serializer.is_valid():
             serializer.save()
@@ -71,7 +72,7 @@ class LTC(APIView):
 
 
 class FormManagement(APIView):
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
 
     def get(self, request, *args, **kwargs):
         username = request.query_params.get("username")
@@ -95,7 +96,7 @@ class FormManagement(APIView):
 
 class CPDAAdvance(APIView):
     serializer_class = CPDAAdvance_serializer
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
 
     def post(self, request):
         print(request.data[0])
@@ -130,6 +131,7 @@ class CPDAAdvance(APIView):
     def put(self, request, *args, **kwargs):
         pk = request.query_params.get("id")
         receiver = request.data[0]
+        print(request.data)
         send_to = receiver['receiver']
         print(send_to)
         receiver_value = User.objects.get(username=send_to)
@@ -159,7 +161,7 @@ class CPDAAdvance(APIView):
 
 class CPDAReimbursement(APIView):
     serializer_class = CPDAReimbursement_serializer
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
 
     def post(self, request):
         user_info = request.data[1]
@@ -217,7 +219,7 @@ class CPDAReimbursement(APIView):
 
 class Leave(APIView):
     serializer_class = Leave_serializer
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
 
     def post(self, request):
         user_info = request.data[1]
@@ -273,7 +275,7 @@ class Leave(APIView):
 
 class Appraisal(APIView):
     serializer_class = Appraisal_serializer
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
 
     def post(self, request):
         user_info = request.data[1]
@@ -313,9 +315,9 @@ class Appraisal(APIView):
         obj = lis[0].designation
         serializer = self.serializer_class(form, data=request.data[1])
         if serializer.is_valid():
-            serializer.save()
             forward_file(file_id=receiver['file_id'], receiver=send_to, receiver_designation=receiver['receiver_designation'],
                          remarks=receiver['remarks'], file_extra_JSON=receiver['file_extra_JSON'])
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -335,22 +337,22 @@ class Appraisal(APIView):
 
 
 class GetFormHistory(APIView):
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
 
     def get(self, request, *args, **kwargs):
         print(request.query_params)
         form_type = request.query_params.get("type")
         id = request.query_params.get("id")
         person = User.objects.get(username=id)
-        print(person.id)
-        id = person.id
+        print(type(person))
+        id = person
         if form_type == "LTC":
             try:
                 forms = LTCform.objects.get(created_by=id)
                 serializer = LTC_serializer(forms, many=False)
                 return Response([serializer.data], status=status.HTTP_200_OK)
             except MultipleObjectsReturned:
-                forms = LeaveForm.objects.filter(created_by=id)
+                forms = LTCform.objects.filter(created_by=id)
                 serializer = LTC_serializer(forms, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             except LTCform.DoesNotExist:
@@ -402,7 +404,7 @@ class GetFormHistory(APIView):
 
 
 class TrackProgress(APIView):
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
 
     def get(self, request, *args, **kwargs):
         file_id = request.query_params.get("id")
@@ -411,22 +413,22 @@ class TrackProgress(APIView):
 
 
 class FormFetch(APIView):
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
 
     def get(self, request, *args, **kwargs):
         fileId = request.query_params.get("file_id")
+        print(fileId)
         form_id = request.query_params.get("id")
         form_type = request.query_params.get("type")
         if form_type == "LTC":
             forms = LTCform.objects.get(id=form_id)
             serializer = LTC_serializer(forms, many=False)
             form = serializer.data
-            # print(form["created_by"])
             user = User.objects.get(id=int(form["created_by"]))
             owner = Tracking.objects.filter(file_id=fileId)
             current_owner = owner.last()
             current_owner = current_owner.receiver_id
-            current_owner = current_owner.user
+            current_owner = current_owner.username
         elif form_type == "CPDAReimbursement":
             forms = CPDAReimbursementform.objects.get(id=form_id)
             serializer = CPDAReimbursement_serializer(forms, many=False)
@@ -435,7 +437,7 @@ class FormFetch(APIView):
             owner = Tracking.objects.filter(file_id=fileId)
             current_owner = owner.last()
             current_owner = current_owner.receiver_id
-            current_owner = current_owner.user
+            current_owner = current_owner.username
         elif form_type == "CPDAAdvance":
             forms = CPDAAdvanceform.objects.get(id=form_id)
             serializer = CPDAAdvance_serializer(forms, many=False)
@@ -445,7 +447,6 @@ class FormFetch(APIView):
             current_owner = owner.last()
             current_owner = current_owner.receiver_id
             current_owner = current_owner.username
-            print(current_owner)
         elif form_type == "Appraisal":
             forms = Appraisalform.objects.get(id=form_id)
             serializer = Appraisal_serializer(forms, many=False)
@@ -454,7 +455,7 @@ class FormFetch(APIView):
             owner = Tracking.objects.filter(file_id=fileId)
             current_owner = owner.last()
             current_owner = current_owner.receiver_id
-            current_owner = current_owner.user
+            current_owner = current_owner.username
         elif form_type == "Leave":
             forms = LeaveForm.objects.get(id=form_id)
             serializer = Leave_serializer(forms, many=False)
@@ -463,52 +464,59 @@ class FormFetch(APIView):
             owner = Tracking.objects.filter(file_id=fileId)
             current_owner = owner.last()
             current_owner = current_owner.receiver_id
-            current_owner = current_owner.user
+            current_owner = current_owner.username
         return Response({"form": serializer.data, "creator": user.username, "current_owner": current_owner}, status=status.HTTP_200_OK)
 
 
 class CheckLeaveBalance(APIView):
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
     serializer_class = LeaveBalanace_serializer
 
     def get(self, request, *args, **kwargs):
         name = request.query_params.get("name")
         person = User.objects.get(username=name)
-        id = person.id
-        leave_blance = LeaveBalance.objects.get(employee_id=id)
-        serializer = self.serializer_class(leave_blance, many=False)
+        extrainfo = ExtraInfo.objects.get(user=person)
+        leave_balance = LeaveBalance.objects.get(employeeId=extrainfo)
+        serializer = self.serializer_class(leave_balance, many=False)
         return Response(serializer.data, status=status.HTTP_200_OK)
+        # return Response([], status=status.HTTP_200_OK)
 
     def put(self, request, *args, **kwargs):
         name = request.query_params.get("name")
+        # print(request.data)
         person = User.objects.get(username=name)
-        id = person.id
-        leave_balance = LeaveBalance.objects.get(employee_id=id)
-        serializer = self.serializer_class(leave_balance, data=request.data)
+        extrainfo = ExtraInfo.objects.get(user=person)
+        leave_balance = LeaveBalance.objects.get(employeeId=extrainfo)
+        data1 = request.data
+        data1['employeeId'] = extrainfo.id
+        serializer = self.serializer_class(leave_balance, data=data1)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
+            print(serializer.error_messages)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class DropDown(APIView):
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
 
     def get(self, request, *args, **kwargs):
         user_id = request.query_params.get("username")
         user = User.objects.get(username=user_id)
         designations = HoldsDesignation.objects.filter(user=user.id)
         designation_list = []
+
         for design in designations:
             design = design.designation
             design = design.name
             designation_list.append(design)
+        # print(designation_list)
         return Response(designation_list, status=status.HTTP_200_OK)
 
 
 class UserById(APIView):
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
 
     def get(self, request, *args, **kwargs):
         user_id = request.query_params.get("id")
@@ -517,7 +525,7 @@ class UserById(APIView):
 
 
 class ViewArchived(APIView):
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
 
     def get(self, request, *args, **kwargs):
         user_name = request.query_params.get("username")
@@ -528,7 +536,7 @@ class ViewArchived(APIView):
 
 
 class GetOutbox(APIView):
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
 
     def get(self, request, *args, **kwargs):
         name = request.query_params.get("username")
