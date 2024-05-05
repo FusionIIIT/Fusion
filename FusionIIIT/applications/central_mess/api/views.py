@@ -656,6 +656,7 @@ class RegistrationRequestApi(APIView):
                     reg_main = Reg_main.objects.get(student_id=student)
                     reg_main.current_mess_status = "Registered"
                     reg_main.balance = F('balance') + amount
+                    reg_main.mess_option = mess_option
                 except Reg_main.DoesNotExist:
                     reg_main = Reg_main.objects.create(
                         student_id=student,
@@ -716,6 +717,78 @@ class DeregistrationRequestApi(APIView):
                 reg_record = Reg_records.objects.filter(student_id=student).latest('start_date')
                 reg_record.end_date = end_date
                 reg_record.save()
+            return Response({'status': 200})
+        except Exception as e:
+            print({'error': str(e)})
+            return Response({'error': str(e)}, status=400)
+
+class DeregistrationApi(APIView):
+    def post(self, request):
+        try:
+            data = request.data
+            print(data)
+            student_id = data['student_id']
+            end_date = data['end_date']
+
+            username = get_object_or_404(User, username=student_id)
+            idd = ExtraInfo.objects.get(user=username)
+            student = Student.objects.get(id=idd.id)
+
+            reg_main = Reg_main.objects.get(student_id=student)
+            reg_main.current_mess_status = "Deregistered"
+            reg_main.save()
+
+            reg_record = Reg_records.objects.filter(student_id=student).latest('start_date')
+            reg_record.end_date = end_date
+            reg_record.save()
+            return Response({'status': 200})
+        except Exception as e:
+            print({'error': str(e)})
+            return Response({'error': str(e)}, status=400)
+
+class UpdatePaymentRequestApi(APIView):
+    def get(self, request):
+        update_payment_requests = Update_Payment.objects.all()
+        serializer = UpdatePaymentRequestSerializer(update_payment_requests, many=True)
+        return Response({'status': 200, 'payload': serializer.data})
+
+    def post(self, request):
+        serializer = UpdatePaymentRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'status': 200})
+        return Response(serializer.errors, status=400)
+    
+    def put(self, request):
+        try:
+            data = request.data
+            print(data)
+            student_id = data['student_id']
+            payment_date = data['payment_date']
+            amount = data['amount']
+            Txn_no = data['Txn_no']
+            img = data['img']
+            new_status = data['status']
+            new_remark = data['update_payment_remark']
+
+            username = get_object_or_404(User, username=student_id)
+            idd = ExtraInfo.objects.get(user=username)
+            student = Student.objects.get(id=idd.id)
+
+            UpdatePayment_request = get_object_or_404(Update_Payment, student_id = student_id, payment_date = payment_date, amount = amount, Txn_no = Txn_no)
+            
+            UpdatePayment_request.status = new_status
+            UpdatePayment_request.update_payment_remark = new_remark
+            UpdatePayment_request.save()
+
+            if (new_status == 'accept'):
+                new_payment_record = Payments(student_id = student, amount_paid = amount, payment_date=payment_date, payment_month=current_month(), payment_year=current_year())
+                new_payment_record.save()
+
+                reg_main = Reg_main.objects.get(student_id=student)
+                reg_main.balance = F('balance') + amount
+                reg_main.save()
+
             return Response({'status': 200})
         except Exception as e:
             print({'error': str(e)})

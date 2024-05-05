@@ -335,7 +335,7 @@ def mess(request):
         context = {
                     'menu': menu_data,
                 #    'reg_menu': y,
-                #    'messinfo': mess_optn,
+                   'messinfo': mess_optn,
                    'monthly_bill': monthly_bill,
                 #    'total_due': amount_due,
                    'vaca': vaca_obj,
