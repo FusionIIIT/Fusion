@@ -73,7 +73,7 @@
                     </a>
                 {% endif %}
                 {% if request.user.extrainfo.user_type == "student" or "spacsconvenor" == global_var  or "spacsassistant" == global_var  %}
-                    <a class="item" href="{% url 'spacs:spacs' %}">
+                    <a class="item" href="{% url 'spacs:spacs' %}"style="display: none;">
                         <h4>Scholarship Portal</h4>
                     </a>
                 {% endif %}
@@ -119,12 +119,12 @@
                     </a>
                 {% endif %}
                 {% if "acadadmin" == global_var  %}
-                    <a class="item" href="/examination">
+                    <a class="item" href="/examination" style="display: none;">
                         <h4> Examination </h4>
                     </a>
                 {% endif %}
                 {% if request.user.extrainfo.user_type != "staff" or "administrator" == global_var %}
-			        <a class = "item" href="/ocms/course_code">
+			        <a class = "item" href="/ocms/course_code" style="display: none;">
 			            <h4> Course Management </h4>
 			        </a>
                 {% endif %}

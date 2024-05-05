@@ -124,11 +124,11 @@
                         </div>
                         {% endif %}
                 
-                        <!-- AC-5  -->
+                        <!-- Display none  -->
                         {% if request.user.extrainfo.user_type == "student" or "spacsconvenor" == global_var  or "spacsassistant" == global_var  %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
-                        box-sizing: border-box;">
+                        box-sizing: border-box;display: none;">
                             <a class="ui large label" style="height: 120px; width:100%" href="/spacs">
                                 <div class="ui centered grid">
                                     <div class="row">
@@ -309,11 +309,11 @@
                  
                   
 
-                        <!-- AC-7  -->
+                        <!-- Display None   -->
                         {% if "acadadmin" == global_var  %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
-                        box-sizing: border-box;">
+                        box-sizing: border-box;display: none;">
                             <a class="ui large label" style="height: 120px; width:100%" href="/examination">
                                 <div class="ui centered grid">
                                     <div class="row">
