@@ -38,10 +38,7 @@
             &ensp;&ensp;&ensp;&ensp;&ensp;
         
             {% comment %}The Tab-Menu starts here!{% endcomment %}
-            {% comment %}A single modules row starts here!{% endcomment %}
-               
-            <!-- {% if  request.user.extrainfo.user_type == "staff"    %} -->
-             
+            
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
                 <a class="active item" data-tab="first">
@@ -58,12 +55,17 @@
                     Feedback
                     <i class="right floated chevron right icon"></i>
                 </a>
-                <!-- {% endif %} -->
                 
-                {% comment %}A single modules row ends here!{% endcomment %}
-                
-                {% if  "supervisor" in global_var %}
-                <a class=" item" data-tab="fourth">
+                <!-- <a class=" item" data-tab="fourth">
+                    View Caretaker
+                    <i class="right floated chevron right icon"></i>
+                </a> -->
+                <!-- <a class="item" data-tab="second">
+                    Resolved Complaints
+                    <i class="right floated chevron right icon"></i> 
+                </a> -->
+                {% if "supervisor" in global_var %}
+                <a class="item" data-tab="fourth">
                     Redirected Complaints
                     <i class="right floated chevron right icon"></i>
                 </a>

@@ -13,7 +13,9 @@
 
     <div class="ui divider"></div>
 
-    <table class="ui very basic celled sortable table">
+    <div class="table-container" style="overflow-x: scroll;max-height: 530px; overflow-y: scroll;">
+
+    <table class="ui very basic celled sortable table" >
         <thead>
         <tr>
             <th>Created By</th>
@@ -32,7 +34,7 @@
                  <td>{{request.user.extrainfo.department.name}}-{{indent.file_info.upload_date.year}}-{{indent.file_info.upload_date.month}}-#{{indent.file_info.id}}</td>
                  <td>{{indent.file_info.subject}}</td>
                  <td>{{indent.file_info.upload_date}}</td>
-                 <td><a href="{% url 'ps1:createdindent' indent.file_info.id %}"><button class="ui primary button">
+                 <td><a href="{% url 'ps1:forwardedIndent' indent.file_info.id %}"><button class="ui primary button">
                               View
                     </button></a></td>
                  {% if indent.head_approval == False or indent.director_approval == False or indent.financial_approval == False %}
@@ -54,6 +56,7 @@
         </tbody>
 
     </table>
+</div>  
 
     <br>
 

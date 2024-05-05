@@ -87,7 +87,6 @@ Academic Information System
                 Verify Registered Courses
                 <i class="right floated chevron right icon"></i>
             </a> -->
-
             <a class=" item" data-tab="proced_results">
                 Results
                 <i class="right floated chevron right icon"></i>
@@ -114,7 +113,6 @@ Academic Information System
             </a>
             
             <!-- <a class="item" disabled="disabled" href="/aims">
-
                 Manage Student Profile
                 <i class="right floated chevron right icon"></i>
             </a> -->
@@ -131,12 +129,15 @@ Academic Information System
                 <i class="right floated chevron right icon"></i>
             </a> -->
 
+            <a class="item" data-tab="tenth">
+                Curriculum
+                <i class="right floated chevron right icon"></i>
+            </a>
 
-                <a class="item" data-tab="vassis" id="va">Verify Assistantship &ensp; <span
-                        class="circle">{{assistant_list_length}}</span>
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
+            <a class="item" data-tab="vassis" id="va">Verify Assistantship &ensp; <span
+                    class="circle">{{assistant_list_length}}</span>
+                <i class="right floated chevron right icon"></i>
+            </a>
 
         </div>
         <br><br>
@@ -241,13 +242,16 @@ Academic Information System
 
     <div class="three wide column">
 
-        <!-- <div class="row">
-        <div class="ui tab segment" data-tab="ninth">
+        <div class="row">
+        <!-- <div class="ui tab segment" data-tab="ninth">
         {% block filter_stu %}
             {% include 'ais/filter_student.html' %}
+            {% endblock %} -->
+            {% block sidepanel%} 
+            {% include 'notifications/academic_procedures_sidepanel.html' %} 
             {% endblock %}
         </div>
-    </div> -->
+    </div> 
     </div>
 </div>
 {% endblock %}

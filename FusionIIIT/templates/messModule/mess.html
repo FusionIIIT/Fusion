@@ -52,7 +52,7 @@ Central Mess
     {% endcomment %}
     <div class="eight wide column">
         {% comment %}The ... start here!{% endcomment %}
-        <div class="ui tab segment {% if messinfo.mess_option == 'no-mess' %}disabled {% endif %}" data-tab="first">
+        <div class="ui tab segment {% if reg_main_stud.current_mess_status == 'Deregistered' %}disabled {% endif %}"  data-tab="first">
             {% block feedback %}
             {% include 'messModule/feedback.html' %}
             {% endblock %}
@@ -69,7 +69,7 @@ Central Mess
 
 
         {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui {% if info.user_type == 'student' %}active {% endif %}tab segment" data-tab="fourth">
+        <div class="ui tab segment" data-tab="fourth">
             {% block views %}
             {% include 'messModule/views.html' %}
             {% endblock %}
@@ -80,6 +80,12 @@ Central Mess
         <div class="ui tab segment" data-tab="Registration">
             {% block Registration %}
             {% include 'messModule/registration.html' %}
+            {% endblock %}
+        </div>
+        {% comment %}The ... end here!{% endcomment %}
+        <div class="ui tab segment" data-tab="updatePayment">
+            {% block updatePayment %}
+            {% include 'messModule/updatePayment.html' %}
             {% endblock %}
         </div>
         {% comment %}The ... end here!{% endcomment %}
@@ -143,7 +149,7 @@ Central Mess
         {% comment %}The ... ends here!{% endcomment %}
 
         {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui {% if info.user_type == 'staff' or info.user_type == 'faculty' %}active {% endif %} tab segment" data-tab="thirteenth">
+        <div class="ui active tab segment" data-tab="thirteenth">
             {% block viewmenu %}
             {% include 'messModule/viewmenu.html' %}
             {% endblock %}
@@ -219,62 +225,9 @@ Central Mess
     {% comment %}The right-rail segment starts here!{% endcomment %}
     <div class="three wide column">
         <div class="row">
-            
-            <!-- Right Rail code starts here -->
-    {% for d in desig %}
-        {% if d.designation.name == 'student' %}
-            <div class="eight wide column">
-                <div class="ui top attached tabular large menu">
-                    <a class="active item" data-tab="first_alert">Notifications</a>
-                    <!-- <a class="item" data-tab="second">News</a> -->
-                    <a class="item" data-tab="second_alert">Announcements</a>
-                </div>
-                <div class="ui bottom attached active tab segment" data-tab="first_alert">
-                    <div id="textSegmentDiv">
-        
-                        {% comment %}
-                        TODO: Loader required?
-                        <div class="ui active large text loader" id="loader">
-                            Loading ...
-                        </div>
-                        {% endcomment %}
-        
-                        <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
-                            {% block alerts_2 %}
-                            {% include 'messModule/alerts.html' %}
-                            {% endblock %}
-                        </div>
-                    </div>
-        
-                </div>
-               
-                <div class="ui bottom attached tab segment" data-tab="second_alert">
-                        <div id="textSegmentDiv">
-        
-                            <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
-                                <!-- {% block alerts1 %} -->
-
-                                <h1>Announcements will be displayed here...</h1>
-                                    <!-- {% include 'dashboard/alerts1.html' %} -->
-                                <!-- {% endblock %} -->
-                            </div>
-                        </div>
-                    </div>
-            </div>
-        {% endif %}
-    {% endfor %}        
-
-
-
-            <!-- ye pehle ka code h -->
-
-            
-
-            <!-- RIGHT Rail ka code ends here -->
-
-            {% comment %}
-            TODO: the right rail!
-            {% endcomment %}
+            {% block sidepanel%}
+            {% include 'notifications/messModule_sidepanel.html'%}
+            {% endblock %}
         </div>
     </div>
     {% comment %}The right-rail segment ends here!{% endcomment %}
@@ -310,8 +263,8 @@ Central Mess
             data: {
                 labels: ["Food", "Hygiene", "Maintenance", "Others"],
                 datasets: [{
-                    label: 'Feedback',
-                    data: [c1,c2,c3,c4],
+                    label: 'Feedback',               
+                    data: [c2,c3,c1,c4],
                     backgroundColor: [
                         'rgba(255, 99, 132, 0.2)',
                         'rgba(54, 162, 235, 0.2)',
@@ -348,7 +301,7 @@ Central Mess
                 labels: ["Food", "Hygiene", "Maintenance", "Others"],
                 datasets: [{
                     label: 'Feedback',
-                    data: [c5,c6,c7,c8],
+                    data: [c6,c7,c5,c8],
                     backgroundColor: [
                         'rgba(255, 99, 132, 0.2)',
                         'rgba(54, 162, 235, 0.2)',

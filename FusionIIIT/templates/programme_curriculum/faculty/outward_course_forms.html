@@ -1,0 +1,108 @@
+{% extends 'programme_curriculum/faculty/common.html' %} 
+{% block content %}
+{%if data %}
+
+<div style=" padding-left: 18px; padding-top: 10px; font-size:25px "><br>
+    <center><span style="color: red;font-size:25px">{{ data }}</span></center>
+</div>
+{%endif%}
+{%if not data %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="notesheet">
+            <h3>Outward Files of "{{request.user.extrainfo.user}} - {{design}}"</h3>
+        </a>
+        <a class="item" data-tab="attachments">
+            <h3>Archived Files</h3>
+        </a>
+
+    </div>
+
+    
+        
+
+
+    <div class="ui active tab" data-tab="notesheet">
+
+    <table class="ui very basic celled sortable table">
+        <thead>
+        <tr>
+            <th>Send by</th>
+            <th>Received as</th>
+            <th>File ID</th>
+            <th>Remark</th>
+            <th>Date</th>
+            <th>View File</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for courseProposal in courseProposals %}
+        {%if not courseProposal.sender_archive %}
+            <tr>
+                <td>{{request.user.extrainfo.user}}-{{courseProposal.current_design}}</td>
+                <td> {{courseProposal.receive_id}} - {{courseProposal.receive_design}}</td>
+                <td>{{courseProposal.file_id}}</td>
+                <td>{{courseProposal.remarks}}</td>
+                <td>{{courseProposal.receive_date}}</td>
+                <td><a href="{% url 'programme_curriculum:view_inward_files' courseProposal.id %}"><button class="ui primary button">
+                              View
+                </button></a></td>
+                <td><a href="{% url 'programme_curriculum:tracking_archive' courseProposal.id %}"><button class="ui grey button">
+                    Archive
+                </button></a></td>
+              </tr>
+              {%endif%}
+        {% endfor %}
+        </tbody>
+
+    </table>
+
+    <br>
+    
+    </div>
+    <div class="ui tab" data-tab="attachments">
+
+        <table class="ui very basic celled sortable table">
+            <thead>
+            <tr>
+                <th>Send by</th>
+                <th>Received as</th>
+                <th>File ID</th>
+                <th>Remark</th>
+                <th>Date</th>
+                <th>View File</th>
+            </tr>
+            </thead>
+    
+            <tbody>
+            {% for courseProposal in courseProposals %}
+            {%if courseProposal.sender_archive %}
+                <tr>
+                    <td>{{request.user.extrainfo.user}}-{{courseProposal.current_design}}</td>
+                    <td> {{courseProposal.receive_id}} - {{courseProposal.receive_design}}</td>
+                    <td>{{courseProposal.file_id}}</td>
+                    <td>{{courseProposal.remarks}}</td>
+                    <td>{{courseProposal.receive_date}}</td>
+                    <td><a href="{% url 'programme_curriculum:view_inward_files' courseProposal.id %}"><button class="ui primary button">
+                                  View
+                        </button></a></td>
+                        <td><a href="{% url 'programme_curriculum:tracking_unarchive' courseProposal.id %}"><button class="ui green button">
+                            UnArchive
+                        </button></a></td>
+                  </tr>
+                  {%endif%}
+        
+            {% endfor %}
+            </tbody>
+    
+        </table>
+    
+        <br>
+        
+
+    </div>
+        
+    {%endif%}
+
+{% endblock %}
+

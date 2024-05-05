@@ -33,7 +33,7 @@ urlpatterns = [
     url(r'^process_verification_request/$', views.process_verification_request),
     url(r'^auto_process_verification_request/$', views.auto_process_verification_request),
     url(r'^teaching_credit/$', views.teaching_credit_register),
-    url(r'^course_marks_data/$', views.course_marks_data),  # --
+    url(r'^course_marks_data/$', views.course_marks_data),  # -- 
     url(r'^submit_marks/$', views.submit_marks),  # --
     url(r'^verify_course_marks_data/$', views.verify_course_marks_data),  # --
     url(r'^verify_marks/$', views.verify_marks),
@@ -72,5 +72,5 @@ urlpatterns = [
     url(r'^acad_person/add_course_to_slot/' , views.add_course_to_slot , name = 'add_course_to_slot'),
     url(r'^acad_person/replaceSwayam/', views.replaceSwayam, name='replaceSwayam'),
     url(r'^acad_person/swayam_replace/', views.swayam_replace, name='swayam_replace'),
-
+    url(r'^register_backlog_course/' , views.register_backlog_course , name = 'register_backlog_course')
 ]

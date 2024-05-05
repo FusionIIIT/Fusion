@@ -1,0 +1,104 @@
+{% extends 'ps1/ps2.html' %} {% load static %} {% block filetracking_tab %}
+
+<div id="generate_report">
+<div class="ui pointing secondary menu">
+    <h3>
+        <a class="active item" data-tab="composefile"> Report </a>
+    </h3>
+</div>
+<div class="ui divider"></div>
+{% if stocks %}
+{% for stock in stocks %}
+<div class="ui active tab" data-tab="composefile" id="all_stocks">
+    <div class="ui vertical stripe team segment" style="padding-left: 3.5%; padding-right: 3.5%">
+        <div class="ui pointing secondary menu">
+            <h3 style="display: flex">
+                <a class="active item" data-tab="inward" style="margin-right: 40px">
+                    {{stock.department.name}}
+                </a>
+                <a class="active item" data-tab="inward" style="margin-right: 40px">
+                    Item Type: {{stock.item_type}}
+                </a>
+                <a class="active item" data-tab="inward" style="margin-right: 40px">
+                    Item SubType: {{stock.item_subtype}}
+                </a>
+                <a class="active item" data-tab="inward">
+                    Total Quantity: {{stock.total_quantity}}
+                </a>
+            </h3>
+        </div>
+
+        <div class="ui divider"></div>
+        {% if stock.StockItems %}
+
+        <div class="table-container" style="overflow-x: scroll;">
+            <table class="ui very basic celled sortable table">
+                <thead>
+                    <tr>
+                        <th>Nomenclature</th>
+                        <th>Item Name</th>
+
+                        <th>Current Location</th>
+                    </tr>
+                </thead>
+               
+                <tbody>
+                    {% for s in stock.StockItems %} 
+                        {% if s.StockEntryId.item_id.purchased %}
+
+                    <tr>
+                        <td>{{s.nomenclature}}</td>
+                        <td>{{s.StockEntryId.item_id.item_name}}</td>
+
+                        <td>{{s.location}}</td>
+                    </tr>
+                    {% endif %} 
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endfor %}
+</div>
+<div class="ui pointing secondary menu">
+    <a class="right floated item">
+        <button id="print123" class="ui large right floated primary button" style="float: right">
+            Print<i class="ui send icon right floated"></i>
+        </button>
+    </a>
+</div>
+{% else %}
+<h4 >No Stocks Found</h4>
+{% endif %}
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"> </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+    $("#print123").click(function () {
+        const { jsPDF } = window.jspdf;
+        let doc = new jsPDF('l', 'mm', [500000, 1400]);
+        let pdfjs = document.querySelector('#generate_report');
+        
+        // Clone the element
+        let clonedPdfjs = pdfjs.cloneNode(true);
+
+        // Set width of the cloned element to match the width of the PDF document
+        var widthInPixels = 450 * 3.78;
+        clonedPdfjs.style.width = widthInPixels + 'px';
+
+        doc.html(clonedPdfjs, {
+            callback: function(doc) {
+                doc.save("newpdf.pdf");
+            }
+        });
+    });
+});
+
+</script> 
+
+{% endblock %}

@@ -94,6 +94,15 @@
             <td>
                 <center>{{curr_sem.semester_no}}</center>
             </td>
+            <td class="collapsing"><a class="tiny ui positive animated button"  style="background:#2590e2;" tabindex="0"
+              href="{% url 'online_cms:course' items.1.code items.1.version %}"
+              type="Submit" name="Submit">
+                  <div class="visible content">MANAGE</div>
+                  <div class="hidden content">
+                  <i class="folder open icon"></i>
+                  </div>
+              </a>
+          </td>
           </tr>
         {% endfor %}
       </tbody>

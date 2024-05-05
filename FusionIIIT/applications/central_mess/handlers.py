@@ -15,7 +15,7 @@ from .forms import MinuteForm
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
-                     Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
+                     Mess_minutes, Mess_reg, Messinfo, Monthly_bill, Update_Payment,
                       Payments, Rebate,Special_request, Vacation_food, MessBillBase,Registration_Request, Reg_main, Reg_records ,Deregistration_Request, Semdates)
 from notification.views import central_mess_notif
 
@@ -84,7 +84,7 @@ def add_mess_feedback(request, student):
         data: to record success or any errors
     """
     date_today = datetime.now().date()
-    mess_optn = Messinfo.objects.get(student_id=student)
+    mess_optn = Reg_main.objects.get(student_id=student)
     description = request.POST.get('description')
     feedback_type = request.POST.get('feedback_type')
     feedback_object = Feedback(student_id=student, fdate=date_today,
@@ -766,6 +766,40 @@ def handle_reg_response(request):
     return data
 
 
+def handle_update_payment_response(request):
+    id = request.POST['id_reg']
+    status = request.POST['status']
+    remark = request.POST['remark']
+    payment_req = Update_Payment.objects.get(pk=id)
+    payment_date = payment_req.payment_date
+    student = payment_req.student_id
+    payment_req.status = status
+    payment_req.update_remark=remark
+    
+    payment_req.save()
+    
+    if(status == 'accept'):
+        amount = payment_req.amount
+        reg_main_obj= Reg_main.objects.get(student_id=student)
+        new_balance = reg_main_obj.balance + amount
+        reg_main_obj.balance = new_balance
+        reg_main_obj.save()
+        new_payment_record = Payments(student_id=student, amount_paid = amount, payment_date=payment_date, payment_month=current_month(), payment_year= current_year())
+        new_payment_record.save()
+        
+        message = 'Your update payment request has been accepted.'
+        
+    else:
+        message = 'Your update payment request has been rejected.'    
+    
+    receiver = payment_req.student_id.id.user
+    central_mess_notif(request.user, receiver, 'leave_request', message)
+    data = {
+        'message': 'success'
+    }
+    return data
+    
+
 def handle_dreg_response(request):
     """
        This function is to respond to de registeration requests
@@ -816,14 +850,13 @@ def update_month_bill(request):
     """
     student = str(request.POST.get("rollNo")).upper()
     studentHere = Student.objects.get(id = student)
-    rebate_count = int(request.POST.get("RebateCount"))
-    print(rebate_count)
-    rebate_amount = int(request.POST.get("RebateAmount"))
-    print(rebate_amount)
     new_amount = int(request.POST.get("new_amount"))
     month = request.POST.get("Month")
     year = int(request.POST.get("Year"))
-    bill_base_amount = int(MessBillBase.objects.latest('timestamp').bill_amount)
+    try:
+        bill_base_amount = int(MessBillBase.objects.latest('timestamp').bill_amount)
+    except:
+        bill_base_amount = 150
     fixed_amount_per_month = int(bill_base_amount)*int(30)
 
     reg_main_obj = Reg_main.objects.get(student_id=student)
@@ -838,7 +871,7 @@ def update_month_bill(request):
         reg_main_obj.save() 
         existing_monthly_bill_object.save()
     except:
-        new_monthly_bill_obj = Monthly_bill(student_id = studentHere, rebate_amount=rebate_amount, rebate_count=rebate_count, month=month, year= year, total_bill = new_amount, amount=fixed_amount_per_month)
+        new_monthly_bill_obj = Monthly_bill(student_id = studentHere, month=month, year= year, total_bill = new_amount, amount=fixed_amount_per_month)
         curr_balance = curr_balance - new_amount
         reg_main_obj.balance = curr_balance
         reg_main_obj.save()

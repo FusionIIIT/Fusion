@@ -1,0 +1,178 @@
+<style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+    }
+    th {
+        background-color: #f2f2f2;
+    }
+</style>
+
+<div style="margin: 2rem;">
+    <div class="ui vertical segment">
+
+
+
+        <form method="post" id="editDetail" enctype="multipart/form-data">
+            {% csrf_token %}
+           
+
+            <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                
+
+                <div class="eight wide field">
+                    <label for="post_title">Name</label>
+                    <input type="text" name="name" maxlength="40" required id="name" value="{{ employee.user }}">
+                </div>
+                <div class="eight wide field">
+                    <label for="post_title">Designation</label>
+                    <input type="text" name="designation" maxlength="40" id="designation" value="{{ designation }}">
+                </div>
+                <div class="eight wide field">
+                    <label for="post_title">Application Date</label>
+                    <input type="Date" name="submissionDate" id="submissionDate">
+                </div>
+                <div class="fifteen wide field">
+                    <label for="post_title">PF Number</label>
+                    <input type="number" name="pfNo" maxlength="40" id="pfNo">
+                </div>
+                <div class="eight wide field">
+                    <label for="post_title">Department/Discipline</label>
+                    <input type="text" name="departmentInfo" maxlength="40" id="departmentInfo">
+                </div>
+
+
+
+               <div style="text-align: center;">
+                <div class="field">
+                    <label for="natureOfLeave">Nature of leave :</label>
+                    <select id="natureOfLeave" name="natureOfLeave">
+                        <option value="Casual">Casual</option>
+                        <option value="vacaction">Vacation</option>
+                        <option value="earned">Earned</option>
+                        <option value="commuted leave">Commuted Leave</option>
+                        <option value="specail casual leave">Special Casual Leave</option>
+                        <option value="restricted leave">Restricted Holiday</option>
+                        <option value="station leave">Station Leave</option>
+
+                    </select>
+                </div>
+                
+                </div>
+
+
+                <div class="eight wide field">
+                    <label for="post_title">Leave Start Date </label>
+                    <input type="date" name="leaveStartDate" maxlength="40"  id="leaveStartDate">
+                </div>
+
+                <div class="eight wide field">
+                    <label for="post_title"> Leave End Date</label>
+                    <input type="date" name="leaveEndDate" maxlength="40"  id="leaveEndDate">
+                </div>
+
+                <div class="eight wide field">
+                    <label for="post_title">Purpose</label>
+                    <input type="text" name="purposeOfLeave" maxlength="40" id="purposeOfLeave">
+                </div>
+
+                <div class="eight wide field">
+                    <label for="post_title">Leave Address</label>
+                    <input type="text" name="addressDuringLeave" maxlength="40" id="addressDuringLeave">
+                </div>
+
+                <div class="eight wide field">
+                    <label for="post_title">Academic Responsibility Assigned to </label>
+                    <input type="text" name="academicResponsibility" maxlength="40" id="academicResponsibility">
+                </div>
+
+                <div class="eight wide field">
+                    <label for="post_title">Administrative Responsibility Assigned to </label>
+                    <input type="text" name="addministrativeResponsibiltyAssigned" maxlength="40" id="addministrativeResponsibiltyAssigned">
+                </div>
+
+             
+               <hr>
+
+               <br>
+               <br>
+               <br>
+               <br>           
+                <br><br><br><br><br><br><br><br>
+                
+                
+                <br>
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label for="username_employee">Username:</label>
+                        <input type="text" name="username_employee" id="username_employee" class="ui search" placeholder="Enter Username">
+                    </div>
+                    <div class="eight wide field">
+                        <label for="designation_employee">Designation:</label>
+                        <input type="text" name="designation_employee" id="designation_employee" readonly>
+                    </div>
+                    <div class="field">
+                        <button id="check_button" class="ui primary button right floated">Check</button>
+                    </div>
+                </div>
+
+                <br>
+               
+
+                <div class="field">
+                    <button class="ui primary button right floated" type="submit" value="Submit">
+                        Submit
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <br>
+        <br>
+
+
+    </div>
+    <br>
+    <div class="extra content"></div>
+</div>
+
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#check_button').click(function(event) {
+            event.preventDefault();
+            var selectedUsername = $('#username_employee').val();
+
+            // Fire query to the URL with selected username
+            $.ajax({
+                url: '/hr2/search_employee/',
+                type: 'GET',
+                data: { search: selectedUsername }, // Pass search text as query parameter
+                success: function(data) {
+                    if (data.designation) {
+                        // Employee exists, update designation
+                        $('#designation_employee').val(data.designation);
+                        alert("Employee exists");
+                    } else {
+                        // Employee doesn't exist, show error message
+                        alert("Employee doesn't exist");
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                    // Show error message
+                    alert("An error occurred while processing your request.");
+                }
+            });
+        });
+    });
+</script>

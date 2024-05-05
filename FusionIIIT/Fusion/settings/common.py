@@ -111,6 +111,7 @@ INSTALLED_APPS = [
     'notification',
     'notifications',
     'applications.academic_procedures',
+    'applications.examination',
     'applications.academic_information',
     'applications.leave',
     'applications.library',
@@ -127,6 +128,7 @@ INSTALLED_APPS = [
     'applications.ps1',
     'applications.programme_curriculum',
     'applications.placement_cell',
+    'applications.otheracademic',
     'applications.recruitment',
     'applications.scholarships',
     'applications.visitor_hostel',
@@ -171,7 +173,7 @@ ROOT_URLCONF = 'Fusion.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, '..', 'templates/'),],
+        'DIRS': [os.path.join(BASE_DIR, '..', 'templates'),],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -256,9 +258,9 @@ SITE_ID = 1
 
 # os.path.join(BASE_DIR, 'static/')
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, '..', 'static/')
+STATIC_ROOT = os.path.join(BASE_DIR, '..', 'static')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-MEDIA_ROOT = os.path.join(BASE_DIR, '..', 'media/')
+MEDIA_ROOT = os.path.join(BASE_DIR, '..', 'media')
 MEDIA_URL = '/media/'
 
 ACCOUNT_USERNAME_REQUIRED = False
