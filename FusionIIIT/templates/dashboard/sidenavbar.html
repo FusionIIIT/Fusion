@@ -63,7 +63,7 @@
                 </a>
 
                 
-                <a class="item" href="{% url 'healthcenter:healthcenter' %}">
+                <a class="item" href="{% url 'healthcenter:healthcenter' %}" style="display: none;">
                     <h4>Healthcare Center</h4>
                 </a>
 
@@ -82,7 +82,7 @@
                     <h4>Complaint System</h4>
                 </a>
                 {% if request.user.extrainfo.user_type != "staff" or "placement officer" == global_var or "placement chairman" == global_var  %}
-                    <a class="item" href="{% url 'placement:placement' %}">
+                    <a class="item" href="{% url 'placement:placement' %}" style="display: none;">
                         <h4>Placement Cell</h4>
                     </a>
                 {% endif %}
@@ -90,12 +90,12 @@
                     <h4> Establishment Module </h4>
                 </a> -->
                 
-                    <a class="item" href="{% url 'dep:dep' %}">
+                    <a class="item" href="{% url 'dep:dep' %}" style="display: none;">
                             <h4> Department Portal </h4>
                     </a>
                 
                 {% if request.user.extrainfo.user_type == "faculty" or "rspc_admin" == global_var  or "HOD (CSE)" == global_var  or "HOD (ECE)" == global_var  or "HOD (ME)" == global_var  or "HOD (NS)" == global_var  or "HOD (Design)" == global_var  or "HOD (Liberal Arts)" == global_var  or "dean_rspc" == global_var  or "Director" == global_var  %}
-                <a class="item " href="/research_procedures">
+                <a class="item " href="/research_procedures" style="display: none;">
                     <h4> Research Module </h4>
                 </a>
                 {% endif %}
@@ -104,17 +104,17 @@
                     <h4>Counselling Cell</h4>
                 </a> -->
                 
-                <a class="item" href="{% url 'leave:leave' %}">
+                <a class="item" href="{% url 'leave:leave' %}" style="display: none;">
                     <h4>Leave Module</h4>
                 </a>
                 
                 {% if request.user.extrainfo.user_type == "faculty"  or "Professor" == global_var  or "Associate Professor" == global_var  or "Director" == global_var  or "HOD (CSE)" == global_var  or "HOD (ECE)" == global_var  or "HOD (ME)" == global_var  or "HOD (NS)" == global_var  or "HOD (Design)" == global_var  or "HOD (Liberal Arts)" == global_var  or "Accounts Admin" == global_var  or "Registrar" == global_var  or "Deputy Registrar" == global_var  or "asst. registrar aud" == global_var  or "asst. registrar fa" == global_var  or "ps_admin" == global_var  or "deptadmin_cse" == global_var  or "deptadmin_ece" == global_var  or "deptadmin_me" == global_var  or "deptadmin_sm" == global_var  or "deptadmin_design" == global_var  or "deptadmin_liberalarts" == global_var  or "deptadmin_ns" == global_var %}   
-		            <a class="item" href="/purchase-and-store">
+		            <a class="item" href="/purchase-and-store" style="display: none;">
                         <h4> Purchase and Store </h4>
                      </a>	
                 {% endif %}
                 {% if request.user.extrainfo.user_type != "student"  %}
-                    <a class = "item" href="/hr2/dashboard/">
+                    <a class = "item" href="/hr2/dashboard/" style="display: none;">
                         <h4> Human Resource </h4>
                     </a>
                 {% endif %}
@@ -129,22 +129,22 @@
 			        </a>
                 {% endif %}
                 {% if request.user.extrainfo.user_type == "student" or  "dean_s" == global_var or request.user.extrainfo.user_type == "faculty" %}
-                    <a class = "item" href="/gymkhana">
+                    <a class = "item" href="/gymkhana" style="display: none;">
                         <h4> Gymkhana </h4>
                     </a>
                 {% endif %}
 
                 {% if request.user.extrainfo.user_type != "student" %}
-				    <a class="item" href="/iwdModuleV2">
+				    <a class="item" href="/iwdModuleV2" style="display: none;">
                         <h4>Institute Work Departments</h4>
                     </a>
                 {% endif %}
                 {% if request.user.extrainfo.user_type == "student"  or user in hall_caretaker or user in hall_warden or request.user.is_superuser %}
-                    <a class="item" href="/hostelmanagement">
+                    <a class="item" href="/hostelmanagement" style="display: none;">
                         <h4>Hostel Management</h4>
                     </a>
                 {% endif %}
-                    <a class="item" href="/otheracademic">
+                    <a class="item" href="/otheracademic" style="display: none;">
                         <h4>Other Academic Procedure</h4>
                     </a>                         
                         </div>

@@ -13,6 +13,8 @@
             <div class="content modulesContent">
                 <div style="display: flex; flex-wrap: wrap;">
                         
+
+                        <!-- AC-2  -->
                         {% if request.user.extrainfo.user_type != "staff" or "acadadmin" == global_var %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
@@ -31,6 +33,7 @@
                         </div>
                         {% endif %}
                         
+                        <!-- AC-1  -->
                         {% if request.user.extrainfo.user_type == "student" or "Professor" == global_var or "Dean Academic" == global_var or "acadadmin" == global_var or "Assistant Professor" == global_var or "HOD (CSE)" == global_var  or "HOD (ECE)" == global_var  or "HOD (ME)" == global_var  or "HOD (NS)" == global_var  or "HOD (Design)" == global_var  or "HOD (Liberal Arts)" == global_var %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
@@ -49,6 +52,7 @@
                         </div>
                         {% endif %}
                   
+                        <!-- SA-2  -->
                         {% if request.user.extrainfo.user_type == "student" or "mess_manager" == global_var  or "mess_warden" == global_var  %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
@@ -67,7 +71,7 @@
                         </div>
                         {% endif %}
 
-
+                        <!-- OS-1  -->
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
@@ -84,10 +88,10 @@
                             </a>
                         </div>
                   
-                  
+                        <!-- Display none  -->
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
-                        box-sizing: border-box;">
+                        box-sizing: border-box; display: none;">
                             <a class="ui large label" style="height: 120px; width:100%" href="/healthcenter">
                                 <div class="ui centered grid">
                                     <div class="row">
@@ -101,6 +105,7 @@
                             </a>
                         </div>
 
+                        <!-- GAD-4  -->
                         {% if request.user.extrainfo.user_type != "student" %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
@@ -119,7 +124,7 @@
                         </div>
                         {% endif %}
                 
-
+                        <!-- AC-5  -->
                         {% if request.user.extrainfo.user_type == "student" or "spacsconvenor" == global_var  or "spacsassistant" == global_var  %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
@@ -138,7 +143,7 @@
                         </div>
                         {% endif %}
 
-
+                        <!-- GAD-3  -->
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
@@ -155,11 +160,11 @@
                             </a>
                         </div>
                    
-                  
+                        <!-- Display none  -->
                         {% if request.user.extrainfo.user_type != "staff" or "placement officer" == global_var or "placement chairman" == global_var  %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
-                        box-sizing: border-box;">
+                        box-sizing: border-box;display: none;">
                             <a class="ui large label" style="height: 120px; width:100%" href="/placement">
                                 <div class="ui centered grid">
                                     <div class="row">
@@ -192,10 +197,10 @@
                         </div> -->
                    
                   
- 
+                        <!-- Display none  -->
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
-                        box-sizing: border-box;">
+                        box-sizing: border-box;display: none;">
                             <a class="ui large label" style="height: 120px; width:100%" href="/dep">
                                 <div class="ui centered grid">
                                     <div class="row">
@@ -209,11 +214,11 @@
                             </a>
                         </div>
 
-
+                        <!-- Display none  -->
                         {% if request.user.extrainfo.user_type == "faculty" or "rspc_admin" == global_var  or "HOD (CSE)" == global_var  or "HOD (ECE)" == global_var  or "HOD (ME)" == global_var  or "HOD (NS)" == global_var  or "HOD (Design)" == global_var  or "HOD (Liberal Arts)" == global_var  or "dean_rspc" == global_var  or "Director" == global_var  %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
-                        box-sizing: border-box;">
+                        box-sizing: border-box;display: none;">
                             <a class="ui large label "  style="height: 120px; width:100%" href="/research_procedures">
                                 <div class="ui centered grid">
                                     <div class="row">
@@ -246,9 +251,10 @@
                         </div> -->
 
 
+                        <!-- Display none  -->
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
-                        box-sizing: border-box;">
+                        box-sizing: border-box;display: none;">
                             <a class="ui large label " style="height: 120px; width:100%" href="/leave">
                                 <div class="ui centered grid">
                                     <div class="row">
@@ -263,11 +269,11 @@
                         </div>
                  
 
-                          
+                        <!-- Display none  -->
                         {% if request.user.extrainfo.user_type == "faculty"  or "Professor" == global_var  or "Associate Professor" == global_var  or "Director" == global_var  or "HOD (CSE)" == global_var  or "HOD (ECE)" == global_var  or "HOD (ME)" == global_var  or "HOD (NS)" == global_var  or "HOD (Design)" == global_var  or "HOD (Liberal Arts)" == global_var  or "Accounts Admin" == global_var  or "Registrar" == global_var  or "Deputy Registrar" == global_var  or "asst. registrar aud" == global_var  or "asst. registrar fa" == global_var  or "ps_admin" == global_var  or "deptadmin_cse" == global_var  or "deptadmin_ece" == global_var  or "deptadmin_me" == global_var  or "deptadmin_sm" == global_var  or "deptadmin_design" == global_var  or "deptadmin_liberalarts" == global_var  or "deptadmin_ns" == global_var %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
-                        box-sizing: border-box;">
+                        box-sizing: border-box;display: none;">
                             <a class="ui large label" style="height: 120px; width:100%" href="/purchase-and-store">
                                 <div class="ui centered grid">
                                     <div class="row">
@@ -282,10 +288,11 @@
                         </div>
                         {% endif %}
                         
+                        <!-- Display none  -->
                         {% if request.user.extrainfo.user_type != "student"  %}
                             <div style="width: calc(50% - 10px);
                         margin: 5px;
-                        box-sizing: border-box;">
+                        box-sizing: border-box;display: none;">
                                 <a class="ui large label" style="height: 120px; width:100%" href="/hr2/dashboard">
                                     <div class="ui centered grid">
                                         <div class="row">
@@ -302,7 +309,7 @@
                  
                   
 
-                  
+                        <!-- AC-7  -->
                         {% if "acadadmin" == global_var  %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
@@ -321,7 +328,7 @@
                         </div>
                         {% endif %}
 
-
+                        <!-- AC-3  -->
                         {% if request.user.extrainfo.user_type != "staff" or "administrator" == global_var %}
                             <div style="width: calc(50% - 10px);
                         margin: 5px;
@@ -342,11 +349,11 @@
                 
                   
 
-                          
+                        <!-- Display none  -->
                         {% if request.user.extrainfo.user_type == "student" or  "dean_s" == global_var or request.user.extrainfo.user_type == "faculty" %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
-                        box-sizing: border-box;">
+                        box-sizing: border-box;display: none;">
                             <a class="ui large label" style="height: 120px; width:100%" href="/gymkhana">
                                 <div class="ui centered grid">
                                     <div class="row">
@@ -361,11 +368,11 @@
                         </div>
                         {% endif %}
 
-
+                        <!-- Display none  -->
                         {% if request.user.extrainfo.user_type != "student" %}
                             <div style="width: calc(50% - 10px);
                         margin: 5px;
-                        box-sizing: border-box;">
+                        box-sizing: border-box;display: none;">
                                 <a class="ui large label" style="height: 120px; width:100%" href="/iwdModuleV2">
                                     <div class="ui centered grid">
                                         <div class="row">
@@ -381,11 +388,11 @@
                         {% endif %}
                  
 
-                                     
+                        <!-- Display none  -->        
                         {% if request.user.extrainfo.user_type == "student"  or user in hall_caretaker or user in hall_warden or request.user.is_superuser %}
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
-                        box-sizing: border-box;">
+                        box-sizing: border-box;display: none;">
                             <a class="ui large label" style="height: 120px; width:100%" href="/hostelmanagement">
                                 <div class="ui centered grid">   
                                     <div class="row">
@@ -399,9 +406,11 @@
                             </a>
                         </div>
                         {% endif %}
+
+                        <!-- Display none  -->
                         <div style="width: calc(50% - 10px);
                         margin: 5px;
-                        box-sizing: border-box;">
+                        box-sizing: border-box;display: none;">
                             <a class="ui large label" style="height: 120px; width:100%" href="/otheracademic">
                                 <div class="ui centered grid">   
                                     <div class="row">
