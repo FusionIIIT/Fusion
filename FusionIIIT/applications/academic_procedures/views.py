@@ -1541,7 +1541,7 @@ def final_registration(request):
                 obj.save()
                 try:
                     StudentRegistrationChecks.objects.filter(student_id = current_user, semester_id = sem_id).update(final_registration_flag = True)
-                    messages.info(request, 'Final-Registration Successful')
+                    # messages.info(request, 'Final-Registration Successful')
                 except Exception as e:
                     return HttpResponseRedirect('/academic-procedures/main')
                 return HttpResponseRedirect('/academic-procedures/main')
