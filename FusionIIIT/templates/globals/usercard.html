@@ -1,31 +1,19 @@
-{% load static %}
+{% load static %} {% block usercard %} {% comment %} TODO: Something! {% endcomment %} {% comment %}The Employee Image Card starts here!{% endcomment %}
+<div class="ui large fluid raised card" style="max-width: 320px;">
 
-{% block usercard %}
+    <div class="image">
+        <img src="{% static 'globals/img/zlatan.jpg' %}">
+    </div>
 
-    {% comment %}
-        TODO: Something!
-    {% endcomment %}
-    {% comment %}The Employee Image Card starts here!{% endcomment %}
-    <div class="ui large fluid raised card"
-         style="max-width: 320px;">
-
-        <div class="image">
-            <img src="{% static 'globals/img/zlatan.jpg' %}">
-        </div>
-
-        <div class="content">
-            {% comment %}
-                TODO: Add a If-Else here!
-            {% endcomment %}
-            {% if user %}
-            <div class="ui large header" href="">
-                {{ user.first_name}}
-                {{ user.last_name}}
-                <span class="right floated meta">
+    <div class="content">
+        {% comment %} TODO: Add a If-Else here! {% endcomment %} {% if user %}
+        <div class="ui large header user_card" href="">
+            {{ user.first_name}} {{ user.last_name}}
+            <span class="right floated meta">
                     {{ user.extrainfo.department.name}}
                     
                 </span>
-                <span class="left floated meta">
+            <span class="left floated meta">
                     {% if user.extrainfo.user_type == 'student' %}
                     {{user.extrainfo.student.programme}}
                     {{ user.extrainfo.student.batch}}
@@ -33,13 +21,12 @@
                     Sem - {{user.extrainfo.student.curr_semester_no}}
                     {% endif %}
                 </span>
-                
-            </div>
-            {% else %}
-            <div class="ui large header" href="">
-                {{ request.user.first_name}}
-                {{ request.user.last_name}}
-                <span class="right floated meta">
+
+        </div>
+        {% else %}
+        <div class="ui large header" href="">
+            {{ request.user.first_name}} {{ request.user.last_name}}
+            <span class="right floated meta">
                     {{ request.user.extrainfo.department.name}}
                     <span class="right floated meta">
                         {% if request.user.extrainfo.user_type == 'student' %}
@@ -50,29 +37,32 @@
                         <br/>
                         {% endif %}
                 </span>
-                <span class="right floated meta">
+            <span class="right floated meta">
                     {{user.extrainfo.student.programme}}
                     {{ user.extrainfo.student.batch}}
                     {{user.extrainfo.student.curr_semester_no}}
                 </span>
-            </div>
-            {% endif %}
-            <br/>
-            <div class="meta">
-                {% for i in Curr_desig %}
-                <span> {% comment %}Should this be inside if else?{% endcomment %}
+        </div>
+        {% endif %}
+        <br/>
+        <div class="meta">
+            {% for i in Curr_desig %}
+            <span> {% comment %}Should this be inside if else?{% endcomment %}
                     {% if i == "co-ordinator" or  i == "co co-ordinator" %}
                         {{ i }} of {{ club_details }} club
                     {% else %}
                         {{ i }}
                     {% endif %}
                 </span>
-                <br>
-                {% endfor %}
-            </div>
+            <br> {% endfor %}
         </div>
     </div>
-    {% comment %}The Employee Image Card ends here!{% endcomment %}
-
-
-{% endblock %}
+</div>
+<style>
+    @media screen and (max-width: 988px) {
+        .user_card {
+            font-size: 14px !important;
+        }
+    }
+</style>
+{% comment %}The Employee Image Card ends here!{% endcomment %} {% endblock %}
