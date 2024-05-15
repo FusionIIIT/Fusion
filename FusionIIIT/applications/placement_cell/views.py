@@ -2609,16 +2609,16 @@ def cv(request, username):
     user = get_object_or_404(User, Q(username=username))
     profile = get_object_or_404(ExtraInfo, Q(user=user))
     now = datetime.datetime.now()
-    if int(str(profile.id)[:2]) == 20:
+    if((str(profile.id)[2])== 'B'):
+         if (now.month>4):
+          roll = 1+(now.year)-int("20"+str(profile.id)[0:2])
+         else:
+          roll = (now.year)-int("20"+str(profile.id)[0:2])
+    else :   
         if (now.month>4):
           roll = 1+now.year-int(str(profile.id)[:4])
         else:
           roll = now.year-int(str(profile.id)[:4])
-    else:
-        if (now.month>4):
-          roll = 1+(now.year)-int("20"+str(profile.id)[0:2])
-        else:
-          roll = (now.year)-int("20"+str(profile.id)[0:2])
 
     student = get_object_or_404(Student, Q(id=profile.id))
     skills = Has.objects.select_related('skill_id','unique_id').filter(Q(unique_id=student))
