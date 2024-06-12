@@ -694,6 +694,24 @@ def about(request):
 
 @login_required(login_url=LOGIN_URL)
 def dashboard(request):
+    """
+    Renders the dashboard page for the user
+
+    Parameters
+    ----------
+    request : HttpRequest
+        The request object which contains the user information
+    
+    Returns
+    -------
+    HttpResponse
+        The dashboard page 
+
+    Template
+    --------
+    globals/dashboard.html
+    """
+
     # cse_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'CSE'))
     # ece_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'ECE'))
     # me_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'ME'))
@@ -719,6 +737,7 @@ def dashboard(request):
     #         'students_2017': students_2017,
     #         'students_2016': students_2016,
     #         'students_2015': students_2015}
+
     user=request.user
     notifs=request.user.notifications.all()
     name = request.user.first_name +"_"+ request.user.last_name

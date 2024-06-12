@@ -74,6 +74,20 @@ def logout(request):
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def dashboard(request):
+    """
+    Used to get the dashboard data
+
+    Parameters
+    ----------
+    request : HttpRequest
+        The request object which contains the user details
+
+    Returns
+    -------
+    Response
+        The response object which contains the notifications, designation and club details
+    """
+
     user=request.user
 
     name = request.user.first_name +"_"+ request.user.last_name
