@@ -216,6 +216,7 @@ def homepage(request):
         return HttpResponseRedirect('/academic-procedures/')
 
     context = get_context(request)
+    
 
     return render(request, "ais/ais.html", context)
 
