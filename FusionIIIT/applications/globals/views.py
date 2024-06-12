@@ -1,5 +1,5 @@
 import json
-
+from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -895,10 +895,15 @@ def profile(request, username=None):
                                                          project_status=project_status,
                                                          project_link=project_link,
                                                          sdate=sdate, edate=edate)
-                    project_obj.save()
+                    project_obj.save()                               
             if 'experiencesubmit' in request.POST:
                 form = AddExperience(request.POST)
+                if request.POST.get("status") == 'COMPLETED':
+                  form.fields['edate'].required = True
+                  
+                  
                 if form.is_valid():
+                    
                     title = form.cleaned_data['title']
                     status = form.cleaned_data['status']
                     company = form.cleaned_data['company']
@@ -912,6 +917,11 @@ def profile(request, username=None):
                                                                description=description,
                                                                sdate=sdate, edate=edate)
                     experience_obj.save()
+
+                else:
+                   if (request.POST.get("status")) == 'COMPLETED' and request.POST.get('edate')=='':
+                         messages.error(request, 'End date is required')
+                                         
             if 'deleteskill' in request.POST:
                 hid = request.POST['deleteskill']
                 hs = Has.objects.select_related('skill_id','unique_id__id__user','unique_id__id__department').get(Q(pk=hid))

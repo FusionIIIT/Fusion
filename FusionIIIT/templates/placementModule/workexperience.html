@@ -73,10 +73,17 @@
                                     <div class="ui input left icon">
                                         <i class="calendar icon"></i>
                                         {{ form8.edate }}
+                                        {% if messages %}
+                                        <ul class="messages">
+                                            {% for message in messages %}
+                                            <li {% if message.tags %} class=" {{ message.tags }} " {% endif %}> {{ message }} </li>
+                                            {% endfor %}
+                                        </ul>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div>                                   
 
                         <div class="two fields">
                             <div class="sixteen wide field">
