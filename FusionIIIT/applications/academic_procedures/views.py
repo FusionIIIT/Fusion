@@ -1549,6 +1549,7 @@ def register(request):
         return HttpResponseRedirect('/academic-procedures/main')
 
 
+
 def add_courses(request):
     """
     This function is used to add courses for currernt semester
@@ -1567,6 +1568,7 @@ def add_courses(request):
     """
     if request.method == 'POST':
         try:
+            print(request)
             current_user = get_object_or_404(User, username=request.POST.get('user'))
             current_user = ExtraInfo.objects.all().filter(user=current_user).first()
             current_user = Student.objects.all().filter(id=current_user.id).first()
@@ -1574,11 +1576,18 @@ def add_courses(request):
             sem_id = Semester.objects.get(id = request.POST.get('semester'))
             count = request.POST.get('ct')
             count = int(count)
+            print(current_user,sem_id,count)
             reg_curr=[]
             for i in range(1, count+1):
                 choice = "choice["+str(i)+"]"
+                print("choice",choice)
+                
                 slot = "slot["+str(i)+"]"
+                print("slot",slot)
                 try:
+                    if request.POST.get(choice) == 0 or request.POST.get(slot) == 0 or request.POST.get(choice) == '0' or request.POST.get(slot) == '0':
+                        continue
+                    print("Course ",request.POST.get(choice))
                     course_id = Courses.objects.get(id = request.POST.get(choice))
                     courseslot_id = CourseSlot.objects.get(id = request.POST.get(slot))
                     # Check if maximum course registration limit has not reached and student has not already registered for that course
@@ -1594,11 +1603,13 @@ def add_courses(request):
                 except Exception as e:
                     continue
             course_registration.objects.bulk_create(reg_curr)
+            # return HttpResponse("Ok")
             return HttpResponseRedirect('/academic-procedures/main')
         except Exception as e:
             return HttpResponseRedirect('/academic-procedures/main')
     else:
         return HttpResponseRedirect('/academic-procedures/main')
+
 
 
 def drop_course(request):
@@ -1750,13 +1761,13 @@ def get_add_course_options(branch_courses, current_register, batch):
             course_option.append((courseslot, lis))
     return course_option
 
+
 def get_drop_course_options(current_register):
     courses = []
     for item in current_register:
-        if item[0].type != "Professional Core":
+        if item[1].name != "Professional Core":
             courses.append(item[1])
     return courses
-
 
 
 
