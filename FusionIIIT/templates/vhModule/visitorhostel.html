@@ -36,7 +36,7 @@
                     <i class="right floated chevron right icon"></i>
                 </a> 
 
-                {% if user_designation == 'VhIncharge' or user_designation == 'VhCaretaker' %}
+                {% if global_var == 'VhIncharge' or global_var == 'VhCaretaker' %}
                 <a class="item" data-tab="third" id="roomstatus">
                     Room Availability
                     <i class="right floated chevron right icon"></i>
@@ -129,9 +129,9 @@
 
         <div class="three wide column">
             <div class="row">
-                {% comment %}
-                    TODO: the right rail!
-                {% endcomment %}
+                {% block sidepanel%} 
+                {% include 'notifications/visitorhostel_sidepanel.html' %} 
+                {% endblock %}
             </div>
         </div>
 
