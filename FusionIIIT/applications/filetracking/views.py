@@ -8,12 +8,14 @@ from django.contrib.auth.models import User
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+from django.core.paginator import Paginator
 
 from .models import File, Tracking
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from .utils import *
 from .sdk.methods import *
 from .decorators import *
+from datetime import datetime;
 
 from timeit import default_timer as time
 from notification.views import office_module_notif, file_tracking_notif
@@ -235,25 +237,24 @@ def drafts_view(request, id):
 @login_required(login_url="/accounts/login")
 @user_is_student
 @dropdown_designation_valid
-def outbox_view(request, id):
+def outbox_view(request):
     """
-         The function is used to get all the files sent by user(employee) to other employees
-        which are filtered from Tracking(table) objects by current user i.e. current_id.
-        It displays files sent by user to other employees of a Tracking(table) of filetracking(model)
-        in the 'Outbox' tab of template.
+    The function is used to get all the files sent by user(employee) to other employees
+    which are filtered from Tracking(table) objects by current user i.e. current_id.
+    It displays files sent by user to other employees of a Tracking(table) of filetracking(model)
+    in the 'Outbox' tab of template.
 
-        @param:
-                request - trivial.
-                id - user id 
+    @param:
+            request - trivial.
+            id - user id 
 
-        @variables:
-                outward_files - File objects filtered by current_id i.e, present working user.
-                context - Holds data needed to make necessary changes in the template.
-
-
+    @variables:
+            outward_files - File objects filtered by current_id i.e, present working user.
+            context - Holds data needed to make necessary changes in the template.
     """
-    user_HoldsDesignation_obj = HoldsDesignation.objects.select_related(
-        'user', 'working', 'designation').get(pk=id)
+    dropdown_design = request.session.get('currentDesignationSelected', 'default_value')
+    username = request.user
+    user_HoldsDesignation_obj = get_HoldsDesignation_obj(username, dropdown_design)
     s = str(user_HoldsDesignation_obj).split(" - ")
     designation = s[1]
 
@@ -268,21 +269,33 @@ def outbox_view(request, id):
         f['sent_to_user'] = last_forw_tracking.receiver_id
         f['sent_to_design'] = last_forw_tracking.receive_design
         f['last_sent_date'] = last_forw_tracking.forward_date
-
         f['upload_date'] = parse_datetime(f['upload_date'])
         f['uploader'] = get_extra_info_object_from_id(f['uploader'])
 
-    outward_files = add_uploader_department_to_files_list(outward_files)
-    user_HoldsDesignation_obj = HoldsDesignation.objects.select_related(
-        'user', 'working', 'designation').get(pk=id)
-    s = str(user_HoldsDesignation_obj).split(" - ")
-    designation = s[1]
+    subject_query = request.GET.get('subject', '')
+    sent_to_query = request.GET.get('sent_to', '')
+    date_query = request.GET.get('date', '')
+
+    if subject_query:
+        outward_files = [f for f in outward_files if subject_query.lower() in f['subject'].lower()]
+    if sent_to_query:
+        outward_files = [f for f in outward_files if sent_to_query.lower() in f['sent_to_user'].username.lower()]
+    if date_query:
+        try:
+            search_date = datetime.strptime(date_query, '%Y-%m-%d')
+            outward_files = [f for f in outward_files if f['last_sent_date'].date() == search_date.date()]
+        except ValueError:
+            outward_files = []  # Invalid date format
+
+    paginator = Paginator(outward_files, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     context = {
-        'out_files': outward_files,
+        'page_obj': page_obj,
         'viewer_designation': designation,
         'notifications': request.user.notifications.all(),
-        'path_parent': 'outbox'
+        'path_parent': 'outbox',
     }
     return render(request, 'filetracking/outbox.html', context)
 
@@ -290,7 +303,7 @@ def outbox_view(request, id):
 @login_required(login_url="/accounts/login")
 @user_is_student
 @dropdown_designation_valid
-def inbox_view(request, id):
+def inbox_view(request):
     """
     The function is used to fetch the files received by the user form other employees. 
     These files are filtered by receiver id and ordered by receive date.
@@ -304,9 +317,11 @@ def inbox_view(request, id):
                 context - Holds data needed to make necessary changes in the template. 
 
     """
-
-    user_HoldsDesignation_obj = HoldsDesignation.objects.select_related(
-        'user', 'working', 'designation').get(pk=id)
+    dropdown_design = request.session.get(
+        'currentDesignationSelected', 'default_value')
+    username = request.user
+    user_HoldsDesignation_obj = get_HoldsDesignation_obj(
+        username, dropdown_design)
     s = str(user_HoldsDesignation_obj).split(" - ")
     designation = s[1]
     inward_files = view_inbox(
@@ -324,11 +339,32 @@ def inbox_view(request, id):
                                                             designation=user_HoldsDesignation_obj.designation)
         f['receive_date'] = last_recv_tracking.receive_date
         f['uploader'] = get_extra_info_object_from_id(f['uploader'])
+        f['is_forwarded'] = (False if (str(get_current_file_owner(f['id']).username) == str(user_HoldsDesignation_obj.user)) else True)
+
         
     inward_files = add_uploader_department_to_files_list(inward_files)
 
+    subject_query = request.GET.get('subject', '')
+    sent_to_query = request.GET.get('sent_to', '')
+    date_query = request.GET.get('date', '')
+
+    if subject_query:
+        inward_files = [f for f in inward_files if subject_query.lower() in f['subject'].lower()]
+    if sent_to_query:
+        inward_files = [f for f in inward_files if sent_to_query.lower() in f['sent_to_user'].username.lower()]
+    if date_query:
+        try:
+            search_date = datetime.strptime(date_query, '%Y-%m-%d')
+            inward_files = [f for f in inward_files if f['last_sent_date'].date() == search_date.date()]
+        except ValueError:
+            inward_files = []  # Invalid date format
+
+    paginator = Paginator(inward_files, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'in_file': inward_files,
+        'page_obj': page_obj,
         'designations': designation,
         'notifications': request.user.notifications.all(),
         'path_parent': 'inbox'
@@ -436,10 +472,11 @@ def view_file(request, id):
     current_owner = get_current_file_owner(file.id)
     file_uploader = get_user_object_from_username(file.uploader.user.username) 
 
+    last_receiver_designation = get_current_file_owner_designation(file.id).name
 
     if current_owner == request.user and file.is_read is False: 
         forward_enable = True
-    if current_owner == request.user and file_uploader == request.user and file.is_read is False:
+    if current_owner == request.user and last_receiver_designation == file.designation.name and file_uploader == request.user and file.is_read is False:
         archive_enable = True
 
     parent_of_prev_path = request.META.get('HTTP_REFERER').strip("/").split('/')[-2]
