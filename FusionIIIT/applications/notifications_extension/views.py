@@ -9,7 +9,9 @@ def delete(request, slug=None):
     notification = get_object_or_404(
         Notification, recipient=request.user, id=notification_id)
     notification.delete()
-    return HttpResponseRedirect('/')
+    previous_page = request.META.get('HTTP_REFERER', '/')
+    # Redirect to the previous page or the home page if the referrer is not available
+    return HttpResponseRedirect(previous_page)
     # return HttpResponseRedirect('dashboard/')
 def mark_as_read_and_redirect(request, slug=None):
     notification_id = slug2id(slug)

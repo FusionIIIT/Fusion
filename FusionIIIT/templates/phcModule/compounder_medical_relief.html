@@ -1,0 +1,109 @@
+{% load static %}
+
+{% block CompounderMedicalReliefView %}
+
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="inbox">
+        Inbox
+    </a>    
+</div>
+
+<div class="ui active tab" data-tab="inbox">
+    <div class="ui vertical segment" >
+        <table  border=1 class="ui very basic collapsing celled large sortable table"
+              style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;" >
+            <thead>
+            <tr>
+                <td style="font-weight:bold;color:black;" >
+                    Uploader ID
+                </td>
+
+                <td style="font-weight:bold;color:black;">
+                    Upload Date
+                </td>
+
+                <td style="font-weight:bold;color:black;" >
+                    Description
+                </td>
+                <td style="font-weight:bold;color:black;">
+                      File
+                </td>               
+                <td style="font-weight:bold;color:black;">
+                      Status
+                </td>               
+
+            </tr>
+            </thead>
+            <tbody>
+                {% for inbox in inbox_files %}
+                <tr>
+                
+                    <td style="white-space:nowrap;">
+                        {{ inbox.uploader }}
+                    </td>
+                    <td style="white-space:nowrap;">
+                        {{ inbox.upload_date }}
+                    </td>
+                
+                    <td style="white-space:nowrap;">
+                        {{ inbox.desc }}
+                    </td>
+                    <td style="white-space:nowrap;">
+                        <a href="{{ inbox.file }}" download>
+                            <i class="ui download icon right floated"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        {% if inbox.status1 %}
+                            Approved
+                        {% elif inbox.status %}
+                            Forwarded                  
+                        {% else %}
+                            Pending
+                        {% endif %}
+                    </td>
+                
+                    <td>
+                        {% if not inbox.status %}
+                            <input type="button" onclick="rem({{ inbox.id }})" id="{{ inbox.id }}" name="Forward" value="Forward" class="ui blue button" />
+                        {% endif %}
+                    </td>
+                
+                </tr>
+                {% endfor %}
+                </tbody>
+                
+        </table>
+
+            <script>
+                function rem(id) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/healthcenter/compounder/', // Specify the URL
+                        data: {
+                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                            file_id: id,  
+                            compounder_forward: 1,                            
+                        },
+                        success: function(data) {
+                            if (data.status === 1) {
+                                alert("Forwarded to Accounts Admin");
+                                // Optionally, reload the page
+                                window.location.reload();
+                            }
+                        }
+                    });
+                }
+                
+                
+           
+        </script>
+
+    </div>
+</div>
+
+
+
+
+{% endblock %}

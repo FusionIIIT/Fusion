@@ -38,10 +38,10 @@
 
         var hall_id = document.getElementById('_hall__id').value;
         var caretaker_username = document.getElementById('caretaker_username').value;
-        console.log('~~~~~~~~~~~', hall_id);
+        // console.log('~~~~~~~~~~~', hall_id);
      
         // Perform AJAX request to assign caretaker
-        fetch('http://0.0.0.0:8000/hostelmanagement/assign-caretaker', {
+        fetch('/hostelmanagement/assign-caretaker', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
