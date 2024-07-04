@@ -114,5 +114,7 @@ urlpatterns = [
     path('edit-student/<str:student_id>/', views.EditStudentView.as_view(), name='edit_student'),
     path('remove-student/<str:student_id>/', views.RemoveStudentView.as_view(), name='remove-student'),
     
+    path('addNewHall',views.AddNewHall.as_view(), name='add_new_hall'),
+    path('hostelDetails/<str:id>/', views.HostelDetails.as_view(), name='hostel_details'),
      
 ]

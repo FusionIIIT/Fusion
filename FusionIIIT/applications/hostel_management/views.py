@@ -74,7 +74,7 @@ from django.contrib.auth.decorators import login_required
 from Fusion.settings.common import LOGIN_URL
 from django.shortcuts import get_object_or_404, redirect, render
 from django.db import transaction
-from .forms import HallForm
+from .forms import HallForm ,AddNewHallForm
 from notification.views import hostel_notifications
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -2120,3 +2120,75 @@ class RemoveStudentView(View):
         return super().dispatch(request, *args, **kwargs)
     
 
+
+@method_decorator(user_passes_test(is_superuser), name='dispatch')
+class AddNewHall(View):
+    template_name = 'hostelmanagement/addNewHall.html'
+
+    def get(self, request, *args, **kwargs):
+        form = AddNewHallForm()
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        form = AddNewHallForm(request.POST)
+        if form.is_valid():
+            hall_id = form.cleaned_data['hall_id']
+            hall_name = form.cleaned_data['hall_name']
+            single_seater = form.cleaned_data['single_seater']
+            double_seater = form.cleaned_data['double_seater']
+            triple_seater = form.cleaned_data['triple_seater']
+
+            # Check if a hall with the given name already exists
+            if Hall.objects.filter(hall_id=hall_id).exists():
+                error_message = f'Hall with ID {hall_id} already exists.'
+                return HttpResponse(error_message, status=400)
+
+            # Calculate total rooms and max occupancy
+            total_rooms = single_seater + double_seater + triple_seater
+            max_occupancy = single_seater * 1 + double_seater * 2 + triple_seater * 3
+
+            # Create the hall
+            hall = Hall.objects.create(
+                hall_id=hall_id,
+                hall_name=hall_name,
+                max_accomodation=max_occupancy,                             
+                single_seater=single_seater,
+                double_seater=double_seater,
+                triple_seater=triple_seater
+            )
+
+            # Create rooms based on the provided details
+            room_types = [
+                {'type': 'Single Seater', 'quantity': single_seater, 'prefix': 'S', 'seats': 1},
+                {'type': 'Double Seater', 'quantity': double_seater, 'prefix': 'D', 'seats': 2},
+                {'type': 'Triple Seater', 'quantity': triple_seater, 'prefix': 'T', 'seats': 3},
+            ]
+
+            room_number = 1
+            for room_type in room_types:
+                for _ in range(room_type['quantity']):
+                    HostelRoom.objects.create(
+                        hall=hall,
+                        room_type=room_type['type'],
+                        room_number=f"{room_type['prefix']}{room_number}",
+                        status='available',
+                        available_seats=room_type['seats']
+                    )
+                    room_number += 1
+
+            messages.success(request, 'Hall and rooms added successfully!')
+            return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+
+        return render(request, self.template_name, {'form': form})
+
+@method_decorator(login_required, name='dispatch')
+class HostelDetails(View):
+    template_name = 'hostelmanagement/hostel_details.html'
+
+    def get(self, request, id):
+        hall = get_object_or_404(Hall, hall_id=id)
+        rooms = HostelRoom.objects.filter(hall=hall).select_related('hall').prefetch_related('occupants')
+
+        room_types = ['Single Seater', 'Double Seater', 'Triple Seater']
+
+        return render(request, self.template_name, {'hall': hall, 'rooms': rooms, 'room_types': room_types})

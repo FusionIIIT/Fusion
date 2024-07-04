@@ -1,0 +1,71 @@
+<!-- templates/hostelmanagement/hostel_details.html -->
+{% load custom_filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ hall.hall_name }} Room Details</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>{{ hall.hall_name }} Room Details</h1>
+        </div>
+        <div class="row">
+            {% for type in room_types %}
+                <div class="col-12 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h3>{{ type }}</h3>
+                            <div class="mt-2">
+                                <span class="me-3">
+                                    <i class="fa fa-bed"></i> Total Rooms: {{ rooms|filter_by_type:type|length }}
+                                </span>
+                                <br class="d-sm-none" /> <!-- Hide on small screens -->
+                                <span class="me-3">
+                                    <i class="fa fa-user"></i> Occupied Seats: {{ rooms|filter_by_type:type|occupied_seats }}
+                                </span>
+                                <br class="d-sm-none" /> <!-- Hide on small screens -->
+                                <span>
+                                    <i class="fa fa-door-open"></i> Vacant Seats: {{ rooms|filter_by_type:type|vacant_seats }}
+                                </span>
+                                <br class="d-sm-none" /> <!-- Hide on small screens -->
+                            </div>
+                        </div>
+                        <div class="card-body room-list">
+                            <div class="row">
+                                {% for room in rooms|filter_by_type:type %}
+                                    <div class="col-md-3 mb-3">
+                                        <div class="card h-100 {% if room.available_seats == 0 %}room-card-occupied{% else %}room-card{% endif %}">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Room Number: {{ room.room_number }}</h5>
+                                                <p class="card-text">
+                                                    <i class="fa fa-door-closed"></i> Vacant Seats: {{ room.available_seats }}
+                                                </p>
+                                                {% if room.occupants.all %}
+                                                    <ul class="list-group list-group-flush">
+                                                        {% for occupant in room.occupants.all %}
+                                                            <li class="list-group-item">
+                                                                {{ occupant.id.user.username }} ({{ occupant.batch }})
+                                                            </li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                {% else %}
+                                                    <p class="card-text text-muted">No occupants</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+</body>
+</html>

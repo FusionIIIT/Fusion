@@ -21,4 +21,5 @@ admin.site.register(HostelAllotment)
 admin.site.register(GuestRoom)
 admin.site.register(HostelTransactionHistory)
 admin.site.register(HostelHistory)
+admin.site.register(HostelRoom)
 
