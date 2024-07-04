@@ -1,0 +1,131 @@
+<!-- templates/hostel_allotment_page.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hostel Allotment</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Hostel Allotment</h1>
+        <div class="mb-4">
+            <label for="hostelSelect" class="form-label">Select Hostel</label>
+            <select id="hostelSelect" class="form-select">
+                <option value="">Select a hostel</option>
+            </select>
+        </div>
+        <div class="mb-4">
+            <label for="batchSelect" class="form-label">Select Batch</label>
+            <select id="batchSelect" class="form-select">
+                <option value="">Select a batch</option>
+                <option value="2019">2018</option>
+                <option value="2019">2019</option>
+                <option value="2020">2020</option>
+                <option value="2021">2021</option>
+                <option value="2022">2022</option>
+                <option value="2023">2023</option>
+                <option value="2023">2024</option>
+                <option value="2023">2025</option>
+            </select>
+        </div>
+        <div id="studentsList" class="mb-4" style="display: none;">
+            <h5>Students:</h5>
+            <div class="list-group" id="studentListContainer"></div>
+        </div>
+        <button id="allotHostelBtn" class="btn btn-success btn-lg btn-block" disabled>Allot Hostel</button>
+        <div class="mt-3 text-center" id="loading" style="display: none;">
+            <p>Allotment is processing...</p>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            let selectedHostel = '';
+            let selectedBatch = '';
+            let selectedStudents = [];
+
+            function fetchHostels() {
+                $.get('/hostelmanagement/hostels/', function (data) {
+                    console.log(data)
+                    data.forEach(function (hostel) {
+                        $('#hostelSelect').append(new Option(`${hostel.name} (Available: ${hostel.maxOccupancy - hostel.students})`, hostel.id));
+                    });
+                });
+            }
+
+            function fetchStudents(batch) {
+                $.get(`/hostelmanagement/students/?batch=${batch}`, function (data) {
+                    $('#studentListContainer').empty();
+                    data.forEach(function (student) {
+                        const studentHtml = `
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>${student.username}</span>
+                                <button class="btn btn-sm btn-primary select-student-btn" data-student-id="${student.id}">Select</button>
+                            </div>`;
+                        $('#studentListContainer').append(studentHtml);
+                    });
+                    $('#studentsList').show();
+                });
+            }
+
+            function updateSelectedStudents() {
+                if (selectedStudents.length > 0 && selectedHostel) {
+                    $('#allotHostelBtn').prop('disabled', false);
+                } else {
+                    $('#allotHostelBtn').prop('disabled', true);
+                }
+            }
+
+            $('#hostelSelect').change(function () {
+                selectedHostel = $(this).val();
+                updateSelectedStudents();
+            });
+
+            $('#batchSelect').change(function () {
+                selectedBatch = $(this).val();
+                if (selectedBatch) {
+                    fetchStudents(selectedBatch);
+                } else {
+                    $('#studentsList').hide();
+                }
+            });
+
+            $(document).on('click', '.select-student-btn', function () {
+                const studentId = $(this).data('student-id');
+                if (selectedStudents.includes(studentId)) {
+                    selectedStudents = selectedStudents.filter(id => id !== studentId);
+                    $(this).removeClass('btn-danger').addClass('btn-primary').text('Select');
+                } else {
+                    selectedStudents.push(studentId);
+                    $(this).removeClass('btn-primary').addClass('btn-danger').text('Deselect');
+                }
+                updateSelectedStudents();
+            });
+
+            $('#allotHostelBtn').click(function () {
+                $('#loading').show();
+                $.ajax({
+                    url: '/hostelmanagement/allot-hostel/',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ hostelId: selectedHostel, studentIds: selectedStudents }),
+                    success: function () {
+                        alert('Hostel allotted successfully!');
+                        location.reload();
+                    },
+                    error: function (xhr) {
+                        alert(`Error allotting hostel: ${xhr.responseJSON.message}`);
+                        $('#loading').hide();
+                    }
+                });
+            });
+
+            fetchHostels();
+        });
+    </script>
+</body>
+</html>

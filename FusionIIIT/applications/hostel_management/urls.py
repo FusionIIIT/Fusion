@@ -116,5 +116,9 @@ urlpatterns = [
     
     path('addNewHall',views.AddNewHall.as_view(), name='add_new_hall'),
     path('hostelDetails/<str:id>/', views.HostelDetails.as_view(), name='hostel_details'),
+    path('hostelAllotmentPage/', views.hostel_allotment_page, name='hostel_allotment_page'),
+    path('hostels/', views.fetch_hostels, name='fetch_hostels'),
+    path('allot-hostel/', views.allot_hostel, name='allot_hostel'),
+    path('students/', views.fetch_students, name='fetch_students')
      
 ]

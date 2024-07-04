@@ -2192,3 +2192,90 @@ class HostelDetails(View):
         room_types = ['Single Seater', 'Double Seater', 'Triple Seater']
 
         return render(request, self.template_name, {'hall': hall, 'rooms': rooms, 'room_types': room_types})
+
+@csrf_exempt
+def fetch_students(request):
+    if request.method == 'GET':
+        batch = request.GET.get('batch', None)
+        if batch is None:
+            return JsonResponse({'error': 'Batch parameter is required'}, status=400)
+
+        students = Student.objects.filter(batch=batch)
+        
+        data = [{'id': student.id.id, 'username': student.id.user.username} for student in students]
+        return JsonResponse(data, safe=False)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+@csrf_exempt
+def fetch_hostels(request):
+    if request.method == 'GET':
+        hostels = Hall.objects.all()
+        data = [{'id': hostel.hall_id, 'name': hostel.hall_name, 'maxOccupancy': hostel.max_accomodation,
+                 'students': hostel.number_students, 'typeOfSeater': hostel.type_of_seater} for hostel in hostels]
+        return JsonResponse(data, safe=False)
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+@csrf_exempt
+def hostel_allotment_page(request):
+    
+    return render(request, 'hostelmanagement/hostel_allotment_page.html')
+
+# Function to convert 'hall1', 'hall2', ... to '1', '2', ...
+def hall_identifier_to_number(identifier):
+    try:
+        return int(identifier.replace('hall', ''))
+    except ValueError:
+        return None
+
+# Function to map '1', '2', ... to 'hall1', 'hall2', ...
+def hall_number_to_identifier(number):
+    return f'hall{number}'
+
+
+
+@csrf_exempt
+def allot_hostel(request):
+    if request.method == 'POST':
+
+        
+        try:
+            data = json.loads(request.body)
+            
+            hostel_id = data.get('hostelId')
+            student_ids = data.get('studentIds')
+            hostel = get_object_or_404(Hall, hall_id=hostel_id)
+            students = Student.objects.filter(id__in=student_ids)
+
+            for student in students:
+                # Check if student already has a hostel assigned
+                if student.hall_no:
+                    # If a hostel is already assigned, decrement previous hostel's number_students
+                    current_hostel_id = hall_number_to_identifier(student.hall_no)
+                    try:
+                        current_hostel = get_object_or_404(Hall, hall_id=current_hostel_id)
+                        if current_hostel.number_students > 0:  # Ensure number_students doesn't go below zero
+                            current_hostel.number_students -= 1
+                            current_hostel.save()
+                    except Hall.DoesNotExist:
+                        pass  # Handle cases where current_hostel_id doesn't exist in Hall model
+
+                # Assign new hostel
+                student.hall_no = hall_identifier_to_number(hostel_id)
+                student.save()
+
+                # Increment new hostel's number_students
+                hostel.number_students += 1
+                hostel.save()
+
+            return JsonResponse({'message': 'Hostel allotted successfully'}, status=200)
+
+        except Hall.DoesNotExist:
+            return JsonResponse({'message': 'Hostel not found.'}, status=404)
+        except Student.DoesNotExist:
+            return JsonResponse({'message': 'Student not found.'}, status=404)
+        
+        except Exception as e:
+            return JsonResponse({'message': 'Error allotting hostel', 'error': str(e)}, status=500)
+
+    return JsonResponse({'message': 'Invalid request method'}, status=405)
