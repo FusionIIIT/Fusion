@@ -2210,7 +2210,8 @@ def fetch_students(request):
 
         students = Student.objects.filter(batch=batch)
         
-        data = [{'id': student.id.id, 'username': student.id.user.username} for student in students]
+        
+        data = [{'id': student.id.id, 'username': student.id.user.username, 'hostel':student.hall_no}for student in students]
         return JsonResponse(data, safe=False)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
@@ -2260,6 +2261,7 @@ def allot_hostel(request):
                 # Check if student already has a hostel assigned
                 if student.hall_no:
                     print(student.hall_no)
+                    student.room_no = None
                     # If a hostel is already assigned, decrement previous hostel's number_students
                     current_hostel_id = hall_number_to_identifier(student.hall_no)
                     try:
@@ -2305,11 +2307,12 @@ def allot_rooms_to_students(request, hostel_id):
 
             # Sort rooms using the custom sorting function
             rooms = sorted(rooms, key=lambda room: natural_sort_key(room.room_number))
-            
+
             students = Student.objects.filter(hall_no=hall_identifier_to_number(hostel_id))
             
             students_to_allot = students.filter(room_no__isnull=True)
 
+            print(students_to_allot.count())
             if students_to_allot.count() == 0:
                 return JsonResponse({'message': 'All students already have rooms allocated'}, status=200)
 
@@ -2341,7 +2344,7 @@ def allot_rooms_to_students(request, hostel_id):
                 student.room_no = room.room_number
                 student.save()
 
-                print(student.room_no)
+                
 
                 # Update room status if fully occupied
                 room.occupants.add(student)
@@ -2417,3 +2420,73 @@ def remove_room_allotments(request, hostel_id):
             'message': 'Error removing room allotments for the hostel',
             'error': str(e)
         }, status=500)
+
+@csrf_exempt
+def remove_hostel_allotment(request):
+    if request.method == 'POST':
+        try:
+            # Get all students
+            students = Student.objects.all()
+
+            for student in students:
+                # Check if student already has a hostel assigned
+                
+                if student.hall_no:
+                    
+                    # If a hostel is already assigned, decrement previous hostel's number_students
+                    current_hostel_id = hall_number_to_identifier(student.hall_no)
+                    try:
+                        current_hostel = get_object_or_404(Hall, hall_id=current_hostel_id)
+                        if current_hostel.number_students > 0:  # Ensure number_students doesn't go below zero
+                            current_hostel.number_students -= 1
+                            current_hostel.save()
+                    except Http404:
+                        pass  # Handle cases where current_hostel_id doesn't exist in Hall model
+                
+                
+                # Check if student already has a room assigned
+                if student.room_no and student.hall_no!=0:
+                    
+                    try:
+                        # Retrieve and update the previous room within the previous hostel
+                        current_hostel_id = hall_number_to_identifier(student.hall_no)
+                        hostel = get_object_or_404(Hall, hall_id =current_hostel_id)
+                        
+                        previous_room = HostelRoom.objects.get(hall=hostel, room_number=student.room_no)
+
+                        
+                        
+                        if(previous_room and previous_room.occupants.count()>0):
+                            capacity = 0
+                            if previous_room.room_type == 'Single Seater':
+                                capacity = 1
+                            elif previous_room.room_type == 'Double Seater':
+                                capacity = 2
+                            elif previous_room.room_type == 'Triple Seater':
+                                capacity = 3
+
+                            
+                            previous_room.available_seats =capacity
+                            previous_room.occupants.clear()
+                            previous_room.status = 'available'                     
+                            previous_room.save()
+                        else:
+                            print("No previous room")
+                            
+                    except HostelRoom.DoesNotExist:
+                        print(f"HostelRoom.DoesNotExist: {student.room_no} in Hall {current_hostel_id}")
+                        
+                        pass  # Handle cases where the previous room doesn't exist
+
+                # Reset the student's hostel and room assignment
+                
+                student.hall_no = 0  # Setting to 0 as null is not allowed
+                student.room_no = None
+                student.save()
+
+            return JsonResponse({'message': 'Hostel allotments removed successfully'}, status=200)
+        
+        except Exception as e:
+            return JsonResponse({'message': 'Error removing hostel allotments', 'error': str(e)}, status=500)
+
+    return JsonResponse({'message': 'Invalid request method'}, status=405)

@@ -2,6 +2,7 @@
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 </head>
+
 <body>
     <div class="container mt-5">
         <h1 class="text-center mb-4">Hostel Allotment</h1>
@@ -22,21 +24,32 @@
             <label for="batchSelect" class="form-label">Select Batch</label>
             <select id="batchSelect" class="form-select">
                 <option value="">Select a batch</option>
-                <option value="2019">2018</option>
+                <option value="2017">2017</option>
+
+                <option value="2018">2018</option>
                 <option value="2019">2019</option>
                 <option value="2020">2020</option>
                 <option value="2021">2021</option>
                 <option value="2022">2022</option>
                 <option value="2023">2023</option>
-                <option value="2023">2024</option>
-                <option value="2023">2025</option>
+                <option value="2024">2024</option>
+                <option value="2025">2025</option>
             </select>
+        </div>
+        <div id="selectedCount" class="mb-3 text-center">
+            <span class="badge bg-info">Selected Students: <span id="selectedStudentCount">0</span></span>
         </div>
         <div id="studentsList" class="mb-4" style="display: none;">
             <h5>Students:</h5>
+
             <div class="list-group" id="studentListContainer"></div>
         </div>
+
+        <button id="selectAllBtn" class="btn btn-primary mb-3">Select All</button>
+
         <button id="allotHostelBtn" class="btn btn-success btn-lg btn-block" disabled>Allot Hostel</button>
+        <button id="removeAllotmentBtn" class="btn btn-danger btn-lg btn-block mt-3">Remove All Hostel Allotments</button>
+
         <div class="mt-3 text-center" id="loading" style="display: none;">
             <p>Allotment is processing...</p>
         </div>
@@ -47,12 +60,15 @@
             let selectedHostel = '';
             let selectedBatch = '';
             let selectedStudents = [];
+            let selectedHostelCapacity = 0;
 
             function fetchHostels() {
                 $.get('/hostelmanagement/hostels/', function (data) {
-                    console.log(data)
+
                     data.forEach(function (hostel) {
-                        $('#hostelSelect').append(new Option(`${hostel.name} (Available: ${hostel.maxOccupancy - hostel.students})`, hostel.id));
+                        const option = new Option(`${hostel.name} (Available: ${hostel.maxOccupancy - hostel.students})`, hostel.id);
+                        $(option).attr('data-capacity', hostel.maxOccupancy - hostel.students);
+                        $('#hostelSelect').append(option);
                     });
                 });
             }
@@ -61,9 +77,11 @@
                 $.get(`/hostelmanagement/students/?batch=${batch}`, function (data) {
                     $('#studentListContainer').empty();
                     data.forEach(function (student) {
+                        let hostelDisplay = student.hostel === 0 ? 'Not allotted' : `Hall ${student.hostel}`;
                         const studentHtml = `
                             <div class="list-group-item d-flex justify-content-between align-items-center">
                                 <span>${student.username}</span>
+                                <span>${hostelDisplay}</span>
                                 <button class="btn btn-sm btn-primary select-student-btn" data-student-id="${student.id}">Select</button>
                             </div>`;
                         $('#studentListContainer').append(studentHtml);
@@ -73,6 +91,7 @@
             }
 
             function updateSelectedStudents() {
+                $('#selectedStudentCount').text(selectedStudents.length);
                 if (selectedStudents.length > 0 && selectedHostel) {
                     $('#allotHostelBtn').prop('disabled', false);
                 } else {
@@ -81,8 +100,14 @@
             }
 
             $('#hostelSelect').change(function () {
+
                 selectedHostel = $(this).val();
+
+
+                selectedHostelCapacity = parseInt($('#hostelSelect option:selected').data('capacity'), 10);
+                console.log(selectedHostelCapacity)
                 updateSelectedStudents();
+
             });
 
             $('#batchSelect').change(function () {
@@ -94,15 +119,35 @@
                 }
             });
 
+
             $(document).on('click', '.select-student-btn', function () {
                 const studentId = $(this).data('student-id');
                 if (selectedStudents.includes(studentId)) {
                     selectedStudents = selectedStudents.filter(id => id !== studentId);
                     $(this).removeClass('btn-danger').addClass('btn-primary').text('Select');
                 } else {
-                    selectedStudents.push(studentId);
-                    $(this).removeClass('btn-primary').addClass('btn-danger').text('Deselect');
+
+                    if (selectedStudents.length < selectedHostelCapacity) {
+                        selectedStudents.push(studentId);
+                        $(this).removeClass('btn-primary').addClass('btn-danger').text('Deselect');
+                    } else {
+                        alert('No more seats available. Please deselect some students.');
+                    }
                 }
+                updateSelectedStudents();
+            });
+
+            $('#selectAllBtn').click(function () {
+                const allSelectButtons = $('.select-student-btn');
+                allSelectButtons.each(function () {
+                    const studentId = $(this).data('student-id');
+                    if (!selectedStudents.includes(studentId)) {
+                        if (selectedStudents.length < selectedHostelCapacity) {
+                            selectedStudents.push(studentId);
+                            $(this).removeClass('btn-primary').addClass('btn-danger').text('Deselect');
+                        }
+                    }
+                });
                 updateSelectedStudents();
             });
 
@@ -124,8 +169,25 @@
                 });
             });
 
+            $('#removeAllotmentBtn').click(function () {
+                $('#loading').show();
+                $.ajax({
+                    url: '/hostelmanagement/remove-hostel-allotment/',
+                    type: 'POST',
+                    success: function () {
+                        alert('All hostel allotments removed successfully!');
+                        location.reload();
+                    },
+                    error: function (xhr) {
+                        alert(`Error removing hostel allotments: ${xhr.responseJSON.message}`);
+                        $('#loading').hide();
+                    }
+                });
+            });
+
             fetchHostels();
         });
     </script>
 </body>
+
 </html>

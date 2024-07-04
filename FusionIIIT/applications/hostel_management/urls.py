@@ -123,6 +123,7 @@ urlpatterns = [
     
     path('allot-rooms/<str:hostel_id>/', views.allot_rooms_to_students, name='allot_rooms'),
     path('remove-room-allotments/<str:hostel_id>/', views.remove_room_allotments, name='remove_room_allotments'),
+    path('remove-hostel-allotment/', views.remove_hostel_allotment, name='remove_hostel_allotment'),
 
      
 ]
