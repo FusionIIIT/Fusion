@@ -12,6 +12,9 @@
     <div class="container mt-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1>{{ hall.hall_name }} Room Details</h1>
+            <a href="#" id="allotRoomsBtn" class="btn btn-primary">Allot Rooms</a>
+            <a href="#" id="removeAllotmentBtn" class="btn btn-danger">Remove Allotment</a>
+
         </div>
         <div class="row">
             {% for type in room_types %}
@@ -67,5 +70,40 @@
         </div>
     </div>
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#allotRoomsBtn').click(function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url: "{% url 'hostelmanagement:allot_rooms' hall.hall_id %}",
+                    type: 'POST',
+                    success: function(response) {
+                        alert(response.message);
+                        location.reload(); // Reload the page to reflect changes
+                    },
+                    error: function(xhr, status, error) {
+                        alert("Error: " + xhr.responseJSON.message);
+                    }
+                });
+            });
+
+            // Remove Allotment Button
+            $('#removeAllotmentBtn').click(function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url: "{% url 'hostelmanagement:remove_room_allotments' hall.hall_id %}",
+                    type: 'POST',
+                    success: function(response) {
+                        alert(response.message);
+                        location.reload(); // Reload the page to reflect changes
+                    },
+                    error: function(xhr, status, error) {
+                        alert("Error: " + xhr.responseJSON.message);
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

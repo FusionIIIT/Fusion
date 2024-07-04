@@ -119,6 +119,10 @@ urlpatterns = [
     path('hostelAllotmentPage/', views.hostel_allotment_page, name='hostel_allotment_page'),
     path('hostels/', views.fetch_hostels, name='fetch_hostels'),
     path('allot-hostel/', views.allot_hostel, name='allot_hostel'),
-    path('students/', views.fetch_students, name='fetch_students')
+    path('students/', views.fetch_students, name='fetch_students'),
+    
+    path('allot-rooms/<str:hostel_id>/', views.allot_rooms_to_students, name='allot_rooms'),
+    path('remove-room-allotments/<str:hostel_id>/', views.remove_room_allotments, name='remove_room_allotments'),
+
      
 ]

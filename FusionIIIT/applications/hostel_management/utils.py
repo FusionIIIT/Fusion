@@ -118,3 +118,6 @@ def save_worker_report_sheet(excel, sheet, user_id):
 #         print(month,year)
 #         new_report = WorkerReport.objects.create(worker_id=worker_id, hall=hall_no, worker_name=worker_name, month=month, year=year, absent=absent, total_day=working_days, remark="none")
 #         new_report.save()    
+
+def sort_students_by_preference(students):
+    return students.order_by('batch', '-programme')
