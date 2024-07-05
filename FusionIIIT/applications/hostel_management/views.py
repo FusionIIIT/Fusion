@@ -112,7 +112,7 @@ def hostel_view(request, context={}):
     halls_student = {}
     for hall in all_hall:
         halls_student[hall.hall_id] = Student.objects.filter(
-            hall_no=int(hall.hall_id[4])).select_related('id__user')
+            hall_no=int(hall.hall_id[4])).select_related('id__user').order_by('id__user__username')
 
     hall_staffs = {}
     for hall in all_hall:
@@ -2218,7 +2218,7 @@ def fetch_students(request):
         if batch is None:
             return JsonResponse({'error': 'Batch parameter is required'}, status=400)
 
-        students = Student.objects.filter(batch=batch)
+        students = Student.objects.filter(batch=batch).order_by('id__user__username')
         
         
         data = [{'id': student.id.id, 'username': student.id.user.username, 'hostel':student.hall_no}for student in students]
