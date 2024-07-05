@@ -2133,8 +2133,8 @@ class AddNewHall(View):
     template_name = 'hostelmanagement/addNewHall.html'
 
     def get(self, request, *args, **kwargs):
-        form = AddNewHallForm()
-        return render(request, self.template_name, {'form': form})
+        add_new_hallForm = AddNewHallForm()
+        return render(request, self.template_name, {'add_new_hallForm': add_new_hallForm})
 
     def post(self, request, *args, **kwargs):
         form = AddNewHallForm(request.POST)
