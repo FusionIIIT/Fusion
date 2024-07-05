@@ -162,6 +162,9 @@ def hostel_view(request, context={}):
             'assigned_batch': hall.assigned_batch,
             'assigned_caretaker': caretaker.staff.id.user.username if caretaker else None,
             'assigned_warden': warden.faculty.id.user.username if warden else None,
+            'single_seater':hall.single_seater,
+            'double_seater':hall.double_seater,
+            'triple_seater':hall.triple_seater,
         }
 
         hostel_details.append(hostel_detail)
@@ -2194,6 +2197,10 @@ class HostelDetails(View):
     template_name = 'hostelmanagement/hostel_details.html'
 
     def get(self, request, id):
+        if request.user.id in Student.objects.values_list('id__user', flat=True):
+            return JsonResponse({'error': 'Unauthorized'}, status=400)
+            
+        
         hall = get_object_or_404(Hall, hall_id=id)
         rooms = HostelRoom.objects.filter(hall=hall).select_related('hall').prefetch_related('occupants')
 

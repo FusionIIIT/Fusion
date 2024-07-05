@@ -26,17 +26,22 @@ Hostel Allotment
             <div class="ui stackable grid">
                 <div class="sixteen wide column">
                     <h1 class="ui header">{{ hall.hall_name }} Room Details</h1>
+                    <button class="mini ui button"><a href="{% url 'hostelmanagement:hostel_view' %}">Back To Homepage</a></button>
+
                 </div>
+                
+
                 <div class="sixteen wide column">
-                    <div class="ui buttons right floated">
+                    <div class=" small ui buttons right floated">
                         <a href="#" id="allotRoomsBtn" class="ui primary button">Allot Rooms</a>
                         <a href="#" id="removeAllotmentBtn" class="ui red button">Remove Allotment</a>
-                        
+
                     
                     </div>
                     <a class="ui primary button" href="{% url 'hostelmanagement:manual_room_allocation' hall.hall_id %}">
                         <i class="tasks icon"></i>Manual Allocation
                     </a>
+
                 </div>
             </div>
 

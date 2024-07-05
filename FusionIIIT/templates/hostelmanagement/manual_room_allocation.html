@@ -24,7 +24,7 @@ Hostel Allotment
     </div>
     <div class="eight wide column">
         <h1 class="ui center aligned header">Manual Room Allocation</h1>
-
+        <br>
         <div class="ui form mb-4">
             <div class="field">
                 <label for="studentSelect">Select Student</label>
@@ -92,7 +92,14 @@ Hostel Allotment
             </div>
 
         </div>
+        <br>
+        <button class="mini ui button"><a href="{% url 'hostelmanagement:hostel_view' %}">Back To Homepage</a></button>
+        <button class="mini ui button"><a class="item" href="{% url 'hostelmanagement:hostel_details' hostel.hall_id %}">
+            <i class="tasks icon"></i>Room Details
+        </a></button>
+
     </div>
+    
 </div>
 
 {% block scripts %}
