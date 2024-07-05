@@ -125,5 +125,10 @@ urlpatterns = [
     path('remove-room-allotments/<str:hostel_id>/', views.remove_room_allotments, name='remove_room_allotments'),
     path('remove-hostel-allotment/', views.remove_hostel_allotment, name='remove_hostel_allotment'),
 
+    path('hostel/<str:hostel_id>/manual-room-allocation/', views.manual_room_allocation, name='manual_room_allocation'),
+    path('reassign-room/', views.reassign_student_room, name='reassign_student_room'),
+    path('swap-rooms/', views.swap_student_rooms, name='swap_student_rooms'),
+
+
      
 ]

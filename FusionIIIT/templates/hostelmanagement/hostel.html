@@ -261,6 +261,13 @@ Hostel
                 </a>
                 {% endif %}
 
+                {% if is_superuser %}
+                <a class="item" data-tab="superUser8">
+                    Hostel Allotment
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                
 
                 <!-- {% if user in hall_caretaker%}
                 <a class="item" data-tab="inventory1">
@@ -401,7 +408,7 @@ Hostel
         {% if is_superuser %}
         <div class="ui tab segment" data-tab="superUser4">
             {% block Add_hostel %}
-            {% include 'hostelmanagement/add_hostel.html' %}
+            {% include 'hostelmanagement/addNewHall.html' %}
             {% endblock %}
         </div>
         {% endif %}
@@ -423,6 +430,13 @@ Hostel
             {% endblock %}
         </div>
         {% endif %}
+        {% if is_superuser %}
+        <div class="ui tab segment" data-tab="superUser8">
+            {% block hostel_Allotment %}
+            {% include 'hostelmanagement/hostel_allotment_page.html' %}
+            {% endblock %}
+        </div>
+        {% endif %}
 
         {% if is_superuser %}
         <div class="ui tab segment" data-tab="superUser5">
@@ -431,6 +445,8 @@ Hostel
             {% endblock %}
         </div>
         {% endif %}
+
+        
 
 
 

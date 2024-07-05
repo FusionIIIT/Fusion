@@ -240,6 +240,7 @@ def hostel_view(request, context={}):
     all_complaints = HostelComplaint.objects.all()
 
     add_hostel_form = HallForm()
+    add_new_hallForm = AddNewHallForm()
     warden_ids = Faculty.objects.all().select_related('id__user')
 
     # //! My change for imposing fines
@@ -429,6 +430,8 @@ def hostel_view(request, context={}):
         'students': students,
         'hostel_transactions':hostel_transactions,
         'hostel_history':hostel_history,
+        'add_new_hallForm':add_new_hallForm,
+
         **context
     }
 
@@ -2490,3 +2493,122 @@ def remove_hostel_allotment(request):
             return JsonResponse({'message': 'Error removing hostel allotments', 'error': str(e)}, status=500)
 
     return JsonResponse({'message': 'Invalid request method'}, status=405)
+
+
+def manual_room_allocation(request, hostel_id):
+    hostel = get_object_or_404(Hall, hall_id=hostel_id)
+    students = Student.objects.filter(hall_no=hall_identifier_to_number(hostel_id))
+
+   
+    rooms = HostelRoom.objects.filter(hall=hostel, available_seats__gt=0)
+
+    context = {
+        'hostel': hostel,
+        'students': students,
+        'rooms': rooms
+    }
+
+    return render(request, 'hostelmanagement/manual_room_allocation.html', context)
+
+
+@csrf_exempt
+def reassign_student_room(request):
+
+    
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        student_id = data.get('studentId')
+        new_roomNum = data.get('roomNum')
+
+        student = get_object_or_404(Student, id=student_id)
+        
+        current_hostel_id = hall_number_to_identifier(student.hall_no)
+        hostel = get_object_or_404(Hall, hall_id =current_hostel_id)
+        
+        new_room=HostelRoom.objects.get(hall=hostel, room_number=new_roomNum )
+
+        if not student:
+            return JsonResponse({'message': 'Student not found'}, status=404)
+
+        if not new_room or new_room.available_seats <= 0:
+            return JsonResponse({'message': 'New room is not available'}, status=400)
+
+        # Find the current room of the student    
+        current_room=HostelRoom.objects.get(hall=hostel, room_number=student.room_no)
+
+        # Remove the student from the current room
+        if current_room:
+            current_room.occupants.remove(student)
+            current_room.available_seats += 1
+            if current_room.available_seats > 0:
+                current_room.status = 'available'
+            current_room.save()
+
+        # Add the student to the new room
+        
+                
+        new_room.occupants.add(student)
+        new_room.available_seats -= 1
+        if new_room.available_seats == 0:
+            new_room.status = 'occupied'
+        new_room.save()
+
+        # Update the student's room reference
+        student.room_no = new_room.room_number
+        student.save()
+
+        return JsonResponse({'message': 'Student reassigned successfully', 'hostel': student.hall_no})
+    else:
+        return JsonResponse({'message': 'Invalid request method'}, status=405)
+    
+
+
+@csrf_exempt
+def swap_student_rooms(request):
+    
+    if request.method == 'POST':
+
+        
+        try:
+            data = json.loads(request.body)
+            student_id1 = data['studentId1']
+            student_id2 = data['studentId2']
+
+            if(student_id1==student_id2):
+                return JsonResponse({'message': 'Choose two different student'}, status=400)
+
+            student1 = get_object_or_404(Student, id=student_id1)
+            student2 = get_object_or_404(Student, id=student_id2)
+
+            current_hostel_id = hall_number_to_identifier(student1.hall_no)
+            hostel = get_object_or_404(Hall, hall_id =current_hostel_id)
+
+            # Get current rooms of both students
+            room1=HostelRoom.objects.get(hall=hostel, room_number=student1.room_no)
+            room2=HostelRoom.objects.get(hall=hostel, room_number=student2.room_no)
+
+           
+
+            # Swap the students in their respective rooms
+            room1.occupants.remove(student1)
+            room2.occupants.remove(student2)
+
+            room1.occupants.add(student2)
+            room2.occupants.add(student1)
+
+            room1.save()
+            room2.save()
+
+            # Update the students' room references
+            student1.room_no, student2.room_no = student2.room_no, student1.room_no
+            student1.save()
+            student2.save()
+
+           
+
+            return JsonResponse({'message': 'Rooms swapped successfully'}, status=200)
+
+        except Exception as e:
+            print(e)
+            return JsonResponse({'message': 'Error swapping rooms', 'error': str(e)}, status=500)
+    return JsonResponse({'message': 'Invalid request method'}, status=400)

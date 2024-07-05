@@ -1,109 +1,136 @@
 <!-- templates/hostelmanagement/hostel_details.html -->
+{% extends 'globals/base.html' %}
 {% load custom_filters %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ hall.hall_name }} Room Details</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-</head>
-<body>
-    <div class="container mt-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>{{ hall.hall_name }} Room Details</h1>
-            <a href="#" id="allotRoomsBtn" class="btn btn-primary">Allot Rooms</a>
-            <a href="#" id="removeAllotmentBtn" class="btn btn-danger">Remove Allotment</a>
+{% load static %}
 
-        </div>
+{% block title %}
+Hostel Allotment
+{% endblock %}
+
+{% block body %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
+
+<div class="ui stackable doubling grid">
+    <div class="column"></div>
+    <div class="three wide column">
         <div class="row">
+            {% block userCard %}
+            {% include 'globals/usercard.html' %}
+            {% endblock %}
+        </div>
+    </div>
+    <div class="eight wide column">
+        <div class="ui container">
+            <div class="ui stackable grid">
+                <div class="sixteen wide column">
+                    <h1 class="ui header">{{ hall.hall_name }} Room Details</h1>
+                </div>
+                <div class="sixteen wide column">
+                    <div class="ui buttons right floated">
+                        <a href="#" id="allotRoomsBtn" class="ui primary button">Allot Rooms</a>
+                        <a href="#" id="removeAllotmentBtn" class="ui red button">Remove Allotment</a>
+                        
+                    
+                    </div>
+                    <a class="ui primary button" href="{% url 'hostelmanagement:manual_room_allocation' hall.hall_id %}">
+                        <i class="tasks icon"></i>Manual Allocation
+                    </a>
+                </div>
+            </div>
+
             {% for type in room_types %}
-                <div class="col-12 mb-4">
-                    <div class="card shadow-sm">
-                        <div class="card-header bg-primary text-white">
-                            <h3>{{ type }}</h3>
-                            <div class="mt-2">
-                                <span class="me-3">
-                                    <i class="fa fa-bed"></i> Total Rooms: {{ rooms|filter_by_type:type|length }}
-                                </span>
-                                <br class="d-sm-none" /> <!-- Hide on small screens -->
-                                <span class="me-3">
-                                    <i class="fa fa-user"></i> Occupied Seats: {{ rooms|filter_by_type:type|occupied_seats }}
-                                </span>
-                                <br class="d-sm-none" /> <!-- Hide on small screens -->
+            <div class="ui segment">
+                <div class="ui top attached label">{{ type }}</div>
+                <div class="ui divided items">
+                    <div class="item">
+                        <div class="content">
+                            <div class="meta">
                                 <span>
-                                    <i class="fa fa-door-open"></i> Vacant Seats: {{ rooms|filter_by_type:type|vacant_seats }}
+                                    <i class="bed icon"></i> Total Rooms: {{ rooms|filter_by_type:type|length }}
                                 </span>
-                                <br class="d-sm-none" /> <!-- Hide on small screens -->
-                            </div>
-                        </div>
-                        <div class="card-body room-list">
-                            <div class="row">
-                                {% for room in rooms|filter_by_type:type %}
-                                    <div class="col-md-3 mb-3">
-                                        <div class="card h-100 {% if room.available_seats == 0 %}room-card-occupied{% else %}room-card{% endif %}">
-                                            <div class="card-body">
-                                                <h5 class="card-title">Room Number: {{ room.room_number }}</h5>
-                                                <p class="card-text">
-                                                    <i class="fa fa-door-closed"></i> Vacant Seats: {{ room.available_seats }}
-                                                </p>
-                                                {% if room.occupants.all %}
-                                                    <ul class="list-group list-group-flush">
-                                                        {% for occupant in room.occupants.all %}
-                                                            <li class="list-group-item">
-                                                                {{ occupant.id.user.username }} ({{ occupant.batch }})
-                                                            </li>
-                                                        {% endfor %}
-                                                    </ul>
-                                                {% else %}
-                                                    <p class="card-text text-muted">No occupants</p>
-                                                {% endif %}
-                                            </div>
-                                        </div>
-                                    </div>
-                                {% endfor %}
+                                <span>
+                                    <i class="user icon"></i> Occupied Seats: {{ rooms|filter_by_type:type|occupied_seats }}
+                                </span>
+                                <span>
+                                    <i class="door open icon"></i> Vacant Seats: {{ rooms|filter_by_type:type|vacant_seats }}
+                                </span>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <div class="ui stackable grid" style="max-height: 400px; overflow-y: auto;">
+                    {% for room in rooms|filter_by_type:type %}
+                    <div class="four wide column">
+                        <div class="ui card {% if room.available_seats == 0 %}red{% else %}green{% endif %}">
+                            <div class="content">
+                                <div class="header">Room Number: {{ room.room_number }}</div>
+                                <div class="meta">
+                                    <i class="door closed icon"></i> Vacant Seats: {{ room.available_seats }}
+                                </div>
+                                {% if room.occupants.all %}
+                                <div class="description">
+                                    <ul class="ui list">
+                                        {% for occupant in room.occupants.all %}
+                                        <li class="item">
+                                            {{ occupant.id.user.username }}
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                {% else %}
+                                <div class="description">
+                                    <p class="text-muted">No occupants</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
             {% endfor %}
         </div>
     </div>
-    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            $('#allotRoomsBtn').click(function(e) {
-                e.preventDefault();
-                $.ajax({
-                    url: "{% url 'hostelmanagement:allot_rooms' hall.hall_id %}",
-                    type: 'POST',
-                    success: function(response) {
-                        alert(response.message);
-                        location.reload(); // Reload the page to reflect changes
-                    },
-                    error: function(xhr, status, error) {
-                        alert("Error: " + xhr.responseJSON.message);
-                    }
-                });
-            });
+</div>
 
-            // Remove Allotment Button
-            $('#removeAllotmentBtn').click(function(e) {
-                e.preventDefault();
-                $.ajax({
-                    url: "{% url 'hostelmanagement:remove_room_allotments' hall.hall_id %}",
-                    type: 'POST',
-                    success: function(response) {
-                        alert(response.message);
-                        location.reload(); // Reload the page to reflect changes
-                    },
-                    error: function(xhr, status, error) {
-                        alert("Error: " + xhr.responseJSON.message);
-                    }
-                });
+<script src="https://kit.fontawesome.com/a076d05399.js"></script>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#allotRoomsBtn').click(function (e) {
+            e.preventDefault();
+            $.ajax({
+                url: "{% url 'hostelmanagement:allot_rooms' hall.hall_id %}",
+                type: 'POST',
+                success: function (response) {
+                    alert(response.message);
+                    location.reload(); // Reload the page to reflect changes
+                },
+                error: function (xhr, status, error) {
+                    alert("Error: " + xhr.responseJSON.message);
+                }
             });
         });
-    </script>
-</body>
-</html>
+
+        // Remove Allotment Button
+        $('#removeAllotmentBtn').click(function (e) {
+            e.preventDefault();
+            $.ajax({
+                url: "{% url 'hostelmanagement:remove_room_allotments' hall.hall_id %}",
+                type: 'POST',
+                success: function (response) {
+                    alert(response.message);
+                    location.reload(); // Reload the page to reflect changes
+                },
+                error: function (xhr, status, error) {
+                    alert("Error: " + xhr.responseJSON.message);
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock %}
