@@ -26,19 +26,21 @@ Hostel Allotment
             <div class="ui stackable grid">
                 <div class="sixteen wide column">
                     <h1 class="ui header">{{ hall.hall_name }} Room Details</h1>
-                    <button class="mini ui button"><a href="{% url 'hostelmanagement:hostel_view' %}">Back To Homepage</a></button>
+                    <button class="mini ui button"><a href="{% url 'hostelmanagement:hostel_view' %}">Back To
+                            Homepage</a></button>
 
                 </div>
-                
+
 
                 <div class="sixteen wide column">
                     <div class=" small ui buttons right floated">
                         <a href="#" id="allotRoomsBtn" class="ui primary button">Allot Rooms</a>
                         <a href="#" id="removeAllotmentBtn" class="ui red button">Remove Allotment</a>
 
-                    
+
                     </div>
-                    <a class="ui primary button" href="{% url 'hostelmanagement:manual_room_allocation' hall.hall_id %}">
+                    <a class="ui primary button"
+                        href="{% url 'hostelmanagement:manual_room_allocation' hall.hall_id %}">
                         <i class="tasks icon"></i>Manual Allocation
                     </a>
 
@@ -56,10 +58,12 @@ Hostel Allotment
                                     <i class="bed icon"></i> Total Rooms: {{ rooms|filter_by_type:type|length }}
                                 </span>
                                 <span>
-                                    <i class="user icon"></i> Occupied Seats: {{ rooms|filter_by_type:type|occupied_seats }}
+                                    <i class="user icon"></i> Occupied Seats: {{rooms|filter_by_type:type|occupied_seats }}
+                                    
                                 </span>
                                 <span>
-                                    <i class="door open icon"></i> Vacant Seats: {{ rooms|filter_by_type:type|vacant_seats }}
+                                    <i class="door open icon"></i> Vacant Seats: {{rooms|filter_by_type:type|vacant_seats }}
+                                    
                                 </span>
                             </div>
                         </div>
@@ -123,17 +127,21 @@ Hostel Allotment
         // Remove Allotment Button
         $('#removeAllotmentBtn').click(function (e) {
             e.preventDefault();
-            $.ajax({
-                url: "{% url 'hostelmanagement:remove_room_allotments' hall.hall_id %}",
-                type: 'POST',
-                success: function (response) {
-                    alert(response.message);
-                    location.reload(); // Reload the page to reflect changes
-                },
-                error: function (xhr, status, error) {
-                    alert("Error: " + xhr.responseJSON.message);
-                }
-            });
+            if (confirm("Are you sure you want to remove the allotment?")) {
+
+
+                $.ajax({
+                    url: "{% url 'hostelmanagement:remove_room_allotments' hall.hall_id %}",
+                    type: 'POST',
+                    success: function (response) {
+                        alert(response.message);
+                        location.reload(); // Reload the page to reflect changes
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Error: " + xhr.responseJSON.message);
+                    }
+                });
+            }
         });
     });
 </script>
