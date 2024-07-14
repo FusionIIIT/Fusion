@@ -1,16 +1,17 @@
 {% extends "account/base.html" %}
-{%block content%}
+{% block content %}
 {% load i18n %}
 {% load account socialaccount %}
 {% load static semanticui %}
+
 <div class="content">
   <img class="ui rounded centered small image"
-    src="{% static 'globals/img/user.png' %}"
-    style="margin-top: -27.5%; margin-left: 27.5%;"
-    alt="User Image" >
+       src="{% static 'globals/img/user.png' %}"
+       style="margin-top: -27.5%; margin-left: 27.5%;"
+       alt="User Image">
   <div class="ui huge centered header">
-      Login
-  </div>  
+    Login
+  </div>
 </div>
 
 <div class="content">
@@ -18,31 +19,56 @@
     {% csrf_token %}
     {% render_form form %}
     {% if redirect_field_value %}
-    <input type="hidden"  name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+      <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
     {% endif %}
     <div class="field">
       <button class="ui fluid large primary button" type="submit">Login</button>
     </div>
     <div class="center aligned">
-      <a href="{% url 'account_reset_password' %}">{% trans "Forgot Password?" %}</a>
+      <a href="{% url 'account_reset_password' %}" style="color:white">{% trans "Forgot Password?" %}</a>
     </div>
   </form>
 
-  <!-- <div class="ui divider"><center style="margin-top: -0.5em;">OR</center></div> -->
   <div class="box-header with-border">
     {% get_providers as socialaccount_providers %}
   </div>
-      <center>
-      {% if socialaccount_providers %}
-        <div class="socialaccount_ballot">
-          <div class="socialaccount_providers">
-            {% include "socialaccount/snippets/provider_list.html" with process="login" %}
-          </div>
+  <center>
+    {% if socialaccount_providers %}
+      <div class="socialaccount_ballot">
+        <div class="socialaccount_providers">
+          {% include "socialaccount/snippets/provider_list.html" with process="login" %}
         </div>
-        {% include "socialaccount/snippets/login_extra.html" %}
-        {% endif %}
-      </center>
+      </div>
+      {% include "socialaccount/snippets/login_extra.html" %}
+    {% endif %}
+  </center>
 </div>
 
-{% endblock %}
+{% if form.errors %}
+<div id="error-popup" class="ui modal">
+  <div class="header">Login Failed</div>
+  <div class="content">
+    <div class="ui red message">
+      <p>Invalid credentials. Please try again.</p>
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui red ok button">OK</div>
+  </div>
+</div>
+{% endif %}
 
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    if (document.getElementById('error-popup')) {
+      $('#error-popup').modal({
+        onApprove: function() {
+          $('#error-popup').modal('hide');
+        }
+      }).modal('show');
+    }
+  });
+</script>
+
+{% endblock %}
+ 

@@ -12,170 +12,196 @@
 
             <div class="content modulesContent">
                 <div style="display: flex; flex-wrap: wrap;">
-                        
-                        {% if request.user.extrainfo.user_type != "staff" or "acadadmin" == global_var %}
-                        <div style="width: calc(50% - 10px);
+
+
+                    {% if request.session.moduleAccessRights.course_registration %}
+
+                    <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" style="height: 120px; width:100%" href="/academic-procedures">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui university icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Academics</span>
-                                    </div>
+                        <a class="ui large label" style="height: 120px; width:100%" style="height: 120px; width:100%"
+                            href="/academic-procedures">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui university icon big"></i>
                                 </div>
-                            </a>
-                        </div>
-                        {% endif %}
-                        
-                        {% if request.user.extrainfo.user_type == "student" or "Professor" == global_var or "Dean Academic" == global_var or "acadadmin" == global_var or "Assistant Professor" == global_var or "HOD (CSE)" == global_var  or "HOD (ECE)" == global_var  or "HOD (ME)" == global_var  or "HOD (NS)" == global_var  or "HOD (Design)" == global_var  or "HOD (Liberal Arts)" == global_var %}
-                        <div style="width: calc(50% - 10px);
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Academics</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+
+
+                    {% if request.session.moduleAccessRights.program_and_curriculum %}
+
+                    <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/programme_curriculum">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui book icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Programme And Curriculum </span>
-                                    </div>
+                        <a class="ui large label" style="height: 120px; width:100%" href="/programme_curriculum">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui book icon big"></i>
                                 </div>
-                            </a>
-                        </div>
-                        {% endif %}
-                  
-                        {% if request.user.extrainfo.user_type == "student" or "mess_manager" == global_var  or "mess_warden" == global_var  %}
-                        <div style="width: calc(50% - 10px);
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Programme And Curriculum </span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+
+
+                    {% if request.session.moduleAccessRights.mess_management %}
+
+                    <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/mess">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui food icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Mess Management</span>
-                                    </div>
+                        <a class="ui large label" style="height: 120px; width:100%" href="/mess">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui food icon big"></i>
                                 </div>
-                            </a>
-                        </div>
-                        {% endif %}
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Mess Management</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    {% if request.session.moduleAccessRights.visitor_hostel %}
 
 
-                        <div style="width: calc(50% - 10px);
+
+                    <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/visitorhostel">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui hotel icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Visitor's Hostel</span>
-                                    </div>
+                        <a class="ui large label" style="height: 120px; width:100%" href="/visitorhostel">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui hotel icon big"></i>
                                 </div>
-                            </a>
-                        </div>
-                  
-                  
-                        <div style="width: calc(50% - 10px);
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Visitor's Hostel</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    {% if request.session.moduleAccessRights.phc %}
+
+
+                    <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/healthcenter">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui first aid icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Healthcare Center</span>
-                                    </div>
+                        <a class="ui large label" style="height: 120px; width:100%" href="/healthcenter">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui first aid icon big"></i>
                                 </div>
-                            </a>
-                        </div>
 
-                        {% if request.user.extrainfo.user_type != "student" %}
-                        <div style="width: calc(50% - 10px);
+                                <div class="row">
+                                    <span class="ui sub header centered">Healthcare Center</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+
+
+
+                    {% if request.session.moduleAccessRights.fts %}
+
+                    <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/filetracking">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui wpforms icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">File Tracking</span>
-                                    </div>
+                        <a class="ui large label" style="height: 120px; width:100%" href="/filetracking">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui wpforms icon big"></i>
                                 </div>
-                            </a>
-                        </div>
-                        {% endif %}
-                
 
-                        {% if request.user.extrainfo.user_type == "student" or "spacsconvenor" == global_var  or "spacsassistant" == global_var  %}
-                        <div style="width: calc(50% - 10px);
+                                <div class="row">
+                                    <span class="ui sub header centered">File Tracking</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+
+
+
+                    {% if request.session.moduleAccessRights.spacs %}
+
+                    <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/spacs">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui student icon big"></i>
-                                    </div>
-                                    
-                                    <div class="row">
-                                        <span class="ui sub header centered">Scholarship Portal</span>
-                                    </div>
+                        <a class="ui large label" style="height: 120px; width:100%" href="/spacs">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui student icon big"></i>
                                 </div>
-                            </a>
-                        </div>
-                        {% endif %}
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Scholarship Portal</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% if request.session.moduleAccessRights.complaint_management %}
 
 
-                        <div style="width: calc(50% - 10px);
+                    <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/complaint">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui line chart icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Complaint System</span>
-                                    </div>
+                        <a class="ui large label" style="height: 120px; width:100%" href="/complaint">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui line chart icon big"></i>
                                 </div>
-                            </a>
-                        </div>
-                   
-                  
-                        {% if request.user.extrainfo.user_type != "staff" or "placement officer" == global_var or "placement chairman" == global_var  %}
-                        <div style="width: calc(50% - 10px);
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Complaint System</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+
+                    {% endif %}
+
+
+
+
+                    {% if request.session.moduleAccessRights.placement_cell %}
+
+                    <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/placement">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui bitcoin icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Placement Cell</span>
-                                    </div>
+                        <a class="ui large label" style="height: 120px; width:100%" href="/placement">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui bitcoin icon big"></i>
                                 </div>
-                            </a>
-                        </div>
-                        {% endif %}
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Placement Cell</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
 
 
-                        <!-- <div style="width: calc(50% - 10px);
+                    <!-- <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
                             <a class="ui large label  "  style="height: 120px; width:100%" href="{% url 'estate_module_home' %}">
@@ -190,46 +216,51 @@
                                 </div>
                             </a>
                         </div> -->
-                   
-                  
- 
-                        <div style="width: calc(50% - 10px);
+
+
+                    {% if request.session.moduleAccessRights.department %}
+
+                    <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/dep">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui student icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Department Portal</span>
-                                    </div>
+                        <a class="ui large label" style="height: 120px; width:100%" href="/dep">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui student icon big"></i>
                                 </div>
-                            </a>
-                        </div>
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Department Portal</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
 
 
-                        {% if request.user.extrainfo.user_type == "faculty" or "rspc_admin" == global_var  or "HOD (CSE)" == global_var  or "HOD (ECE)" == global_var  or "HOD (ME)" == global_var  or "HOD (NS)" == global_var  or "HOD (Design)" == global_var  or "HOD (Liberal Arts)" == global_var  or "dean_rspc" == global_var  or "Director" == global_var  %}
-                        <div style="width: calc(50% - 10px);
+
+
+                    {% if request.session.moduleAccessRights.rspc %}
+
+                    <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
-                            <a class="ui large label "  style="height: 120px; width:100%" href="/research_procedures">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui university icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Research Module</span>
-                                    </div>
+                        <a class="ui large label " style="height: 120px; width:100%" href="/research_procedures">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui university icon big"></i>
                                 </div>
-                            </a>
-                        </div>
-                        {% endif %}
-                   
-                                     
-                        <!-- <div style="width: calc(50% - 10px);
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Research Module</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+
+
+                    <!-- <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
                             <a class="ui large label"  style="height: 120px; width:100%" href="/counselling">
@@ -246,181 +277,182 @@
                         </div> -->
 
 
-                        <div style="width: calc(50% - 10px);
+                    <!-- <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
-                            <a class="ui large label " style="height: 120px; width:100%" href="/leave">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="plane icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Leave Module</span>
-                                    </div>
+                        <a class="ui large label " style="height: 120px; width:100%" href="/leave">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="plane icon big"></i>
                                 </div>
-                            </a>
-                        </div>
-                 
 
-                          
-                        {% if request.user.extrainfo.user_type == "faculty"  or "Professor" == global_var  or "Associate Professor" == global_var  or "Director" == global_var  or "HOD (CSE)" == global_var  or "HOD (ECE)" == global_var  or "HOD (ME)" == global_var  or "HOD (NS)" == global_var  or "HOD (Design)" == global_var  or "HOD (Liberal Arts)" == global_var  or "Accounts Admin" == global_var  or "Registrar" == global_var  or "Deputy Registrar" == global_var  or "asst. registrar aud" == global_var  or "asst. registrar fa" == global_var  or "ps_admin" == global_var  or "deptadmin_cse" == global_var  or "deptadmin_ece" == global_var  or "deptadmin_me" == global_var  or "deptadmin_sm" == global_var  or "deptadmin_design" == global_var  or "deptadmin_liberalarts" == global_var  or "deptadmin_ns" == global_var %}
-                        <div style="width: calc(50% - 10px);
-                        margin: 5px;
-                        box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/purchase-and-store">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui edit outline icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Purchase and Store</span>
-                                    </div>
+                                <div class="row">
+                                    <span class="ui sub header centered">Leave Module</span>
                                 </div>
-                            </a>
-                        </div>
-                        {% endif %}
-                        
-                        {% if request.user.extrainfo.user_type != "student"  %}
-                            <div style="width: calc(50% - 10px);
-                        margin: 5px;
-                        box-sizing: border-box;">
-                                <a class="ui large label" style="height: 120px; width:100%" href="/hr2/dashboard">
-                                    <div class="ui centered grid">
-                                        <div class="row">
-                                            <i class="ui file icon big"></i>
-                                        </div>
-
-                                        <div class="row">
-                                            <span class="ui sub header centered">Human Resource</span>
-                                        </div>
-                                    </div>
-                                </a>
                             </div>
-                        {% endif %}
-                 
-                  
+                        </a>
+                    </div> -->
 
-                  
-                        {% if "acadadmin" == global_var  %}
-                        <div style="width: calc(50% - 10px);
+
+
+
+                    {% if request.session.moduleAccessRights.purchase_and_store %}
+
+                    <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/examination">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui edit outline icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Examination </span>
-                                    </div>
+                        <a class="ui large label" style="height: 120px; width:100%" href="/purchase-and-store">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui edit outline icon big"></i>
                                 </div>
-                            </a>
-                        </div>
-                        {% endif %}
 
-
-                        {% if request.user.extrainfo.user_type != "staff" or "administrator" == global_var %}
-                            <div style="width: calc(50% - 10px);
-                        margin: 5px;
-                        box-sizing: border-box;">
-                                <a class="ui large label" style="height: 120px; width:100%" href="/ocms/course_code">
-                                    <div class="ui centered grid">
-                                        <div class="row">
-                                            <i class="book icon big"></i>
-                                        </div>
-
-                                        <div class="row">
-                                            <span class="ui sub header centered">Course Management</span>
-                                        </div>
-                                    </div>
-                                </a>
+                                <div class="row">
+                                    <span class="ui sub header centered">Purchase and Store</span>
+                                </div>
                             </div>
-                        {% endif %}
-                
-                  
+                        </a>
+                    </div>
+                    {% endif %}
 
-                          
-                        {% if request.user.extrainfo.user_type == "student" or  "dean_s" == global_var or request.user.extrainfo.user_type == "faculty" %}
-                        <div style="width: calc(50% - 10px);
+
+                    {% if request.session.moduleAccessRights.hr %}
+
+                    <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/gymkhana">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui edit outline icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Gymkhana </span>
-                                    </div>
+                        <a class="ui large label" style="height: 120px; width:100%" href="/hr2/dashboard">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui file icon big"></i>
                                 </div>
-                            </a>
-                        </div>
-                        {% endif %}
 
-
-                        {% if request.user.extrainfo.user_type != "student" %}
-                            <div style="width: calc(50% - 10px);
-                        margin: 5px;
-                        box-sizing: border-box;">
-                                <a class="ui large label" style="height: 120px; width:100%" href="/iwdModuleV2">
-                                    <div class="ui centered grid">
-                                        <div class="row">
-                                            <i class="building icon big"></i>
-                                        </div>
-
-                                        <div class="row">
-                                            <span class="ui sub header centered">Institute Work Departments</span>
-                                        </div>
-                                    </div>
-                                </a>
+                                <div class="row">
+                                    <span class="ui sub header centered">Human Resource</span>
+                                </div>
                             </div>
-                        {% endif %}
-                 
+                        </a>
+                    </div>
+                    {% endif %}
 
-                                     
-                        {% if request.user.extrainfo.user_type == "student"  or user in hall_caretaker or user in hall_warden or request.user.is_superuser %}
-                        <div style="width: calc(50% - 10px);
+
+
+
+
+                    {% if request.session.moduleAccessRights.examinations %}
+
+                    <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/hostelmanagement">
-                                <div class="ui centered grid">   
-                                    <div class="row">
-                                        <i class="ui hotel icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Hostel Management </span>
-                                    </div>
+                        <a class="ui large label" style="height: 120px; width:100%" href="/examination">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui edit outline icon big"></i>
                                 </div>
-                            </a>
-                        </div>
-                        {% endif %}
-                        <div style="width: calc(50% - 10px);
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Examination </span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+
+
+
+
+
+
+
+
+
+                    {% if request.session.moduleAccessRights.gymkhana %}
+
+                    <div style="width: calc(50% - 10px);
                         margin: 5px;
                         box-sizing: border-box;">
-                            <a class="ui large label" style="height: 120px; width:100%" href="/otheracademic">
-                                <div class="ui centered grid">   
-                                    <div class="row">
-                                        <i class="ui university icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Other Academic Procedure</span>
-                                    </div>
+                        <a class="ui large label" style="height: 120px; width:100%" href="/gymkhana">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui edit outline icon big"></i>
                                 </div>
-                            </a>
-                        </div>
-                   
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Gymkhana </span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+
+
+
+                    {% if request.session.moduleAccessRights.iwd %}
+
+                    <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                        <a class="ui large label" style="height: 120px; width:100%" href="/iwdModuleV2">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="building icon big"></i>
+                                </div>
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Institute Work Departments</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+
+
+
+
+                    {% if request.session.moduleAccessRights.hostel_management %}
+
+                    <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                        <a class="ui large label" style="height: 120px; width:100%" href="/hostelmanagement">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui hotel icon big"></i>
+                                </div>
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Hostel Management </span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% if request.session.moduleAccessRights.other_academics %}
+
+                    <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                        <a class="ui large label" style="height: 120px; width:100%" href="/otheracademic">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui university icon big"></i>
+                                </div>
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Other Academic Procedure</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+
+
                 </div>
-            {% comment %}
-            <a class="ui bottom attached blue label">
-                <i class="right arrow icon right floated"></i>
-            </a>
-            {% endcomment %}
+                {% comment %}
+                <a class="ui bottom attached blue label">
+                    <i class="right arrow icon right floated"></i>
+                </a>
+                {% endcomment %}
             </div>
         </div>
     </div>
@@ -441,5 +473,5 @@
         }
     }
 
-    </script>
-{% endblock %}
+</script>
+{% endblock %} 

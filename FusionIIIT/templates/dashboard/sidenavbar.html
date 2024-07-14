@@ -38,50 +38,54 @@
                     <div class="active content" style="margin-top: 22px;">
                         <div class="link items" style="display: flex;flex-direction: column;gap: 10px;">
                
-                {% if request.user.extrainfo.user_type != "staff" or "acadadmin" == global_var %}
+                {% if request.session.moduleAccessRights.course_registration %}
 			    <a class = "item" href="/academic-procedures">
 			        <h4> Academics </h4>
 			    </a>
 			    {% endif %}
 
-                {% if request.user.extrainfo.user_type == "student" or "Professor" == global_var or "Dean Academic" == global_var or "acadadmin" == global_var or "Assistant Professor" == global_var or "HOD (CSE)" == global_var  or "HOD (ECE)" == global_var  or "HOD (ME)" == global_var  or "HOD (NS)" == global_var  or "HOD (Design)" == global_var  or "HOD (Liberal Arts)" == global_var %}
+                {% if request.session.moduleAccessRights.program_and_curriculum %}
                 <a class="item" href="/programme_curriculum">
                     <h4> Programme And Curriculum </h4>
                 </a>
                 {% endif %}
 
-                {% if request.user.extrainfo.user_type == "student" or "mess_manager" == global_var  or "mess_warden" == global_var  %}
+                {% if request.session.moduleAccessRights.mess_management %}
                 <a class="item" href="{% url 'mess:mess' %}">
                     <h4>Mess Management</h4>
                 </a>
                 {% endif %}
                
                
-                
+                {% if request.session.moduleAccessRights.visitor_hostel %}
                 <a class="item" href="{% url 'visitorhostel:visitorhostel' %}">
                     <h4>Visitor's Hostel</h4>
                 </a>
+                {% endif %}
 
-                
+                {% if request.session.moduleAccessRights.phc %}
                 <a class="item" href="{% url 'healthcenter:healthcenter' %}">
                     <h4>Healthcare Center</h4>
                 </a>
+                {% endif %}
 
-                {% if request.user.extrainfo.user_type != "student"  %}
+                {% if request.session.moduleAccessRights.fts %}
                     <a class="item" href="{% url 'filetracking:filetracking' %}">
                         <h4> File Tracking </h4>
                     </a>
                 {% endif %}
-                {% if request.user.extrainfo.user_type == "student" or "spacsconvenor" == global_var  or "spacsassistant" == global_var  %}
+                {% if request.session.moduleAccessRights.spacs %}
                     <a class="item" href="{% url 'spacs:spacs' %}">
                         <h4>Scholarship Portal</h4>
                     </a>
                 {% endif %}
 
+                {% if request.session.moduleAccessRights.complaint_management %}
                 <a class="item" href="{% url 'complaint:complaint' %}">
                     <h4>Complaint System</h4>
                 </a>
-                {% if request.user.extrainfo.user_type != "staff" or "placement officer" == global_var or "placement chairman" == global_var  %}
+                {% endif %}
+                {% if request.session.moduleAccessRights.placement_cell %}
                     <a class="item" href="{% url 'placement:placement' %}">
                         <h4>Placement Cell</h4>
                     </a>
@@ -89,12 +93,13 @@
                 <!-- <a class = "item" href="{% url 'estate_module_home' %}">
                     <h4> Establishment Module </h4>
                 </a> -->
-                
+                {% if request.session.moduleAccessRights.department %}
                     <a class="item" href="{% url 'dep:dep' %}">
                             <h4> Department Portal </h4>
                     </a>
+                    {% endif %}
                 
-                {% if request.user.extrainfo.user_type == "faculty" or "rspc_admin" == global_var  or "HOD (CSE)" == global_var  or "HOD (ECE)" == global_var  or "HOD (ME)" == global_var  or "HOD (NS)" == global_var  or "HOD (Design)" == global_var  or "HOD (Liberal Arts)" == global_var  or "dean_rspc" == global_var  or "Director" == global_var  %}
+                {% if request.session.moduleAccessRights.rspc %}
                 <a class="item " href="/research_procedures">
                     <h4> Research Module </h4>
                 </a>
@@ -104,49 +109,47 @@
                     <h4>Counselling Cell</h4>
                 </a> -->
                 
-                <a class="item" href="{% url 'leave:leave' %}">
+                {% comment %} <a class="item" href="{% url 'leave:leave' %}">
                     <h4>Leave Module</h4>
-                </a>
+                </a> {% endcomment %}
                 
-                {% if request.user.extrainfo.user_type == "faculty"  or "Professor" == global_var  or "Associate Professor" == global_var  or "Director" == global_var  or "HOD (CSE)" == global_var  or "HOD (ECE)" == global_var  or "HOD (ME)" == global_var  or "HOD (NS)" == global_var  or "HOD (Design)" == global_var  or "HOD (Liberal Arts)" == global_var  or "Accounts Admin" == global_var  or "Registrar" == global_var  or "Deputy Registrar" == global_var  or "asst. registrar aud" == global_var  or "asst. registrar fa" == global_var  or "ps_admin" == global_var  or "deptadmin_cse" == global_var  or "deptadmin_ece" == global_var  or "deptadmin_me" == global_var  or "deptadmin_sm" == global_var  or "deptadmin_design" == global_var  or "deptadmin_liberalarts" == global_var  or "deptadmin_ns" == global_var %}   
+                {% if request.session.moduleAccessRights.purchase_and_store %}
 		            <a class="item" href="/purchase-and-store">
                         <h4> Purchase and Store </h4>
                      </a>	
                 {% endif %}
-                {% if request.user.extrainfo.user_type != "student"  %}
+                {% if request.session.moduleAccessRights.hr %}
                     <a class = "item" href="/hr2/dashboard/">
                         <h4> Human Resource </h4>
                     </a>
                 {% endif %}
-                {% if "acadadmin" == global_var  %}
+                {% if request.session.moduleAccessRights.examinations %}
                     <a class="item" href="/examination">
                         <h4> Examination </h4>
                     </a>
                 {% endif %}
-                {% if request.user.extrainfo.user_type != "staff" or "administrator" == global_var %}
-			        <a class = "item" href="/ocms/course_code">
-			            <h4> Course Management </h4>
-			        </a>
-                {% endif %}
-                {% if request.user.extrainfo.user_type == "student" or  "dean_s" == global_var or request.user.extrainfo.user_type == "faculty" %}
+                
+                {% if request.session.moduleAccessRights.gymkhana %}
                     <a class = "item" href="/gymkhana">
                         <h4> Gymkhana </h4>
                     </a>
                 {% endif %}
 
-                {% if request.user.extrainfo.user_type != "student" %}
+                {% if request.session.moduleAccessRights.iwd %}
 				    <a class="item" href="/iwdModuleV2">
                         <h4>Institute Work Departments</h4>
                     </a>
                 {% endif %}
-                {% if request.user.extrainfo.user_type == "student"  or user in hall_caretaker or user in hall_warden or request.user.is_superuser %}
+                {% if request.session.moduleAccessRights.hostel_management %}
                     <a class="item" href="/hostelmanagement">
                         <h4>Hostel Management</h4>
                     </a>
                 {% endif %}
+                {% if request.session.moduleAccessRights.other_academics %}
                     <a class="item" href="/otheracademic">
                         <h4>Other Academic Procedure</h4>
-                    </a>                         
+                    </a> 
+                {% endif %}                            
                         </div>
                     </div>
                 </div>
