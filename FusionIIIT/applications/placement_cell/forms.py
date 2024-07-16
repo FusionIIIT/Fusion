@@ -491,7 +491,7 @@ def max_value_current_year(value):
     return MaxValueValidator(current_year())(value)
 
 def year_choices():
-    return [(r,r) for r in range(1984, date.today().year+1)]    
+    return [(r,r) for r in range(1984, date.today().year+100)]    
 class SearchPlacementRecord(forms.Form):
     """
     The form is used to search from placement records based of various parameters.
@@ -651,7 +651,8 @@ class SearchHigherRecord(forms.Form):
                                                             'class': 'field',
                                                             'id': 'add_higher_test_type'}),
                                 label="test_type", required=False)
-    test_score = forms.IntegerField(label="test_score", required=False, widget=forms.NumberInput(attrs={'id': 'add_higher_test_score'}))
+    test_score = forms.CharField(label="test_score", required=False, widget=forms.TextInput(attrs={'max_length': 100,
+                                                            'class': 'field','id': 'add_higher_test_score'}))
     year = forms.TypedChoiceField(coerce=int, choices=year_choices, initial=current_year, label="year", required=False, widget=forms.NumberInput(attrs={'id': 'add_higher_year'}))
     uname = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
                                                             'class': 'field',
@@ -693,8 +694,8 @@ class ManagePbiRecord(forms.Form):
     stuname = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
                                                               'class': 'field'}),
                                 label="stuname", required=False)
-    roll = forms.IntegerField(widget=forms.NumberInput(attrs={ 'min':0,
-                                                            'max_length': 10,
+    roll = forms.CharField(widget=forms.TextInput(attrs={ 'min':0,
+                                                            'max_length': 100,
                                                             'class': 'form-control'}),
                             label="roll", required=False)
     company = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
@@ -726,4 +727,6 @@ class ManageHigherRecord(forms.Form):
     company = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
                                                               'class': 'field'}),
                                 label="company", required=False)
-    test_score = forms.IntegerField(label="test_score", required=False)
+    test_score = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
+                                                              'class': 'field'}),
+                                label="test_score", required=False)

@@ -60,7 +60,7 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(default='', max_length=100)),
                 ('ctc', models.DecimalField(decimal_places=2, default=0, max_digits=5)),
                 ('year', models.IntegerField(default=0)),
-                ('test_score', models.IntegerField(blank=True, default=0, null=True)),
+                ('test_score', models.CharField(blank=True, default=0, null=True)),
                 ('test_type', models.CharField(blank=True, default='', max_length=30, null=True)),
             ],
         ),
