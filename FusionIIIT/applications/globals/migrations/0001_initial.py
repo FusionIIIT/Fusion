@@ -51,32 +51,6 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name='ModuleAccess',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('designation', models.CharField(max_length=155)),
-                ('program_and_curriculum', models.BooleanField(default=False)),
-                ('course_registration', models.BooleanField(default=False)),
-                ('course_management', models.BooleanField(default=False)),
-                ('other_academics', models.BooleanField(default=False)),
-                ('spacs', models.BooleanField(default=False)),
-                ('department', models.BooleanField(default=False)),
-                ('examinations', models.BooleanField(default=False)),
-                ('hr', models.BooleanField(default=False)),
-                ('iwd', models.BooleanField(default=False)),
-                ('complaint_management', models.BooleanField(default=False)),
-                ('fts', models.BooleanField(default=False)),
-                ('purchase_and_store', models.BooleanField(default=False)),
-                ('rspc', models.BooleanField(default=False)),
-                ('hostel_management', models.BooleanField(default=False)),
-                ('mess_management', models.BooleanField(default=False)),
-                ('gymkhana', models.BooleanField(default=False)),
-                ('placement_cell', models.BooleanField(default=False)),
-                ('visitor_hostel', models.BooleanField(default=False)),
-                ('phc', models.BooleanField(default=False)),
-            ],
-        ),
-        migrations.CreateModel(
             name='Faculty',
             fields=[
                 ('id', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False, to='globals.extrainfo')),
@@ -132,7 +106,7 @@ class Migration(migrations.Migration):
                 ('working', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='current_designation', to=settings.AUTH_USER_MODEL)),
             ],
             options={
-                'unique_together': {('working', 'designation'), ('user', 'designation')},
+                'unique_together': {('user', 'designation'), ('working', 'designation')},
             },
         ),
     ]
