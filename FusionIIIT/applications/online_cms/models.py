@@ -229,7 +229,7 @@ class GradingScheme(models.Model):
     # midsem = models.DecimalField(max_digits=10, decimal_places=2,default=0)
     # endsem = models.DecimalField(max_digits=10, decimal_places=2,default=0)
     # projects = models.DecimalField(max_digits=10, decimal_places=2,default=0)
-    type_of_evaluation = models.TextField(max_length=255, default=None)
+    type_of_evaluation = models.CharField(max_length=100)
     weightage = models.DecimalField(max_digits=10, decimal_places=2,default=0)
 
     def __str__(self):
@@ -281,7 +281,19 @@ class Attendance(models.Model):
     instructor_id = models.ForeignKey(CourseInstructor, on_delete=models.CASCADE)
 #    curriculum_id = models.ForeignKey(Curriculum, on_delete=models.CASCADE)
     date = models.DateField()
-    present = models.BooleanField(default=False)
+    present = models.IntegerField(default=0)
+    no_of_attendance = models.IntegerField(default=1)
  
     def __str__(self):
         return self.course_id
+    
+class StudentEvaluation(models.Model):
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    evaluation_id = models.ForeignKey(GradingScheme, on_delete=models.CASCADE)
+    marks = models.DecimalField(max_digits=10, decimal_places=2,null=True)
+    total_marks = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    def __str__(self):
+        return '{} - {} - {} - {}'.format(
+                self.pk, self.student_id,
+                self.evaluation_id, self.marks)

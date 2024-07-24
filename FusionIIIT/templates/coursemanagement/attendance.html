@@ -116,52 +116,50 @@ input:checked + .slider:before {
 </div>
 </div>
 <div class="ui tab segment" id="refresh_submit_tab" data-tab="submit">
-    <form class="ui form" id="attendance_submit" method="post" action="/ocms/{{course.code}}/{{course.version}}/attendance">
+  <form class="ui form" id="attendance_submit" method="post" action="/ocms/{{course.code}}/{{course.version}}/attendance">
     {% csrf_token %}
 
-    	<div class="field">
-                <label>Date</label>
-                    <input type="Date" name="date">
-         </div>
+    <div class="field">
+        <label>Date</label>
+        <input type="date" name="date">
+    </div>
+    
+    <div class="field">
+        <label>Number of Attendances Taken</label>
+        <input type="number" name="total_attendance" id="total_attendance" min="1">
+    </div>
 
+    <div class="field">
+      <button type="button" class="ui blue button" onclick="generateMaxAttendance()">Fill Attendance</button>
+    </div>
 
-	<div style="overflow:scroll;height:38em;overflow-x:hidden;">
-    <table class="ui fixed single line sortable celled table">
-	        <thead>
-	            <tr>
-	                <th style="width: 30%;">Roll No.</th>
-	                <th style="width: 30%;">Name</th>
-	                <th style="width: 30%;">Present/Absent</th>
-	                      
-	            </tr>
-	        </thead>
-	        <tbody>
-            	{% for roll_no, name in students.items %}
-        		<tr>
-        			<td>{{roll_no}}</td>
-        			<td>{{name}}</td>
-        			<input type="input" hidden="hidden" name="Roll" value={{roll_no}}>	
-               		<td><label class="switch">
-                        	<input type="checkbox" name="Present_absent" id="Present_absent" value={{roll_no}}>
-                        	<span class="slider round"></span>
-                    	</label></td>
-           		 </tr>
-            {% endfor %}
-               
+    <div style="overflow:scroll;height:38em;overflow-x:hidden;">
+        <table class="ui fixed single line sortable celled table">
+            <thead>
+                <tr>
+                    <th style="width: 30%;">Roll No.</th>
+                    <th style="width: 30%;">Name</th>
+                    <th style="width: 30%;">Number of Presents</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for roll_no, name in students.items %}
+                <tr>
+                    <td>{{roll_no}}</td>
+                    <td>{{name}}</td>
+                    <input type="hidden" name="Roll" value="{{roll_no}}">
+                    <td><input type="number" name="Present_absent_{{roll_no}}" class="present-absent" min="0"></td>
+                </tr>
+                {% endfor %}
             </tbody>
-	    </table>
-	</div>
-  <br>
+        </table>
+    </div>
 
-	   <!--  <div class="one wide field">
-            <label><br></label>
-                 <a href="#" onclick="document.getElementById('form199').submit();">
-                    <div class="ui primary button">Save</div>
-             </a>
-         </div>  -->
-  <input type="submit" class="ui primary button" id="submit_attendance" value="Upload">
+    <br>
 
-	</form>
+    <input type="submit" class="ui primary button" id="submit_attendance" value="Upload">
+
+</form>
   <br>
   <h4 class="ui dividing header" style="margin-left: 2px;">Upload Attendance file</h4>
   <div class="ui blue button" id="add_att_button">
@@ -169,6 +167,11 @@ input:checked + .slider:before {
   </div>
   <form class="ui form" id="form5" enctype="multipart/form-data" style="display: none">
     {% csrf_token %}
+      <div class="field" style="margin-top: 10px;">
+        <h4 class="ui blue header">Note : Provide the data in Excel Sheet in following format:</h4>
+        RollNo | Student Name | 08-10-24 (1) | Date2 (No. of Attendance) | Date3 (No. of Attendance)
+        <h4 class="ui dividing header"><a href="/applications/online_cms/templates/Sample_Attendance_Sheet.xlsx">Download</a> the sample Excel, fill the data accordingly and then upload the same</h4>
+      </div>
           <div class="One field" style="margin-top: 10px;">
               <div class="field">
                   <label> Name <font color="red" size="4.5">*</font></label>
@@ -179,7 +182,7 @@ input:checked + .slider:before {
           <div class="fields">
               <div class="six wide field">
                   <label>Attendance File <font color="red" size="4.5">*</font></label>
-                  <input placeholder="Attendance File" id="doc1" name="doc1" accept="application/msword, application/vnd.ms-excel, application/vnd.ms-powerpoint, application/pdf"  type="file">
+                  <input placeholder="Attendance File" id="doc1" name="doc1" required accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-exce"  type="file">
               </div>
           </div>
           <div class="fields">
@@ -226,6 +229,14 @@ input:checked + .slider:before {
       });
   }
 
+  function generateMaxAttendance() {
+        const totalAttendance = document.getElementById('total_attendance').value;
+        const presentInputs = document.querySelectorAll('.present-absent');
+        presentInputs.forEach(input => {
+            input.value = totalAttendance;
+        });
+    }
+
 $(function() {
     $("#attendance_submit").submit(function(event) {
             $("#refresh_attend_tab").load(" #refresh_attend_tab > *");
@@ -236,12 +247,21 @@ $(function() {
             var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
             // if success:
             posting.done(function(data) {
-                successAlert('Upload Successful');
-                // window.location = "/academic-procedures/main/";
+            if (data === "Upload Successful") {
+                successAlert(data);
+                $("#refresh_attend_tab").load(" #refresh_attend_tab > *");
+                $("#refresh_submit_tab").load(" #refresh_submit_tab > *");
+            } else {
+                errAlert(data);
+                $("#refresh_attend_tab").load(" #refresh_attend_tab > *");
+                $("#refresh_submit_tab").load(" #refresh_submit_tab > *");
+            }
             });
             // if failure
             posting.fail(function(data) {
-                errAlert('Failed');
+                errAlert(data);
+                $("#refresh_attend_tab").load(" #refresh_attend_tab > *");
+                $("#refresh_submit_tab").load(" #refresh_submit_tab > *");
                 // window.location = "/academic-procedures/main/";
             });
     });

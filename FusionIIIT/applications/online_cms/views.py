@@ -12,6 +12,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.core.serializers import serialize
@@ -28,6 +29,7 @@ from .forms import *
 from .models import *
 from .helpers import create_thumbnail, semester
 from notification.views import course_management_notif
+
 
 @login_required
 def viewcourses(request):
@@ -76,6 +78,7 @@ def viewcourses(request):
 
 
 
+
 @login_required
 def course(request, course_code, version):
     '''
@@ -91,7 +94,10 @@ def course(request, course_code, version):
         #info about courses he is registered in
         course = Courses.objects.select_related().get(code=course_code, version = version)
         #instructor of the course
-        instructor = CourseInstructor.objects.select_related().get(course_id = course, batch_id = student.batch_id)
+        try:
+            instructor = CourseInstructor.objects.select_related().get(course_id = course, batch_id = student.batch_id)
+        except:
+            return HttpResponseRedirect('/academic-procedures/stu/')
         #course material uploaded by the instructor
         # videos = CourseVideo.objects.filter(course_id=course)
         videos = []
@@ -222,16 +228,14 @@ def course(request, course_code, version):
         #         marks_pk.append(qs_pk[0])
         
         present_attendance = {}
-        total_attendance=None
+        total_attendance=0
         a = Attendance.objects.select_related().filter(student_id=student , instructor_id = instructor)
-        total_attendance = len(a)
         count = 0
         for row in a:
-                if(row.present):
-                    count+=1
-                    present_attendance[row.date] = 1
-                else:
-                    present_attendance[row.date] = 0
+            total_attendance+=row.no_of_attendance
+            count+=row.present
+            present_attendance[row.date] = row.present
+
         attendance_percent = 0
         if(total_attendance):
             attendance_percent = count/total_attendance*100
@@ -243,7 +247,19 @@ def course(request, course_code, version):
         except AttendanceFiles.DoesNotExist:
             attendance_file = {}
 
+        quiz_marks = 0
+        quiz = {}
+        try:
+            quiz = GradingScheme.objects.select_related().filter(course_id = course)
+            for q in quiz:
+                if q.type_of_evaluation == "Quiz":
+                    m = StudentEvaluation.objects.select_related().filter(evaluation_id = q, student_id = student)
+                    for mr in m:
+                        quiz_marks+=mr.marks
+        except GradingScheme.DoesNotExist:
+            quiz_marks = 0
         
+
         lec = 0
         comments = Forum.objects.select_related().filter(course_id=course).order_by('comment_time')
         answers = collections.OrderedDict()
@@ -266,21 +282,27 @@ def course(request, course_code, version):
                        'present_attendance':present_attendance,
                        'attendance_percent': attendance_percent,
                        'Lecturer': lec,
+                       'quiz_marks': quiz_marks,
                        'attendance_file':attendance_file,
                        'notifications': notifs})
 
     else:
         if request.session.get('currentDesignationSelected') != "faculty" and request.session.get('currentDesignationSelected') != "Associate Professor" and request.session.get('currentDesignationSelected') != "Professor" and request.session.get('currentDesignationSelected') != "Assistant Professor":
             return HttpResponseRedirect('/dashboard/')
-        instructor = CourseInstructor.objects.select_related('course_id').filter(instructor_id=extrainfo)
+        instructor = {}
+        try:
+            instructor = CourseInstructor.objects.select_related('course_id').filter(instructor_id=extrainfo)
+        except:
+            return HttpResponseRedirect('/academic-procedures/fac/')
+        
         for ins in instructor:
             if ins.course_id.code == course_code and ins.course_id.version == Decimal(version):
                 registered_students = course_registration.objects.select_related('student_id').filter(course_id = ins.course_id)
                 students = {}
                 test_marks = {}
                 for x in registered_students:
-                     students[x.student_id.id.id] = (x.student_id.id.user.first_name + " " + x.student_id.id.user.last_name)
-                #     stored_marks = StoreMarks.objects.filter(mid = x.r_id)
+                    students[x.student_id.id.id] = (x.student_id.id.user.first_name + " " + x.student_id.id.user.last_name)
+                #     stored_marks = StudentEvaluation.objects.filter(mid = x.r_id)
                 #     for x in stored_marks:
                 #         test_marks[x.id] = (x.mid.r_id,x.exam_type,x.marks)
                     #marks_id.append(x.curr_id)
@@ -298,11 +320,11 @@ def course(request, course_code, version):
                 total_attendance=None
                 for x in registered_students:
                     a = Attendance.objects.select_related().filter(student_id=x.student_id , instructor_id = ins)
-                    total_attendance = len(a)
+                    total_attendance = 0
                     count =0
                     for row in a:
-                        if(row.present):
-                            count += 1
+                        total_attendance+=row.no_of_attendance
+                        count+=row.present
                     
                     attendance_percent = 0
                     if(total_attendance):
@@ -405,6 +427,20 @@ def course(request, course_code, version):
         except Student_grades.DoesNotExist:
             student_grades = {}
 
+        marks_with_roll = collections.OrderedDict()
+        for eval in gradingscheme:
+            try:
+                rollist = StudentEvaluation.objects.filter(evaluation_id=eval)
+            except StudentEvaluation.DoesNotExist:
+                rollist = {}
+            for roll in rollist:
+                sid = roll.student_id.id.id
+                scaling_factor = eval.weightage/roll.total_marks
+                scaled_marks = scaling_factor*roll.marks
+                if sid in marks_with_roll:
+                    marks_with_roll[sid] += round(scaled_marks,2)
+                else:
+                    marks_with_roll[sid] = round(scaled_marks,2)
 
         return render(request, 'coursemanagement/viewcourse.html',
                       {'instructor': instructor,
@@ -426,7 +462,8 @@ def course(request, course_code, version):
                        'test_marks': test_marks,
                        'gradingscheme':gradingscheme,
                        'gradingscheme_grades': gradingscheme_grades,
-                       'student_grades' : student_grades
+                       'student_grades' : student_grades,
+                       'marks_with_roll': marks_with_roll
                        })
 
 
@@ -1527,56 +1564,57 @@ def add_practice_question(request, course_code, practice_contest_code):
         )
         return redirect('/ocms/' + course_code + '/edit_practice_contest/'+str(pq[0].id))
 
-# @csrf_protect
-# @login_required
-# def edit_marks(request, course_code):
-#     user = request.user
-#     extrainfo = ExtraInfo.objects.get(user=user)
+@csrf_protect
+@login_required
+def edit_marks(request, course_code,version):
+    user = request.user
+    extrainfo = ExtraInfo.objects.get(user=user)
 
-#     if extrainfo.user_type == 'faculty':
-#         instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
-
-#         for ins in instructor:
-#             if ins.curriculum_id.course_code == course_code:
-#                 registered_students = Register.objects.filter(curr_id = ins.curriculum_id.curriculum_id)
-
-
-#         exam = request.POST.get('examtype')
-#         score = request.POST.getlist('enteredmarks')
-
-#         List = list()
-
-#         for i in range(len(registered_students)):
-#             m_id = registered_students[i]            
-#             s = score[i]
-
-#             # rows = StoreMarks.objects.filter(mid=m_id, exam_type=exam)
-#             num = StoreMarks.objects.filter(mid=m_id, exam_type=exam).count()
-#             record = StoreMarks.objects.filter(mid=m_id, exam_type=exam).values_list('marks', flat=True)
-
-#             List.append(list(record))
-
-#             if num==0:
-#                 StoreMarks.objects.create(
-#                     mid=m_id,
-#                     exam_type=exam,
-#                     marks=s
-#                     )
-#             else:
-#                 StoreMarks.objects.filter(mid=m_id, exam_type=exam).update(marks=s)
-
-#         #print(registered_students)
+    if extrainfo.user_type == 'faculty':
+        instructor = CourseInstructor.objects.select_related('course_id').filter(instructor_id=extrainfo)
+        for ins in instructor:
+            if ins.course_id.code == course_code and ins.course_id.version == Decimal(version):
+                registered_students = course_registration.objects.select_related('student_id').filter(course_id = ins.course_id)
 
 
-#         return HttpResponse("Upload successful")  
-#         context= {'m_id':m_id,'registered_students': registered_students, 'record':List}
-#     return render(request, 'coursemanagement/assessment.html', context)
+        exam = request.POST.get('examtype')
+        score = request.POST.getlist('enteredmarks')
+        total = request.POST.get('totalmarks')
+        e_id = GradingScheme.objects.get(pk=int(exam))
+        print(e_id)
+        List = list()
+
+        for i in range(len(registered_students)):
+            m_id = registered_students[i].student_id         
+            s = score[i]
+
+            # rows = StudentEvaluation.objects.filter(mid=m_id, exam_type=exam)
+            num = StudentEvaluation.objects.filter(student_id=m_id, evaluation_id=exam).count()
+            record = StudentEvaluation.objects.filter(student_id=m_id, evaluation_id=exam).values_list('marks', flat=True)
+
+            List.append(list(record))
+
+            if num==0:
+                StudentEvaluation.objects.create(
+                    student_id=m_id,
+                    evaluation_id=e_id,
+                    marks=s,
+                    total_marks = total
+                    )
+            else:
+                StudentEvaluation.objects.filter(student_id=m_id, evaluation_id=e_id).update(marks=s)
+
+        return JsonResponse({"message": "Upload Successful"}, status=200)  
+    return HttpResponse("Unauthorized", status=403)
+    # context= {'m_id':m_id,'registered_students': registered_students, 'record':List}
+    # return render(request, 'coursemanagement/assessment.html', context)
 
 @csrf_protect
 @login_required
-def get_exam_data(request,course_code):   #it is store the type of exam helpful in storing the marks
+def get_exam_data(request,course_code, version):   #it is store the type of exam helpful in storing the marks
     exam_name = request.POST['exam_name']
-    data = serializers.serialize('json', StoreMarks.objects.filter(exam_type=exam_name))
+    e_id = GradingScheme.objects.get(pk=int(exam_name))
+    data = serializers.serialize('json', StudentEvaluation.objects.filter(evaluation_id=e_id))
     return HttpResponse(data, content_type='application/json')
 
 
@@ -1601,31 +1639,34 @@ def submit_attendance(request, course_code, version):
         #         print(item)
             try:
                 date =  request.POST['date']
+                total_attendance = int(request.POST['total_attendance'])
             except:
-                return HttpResponse("Please Enter The Form Properly")
+                return HttpResponse("Please Enter The Form Properly",status=400)
 
 
             #mark the attendance according to the student roll no.
             all_students = request.POST.getlist('Roll')
-            present_students = request.POST.getlist('Present_absent')
 
 
             for student in all_students:
 
                 s_id = Student.objects.select_related().get(id = student)
-                present = False
-                if student in present_students:
-                    present = True
+                presents = int(request.POST.get(f'Present_absent_{student}', 0))
+
+                # Ensure presents do not exceed total attendance
+                if presents > total_attendance:
+                    presents = total_attendance
 
                 Attendance.objects.create(
-                        student_id = s_id,
-                        instructor_id = instructor,
-                        date = date,
-                        present = present
-                    )
-
-
-    return HttpResponse("Feedback uploaded")
+                    student_id = s_id,
+                    instructor_id = instructor,
+                    date = date,
+                    present = presents,
+                    no_of_attendance = total_attendance
+                )
+        
+        return HttpResponse("Upload Successful", status=200)
+    return HttpResponse("Form is not valid", status=400)
 
 #to store the grading scheme created by the faculty
 @login_required
@@ -1639,11 +1680,10 @@ def create_grading_scheme(request, course_code, version):
                          
             form_data = {}
             form_data = request.POST.copy()
-            del form_data['add_item_wtg']
-            del form_data['add_eval_type']
-            del form_data['csrfmiddlewaretoken']
+            form_data.pop('add_item_wtg', None)
+            form_data.pop('add_eval_type', None)
+            form_data.pop('csrfmiddlewaretoken', None)
  
-            # data to be sent to the gradingscheme table
             key_list = list(form_data.keys())
   
             no_of_evaluation_types = len(form_data) - 20
@@ -1661,6 +1701,21 @@ def create_grading_scheme(request, course_code, version):
                         weightage=form_data[key_list[i]]
                     )
                     grading_scheme.save()
+
+            # for key, value in form_data.items():
+            # # Check if the grading scheme already exists
+            #     already_existing_data = GradingScheme.objects.filter(course_id=course_id, type_of_evaluation=key)
+            #     if already_existing_data.exists():
+            #         grading_scheme_object = already_existing_data.first()
+            #         grading_scheme_object.weightage = value
+            #         grading_scheme_object.save()
+            #     else:
+            #         grading_scheme = GradingScheme.objects.create(
+            #             course_id=course_id,
+            #             type_of_evaluation=key,
+            #             weightage=value
+            #         )
+            #         grading_scheme.save()
  
             # data to be sent to gradingscheme_grades table
             already_existing_data2 = GradingScheme_grades.objects.filter(course_id=course_id)

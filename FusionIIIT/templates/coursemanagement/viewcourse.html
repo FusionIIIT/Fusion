@@ -57,6 +57,10 @@ Course Management
                     Evaluate Assignments
                   <i class="right floated chevron right icon"></i>
                   </a>
+                  <a class="item sidetab" data-tab="sixth" data-num="16">
+                    Submit Marks
+                  <i class="right floated chevron right icon"></i>
+                  </a>
                   <a class="item sidetab" data-tab="seventh" data-num="17">
                       Attendance
                     <i class="right floated chevron right icon"></i>
@@ -542,6 +546,9 @@ Course Management
             </div>
             <div class="ui tab segment" id="15" data-tab="fifth" style="display:none">
                 {% block assessment %} {% include 'coursemanagement/assessment.html' %} {% endblock %}
+            </div>
+            <div class="ui tab segment" id="16" data-tab="sixth" style="display:none">
+              {% block submitmarks %} {% include 'coursemanagement/submit_marks.html' %} {% endblock %}
             </div>
             <!-- <div class="ui tab segment" id="16" data-tab="sixth" style="display:none">
                 {% block questionbank %} {% include 'coursemanagement/questionbank.html' %} {% endblock %}
@@ -1399,31 +1406,31 @@ Course Management
         moduleForm.hide();
         }
       });
-        $(document).on('click','#submit_marks',function(e) {
-        var pk=$(this).attr("enteredmarks");
+    //     $(document).on('click','#submit_marks',function(e) {
+    //     var pk=$(this).attr("enteredmarks");
  
-        var marks = document.getElementById("enteredmarks").value;
-        console.log(marks);
-        var csrf = $('input[name=csrfmiddlewaretoken]').val();
-        alert(pk);
-        $.ajax({
-            type: 'POST',
-            url: '/ocms/{{course.code}}/edit_marks',
-            dataType : "json",
-            data: {
-                'pk': pk,
-                'marks': marks,
-                'csrfmiddlewaretoken': csrf
-            },
-            success: function(data) {
-                successAlert(data);
-                //$('#score'+pk).text(element.value);
-            },
-            error: function(data, err) {
-                errAlert(err.message);
-            }
-        });
-    });
+    //     var marks = document.getElementById("enteredmarks").value;
+    //     console.log(marks);
+    //     var csrf = $('input[name=csrfmiddlewaretoken]').val();
+    //     alert(pk);
+    //     $.ajax({
+    //         type: 'POST',
+    //         url: '/ocms/{{course.code}}/edit_marks',
+    //         dataType : "json",
+    //         data: {
+    //             'pk': pk,
+    //             'marks': marks,
+    //             'csrfmiddlewaretoken': csrf
+    //         },
+    //         success: function(data) {
+    //             successAlert(data);
+    //             //$('#score'+pk).text(element.value);
+    //         },
+    //         error: function(data, err) {
+    //             errAlert(err.message);
+    //         }
+    //     });
+    // });
 
  
  
