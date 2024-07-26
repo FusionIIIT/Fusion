@@ -26,8 +26,11 @@
                 
 
                     <div class="meta" style="padding: 0.25rem;word-wrap: break-word;">
-
                         {{ user.extrainfo.department.name }}
+                        {% if user.extrainfo.user_type == "student" %}
+                            -
+                            {{ user.extrainfo.id }}
+                        {% endif %}
                     </div>
                 </div>
 

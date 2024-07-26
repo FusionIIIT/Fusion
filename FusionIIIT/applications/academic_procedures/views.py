@@ -1567,8 +1567,12 @@ def allot_courses(request):
             #  format of excel sheet being uploaded should be xls only , otherwise error
             excel = xlrd.open_workbook(file_contents=profiles.read())
             sheet=excel.sheet_by_index(0)
+            course_registrations=[]
             final_registrations=[]
+            pre_registrations=[]
+            student_checks=[]
             # print('>>>>>>>>>>>>>>>>>>>' , sheet.nrows)
+            currroll=set()
             for i in range(1,sheet.nrows):
                 roll_no = str(sheet.cell(i,0).value).split(".")[0]
                 # print("Roll No from Excel:", roll_no)
@@ -1576,21 +1580,37 @@ def allot_courses(request):
                 course_code = sheet.cell_value(i,2)
                 course_name = sheet.cell_value(i,3)
                 try:
+
                     user=User.objects.get(username=roll_no)
                     user_info = ExtraInfo.objects.get(user=user)
                     student = Student.objects.get(id=user_info)
                     course_slot=CourseSlot.objects.get(name=course_slot_name.strip(),semester=sem_id)
                     print(course_code.strip() , course_name.strip())
                     course = Courses.objects.get(code=course_code.strip(),name=course_name.strip())
+                    if(roll_no not in currroll):
+                        student_check=StudentRegistrationChecks(student_id = student, semester_id = sem_id, pre_registration_flag = True,final_registration_flag = False)
+                        student_checks.append(student_check)
+                        currroll.add(roll_no)
                     # print(">>>>>",roll_no,course_slot_name,course_code,course_name)
                 except Exception as e:
                     print('----------------------' , e)
+                pre_registration=InitialRegistration(student_id=student,course_slot_id=course_slot,
+                                                    course_id=course,semester_id=sem_id,priority=1)
+                pre_registrations.append(pre_registration)
                 final_registration=FinalRegistration(student_id=student,course_slot_id=course_slot,
                                                     course_id=course,semester_id=sem_id)
                 final_registrations.append(final_registration)
+    
+                courseregistration=course_registration(working_year=datetime.datetime.now().year,course_id=course,semester_id=sem_id,student_id=student,course_slot_id=course_slot)
+                course_registrations.append(courseregistration)
+                
+
 
             try:
+                InitialRegistration.objects.bulk_create(pre_registrations)
+                StudentRegistrationChecks.objects.bulk_create(student_checks)
                 FinalRegistration.objects.bulk_create(final_registrations)
+                course_registration.objects.bulk_create(course_registrations)
                 messages.success(request, 'Successfully uploaded!')
                 return HttpResponseRedirect('/academic-procedures/main')
                 # return HttpResponse("Success")
@@ -2029,7 +2049,8 @@ def get_currently_registered_courses(id, user_sem):
     return ans
 
 def get_currently_registered_course(id, sem_id):
-    obj = course_registration.objects.all().filter(student_id = id, semester_id=sem_id)
+    #  obj = course_registration.objects.all().filter(student_id = id, semester_id=sem_id)
+    obj = course_registration.objects.all().filter(student_id = id)
     courses = []
     for i in obj:
         courses.append((i.course_slot_id,i.course_id))
