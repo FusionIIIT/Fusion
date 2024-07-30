@@ -16,7 +16,7 @@ from PIL import Image
 from applications.academic_information.models import Student
 from applications.globals.forms import IssueForm, WebFeedbackForm
 from applications.globals.models import (ExtraInfo, Feedback, HoldsDesignation,
-                                         Issue, IssueImage, DepartmentInfo)
+                                         Issue, IssueImage, DepartmentInfo,ModuleAccess)
 from applications.gymkhana.views import coordinator_club
 from applications.placement_cell.forms import (AddAchievement, AddCourse,
                                                AddEducation, AddExperience,
@@ -745,7 +745,8 @@ def dashboard(request):
     hall_warden_user = []
     for warden in hall_wardens:
         hall_warden_user.append(warden.faculty.id.user)
-
+    print("modules are")
+    print(request.session.get('moduleAccessRights'))
     context={
         'notifications':notifs,
         'Curr_desig' : roll_,
@@ -787,6 +788,7 @@ def   profile(request, username=None):
         username: Username of the user. If None,
             displays the profile of currently logged-in user
     """
+
 
 
     user = get_object_or_404(User, Q(username=username)) if username else request.user
@@ -1061,8 +1063,7 @@ def   profile(request, username=None):
             return render(request, "globals/student_profile4.html", context)
         if 'achievementsubmit' in request.POST or 'deleteach' in request.POST:
             return render(request, "globals/student_profile5.html", context)
-        print("context",context)
-
+        # print("context",context)
         return render(request, "globals/student_profile.html", context)
     else:
         return redirect("/")
@@ -1267,8 +1268,19 @@ def update_global_variable(request):
     if request.method == 'POST':
         selected_option = request.POST.get('dropdown')
         request.session['currentDesignationSelected'] = selected_option
+        module_access = ModuleAccess.objects.filter(designation=selected_option).first()
+        if module_access:
+            access_rights = {}
+    
+            field_names = [field.name for field in ModuleAccess._meta.get_fields() if field.name not in ['id', 'designation']]
+    
+            for field_name in field_names:
+                access_rights[field_name] = getattr(module_access, field_name)
+    
+        request.session['moduleAccessRights'] = access_rights      
+                
         print(selected_option)
         print(request.session['currentDesignationSelected'])
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+        return HttpResponseRedirect('/dashboard')
     # Redirect to home if not a POST request or some issue occurs
     return HttpResponseRedirect(reverse('home'))

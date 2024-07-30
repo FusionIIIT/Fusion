@@ -2,377 +2,228 @@
 
 {% block comapproval %}
     <div class="ui pointing secondary menu">
-        {% comment %} <a class="active item" data-tab="viewappointments">
-            Today Appointments
-        </a> {% endcomment %}
-        {% comment %} <a class="item" data-tab="viewambulance">
-            Ambulance
-        </a> {% endcomment %}
-        {% comment %} <a class="item" data-tab="viewhospitaladmission">
-            Hospital_Admission
-        </a> {% endcomment %}
-        {% comment %} <a class="item" data-tab="futureappointments">
-            Future Appointments
-        </a> {% endcomment %}
+        <a class="active item" data-tab="prescribe">
+            Update Patient log
+        </a>
+       
         <a class="item" data-tab="prescriptionhistory">
-            Prescription History
+            History
         </a>
 
     </div>
+    <div class="ui active tab" data-tab="prescribe">
+        <div class="ui vertical stripe team segment"
+             style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+            <form class="ui form" method="POST">{% csrf_token %}
+                <p id="usr_b"></p>
+                <div class="two fields">
+                  <div class="field">
+                      <label>Patient</label>
+                      <div class="ui fluid large input">
+                          <input placeholder="Patient Id" id="patient_b" name="patient_b" type="text">
+                      </div>
+                   </div>
+
+                   <div class="field">
+                       <label>Doctor</label>
+                       <select class="ui search fluid dropdown" name="doctor_b" id="doctor_b" required="true">
+                         <option value="" disabled selected>--SELECT--</option>
+                         {% for doctor in doctors %}
+                         <option value="{{doctor.id}}">{{doctor.doctor_name}}</option>
+                         {% endfor %}
+                       </select>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Detail of Disease</label>
+                    <textarea name="details" id="details_b" rows="2"></textarea>
+                </div>
+
+                <div class="two fields">
+                  <div class="field">
+                      <label>Medicine</label>
+
+                        <select class="ui search fluid dropdown" id="medicine_id_b" name="medicine_id_b" required="true">
+                        <option value="" disabled selected>--SELECT--</option>
+                        {% for medicine in stocks %}
+                        <option value="{{medicine.id}}">{{medicine.medicine_name}}</option>
+                        {% endfor %}
+                      </select>
+                  </div>
+
+                   <div class="field">
+                     <label>Quantity</label>
+                     <div class="ui fluid large input">
+                         <input placeholder="Quantity" id="quantity_b" name="quantity_b" type="number">
+
+                     </div>
+                  </div>
+                    <div class="field">
+                      <label>No of days</label>
+                      <div class="ui fluid large input">
+                          <input placeholder="No of days" id="days_b" name="days_b" type="number">
+
+                      </div>
+                     </div>
+                     <div class="field">
+                       <label>Times per day</label>
+                       <div class="ui fluid large input">
+                           <input placeholder="No of times per day" id="times_b" name="times_b" type="number">
+
+                       </div>
+                      </div>
+                     <div class="field">
+                         <label><br></label>
+                         <input type="button" id="medicine_b" name="medicine_b" value="Add"class="ui small left floated primary button" />
+
+                     </div>
+                </div>
+                <table  class="ui very basic collapsing celled small fluid sortable table"
+                       style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;">
+                    <thead>
+                    <tr>
+                        <th class="two wide">
+                            Medicine
+                        </th>
+
+                        <th class="two wide" >
+                            Quantity
+                        </th>
+
+                        <th class="wide">
+                            Days
+                        </th>
+                        <th class="wide">
+                            Times
+                        </th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="sched_b">
+
+                    </tbody>
+                </table>
+                <div class="field">
+                    <label>Tests Suggested</label>
+                    <textarea rows="2" id="tests_b" name="extra_meds"></textarea>
+                </div>
+                <div class="field">
+                    <label for="file">Report</label>
+                    <div class="ui fluid input">
+                        <input type="file" name="file" id="file">
+                    </div>
+                </div>
+                <div class="field">
+                    <label><br></label>
+                    <input type="button" id="prescribe_b" name="prescribe"  value="Submit"class="ui large right floated primary button" />
+                </div>
 
 
-    {% comment %}the view appointments tab starts here {% endcomment %}
-    {% comment %} <div class="ui active tab" data-tab="viewappointments">
-        <table class="ui very basic collapsing celled large sortable table"
-               style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
-            <thead>
-            <tr>
-                <th class="four wide">
-                    User
-                </th>
 
-                <th class="two wide">
-                    Doctor
-                </th>
-
-                <th class="four wide">
-                    Description
-                </th>
-                <th>
-                    Date
-                </th>
-                <th>
-                    From Time
-                </th>
-
-                <th >
-                    To Time
-
-                  </th>
-            </tr>
-            </thead>
-
-            <tbody>
-              {% for appointment in appointments_today%}
-            <tr>
-                <td>
-                    <h4 class="ui image header">
-                        <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                        <div class="content">
-                          {{appointment.user_id}}
-                        </div>
-                    </h4>
-                </td>
-
-                <td style="white-space:nowrap;" >
-                    {{appointment.doctor_id}}
-                </td>
-
-                <td>
-                    {{appointment.description}}
-                </td>
-                <td style="white-space:nowrap;">
-                    {{appointment.date}}
-                </td>
-                <td style="white-space:nowrap;">
-                    {{appointment.schedule.from_time}}
-                </td>
-
-                <td style="white-space:nowrap;">
-                    {{appointment.schedule.to_time}}
-                </td>
-
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div> {% endcomment %}
-    {% comment %}the view appointments tab ends here {% endcomment %}
-
-
-    {% comment %}the view ambulance tab starts here {% endcomment %}
-    {% comment %} <div class="ui tab" data-tab="viewambulance">
-      <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
-          <table class="ui very basic collapsing celled large sortable table"
-                 style="padding-left: 2.5%;
-                                                        padding-right: 2.5%;
-                                                        padding-top: 1%;
-                                                        padding-bottom: 1.5%;
-                                                        margin: auto;">
-              <thead>
-              <tr>
-
-                  <th>
-                      User
-                  </th>
-                     <th class="three wide">
-                      Cause
-                  </th>
-
-                  <th>
-                    Requested Date
-                  </th>
-
-                  <th>
-                      Start Date
-                  </th>
-
-                  <th>
-                    End Date
-                  </th>
-
-
-              </tr>
-              </thead>
-
-              <tbody>
-              {% for  ambulance in all_ambulances%}
-              <tr>
-                <td>
-                    <h4 class="ui image header">
-                        <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                        <div class="content">
-                          {{ambulance.user_id.user}}
-                        </div>
-                    </h4>
-                </td>
-                  <td>
-                      {{ambulance.reason}}
-                  </td>
-
-                  <td style="white-space:nowrap;">
-                      {{ambulance.date_request.date}}
-                  </td>
-
-                  <td style="white-space:nowrap;">
-                      {{ambulance.start_date}}
-                  </td>
-
-                  {% if ambulance.end_date == None %}
-                  <form method='POST'>{% csrf_token %}
-                  <input type="hidden" id="end_id" name="id" value={{ambulance.id}} />
-                  <td><p id="end_p"></p><input class="ui small right floated primary button" type="button" id="end" name="end" value="End"/></td>
-                  </form>
-                  {% else %}
-                     <td>{{ambulance.end_date}}</td>
-                  {% endif %}
-
-
-              </tr>
-              {% endfor %}
-              </tbody>
-          </table>
-          <script type="text/javascript">
-                $('#end').click(function(e)
-                                                    {
-                                                      $.ajax({
-                                                        type:'post',
-                                                        url:'/healthcenter/compounder/',
-                                                        data: {
-                                                        csrfmiddlewaretoken: '{{ csrf_token }}',
-                                                        id:$("#end_id").val(),
-                                                        end:$("#end").val()
-                                                      },
-                                                        success: function(data){
-                                                          alert("ended ambulance service");
-                                                          $('#end_p').html(data.datenow);
-                                                          document.getElementById("end").style.visibility='hidden';
-                                                      }
+            </form></div></div>
+            <script src="{% static 'globals/js/jquery.min.js' %}"></script>
+            <script type="text/javascript">
+                  $('#medicine_b').click(function(e){
+                                                        $("#sched_b tr").remove();
+                                                        var user = document.getElementById('patient_b').value;
+                                                        var quantity = document.getElementById('quantity_b').value;
+                                                        var medicine = document.getElementById('medicine_id_b').value;
+                                                        var days = document.getElementById('days_b').value;
+                                                        var times = document.getElementById('times_b').value;
+                                                        if(user=="" || days=="" || days<0 || times=="" || times<0 || quantity=="" || quantity<0)
+                                                        {
+                                                        $('#usr_b').html("Enter Valid Information");
+                                                        return false;
+                                                        }
+                                                        $.ajax({
+                                                          type:'post',
+                                                          url:'/healthcenter/compounder/',
+                                                          data: {
+                                                          csrfmiddlewaretoken: '{{ csrf_token }}',
+                                                          user:$("#patient_b").val(),
+                                                          quantity:$("#quantity_b").val(),
+                                                          medicine_name_b:$("#medicine_id_b").val(),
+                                                          days:$("#days_b").val(),
+                                                          times:$("#times_b").val()
+                                                        },
+                                                          success: function(data){
+                                                              alert("added medicine");
+                                                              document.getElementById("quantity_b").value="";
+                                                              document.getElementById("medicine_id_b").value="";
+                                                              document.getElementById("days_b").value="";
+                                                              document.getElementById("times_b").value="";
+                                                              var response=JSON.stringify(data);
+                                                               $('#sched_b').empty();
+                                                              $.each(data, function(key, value) {
+                                                               $('#sched_b').append("<tr><td>" + value.medicine + "</td><td>" +
+                                                               value.quantity + "</td><td>" + value.days + "</td><td>" + value.times + "</td></tr>");
+                                                             });
+                                                        }
+                                                      });
                                                     });
+    </script>
+    <script type="text/javascript">
+                    $('#prescribe_b').click(function(e){
+                                                    var user = document.getElementById('patient_b').value;
+                                                    var details = document.getElementById('details_b').value;
+                                                    var tbl = document.getElementById('sched_b');
+                                                     
+                                                    // Get the file input element
+                                                    var fileInput = document.getElementById('file');
+                                                    
+                                                    // Get the files from the input element
+                                                    var file = fileInput.files[0];
+                                                    
+                                                    // Create a new FormData object
+                                                    var formData = new FormData();
+                                                    if(tbl.rows.length==0){
+                                                    $('#usr_b').html("Please prescribe some medicine!");
+                                                    return false;
+                                                     }
+                                                    if(user=="" || details=="")
+                                                    {
+                                                    $('#usr_b').html("Please enter all the details!");
+                                                    return false;
+                                                    }
+                                                    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}')
+                                                    formData.append('file', file);
+                                                    formData.append('user', $("#patient_b").val());
+                                                    formData.append('doctor', $("#doctor_b").val());
+                                                    formData.append('details', $("#details_b").val());
+                                                    formData.append('tests', $("#tests_b").val());
+                                                    formData.append('prescribe_b', $("#prescribe_b").val());
+                                                    $.ajax({
+                                                      type:'post',
+                                                      url:'/healthcenter/compounder/',
+                                                      data: formData,
+                                                      processData: false, // Don't process the data as a query string
+                                                      contentType: false, // Let the browser set the Content-Type header automatically
+                                                      success: function(data){
+                                                        if (data.status == 1){
+                                                          alert("prescribed medicine");
+                                                          document.getElementById("doctor_b").value="";
+                                                          document.getElementById("details_b").value="";
+                                                          document.getElementById("tests_b").value="";
+                                                          $('#sched_b').empty();
+                                                          window.location.reload();
+                                                        }
+
+                                                        else {
+                                                            if(data.status == 0)
+                                                            alert("Prescription failed!, not enough medicine available in stock");
+                                                            }
+                                                    },
+                                                  });
                                                   });
               </script>
-      </div>
-    </div> {% endcomment %}
-    {% comment %}the view ambulance tab ends here {% endcomment %}
-
-      {% comment %}the view hospital admission tab starts here {% endcomment %}
-      {% comment %} <div class="ui tab" data-tab="viewhospitaladmission">
-          <div class="ui vertical segment" >
-              <table class="ui very basic collapsing celled small sortable table">
-                  <thead>
-                  <tr>
-                    <th class="four wide">
-                        Patient
-                    </th>
-
-                    <th class="four wide">
-                        Institute Doctor
-                    </th>
-
-                    <th class="four wide">
-                        Hospital Doctor
-                    </th>
-
-                      <th class="four wide">
-                          Hospital
-                      </th>
-
-                      <th>
-                          Admission Date
-                      </th>
-
-                      <th>
-                          Discharge Date
-                      </th>
-
-                      <th class="three wide">
-                          Medical Reason
-                      </th>
+         
 
 
-                  </tr>
-                  </thead>
 
-                  <tbody>
-                  {% for hospital in all_hospitals %}
-                  <tr>
-                    <td style="white-space:nowrap;">
-                        <h4 class="ui image header">
-                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                            <div class="content">
-                                {{hospital.user_id.user}}
-                            </div>
-                        </h4>
-                    </td>
-
-                      <td style="white-space:nowrap;">
-                          <h4 class="ui image header">
-                              <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                              <div class="content">
-                                {% if hospital.doctor_id == None %}
-
-                                {% else %}
-                                  {{hospital.doctor_id}}
-                                {% endif %}
-                              </div>
-                          </h4>
-                      </td>
-
-                      <td style="white-space:nowrap;">
-                          {{hospital.hospital_doctor}}
-                      </td>
-
-                      <td style="white-space:nowrap;">
-                          {{hospital.hospital_name}}
-                      </td>
-                      <td style="white-space:nowrap;">
-                          {{hospital.admission_date}}
-                      </td>
-
-
-                        {% if hospital.discharge_date == None %}
-                        <form method='POST'>{% csrf_token %}
-
-                        <td ><div id="dis"><input type="button"  onclick="dis({{hospital.pk}})" id="{{hospital.pk}}" name="discharge" class="ui small floated primary button" value="Discharge"/></div>
-                            <p id="disc_p"></p>
-                        </td>
-                        </form>
-                        {% else %}
-                        <td style="white-space:nowrap;">{{hospital.discharge_date}}</td>
-
-                        {% endif %}
-                      <td>
-                          {{hospital.reason}}
-                      </td>
-
-
-                  </tr>
-                    {% endfor %}
-                  </tbody>
-              </table>
-              <script type="text/javascript">
-                    function dis(id)
-                                       {
-
-                                                          $.ajax({
-                                                            type:'post',
-                                                            url:'/healthcenter/compounder/',
-                                                            data: {
-                                                            csrfmiddlewaretoken: '{{ csrf_token }}',
-                                                            'discharge':id
-                                                          },
-                                                            success: function(data){
-                                                              alert("discharged from hospital");
-                                                              $('#disc_p').html(data.datenow);
-                                                              document.getElementById("dis").style.visibility='hidden';
-                                                          }
-                                                        });
-                                        }
-  </script>
-          </div>
-
-      </div> {% endcomment %}
-
-      {% comment %}the view hospital admission tab ends here {% endcomment %}
-      {% comment %}the view appointments tab starts here {% endcomment %}
-      {% comment %} <div class="ui tab" data-tab="futureappointments">
-          <table class="ui very basic collapsing celled large sortable table"
-                 style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
-              <thead>
-              <tr>
-                  <th class="four wide">
-                      User
-                  </th>
-
-                  <th class="two wide">
-                      Doctor
-                  </th>
-
-                  <th class="four wide">
-                      Description
-                  </th>
-                  <th>
-                      Date
-                  </th>
-                  <th>
-                      From Time
-                  </th>
-
-                  <th >
-                      To Time
-
-                    </th>
-              </tr>
-              </thead>
-
-              <tbody>
-                {% for appointment_f in appointments_future%}
-              <tr>
-                  <td style="white-space:nowrap;">
-                      <h4 class="ui image header">
-                          <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                          <div class="content">
-                            {{appointment_f.user_id}}
-                          </div>
-                      </h4>
-                  </td>
-
-                  <td style="white-space:nowrap;">
-                      {{appointment_f.doctor_id}}
-                  </td>
-
-                  <td>
-                      {{appointment_f.description}}
-                  </td style="white-space:nowrap;">
-                  <td style="white-space:nowrap;">
-                      {{appointment_f.date}}
-                  </td>
-                  <td style="white-space:nowrap;">
-                      {{appointment_f.schedule.from_time}}
-                  </td >
-
-                  <td style="white-space:nowrap;">
-                      {{appointment_f.schedule.to_time}}
-                  </td>
-
-              </tr>
-              {% endfor %}
-              </tbody>
-          </table>
-      </div> {% endcomment %}
-      {% comment %}the view appointments tab ends here {% endcomment %}
-
-<div class="ui active tab" data-tab="prescriptionhistory">
+<div class="ui tab" data-tab="prescriptionhistory">
         <div class="ui vertical segment" >
             <table  border=1 class="ui very basic collapsing celled large sortable table"
                   style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;" >
@@ -466,6 +317,7 @@
 
                 </tr>
                 {% endfor %}
+               
 
                 </tbody>
             </table>

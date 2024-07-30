@@ -3,7 +3,7 @@ from .models import File, Tracking
 
 
 class FileAdmin(admin.ModelAdmin):
-    list_display = ('uploader', 'designation',
+    list_display = ('id', 'uploader', 'designation',
                     'subject', 'upload_date', 'is_read')
     search_fields = ('uploader__user__username', 'subject', 'description')
     list_filter = ('is_read',)

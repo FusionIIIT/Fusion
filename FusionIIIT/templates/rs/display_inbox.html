@@ -1,0 +1,180 @@
+
+{% load static %}
+
+{% block title %}
+
+{% endblock %}
+
+{% block view_projects %}
+
+{% block body %}
+   
+   
+    <script>
+      
+        
+        function openFile(event, index) {
+            var file = files[index-1];
+            var url = file.index
+            console.log(url);
+            window.location.href = "media/" + file.index;
+        }
+
+
+
+         // Assuming you have the files array defined in your JavaScript code
+    // And you want to dynamically set the URL of the link
+    // Loop through files array and set the href attribute of the link
+    // var files = [{upload_file: {url: 'file1_url'}}, {upload_file: {url: 'file2_url'}}]; // Example files array
+    window.onload = function() {
+        var files = {{files|safe}}; // Assuming files is a list of dictionaries with upload_file key
+        let link = document.getElementsByClassName('ui small blue equal-size-button button filelink');
+        console.log("links length: "+link.length)
+       for (var i = 0; i < files.length; i++) {
+           link[i].href = files[i].upload_file.url;
+           link[i].innerHTML="hello"; // Set the text of the link (optional
+           // If you want to create separate links for each file, you can clone the link element
+           // var newLink = link.cloneNode(true);
+           // newLink.href = files[i].upload_file.url;
+           // document.body.appendChild(newLink); // Append the new link to the body or another appropriate element
+           
+        } 
+    }
+
+
+    $(document).ready(function(){
+        $('#sort-by-date-btn').click(function(){
+            sortByDate();
+            var item = getElementById('sorting_icon');
+            console.log(item)
+            if(item.hasClass('sort amount down icon')){
+                item.removeClass('sort amount down icon');
+                item.addClass('sort amount up icon');
+            } else {
+                item.removeClass('sort amount up icon');
+                item.addClass('sort amount down icon');
+            }
+
+            var item = getElementById('sorting icon');
+            console.log(item)
+
+        });
+
+        function sortByDate() {
+            var rows = $('tbody > tr');
+            rows.sort(function(a, b) {
+                var dateA = new Date($(a).find('.receive-date').text()); // Get the date from the receive date column
+                var dateB = new Date($(b).find('.receive-date').text());
+                return dateA - dateB;
+            });
+            $('tbody').empty().append(rows); // Replace the existing rows with the sorted rows
+        }
+    });
+
+    </script>
+
+
+
+    <style>
+        .equal-size-button {
+            width: 100px; /* Adjust the width according to your preference */
+        }
+        .table .th{
+            
+        }
+        .ui.selection.dropdown.small {
+    font-size: 12px; /* Adjust the font size as needed */
+    padding: 5px 10px; /* Adjust the padding as needed */
+}
+
+/* Optionally, you can adjust the font size and padding for the dropdown's default text */
+.ui.selection.dropdown.small .default.text {
+    font-size: 12px; /* Adjust the font size as needed */
+    padding: 5px 10px; /* Adjust the padding as needed */
+}
+.ui.small.grey.equal-size-button.button:hover{
+        background-color:black;
+    }
+
+    </style>
+<div style="max-width:100%">
+    <div class="ui pointing secondary menu" style="font-size:25px;">
+        <label style="text-transform: uppercase" class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
+            Inbox             
+        </label>      
+    </div>
+    <table class="ui celled table  custom-table medium">
+        <thead>
+            <tr style="background-color: grey; color: white; " >
+                <th style="text-align: center;text-transform: uppercase;">S.No.</th>
+                <th style="text-align: center;text-transform: uppercase">Request Author</th>
+                <th style="text-align: center;text-transform: uppercase">Context</th>
+                <th style="text-align: center;text-transform: uppercase">File</th>
+                <th style="text-align: center;text-transform: uppercase">
+                    <div style="display: flex; flex-direction: row;margin-bottom:-7px; ">
+                        
+                        <div style="margin-right: 12px;">
+                            Recive Date 
+                        </div>
+                        <div  id="sort-by-date-btn"><i id="sorting_icon" class="sort icon large" ></i></div>
+                    </div>
+                    
+                </th>
+                <th style="text-align: center;text-transform: uppercase">View File Tracking</th>
+                {% comment %} {% if global_var == "director" or global_var == "HOD (CSE)"  or global_var == "HOD (ECE)" or global_var == "HOD (ME)" or global_var == "HOD (NS)" or global_var == "dean_rspc" %} {% endcomment %}
+                {% comment %} <th style="text-align: center;">Approve</th> {% endcomment %}
+                {% comment %} {% endif %} {% endcomment %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in files %}
+            <tr>
+                <td>{{forloop.counter}}.</td>
+                <td>{{data.file_id.uploader.user}}</td>
+                <td>{{data.remarks}}</td>
+            <td>
+                {% if data.file_id.upload_file %}
+                <a id="fileLink" class="ui small grey equal-size-button button" href="{{data.file_id.upload_file.url}}" ><i class="large download icon"></i></a>
+                {% else %}
+                <p>No file uploaded</p>
+                {% endif %}
+            </td>
+                <td>
+                    {{data.receive_date}}
+                </td>
+                <td>
+                    <button onclick="window.location='/research_procedures/view_file/{{ data.file_id.id }}'" style="margin-left:5px; height:5vh;" class="ui small grey equal-size-button button">View File</button>
+                </td>
+                {% comment %} {% if global_var == "director" or global_var == "HOD (CSE)" or  global_var == "HOD (ECE)" or global_var == "HOD (ME)" or global_var == "HOD (NS)" or global_var == "dean_rspc" %} {% endcomment %}
+            {% comment %} <td>
+                <form method="POST" enctype="multipart/form-data" action="{% url 'research_procedures:approve_request' data.id  %}">
+                    {% csrf_token %}
+                    <button style="margin-left:5px; height:5vh;" class="ui small grey equal-size-button button"  type="submit" >Approve</button>
+                </form>
+            </td> {% endcomment %}
+            {% comment %} {% endif %} {% endcomment %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="pagination" style="margin-top: 2rem;">
+        {% if current_page > 1 %}
+            <a class="mini ui button" href="?page={{ current_page|add:"-1" }}" ><i class="left arrow icon"></i></a>
+        {% endif %}
+        
+        {% for page_num in total_pages %}
+            {% if page_num == current_page %}
+            <a href="?page={{ page_num }}" style="color:blue">{{ page_num }}</a>
+            {% else %}
+            <a href="?page={{ page_num }}" style="color: black">{{ page_num }}</a>
+            {% endif %}
+        {% endfor %}
+        
+        {% if current_page < total_pages|length %}
+         <a class="mini ui button" href="?page={{ current_page|add:"1" }}"><i class="right arrow icon"></i></a>
+        {% endif %}
+    </div>
+    
+{% endblock %}
+</div>
+{% endblock %}

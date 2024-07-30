@@ -8,6 +8,10 @@ from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 from applications.globals.models import ExtraInfo
 from django.core.validators import MinValueValidator, MaxValueValidator, DecimalValidator
+from applications.globals.models import (DepartmentInfo, Designation,
+                                         ExtraInfo, Faculty, HoldsDesignation)
+from django.contrib.auth.models import User
+
 
 # Create your models here.
 # Create your models here.
@@ -128,13 +132,15 @@ class Curriculum(models.Model):
     # version = models.FloatField(default=1.0, null=False)
     # version = models.PositiveIntegerField(default=1, null=False)
     version = models.DecimalField(
-        max_digits=2,
-        decimal_places=1,
-        default=1.0,
-        validators=[MinValueValidator(1.0), DecimalValidator(max_digits=2, decimal_places=1)])
+    max_digits=5, 
+    decimal_places=1,  
+    default=1.0, 
+    validators=[MinValueValidator(1.0), DecimalValidator(max_digits=5, decimal_places=1)])
     working_curriculum = models.BooleanField(default=True, null=False)
     no_of_semester = models.PositiveIntegerField(default=1, null=False)
     min_credit = models.PositiveIntegerField(default=0, null=False)
+    latest_version = models.BooleanField(default=True)
+    
 
     class Meta:
         unique_together = ('name', 'version',)
@@ -350,46 +356,11 @@ class CourseInstructor(models.Model):
     class Meta:
         unique_together = ('course_id', 'instructor_id', 'batch_id')
 
-    def __self__(self):
-        return '{} - {}'.format(self.course_id, self.instructor_id)
-
-
-class CourseProposal(models.Model):
-    '''
-        Current Purpose : To store the details regarding a course
-
-
-
-
-
-        ATTRIBUTES :
-
-        code(char) -  the course code (eg CS3005)
-        name(char) -  the name of the course(eg Machine Learning)
-        credit(Integer) -  the credits defined for the course
-        lecture_hours(integer) -  lecture hours defined for the course
-        tutorial_hours(Integer) - tutorial hours defined for the course
-        practical_hours(Integer)  - practical hours defined for the course
-        discussion_hours(Integer) - discussion hours
-        project_hours(Integer) - project hours
-        pre_requisits(Boolean) -  denote whether  this course has prerequisites(courses that one should take before opting this )
-        pre_requisit_courses(programme_curriculum.Course) - link to set of prerequisite courses
-        syllabus(text) - syllabus described for the course
-        percent_quiz_1(+ve int)  - defined weightage in marking
-        percent_midsem(+ve int)  - defined weightage in marking
-        percent_quiz_2(+ve int)  - defined weightage in marking
-        percent_endsem (+ve int)  - defined weightage in marking
-        percent_project(+ve int)  - defined weightage in marking
-        percent_lab_evaluation (+ve int)  - defined weightage in marking
-        percent_course_attendance (+ve int)  - defined weightage in marking
-        ref_books(text) - reference books suggested for the course
-        working_course(boolean) - to denote whether the course is currently in execution or not
-        disciplines(programme_curriculum.Discipline) - to store which discipline is offering the course
-
-
-    '''
-    faculty_name = models.CharField(max_length=100, null=False, blank=False)
-    faculty_code = models.CharField(max_length=10, null=False, blank=False)
+#new
+class NewProposalFile(models.Model):
+    
+    uploader = models.CharField(max_length=100, null=False, blank=False)
+    designation = models.CharField(max_length=100, null=False, blank=False)
     code = models.CharField(max_length=10, null=False, blank=False)
     name = models.CharField(max_length=100, null=False, blank=False)
     credit = models.PositiveIntegerField(default=3, null=False, blank=False)
@@ -416,87 +387,39 @@ class CourseProposal(models.Model):
     percent_course_attendance = models.PositiveIntegerField(
         default=5, null=False, blank=False)
     ref_books = models.TextField()
-    disciplines = models.ManyToManyField(Discipline, blank=True)
-    status = models.PositiveIntegerField(default=0, null=False, blank=False)
+    subject = models.CharField(max_length=100, null=True, blank=False)
+    description = models.CharField(max_length=400, null=True, blank=False)
+    upload_date = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default = False)
+    is_update= models.BooleanField(default = False)
+    is_archive = models.BooleanField(default = False)
+    class Meta:
+        unique_together = ('code', 'uploader','name') # if code and faculty code matches to another proposal name will take care of it         
+    
+    def __str__(self):
+        return str(self.uploader + " - " +self.designation+" - "+self.code + " - "+self.name)
+
+class Proposal_Tracking(models.Model):
+
+    file_id = models.CharField(max_length=100, null=False, blank=False)
+    current_id =  models.CharField(max_length=100, null=False, blank=False)
+    current_design = models.CharField(max_length=100, null=False, blank=False)
+    receive_id = models.ForeignKey(User,blank=False,on_delete=models.CASCADE)
+    receive_design = models.ForeignKey(Designation, blank=False,on_delete=models.CASCADE)
+    disciplines = models.ForeignKey(Discipline, blank=False,on_delete=models.CASCADE)
+    receive_date = models.DateTimeField(auto_now_add=True)
+    forward_date = models.DateTimeField(auto_now_add=True)
+    remarks = models.CharField(max_length=250, null=True, blank=True)
+    is_added = models.BooleanField(default = False)
+    is_submitted = models.BooleanField(default = False)
+    is_rejected = models.BooleanField(default = False)
+    sender_archive = models.BooleanField(default = False)
+    receiver_archive = models.BooleanField(default = False)
+    
+
 
     class Meta:
-        unique_together = ('code', 'faculty_code',)
+        # unique_together = ('file_id', 'current_id','receive_id','receive_design')
+        unique_together = ('file_id', 'current_id','current_design','disciplines')
 
-    def __str__(self):
-        return str(self.faculty_name + " - " + self.faculty_code+" - "+self.code + " - "+self.name)
-
-    # @property
-    # def courseslots(self):
-    #     return CourseSlot.objects.filter(courses=self.id)
-
-
-class UpdateCourseProposal(models.Model):
-    '''
-        Current Purpose : To store the details regarding a update course proposal forms
-        ATTRIBUTES :
-
-        code(char) -  the course code (eg CS3005)
-        name(char) -  the name of the course(eg Machine Learning)
-        credit(Integer) -  the credits defined for the course
-        lecture_hours(integer) -  lecture hours defined for the course
-        tutorial_hours(Integer) - tutorial hours defined for the course
-        practical_hours(Integer)  - practical hours defined for the course
-        discussion_hours(Integer) - discussion hours
-        project_hours(Integer) - project hours
-        pre_requisits(Boolean) -  denote whether  this course has prerequisites(courses that one should take before opting this )
-        pre_requisit_courses(programme_curriculum.Course) - link to set of prerequisite courses
-        syllabus(text) - syllabus described for the course
-        percent_quiz_1(+ve int)  - defined weightage in marking
-        percent_midsem(+ve int)  - defined weightage in marking
-        percent_quiz_2(+ve int)  - defined weightage in marking
-        percent_endsem (+ve int)  - defined weightage in marking
-        percent_project(+ve int)  - defined weightage in marking
-        percent_lab_evaluation (+ve int)  - defined weightage in marking
-        percent_course_attendance (+ve int)  - defined weightage in marking
-        ref_books(text) - reference books suggested for the course
-        working_course(boolean) - to denote whether the course is currently in execution or not
-        disciplines(programme_curriculum.Discipline) - to store which discipline is offering the course
-
-
-    '''
-    faculty_name = models.CharField(max_length=100, null=False, blank=False)
-    faculty_code = models.CharField(max_length=10, null=False, blank=False)
-    code = models.CharField(max_length=10, null=False, blank=False)
-    name = models.CharField(max_length=100, null=False, blank=False)
-    credit = models.PositiveIntegerField(default=0, null=False, blank=False)
-    lecture_hours = PositiveIntegerField(null=True, )
-    tutorial_hours = PositiveIntegerField(null=True)
-    pratical_hours = PositiveIntegerField(null=True)
-    discussion_hours = PositiveIntegerField(null=True)
-    project_hours = PositiveIntegerField(null=True)
-    pre_requisits = models.TextField(null=True, blank=True)
-    pre_requisit_courses = models.ManyToManyField(Course, blank=True)
-    syllabus = models.TextField()
-    percent_quiz_1 = models.PositiveIntegerField(
-        default=10, null=False, blank=False)
-    percent_midsem = models.PositiveIntegerField(
-        default=20, null=False, blank=False)
-    percent_quiz_2 = models.PositiveIntegerField(
-        default=10, null=False, blank=False)
-    percent_endsem = models.PositiveIntegerField(
-        default=30, null=False, blank=False)
-    percent_project = models.PositiveIntegerField(
-        default=15, null=False, blank=False)
-    percent_lab_evaluation = models.PositiveIntegerField(
-        default=10, null=False, blank=False)
-    percent_course_attendance = models.PositiveIntegerField(
-        default=5, null=False, blank=False)
-    ref_books = models.TextField()
-    working_course = models.BooleanField(default=True)
-    disciplines = models.ManyToManyField(Discipline, blank=True)
-    status = models.PositiveIntegerField(default=0, null=False, blank=False)
-
-    class Meta:
-        unique_together = ('code', 'faculty_code',)
-
-    def __str__(self):
-        return str(self.faculty_name + " - " + self.faculty_code+" - "+self.code + " - "+self.name)
-
-    # @property
-    # def courseslots(self):
-    #     return CourseSlot.objects.filter(courses=self.id)
+        

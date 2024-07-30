@@ -55,8 +55,8 @@
             
 
             <div class="field">
-                <label>Transfer to Department</label><br>
-                <input type="text" value="{{RequestFile.uploader.department}}" readonly>
+                <label>Transfer to Department/Section</label><br>
+                <input type="text" value="{{RequestFile.uploader.department.name}}" readonly>
             </div>
 
             <!-- <div class="field">
@@ -68,10 +68,6 @@
                 </select>
             </div> -->
 
-            <div class="field">
-                <label>Grade Required </label><br>
-                <input type="text" value="{{indent.grade}}" readonly>
-            </div>
 
             <div class="field">
                 <label>Stock Required</label><br>
@@ -98,12 +94,11 @@
             <div class="field">
                 <label>Location of Storage</label><br>
                 <select name="location">
-                    <option value="H1">Vashistha Hostel</option>
-                    <option value="H3">Vivekananda Hostel</option>
-                    <option value="H4">AryaBhatta Hostel</option>
-                    <option value="SR1">Storage Room 1</option>
-                    <option value="SR2">Storage Room 2</option>
-                    <option value="SR3">Storage Room 3</option>
+                        <option value="SR1">LHTC</option>  
+                        <option value="SR2">Computer Center</option>  
+                        <option value="SR3">Panini Hostel</option>  
+                        <option value="SR4">Lab Complex</option>  
+                        <option value="SR5">Admin Block</option>  
                 </select>
             </div>
 
@@ -112,7 +107,7 @@
 
             <div class="left floated item">
                 <label for="file">Attach Bills ( PDF, JPEG, PNG, JPG ) sent from indenter</label>
-                <input type="file" id="file" name="bill" accept=".pdf, .jpg, .jpeg, .png">
+                <input type="file" id="file" name="bill" accept=".pdf, .jpg, .jpeg, .png" >
             </div>
 
             <br>

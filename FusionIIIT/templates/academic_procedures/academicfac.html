@@ -25,7 +25,13 @@
                  style="max-width: 320px;">
                 
                 {% if fac_flag %}
-                    <a class="item" data-tab="one">
+                    {% if request.user.extrainfo.user_type == 'fx' or request.user.extrainfo.user_type == 'faculty' %}   
+                    <a class="active item" data-tab="one">
+                        Assigned Course
+                        <i class="right floated chevron right icon"></i>
+                    </a>   
+                    {% endif %}
+                    <a class="item" data-tab="fourth">
                         Course Management
                         <i class="right floated chevron right icon"></i>
                     </a>
@@ -61,9 +67,60 @@
             Kartik
          {% endcomment %}
 
+         <div class="ui active bottom attached tab segment" data-tab="one">
+                <div class="content">
+                <div class="description" style="overflow: auto; max-height: 480px">
+                    <table
+                    class="ui celled medium table orange"
+                    style="text-align: center; margin: auto"
+                    >
+                    <thead>
+                        <tr style="font-size: medium; background-color: whitesmoke">
+                        <td colspan="2"><h4>Course Name</h4></td>
+                        <td colspan="2"><h4>Course Code</h4></td>
+        
+        
+                        <td colspan="2"><h4>Course Version</h4></td>
+                        <td colspan="2"><h4>Programme</h4></td>
+        
+                        <td colspan="2"><h4>Branch</h4></td>
+                        <!-- <td colspan="2"><h4>Year</h4></td> -->
 
+                        <td colspan="2"><h4>Download Roll List</h4></td>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- <h1>{{course_infos}}</h1> -->
+                        {% for course in assigned_courses %}
+                        <tr>
+                            <td colspan="2"> {{course.course_id.name }}</td>
+                            <td colspan="2"> {{course.course_id.code }}</td>
+                            <td colspan="2"> {{course.course_id.version }}</td>
+                            <td colspan="2"> {{course.batch_id.name }}</td>
+                            <td colspan="2"> {{course.batch_id.discipline.name }}</td>
+                            <!-- <td colspan="2"> {{course.batch_id.year }}</td> -->
 
-            <div class="ui active tab segment" data-tab="one">
+                            <!-- <td colspan="2"><a href="">Roll List</a></td> -->
+        
+                            <td colspan="2">
+                                <form method="post" action="/aims/generateSheet">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="course" value="{{ course.course_id.id }}">
+                                    <input type="hidden" name="batch" value="">
+                                    <button class="ui button green" type="submit">Roll List</button>
+                                </form>
+                            </td>
+        
+                        </tr>
+                        {%endfor%}
+                    </tbody>
+                    </table>
+                </div>
+                </div>
+            </div>
+
+            <div class="ui tab segment" data-tab="fourth">
                     <br> <br>
                     <table class="ui orange table">
                         <thead>
@@ -78,7 +135,7 @@
                             <tr>
                                 <td><a href="{% url 'programme_curriculum:view_a_course' obj.course_id.id %}">{{obj.course_id.code}}</a></td>
                                 <td>{{obj.course_id.name}}</td>
-                                <td>{{ obj.batch_id }}</td>
+                                <td>{{ obj.batch_id.name}} {{obj.batch_id.year}}-{{obj.batch_id.discipline.name}}</td>
                                  
                                 <td class="collapsing"><a class="tiny ui positive animated button"  tabindex="0"
                                     href="{% url 'programme_curriculum:update_course_form' obj.course_id.id %}"
@@ -89,7 +146,17 @@
                                         </div>
                                     </a>
                                 </td>
-
+                                {%if items.0.type != "Swayam" %}
+                                <td class="collapsing"><a class="tiny ui positive animated button"  style="background:#2590e2;" tabindex="0"
+                                    href="{% url 'online_cms:course' obj.course_id.code obj.course_id.version %}"
+                                    type="Submit" name="Submit">
+                                        <div class="visible content">MANAGE</div>
+                                        <div class="hidden content">
+                                        <i class="folder open icon"></i>
+                                        </div>
+                                    </a>
+                                </td>
+                                {%endif %}
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -164,6 +231,9 @@
                 {% comment %}
                 TODO: the right rail!
                 {% endcomment %}
+                {% block sidepanel%} 
+                {% include 'notifications/academic_procedures_sidepanel.html' %} 
+                {% endblock %}
             </div>
         </div>
           {% comment %}The right-rail segment ends here!{% endcomment %}

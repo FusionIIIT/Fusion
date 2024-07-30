@@ -1,21 +1,33 @@
-from django.contrib import messages
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import File, Tracking
-from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
-from django.template.defaulttags import csrf_token
+from sqlite3 import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.contrib import messages
+from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.contrib.auth.decorators import login_required
-from django.db import IntegrityError
 from django.core import serializers
 from django.contrib.auth.models import User
-from django.http import JsonResponse
-from timeit import default_timer as time
-from notification.views import office_module_notif, file_tracking_notif
-from .utils import *
+from django.views.decorators.http import require_POST
+from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+from django.core.paginator import Paginator
+
+from .models import File, Tracking
+from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
+from .utils import *
 from .sdk.methods import *
 from .decorators import *
+from datetime import datetime;
+
+from timeit import default_timer as time
+from notification.views import office_module_notif, file_tracking_notif
+
+import io
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+
 import json
+import zipfile
+import os
 
 
 @login_required(login_url="/accounts/login/")
@@ -43,7 +55,6 @@ def filetracking(request):
                 context - Holds data needed to make necessary changes in the template.
     """
 
-
     if request.method == "POST":
         try:
             if 'save' in request.POST:
@@ -59,8 +70,9 @@ def filetracking(request):
                         request, "File should not be greater than 10MB")
                     return redirect("/filetracking")
 
+                form_remarks = request.POST.get('remarks')
                 extraJSON = {
-                    'remarks': request.POST.get('remarks'),
+                    'remarks': form_remarks if form_remarks is not None else '',
                 }
 
                 File.objects.create(
@@ -111,7 +123,6 @@ def filetracking(request):
                     return redirect('/filetracking/')
                 receive = request.POST.get('receive')
                 try:
-                    print(receive)
                     receive_design = Designation.objects.get(name=receive)
                 except Exception as e:
                     messages.error(request, 'Enter a valid Designation')
@@ -128,7 +139,6 @@ def filetracking(request):
                     remarks=remarks,
                     upload_file=upload_file,
                 )
-                # office_module_notif(request.user, receiver_id)
                 file_tracking_notif(request.user, receiver_id, subject)
                 messages.success(request, 'File sent successfully')
 
@@ -157,12 +167,15 @@ def filetracking(request):
         'holdsdesignations': holdsdesignations,
         'designation_name': designation_name,
         'designation_id': designation_id,
-        'notifications': request.user.notifications.all()
+        'notifications': request.user.notifications.all(),
+        'path_parent': 'compose'
     }
     return render(request, 'filetracking/composefile.html', context)
 
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def draft_design(request):
     """ 
     This function redirects the user to the drafts page of designation selected in dropdown 
@@ -180,6 +193,8 @@ def draft_design(request):
 
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def drafts_view(request, id):
     """
     This function is used to view all the drafts created by the user ordered by upload date.it collects all the created files from File object.
@@ -191,9 +206,6 @@ def drafts_view(request, id):
     @parameters
       draft - file obeject containing all the files created by user
       context - holds data needed to render the template
-
-
-
 
     """
     user_HoldsDesignation_obj = HoldsDesignation.objects.select_related(
@@ -216,31 +228,33 @@ def drafts_view(request, id):
     context = {
         'draft_files': draft_files,
         'designations': designation,
-        'notifications': request.user.notifications.all()
+        'notifications': request.user.notifications.all(),
+        'path_parent': 'draft'
     }
     return render(request, 'filetracking/drafts.html', context)
 
 
 @login_required(login_url="/accounts/login")
-def outbox_view(request, id):
+@user_is_student
+@dropdown_designation_valid
+def outbox_view(request):
     """
-         The function is used to get all the files sent by user(employee) to other employees
-        which are filtered from Tracking(table) objects by current user i.e. current_id.
-        It displays files sent by user to other employees of a Tracking(table) of filetracking(model)
-        in the 'Outbox' tab of template.
+    The function is used to get all the files sent by user(employee) to other employees
+    which are filtered from Tracking(table) objects by current user i.e. current_id.
+    It displays files sent by user to other employees of a Tracking(table) of filetracking(model)
+    in the 'Outbox' tab of template.
 
-        @param:
-                request - trivial.
-                id - user id 
+    @param:
+            request - trivial.
+            id - user id 
 
-        @variables:
-                outward_files - File objects filtered by current_id i.e, present working user.
-                context - Holds data needed to make necessary changes in the template.
-
-
+    @variables:
+            outward_files - File objects filtered by current_id i.e, present working user.
+            context - Holds data needed to make necessary changes in the template.
     """
-    user_HoldsDesignation_obj = HoldsDesignation.objects.select_related(
-        'user', 'working', 'designation').get(pk=id)
+    dropdown_design = request.session.get('currentDesignationSelected', 'default_value')
+    username = request.user
+    user_HoldsDesignation_obj = get_HoldsDesignation_obj(username, dropdown_design)
     s = str(user_HoldsDesignation_obj).split(" - ")
     designation = s[1]
 
@@ -255,26 +269,41 @@ def outbox_view(request, id):
         f['sent_to_user'] = last_forw_tracking.receiver_id
         f['sent_to_design'] = last_forw_tracking.receive_design
         f['last_sent_date'] = last_forw_tracking.forward_date
-
         f['upload_date'] = parse_datetime(f['upload_date'])
         f['uploader'] = get_extra_info_object_from_id(f['uploader'])
 
-    outward_files = add_uploader_department_to_files_list(outward_files)
-    user_HoldsDesignation_obj = HoldsDesignation.objects.select_related(
-        'user', 'working', 'designation').get(pk=id)
-    s = str(user_HoldsDesignation_obj).split(" - ")
-    designation = s[1]
+    subject_query = request.GET.get('subject', '')
+    sent_to_query = request.GET.get('sent_to', '')
+    date_query = request.GET.get('date', '')
+
+    if subject_query:
+        outward_files = [f for f in outward_files if subject_query.lower() in f['subject'].lower()]
+    if sent_to_query:
+        outward_files = [f for f in outward_files if sent_to_query.lower() in f['sent_to_user'].username.lower()]
+    if date_query:
+        try:
+            search_date = datetime.strptime(date_query, '%Y-%m-%d')
+            outward_files = [f for f in outward_files if f['last_sent_date'].date() == search_date.date()]
+        except ValueError:
+            outward_files = []  # Invalid date format
+
+    paginator = Paginator(outward_files, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     context = {
-        'out_files': outward_files,
+        'page_obj': page_obj,
         'viewer_designation': designation,
-        'notifications': request.user.notifications.all()
+        'notifications': request.user.notifications.all(),
+        'path_parent': 'outbox',
     }
     return render(request, 'filetracking/outbox.html', context)
 
 
 @login_required(login_url="/accounts/login")
-def inbox_view(request, id):
+@user_is_student
+@dropdown_designation_valid
+def inbox_view(request):
     """
     The function is used to fetch the files received by the user form other employees. 
     These files are filtered by receiver id and ordered by receive date.
@@ -288,9 +317,11 @@ def inbox_view(request, id):
                 context - Holds data needed to make necessary changes in the template. 
 
     """
-
-    user_HoldsDesignation_obj = HoldsDesignation.objects.select_related(
-        'user', 'working', 'designation').get(pk=id)
+    dropdown_design = request.session.get(
+        'currentDesignationSelected', 'default_value')
+    username = request.user
+    user_HoldsDesignation_obj = get_HoldsDesignation_obj(
+        username, dropdown_design)
     s = str(user_HoldsDesignation_obj).split(" - ")
     designation = s[1]
     inward_files = view_inbox(
@@ -308,18 +339,42 @@ def inbox_view(request, id):
                                                             designation=user_HoldsDesignation_obj.designation)
         f['receive_date'] = last_recv_tracking.receive_date
         f['uploader'] = get_extra_info_object_from_id(f['uploader'])
+        f['is_forwarded'] = (False if (str(get_current_file_owner(f['id']).username) == str(user_HoldsDesignation_obj.user)) else True)
+
         
     inward_files = add_uploader_department_to_files_list(inward_files)
 
+    subject_query = request.GET.get('subject', '')
+    sent_to_query = request.GET.get('sent_to', '')
+    date_query = request.GET.get('date', '')
+
+    if subject_query:
+        inward_files = [f for f in inward_files if subject_query.lower() in f['subject'].lower()]
+    if sent_to_query:
+        inward_files = [f for f in inward_files if sent_to_query.lower() in f['sent_to_user'].username.lower()]
+    if date_query:
+        try:
+            search_date = datetime.strptime(date_query, '%Y-%m-%d')
+            inward_files = [f for f in inward_files if f['last_sent_date'].date() == search_date.date()]
+        except ValueError:
+            inward_files = []  # Invalid date format
+
+    paginator = Paginator(inward_files, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'in_file': inward_files,
+        'page_obj': page_obj,
         'designations': designation,
-        'notifications': request.user.notifications.all()
+        'notifications': request.user.notifications.all(),
+        'path_parent': 'inbox'
     }
     return render(request, 'filetracking/inbox.html', context)
 
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def outward(request):
     """ 
     This function redirects the user to the outbox page of designation selected in dropdown 
@@ -339,6 +394,8 @@ def outward(request):
 
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def inward(request):
     """ 
     This function redirects the user to the inbox page of designation selected in dropdown 
@@ -356,6 +413,8 @@ def inward(request):
 
 
 @login_required(login_url = "/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def confirmdelete(request,id):
     """
      The function is used to confirm the deletion of a file.
@@ -376,6 +435,8 @@ def confirmdelete(request,id):
     return render(request, 'filetracking/confirmdelete.html', context)
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def view_file(request, id): 
     ''' 
     This function is used to view a particular file received by an employee from another.
@@ -411,30 +472,35 @@ def view_file(request, id):
     current_owner = get_current_file_owner(file.id)
     file_uploader = get_user_object_from_username(file.uploader.user.username) 
 
+    last_receiver_designation = get_current_file_owner_designation(file.id).name
 
     if current_owner == request.user and file.is_read is False: 
         forward_enable = True
-    if current_owner == request.user and file_uploader == request.user and file.is_read is False:
+    if current_owner == request.user and last_receiver_designation == file.designation.name and file_uploader == request.user and file.is_read is False:
         archive_enable = True
 
+    parent_of_prev_path = request.META.get('HTTP_REFERER').strip("/").split('/')[-2]
     context = {
         'designations': designations,
         'file': file,
         'track': track,
         'forward_enable': forward_enable, 
         'archive_enable': archive_enable,
-        'notifications': request.user.notifications.all()
+        'notifications': request.user.notifications.all(),
+        'path_parent': parent_of_prev_path
     }
     return render(request, 'filetracking/viewfile.html', context)
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def archive_file(request, id): 
     '''This function is used to archive a file.
        It returns unauthorized access if the user is not file uploader 
        and the current owner of the file
     '''
     if request.method == "POST":
-        file = get_object_or_404(File, id=id);
+        file = get_object_or_404(File, id=id)
         current_owner = get_current_file_owner(file.id)
         file_uploader = get_user_object_from_username(file.uploader.user.username)
         if current_owner == request.user and file_uploader == request.user:
@@ -447,6 +513,8 @@ def archive_file(request, id):
         return render(request, 'filetracking/composefile.html')
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def forward(request, id):
     """
             The function is used to forward files received by user(employee) from other
@@ -477,6 +545,16 @@ def forward(request, id):
     track = Tracking.objects.select_related('file_id__uploader__user', 'file_id__uploader__department', 'file_id__designation', 'current_id__user', 'current_id__department',
                                             'current_design__user', 'current_design__working', 'current_design__designation', 'receiver_id', 'receive_design').filter(file_id=file).order_by('receive_date')
 
+    designations = get_designation(request.user)
+
+    designation_name = request.session.get('currentDesignationSelected', 'default_value')
+    all_available_designations = request.session.get(
+        'allDesignations', 'default_value2')
+
+    username = request.user
+    designation_id = get_HoldsDesignation_obj(
+        username, designation_name).id
+
     if request.method == "POST":
         if 'finish' in request.POST:
             file.is_read = True
@@ -499,11 +577,15 @@ def forward(request, id):
                     'user', 'working', 'designation').filter(user=request.user)
 
                 context = {
-
                     'designations': designations,
                     'file': file,
                     'track': track,
+                    'designation_name': designation_name,
+                    'designation_id': designation_id,
+                    'notifications': request.user.notifications.all(),
+                    'path_parent': 'inbox'
                 }
+
                 return render(request, 'filetracking/forward.html', context)
             receive = request.POST.get('receive')
             try:
@@ -513,11 +595,15 @@ def forward(request, id):
                 designations = get_designation(request.user)
 
                 context = {
-
                     'designations': designations,
                     'file': file,
                     'track': track,
+                    'designation_name': designation_name,
+                    'designation_id': designation_id,
+                    'notifications': request.user.notifications.all(),
+                    'path_parent': 'inbox'
                 }
+
                 return render(request, 'filetracking/forward.html', context)
 
             upload_file = request.FILES.get('myfile')
@@ -531,18 +617,9 @@ def forward(request, id):
                 remarks=remarks,
                 upload_file=upload_file,
             )
+        file_tracking_notif(request.user, receiver_id, file.subject)
         messages.success(request, 'File sent successfully')
-
-    designations = get_designation(request.user)
-
-    designation_name = request.session.get('currentDesignationSelected', 'default_value')
-    all_available_designations = request.session.get(
-        'allDesignations', 'default_value2')
-
-    username = request.user
-    designation_id = get_HoldsDesignation_obj(
-        username, designation_name).id
-
+        return redirect(reverse('filetracking:filetracking'))
 
     context = {
         'designations': designations,
@@ -550,14 +627,16 @@ def forward(request, id):
         'track': track,
         'designation_name': designation_name,
         'designation_id': designation_id,
-
-        'notifications': request.user.notifications.all()
+        'notifications': request.user.notifications.all(),
+        'path_parent': 'inbox'
     }
 
     return render(request, 'filetracking/forward.html', context)
 
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def archive_design(request):
     """ 
     This function redirects the user to the archive page of designation selected in dropdown 
@@ -575,6 +654,8 @@ def archive_design(request):
 
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def archive_view(request, id):
     """
     The function is used to fetch the files in the user's archive 
@@ -611,15 +692,17 @@ def archive_view(request, id):
     context = {
         'archive_files': archive_files,
         'designations': designation,
-        'notifications': request.user.notifications.all()
+        'notifications': request.user.notifications.all(),
+        'path_parent': 'archive'
     }
     return render(request, 'filetracking/archive.html', context)
 
 
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def archive_finish(request, id):
-    # file = get_object_or_404(File, ref_id=id)
     file1 = get_object_or_404(File, id=id)
     track = Tracking.objects.filter(file_id=file1)
 
@@ -627,6 +710,8 @@ def archive_finish(request, id):
 
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def finish_design(request):
 
     designation = HoldsDesignation.objects.select_related(
@@ -640,6 +725,8 @@ def finish_design(request):
 
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def finish_fileview(request, id):
 
     out = Tracking.objects.select_related('file_id__uploader__user', 'file_id__uploader__department', 'file_id__designation', 'current_id__user', 'current_id__department',
@@ -658,6 +745,8 @@ def finish_fileview(request, id):
 
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def finish(request, id):
     # file = get_object_or_404(File, ref_id=id)
     file1 = get_object_or_404(File, id=id)
@@ -669,14 +758,19 @@ def finish(request, id):
             track.update(is_read=True)
             messages.success(request, 'File Archived')
 
-    return render(request, 'filetracking/finish.html', {'file': file1, 'track': track, 'fileid': id,
-                                                        'notifications': request.user.notifications.all()})
+    context = {
+        'file': file1, 
+        'track': track, 
+        'fileid': id,
+        'notifications': request.user.notifications.all()
+        }
 
+    return render(request, 'filetracking/finish.html', )
 
 def AjaxDropdown1(request):
 
     """
-    This function returns the designation of receiver  on the forward or compose file template.
+    This function returns the designation of receiver on the forward or compose file template.
 
      @param:
             request - trivial.
@@ -699,7 +793,7 @@ def AjaxDropdown1(request):
 
 def AjaxDropdown(request):
     """
-    This function returns the usernames of receiver  on the forward or compose file template.
+    This function returns the usernames of receiver on the forward or compose file template.
 
      @param:
             request - trivial.
@@ -719,12 +813,10 @@ def AjaxDropdown(request):
         return HttpResponse(JsonResponse(context), content_type='application/json')
 
 
-def test(request):
-    return HttpResponse('success')
-
-
 
 @login_required(login_url = "/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def delete(request,id):
     """ 
      The function is used the delete of a file and it returns to the drafts page. 
@@ -739,6 +831,8 @@ def delete(request,id):
     return redirect('/filetracking/draftdesign/')
 
 
+@user_is_student
+@dropdown_designation_valid
 def forward_inward(request,id):
     """ This function is used forward the files which are available in the inbox of the user .
 
@@ -787,6 +881,8 @@ def unarchive_file(request, id):
     
 
 @login_required(login_url="/accounts/login")
+@user_is_student
+@dropdown_designation_valid
 def edit_draft_view(request, id, *args, **kwargs):
     """
             The function is used to edit and send drafted files, and also alter their title and subject 
@@ -843,7 +939,8 @@ def edit_draft_view(request, id, *args, **kwargs):
                     'track': track,
                     'notifications': request.user.notifications.all()
                 }
-                return render(request, 'filetracking/editdraft.html', context)
+                return redirect(reverse('filetracking:filetracking'))
+
             receive = request.POST.get('receive')
             try:
                 receive_design = Designation.objects.get(name=receive)
@@ -857,9 +954,17 @@ def edit_draft_view(request, id, *args, **kwargs):
                     'file': file,
                     'notifications': request.user.notifications.all()
                 }
-                return render(request, 'filetracking/editdraft.html', context)
+                return redirect(reverse('filetracking:filetracking'))
 
             upload_file = request.FILES.get('myfile')
+
+            if upload_file is None and file.upload_file is not None: 
+                upload_file = file.upload_file
+
+            # since frontend isnt reflecting uploaded file in edit draft, but upload_file may exist in File
+            # (this feature isnt working atm, duplicate is still stored)
+            #if upload_file == file.upload_file:
+            #    upload_file = None
 
             Tracking.objects.create(
                 file_id=file,
@@ -870,7 +975,10 @@ def edit_draft_view(request, id, *args, **kwargs):
                 remarks=remarks,
                 upload_file=upload_file,
             )
+            
+        file_tracking_notif(request.user, receiver_id, subject)
         messages.success(request, 'File sent successfully')
+        return render(request, 'filetracking/composefile.html')
 
     designations = get_designation(request.user)
 
@@ -903,4 +1011,63 @@ def edit_draft_view(request, id, *args, **kwargs):
     return render(request, 'filetracking/editdraft.html', context)
 
 
-    
+@login_required(login_url="/accounts/login/")
+@user_is_student
+@dropdown_designation_valid
+@require_POST
+def download_file(request, id):
+    file = get_object_or_404(File, id=id)
+    track = Tracking.objects.select_related('file_id__uploader__user', 'file_id__uploader__department', 'file_id__designation', 'current_id__user', 'current_id__department',
+                                            'current_design__user', 'current_design__working', 'current_design__designation', 'receiver_id', 'receive_design').filter(file_id=id).order_by('receive_date')
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    elements = []
+    styles = getSampleStyleSheet()
+    style_heading = styles['Heading1']
+    style_paragraph = styles['BodyText']
+
+    elements.append(
+        Paragraph(f"<center><b>Subject - {file.subject}</b></center>", style_heading))
+    elements.append(Spacer(1, 12))
+    elements.append(
+        Paragraph(f"<b>Description:</b> {file.description}", style_paragraph))
+    elements.append(Spacer(1, 12))
+
+    for t in track:
+        sent_by = f"<b>Sent by:</b> {t.current_design} - {t.forward_date.strftime('%B %d, %Y %I:%M %p')}"
+        received_by = f"<b>Received by:</b> {t.receiver_id} - {t.receive_design}"
+        combined_info = f"{sent_by} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {received_by}"
+        elements.append(Paragraph(combined_info, style_paragraph))
+        elements.append(Spacer(1, 12))
+        remarks = f"<b>Remarks:</b> {t.remarks}" if t.remarks else "<b>Remarks:</b> No Remarks"
+        elements.append(Paragraph(remarks, style_paragraph))
+        elements.append(Spacer(1, 12))
+        attachment = f"<b>Attachment:</b> {os.path.basename(t.upload_file.name)}" if t.upload_file else "<b>Attachment:</b> No attachments"
+        elements.append(Paragraph(attachment, style_paragraph))
+        elements.append(Paragraph('<hr width="100%" style="border-top: 1px solid #ccc;">', style_paragraph))
+        elements.append(Spacer(2, 12))
+
+    doc.build(elements)
+    pdf_data = buffer.getvalue()
+    buffer.close()
+
+    formal_filename = f'{file.uploader.department.name}-{file.upload_date.year}-{file.upload_date.month}-#{file.id}'
+    output_filename = f'iiitdmj-fts-{formal_filename}'
+
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+        pdf_filename = f'{file.uploader.department.name}-{file.upload_date.year}-{file.upload_date.month}-#{file.id}-notesheet.pdf'
+        zip_file.writestr(output_filename+'.pdf', pdf_data)
+        for t in track:
+            if t.upload_file:
+                zip_file.write(t.upload_file.path,
+                               os.path.basename(t.upload_file.name))
+
+    zip_data = zip_buffer.getvalue()
+    zip_buffer.close()
+
+    response = HttpResponse(zip_data, content_type='application/zip')
+    response['Content-Disposition'] = f'attachment; filename="{output_filename}.zip"'
+
+    return response

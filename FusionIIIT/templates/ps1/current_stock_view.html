@@ -35,8 +35,8 @@
             <thead>
             <tr>
                     <th>Item Type</th>
-                    <th>Item Grade</th>
-                    <th>department</th>
+                    <!-- <th>Item SubType</th> -->
+                    <th>department/Section</th>
                     <th>Quantity</th>
                 
             </tr>
@@ -46,7 +46,7 @@
                 <tr>
                     
                     <td> {{s.item_type}} </td>
-                    <td> {{s.grade}} </td>
+                    <!-- <td> {{s.item_subtype}} </td> -->
                     <td> {{s.department}} </td>
                     <td>{{s.total_quantity}}</td>
                 </tr>
@@ -58,7 +58,7 @@
 
 <!-- for displaying the stocks  -->
 <div class="ui divider"></div>
-    <div class="table-container" style="overflow-x: scroll;">
+    <div class="table-container"  style="overflow-x: scroll;max-height: 300px;  overflow-y: scroll;">
 
 
         <table class="ui very basic celled sortable table">
@@ -83,7 +83,13 @@
                     <td>{{s.location}}</td>
                     <td>{{s.isTransferred}}</td>
                     <td>{{s.StockEntryId.vendor}}</td>
-                    <td>{{s.StockEntryId.bill}}</td>
+                    <td>
+                        {% if s.StockEntryId.bill %}
+                            <a href="{{ s.StockEntryId.bill.url }}" download>{{ s.StockEntryId.bill }}</a>
+                        {% else %}
+                            No bill available
+                        {% endif %}
+                    </td>
                 
                   </tr>
                   {% endif %}

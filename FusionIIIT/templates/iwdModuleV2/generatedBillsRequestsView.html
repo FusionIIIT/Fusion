@@ -12,6 +12,16 @@ Academic
 {% include 'dashboard/navbar.html' %}
 {% endblock %}
 
+<script>
+    $('.message .close')
+        .on('click', function() {
+            $(this)
+                .closest('.message')
+                .transition('fade')
+            ;
+        });
+</script>
+
 <div class="ui stackable doubling grid">
 
     {% comment %}The left-margin segment!{% endcomment %}
@@ -58,8 +68,6 @@ Academic
                                 <th>Id</th>
                                 <th>Name</th>
                                 <th>Created By</th>
-                                <th>Bill</th>
-                                <th>Send to</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -69,24 +77,9 @@ Academic
                                 <td>{{f.0}}</td>
                                 <td>{{f.1}}</td>
                                 <td>{{f.4}}</td>
-                                <form method="POST" action="{% url 'iwdModuleV2:Handle-Processed-Bills' %}" enctype="multipart/form-data">
-                                    {% csrf_token %}
-                                    <td>
-                                        <input type="file" name="bill" id="bill">
-                                    </td>
-                                    <td>
-                                    <!-- <form method="POST" action="handleProcessRequests?id={{ f.0 }}"> -->
-                                        <select name="designation">
-                                            {% for queryset in holdsDesignations %}
-                                                {% for hd in queryset %}
-                                                    <option value="{{ hd.user.username }}">{{ hd.designation }}({{ hd.user.username }})</option>
-                                                {% endfor %}
-                                            {% endfor %}
-                                        </select>
-                                        <input type="hidden" name="id" value="{{ f.0 }}">
-                                        <button type="submit" class="ui small primary button">Send</button>
-                                    </td>
-                                </form>
+                                <td>
+                                    <button onclick="window.location='/iwdModuleV2/view_file/{{ f.5 }}/Handle-Processed-Bills'" style="margin-left:5px; height:5vh;" class="ui small grey equal-size-button button">View File</button>
+                                </td>
                             </tr>
                         </tbody>
                         {% endfor %}
