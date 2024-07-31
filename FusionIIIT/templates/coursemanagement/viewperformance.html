@@ -5,6 +5,9 @@
 
     <!-- <a class="item tab vptab" id="quiztab" data-tab="quiz">Online Quiz</a> -->
     <a class="item tab vptab" id="attendancetab" data-tab="attendance">Attendance</a>
+    {% if quiz_marks %}
+    <a class="item tab vptab" id="quizmtab" data-tab="quizm">Quiz</a>
+    {% endif %}
     <!-- {% if Lecturer == 1 %}
       <a class="item tab vptab" id="viewmarkstab" data-tab="viewmarks"> Exams </a>
     {% endif %} -->
@@ -263,7 +266,7 @@
         <thead>
             <tr>
                 <th style="width: 30%;">Date.</th>
-                <th style="width: 30%;">Status</th>
+                <th style="width: 30%;">Classes Attended</th>
                       
             </tr>
         </thead>
@@ -277,16 +280,12 @@
             {% endfor %}
                        -->
                    
-			{% for date, present in present_attendance.items %}    
-			<tr>
-        			<td>{{date}}</td>
-              {% if present == 1%}
-        			<td style="color: green;">Present</td>
-              {% else %}
-              <td style="color: rgba(255, 99, 132, 1);">Absent</td>
-              {% endif %}
-        		</tr>
-        	{% endfor %}
+			  {% for date, present in present_attendance.items %}    
+			    <tr>
+        		<td>{{date}}</td>
+        		<td>{{present}}</td>
+          </tr>
+        {% endfor %}
         </tbody>
     </table>  
     
@@ -315,6 +314,15 @@
 </div>
 </div>
 
+<div class="ui bottom attached tab vptabdata segment" id="quiztabdata" data-tab="quizm">
+  <div class="ui segment">
+    <h4 class="ui dividing header">Total Quiz Marks</h4>
+    <div class="ui statistic">
+      <div class="value" style="color: #19201b;">{{quiz_marks}}</div>
+      <div class="label">Marks</div>
+    </div>
+  </div>
+</div>
 
 
 {% endblock %}

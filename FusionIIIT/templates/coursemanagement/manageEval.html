@@ -4,13 +4,13 @@
 
 {% endblock %}
 {% block manageEval %}
-<div style="height:45em;overflow:auto;overflow-x:hidden;width:100%;">
+<div style="height:55em;width:100%;">
     <h3 class="ui dividing header">Manage Evaluations</h3>
     <p>(Please Click on Generate button before uploading)</p>
     <form class="ui form" id="manageEval" method="post" action="/ocms/{{ course.code }}/{{course.version}}/submit_marks">
         {% csrf_token %}
         
-        <div style="overflow-x:hidden; margin-top:15px; margin-right:0.75em;">
+        <div style="height:45em;width:100%;overflow:auto;overflow-x:hidden;">
             <!-- <div class="ui fluid input">
                 <input type="text" id="usernameSearchInput" placeholder="Search by Roll No." onkeyup="searchByUsername()">
             </div> -->
@@ -42,6 +42,24 @@
                         {% endfor %} 
                         {% else%}
                         {% for stu in registered_students %}
+                            {% if marks_with_roll %}
+                            {% for roll, marks in marks_with_roll.items %}
+                            {% if stu.student_id.id.id == roll %}
+                        <tr>
+                            <td>
+                                <input type="text" readonly name="stu_marks" id="roll_no{{forloop.counter}}" value="{{stu.student_id.id.user.username}}" />
+                            </td>
+                            <td>
+                                <input type="number" name="stu_marks" id="total_marks{{forloop.counter}}" value="{{marks}}" placeholder="Enter total marks" />
+                            </td>
+                            <td>
+                                <input name="stu_marks" id="grade{{forloop.counter}}" value="" placeholder="Add manually" />
+                            </td>
+                        </tr> 
+                        
+                        {% endif %}
+                        {% endfor %} 
+                        {% else %}
                         <tr>
                             <td>
                                 <input type="text" readonly name="stu_marks" id="roll_no{{forloop.counter}}" value="{{stu.student_id.id.user.username}}" />
@@ -53,18 +71,18 @@
                                 <input name="stu_marks" id="grade{{forloop.counter}}" value="" placeholder="Add manually" />
                             </td>
                         </tr> 
+                        {% endif %}
                         {% endfor %} 
                         {% endif %}                     
                     </tbody>
                 </table>
-                <div style="float: right;">
-                    <div class="load" id="load_submit_grades" style="display:none">
-                        <span>Please wait...Grades are being saved!</span>
-                    </div>
-                    <br>
-                    <input type="button" class="ui primary button" id="submit_grades" style="float: right;" value="Upload">
+            </div>
+            <div style="float: left;">
+                <div class="load" id="load_submit_grades" style="display:none">
+                    <span>Please wait...Grades are being saved!</span>
                 </div>
-                
+                <br>
+                <input type="button" class="ui primary button" id="submit_grades" style="float: left;" value="Upload">
             </div>
         </form>
 </div>
