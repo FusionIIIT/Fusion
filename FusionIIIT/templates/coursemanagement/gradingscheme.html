@@ -4,13 +4,13 @@
 
 {% endblock %}
 {% block gradingScheme %}
-<div style="height:45em;overflow:auto;overflow-x:hidden;width:100%;">
+<div style="height:55em;width:100%;">
     <h3 class="ui dividing header">Create Grading Scheme</h3>
 
     <form class="ui form" id="gradingScheme_submit" method="post" action="/ocms/{{ course.code }}/{{course.version}}/create_grading_scheme">
     {% csrf_token %}
-
-	<div style="overflow:auto;overflow-x:hidden; margin-right:0.75em;">
+    <div style="height:47em;width:100%;overflow:auto;overflow-x:hidden;">
+	<div style="height:20em;overflow:auto;overflow-x:hidden; margin-right:0.75em;">
     <table class="ui fixed single line sortable celled table">
 	        <thead>
 	            <tr>
@@ -19,66 +19,32 @@
 	            </tr>
 	        </thead>
 	        <tbody id="grading_scheme_table">
-                {% comment %} {% if gradingscheme is defined %} {% endcomment %}
                 {% for eval in gradingscheme %}
                 <tr><td style="padding-left:28px;">{{eval.type_of_evaluation}}</td><td> <input type="number" name="{{eval.type_of_evaluation}}" id="{{eval.type_of_evaluation}}" value= {{eval.weightage}} /></tr>
                 {% endfor %}
-                {% comment %} {% endif %} {% endcomment %}
 
                 <tr id="addItem_Row">
                     <td style="overflow:visible; display:flex; ">
-                        <input type="text" style="width:80%;" name="add_eval_type" id="add_eval_type" value="" placeholder="Enter New Evaluation" />
-                        {% comment %} <select class="ui selection dropdown"  id="add_item" >;
+                        <!-- <input type="text" style="width:80%;" name="add_eval_type" id="add_eval_type" value="" placeholder="Enter New Evaluation" /> -->
+                        <select class="ui selection dropdown"  name="add_eval_type" id="add_eval_type" >
                             <option class="item" name="add_item" value="Assignment">Assignment</option>
-                            <option class="item" name="add_item" value="Lab">Lab</option>
+                            <option class="item" name="add_item" value="Lab">Lab Evaluation</option>
                             <option class="item" name="add_item" value="Project">Project</option>
                             <option class="item" name="add_item" value="Quiz">Quiz</option>
-                            <option class="item" name="add_item" value="Quiz_2">Quiz_2</option>
                             <option class="item" name="add_item" value="Mid-Sem Exam">Mid-Sem Exam</option>
                             <option class="item" name="add_item" value="End-Sem Exam">End-Sem Exam</option>
                             <option class="item" name="add_item" value="Attendance">Attendance</option>
-                        </select> {% endcomment %}
+                        </select>
                     </td>
                     <td >
                         <input type="number" style="width:80%; float:left;" name="add_item_wtg" id="" value="" placeholder="Enter Weightage" />
                         <input type="button" style="float:right;" class="ui primary button tiny" id="add_item_btn" style="display: flex; justify-content: center;" value="Add">
                     </td>
                 </tr>
-        		{% comment %} <tr>
-        			<td>Quiz</td>
-               		<td>
-                        	<input type="number" name="quiz_weightage" id="quiz_weightage" value="{{ quiz_weightage }}" />
-                    </td>
-           		</tr>
-                <tr>
-        			<td>Mid Semester</td>
-               		<td>
-                        	<input type="number" name="midsem_weightage" id="midsem_weightage" value="{{ midsem_weightage }}" />
-                    </td>
-           		</tr>
-                <tr>
-        			<td>Assignment</td>
-               		<td>
-                        	<input type="number" name="assignment_weightage" id="assignment_weightage" value="{{ assignment_weightage }}" />
-                    </td>
-           		</tr>
-                <tr>
-        			<td>End Semester</td>
-               		<td>
-                        	<input type="number" name="endsem_weightage" id="endsem_weightage" value="{{ endsem_weightage }}" />
-                    </td>
-           		</tr>
-                <tr>
-        			<td>Project</td>
-               		<td>
-                        	<input type="number" name="project_weightage" id="project_weightage" value="{{ project_weightage }}" />
-                    </td>
-           		</tr> {% endcomment %}
-               
             </tbody>
 	    </table>
 	</div>
-    <div style="overflow-x:hidden; margin-top:15px; margin-right:0.75em;">
+    <div style="margin-top:15px; margin-right:0.75em;">
         <table class="ui fixed single line sortable celled table">
                 <thead>
                     <tr>
@@ -182,9 +148,8 @@
                 </tbody>
             </table>
         </div>
-
-    <input type="button" class="ui primary button" id="submit_gradingScheme" style="float:right; margin-top:15px; margin-right:0.75em;" value="Upload">
-
+    </div>
+    <input type="button" class="ui primary button" id="submit_gradingScheme" style="float:left; margin-top:15px;" value="Upload">
 	</form>
 
 
@@ -197,28 +162,64 @@
 <script type="text/javascript">
     // Function to handle add_item_btn
     //var no_of_items = 0;
-    add_item_btn.addEventListener('click', function() {
-        //no_of_items=no_of_items+1;
-        // Your code to execute when the input is clicked
-        const add_item_btn = document.getElementById('add_item_btn');
+    // add_item_btn.addEventListener('click', function() {
+    //     //no_of_items=no_of_items+1;
+    //     // Your code to execute when the input is clicked
+    //     const add_item_btn = document.getElementById('add_item_btn');
+    //     const tbody = document.getElementById('grading_scheme_table');
+    //     const addItem_Row = document.getElementById('addItem_Row');
+    
+    //     const itemType = document.getElementById('addItem_Row').childNodes[1].childNodes[1] ;
+    //     const itemWtg = document.getElementById('addItem_Row').childNodes[3].childNodes[1] ;
+
+    //     if (itemType.value == '') {return}
+    //     if (itemWtg.value == '') {return}
+    
+    //     const newElement = document.createElement('tr');
+    //     newElement.id = 'new_row';
+    //     newElement.innerHTML = `<td style="padding-left:28px;"><input value="` + itemType.value + `"></input></td> <td> <input style="width:85%;" type="number" name="`+itemType.value+`" id="`+itemType.value+`" value= `+itemWtg.value+` /> <div class="ui button" style="width:10px; margin-right:5px; float:right;" onclick="const new_row = document.getElementById('new_row'); new_row.parentNode.removeChild(new_row);" > <i style="margin-left:-8px;" class="close icon"></i> </div> </td> `;
+    //     //console.log(itemType.value + ` has weightage `+ itemWtg.value +`%`);
+    //     //console.log(newElement.innerHTML = `<td>` + itemType.value + `</td> <td> <input type="number" name="`+itemType.value+`_weightage" id="`+itemType.value+`_weightage" value="`+itemWtg.value+`" /> `);
+    //     //console.log('Input clicked!');
+    //     tbody.insertBefore(newElement, addItem_Row);
+    //     itemType.value = ''
+    //     itemWtg.value = ''
+    // });
+
+    document.getElementById('add_item_btn').addEventListener('click', function() {
+        // Get references to the necessary elements
         const tbody = document.getElementById('grading_scheme_table');
         const addItem_Row = document.getElementById('addItem_Row');
-    
-        const itemType = document.getElementById('addItem_Row').childNodes[1].childNodes[1] ;
-        const itemWtg = document.getElementById('addItem_Row').childNodes[3].childNodes[1] ;
+        
+        const itemType = document.getElementById('add_eval_type');
+        const itemWtg = addItem_Row.querySelector('input[name="add_item_wtg"]');
 
-        if (itemType.value == '') {return}
-        if (itemWtg.value == '') {return}
-    
+        // Validate input values
+        if (itemType.value === '') {
+            return;
+        }
+        if (itemWtg.value === '') {
+            return;
+        }
+
+        // Create a new row
         const newElement = document.createElement('tr');
-        newElement.id = 'new_row';
-        newElement.innerHTML = `<td style="padding-left:28px;"><input value="` + itemType.value + `"></input></td> <td> <input style="width:85%;" type="number" name="`+itemType.value+`" id="`+itemType.value+`" value= `+itemWtg.value+` /> <div class="ui button" style="width:10px; margin-right:5px; float:right;" onclick="const new_row = document.getElementById('new_row'); new_row.parentNode.removeChild(new_row);" > <i style="margin-left:-8px;" class="close icon"></i> </div> </td> `;
-        //console.log(itemType.value + ` has weightage `+ itemWtg.value +`%`);
-        //console.log(newElement.innerHTML = `<td>` + itemType.value + `</td> <td> <input type="number" name="`+itemType.value+`_weightage" id="`+itemType.value+`_weightage" value="`+itemWtg.value+`" /> `);
-        //console.log('Input clicked!');
+        newElement.innerHTML = `
+            <td style="padding-left:28px;">${itemType.options[itemType.selectedIndex].text}</td>
+            <td>
+                <input style="width:85%;" type="number" name="${itemType.value}" id="${itemType.value}" value="${itemWtg.value}" />
+                <div class="ui button" style="width:10px; margin-right:5px; float:right;" onclick="this.closest('tr').remove();">
+                    <i style="margin-left:-8px;" class="close icon"></i>
+                </div>
+            </td>
+        `;
+
+        // Insert the new row before the addItem_Row
         tbody.insertBefore(newElement, addItem_Row);
-        itemType.value = ''
-        itemWtg.value = ''
+
+        // Reset input values
+        itemType.value = '';
+        itemWtg.value = '';
     });
 
     function successAlert(data){
