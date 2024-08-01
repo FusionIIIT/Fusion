@@ -108,7 +108,7 @@ def view_inbox(username: str, designation: str, src_module: str) -> list:
         receiver_id=recipient_object,
         receive_design=user_designation,
         file_id__src_module=src_module,
-        file_id__is_read=False).order_by('receive_date');
+        file_id__is_read=False).order_by('-receive_date');
     received_files = [tracking.file_id for tracking in received_files_tracking]
 
     # remove duplicate file ids (from sending back and forth)
@@ -120,7 +120,6 @@ def view_inbox(username: str, designation: str, src_module: str) -> list:
     for file in received_files_serialized: 
         file['sent_by_user'] = get_last_file_sender(file['id']).username
         file['sent_by_designation'] = get_last_file_sender_designation(file['id']).name
-
     return received_files_serialized
 
 
@@ -168,7 +167,7 @@ def view_archived(username: str, designation: str, src_module: str) -> dict:
         current_id=sender_ExtraInfo_object,
         current_design=user_HoldsDesignation_object,
         file_id__src_module=src_module,
-        file_id__is_read=True)
+        file_id__is_read=True).order_by('-receive_date')
     
     archived_tracking = received_archived_tracking | sent_archived_tracking
     archived_files = [tracking.file_id for tracking in archived_tracking]
@@ -237,7 +236,7 @@ def view_drafts(username: str, designation: str, src_module: str) -> dict:
     user_designation = Designation.objects.get(name=designation)
     user_ExtraInfo_object = get_ExtraInfo_object_from_username(username)
     draft_files = File.objects.filter(
-        tracking__isnull=True, uploader=user_ExtraInfo_object, designation=user_designation, src_module=src_module)
+        tracking__isnull=True, uploader=user_ExtraInfo_object, designation=user_designation, src_module=src_module).order_by('-upload_date')
     draft_files_serialized = FileHeaderSerializer(draft_files, many=True)
     return draft_files_serialized.data
 

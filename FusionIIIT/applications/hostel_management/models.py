@@ -56,6 +56,10 @@ class Hall(models.Model):
     ]
 
     type_of_seater = models.CharField(max_length=50, choices=TYPE_OF_SEATER_CHOICES, default='single')
+    single_seater=models.IntegerField(default=0)
+    double_seater=models.IntegerField(default=0)
+    triple_seater=models.IntegerField(default=0)
+    
     def __str__(self):
         return self.hall_id 
 
@@ -369,3 +373,26 @@ class HostelHistory(models.Model):
 
     def __str__(self):
         return f"History for {self.hall.hall_name} - {self.timestamp}"
+
+
+class HostelRoom(models.Model):
+    ROOM_TYPES = [
+        ('Single Seater', 'Single Seater'),
+        ('Double Seater', 'Double Seater'),
+        ('Triple Seater', 'Triple Seater'),
+    ]
+
+    STATUS_CHOICES = [
+        ('available', 'Available'),
+        ('occupied', 'Occupied'),
+    ]
+
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    room_type = models.CharField(max_length=20, choices=ROOM_TYPES)
+    room_number = models.CharField(max_length=20)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='available')
+    occupants = models.ManyToManyField(Student, blank=True)
+    available_seats = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.room_number} - {self.get_room_type_display()}"

@@ -283,6 +283,9 @@ class SemesterMarks(models.Model):
     # curr_id = models.ForeignKey(Curriculum, on_delete=models.CASCADE)
     curr_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
     #course_id = models.ForeignKey(Courses, on_delete=models.CASCADE, null=True)
+    
+    # def __str__(self):
+    #     return self.student_id
     class Meta:
         db_table = 'SemesterMarks'
 
@@ -565,8 +568,6 @@ class StudentRegistrationChecks(models.Model):
             final_registration_flag(boolean) - to denote whether the final registration is complete
             semester_id(programme_curriculum.Semester) - reference to the semester for which the registration will be considered
 
-
-        
     '''
 
 
@@ -618,9 +619,6 @@ class FinalRegistration(models.Model):
             verified(Boolean) - denotes whether the registration is verified by academic department and complete
             course_slot_id(programme_curriculum.CourseSlot) - details about under which course slot the course is offered(Optional/Core other details)
 
-
-
-        
     '''
 
 
@@ -671,18 +669,14 @@ class course_registration(models.Model):
     '''
             Current Purpose : stores information regarding the process of registration of a student for a course 
 
-
             ATTRIBUTES
             course_id(programme_curriculum.Course) -  reference to the course details for which the registration is being done
             semester_id(programme_curriculum.Semester) - reference to the semester for which the course registration is done
             student_id(academic_information.Student) - reference to the student
             course_slot_id(programme_curriculum.CourseSlot) - details about under which course slot the course is offered(Optional/Core other details)
 
-
-
-        
     '''
-
+    
 
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     working_year=models.IntegerField(null=True,blank=True,choices=Year_Choices)
@@ -691,6 +685,23 @@ class course_registration(models.Model):
     course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True, on_delete=models.SET_NULL)
     # grade = models.CharField(max_length=10)
     #course_registration_year = models.IntegerField()
-
+    def __str__(self):
+        return str(self.semester_id.semester_no)
     class Meta:
         db_table = 'course_registration'
+
+
+class backlog_course(models.Model):
+    '''
+            Current Purpose : stores information regarding the backlog courses of a student (purpose is unclear and is open to interpretations)
+
+            ATTRIBUTES
+            course_id(programme_curriculum.Course) -  reference to the course details for which the registration is being done
+            semester_id(programme_curriculum.Semester) - reference to the semester for which the course registration is done
+            student_id(academic_information.Student) - reference to the student
+            is_summer_course(Boolean) - details about whether this course is available as summer_course or not
+    '''
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    is_summer_course = models.BooleanField(default= False)

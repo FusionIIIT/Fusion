@@ -1,0 +1,19 @@
+
+{% block Add_hostel %}
+       <h2 class="ui header mb-4">Add New Hall</h2>
+       <form class="ui form" method="post" action="{% url 'hostelmanagement:add_new_hall' %}">
+           {% csrf_token %}
+           {{ add_new_hallForm.as_p }}
+           <button type="submit" class="ui primary button">Add Hall</button>
+       </form>
+       {% if messages %}
+           <div class="mt-4">
+               {% for message in messages %}
+                   <div class="ui message {% if message.tags %}{{ message.tags }}{% endif %}">
+                       {{ message }}
+                   </div>
+               {% endfor %}
+           </div>
+       {% endif %}
+   
+{% endblock %}

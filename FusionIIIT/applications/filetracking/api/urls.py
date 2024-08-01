@@ -9,6 +9,8 @@ from .views import (
     DraftFileView,
     CreateDraftFile,
     GetDesignationsView,
+    CreateArchiveFile, 
+    ArchiveFileView
 )
 
 urlpatterns = [
@@ -20,5 +22,7 @@ urlpatterns = [
     url(r'^forwardfile/(?P<file_id>\d+)/$', ForwardFileView.as_view(), name='forward_file'),
     url(r'^draft/$', DraftFileView.as_view(), name='view_drafts'),
     url(r'^createdraft/$', CreateDraftFile.as_view(), name='create_draft'),
+    url(r'^createarchive/$', CreateArchiveFile.as_view(), name='archive_file'),
+    url(r'^archive/$', ArchiveFileView.as_view(), name='view_archived'),
     url(r'^designations/(?P<username>\w+)/$', GetDesignationsView.as_view(), name='get_designations'),
 ]

@@ -1,12 +1,15 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.db.models import Q
+from django.contrib import messages
 from applications.globals.models import *
+from applications.ps1.models import *
 from django.contrib.auth.decorators import login_required
 from .models import *
 from django.http import HttpResponseRedirect
 from applications.filetracking.sdk.methods import *
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
+from notification.views import iwd_notif
 from datetime import datetime
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
@@ -41,12 +44,7 @@ from django.core.files.base import File as DjangoFile
 #Junior Engineer, Electrical Engineer (Civil), Electrical_AE, Electrical_JE, EE, Civil_AE, Civil_JE
 
 def dashboard(request):
-    eligible = ""
-    userObj = request.user
-    userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
-    for p in userDesignationObjects:
-        eligible = p.designation.name
-    print(eligible)
+    eligible = request.session.get('currentDesignationSelected')
     return render(request, 'iwdModuleV2/dashboard.html', {'eligible': eligible})
 
 def page1_1(request):
@@ -476,7 +474,6 @@ def fetchDesignations(request):
 def requestsView(request):
     if request.method == 'POST':
         formObject = Requests()
-        # formObject.key = Projects.objects.get(id=request.session['projectId']) 
         formObject.name = request.POST['name']
         formObject.description = request.POST['description']
         formObject.area = request.POST['area']
@@ -491,46 +488,52 @@ def requestsView(request):
         formObject.billProcessed = 0
         formObject.billSettled = 0
         formObject.save()
-        print(request.user)
-        print(request.user.username)
         request_object = Requests.objects.get(pk=formObject.pk)
-        d = HoldsDesignation.objects.get(user__username=request.POST['designation'])
-        d1 = HoldsDesignation.objects.get(user__username=request.user)
-        print(d)
-        print(d1)
+        desg = request.session.get('currentDesignationSelected')
+        receiver_user, receiver_desg = request.POST['designation'].split('|')
         create_file(uploader=request.user.username, 
-            uploader_designation=d1.designation, 
-            receiver=request.POST['designation'],
-            receiver_designation=d.designation, 
+            uploader_designation=desg, 
+            receiver=receiver_user,
+            receiver_designation=receiver_desg, 
             src_module="IWD", 
             src_object_id= str(request_object.id), 
             file_extra_JSON= {"value": 2}, 
             attached_file = None)
+        messages.success(request, "Request Successfully Created")
+        receiver_user_obj = User.objects.get(username=receiver_user)
         
-        eligible = ""
-        userObj = request.user
-        userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
-        for p in userDesignationObjects:
-            eligible = p.designation.name
+        iwd_notif(request.user, receiver_user_obj, "Request_added")
+        
+        eligible = request.session.get('currentDesignationSelected')
     return render(request, 'iwdModuleV2/dashboard.html', {'eligible' : eligible})
 
 @login_required
 def createdRequests(request):
     obj = []
-    d = HoldsDesignation.objects.get(user__username=request.user)
+    desg = request.session.get('currentDesignationSelected')
 
     inbox_files = view_inbox(
         username=request.user,
-        designation=d.designation,
+        designation=desg,
         src_module="IWD"
     )
 
     for result in inbox_files:
         src_object_id = result['src_object_id']
         request_object = Requests.objects.filter(id=src_object_id).first()
+        file_obj= File.objects.get(src_object_id= request_object.id, src_module = "IWD")
         if request_object:
-            element = [request_object.id, request_object.name, request_object.area, request_object.description, request_object.requestCreatedBy]
+            element = [request_object.id, request_object.name, request_object.area, request_object.description, request_object.requestCreatedBy, file_obj.id]
             obj.append(element)
+
+    return render(request, 'iwdModuleV2/createdRequests.html', {'obj' : obj})
+
+@login_required
+def view_file(request, id, url):
+    file1= File.objects.get(id=id)
+    tracks= Tracking.objects.filter(file_id=file1)
+    current_user = Tracking.objects.filter(file_id=file1).order_by('-receive_date')[0].receiver_id
+    print(current_user)
 
     designations = Designation.objects.filter()
 
@@ -542,231 +545,218 @@ def createdRequests(request):
                 list = HoldsDesignation.objects.filter(designation=d)
                 holdsDesignations.append(list)
 
-    return render(request, 'iwdModuleV2/createdRequests.html', {'obj' : obj, 'holdsDesignations' : holdsDesignations})
+    eligible = request.session.get('currentDesignationSelected')
+
+    return render(request, "iwdModuleV2/view_file.html", context= {"file": file1, "tracks": tracks, "current_user": current_user, "holdsDesignations" : holdsDesignations, "url" : url, "eligible" : eligible})
 
 @login_required
 def handleEngineerProcessRequests(request):
     if request.method == 'POST':
-
-        request_id = request.POST.get("id", 0)
-
-        d = HoldsDesignation.objects.get(user__username=request.POST['designation'])
-        d1 = HoldsDesignation.objects.get(user__username=request.user)
-
-        create_file(uploader=request.user.username, 
-            uploader_designation=d1.designation, 
-            receiver=request.POST['designation'],
-            receiver_designation=d.designation, 
-            src_module="IWD", 
-            src_object_id= str(request_id), 
-            file_extra_JSON= {"value": 2}, 
-            attached_file = None)
+        obj= request.POST
         
-        Requests.objects.filter(id=request_id).update(engineerProcessed=1, status="Approved by the engineer")
+        fileid = obj.get('fileid')
+        request_id = File.objects.get(id=fileid).src_object_id
         
+        remarks = obj.get('remarks')
+        attachment = request.FILES.get('attachment')
+        receiver_user, receiver_desg = request.POST['designation'].split('|')
+        
+
+        forward_file(
+            file_id= fileid,
+            receiver= receiver_user,
+            receiver_designation=receiver_desg, 
+            file_extra_JSON= { "message": "Request forwarded."},
+            remarks= remarks,
+            file_attachment= attachment, 
+        )
+
+        Requests.objects.filter(id=request_id).update(engineerProcessed=1, status="Approved by the Engineer")
+
+        obj = []
+        desg = request.session.get('currentDesignationSelected')
+
         inbox_files = view_inbox(
             username=request.user,
-            designation=d1.designation,
+            designation=desg,
             src_module="IWD"
         )
 
-        for p in inbox_files:
-            if p['src_object_id'] == request_id:
-                delete_file(file_id = p['id'])
-                break
+        for result in inbox_files:
+            src_object_id = result['src_object_id']
+            request_object = Requests.objects.filter(id=src_object_id).first()
+            file_obj= File.objects.get(src_object_id= request_object.id, src_module = "IWD")
+            if request_object:
+                element = [request_object.id, request_object.name, request_object.area, request_object.description, request_object.requestCreatedBy, file_obj.id]
+                obj.append(element)
 
-        eligible = ""
-        userObj = request.user
-        userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
-        for p in userDesignationObjects:
-            eligible = p.designation.name
+        messages.success(request, "File Forwarded")
+        receiver_user_obj = User.objects.get(username=receiver_user)
+        
+        iwd_notif(request.user, receiver_user_obj, "file_forward")
 
-    return render(request, 'iwdModuleV2/dashboard.html', {'eligible': eligible})
+    return render(request, 'iwdModuleV2/createdRequests.html', {'obj' : obj})
+
 
 @login_required
 def engineerProcessedRequests(request):
 
     obj = []
 
-    d = HoldsDesignation.objects.get(user__username=request.user)
+    desg = request.session.get('currentDesignationSelected')
 
     inbox_files = view_inbox(
         username=request.user,
-        designation=d.designation,
+        designation=desg,
         src_module="IWD"
     )
 
     for result in inbox_files:
         src_object_id = result['src_object_id']
         request_object = Requests.objects.filter(id=src_object_id).first()
+        file_obj= File.objects.get(src_object_id= src_object_id, src_module = "IWD")
         if request_object:
-            element = [request_object.id, request_object.name, request_object.area, request_object.description, request_object.requestCreatedBy]
+            element = [request_object.id, request_object.name, request_object.area, request_object.description, request_object.requestCreatedBy, file_obj.id]
             obj.append(element)
 
-    designations = Designation.objects.filter()
-
-    holdsDesignations = []
-
-    for d in designations:
-        for x in designations_list:
-            if d.name == x:
-                list = HoldsDesignation.objects.filter(designation=d)
-                holdsDesignations.append(list)
-
-    return render(request, 'iwdModuleV2/engineerProcessedRequests.html', {'obj' : obj, 'holdsDesignations' : holdsDesignations})
+    return render(request, 'iwdModuleV2/engineerProcessedRequests.html', {'obj' : obj})
 
 @login_required
 def handleDeanProcessRequests(request):
     if request.method == 'POST':
 
-        request_id = request.POST.get("id", 0)
+        obj= request.POST
+        
+        fileid = obj.get('fileid')
+        request_id = File.objects.get(id=fileid).src_object_id
+        
+        remarks = obj.get('remarks')
+        attachment = request.FILES.get('attachment')
+        receiver_user, receiver_desg = request.POST['designation'].split('|')
+        
 
-        d = HoldsDesignation.objects.get(user__username=request.POST['designation'])
-        d1 = HoldsDesignation.objects.get(user__username=request.user)
-
-        create_file(uploader=request.user.username, 
-            uploader_designation=d1.designation, 
-            receiver=request.POST['designation'],
-            receiver_designation=d.designation, 
-            src_module="IWD", 
-            src_object_id= str(request_id), 
-            file_extra_JSON= {"value": 2}, 
-            attached_file = None)
+        forward_file(
+            file_id= fileid,
+            receiver= receiver_user,
+            receiver_designation=receiver_desg, 
+            file_extra_JSON= { "message": "Request forwarded."},
+            remarks= remarks,
+            file_attachment= attachment, 
+        )
         
         Requests.objects.filter(id=request_id).update(deanProcessed=1, status="Approved by the dean")
+        desg = request.session.get('currentDesignationSelected')
 
         inbox_files = view_inbox(
             username=request.user,
-            designation=d1.designation,
+            designation=desg,
             src_module="IWD"
         )
 
-        for p in inbox_files:
-            if p['src_object_id'] == request_id:
-                delete_file(file_id = p['id'])
-                break
+        obj = []
 
-        eligible = ""
-        userObj = request.user
-        userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
-        for p in userDesignationObjects:
-            eligible = p.designation.name
-    return render(request, 'iwdModuleV2/dashboard.html', {'eligible': eligible})
+        for result in inbox_files:
+            src_object_id = result['src_object_id']
+            request_object = Requests.objects.filter(id=src_object_id).first()
+            file_obj= File.objects.get(src_object_id = src_object_id, src_module = "IWD")
+            if request_object:
+                element = [request_object.id, request_object.name, request_object.area, request_object.description, request_object.requestCreatedBy, file_obj.id]
+                obj.append(element)
+
+        messages.success(request, "File Forwarded")
+        receiver_user_obj = User.objects.get(username=receiver_user)
+        
+        iwd_notif(request.user, receiver_user_obj, "file_forward")
+
+    return render(request, 'iwdModuleV2/engineerProcessedRequests.html', {'obj': obj})
 
 @login_required
 def deanProcessedRequests(request):
     obj = []
 
-    d = HoldsDesignation.objects.get(user__username=request.user)
+    desg = request.session.get('currentDesignationSelected')
 
     inbox_files = view_inbox(
         username=request.user,
-        designation=d.designation,
+        designation=desg,
         src_module="IWD"
     )
 
     for result in inbox_files:
         src_object_id = result['src_object_id']
         request_object = Requests.objects.filter(id=src_object_id).first()
+        file_obj= File.objects.get(src_object_id = src_object_id, src_module = "IWD")
         if request_object:
-            element = [request_object.id, request_object.name, request_object.area, request_object.description, request_object.requestCreatedBy]
+            element = [request_object.id, request_object.name, request_object.area, request_object.description, request_object.requestCreatedBy, file_obj.id]
             obj.append(element)
 
-    designations = Designation.objects.filter()
-
-    holdsDesignations = []
-
-    for d in designations:
-        for x in designations_list:
-            if d.name == x:
-                list = HoldsDesignation.objects.filter(designation=d)
-                holdsDesignations.append(list)
-
-    return render(request, 'iwdModuleV2/deanProcessedRequests.html', {'obj' : obj, 'holdsDesignations' : holdsDesignations})
+    return render(request, 'iwdModuleV2/deanProcessedRequests.html', {'obj' : obj})
 
 @login_required
 def handleDirectorApprovalRequests(request):
     if request.method == 'POST':
-        request_id = request.POST.get("id", 0)
-
-        d = HoldsDesignation.objects.get(user__username=request.POST['designation'])
-        d1 = HoldsDesignation.objects.get(user__username=request.user)
-
-        create_file(uploader=request.user.username, 
-            uploader_designation=d1.designation, 
-            receiver=request.POST['designation'],
-            receiver_designation=d.designation, 
-            src_module="IWD", 
-            src_object_id= str(request_id), 
-            file_extra_JSON= {"value": 2}, 
-            attached_file = None)
+        obj= request.POST
         
-        Requests.objects.filter(id=request_id).update(directorApproval=1, status="Approved by the director")
+        fileid = obj.get('fileid')
+        request_id = File.objects.get(id=fileid).src_object_id
+        
+        remarks = obj.get('remarks')
+        attachment = request.FILES.get('attachment')
+        receiver_user, receiver_desg = request.POST['designation'].split('|')
+        
+
+        forward_file(
+            file_id= fileid,
+            receiver= receiver_user,
+            receiver_designation=receiver_desg, 
+            file_extra_JSON= { "message": "Request forwarded."},
+            remarks= remarks,
+            file_attachment= attachment, 
+        )
+
+        message = ""
+
+        if (obj.get('action') == 'approve'):
+            message = "Request_approved"
+            Requests.objects.filter(id=request_id).update(directorApproval=1, status="Approved by the director")
+        else:
+            message = "Request_rejected"
+            Requests.objects.filter(id=request_id).update(directorApproval=-1, status="Rejected by the director")
+
+        desg = request.session.get('currentDesignationSelected')
 
         inbox_files = view_inbox(
             username=request.user,
-            designation=d1.designation,
+            designation=desg,
             src_module="IWD"
         )
 
-        for p in inbox_files:
-            if p['src_object_id'] == request_id:
-                delete_file(file_id = p['id'])
-                break
+        obj = []
 
-        eligible = ""
-        userObj = request.user
-        userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
-        for p in userDesignationObjects:
-            eligible = p.designation.name
-    return render(request, 'iwdModuleV2/dashboard.html', {'eligible': eligible})
+        for result in inbox_files:
+            src_object_id = result['src_object_id']
+            request_object = Requests.objects.filter(id=src_object_id).first()
+            file_obj= File.objects.get(src_object_id = src_object_id, src_module = "IWD")
+            if request_object:
+                element = [request_object.id, request_object.name, request_object.area, request_object.description, request_object.requestCreatedBy, file_obj.id]
+                obj.append(element)
 
-@login_required
-def handleDirectorRejectionRequests(request):
-    if request.method == 'POST':
-        request_id = request.POST.get("id", 0)
-
-        d = HoldsDesignation.objects.get(user__username=request.POST['designation'])
-        d1 = HoldsDesignation.objects.get(user__username=request.user)
-
-        create_file(uploader=request.user.username, 
-            uploader_designation=d1.designation, 
-            receiver=request.POST['designation'],
-            receiver_designation=d.designation, 
-            src_module="IWD", 
-            src_object_id= str(request_id), 
-            file_extra_JSON= {"value": 2}, 
-            attached_file = None)
+        messages.success(request, "File forwarded")
+        receiver_user_obj = User.objects.get(username=receiver_user)
         
-        Requests.objects.filter(id=request_id).update(directorApproval=-1, status="Rejected by the director")
+        iwd_notif(request.user, receiver_user_obj, message)
 
-        inbox_files = view_inbox(
-            username=request.user,
-            designation=d1.designation,
-            src_module="IWD"
-        )
-
-        for p in inbox_files:
-            if p['src_object_id'] == request_id:
-                delete_file(file_id = p['id'])
-                break
-
-        eligible = ""
-        userObj = request.user
-        userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
-        for p in userDesignationObjects:
-            eligible = p.designation.name
-    return render(request, 'iwdModuleV2/dashboard.html', {'eligible': eligible})
+    return render(request, 'iwdModuleV2/deanProcessedRequests.html', {'obj': obj})
 
 @login_required
 def rejectedRequests(request):
     obj = []
 
-    d = HoldsDesignation.objects.get(user__username=request.user)
+    desg = request.session.get('currentDesignationSelected')
 
     inbox_files = view_inbox(
         username=request.user,
-        designation=d.designation,
+        designation=desg,
         src_module="IWD"
     )
 
@@ -793,11 +783,11 @@ def rejectedRequests(request):
 def updateRejectedRequests(request):
     request_id = request.POST.get("id", 0)
 
-    d1 = HoldsDesignation.objects.get(user__username=request.user)
+    desg = request.session.get('currentDesignationSelected')
 
     inbox_files = view_inbox(
             username=request.user,
-            designation=d1.designation,
+            designation=desg,
             src_module="IWD"
         )
 
@@ -827,8 +817,8 @@ def updateRejectedRequests(request):
 def handleUpdateRequests(request):
     if request.method == 'POST':
         request_id = request.POST.get("id", 0)
-        d = HoldsDesignation.objects.get(user__username=request.POST['designation'])
-        d1 = HoldsDesignation.objects.get(user__username=request.user)
+        desg = request.session.get('currentDesignationSelected')
+        receiver_user, receiver_desg = request.POST['designation'].split('|')
         Requests.objects.filter(id=request_id).update(name=request.POST['name'],
             description=request.POST['description'],
             area=request.POST['area'],
@@ -843,41 +833,38 @@ def handleUpdateRequests(request):
             billProcessed=0,
             billSettled=0)
         create_file(uploader=request.user.username, 
-            uploader_designation=d1.designation, 
-            receiver=request.POST['designation'],
-            receiver_designation=d.designation, 
+            uploader_designation=desg, 
+            receiver=receiver_user,
+            receiver_designation=receiver_desg, 
             src_module="IWD", 
             src_object_id= str(request_id), 
             file_extra_JSON= {"value": 2}, 
             attached_file = None)
-        eligible = ""
-        userObj = request.user
-        userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
-        for p in userDesignationObjects:
-            eligible = p.designation.name
+        messages.success(request, "Request updated")
+        receiver_user_obj = User.objects.get(username=receiver_user)
+        
+        iwd_notif(request.user, receiver_user_obj, "Request_added")
+        eligible = request.session.get('currentDesignationSelected')
     return render(request, 'iwdModuleV2/dashboard.html', {'eligible' : eligible})
 
 @login_required
 def issueWorkOrder(request):
     obj = []
 
-    d = HoldsDesignation.objects.get(user__username=request.user)
+    desg = request.session.get('currentDesignationSelected')
 
     inbox_files = view_inbox(
         username=request.user,
-        designation=d.designation,
+        designation=desg,
         src_module="IWD"
     )
 
     for result in inbox_files:
-        uploader = result['sent_by_designation']
-        if uploader == 'Director':
-            src_object_id = result['src_object_id']
-            request_object = Requests.objects.filter(id=src_object_id).first()
-            if request_object:
-                element = [request_object.id, request_object.name, request_object.area, request_object.description, request_object.requestCreatedBy]
-                obj.append(element)
-
+        src_object_id = result['src_object_id']
+        request_object = Requests.objects.filter(id=src_object_id, directorApproval=1, issuedWorkOrder=0).first()
+        if request_object:
+            element = [request_object.id, request_object.name, request_object.area, request_object.description, request_object.requestCreatedBy]
+            obj.append(element)
     return render(request, 'iwdModuleV2/issueWorkOrder.html', {'obj' : obj})
 
 @login_required
@@ -904,36 +891,23 @@ def workOrder(request):
 
         Requests.objects.filter(id=request.POST['id']).update(status="Work Order issued", issuedWorkOrder=1)
 
-        d = HoldsDesignation.objects.get(user__username=request.user)
+        desg = request.session.get('currentDesignationSelected')
 
         inbox_files = view_inbox(
             username=request.user,
-            designation=d.designation,
-            src_module="IWD"
-        )
-
-        for result in inbox_files:
-            if result['src_object_id'] == request.POST['id'] and result['sent_by_designation'] == 'Director':
-                delete_file(file_id = result['id'])
-                break
-
-        inbox_files = view_inbox(
-            username=request.user,
-            designation=d.designation,
+            designation=desg,
             src_module="IWD"
         )
 
         obj = []
 
         for result in inbox_files:
-            uploader = result['sent_by_designation']
-            if uploader == 'Director':
-                src_object_id = result['src_object_id']
-                request_object = Requests.objects.filter(id=src_object_id).first()
-                if request_object:
-                    element = [request_object.id, request_object.name, request_object.area, request_object.description, request_object.requestCreatedBy]
-                    obj.append(element)
-
+            src_object_id = result['src_object_id']
+            request_object = Requests.objects.filter(id=src_object_id).first()
+            if request_object.issuedWorkOrder==0:
+                element = [request_object.id, request_object.name, request_object.area, request_object.description, request_object.requestCreatedBy]
+                obj.append(element)
+        messages.success(request, "Work Order Issued")
         return render(request, 'iwdModuleV2/issueWorkOrder.html', {'obj' : obj})
 
 @login_required
@@ -944,56 +918,6 @@ def requestsStatus(request):
         element = [x.id, x.name, x.area, x.description, x.requestCreatedBy, x.status]
         obj.append(element)
     return render(request, 'iwdModuleV2/requestsStatus.html', {'obj' : obj})
-
-@login_required
-def inventory(request):
-    items = Inventory.objects.filter()
-    obj = []
-    for i in items:
-        element = [i.id, i.name, i.quantity, i.cost]
-        obj.append(element)
-    return render(request, 'iwdModuleV2/inventory.html', {'obj' : obj})
-
-@login_required
-def addItemsView(request):
-    return render(request, 'iwdModuleV2/addItemsView.html')
-
-@login_required
-def addItems(request):
-    if request.method == "POST":
-        formObject = Inventory()
-        formObject.name = request.POST['name']
-        formObject.quantity = request.POST['quantity']
-        formObject.cost = request.POST['cost']
-        formObject.save()
-    return render(request, 'iwdModuleV2/addItemsView.html')
-
-@login_required
-def editInventoryView(request):
-    items = Inventory.objects.filter()
-    obj = []
-    for i in items:
-        element = [i.id, i.name, i.quantity, i.cost]
-        obj.append(element)
-    return render(request, 'iwdModuleV2/editInventory.html', {'obj' : obj})
-
-@login_required
-def editInventory(request):
-    if request.method == "POST":
-        itemId = request.POST['id']
-        itemName = request.POST['name']
-        itemQuantity = request.POST['quantity']
-        itemCost = request.POST['cost']
-        if itemQuantity == "0":
-            Inventory.objects.filter(id=itemId).delete()
-        else:
-            Inventory.objects.filter(id=itemId).update(name=itemName, quantity=itemQuantity, cost=itemCost)
-        items = Inventory.objects.filter()
-        obj = []
-        for i in items:
-            element = [i.id, i.name, i.quantity, i.cost]
-            obj.append(element)
-        return render(request, 'iwdModuleV2/editInventory.html', {'obj' : obj})
 
 @login_required    
 def requestsInProgess(request):
@@ -1013,63 +937,33 @@ def workCompleted(request):
         for x in requestsObject:
             element = [x.id, x.name, x.area, x.description, x.requestCreatedBy, x.workCompleted]
             obj.append(element)
+        messages.success(request, "Work Completed")
     return render(request, 'iwdModuleV2/requestsInProgress.html', {'obj' : obj})
-
-@login_required
-def requestFromInventory(request):
-    if request.method == 'POST':
-        requestId = request.POST['id']
-        Req = Requests.objects.filter(id=requestId)
-        Items = Inventory.objects.filter()
-        req = []
-        items = []
-        for x in Req:
-            element = [x.id, x.name, x.area, x.description, x.requestCreatedBy, x.workCompleted]
-            req.append(element)
-
-        for x in Items:
-            element = [x.id, x.name, x.quantity, x.cost]
-            items.append(element)
-        print(items)
-    return render(request, 'iwdModuleV2/requestFromInventory.html', {'req' : req, 'items' : items})
-
-@login_required
-def editInventoryAfterRequest(request):
-    if request.method == 'POST':
-        selectedItem = Inventory.objects.get(id=request.POST['selected_item_id'])
-        q = int(selectedItem.quantity)
-        if q == int(request.POST['quantity']):
-            Inventory.objects.filter(id=request.POST['selected_item_id']).delete()
-        else:
-            Inventory.objects.filter(id=request.POST['selected_item_id']).update(quantity=(q-int(request.POST['quantity'])))
-        formObject = UsedItems()
-        request_instance = Requests.objects.get(pk=request.POST['id'])
-        formObject.request_id = request_instance
-        formObject.itemName = selectedItem.name
-        formObject.cost = selectedItem.cost
-        formObject.quantity = request.POST['quantity']
-        formObject.date = datetime.now().date()
-        formObject.save()
-        eligible = ""
-        userObj = request.user
-        userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
-        for p in userDesignationObjects:
-            eligible = p.designation.name
-    return render(request, 'iwdModuleV2/dashboard.html', {'eligible': eligible})
 
 @login_required
 def generateFinalBill(request):
     if request.method == 'POST':
         requestId = request.POST.get("id", 0)
 
-        usedItems = UsedItems.objects.filter(request_id=requestId)
+        # usedItems = UsedItems.objects.filter(request_id=requestId)
         workOrder = WorkOrder.objects.get(request_id=requestId)
+
+        iwd_items = StockItem.objects.filter(department = 34)
 
         itemsList = []
 
-        for used in usedItems:
-            element = [used.itemName, used.quantity, used.cost, used.date]
-            itemsList.append(element)
+        for x in iwd_items:
+            stock_entry_id = x.StockEntryId.item_id.file_info
+            indent_file_object = IndentFile.objects.filter(file_info = stock_entry_id)
+            for items in indent_file_object:
+                if items.purpose == requestId:
+                    element = [items.item_name, items.quantity, items.estimated_cost, items.file_info.upload_date]
+                    itemsList.append(element)
+
+
+        # for used in usedItems:
+        #     element = [used.itemName, used.quantity, used.cost, used.date]
+        #     itemsList.append(element)
 
         filename = f"Request_id_{requestId}_final_bill.pdf"
 
@@ -1120,6 +1014,8 @@ def generateFinalBill(request):
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         response.write(buffer.getvalue())
 
+        # messages.success(request, "Bill generated")
+
         return response
 
 @login_required    
@@ -1136,69 +1032,75 @@ def handleBillGeneratedRequests(request):
 
 @login_required
 def generatedBillsView(request):
-    request_object = Requests.objects.filter(billGenerated=1, billProcessed=0)
+    request_object = Requests.objects.filter(billGenerated=1)
     obj = []
     for x in request_object:
-        element = [x.id, x.name, x.description, x.area, x.requestCreatedBy]
-        obj.append(element)
-    designations = Designation.objects.filter()
+        file_obj= File.objects.get(src_object_id= x.id, src_module = "IWD")
+        if request_object:
+            element = [x.id, x.name, x.description, x.area, x.requestCreatedBy, file_obj.id]
+            obj.append(element)
 
-    holdsDesignations = []
-
-    for d in designations:
-        for x in designations_list:
-            if d.name == x:
-                list = HoldsDesignation.objects.filter(designation=d)
-                holdsDesignations.append(list)
-
-    return render(request, 'iwdModuleV2/generatedBillsRequestsView.html', {'obj' : obj, 'holdsDesignations' : holdsDesignations})
+    return render(request, 'iwdModuleV2/generatedBillsRequestsView.html', {'obj' : obj})
 
 @login_required
 def handleProcessedBills(request):
     if request.method == 'POST':
-        requestId = request.POST.get("id", 0)
-        request_instance = Requests.objects.get(pk=requestId)
+        obj= request.POST
+        
+        fileid = obj.get('fileid')
+        # filez= File.objects.get(id=fileid)
+        request_id = File.objects.get(id=fileid).src_object_id
+        
+        remarks = obj.get('remarks')
+        attachment = request.FILES.get('attachment')
+        receiver_user, receiver_desg = request.POST['designation'].split('|')
+        
 
-        d = HoldsDesignation.objects.get(user__username=request.POST['designation'])
-        d1 = HoldsDesignation.objects.get(user__username=request.user)
+        forward_file(
+            file_id= fileid,
+            receiver= receiver_user,
+            receiver_designation=receiver_desg, 
+            file_extra_JSON= { "message": "Request forwarded."},
+            remarks= remarks,
+            file_attachment= attachment, 
+        )
+        
+        Requests.objects.filter(id=request_id).update(billProcessed=1, status="Final Bill Processed")
+        
 
-        create_file(uploader=request.user.username, 
-            uploader_designation=d1.designation, 
-            receiver=request.POST['designation'],
-            receiver_designation=d.designation,
-            src_module="IWD", 
-            src_object_id= str(requestId),
-            file_extra_JSON= {"value": 2},
-            attached_file = request.FILES['bill'])
+        request_instance = Requests.objects.get(pk=request_id)
         
         formObject = Bills()
         formObject.request_id = request_instance
-        formObject.file = request.FILES['bill']
+        formObject.file = attachment
         formObject.save()
 
-        Requests.objects.filter(id=requestId).update(status="Final Bill Processed", billProcessed=1)
+        req_object = Requests.objects.filter(billGenerated=1)
 
-        request_object = Requests.objects.filter(billGenerated=1, billProcessed=0)
         obj = []
-        for x in request_object:
-            element = [x.id, x.name, x.description, x.area, x.requestCreatedBy]
-            obj.append(element)
 
-        eligible = ""
-        userObj = request.user
-        userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
-        for p in userDesignationObjects:
-            eligible = p.designation.name
+        for result in req_object:
+            request_object = Requests.objects.filter(id=result.id).first()
+            file_obj= File.objects.get(src_object_id = result.id, src_module = "IWD")
+            if request_object:
+                element = [request_object.id, request_object.name, request_object.area, request_object.description, request_object.requestCreatedBy, file_obj.id]
+                obj.append(element)
 
-    return render(request, 'iwdModuleV2/dashboard.html', {'obj' : obj, 'eligible': eligible})
+        messages.success(request, "Bill processed")
+
+        receiver_user_obj = User.objects.get(username=receiver_user)
+        
+        iwd_notif(request.user, receiver_user_obj, "file_forward")
+
+    return render(request, 'iwdModuleV2/generatedBillsRequestsView.html', {'obj' : obj})
 
 @login_required
 def auditDocumentView(request):
-    d = HoldsDesignation.objects.get(user__username=request.user)
+    desg = request.session.get('currentDesignationSelected')
 
     inbox_files = view_inbox(
         username=request.user,
-        designation=d.designation,
+        designation=desg,
         src_module="IWD"
     )
 
@@ -1207,66 +1109,68 @@ def auditDocumentView(request):
     for x in inbox_files:
         requestId = x['src_object_id']
         files = Bills.objects.get(request_id=requestId)
-        element = [files.request_id.id, files.file, files.file.url]
+        file_obj= File.objects.get(src_object_id = requestId, src_module = "IWD")
+        element = [files.request_id.id, files.file, files.file.url, file_obj.id, file_obj.id, file_obj.id]
         obj.append(element)
 
-    designations = Designation.objects.filter()
-
-    holdsDesignations = []
-
-    for d in designations:
-        if d.name == "Engineer" or d.name == "Dean" or d.name == "Director" or d.name == "Accounts Admin" or d.name == "Admin IWD":
-            list = HoldsDesignation.objects.filter(designation=d)
-            holdsDesignations.append(list)
-
-    return render(request, 'iwdModuleV2/auditDocumentView.html', {'obj' : obj, 'holdsDesignations' : holdsDesignations})
+    return render(request, 'iwdModuleV2/auditDocumentView.html', {'obj' : obj})
 
 @login_required
 def auditDocument(request):
     if request.method == 'POST':
-        requestId = request.POST.get("id", 0)
+        obj= request.POST
+        
+        fileid = obj.get('fileid')
+        request_id = File.objects.get(id=fileid).src_object_id
+        
+        remarks = obj.get('remarks')
+        attachment = request.FILES.get('attachment')
+        receiver_user, receiver_desg = request.POST['designation'].split('|')
+        
 
-        d = HoldsDesignation.objects.get(user__username=request.POST['designation'])
-        d1 = HoldsDesignation.objects.get(user__username=request.user)
+        forward_file(
+            file_id= fileid,
+            receiver= receiver_user,
+            receiver_designation=receiver_desg, 
+            file_extra_JSON= { "message": "Request forwarded."},
+            remarks= remarks,
+            file_attachment= attachment, 
+        )
 
-        create_file(uploader=request.user.username, 
-            uploader_designation=d1.designation, 
-            receiver=request.POST['designation'],
-            receiver_designation=d.designation,
-            src_module="IWD", 
-            src_object_id= str(requestId),
-            file_extra_JSON= {"value": 2},
-            attached_file = None)
+        Requests.objects.filter(id=request_id).update(status="Bill Audited")
+
+        desg = request.session.get('currentDesignationSelected')
 
         inbox_files = view_inbox(
             username=request.user,
-            designation=d1.designation,
+            designation=desg,
             src_module="IWD"
         )
 
-        for result in inbox_files:
-            print(result['src_object_id'])
-            if result['src_object_id'] == requestId:
-                delete_file(file_id = result['id'])
-                break
+        obj = []
 
-        Requests.objects.filter(id=requestId).update(status="Bill Audited")
+        for x in inbox_files:
+            requestId = x['src_object_id']
+            files = Bills.objects.get(request_id=requestId)
+            file_obj= File.objects.get(src_object_id = requestId, src_module = "IWD")
+            element = [files.request_id.id, files.file, files.file.url, file_obj.id, file_obj.id, file_obj.id]
+            obj.append(element)
 
-        eligible = ""
-        userObj = request.user
-        userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
-        for p in userDesignationObjects:
-            eligible = p.designation.name
+        messages.success(request, "File Audit done")
 
-    return render(request, 'iwdModuleV2/dashboard.html', {'eligible' : eligible})
+        receiver_user_obj = User.objects.get(username=receiver_user)
+        
+        iwd_notif(request.user, receiver_user_obj, "file_forward")
+
+    return render(request, 'iwdModuleV2/auditDocumentView.html', {'obj' : obj})
 
 @login_required
 def settleBillsView(request):
-    d = HoldsDesignation.objects.get(user__username=request.user)
+    desg = request.session.get('currentDesignationSelected')
 
     inbox_files = view_inbox(
         username=request.user,
-        designation=d.designation,
+        designation=desg,
         src_module="IWD"
     )
 
@@ -1275,7 +1179,9 @@ def settleBillsView(request):
     for x in inbox_files:
         requestId = x['src_object_id']
         bills_object = Bills.objects.filter(request_id=requestId).first()
-        element = [bills_object.request_id.id, bills_object.file, bills_object.file.url]
+        file_obj= File.objects.get(src_object_id = requestId, src_module = "IWD")
+        request_object = Requests.objects.get(id = requestId)
+        element = [bills_object.request_id.id, bills_object.file, bills_object.file.url, request_object.billSettled, file_obj.id, file_obj.id]
         obj.append(element)
 
     return render(request, 'iwdModuleV2/settleBillsView.html', {'obj' : obj})
@@ -1285,34 +1191,27 @@ def handleSettleBillRequests(request):
     if request.method == 'POST':
         request_id = request.POST.get("id", 0)
 
-        d = HoldsDesignation.objects.get(user__username=request.user)
+        desg = request.session.get('currentDesignationSelected')
 
         inbox_files = view_inbox(
             username=request.user,
-            designation=d.designation,
+            designation=desg,
             src_module="IWD"
         )
-
-        for p in inbox_files:
-            if p['src_object_id'] == request_id:
-                delete_file(file_id = p['id'])
-                break
 
         Requests.objects.filter(id=request_id).update(status="Final Bill Settled", billSettled=1)
-
-        inbox_files = view_inbox(
-            username=request.user,
-            designation=d.designation,
-            src_module="IWD"
-        )
 
         obj = []
         
         for x in inbox_files:
-            request_id = x['src_object_id']
-            bills_object = Bills.objects.get(request_id=request_id)
-            element = [request_id, bills_object.file, bills_object.file.url]
+            requestId = x['src_object_id']
+            bills_object = Bills.objects.filter(request_id=requestId).first()
+            file_obj= File.objects.get(src_object_id = requestId, src_module = "IWD")
+            request_object = Requests.objects.get(id = requestId)
+            element = [bills_object.request_id.id, bills_object.file, bills_object.file.url, request_object.billSettled, file_obj.id, file_obj.id]
             obj.append(element)
+
+        messages.success(request, "Final Bill settled")
 
         return render(request, 'iwdModuleV2/settleBillsView.html', {'obj' : obj})
 

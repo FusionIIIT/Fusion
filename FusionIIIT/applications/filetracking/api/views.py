@@ -1,12 +1,14 @@
 import logging
 from venv import logger
 from django.forms import ValidationError
+from django.contrib.auth.models import User
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from rest_framework.authentication import TokenAuthentication
 from ..models import File, Tracking
-from ..sdk.methods import create_draft, create_file, view_drafts, view_file, delete_file, view_inbox, view_outbox, view_history, forward_file, get_designations
+from applications.globals.models import Designation
+from ..sdk.methods import create_draft, create_file, view_drafts, view_file, delete_file, view_inbox, view_outbox, view_history, forward_file, get_designations, archive_file, view_archived
 
 class CreateFileView(APIView):
     authentication_classes = [TokenAuthentication]
@@ -21,11 +23,13 @@ class CreateFileView(APIView):
             subject = request.data.get('subject')
             description = request.data.get('description')
 
+            uploaded_file = request.FILES.get('file')  # Get the file if provided
+
             if None in [current_designation, receiver_username, receiver_designation, subject, description]:
                 return Response({'error': 'One or more required fields are missing.'}, status=status.HTTP_400_BAD_REQUEST)
 
             file_id = create_file(uploader=current_user, uploader_designation=current_designation,
-                                  receiver=receiver_username, receiver_designation=receiver_designation, subject=subject, description=description)
+                                  receiver=receiver_username, receiver_designation=receiver_designation, subject=subject, description=description, attached_file=uploaded_file)
 
             return Response({'file_id': file_id}, status=status.HTTP_201_CREATED)
         except Exception as e:
@@ -145,15 +149,21 @@ class ViewHistoryView(APIView):
         Returns:
             rest_framework.response.Response: JSON response containing serialized tracking history.
         """
-
         try:
-            history = view_history(file_id)
-            return Response(history)
+           tracking_array = []
+           histories = view_history(file_id)
+           for history in histories:
+               temp_obj_action = history;
+               temp_obj_action['receiver_id'] = User.objects.get(id=history['receiver_id']).username
+               temp_obj_action['receive_design'] = Designation.objects.get(id=history['receive_design']).name
+               tracking_array.append(temp_obj_action)
+
+           return Response(tracking_array)
         except Tracking.DoesNotExist:
-            return Response({'error': f'File with ID {file_id} not found.'}, status=404)
+           return Response({'error': f'File with ID {file_id} not found.'}, status=404)
         except Exception as e:
-            logger.error(f"An unexpected error occurred: {e}")
-            return Response({'error': 'Internal server error.'}, status=500)
+           logger.error(f"An unexpected error occurred: {e}")
+           return Response({'error': 'Internal server error.'}, status=500)
         
 class ForwardFileView(APIView):
 # #     # Authentication and permission classes (adjust based on your needs)
@@ -233,6 +243,41 @@ class DraftFileView(APIView):
            draft_files = view_drafts(username, designation, src_module)
            print(draft_files)
            return Response(draft_files, status=status.HTTP_200_OK)
+       except Exception as e:
+           return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+       
+class ArchiveFileView(APIView):
+   authentication_classes = [TokenAuthentication]
+   permission_classes = [permissions.IsAuthenticated]
+
+   def get(self, request):
+       username = request.query_params.get('username')
+       designation = request.query_params.get('designation', '')
+       src_module = request.query_params.get('src_module')
+       try:
+           archived_files = view_archived(username, designation, src_module)
+           return Response(archived_files, status=status.HTTP_200_OK)
+       except Exception as e:
+           return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+     
+class CreateArchiveFile(APIView):
+   authentication_classes = [TokenAuthentication]
+   permission_classes = [permissions.IsAuthenticated]
+
+   def post(self, request):
+       file_id = request.data.get('file_id', None)
+
+       if file_id is None:
+           return Response({'error': 'Missing file_id'}, status=status.HTTP_400_BAD_REQUEST)
+
+       try:
+           success = archive_file(file_id)
+           if success:
+               return Response({'success': True})
+           else:
+               return Response({'error': 'File does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
        except Exception as e:
            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

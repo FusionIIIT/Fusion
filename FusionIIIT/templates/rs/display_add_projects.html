@@ -1,0 +1,317 @@
+
+{% load static %}
+
+{% block title %}
+
+{% endblock %}
+
+{% block projects %}
+
+{% block body %}
+
+<script type="text/javascript">
+   function populateList() {
+        console.log('key up')
+
+        value = $('#input_search').val();
+
+          $.ajax({
+            type: 'POST',
+            url: '/filetracking/ajax_dropdown/',
+            data: {
+                'value': value,
+                'csrfmiddlewaretoken': '{{csrf_token}}'
+            },
+            dataType: 'json',
+            success: function(response){
+
+                all_users = JSON.parse(response.users);
+                app = []
+                $('#input_list').html('');
+                for(var i=0;i<all_users.length;i++){
+                   $('#input_list').append('<option value="'+all_users[i].fields.username+'">'+all_users[i].fields.username+'</option>');
+                }
+            },
+            error: function(rs, e){
+                console.log('error-------');
+            },
+        });
+    }
+</script>
+
+
+<script>
+
+
+
+    
+        document.addEventListener('DOMContentLoaded', function () {
+   
+            document.getElementById('start_date').addEventListener('change', function () {
+                try {
+                 
+                    var startDate = new Date(document.getElementById('start_date').value);
+                    var finishDateInput = document.getElementById('finish_date');
+                    var finishDate = new Date(finishDateInput.value);
+
+                   
+                    finishDateInput.min = startDate.toISOString().split('T')[0];
+
+                  
+                    if (finishDate <= startDate) {
+                        finishDateInput.value = '';
+                    }
+                } catch (error) {
+                    console.error(error);
+                }
+            });
+        });
+
+
+       
+        document.addEventListener('DOMContentLoaded', function () {
+                var numberOfYearsInput = document.getElementById('number_of_years');
+                var numberOfYearsError = document.getElementById('number_of_years_error');
+                numberOfYearsInput.addEventListener('input', function () {
+                    var numberOfYears = parseInt(numberOfYearsInput.value);
+                    if (numberOfYears <= 0) {
+                        numberOfYearsError.style.display = 'block';
+                        // submitButton.disabled = true;
+                    } else {
+                        // submitButton.disabled = false;   
+                        numberOfYearsError.style.display = 'none';
+                    }
+                });
+            });
+
+            function addCopis(event){
+                event.preventDefault();
+                var clonedSegment = document.querySelector('.copi_segment').cloneNode(true);
+                var count = document.querySelectorAll('.copi_segment').length;
+                clonedSegment.name = 'co_project_investigator_id-' + (count + 1);
+
+                document.querySelector('.copis').appendChild(clonedSegment);
+                document.querySelector('.remove_button').classList.remove('invisible');
+
+            }
+
+            function removeCopis(event){
+                event.preventDefault();
+                var count = document.querySelectorAll('.copi_segment').length;
+                if(count > 1){
+                    var lastCopi = document.querySelectorAll('.copi_segment')[count - 1];
+                    lastCopi.remove();
+                }
+                if(count == 2){
+                    document.querySelector('.remove_button').classList.add('invisible');
+                }
+            }
+
+</script>
+<style>
+    /* Hide the default file input button */
+    input[type="file"] {
+        display: none;
+    }
+
+    .invisible
+    {
+        display: none;
+        
+    }
+
+    .inputf1 {
+        border: 1px solid grey;
+        width: 800px;
+    }
+
+    .labels1 {
+        padding-bottom: 5px;
+
+            {
+            % comment %
+        }
+
+        margin-bottom:-30px;
+
+            {
+            % endcomment %
+        }
+    }
+
+    /* Style the container to position the icon */
+    .upload-container {
+        position: relative;
+        display: inline-block;
+    }
+
+        {
+        % comment %
+    }
+
+    .upload-container:hover {
+        cursor: pointer;
+    }
+
+        {
+        % endcomment %
+    }
+
+    .big.upload.icon {
+        cursor: pointer;
+    }
+
+    /* Style the icon */
+    .upload-icon {
+        font-size: 18px;
+        /* Set the desired font size */
+        font-weight: bold;
+        /* Set the desired font weight */
+        cursor: pointer;
+        display: inline-block;
+    }
+</style>
+<div class="ui card " style="width:100% ;  box-shadow: 0px 0px 30px rgba(0, 0, 0, 0.2);">
+    <div style="padding: 15px">
+        <div class="ui pointing secondary menu" style="font-size:25px">
+            <label style="text-transform: uppercase" class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
+                Add Projects
+            </label>
+        </div>
+
+        <div class="outer" style="margin:20px">
+            <form class="ui form" method="post" enctype="multipart/form-data"
+                action="{% url 'research_procedures:add_projects' %}" style="width:800px;  margin-bottom: 20px;">
+                {% csrf_token %}
+                <div style="margin-bottom: 20px;">
+                    <div class="labels1">
+                        <label class="labels1" for="project_name" style="font-size:18px ;font-weight:bold;text-transform: uppercase  ">Project
+                            Name:</label>
+                    </div>
+                    <input class="inputf1 " type="text" id="project_name" placeholder="Project Name" required
+                        name="project_name" style=" border: 1px solid grey;">
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label class="labels1" for="sponsored_agency" style="font-size:18px ;font-weight:bold;text-transform: uppercase">Sponsored
+                        Agency:</label>
+                    <input class="input-f1" type="text" id="sponsored_agency" placeholder="Sponsored Agency"
+                        name="sponsored_agency" required style="width: 100%; border: 1px solid grey;">
+                </div>
+
+                <div style="margin-bottom: 20px; ">
+                    <div style="display: flex; justify-content: space-between;">
+                        <div style="flex: 1; margin-right: 10px;">
+
+                            <label class="labels1" for="project_investigator_id"
+                                style="font-size:18px ;font-weight:bold;text-transform: uppercase">Project Investigator Id:</label>
+                            <input class="input-f1" type="search" id="input_search" list="input_list"
+                                placeholder="Project Investigator Id" name="project_investigator_id" required
+                                onchange= {populateList()}
+                                style="width: 100%; border: 1px solid grey;">
+                                <datalist  id="input_list">
+                                </datalist>
+                        </div>
+                       
+                    </div>
+                </div>
+                <div style="margin-bottom: 20px; ">
+                    
+                    <div class="">
+
+                        
+                        <div style="flex: 1; " class="copis" >
+                            <label class="labels1" for="co_project_investigator_id"
+                            style="font-size:18px ;font-weight:bold;text-transform: uppercase">Co-Project Investigator ID:</label>
+                            <input class="input-f1 copi_segment"  type="text" id="co_project_investigator_id"
+                            placeholder="Co-Project Investigator ID" name="co_project_investigator_id-1" required
+                            style="width: 100%; border: 1px solid grey; margin-bottom: 10px;">
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            
+                            <button onclick={addCopis(event)} >
+                                <i class="plus icon"></i>
+                            </button>
+
+                            <div class="invisible remove_button">
+                                <button onclick={removeCopis(event)} >
+                                    <i class="minus icon"></i>
+                                </button>
+                                
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <div style="display: flex;">
+                        <div style="flex: 1; margin-right: 10px;">
+                            <label class="labels1" for="project_type" style="font-size:18px ;font-weight:bold;text-transform: uppercase">Project
+                                Type:</label>
+                            <input class="input-f1" type="text" id="project_type" placeholder="Project Type"
+                                name="project_type" required style="width: 100%; border: 1px solid grey;">
+                        </div>
+                        <div style="flex: 1; margin-right: 10px;">
+                            <label class="labels1" for="number_of_years" style="font-size:18px ;font-weight:bold;text-transform: uppercase">Number
+                                of Years:</label>
+                            <input class="input-f1" type="number" id="number_of_years" placeholder="Number of Years"
+                                name="number_of_years" required style="width: 100%; border: 1px solid grey;">
+                            <div id="number_of_years_error" style="color: red; display: none;">Number of years must be greater than 0.</div>
+                           
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <div style="display: flex;">
+                        <div style="flex: 1; margin-right: 10px;">
+                            <label class="labels1" for="start_date" style="font-size:18px ;font-weight:bold;text-transform: uppercase">Start
+                                Date:</label>
+                            <input class="input-f1" type="date" id="start_date" name="start_date" required
+                                style="width: 100%; border: 1px solid grey;">
+                        </div>
+                        <div style="flex: 1; margin-right: 10px;">
+                            <label class="labels1" for="finish_date" style="font-size:18px ;font-weight:bold;text-transform: uppercase">Project
+                                Deadline:</label>
+                            <input class="input-f1" type="date" id="finish_date" name="finish_date" required
+                                style="width: 100%; border: 1px solid grey;">
+                        </div>
+                    </div>
+                </div> 
+                {% comment %} <div style="margin-bottom: 20px;">
+                    <label class="labels1" for="project_info_file" style="font-size:18px ;font-weight:bold">Select a
+                        file:</label>
+                    <input class="input-f1" type="file" id="project_info_file" name="project_info_file">
+                </div> {% endcomment %}
+                <div class="upload-container" style="padding-top:15px">
+                    <label class="labels1" for="icon-button" class="upload-icon"
+                        onclick="document.getElementById('project_info_file').click()">
+                        <i class="big upload icon" id="icon-button"></i>
+                        Select a file <span style="color: red">*required</span>
+                    </label>
+
+                    <input type="file" class="ui button input-f1" id="project_info_file" name="project_info_file"
+                        style="display: none;" onchange="displaySelectedFile()" required>
+
+                        
+                </div>
+                <p style="color:blue" id="selectedFile"></p>
+                <input type="submit" value="Submit" id="submit-button"
+                    style="background-color: #007bff; color: #fff; border: none; padding: 10px 20px; cursor: pointer; width: 100%;  transition: background-color 0.3s;"
+                    class="submit-button" onmouseover="this.style.backgroundColor='#0056b3'"
+                    onmouseout="this.style.backgroundColor='#007bff'">
+
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    // Function to display the selected file name (optional)
+    function displaySelectedFile() {
+        var fileInput = document.getElementById('project_info_file');
+        var selectedFileText = document.getElementById('selectedFile');
+        selectedFileText.textContent = "" + fileInput.files[0].name;
+    }
+</script>
+</div>
+{% endblock %}
+
+{% endblock %}

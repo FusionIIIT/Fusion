@@ -1,0 +1,140 @@
+<style>
+    
+    .get-info{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-width: 75%;
+        padding-top:5%;
+        padding-bottom:5%;
+    }
+    .get-info>h4{
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .get-info>h4>div{
+        padding: .5rem;
+    }
+    .get-info>div{
+        font-size: 2rem;
+        min-width: 75%;
+        padding: 1rem;
+    }
+    .get-info>div>select{
+        min-width: 75%;
+    }
+    .get-info>div>input{
+        min-width: 75%;
+    }
+    .buttons{
+        display: flex;
+        flex-direction: row;
+        padding: 2rem;
+    }
+
+</style>
+
+
+{% load static %}
+{% block config_courseslot_courses %}
+
+<div class="ui pointing secondary menu" >
+    <a class="active item" data-tab="this">
+        Update Courses in Course-Slot for upcoming Semester
+    </a>
+  </div>
+
+<div class="ui active tab ui-form get-info" data-tab="this" style="max-width: 50%;" >
+    
+    <div class="field">
+        <input placeholder="Course Slot Here" type="text" name="course_slot_name" id="course_slot_name">
+    </div>
+
+    <div class="field">
+        <input placeholder="Course Code Here" type="text" name="course_name" id="course_name">
+    </div>
+
+    <div class = "buttons">
+        <div class="field" style="padding-right:8rem ;">
+            <button class="ui primary button" onclick="addCourse()">Add Course in Slot</button>
+        </div>
+
+        <div class="field">
+            <button class="ui primary button" onclick="removeCourse()">Remove Course from Slot</button>
+        </div>
+    </div>
+</div>
+
+
+            
+            
+{% endblock %}
+            
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script>
+    function addCourse() {
+        var course_slot_name = document.getElementById('course_slot_name').value;
+        var course_name = document.getElementById('course_name').value;
+        
+        fetch('/academic-procedures/acad_person/add_course_to_slot/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({'course_slot_name': course_slot_name, 'course_name': course_name })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Handle response data as required
+            alert(data.message)
+            console.log(data);
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function removeCourse() {
+        var course_slot_name = document.getElementById('course_slot_name').value;
+        var course_name = document.getElementById('course_name').value;
+        
+        fetch('/academic-procedures/acad_person/remove_course_from_slot/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({'course_slot_name': course_slot_name, 'course_name': course_name })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Handle response data as required
+            alert(data.message)
+            console.log(data);
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+
+
+

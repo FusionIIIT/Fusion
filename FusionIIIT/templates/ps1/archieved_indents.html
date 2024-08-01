@@ -1,0 +1,26 @@
+{% extends 'ps1/ps1.html' %}
+{% load static %}
+
+{% block filetracking_tab %}
+    <div class="ui pointing secondary menu">
+        <h3>
+            <a class="active item" data-tab="inward">
+            All Archieved Indents
+            </a>
+        </h3>
+
+    </div>
+<table class="ui very basic celled sortable table" style="overflow-x: scroll;max-height: 500px;  overflow-y: scroll;">
+<div class="field">
+                    <label>Select designation:
+                             {% for designation in designation %}
+                             <td> <a href="{% url 'ps1:archieveview' designation.id %}"><button class="ui primary button">
+                                 {{designation}}
+                             </button></a></td>
+                            {% endfor %}
+                        </select>
+                    </label>
+                </div>
+</table>
+
+{% endblock %}

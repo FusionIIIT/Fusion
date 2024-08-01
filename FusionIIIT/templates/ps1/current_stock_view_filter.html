@@ -22,10 +22,10 @@
             <form class="ui large form" method="POST" action="/purchase-and-store/current_stock_view/" ="multipart/form-data" id="form1">
             {% csrf_token %}
                 <div class="field">
-                        <label>Select Department</label>
+                        <label>Select Department/Section</label>
                         <select name="department">
                             {% for department in departments %}
-                            <option value="{{department.id}}">{{department}}</option>
+                            <option value="{{department.id}}">{{department.name}}</option>
                             {% endfor %}
                         </select>
                 </div>
@@ -40,20 +40,11 @@
                     </select>
                 </div>
 
-                <div class="field">
-                    <label>Select Grade
-                    </label>
-                    <select name="grade">
-                        {% for grade in grades %}
-                        <option value="{{grade}}">{{grade}}</option>
-                        {% endfor %}
-                    </select>
-                </div>
 
 
 
 
-                <div>
+                <div style="margin-bottom: 40px;">
                     <a class="right floated item">
 
                         <button type="submit" name="send" class="ui large right floated primary button" style = "float: right;">
@@ -91,8 +82,8 @@
             <thead>
             <tr>
                     <th>Item Type</th>
-                    <th>Item Grade</th>
-                    <th>department</th>
+                    <th>Item Subtype</th>
+                    <th>department/section</th>
                     <th>Quantity</th>
                     <th>View Stocks</th>
                 
@@ -104,14 +95,14 @@
                 <tr>
                     
                     <td> {{s.item_type}} </td>
-                    <td> {{s.grade}} </td>
-                    <td> {{s.department}} </td>
+                    <td> {{s.item_subtype}} </td>
+                    <td> {{s.department.name}} </td>
                     <td>{{s.total_quantity}}</td>
 
                     <td>
                         <form action="/purchase-and-store/stock_item_view/" method="POST" >{% csrf_token %}
                         <input hidden  name = 'item_type' value="{{ s.item_type}}">
-                        <input hidden  name = 'grade' value="{{ s.grade}}">
+                        <input hidden  name = 'item_subtype' value="{{ s.item_subtype}}">
                         <input hidden  name = 'departmentId' value="{{ s.departmentId}}">
                         <button class="ui primary button" >View Stocks</button>
                         </form>

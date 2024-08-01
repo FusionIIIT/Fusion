@@ -12,21 +12,22 @@ urlpatterns = [
     url(r'^composed_indents/$', views.composed_indents, name='composed_indents'),
 
     # here id is the Holdsdesignation id.
-    url(r'^indentview/(?P<id>\d+)$', views.indentview, name='indentview'),
+    url(r'^indentview/(?P<id>\d+)/$', views.indentview, name='indentview'),
+    url(r'^archieveview/(?P<id>\d+)/$', views.archieveview, name='archieveview'),
 
     url(r'^drafts/$', views.drafts, name='drafts'),
-    url(r'^draftview/(?P<id>\d+)$', views.draftview, name='draftview'),
+    url(r'^draftview/(?P<id>\d+)/$', views.draftview, name='draftview'),
     url(r'^inwardIndent/$', views.inward, name='inward'),
 
     # indentview2 is to get all the indentFiles inwarded towards the request.user.
 
-    url(r'^indentview2/(?P<id>\d+)$', views.indentview2, name='indentview2'),
-    url(r'^confirmdelete/(?P<id>\d+)$', views.confirmdelete, name='confirm_delete'),
-    url(r'^delete/(?P<id>\d+)$',views.delete, name='delete'),
+    url(r'^indentview2/(?P<id>\d+)/$', views.indentview2, name='indentview2'),
+    url(r'^confirmdelete/(?P<id>\d+)/$', views.confirmdelete, name='confirm_delete'),
+    url(r'^delete/(?P<id>\d+)/$',views.delete, name='delete'),
     # forward Indent is to see a specific forwarded indent to ourselves 
     url(r'^forwardindent/(?P<id>\d+)/$', views.forwardindent, name='forwardindent'),
     url(r'^createdindent/(?P<id>\d+)/$', views.createdindent, name='createdindent'),
-
+    url(r'^forwardedIndent/(?P<id>\d+)/$', views.forwardedIndent, name='forwardedIndent'),
     
     url(r'^entry/$', views.entry, name='entry'),
     url(r'^StockEntry/$', views.Stock_Entry, name='Stock_Entry'),
@@ -43,6 +44,7 @@ urlpatterns = [
     # to display stock items which are having similar item_type ,grade and department.(used in current_stock_view)
     url(r'^stock_item_view/$', views.stock_item_view, name='stock_item_view'),
 
+    url(r'^archieved_indents/$', views.archieved_files, name='archieved_indents_view'),
 
 
 
@@ -62,11 +64,12 @@ urlpatterns = [
     url(r'^stock_transfer/$', views.stock_transfer, name='stock_transfer'),
     url(r'^view_transfer/$', views.view_transfer, name='view_transfer'),
 
-    url(r'^outboxview2/$', views.outboxview2, name='outboxview2'),
+    url(r'^outboxview2/(?P<id>\d+)/$', views.outboxview2, name='outboxview2'),
     url(r'^outboxview/$', views.outboxview, name='outboxview'),
 
 
-    url(r'^update_stock_item_inUse/$', views.updateStockItemInUse, name='outboxview'),
+    url(r'^update_stock_item_inUse/$', views.updateStockItemInUse, name='stockItemInUse'),
+    url(r'^item_detail/(?P<id>\d+)/$', views.item_detail, name='item_detail'),
 
     # BASE API 
     url(r'^api/',include('applications.ps1.api.urls')),

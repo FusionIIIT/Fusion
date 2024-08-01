@@ -12,6 +12,16 @@ Academic
 {% include 'dashboard/navbar.html' %}
 {% endblock %}
 
+<script>
+    $('.message .close')
+        .on('click', function() {
+            $(this)
+                .closest('.message')
+                .transition('fade')
+            ;
+        });
+</script>
+
 <div class="ui stackable doubling grid">
 
     {% comment %}The left-margin segment!{% endcomment %}
@@ -58,6 +68,7 @@ Academic
                                 <th>Id</th>
                                 <th>Bill</th>
                                 <th></th>
+                                <th></th>
                             </tr>
                         </thead>
                         {% for f in obj %}
@@ -66,12 +77,16 @@ Academic
                                 <td>{{f.0}}</td>
                                 <td> <a href="{{f.2}}" target="_blank">{{f.1}}</a></td>
                                 <td>
-                                    <!-- <form method="POST" action="handleProcessRequests?id={{ f.0 }}"> -->
-                                    <form method="POST" action="{% url 'iwdModuleV2:Handle-Settle-Bill-Requests' %}">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="id" value="{{ f.0 }}">
-                                        <button type="submit" class="ui small primary button">Settle</button>
-                                    </form>
+                                    <button onclick="window.location='/iwdModuleV2/view_file/{{ f.5 }}/NIL'" style="margin-left:5px; height:5vh;" class="ui small grey equal-size-button button">View File</button>
+                                </td>
+                                <td>
+                                    {% if f.3 != 1 %}
+                                        <form method="POST" action="{% url 'iwdModuleV2:Handle-Settle-Bill-Requests' %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="id" value="{{ f.0 }}">
+                                            <button type="submit" class="ui small primary button">Settle</button>
+                                        </form>
+                                    {% endif %}
                                 </td>
                             </tr>
                         </tbody>

@@ -1,20 +1,24 @@
 {% load static %} {% block viewperformance %}
 
-<div class="ui pointing secondary menu">
+<div class="ui pointing secondary menu" style="margin-top: 14px;">
     <a class="item active tab vptab" id="assignmenttab" data-tab="assignment">Assignment</a>
 
-    <a class="item tab vptab" id="quiztab" data-tab="quiz">Online Quiz</a>
+    <!-- <a class="item tab vptab" id="quiztab" data-tab="quiz">Online Quiz</a> -->
+    <a class="item tab vptab" id="attendancetab" data-tab="attendance">Attendance</a>
+    {% if quiz_marks %}
+    <a class="item tab vptab" id="quizmtab" data-tab="quizm">Quiz</a>
+    {% endif %}
     <!-- {% if Lecturer == 1 %}
       <a class="item tab vptab" id="viewmarkstab" data-tab="viewmarks"> Exams </a>
     {% endif %} -->
 
 </div>
 <!-- Assignment -->
- <div class="ui bottom attached vptabdata active tab segment" id="assignmenttabdata" data-tab="assignment" style="overflow:scroll;overflow-y:hidden ">
+ <div class="ui bottom attached vptabdata active tab segment" id="assignmenttabdata" data-tab="assignment" {% if Lecturer is 0 %} style="height: 65vh;"{% endif %}>
   {% if Lecturer is 0 %}
     <h4>Results</h4>
     {% if assignment|length  %}
-    <div class="ui top attached tabular menu">
+    <div class="ui top attached tabular menu" style="overflow:scroll;overflow-y:hidden ">
       {% for assi in assignment %}
         <a class="{% if forloop.counter is 1 %}active {% endif %}item per"  data-tab="{{forloop.counter}}" >{{assi.assignment_name}}</a>
       {% endfor %}
@@ -35,7 +39,6 @@
                 <tr>
                   <td>
                     <h4 class="ui image header">
-                      <img src="{% static 'globals/img/jenny.jpg' %}" class="ui  rounded image">
                         <div class="content">
                           <p style="text-align:center">{{request.user.first_name}}  {{request.user.last_name}}</p>
                         </div>
@@ -107,6 +110,7 @@
     {% endif %}
   {% endif %}
 </div>
+
 <div class="ui bottom attached tab vptabdata segment" id="quiztabdata" data-tab="quiz">
   {% if Lecturer is 0 %}
     <h4>Results</h4>
@@ -241,14 +245,122 @@
           {% endfor %}
           </tbody>
         </table>
+        
     </div>
+
+
+<div class="ui bottom attached tab vptabdata segment" id="attendancetabdata" data-tab="attendance">
+  <!-- <p> Total Attendance = {{total_attendance}} </p>
+	<p> Total Present = {{present_attendance}} </p>
+  <p> Total Absent = {{absent_attendance}} </p> -->
+  <div style="display: flex; align-items: center; height: 200px; width: 100%; margin-bottom: 20px;">
+    <canvas id="attendanceChart" width="200" height="200"></canvas>
+    <div style="margin-left: 20px;">
+      <h4> Total Attendance = {{total_attendance}} </h4>
+      <h4>Attendance % = {{attendance_percent}}</h4>
+    </div>
+  </div>
+  
+	<div style="overflow:scroll;height:20em;overflow-x:hidden;">
+    <table class="ui fixed single line sortable celled table">
+        <thead>
+            <tr>
+                <th style="width: 30%;">Date.</th>
+                <th style="width: 30%;">Classes Attended</th>
+                      
+            </tr>
+        </thead>
+        <tbody>
+        	<!-- {% for roll_no, name in students.items %}
+        		<tr>
+        			<td>{{roll_no}}</td>
+        			<td>{{name}}</td>
+        			<td></td>
+        		</tr>
+            {% endfor %}
+                       -->
+                   
+			  {% for date, present in present_attendance.items %}    
+			    <tr>
+        		<td>{{date}}</td>
+        		<td>{{present}}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+    </table>  
+    
+</div>
+<div class="ui segment">
+  <!-- <style>
+    .item a:hover {
+      text-decoration: underline;
+    }
+  </style> -->
+  <h4 class="ui dividing header">Attendance Files</h4>
+  {% if attendance_file %}
+    <div class="ui list">
+      {% for attendanceFile in attendance_file %}
+        <div class="item">
+          <i class="file icon"></i>
+          <div class="content">
+            <a href="{{ attendanceFile.file_url }}" class="header">{{ attendanceFile.file_name }}</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>No attendance files.</p>
+  {% endif %}
+</div>
+</div>
+
+<div class="ui bottom attached tab vptabdata segment" id="quiztabdata" data-tab="quizm">
+  <div class="ui segment">
+    <h4 class="ui dividing header">Total Quiz Marks</h4>
+    <div class="ui statistic">
+      <div class="value" style="color: #19201b;">{{quiz_marks}}</div>
+      <div class="label">Marks</div>
+    </div>
+  </div>
+</div>
 
 
 {% endblock %}
 
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script type="text/javascript">
     $("#viewmarkstabdata").click(function(){
       $("#marks_table").unbind();
+  });
+</script>
+
+<script>
+  const attendancePercent = {{ attendance_percent }};
+  const totalAtt = {{ total_attendance}};
+  const canvas = document.getElementById('attendanceChart');
+  const ctx = canvas.getContext('2d');
+  const myChart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: ['Present', 'Absent'],
+      datasets: [{
+        data: [attendancePercent*totalAtt/100, totalAtt-(attendancePercent*totalAtt/100)],
+        backgroundColor: [
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(255, 99, 132, 0.2)',
+        ],
+        borderColor: [
+          'rgba(75, 192, 192, 1)',
+          'rgba(255, 99, 132, 1)',
+        ],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      legend: {
+        display: false,
+      },
+    }
   });
 </script>
