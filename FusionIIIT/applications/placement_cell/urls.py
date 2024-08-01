@@ -26,4 +26,5 @@ urlpatterns = [
     url(r'^placement_record_save/$', views.placement_record_save, name='placement_record_save'),
     url(r'^add_placement_visit/$', views.add_placement_visit, name='add_placement_visit'),
     url(r'^placement_visit_save/$', views.placement_visit_save, name='placement_visit_save'),
+     url(r'^generate_excel/$', views.generate_excel, name='generate_excel'),
 ]

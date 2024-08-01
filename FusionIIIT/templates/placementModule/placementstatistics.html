@@ -186,12 +186,12 @@
                   {% comment %}The tab menu starts here!{% endcomment %}
                   <div class="ui pointing secondary menu">
                       <a class="active item" data-tab="pastrecords">
-                          Past Records
+                          Placement Records
                       </a>
 
-                      <a class="item" data-tab="batchstats">
+                      <!-- <a class="item" data-tab="batchstats">
                           Batch Statistics
-                      </a>
+                      </a> -->
                   </div>
 
                   <div class="ui active tab" data-tab="pastrecords">
@@ -627,7 +627,7 @@
                                     </table>
                                     {% else %}
                                     <h2>No Data Found.</h2>
-                                    {% if current1 %}
+                                    {% if current2 %}
                                     <a href="{% url 'placement:add_placement_record' %}">Add Student Record</a>
                                     {% endif %}
                                     {% endif %}
@@ -836,7 +836,7 @@
                                     </table>
                                     {% else %}
                                     <h2>No Data Found.</h2>
-                                    {% if isStaff %}
+                                    {% if current2 %}
                                     <a href="{% url 'placement:add_placement_record' %}">Add Student Record</a>
                                     {% endif %}
                                     {% endif %}

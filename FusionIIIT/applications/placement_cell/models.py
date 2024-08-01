@@ -37,7 +37,7 @@ class Constants:
         ('PLACEMENT', 'Placement'),
         ('PBI', 'PBI'),
         ('HIGHER STUDIES', 'Higher Studies'),
-        ('OTHER', 'Other'),
+        
     )
 
     PLACED_TYPE = (
