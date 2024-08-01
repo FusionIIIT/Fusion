@@ -711,6 +711,8 @@
                                         <button name="studentplacementsearchsubmit" value="studentplacementsearchsubmit" class="ui fluid large primary button" type="submit">
                                             Search
                                         </button>
+                                        <!-- <a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}"> -->
+                                        <!-- <a href="{% url 'placement:generate_excel' %}" class="btn btn-primary">Download Excel</a> -->
                                     </div>
                                   </div>
                                 </div>
@@ -721,6 +723,12 @@
                     {% if placementstatus_placement %}
                       <br>
                       <!-- Pagination Section starts here  --->
+                      <form method="post" target="_blank" action="{% url 'placement:invitation_status' %}" class="ui form" role="form">
+                        {% csrf_token %}
+                        <input type="hidden" name="excel_gen_invitation_status_placement" value="excel_gen_invitation_status_placement">
+                        <button name="excel_gen_invitation_status_placement" value="excel_gen_invitation_status_placement" class="ui medium positive button right floated" type="submit">
+                        Excel Sheet
+                      </button></form>
                       {% if no_pagination %}
                         <center>
                           <div class="ui pagination menu">
@@ -769,17 +777,20 @@
                                 <th class="two wide">Invitation</th>
                                 <th class="two wide">Delete</th>
                             </tr>
+
                             </thead>
 
                             <tbody>
                               {% for student in placementstatus_placement %}
                                 {% if student.notify_id.placement_type == 'PLACEMENT'  %}
                                 
+                                
                                 <tr>
+                      
                                     <td>
                                         <h4 class="ui image header">
 
-                                            <div class="content">
+                                            <div class="content"> 
                                               {{ student.unique_id.id.user.first_name }} {{ student.unique_id.id.user.last_name }}
                                                 <div class="sub header">
                                                   {{ student.unique_id.id.id }}
@@ -896,21 +907,16 @@
                     {% if placementstatus_pbi %}
                       <br>
 
-                      <!--
-                      <form method="post" target="_blank" action="{% url 'placement:invitation_status' %}" class="ui form" role="form">
-                        {% csrf_token %}
-                        <input type="hidden" name="pdf_gen_invitation_status_placement" value="pdf_gen_invitation_status_placement">
-                        <button name="pdf_gen_invitation_status" value="pdf_gen_invitation_status" class="ui medium positive button right floated" type="submit">
-                        PDF
-                      </button></form>
+                      
+                     
 
                       <form method="post" target="_blank" action="{% url 'placement:invitation_status' %}" class="ui form" role="form">
                         {% csrf_token %}
-                        <input type="hidden" name="excel_gen_invitation_status_placement" value="excel_gen_invitation_status_placement">
-                        <button name="excel_gen_invitation_status" value="excel_gen_invitation_status" class="ui medium positive button right floated" type="submit">
+                        <input type="hidden" name="excel_gen_invitation_status_pbi" value="excel_gen_invitation_status_pbi">
+                        <button name="excel_gen_invitation_status_pbi" value="excel_gen_invitation_status_pbi" class="ui medium positive button right floated" type="submit">
                         Excel Sheet
                       </button></form>
-                      -->
+                     
 
                       <!-- Pagination Section starts here  --->
                     {% if no_pagination %}
