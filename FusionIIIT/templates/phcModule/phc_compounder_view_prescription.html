@@ -234,8 +234,9 @@
                                    <input type="button" id="medicine_b" name="medicine_b" value="Add" class="ui medium right floated primary button" />
                                </div>
                           </div>
-                        <table  class="ui very basic collapsing celled small fluid sortable table"
-                               style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;">
+                        <table id="medicine_schedule_table" style="display: none;"  
+                                class="ui very basic collapsing celled small fluid sortable table"
+                                style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;">
                             <thead>
                             <tr>
                                 <th class="two wide">
@@ -419,7 +420,11 @@
                             {% if f_pres.test == "" %}
                                 No Test suggested
                             {% else %}
-                                {{f_pres.tests}}
+                                {% if f_pres.tests == none %}
+                                    none
+                                {% else %}
+                                    {{f_pres.tests}}
+                                {% endif %}
                             {% endif %}
                        </div>
                    </div>
@@ -535,11 +540,15 @@
                            <div class="field">
                                <label>Tests Suggested</label>
                                <div class="spl-textarea">
-                                    {% if prescription.test == "" %}
-                                         No Test suggested
+                                {% if f_pres.test == "" %}
+                                    No Test suggested
                                     {% else %}
-                                         {{prescription.test}}
+                                    {% if f_pres.tests == none %}
+                                        none
+                                    {% else %}
+                                        {{f_pres.tests}}
                                     {% endif %}
+                                {% endif %}
                                </div>
                            </div>
                             {% if prescription.file_id != 0 %}
@@ -612,14 +621,22 @@
                                 new_option.value = value.brand_name +","+value.id
                                 med_list.appendChild(new_option)
                             })
-                            $.each(data.val,function(key,value){
+                            if(data.val.length == 0){
+                                console.log(document.getElementById('stock_b').value)
+                                document.getElementById('stock_b').value = "N/A at moment"
+                                select_stock.options[select_stock.options.length] = new Option("N/A at moment" ,"N/A at moment", true , true );
+                            }
+                            else{
+                                $.each(data.val,function(key,value){
                                 let id=value.id;
                                 let med_name=value.brand_name;
                                 let expiry=value.expiry;
                                 let supplier = value.supplier;
                                 let qty = value.quantity
-                                select_stock.options[select_stock.options.length] = new Option(med_name , expiry+","+supplier+","+qty+","+id , false , false );
+                                select_stock.options[select_stock.options.length] = new Option(med_name +","+id , expiry+","+supplier+","+qty+","+id , false , false );
                             });
+                            }
+                            
                             console.log($("#stock_b").val())
                             if (data.status == 2) {
                                 var manufacturer_name_b =
@@ -663,7 +680,7 @@
                                                              url:'/healthcenter/compounder/',
                                                              data: {
                                                              csrfmiddlewaretoken: '{{ csrf_token }}',
-                                                             user:$("#patient_b").val(),
+                                                             user:"{{prescription.user_id}}",
                                                              quantity:$("#quantity_b").val(),
                                                              medicine_name_b:$("#medicine_id_b").val(),
                                                              days:$("#days_b").val(),
@@ -673,8 +690,9 @@
                                                              success: function(data){
                                                                  var response=JSON.stringify(data);
                                                                  if(data.status==1){
-                                                                       alert("added medicine");
-                                                                       if(  document.getElementById("stock_b").value == ""){
+                                                                    document.getElementById('medicine_schedule_table').style.display = 'block';
+                                                                    alert("added medicine");
+                                                                    if(  document.getElementById("stock_b").value == "" || document.getElementById("stock_b").value=="N/A at moment"){
                                                                         $('#sched_b').append("<tr><td>" + data.med_name+","+data.id + "</td><td>" +
                                                                             document.getElementById("quantity_b").value + "</td><td>" + document.getElementById("days_b").value + "</td><td>" + document.getElementById("times_b").value + "</td><td>"+ document.getElementById("stock_b").value+ "</td><td hidden>"+"</td></tr>");
                                                                     }
@@ -684,10 +702,10 @@
                                                                     }
                                                                   }
                                                                 else if(data.status==-1){
-                                                                    alert("failed to add medcine")
+                                                                    alert("Failed to add medcine")
                                                                 }
                                                                 else{
-                                                                    alert('mot enough medicine in stock')
+                                                                    alert('Not enough medicine in stock')
                                                                 }
                                                                     document.getElementById("quantity_b").value="";
                                                                     document.getElementById("times_b").value="";

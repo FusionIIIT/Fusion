@@ -711,8 +711,7 @@ def compounder_view_handler(request):
                 )
             else :    
                 stk = stock.split(",")
-                print(stk[4])
-                p_stock = Present_Stock.objects.get(id=int(stk[4]))
+                p_stock = Present_Stock.objects.get(id=int(stk[2]))
                 All_Prescribed_medicine.objects.create(
                     prescription_id = presc,
                     medicine_id = med_id,

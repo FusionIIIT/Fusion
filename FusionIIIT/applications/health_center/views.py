@@ -792,12 +792,12 @@ def view_file(request,file_id):
         return FileResponse(open('static/health_center/add_stock_example.xlsx', 'rb'), as_attachment=True, filename="example_add_stock.xlsx")
     if(file_id_int == -1):
         return FileResponse(open('static/health_center/add_medicine_example.xlsx', 'rb'), as_attachment=True, filename="example_add_medicine.xlsx")  
-    filepath = "generated.pdf"
+    filepath = "applications/health_center/static/health_center/generated.pdf"
 
     file=files.objects.get(id=file_id)
     f=file.file_data
     
-    with open("generated.pdf", 'wb+') as destination:   
+    with open("applications/health_center/static/health_center/generated.pdf", 'wb+') as destination:   
         destination.write(f)  
     
     pdf = open(filepath, 'rb')
