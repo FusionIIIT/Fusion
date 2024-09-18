@@ -132,7 +132,10 @@ def compounder_view_handler(request):
             qty = int(request.POST.get('quantity'))
             supplier=request.POST.get('supplier')
             expiry=request.POST.get('expiry_date')
+            tot_rows = Stock_entry.objects.all().count()
+            tot_rows1 = Present_Stock.objects.all().count()
             stk=Stock_entry.objects.create(
+                id = tot_rows+1,
                 quantity=qty,
                 medicine_id=medicine_id,
                 supplier=supplier,
@@ -140,6 +143,7 @@ def compounder_view_handler(request):
                 date=date.today()
             )
             Present_Stock.objects.create(
+                id = tot_rows1+1,
                 quantity=qty,
                 stock_id=stk,
                 medicine_id=medicine_id,
@@ -258,7 +262,9 @@ def compounder_view_handler(request):
         packsize = request.POST.get('packsize')
         # new_supplier = request.POST.get('new_supplier')
         # new_expiry_date = request.POST.get('new_expiry_date')
+        tot_rows = All_Medicine.objects.all().count()
         All_Medicine.objects.create(
+            id = tot_rows+1,
             medicine_name=medicine,
             brand_name=brand_name,
             constituents=constituents,
@@ -756,6 +762,8 @@ def compounder_view_handler(request):
     elif 'add_medicine_excel' in request.POST:
         excel_file = request.FILES.get('file')
         df = pd.read_excel(excel_file)
+        tot_rows = All_Medicine.objects.all().count()
+        t = 1
         try:
             required_columns = ['medicine_name', 'brand_name', 'manufacturer_name', 'packsize', 'constituents' , 'threshold']
             if not all(column in df.columns for column in required_columns):
@@ -763,6 +771,7 @@ def compounder_view_handler(request):
             with transaction.atomic():
                 for _, row in df.iterrows():
                     All_Medicine.objects.create(
+                        id = tot_rows+t,
                         medicine_name=row['medicine_name'],
                         brand_name=row['brand_name'],
                         manufacturer_name=row['manufacturer_name'],
@@ -770,6 +779,7 @@ def compounder_view_handler(request):
                         constituents = row['constituents'],
                         threshold = row['threshold']
                     )
+                    t+=1
             return JsonResponse({"status":1})
         except Exception as e:
             print(e)
@@ -779,6 +789,9 @@ def compounder_view_handler(request):
         excel_file = request.FILES.get('file')
         df = pd.read_excel(excel_file)
         try:
+            tot_rows = All_Medicine.objects.all().count()
+            tot_rows1 = Present_Stock.objects.all().count()
+            t = 1
             required_columns = ['brand_name', 'manufacturer_name', 'packsize','quantity','supplier','Expiry_date']
             if not all(column in df.columns for column in required_columns):
                 return JsonResponse({"status":0})
@@ -788,6 +801,7 @@ def compounder_view_handler(request):
                         Q(brand_name=row['brand_name']) & Q(manufacturer_name=row['manufacturer_name']) & Q(pack_size_label=row['packsize'])
                     )
                     stk=Stock_entry.objects.create(
+                        id = tot_rows+t,
                         quantity=row['quantity'],
                         medicine_id=med,
                         supplier=row['supplier'],
@@ -795,11 +809,13 @@ def compounder_view_handler(request):
                         date=date.today()
                     )
                     Present_Stock.objects.create(
+                        id = tot_rows1+t,
                         quantity=row['quantity'],
                         stock_id=stk,
                         medicine_id=med,
                         Expiry_date=row['Expiry_date'],
                     )
+                    t+=1
                     if Required_medicine.objects.filter(medicine_id = med).exists():
                         req=Required_medicine.objects.get(medicine_id = med)
                         req.quantity+=qty

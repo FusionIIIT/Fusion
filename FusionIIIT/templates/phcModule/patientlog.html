@@ -385,21 +385,16 @@
                                                     var file = fileInput.files[0];
                                                     
                                                     // Create a new FormData object
-                                                    var dep_name = document.getElementById('dep_name').value
-                                                    if($('input[name="is_dependent"]:checked').val()=="dependent" && dep_name == "No Dependent"){
-                                                        alert("dependent not valid")
+                                                    if(tbl.rows.length==0){
+                                                        $('#usr_b').html("Please prescribe some medicine!");
                                                         return false;
                                                     }
-                                                    var formData = new FormData();
-                                                    if(tbl.rows.length==0){
-                                                    $('#usr_b').html("Please prescribe some medicine!");
-                                                    return false;
-                                                     }
                                                     if(user=="" || details=="")
                                                     {
-                                                    $('#usr_b').html("Please enter all the details!");
-                                                    return false;
+                                                        $('#usr_b').html("Please enter all the details!");
+                                                        return false;
                                                     }
+                                                    var formData = new FormData();                                           
                                                     formData.append('csrfmiddlewaretoken', '{{ csrf_token }}')
                                                     formData.append('file', file);
                                                     formData.append('user', $("#patient_b").val());
@@ -408,8 +403,15 @@
                                                     formData.append('tests', $("#tests_b").val());
                                                     formData.append('prescribe_b', $("#prescribe_b").val());
                                                     formData.append('is_dependent',$('input[name="is_dependent"]:checked').val());
-                                                    formData.append('dependent_name',$("#dep_name").val().split(',')[0]);
-                                                    formData.append('dependent_relation',$("#dep_rel").val());
+                                                    if($('input[name="is_dependent"]:checked').val()=="dependent"){
+                                                        var dep_name = document.getElementById('dep_name').value
+                                                        if($('input[name="is_dependent"]:checked').val()=="dependent" && dep_name == "No Dependent"){
+                                                            alert("dependent not valid")
+                                                            return false;
+                                                        }
+                                                        formData.append('dependent_name',$("#dep_name").val().split(',')[0]);
+                                                        formData.append('dependent_relation',$("#dep_rel").val());
+                                                    }
                                                     formData.append('pre_medicine',JSON.stringify(medicine));
                                                     $.ajax({
                                                       type:'post',
