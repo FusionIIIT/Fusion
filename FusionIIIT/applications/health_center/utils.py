@@ -33,7 +33,6 @@ def compounder_view_handler(request):
     '''
         handles rendering of pages for compounder view
     '''
-    print(request.POST.get('page'), 'page' in request.POST , 'datatype' in request.POST)
     # compounder response to patients feedback
     if 'feed_com' in request.POST:
         pk = request.POST.get('com_id')
@@ -343,11 +342,9 @@ def compounder_view_handler(request):
             if(len(medicine_name_and_id.split(",")) > 1) :
                 id=medicine_name_and_id.split(",")[1]
             if id == 0:
-                print("id 0")
                 status=1
                 similar_name_qs = All_Medicine.objects.filter(brand_name__istartswith=medicine_name)[:10]
             else :
-                print("id not 0")
                 status=2
                 similar_name_qs = All_Medicine.objects.filter(id=id)
             similar_name = list(similar_name_qs.values('id', 'medicine_name','constituents','manufacturer_name','pack_size_label','brand_name','threshold'))
@@ -373,9 +370,7 @@ def compounder_view_handler(request):
                 val_to_return = []
         except Exception as e:
             val_to_return = []
-            print(f"Error: {e}")
         finally:
-            print({"val": val_to_return, "sim": similar_name, "status": status})
             return JsonResponse({"val": val_to_return, "sim": similar_name, "status": status})
     elif 'medicine_name_b' in request.POST:
         user_id = request.POST.get('user')
@@ -391,10 +386,8 @@ def compounder_view_handler(request):
         med_name = All_Medicine.objects.get(id=id).brand_name
         if(stock == "" or stock == "N/A at moment") :
             return JsonResponse({"status":1,"med_name":med_name,"id":id})
-        print(medicine_brand_name)
         stk=stock.split(",")
         qty = int(stk[2])
-        print("qty",qty)
         status=1
         if quantity>qty : status=0
         return JsonResponse({"status":status,"med_name":med_name,"id":id})
@@ -490,7 +483,6 @@ def compounder_view_handler(request):
         doctor_id = request.POST.get('doctor')
         if not User.objects.filter(username__iexact = user_id).exists():
             return JsonResponse({"status":-1}) 
-        print(doctor_id)
         if doctor_id == 'null' :
             doctor = None
         else:
@@ -500,9 +492,7 @@ def compounder_view_handler(request):
         is_dependent=request.POST.get('is_dependent')
         fid=0
         uploaded_file = request.FILES.get('file')
-        print(uploaded_file)
         if uploaded_file != None :
-            print(uploaded_file.name)
             f=uploaded_file.read()
             new_file=files.objects.create(
                 file_data=f
@@ -557,7 +547,6 @@ def compounder_view_handler(request):
             days = med['Days'] 
             times = med['Times']
             stock = med['stock']
-            print(stock)
             med_id = All_Medicine.objects.get(id=id)
             if(stock == "," or stock == 'N/A at moment,') :
                 All_Prescribed_medicine.objects.create(
@@ -676,9 +665,7 @@ def compounder_view_handler(request):
         
         fid=0
         uploaded_file = request.FILES.get('file')
-        print(uploaded_file)
         if uploaded_file != None :
-            print(uploaded_file.name)
             f=uploaded_file.read()
             new_file=files.objects.create(
                 file_data=f
@@ -695,7 +682,6 @@ def compounder_view_handler(request):
         )
 
         pre_medicine = request.POST.get('pre_medicine')
-        print(pre_medicine)
 
         medicine=eval('('+pre_medicine+')')
         for med in medicine:
@@ -782,7 +768,6 @@ def compounder_view_handler(request):
                     t+=1
             return JsonResponse({"status":1})
         except Exception as e:
-            print(e)
             return JsonResponse({"status":0})
 
     elif 'add_stock_excel' in request.POST:
@@ -823,7 +808,6 @@ def compounder_view_handler(request):
                         else : req.delete() 
             return JsonResponse({"status":1})
         except Exception as e:
-            print(e)
             return JsonResponse({"status":0})
 
     elif 'cancel_presc' in request.POST:
@@ -882,7 +866,6 @@ def compounder_view_handler(request):
         return JsonResponse(data)
     elif 'datatype' in request.POST and request.POST['datatype'] == 'patientlog':
                  search = request.POST.get('search_patientlog')
-                 print("patient")
                  page_size = 2
                  new_current_page = int(request.POST.get('page'))
                  new_offset = (new_current_page - 1) * page_size
@@ -915,7 +898,6 @@ def compounder_view_handler(request):
                          })     
     elif 'datatype' in request.POST and request.POST['datatype'] == 'manage_stock_view':
                 search = request.POST.get('search_view_stock')
-                print("manage")
                 page_size_stock = 2
                 new_current_page_stock = int(request.POST.get('page_stock_view'))
                 new_offset_stock = (new_current_page_stock - 1) * page_size_stock
@@ -934,7 +916,6 @@ def compounder_view_handler(request):
                         qty=0
                     obj['quantity']=qty
                     new_live_meds.append(obj)
-                print(new_live_meds)    
                 return JsonResponse({
                         'report_stock_view': new_live_meds,
                         'page_stock_view': new_current_page_stock,
@@ -945,7 +926,6 @@ def compounder_view_handler(request):
                         'next_page_number': new_current_page_stock + 1 if new_current_page_stock < total_pages_stock else None,
                         })
     elif 'datatype' in request.POST and request.POST['datatype'] == 'manage_stock_expired':
-                print('expired')
                 search = request.POST.get('search_view_expired')
                 new_page_size_stock_expired = 2
                 new_current_page_stock_expired = int(request.POST.get('page_stock_expired'))
@@ -974,7 +954,6 @@ def compounder_view_handler(request):
                          'next_page_number': new_current_page_stock_expired + 1 if new_current_page_stock_expired < new_total_pages_stock_expired else None,
                          })
     elif 'datatype' in request.POST and request.POST['datatype'] == 'manage_stock_required':
-                print('required')
                 search = request.POST.get('search_view_required')
                 new_page_size_stock_required = 2
                 new_current_page_stock_required = int(request.POST.get('page_stock_required'))
@@ -1020,10 +999,8 @@ def compounder_view_handler(request):
                     # 'file': view_file(file_id=pre.file_id)['upload_file'] if pre.file_id else None
                 }
             report.append(dic)
-        print(report)
             # Handle total count for pagination context
         total_count = All_Prescription.objects.filter(Q(user_id__icontains = search) | Q(details__icontains = search)).count()
-        print(total_count)
             # Calculate total number of pages
         total_pages = (total_count + page_size_prescription - 1) // page_size_prescription  # This ensures rounding up
         prescContext = {
@@ -1040,8 +1017,6 @@ def compounder_view_handler(request):
         return JsonResponse({'status':1,"presc_context":prescContext})
     elif 'search_view_stock' in request.POST:
         search = request.POST.get('search_view_stock')
-        print("search")
-        print(search)
         current_page_stock = 1
         page_size_stock = 2
         offset_stock = (current_page_stock - 1 )* page_size_stock
