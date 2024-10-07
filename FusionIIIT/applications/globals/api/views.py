@@ -75,6 +75,9 @@ def logout(request):
 def auth_view(request):
     user=request.user
     name = request.user.first_name +"_"+ request.user.last_name
+
+    extra_info = get_object_or_404(ExtraInfo, user=user)
+    last_selected_role = extra_info.last_selected_role
     
     designation_list = list(HoldsDesignation.objects.all().filter(working = request.user).values_list('designation'))
     designation_id = [designation for designations in designation_list for designation in designations]
@@ -100,7 +103,8 @@ def auth_view(request):
     resp={
         'designation_info' : designation_info,
         'name': name,
-        'accessible_modules': accessible_modules
+        'accessible_modules': accessible_modules,
+        'last_selected_role': last_selected_role
     }
     
     return Response(data=resp,status=status.HTTP_200_OK)
@@ -116,6 +120,21 @@ def notification(request):
     }
 
     return Response(data=resp,status=status.HTTP_200_OK)
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def update_last_selected_role(request):
+    new_role = request.data.get('last_selected_role')
+
+    if new_role is None:
+        return Response({'error': 'last_selected_role is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    extra_info = get_object_or_404(ExtraInfo, user=request.user)
+
+    extra_info.last_selected_role = new_role
+    extra_info.save()
+
+    return Response({'message': 'last_selected_role updated successfully'}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def profile(request, username=None):

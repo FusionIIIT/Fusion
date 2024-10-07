@@ -7,6 +7,7 @@ urlpatterns = [
     url(r'^auth/login/', views.login, name='login-api'),
     url(r'^auth/logout/', views.logout, name='logout-api'),
     url(r'^auth/me', views.auth_view, name='auth-api'),
+    url(r'^update-role/', views.update_last_selected_role, name='update_last_selected_role'),
     # generic profile endpoint
     #code of corresponding view is modifiedtemporary because of mismatched designations
     url(r'^profile/(?P<username>.+)/', views.profile, name='profile-api'),
