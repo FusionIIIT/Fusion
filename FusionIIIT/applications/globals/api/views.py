@@ -18,7 +18,7 @@ from rest_framework.response import Response
 
 from . import serializers
 from applications.globals.models import (ExtraInfo, Feedback, HoldsDesignation,
-                                         Issue, IssueImage, DepartmentInfo)
+                                         Issue, IssueImage, DepartmentInfo, ModuleAccess)
 from .utils import get_and_authenticate_user
 from notifications.models import Notification
 
@@ -71,13 +71,14 @@ def logout(request):
     return Response(data=resp, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
-@authentication_classes([TokenAuthentication])
-def dashboard(request):
+@permission_classes([AllowAny])
+def auth_view(request):
     user=request.user
-
     name = request.user.first_name +"_"+ request.user.last_name
 
+    extra_info = get_object_or_404(ExtraInfo, user=user)
+    last_selected_role = extra_info.last_selected_role
+    
     designation_list = list(HoldsDesignation.objects.all().filter(working = request.user).values_list('designation'))
     designation_id = [designation for designations in designation_list for designation in designations]
     designation_info = []
@@ -85,32 +86,55 @@ def dashboard(request):
         name_ = get_object_or_404(Designation, id = id)
         designation_info.append(str(name_.name))
 
-    notifications=serializers.NotificationSerializer(request.user.notifications.all(),many=True).data
-    club_details= coordinator_club(request)
+    accessible_modules = {}
+    
+    for designation in designation_info:
+        module_access = ModuleAccess.objects.filter(designation=designation).first()
+        if module_access:
+            filtered_modules = {}
 
+            field_names = [field.name for field in ModuleAccess._meta.get_fields() if field.name not in ['id', 'designation']]
+
+            for field_name in field_names:
+                filtered_modules[field_name] = getattr(module_access, field_name)
+            
+            accessible_modules[designation] = filtered_modules
+            
     resp={
-        'notifications':notifications,
-        'desgination_info' :  designation_info,
-        'club_details' : club_details
+        'designation_info' : designation_info,
+        'name': name,
+        'accessible_modules': accessible_modules,
+        'last_selected_role': last_selected_role
     }
-
+    
     return Response(data=resp,status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def notification(request):
-  
-    print(request)
     notifications=serializers.NotificationSerializer(request.user.notifications.all(),many=True).data
-    print("get")
-    print(notifications)
 
     resp={
         'notifications':notifications, 
     }
 
     return Response(data=resp,status=status.HTTP_200_OK)
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def update_last_selected_role(request):
+    new_role = request.data.get('last_selected_role')
+
+    if new_role is None:
+        return Response({'error': 'last_selected_role is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    extra_info = get_object_or_404(ExtraInfo, user=request.user)
+
+    extra_info.last_selected_role = new_role
+    extra_info.save()
+
+    return Response({'message': 'last_selected_role updated successfully'}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def profile(request, username=None):
@@ -307,3 +331,46 @@ def NotificationRead(request):
             'error':'Failed, notification is not marked as seen.'
         }
         return Response(response,status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def NotificationUnread(request):
+    try:
+        notifId = int(request.data['id'])
+        user = request.user
+        notification = get_object_or_404(Notification, recipient=user, id=notifId)
+        if not notification.unread:  
+            notification.unread = True
+            notification.save() 
+        response = {
+            'message': 'Notification successfully marked as unread.'
+        }
+        return Response(response, status=status.HTTP_200_OK)
+    except:
+        response = {
+            'error': 'Failed to mark the notification as unread.'
+        }
+        return Response(response, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['POST']) 
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def delete_notification(request):
+    try:
+        notifId = int(request.data['id'])  
+        notification = get_object_or_404(Notification, recipient=request.user, id=notifId)
+        
+        notification.deleted = True
+        notification.save()
+        
+        response = {
+            'message': 'Notification marked as deleted.'
+        }
+        return Response(response, status=status.HTTP_200_OK)
+    except Exception as e:
+        response = {
+            'error': 'Failed to mark the notification as deleted.',
+            'details': str(e)
+        }
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
