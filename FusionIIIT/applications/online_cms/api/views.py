@@ -22,106 +22,79 @@ from applications.programme_curriculum.models import Course as Courses
 from applications.programme_curriculum.models import CourseInstructor
 from applications.academic_procedures.models import course_registration
 from applications.globals.models import ExtraInfo
-# from applications.globals.models import *
-
-# from .forms import *
-# from .helpers import create_thumbnail, semester
-# from .models import *
-# from .helpers import create_thumbnail, semester
-# from notification.views import course_management_notif
-# def viewcourses_serialized(request):
-#     user = request.user
-#     extrainfo = ExtraInfo.objects.select_related().get(user=user)
-    
-#     # If the user is a student
-#     if extrainfo.user_type == 'student':
-#         student = Student.objects.select_related('id').get(id=extrainfo)
-#         register = course_registration.objects.select_related().filter(student_id=student)
-
-#         # Serialize registered courses
-#         registered_courses_data = serializers.serialize('json', register)
-
-#         return JsonResponse({
-#             'user_type': 'student',
-#             'registered_courses': registered_courses_data,
-#         })
-
-#     # If the user is faculty
-#     elif extrainfo.user_type == 'faculty':
-#         instructor = CourseInstructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)
-#         curriculum_list = [Courses.objects.select_related().get(pk=x.course_id) for x in instructor]
-
-#         # Serialize curriculum list
-#         curriculum_data = serializers.serialize('json', curriculum_list)
-
-#         return JsonResponse({
-#             'user_type': 'faculty',
-#             'curriculum_list': curriculum_data,
-#         })
-
-#     # If the user is an admin
-#     elif extrainfo.id == 'id_admin':
-#         # if request.session.get('currentDesignationSelected') != 'acadadmin':
-#         #     return HttpResponseRedirect('/dashboard/')
-        
-#         calendar = Calendar.objects.all()
-#         timetable = Timetable.objects.all()
-
-#         # Serialize calendar and timetable data
-#         calendar_data = serializers.serialize('json', calendar)
-#         timetable_data = serializers.serialize('json', timetable)
-
-#         return JsonResponse({
-#             'user_type': 'admin',
-#             'academic_calendar': calendar_data,
-#             'timetable': timetable_data,
-#         })
-
-#     return JsonResponse({
-#         'error': 'Unknown user type'
-#     })
-
+from applications.online_cms.models import Modules  # Import the Modules model
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status  # Import for custom status codes
 from .serializers import *
-# class CourseListView(APIView):
-#     def get(self, request):
-#         user = request.user
 
-#         try:
-#             extrainfo = ExtraInfo.objects.select_related().get(user=user)
-#         except ExtraInfo.DoesNotExist:
-#             return Response({'message': 'ExtraInfo object not found for this user'}, status=status.HTTP_404_NOT_FOUND)
+@api_view(['POST'])
+def add_module(request):
+    # Extract data from the request
+    course_id = request.data.get('course_id')
+    module_name = request.data.get('module_name')
 
-#         if extrainfo.user_type == 'student':
-#             try:
-#                 student = Student.objects.select_related('id').get(id=extrainfo)
-#                 register = course_registration.objects.select_related().filter(student_id=student)
-#             except (Student.DoesNotExist, course_registration.DoesNotExist):
-#                 return Response({'message': 'No courses found for this student'}, status=status.HTTP_404_NOT_FOUND)
+    # Ensure the course exists
+    try:
+        course = Courses.objects.get(id=course_id)
+    except Courses.DoesNotExist:
+        return Response({"error": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
 
-#             courses = collections.OrderedDict()
-#             for reg in register:
-#                 # instructor = CourseInstructor.objects.select_related().get(course_id=reg.course_id).first()
-#                 instructors = CourseInstructor.objects.select_related().filter(course_id=reg.course_id)
-#                 instructor = instructors.first()  # Get the first instructor
+    # Create the module
+    module = Modules.objects.create(module_name=module_name, course=course)
 
-#                 courses[reg] = instructor
+    # Serialize the module data and return
+    serializer = ModuleSerializer(module)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-#             courses_serializer = CoursesSerializer(courses, many=True)  # Assuming CourseRegistrationSerializer exists
-#             return Response(courses_serializer.data)
-#         elif extrainfo.user_type == 'faculty':
-#             # ... similar logic for faculty courses ...
+@api_view(['DELETE'])
+def delete_module(request, module_id):
+    try:
+        # Get the module by primary key
+        module = Modules.objects.get(pk=module_id)
+        module.delete()  # Delete the module
+        return Response(status=status.HTTP_204_NO_CONTENT)  # No content after deletion
+    except Modules.DoesNotExist:
+        return Response({"error": "Module not found"}, status=status.HTTP_404_NOT_FOUND)
 
-#             return Response(faculty_courses_serializer.data)  # Assuming faculty_courses_serializer exists
-#         elif extrainfo.user_type == 'id_admin':
-#             # ... similar logic for admin courses ...
+# Add a slide
+@api_view(['POST'])
+def add_slide(request, module_id):
+    try:
+        # Get the module using module_id from the URL
+        module = Modules.objects.get(id=module_id)
+    except Modules.DoesNotExist:
+        return Response({"error": "Module not found"}, status=status.HTTP_404_NOT_FOUND)
 
-#             return Response(admin_courses_serializer.data)  # Assuming admin_courses_serializer exists
-#         else:
-#             return Response({'message': 'Invalid user type'}, status=status.HTTP_400_BAD_REQUEST)
+    # Extract data from the request body
+    document_name = request.data.get('document_name')
+    document_url = request.data.get('document_url')
+    description = request.data.get('description', '')  # Default to an empty string if no description is provided
+
+    # Create a new CourseDocument for the slide
+    course_document = CourseDocuments.objects.create(
+        course_id=module.course,
+        module_id=module,
+        document_name=document_name,
+        document_url=document_url,
+        description=description
+    )
+
+    # Serialize the document data and return the response
+    serializer = CourseDocumentsSerializer(course_document)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+# Delete a slide
+@api_view(['DELETE'])
+def delete_slide(request, slide_id):
+    try:
+        # Get the slide by primary key
+        slide = CourseDocuments.objects.get(pk=slide_id)
+        slide.delete()  # Delete the slide
+        return Response(status=status.HTTP_204_NO_CONTENT)  # No content after deletion
+    except CourseDocuments.DoesNotExist:
+        return Response({"error": "Slide not found"}, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
 def courseview(request):
