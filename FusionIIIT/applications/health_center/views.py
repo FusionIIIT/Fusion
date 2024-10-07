@@ -1,4 +1,6 @@
 import json
+import pandas as pd
+from django.http import FileResponse,Http404
 from datetime import date, datetime, timedelta, time
 import xlrd
 import os
@@ -7,17 +9,18 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core import serializers
-from django.core.paginator import Paginator
+from django.core.paginator import EmptyPage
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from notification.views import  healthcare_center_notif
-from applications.health_center.api.serializers import MedicalReliefSerializer
-from .models import (Ambulance_request, Appointment, Complaint, Constants,
-                     Counter, Doctor,Pathologist, Expiry, Hospital, Hospital_admit,
-                     Medicine, Prescribed_medicine, Prescription, Doctors_Schedule,Pathologist_Schedule,
-                     Stock,SpecialRequest,Announcements,medical_relief,MedicalProfile)
+# from applications.health_center.api.serializers import MedicalReliefSerializer
+from .models import ( Constants,All_Medicine,All_Prescribed_medicine,All_Prescription,Prescription_followup,
+                    Present_Stock,Doctor,Pathologist,
+                    Doctors_Schedule,Pathologist_Schedule,Stock_entry,
+                    medical_relief,MedicalProfile,Required_medicine,files,Required_tabel_last_updated)
 from .utils import datetime_handler, compounder_view_handler, student_view_handler
 from applications.filetracking.sdk.methods import *
+from django.db.models import Q
 
 
 
@@ -75,52 +78,190 @@ def compounder_view(request):
 
         else:
             notifs = request.user.notifications.all()           
-            all_complaints = Complaint.objects.select_related('user_id','user_id__user','user_id__department').all()
-            all_hospitals = Hospital_admit.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').all().order_by('-admission_date')
-            hospitals_list = Hospital.objects.all().order_by('hospital_name')
-            all_ambulances = Ambulance_request.objects.select_related('user_id','user_id__user','user_id__department').all().order_by('-date_request')
-            appointments_today =Appointment.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','schedule','schedule__doctor_id').filter(date=datetime.now()).order_by('date')
-            appointments_future=Appointment.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','schedule','schedule__doctor_id').filter(date__gt=datetime.now()).order_by('date')
+            # all_complaints = Complaint.objects.select_related('user_id','user_id__user','user_id__department').all()
+            # all_hospitals = Hospital_admit.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').all().order_by('-admission_date')
+            # hospitals_list = Hospital.objects.all().order_by('hospital_name')
+            # all_ambulances = Ambulance_request.objects.select_related('user_id','user_id__user','user_id__department').all().order_by('-date_request')
+            # appointments_today =Appointment.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','schedule','schedule__doctor_id').filter(date=datetime.now()).order_by('date')
+            # appointments_future=Appointment.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','schedule','schedule__doctor_id').filter(date__gt=datetime.now()).order_by('date')
             users = ExtraInfo.objects.select_related('user','department').filter(user_type='student')
-            stocks = Stock.objects.all()
-           
             days = Constants.DAYS_OF_WEEK
             schedule=Doctors_Schedule.objects.select_related('doctor_id').all().order_by('doctor_id')
             schedule1=Pathologist_Schedule.objects.select_related('pathologist_id').all().order_by('pathologist_id')
-            expired=Expiry.objects.select_related('medicine_id').filter(expiry_date__lt=datetime.now(),returned=False).order_by('expiry_date')
-            live_meds=Expiry.objects.select_related('medicine_id').filter(returned=False).order_by('quantity')
-            count=Counter.objects.all()
-            announcements_data=Announcements.objects.all().values()
+            # expired=Expiry.objects.select_related('medicine_id').filter(expiry_date__lt=datetime.now(),returned=False).order_by('expiry_date')
+            # live_meds=Expiry.objects.select_related('medicine_id').filter(returned=False).order_by('quantity')
+            page_size=2
+            fir=Required_tabel_last_updated.objects.first()
+            if fir == None:
+                exp = Stock_entry.objects.filter(Expiry_date__lt = date.today())
+                for e in exp:
+                    med=e.medicine_id
+                    p_s = Present_Stock.objects.filter(Q(medicine_id = med) & Q(Expiry_date__gte = date.today()))
+                    qty=0
+                    for ps in p_s:
+                        qty+=ps.quantity
+                    if Required_medicine.objects.filter(medicine_id=med).exists() :
+                        req=Required_medicine.objects.get(medicine_id=med)
+                        if qty>=med.threshold  : req.delete()
+                        else :
+                            req.quantity = qty
+                            req.save()
+                    else :
+                        if qty<med.threshold:
+                            Required_medicine.objects.create(
+                                medicine_id=med,
+                                quantity = qty,
+                                threshold = med.threshold
+                            )
+                Required_tabel_last_updated.objects.create(
+                    date= date.today()
+                )
+            else :
+                last_updated = fir.date
+                exp = Stock_entry.objects.filter(Q(Expiry_date__gte = last_updated) & Q(Expiry_date__lt = date.today()))
+                for e in exp:
+                    med=e.medicine_id
+                    p_s = Present_Stock.objects.filter(Q(medicine_id = med) & Q(Expiry_date__gte = date.today()))
+                    qty=0
+                    for ps in p_s:
+                        qty+=ps.quantity
+                    if Required_medicine.objects.filter(medicine_id=med).exists() :
+                        req=Required_medicine.objects.get(medicine_id=med)
+                        if(qty>med.threshold) : req.delete()
+                        else :
+                            req.quantity = qty
+                            req.save()
+                    else :
+                        if qty<med.threshold:
+                            Required_medicine.objects.create(
+                                medicine_id=med,
+                                quantity = qty,
+                                threshold = med.threshold
+                            )
+
+            # stocks = Required_medicine.objects.all()
+            current_required_page = 1
+            page_size_required = page_size
+            offset_stock_required = (current_required_page - 1 )* page_size_required
+            required_data = Required_medicine.objects.filter()[offset_stock_required:offset_stock_required + page_size_required]
+            total_pages_stock_required = (Required_medicine.objects.all().count() + page_size_required -1) // page_size_required
+            stocks = {
+                "count_stock_required" : total_pages_stock_required,
+                "page_stock_required":{
+                    "object_list":required_data,
+                    'number' : current_required_page,
+                    'has_previous' : current_required_page > 1 ,
+                    'has_next': current_required_page < total_pages_stock_required,
+                    'previous_page_number' :  current_required_page - 1 if current_required_page > 1 else None,
+                    'next_page_number' :  current_required_page + 1 if current_required_page < total_pages_stock_required else None,      
+                }
+            }
+
+            current_page_stock_expired = 1
+            page_size_stock_expired = page_size
+            offset_stock_expired = (current_page_stock_expired - 1 )* page_size_stock_expired
+            expired=[]
+            expiredData=Stock_entry.objects.filter(Expiry_date__lt=date.today()).order_by('Expiry_date')[offset_stock_expired:offset_stock_expired + page_size_stock_expired]
+            total_pages_stock_expired = ( Stock_entry.objects.filter(Expiry_date__lt=date.today()).count()  + page_size_stock_expired - 1) // page_size_stock_expired
+            for e in expiredData:
+                obj={}
+                obj['medicine_id']=e.medicine_id.brand_name
+                obj['Expiry_date']=e.Expiry_date
+                obj['supplier']=e.supplier
+                try:
+                    qty=Present_Stock.objects.get(stock_id=e).quantity
+                except:
+                    qty=0
+                obj['quantity']=qty
+                expired.append(obj)
+            ExpiredstockContext = {
+                     'count_stock_expired':total_pages_stock_expired,
+                     'page_stock_expired':{
+                           'object_list': expired,
+                           'number': current_page_stock_expired,
+                           'has_previous': current_page_stock_expired > 1,
+                           'has_next': current_page_stock_expired < total_pages_stock_expired,
+                           'previous_page_number': current_page_stock_expired - 1 if current_page_stock_expired > 1 else None,
+                           'next_page_number': current_page_stock_expired + 1 if current_page_stock_expired < total_pages_stock_expired else None,
+                     }
+            }
+                  
             
-            medicines_presc=Prescribed_medicine.objects.select_related('prescription_id','prescription_id__user_id','prescription_id__user_id__user','prescription_id__user_id__department','prescription_id__doctor_id').all()
-            print(medicines_presc)
-            if count:
-                Counter.objects.all().delete()
-            Counter.objects.create(count=0,fine=0)
-            count=Counter.objects.get()
-            hospitals=Hospital.objects.all()
+            current_page_stock = 1
+            page_size_stock = page_size
+            offset_stock = (current_page_stock - 1 )* page_size_stock
+            live_meds=[]
+            live=Stock_entry.objects.filter(Expiry_date__gte=date.today()).order_by('Expiry_date')[offset_stock:offset_stock + page_size_stock]
+            total_pages_stock = ( Stock_entry.objects.filter(Expiry_date__gte=date.today()).count()  + page_size_stock - 1) // page_size_stock
+            for e in live:
+                obj={}
+                obj['id']=e.id
+                obj['medicine_id']=e.medicine_id.brand_name
+                obj['Expiry_date']=e.Expiry_date
+                obj['supplier']=e.supplier
+                try:
+                    qty=Present_Stock.objects.get(stock_id=e).quantity
+                except:
+                    qty=0
+                obj['quantity']=qty
+                live_meds.append(obj)
+            stockContext = {
+                     'count_stock_view':total_pages_stock,
+                     'page_stock_view':{
+                           'object_list': live_meds,
+                           'number': current_page_stock,
+                           'has_previous': current_page_stock > 1,
+                           'has_next': current_page_stock < total_pages_stock,
+                           'previous_page_number': current_page_stock - 1 if current_page_stock > 1 else None,
+                           'next_page_number': current_page_stock + 1 if current_page_stock < total_pages_stock else None,
+                     }
+            }    
+            
+            
             schedule=Doctors_Schedule.objects.select_related('doctor_id').all().order_by('day','doctor_id')
             schedule1=Pathologist_Schedule.objects.select_related('pathologist_id').all().order_by('day','pathologist_id')
             
             doctors=Doctor.objects.filter(active=True).order_by('id')
             pathologists=Pathologist.objects.filter(active=True).order_by('id')
-            prescription= Prescription.objects.all()
-            report=[]
-            for pre in prescription:
-                dic={}
-                dic['id']=pre.pk
-                dic['user_id']=pre.user_id_id
-                dic['doctor_id'] = pre.doctor_id  # Use dot notation
-                dic['date'] = pre.date  # Use dot notation
-                dic['details'] = pre.details  # Use dot notation
-                dic['test'] = pre.test  # Use dot notation
-                if pre.file_id:
-                    dic['file'] = view_file(file_id=pre.file_id)['upload_file']
-                else:
-                    dic['file']=None 
-                report.append(dic)
-           
+            medicine_presc = All_Prescribed_medicine.objects.all()
             
+            #Logic for the padination and view prescriptions is below , used ajax for pagination
+            current_page = 1
+            page_size_prescription = page_size  # Default to 2 if not specified
+            offset = (current_page - 1) * page_size_prescription
+            # Fetch the prescriptions with limit and offset
+            prescriptions = All_Prescription.objects.all().order_by('-date', '-id')[offset:offset + page_size_prescription]
+            
+            report = []
+            for pre in prescriptions:
+                dic = {
+                    'id': pre.pk,
+                    'user_id': pre.user_id,
+                    'doctor_id': pre.doctor_id,
+                    'date': pre.date,
+                    'details': pre.details,
+                    'test': pre.test,
+                    'file_id': pre.file_id,
+                    # 'file': view_file(file_id=pre.file_id)['upload_file'] if pre.file_id else None
+                }
+                report.append(dic)
+            # Handle total count for pagination context
+            total_count = All_Prescription.objects.count()
+            # Calculate total number of pages
+            total_pages = (total_count + page_size_prescription - 1) // page_size_prescription  # This ensures rounding up
+            prescContext = {
+                'count': total_pages,
+                'page': {
+                    'object_list': report,
+                    'number': current_page,
+                    'has_previous': current_page > 1,
+                    'has_next': current_page < total_pages,
+                    'previous_page_number': current_page - 1 if current_page > 1 else None,
+                    'next_page_number': current_page + 1 if current_page < total_pages else None,
+                }
+            }
+            
+
              
             #adding file tracking inbox part for compounder
             
@@ -136,20 +277,18 @@ def compounder_view(request):
                         dic['uploader']=ib['uploader']                   
                         dic['upload_date']=datetime.fromisoformat(ib['upload_date']).date()                   
                         dic['desc']=mr.description
-                        dic['file']=view_file(file_id=ib['id'])['upload_file']
+                        # dic['file']=view_file(file_id=ib['id'])['upload_file']
                         dic['status']=mr.compounder_forward_flag
                         dic['status1']=mr.acc_admin_forward_flag
                 inbox.append(dic)
                        
             # print(inbox_files)
                       
-                        
             return render(request, 'phcModule/phc_compounder.html',
-                          {'days': days, 'users': users, 'count': count,'expired':expired,
-                           'stocks': stocks, 'all_complaints': all_complaints,
-                           'all_hospitals': all_hospitals, 'hospitals':hospitals, 'all_ambulances': all_ambulances,
-                           'appointments_today': appointments_today, 'doctors': doctors, 'pathologists':pathologists, 
-                           'appointments_future': appointments_future, 'schedule': schedule, 'schedule1': schedule1, 'live_meds': live_meds, 'presc_hist': report, 'medicines_presc': medicines_presc, 'hospitals_list': hospitals_list,'inbox_files':inbox,'announcements':announcements_data,})
+                          {'days': days, 'users': users,'expired':ExpiredstockContext,
+                           'stocks': stocks,
+                            'doctors': doctors, 'pathologists':pathologists, 
+                        'schedule': schedule, 'schedule1': schedule1, 'live_meds': stockContext, 'presc_hist': prescContext,'inbox_files':inbox,'medicines_presc':medicine_presc})
     else:
         return HttpResponseRedirect("/healthcenter/student")                                      # compounder view ends
 
@@ -632,4 +771,37 @@ def medical_profile(request):
     return render(request, 'health_center/medical_profile.html', {"user_designation":user_info.user_type,
                                                             'medical_profile':medical_profile,
                                                             "request_to":requests_received
-                                                        })  
+                                                        })
+
+@login_required
+def compounder_view_prescription(request,prescription_id):
+    prescription = All_Prescription.objects.get(id=prescription_id)
+    pre_medicine = All_Prescribed_medicine.objects.filter(prescription_id=prescription)
+    doctors=Doctor.objects.filter(active=True).order_by('id')
+    follow_presc =Prescription_followup.objects.filter(prescription_id=prescription).order_by('-id')
+    if request.method == "POST":
+        print("post")
+    return render(request, 'phcModule/phc_compounder_view_prescription.html',{'prescription':prescription,
+                            'pre_medicine':pre_medicine,'doctors':doctors,
+                            "follow_presc":follow_presc})
+
+@login_required
+def view_file(request,file_id):
+    file_id_int = int(file_id)
+    if(file_id_int == -2):
+        return FileResponse(open('static/health_center/add_stock_example.xlsx', 'rb'), as_attachment=True, filename="example_add_stock.xlsx")
+    if(file_id_int == -1):
+        return FileResponse(open('static/health_center/add_medicine_example.xlsx', 'rb'), as_attachment=True, filename="example_add_medicine.xlsx")  
+    filepath = "applications/health_center/static/health_center/generated.pdf"
+
+    file=files.objects.get(id=file_id)
+    f=file.file_data
+    
+    with open("applications/health_center/static/health_center/generated.pdf", 'wb+') as destination:   
+        destination.write(f)  
+    
+    pdf = open(filepath, 'rb')
+    response = FileResponse(pdf, content_type="application/pdf")
+    response['Content-Disposition'] = 'inline; filename="generated.pdf"'
+
+    return response
