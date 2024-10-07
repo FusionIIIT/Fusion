@@ -1,0 +1,970 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+    Home
+{% endblock %}
+
+{% block body %}
+    <link href="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.css" rel="stylesheet" type="text/css" />
+
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}The left-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}ROW #1 starts here!{% endcomment %}
+            <div class="row">
+                {% comment %}The Employee Image Card starts here!{% endcomment %}
+                {% block userCard %}
+                    {% include 'globals/usercard.html' %}
+                {% endblock %}
+                {% comment %}The Employee Image Card ends here!{% endcomment %}
+            </div>
+            {% comment %}ROW #1 ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}ROW #2 starts here!{% endcomment %}
+            <div class="row">
+                {% comment %}The Tab-Menu starts here!{% endcomment %}
+                <div class="ui large fluid vertical pointing menu">
+
+                    <a class=" active item" href="{% url 'healthcenter:compounder_view' %}">
+                        health center
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                </div>
+                {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+            </div>
+            {% comment %}ROW #2 ends here!{% endcomment %}
+
+        </div>
+        {% comment %}The left-rail segment ends here!{% endcomment %}
+
+        {% comment %}The central-rail segment starts here!{% endcomment %}
+        <div class="eight wide column">
+
+            {% comment %}The ap `pointment approval tab starts here!{% endcomment %}
+            <div class="ui active tab segment" style='height:650px;width:820px;overflow-x:scroll;display: flex;flex-direction: column;' id="whole_prescription">
+                <link href="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.css" rel="stylesheet" type="text/css" />
+                {% block patientlog %}
+                <div class="ui vertical stripe team segment"
+                style="padding-left: 3.5%;
+                   padding-right: 3.5%;">
+                    <div>
+                        <p style="font-size: 2rem;font-weight: 700;">{{prescription.user_id}}'s Prescription History</p>
+                    </div>
+                    <div class="hidden_print">
+                        <div id="util_btns" style="height: 65px;display: flex;justify-content: space-between;gap: 10px;align-items: center;">
+                            <div>
+                                <button id="add_followup" class="ui medium primary button">Add Follow-up</button> 
+                            </div>            
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <div id="print_options">
+                                    <div>
+                                        <input type="checkbox" id="print_lat_follow_up" name="print_lat_follow_up" value="print_lat_follow_up" checked onchange="printHandleChange(this)">
+                                        <label for="print_lat_follow_up">Print Latest Follow-up</label>
+                                    </div>
+                                    <div>
+                                        <input type="checkbox" id="print_whole_prescription" name="print_whole_prescription" value="print_whole_prescription" onchange="printHandleChange(this)">
+                                        <label for="print_whole_prescription">Print Whole Prescription</label>
+                                    </div>
+                                </div>
+                                <button id="print_button" class="ui medium primary button">Print</button>
+                            </div>   
+                        </div>
+                    </div>
+                    <form id="followup_form" class="ui form hidden_print" method="POST">{% csrf_token %}
+                        <p id="usr_b"></p>
+                           <div class="field">
+                            <label>Doctor</label>
+                            <select class="ui search fluid dropdown" name="doctor_b" id="doctor_b" required="true">
+                              <option value="" disabled selected>--SELECT--</option>
+                              {% for doctor in doctors %}
+                              <option value="{{doctor.id}}">{{doctor.doctor_name}}</option>
+                              {% endfor %}
+                            </select>
+                            </div>
+        
+                        <div class="field">
+                            <label>Detail of Disease</label>
+                            <textarea name="details" id="details_b" rows="2"></textarea>
+                        </div>
+    
+                        <table  class="ui very basic collapsing celled small fluid sortable table"
+                               style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;">
+                            <thead>
+                            <tr>
+                                <th class="two wide">
+                                    Medicine id
+                                </th>
+                                <th class="two wide">
+                                    Medicine
+                                </th>
+        
+                                <th class="two wide" >
+                                    Quantity
+                                </th>
+        
+                                <th class="wide">
+                                    Days
+                                </th>
+                                <th class="wide">
+                                    Times
+                                </th>
+                                <th class="wide">
+                                    Expiry Date
+                                </th>
+                                <th class="wide">
+                                    revoke
+                                </th>
+                            </tr>
+                            </thead>
+        
+                            <tbody id="non_revoked">
+                                {% for med in pre_medicine %}
+                                {% if med.revoked == False %}
+                                <tr>
+                                    <td>
+                                        {{med.id}}
+                                    </td>
+                                    <td>
+                                        {{med.medicine_id.brand_name}}
+                                    </td>
+                                    <td>
+                                        {{med.quantity}}
+                                    </td>
+                                    <td>
+                                        {{med.days}}
+                                    </td>
+                                    <td>
+                                        {{med.times}}
+                                    </td>
+                                    <td>
+                                        {{med.stock}}
+                                    </td>
+                                    <td>
+                                        <label id="" for="{{med.id}}" value="">
+                                            <input type="checkbox" id="{{med.id}}" name="{{med.id}}" value="revoke">
+                                        </label>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+     
+                        <div class="flex flex-col">
+                            <div class="field">
+                                  <label>Medicine</label>
+                                      <div class="flex" style="gap: 10px;">
+                                          <input type="text" class="" id="medicine_id_b" name="medicine_id_b" list="med_list" />
+                                          <input type="button" id="medicine_search_b" name="medicine_search_b" value="Search" class="ui small primary button" />
+                                      </div>
+                                  <datalist id="med_list">
+                                  </datalist>
+                            </div>
+          
+                            <div class="flex">
+                              <div class="field">
+                                  <label>Manufacturer Name</label>
+                                  <div>
+                                      <input placeholder="Manufacturer Name" id="medicine_manu_name_b" name="medicine_manu_name_b" type="text" style="width: 400px;">
+                                  </div>
+                               </div>
+                               <div class="field">
+                                  <label>Pack Size</label>
+                                  <div>
+                                      <input placeholder="Pack size" id="medicine_pack_size_b" name="medicine_pack_size_b" type="text" style="width: 300px;">
+                                  </div>
+                               </div>
+                            </div>
+          
+                             <div class="flex w-full">
+                              <div class="field">
+                                  <label>Quantity</label>
+                                  <div class="">
+                                      <input placeholder="Quantity" id="quantity_b" name="quantity_b" type="number">
+             
+                                  </div>
+                               </div>
+                                 <div class="field">
+                                   <label>No of days</label>
+                                   <div class="">
+                                       <input placeholder="No of days" id="days_b" name="days_b" type="number">
+             
+                                   </div>
+                                  </div>
+                                  <div class="field">
+                                    <label>Times per day</label>
+                                    <div class="">
+                                        <input placeholder="No of times per day" id="times_b" name="times_b" type="number">
+             
+                                    </div>
+                                 </div>
+                             </div>
+                              <div class="field">
+                                  <label >Stock</label>
+                                  <select class="ui search fluid dropdown" name="stock_b" id="stock_b" required="true">
+                                      <option value="" selected>--SELECT--</option>
+                                    </select>
+                               </div>
+                               <div class="flex w-full">
+                                <div class="field">
+                                    <label>Expiry Date</label>
+                                    <input id="stock_expiry" placeholder="stock expiry" style="width: 400px;" readonly />
+                                </div>
+                                <div class="field">
+                                    <label>Stock Quantity</label>
+                                    <input id="stock_quantity" placeholder="stock quantity" style="width: 300px;" readonly />
+                                </div>
+                         </div>
+                               <div class="field">
+                                   <label><br></label>
+                                   <input type="button" id="medicine_b" name="medicine_b" value="Add" class="ui medium right floated primary button" />
+                               </div>
+                          </div>
+                        <table id="medicine_schedule_table" style="display: none;"  
+                                class="ui very basic collapsing celled small fluid sortable table"
+                                style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;">
+                            <thead>
+                            <tr>
+                                <th class="two wide">
+                                    Medicine
+                                </th>
+        
+                                <th class="two wide" >
+                                    Quantity
+                                </th>
+        
+                                <th class="wide">
+                                    Days
+                                </th>
+                                <th class="wide">
+                                    Times
+                                </th>
+                                <th class="wide">
+                                    Expiry Date
+                                </th>
+                                <th class="wide" hidden>
+                                    extra
+                                </th>
+                            </tr>
+                            </thead>
+        
+                            <tbody id="sched_b">
+                            </tbody>
+                        </table>
+                        <div class="field">
+                            <label>Tests Suggested</label>
+                            <textarea rows="2" id="tests_b" name="extra_meds" ></textarea>
+                        </div>
+                        <div class="field">
+                            <label for="file">Report</label>
+                            <div class="ui fluid input">
+                                <input type="file" name="file" id="file">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label><br></label>
+                            <input type="button" id="prescribe_b" name="prescribe"  value="Submit Follow-up" class="ui large right floated primary button" />
+                        </div>
+                        <br>
+                        <br>
+                        <hr>
+                        <hr>
+                    </form>
+
+
+
+                   {% for f_pres in follow_presc %}
+                   <div class="follow_up_presc">
+                   <form class="ui form">
+                       <div style="margin-bottom: 10px;margin-top: 15px;">
+                           <span style="font-size: 20px;font-weight: 900;margin-right: 5px;">Follow-up</span>
+                           <span style="font-size: 13px;">on {{f_pres.date}}</span>
+                       </div>
+                       <div class="field">
+                           <label>Doctor</label>
+                           <input placeholder="User Id" value="{{f_pres.Doctor_id}}" id="doctor" name="doctor" type="text" readonly>
+                    </div>
+                     <div class="field">
+                       <label>Detail of Disease</label>
+                        <div class="spl-textarea">
+                            {{f_pres.details}}
+                        </div>
+                   </div>
+                   <div>
+                       <p style="text-align: center; font-size: 15px;margin-top: 10px;margin-bottom: 10px;font-weight: 900;">Revoked Medicine in this Follow-up</p>
+                   </div>
+                   <table  class="ui very basic collapsing celled small fluid sortable table"
+                             style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;">
+                          <thead>
+                          <tr>
+                              <th class="two wide">
+                                  Medicine
+                              </th>
+      
+                              <th class="two wide" >
+                                  Quantity
+                              </th>
+      
+                              <th class="wide">
+                                  Days
+                              </th>
+                              <th class="wide">
+                                  Times
+                              </th>
+                              <th class="wide">
+                                Expiry Date
+                              </th>
+                          </tr>
+                          </thead>
+      
+                          <tbody id="">
+                           {% for med in pre_medicine %}
+                           {% if med.revoked == True and med.revoked_prescription.id == f_pres.id %}
+                           <tr>
+                               <td>
+                                   {{med.medicine_id.brand_name}}
+                               </td>
+                               <td>
+                                   {{med.quantity}}
+                               </td>
+                               <td>
+                                   {{med.days}}
+                               </td>
+                               <td>
+                                   {{med.times}}
+                               </td>
+                               <td>
+                                {% if med.stock == None %}
+                                NOT TAKEN FROM STOCK
+                                {% else %}
+                                   {{med.stock}}
+                                {% endif %}
+                               </td>
+                           </tr>
+                           {% endif %}
+                           {% endfor %}
+                          </tbody>
+                      </table>
+                      <div>
+                       <p style="text-align: center; font-size: 15px;margin-top: 20px;margin-bottom: 20px;font-weight: 900;">Prescribed Medicine in this Follow-up</p>
+                      </div>
+                   <table  class="ui very basic collapsing celled small fluid sortable table"
+                             style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;">
+                          <thead>
+                          <tr>
+                              <th class="two wide">
+                                  Medicine
+                              </th>
+      
+                              <th class="two wide" >
+                                  Quantity
+                              </th>
+      
+                              <th class="wide">
+                                  Days
+                              </th>
+                              <th class="wide">
+                                  Times
+                              </th>
+                              <th class="wide">
+                                Expiry Date
+                              </th>
+                          </tr>
+                          </thead>
+      
+                          <tbody id="">
+                           {% for med in pre_medicine %}
+                           {% if med.prescription_followup_id.id == f_pres.id %}
+                           <tr>
+                               <td>
+                                   {{med.medicine_id.brand_name}}
+                               </td>
+                               <td>
+                                   {{med.quantity}}
+                               </td>
+                               <td>
+                                   {{med.days}}
+                               </td>
+                               <td>
+                                   {{med.times}}
+                               </td>
+                               <td>
+                                {% if med.stock == None %}
+                                NOT TAKEN FROM STOCK
+                                {% else %}
+                                   {{med.stock}}
+                                {% endif %}
+                               </td>
+                           </tr>
+                           {% endif %}
+                           {% endfor %}
+                          </tbody>
+                      </table>
+                      <div class="field">
+                       <label>Tests Suggested</label>
+                       <div class="spl-textarea">
+                            {% if f_pres.test == "" %}
+                                No Test suggested
+                            {% else %}
+                                {% if f_pres.tests == none %}
+                                    none
+                                {% else %}
+                                    {{f_pres.tests}}
+                                {% endif %}
+                            {% endif %}
+                       </div>
+                   </div>
+                   {% if f_pres.file_id != 0 %}
+                   <div class="field hidden_print" style="margin-bottom: 20px;">
+                       <label><br></label>
+                       <input type="button" id="{{f_pres.file_id}}" onclick="view_report(this)" value="View Report"class="ui small left floated primary button" />
+                   </div>
+                   {% endif %}
+   
+                   </form>
+                   <div class="hidden_print">
+                        <br>
+                        <hr>
+                        <hr>
+                        <br>
+                   </div>
+                   </div>
+                   {% endfor %}
+                   <div class="follow_up_presc">
+                    <form class="ui form" method="POST" style="margin-bottom: 40px;">{% csrf_token %}
+                        <div style="margin-bottom: 10px;margin-top: 15px;">
+                            <span style="font-size: 20px;font-weight: 900;margin-right: 5px;">First visit</span>
+                            <span style="font-size: 13px;">on {{prescription.date}}</span>
+                        </div>
+                           <div class="">
+                             {% comment %} <div class="field">
+                                 <label>Patient</label>
+                                 <div class="ui fluid large input">
+                                     <input placeholder="User Id" value="{{prescription.user_id}}" id="user" name="user" type="text" readonly>
+                                 </div>
+                              </div> {% endcomment %}
+           
+                              <div class="field">
+                                  <label>Doctor</label>
+                                  <input placeholder="User Id" value="{{prescription.doctor_id}}" id="doctor" name="doctor" type="text" readonly>
+                                  </select>
+                               </div>
+                           </div>
+                           {% comment %} <div class="field" >
+                                <label>Date</label>
+                                <input name="date" id="date" value="{{prescription.date}}" readonly></input>
+                            </div> {% endcomment %}
+                           {% if prescription.is_dependent == True %}
+                           <div id="dependent_hide">
+                               <div class="field">
+                                   <label>Dependent Name</label>
+                                   <input placeholder="dependent_name" value="{{prescription.dependent_name}}" id="" name="" type="text" readonly>
+                               </div>
+                               <div class="field">
+                                   <label>Dependent Relation</label>
+                                   <input placeholder="dependent_relation" value="{{prescription.dependent_relation}}" id="" name="" type="text" readonly>
+                               </div>
+                           </div>
+                           {% endif %}
+           
+                           <div class="field">
+                               <label>Detail of Disease</label>
+                               <div class="spl-textarea">{{prescription.details}}</div>
+                           </div>
+                           <table  class="ui very basic collapsing celled small fluid sortable table"
+                                  style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;">
+                               <thead>
+                               <tr>
+                                   <th class="two wide">
+                                       Medicine
+                                   </th>
+           
+                                   <th class="two wide" >
+                                       Quantity
+                                   </th>
+           
+                                   <th class="wide">
+                                       Days
+                                   </th>
+                                   <th class="wide">
+                                       Times
+                                   </th>
+                                   <th class="wide">
+                                    Expiry Date
+                                  </th>
+                               </tr>
+                               </thead>
+           
+                               <tbody id="">
+                                {% for med in pre_medicine %}
+                                {% if med.prescription_followup_id == None %}
+                                <tr>
+                                    <td>
+                                        {{med.medicine_id.brand_name}}
+                                    </td>
+                                    <td>
+                                        {{med.quantity}}
+                                    </td>
+                                    <td>
+                                        {{med.days}}
+                                    </td>
+                                    <td>
+                                        {{med.times}}
+                                    </td>
+                                    <td>
+                                        {% if med.stock == None %}
+                                        NOT TAKEN FROM STOCK
+                                        {% else %}
+                                           {{med.stock}}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                               </tbody>
+                           </table>
+                           <div class="field">
+                               <label>Tests Suggested</label>
+                               <div class="spl-textarea">
+                                {% if f_pres.test == "" %}
+                                    No Test suggested
+                                    {% else %}
+                                    {% if f_pres.tests == none %}
+                                        none
+                                    {% else %}
+                                        {{f_pres.tests}}
+                                    {% endif %}
+                                {% endif %}
+                               </div>
+                           </div>
+                            {% if prescription.file_id != 0 %}
+                            <div class="hidden_print" style="margin-botttom: 20px;">
+                                <button id="{{prescription.file_id}}" onclick="view_report(this)" class="ui small left floated primary button" >View Report</button>
+                            </div>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+                <br>
+                
+               </div></div>
+               <script src="{% static 'globals/js/jquery.min.js' %}"></script>
+               <script type="text/javascript">
+                    
+                    var form = document.getElementById('followup_form')
+                    form.style.display="none"
+            
+            
+            $('#printArea').click((e)=>{
+            var printReport = document.getElementById("printingAreaTest").innerHTML;
+             var iframe = document.createElement("iframe");
+             iframe.style.position = "absolute";
+             iframe.style.top = "-99999px"; // Move the iframe off-screen
+             document.body.appendChild(iframe);
+             var doc = iframe.contentWindow.document;
+             doc.write(
+               "<html><head><style>@media print { .avoid-page-break { page-break-inside: avoid; } } #printArea{ display:none; } #add_followup{display:none;} </style></head><body>" +
+                 printReport +
+                 "</body></html>"
+             );
+             doc.close();
+             iframe.contentWindow.focus();
+             iframe.contentWindow.print();
+             iframe.contentWindow.onafterprint = function () {
+               document.body.removeChild(iframe);
+               close();
+             };
+                })
+                $("#stock_b").change(function(){
+                    console.log($("#stock_b").val())
+                    var stock_val = $("#stock_b").val().split(',')
+                    document.getElementById("stock_expiry").value = stock_val[0]
+                    document.getElementById("stock_quantity").value = stock_val[2]
+                })
+                $("#add_followup").click(function(e){
+                    form.style.display="block"
+                    document.getElementById('util_btns').style.display="none"
+                })
+                $('#medicine_search_b').click(function(e){
+                    name=document.getElementById('medicine_id_b').value;
+                    if(name.length>2){
+                        $.ajax({
+                        type:'post',
+                        url:'/healthcenter/compounder/',
+                        data:{
+                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                            medicine_name_for_stock:$("#medicine_id_b").val(),
+                            get_stock:1,
+                        },
+                        success: function(data){
+                            var select_stock = document.getElementById("stock_b");
+                            select_stock.options.length=0
+                            select_stock.options[select_stock.options.length] =new Option("","",true , true );
+                            var med_list = document.getElementById("med_list");
+                            med_list.innerHTML="";
+                            $.each(data.sim,function(key,value){
+                                var new_option = document.createElement('option')
+                                new_option.value = value.brand_name +","+value.id
+                                med_list.appendChild(new_option)
+                            })
+                            if(data.val.length == 0){
+                                console.log(document.getElementById('stock_b').value)
+                                document.getElementById('stock_b').value = "N/A at moment"
+                                select_stock.options[select_stock.options.length] = new Option("N/A at moment" ,"N/A at moment", true , true );
+                            }
+                            else{
+                                $.each(data.val,function(key,value){
+                                let id=value.id;
+                                let med_name=value.brand_name;
+                                let expiry=value.expiry;
+                                let supplier = value.supplier;
+                                let qty = value.quantity
+                                select_stock.options[select_stock.options.length] = new Option(med_name +","+id , expiry+","+supplier+","+qty+","+id , false , false );
+                            });
+                            }
+                            
+                            console.log($("#stock_b").val())
+                            if (data.status == 2) {
+                                var manufacturer_name_b =
+                                document.getElementById("medicine_manu_name_b");
+                                if (data.sim[0].manufacturer_name == null)
+                                    manufacturer_name_b.value = "";
+                                else manufacturer_name_b.value = data.sim[0].manufacturer_name;
+                                var pack_size_label_b = document.getElementById("medicine_pack_size_b");
+                                if (data.sim[0].pack_size_label == null)
+                                    pack_size_label_b.value = "";
+                                else pack_size_label_b.value = data.sim[0].pack_size_label;
+                            }
+                        }
+                    });
+                    }
+                  });
+
+                    function view_report(f){
+                        console.log(f.id)
+                        var pk=f.id
+                        alert('view_report')
+                        var url= `{% url 'healthcenter:view_file' file_id='0' %}`
+                        var newurl=url.replace('0',f.id)
+                        window.open(newurl,"_blank")
+                     }
+   
+                     $('#medicine_b').click(function(e){
+                                                           var medicine = document.getElementById('medicine_id_b').value;
+                                                           var quantity = document.getElementById('quantity_b').value;
+                                                           var days = document.getElementById('days_b').value;
+                                                           var times = document.getElementById('times_b').value;
+                                                           var stock = document.getElementById('stock_b').value;
+                                                           console.log(stock)
+                                                           if(days=="" || days<0 || times=="" || times<0 || quantity=="" || quantity<0)
+                                                           {
+                                                           $('#usr_b').html("Enter Valid Information");
+                                                           return false;
+                                                           }
+                                                           $.ajax({
+                                                             type:'post',
+                                                             url:'/healthcenter/compounder/',
+                                                             data: {
+                                                             csrfmiddlewaretoken: '{{ csrf_token }}',
+                                                             user:"{{prescription.user_id}}",
+                                                             quantity:$("#quantity_b").val(),
+                                                             medicine_name_b:$("#medicine_id_b").val(),
+                                                             days:$("#days_b").val(),
+                                                             times:$("#times_b").val(),
+                                                             stock:$("#stock_b").val()
+                                                           },
+                                                             success: function(data){
+                                                                 var response=JSON.stringify(data);
+                                                                 if(data.status==1){
+                                                                    document.getElementById('medicine_schedule_table').style.display = 'block';
+                                                                    alert("added medicine");
+                                                                    if(  document.getElementById("stock_b").value == "" || document.getElementById("stock_b").value=="N/A at moment"){
+                                                                        $('#sched_b').append("<tr><td>" + data.med_name+","+data.id + "</td><td>" +
+                                                                            document.getElementById("quantity_b").value + "</td><td>" + document.getElementById("days_b").value + "</td><td>" + document.getElementById("times_b").value + "</td><td>"+ document.getElementById("stock_b").value+ "</td><td hidden>"+"</td></tr>");
+                                                                    }
+                                                                    else{
+                                                                        $('#sched_b').append("<tr><td>" + data.med_name+","+data.id + "</td><td>" +
+                                                                        document.getElementById("quantity_b").value + "</td><td>" + document.getElementById("days_b").value + "</td><td>" + document.getElementById("times_b").value + "</td><td>"+ document.getElementById("stock_b").value.split(",")[0] +","+ document.getElementById("stock_b").value.split(",")[2]  + "</td><td hidden>"+ document.getElementById("stock_b").value.split(",")[3] + "</td></tr>");
+                                                                    }
+                                                                  }
+                                                                else if(data.status==-1){
+                                                                    alert("Failed to add medcine")
+                                                                }
+                                                                else{
+                                                                    alert('Not enough medicine in stock')
+                                                                }
+                                                                    document.getElementById("quantity_b").value="";
+                                                                    document.getElementById("times_b").value="";
+                                                                    document.getElementById("days_b").value="";
+                                                                    document.getElementById("medicine_id_b").value="";
+                                                                }
+                                                         });
+                                                       });
+       </script>
+       <script type="text/javascript">
+                       $('#prescribe_b').click(function(e){
+
+                                                       // document.getElementById('printArea').style.display="block"
+
+                                                       // var user = document.getElementById('user').value;
+                                                       var details = document.getElementById('details_b').value;
+                                                       var tbl = document.getElementById('sched_b');
+                                                       var medicine=[]
+   
+                                                       for(var i=0,row;row=tbl.rows[i];i++){
+                                                           var obj= new Object();
+                                                           obj.med_name=row.cells[0].innerText;
+                                                           obj.quantity=row.cells[1].innerText;
+                                                           obj.Days=row.cells[2].innerText;
+                                                           obj.Times=row.cells[3].innerText;
+                                                           obj.stock=row.cells[4].innerText+","+row.cells[5].innerText;
+                                                           medicine[i]=obj;
+                                                           console.log(obj)
+                                                       }
+                                                       var tbl_r = document.getElementById('non_revoked');
+                                                       console.log(tbl_r)
+                                                       var revoked=[]
+
+                                                       for(var i=0,row;row=tbl_r.rows[i];i++){
+                                                            var obj = new Object;
+                                                            var med_id = row.cells[0].innerText;
+                                                            obj.med_id = med_id;
+                                                            console.log(typeof med_id)
+                                                            var check = document.getElementById(med_id);
+                                                            console.log(check)
+                                                            if(check.checked) obj.checked = 'true';
+                                                            else obj.checked = 'false';
+                                                            revoked[i]=obj;
+                                                            console.log(obj)
+                                                       }
+   
+                                                       console.log(medicine)
+                                                        
+                                                       // Get the file input element     
+                                                       var fileInput = document.getElementById('file');                                                  
+                                                       // Get the files from the input element
+                                                       var file = fileInput.files[0];
+                                                       // Create a new FormData object
+                                                       date="{{prescription.date}}"
+                                                       console.log(date)
+                                                       var formData = new FormData();
+                                                       if(details=="")
+                                                       {
+                                                       $('#usr_b').html("Please enter all the details!");
+                                                       alert("Please enter all the details!");
+                                                       return false;
+                                                       }
+                                                       formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                                                       formData.append('file', file);
+                                                       formData.append('pre_id',"{{prescription.id}}");
+                                                       formData.append('doctor', $("#doctor_b").val());
+                                                       formData.append('details', $("#details_b").val());
+                                                       formData.append('tests', $("#tests_b").val());
+                                                       formData.append('presc_followup', $("#prescribe_b").val());
+                                                       formData.append('pre_medicine',JSON.stringify(medicine));
+                                                       formData.append('revoked',JSON.stringify(revoked));
+                                                       $.ajax({
+                                                         type:'post',
+                                                         url:'/healthcenter/compounder/',
+                                                         data: formData,
+                                                         processData: false, // Don't process the data as a query string
+                                                         contentType: false, // Let the browser set the Content-Type header automatically
+                                                         success: function(data){
+                                                           if (data.status == 1){
+                                                             alert("prescribed medicine");
+                                                             document.getElementById("doctor_b").value="";
+                                                             document.getElementById("details_b").value="";
+                                                             document.getElementById("tests_b").value="";
+                                                             $('#sched_b').empty();
+                                                             window.location.reload();
+                                                           }
+   
+                                                           else {
+                                                               if(data.status == 0)
+                                                               alert("Prescription failed!, not enough medicine available in stock");
+                                                               }
+                                                       },
+                                                     });
+                                                     });
+                 </script>
+                {% endblock %}
+            </div>
+        </div>
+        <div id="logo-div" style="display: none;">
+            <img src="{% static 'health_center/institute_logo.jpg' %}" alt="IIITDMJ Logo" style="width: 80px; height: 80px; margin: auto; display: block;" />
+        </div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            {% comment %} <div class="row">
+                {% block sidepanel %} {% include 'notifications/sidepanel.html' with notifications=notifications %}
+                {% endblock %}
+            </div> {% endcomment %}
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+    </div>
+    <div class="ui stackable doubling grid">
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+    <style>
+        .w-full {
+            width: 100%;
+        }
+        .flex {
+            display: flex;
+            justify-content: space-between;
+        }
+        .flex-col {
+            flex-direction: column;
+        }
+        .bbx {
+            border: 1px solid red;
+        }
+        .spl-textarea {
+            border: 1px solid rgba(34, 36, 38, .15);
+            padding: .67861429em 1em;
+            border-radius: .28571429rem;
+            width: 100%;
+        }
+    </style>
+
+    <script>
+        function printHandleChange(e){
+            if(e.id=="print_lat_follow_up"){
+                if(e.checked){
+                    document.getElementById('print_whole_prescription').checked=false;
+                }
+            }
+            else{
+                if(e.checked){
+                    document.getElementById('print_lat_follow_up').checked=false;
+                }
+            }
+        }
+        document.getElementById('print_button').addEventListener('click',() => {
+            handleprint()
+        })
+        function handleprint() {
+            let follow_up = document.getElementById('print_lat_follow_up').checked;
+            let whole_prescription = document.getElementById('print_whole_prescription').checked;
+            if(!follow_up && !whole_prescription){
+                alert('Please select one option to print!')
+                return
+            }
+            let reqHtml = '';
+            if(follow_up){
+                var captures = document.querySelectorAll('.follow_up_presc');
+                reqHtml = `
+                    <link href="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.css" rel="stylesheet" type="text/css" />
+                    <div>
+                        <p style="font-size: 1.3rem;font-weight: 700;">Patient ID : {{prescription.user_id}}</p>
+                        <p>Of prescription ID #{{prescription.id}} on {{prescription.date}}</p>
+                    </div>
+                    ${captures[0].innerHTML}
+                `;
+            }
+            else{
+                reqHtml = document.getElementById('whole_prescription').innerHTML;
+            }
+            let logoHtml = document.getElementById('logo-div').innerHTML;
+            let content = `
+                <html lang="en">
+                <head>
+                <title>
+                    PHC IIITDMJ
+                </title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        margin: 0;
+                        padding: 0;
+                        box-sizing: border-box;
+                        min-height: 100dvh;
+                    }
+                    .prescription-container {
+                        margin: 20px;
+                        padding: 20px;
+                        border: 1px solid #ccc;
+                        border-radius: 10px;
+                        max-width: 600px;
+                        margin: auto;
+                        page-break-inside: avoid;
+                    }
+                    .hidden_print {
+                        display: none;
+                    }
+                    .spl-textarea {
+                        border: 1px solid rgba(34, 36, 38, .15);
+                        padding: .67861429em 1em;
+                        border-radius: .28571429rem;
+                        width: 100%;
+                    }
+                    @media print {
+                        body, .prescription-container {
+                            margin: 0;
+                            padding: 0;
+                        }
+                        .prescription-container {
+                            border: 1px solid #ccc;
+                            border-radius: 10px;
+                            margin: 20px auto;
+                            padding: 20px;
+                            box-sizing: border-box;
+                        }
+                    }
+                </style>
+                </head>
+                <body>
+                <div class="prescription-container">
+                    <div style="display: flex;width: 100%;gap: 20px;margin-bottom: 30px;">
+                        <div>
+                            ${logoHtml}
+                        </div>
+                        <div style="flex-grow: 1;">
+                            <p style="font-size: 2rem;font-wieght: 700;margin-bottom: 7px;">Primary Health Care Center</p>
+                            <p>PDPM IIITDM Jabalpur</p>
+                        </div>
+                    </div>
+                    ${reqHtml}
+                </div>
+                </body>
+                </html>
+            `
+            var printWindow = window.open('', '', 'height=900,width=1000');
+            printWindow.document.write(content);
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+        }
+    </script>
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.2/jspdf.min.js"></script>
+   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.22/pdfmake.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+
+{% endblock %}
