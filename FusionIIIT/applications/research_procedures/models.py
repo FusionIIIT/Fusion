@@ -77,7 +77,7 @@ class staff_allocations(models.Model):
     year=models.IntegerField()
     stipend=models.IntegerField()
     staff_type=models.CharField(max_length=100,default="research")
-    start_date=models.DateField(default=datetime.date.today()) #default=datetime.date.today()
+    start_date=models.DateField(default=datetime.date.today)
     end_date=models.DateField(null=True, blank=True)
     
     def __str__(self):

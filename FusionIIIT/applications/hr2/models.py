@@ -78,7 +78,7 @@ class EmpConfidentialDetails(models.Model):
     table for employee  confidential details
     """
     extra_info = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE)
-    aadhar_no = models.BigIntegerField(default=0, max_length=12, 
+    aadhar_no = models.BigIntegerField(default=0,
                               validators=[MaxValueValidator(999999999999),MinValueValidator(99999999999)])
                               
     maritial_status = models.CharField(
@@ -149,7 +149,7 @@ class LTCform(models.Model):
     employeeId = models.IntegerField()
     name = models.CharField(max_length=100, null=True)
     blockYear = models.TextField() #
-    pfNo = models.IntegerField(max_length=50)
+    pfNo = models.IntegerField()
     basicPaySalary = models.IntegerField(null=True)
     designation = models.CharField(max_length=50)
     departmentInfo = models.CharField(max_length=50)
@@ -181,12 +181,12 @@ class LTCform(models.Model):
 
 class CPDAAdvanceform(models.Model):
     id = models.AutoField(primary_key=True)
-    employeeId = models.IntegerField(max_length=22, null=True)
+    employeeId = models.IntegerField(null=True)
     name = models.CharField(max_length=40,null=True)
     designation = models.CharField(max_length=40,null=True)
-    pfNo = models.IntegerField(max_length=30,null=True)
+    pfNo = models.IntegerField(null=True)
     purpose = models.TextField(max_length=40, null=True)
-    amountRequired = models.IntegerField(max_length=30,null=True)
+    amountRequired = models.IntegerField(null=True)
     advanceDueAdjustment = models.DecimalField(max_digits=10, decimal_places=2, null=True,blank=True)
    
     submissionDate = models.DateField(blank=True, null=True)
@@ -202,11 +202,11 @@ class CPDAAdvanceform(models.Model):
 
 class LeaveForm(models.Model):
     id = models.AutoField(primary_key=True)
-    employeeId = models.IntegerField(max_length=22,null=True)
+    employeeId = models.IntegerField(null=True)
     name = models.CharField(max_length=40,null=True)
     designation = models.CharField(max_length=40,null=True)
     submissionDate = models.DateField(blank=True, null=True)
-    pfNo = models.IntegerField(max_length=30,null=True)
+    pfNo = models.IntegerField(null=True)
     departmentInfo = models.CharField(max_length=40,null=True)
     natureOfLeave = models.TextField(max_length=40,null=True)
     leaveStartDate = models.DateField(blank=True, null=True)
@@ -237,7 +237,7 @@ class LeaveBalance(models.Model):
 
 class Appraisalform(models.Model):
     id = models.AutoField(primary_key=True)
-    employeeId = models.IntegerField(max_length=22,null=True)
+    employeeId = models.IntegerField(null=True)
     name = models.CharField(max_length=22)
     designation = models.CharField(max_length=50)
     disciplineInfo = models.CharField(max_length=22, null=True)
@@ -273,10 +273,10 @@ class Appraisalform(models.Model):
 
 class CPDAReimbursementform(models.Model):
      id = models.AutoField(primary_key=True)
-     employeeId = models.IntegerField(max_length=22,null=True)
+     employeeId = models.IntegerField(null=True)
      name = models.CharField(max_length=50)
      designation = models.CharField(max_length=50)
-     pfNo = models.IntegerField(max_length=20)
+     pfNo = models.IntegerField()
      advanceTaken = models.IntegerField()
      purpose = models.TextField()
      adjustmentSubmitted = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
