@@ -28,6 +28,14 @@ class Constants:
         ("Cultural", "Cultural"),
     )
     status = (("open", "Open"), ("confirmed", "Confirmed"), ("rejected", "Rejected"))
+    STATUS_CHOICES = (
+        ('ACCEPT', 'Accepted'),
+        ('REJECT', 'Rejected'),
+        ('COORDINATOR', 'Coordinator Review'),
+        ('FIC', 'FIC Review'),
+        ('COUNSELLOR', 'Counsellor Review'),
+        ('DEAN', 'Dean Review')
+    )
     fest = (("Abhikalpan", "Abhikalpan"), ("Gusto", "Gusto"), ("Tarang", "Tarang"))
     venue = (
         (
@@ -180,36 +188,37 @@ class Club_member(models.Model):
         db_table = "Club_member"
 
 
-class Core_team(models.Model):
-    """
-    The details about the main members who  conducted/take care of the fest.
-    It stores the indormation of those members.
+# class Core_team(models.Model):
+#     """
+#     The details about the main members who  conducted/take care of the fest.
+#     It stores the indormation of those members.
 
-    id - serial number
-    student_id - roll  number of student
-    team - name of the core_team
-    year - year in which this team conducted the fest
-    fest_name - name of the fest the core_team students takes care of
-    pda - achievements they achieved through the fest
-    remarks - remarks(if there are any) in the fest
+#     id - serial number
+#     student_id - roll  number of student
+#     team - name of the core_team
+#     year - year in which this team conducted the fest
+#     fest_name - name of the fest the core_team students takes care of
+#     pda - achievements they achieved through the fest
+#     remarks - remarks(if there are any) in the fest
 
-    """
+#     """
 
-    id = models.AutoField(primary_key=True)
-    student_id = models.ForeignKey(
-        Student, on_delete=models.CASCADE, related_name="applied_for"
-    )
-    team = models.CharField(max_length=50, null=False)
-    year = models.DateTimeField(max_length=6, null=True)
-    fest_name = models.CharField(max_length=256, null=False, choices=Constants.fest)
-    pda = models.TextField(max_length=256, null=False)
-    remarks = models.CharField(max_length=256, null=True)
+#     id = models.AutoField(primary_key=True)
+#     student_id = models.ForeignKey(
+#         Student, on_delete=models.CASCADE, related_name="applied_for"
+#     )
+#     team = models.CharField(max_length=50, null=False)
+#     year = models.DateTimeField(max_length=6, null=True)
+#     fest_name = models.CharField(max_length=256, null=False, choices=Constants.fest)
+#     pda = models.TextField(max_length=256, null=False)
+#     remarks = models.CharField(max_length=256, null=True)
 
-    def __str__(self):
-        return str(self.student_id)
+#     def __str__(self):
+#         return str(self.student_id)
 
-    class Meta:
-        db_table = "Core_team"
+#     class Meta:
+#         db_table = "Core_team"
+
 
 
 class Club_budget(models.Model):
@@ -284,7 +293,8 @@ class Event_info(models.Model):
     event_name - name of the event
     venue - the place at which they conducting the event
     incharge -  name of faculty who is incharge for the event
-    date - date of the event
+    start_date - start date of the event
+    end_date - end date of event
     start_time - the time at which event starts
     end_time - the time at which event ends
     event_poster - the logo/poster for the event(image)
@@ -300,13 +310,14 @@ class Event_info(models.Model):
     event_name = models.CharField(max_length=256, null=False)
     venue = models.CharField(max_length=50, null=False, choices=Constants.venue)
     incharge = models.CharField(max_length=256, null=False)
-    date = models.DateField(default=None, auto_now=False, null=False)
+    end_date = models.DateField(default=None, auto_now=False, null=False)
+    start_date=models.DateField(default=None, auto_now=False, null=False)
     start_time = models.TimeField(default=None, auto_now=False, null=False)
     end_time = models.TimeField(default=None, auto_now=False, null=True)
     event_poster = models.FileField(upload_to="gymkhana/event_poster", blank=True)
     details = models.TextField(max_length=256, null=True)
-    status = models.CharField(max_length=50, choices=Constants.status, default="open")
-
+    status = models.CharField(max_length=50, choices=Constants.STATUS_CHOICES, default="open")
+    #change the status choices
     def __str__(self):
         return str(self.id)
 
@@ -445,71 +456,71 @@ class Change_office(models.Model):
         db_table = "Change_office"
 
 
-class Voting_polls(models.Model):
-    """
-    It shows the information about the voting poll.
+# class Voting_polls(models.Model):
+#     """
+#     It shows the information about the voting poll.
 
-    title - title of the poll
-    description - explanation about the voting
-    pub_date - the date at which polling starts
-    exp_date - the date at which polling ends
-    created_by - name of the person who created this poll
-    groups - the groups that are participating in the voting
+#     title - title of the poll
+#     description - explanation about the voting
+#     pub_date - the date at which polling starts
+#     exp_date - the date at which polling ends
+#     created_by - name of the person who created this poll
+#     groups - the groups that are participating in the voting
 
-    """
+#     """
 
-    title = models.CharField(max_length=200, null=False)
-    description = models.CharField(max_length=5000, null=False)
-    pub_date = models.DateTimeField(default=timezone.now)
-    exp_date = models.DateTimeField(default=timezone.now)
-    created_by = models.CharField(max_length=100, null=True)
-    groups = models.CharField(max_length=500, default="{}")
+#     title = models.CharField(max_length=200, null=False)
+#     description = models.CharField(max_length=5000, null=False)
+#     pub_date = models.DateTimeField(default=timezone.now)
+#     exp_date = models.DateTimeField(default=timezone.now)
+#     created_by = models.CharField(max_length=100, null=True)
+#     groups = models.CharField(max_length=500, default="{}")
 
-    def groups_data(self):
-        return self.groups
+#     def groups_data(self):
+#         return self.groups
 
-    def __str__(self):
-        return self.title
+#     def __str__(self):
+#         return self.title
 
-    class Meta:
-        ordering = ["-pub_date"]
-
-
-class Voting_choices(models.Model):
-    """
-    poll_event - name of the poll_event
-    title - name of the poll
-    description - description about choices if any
-    votes - no.of votes recorded
-
-    """
-
-    poll_event = models.ForeignKey(Voting_polls, on_delete=models.CASCADE)
-    title = models.CharField(max_length=200, null=False)
-    description = models.CharField(max_length=500, default="")
-    votes = models.IntegerField(default=0)
-
-    def __str__(self):
-        return self.title
-
-    class Meta:
-        get_latest_by = "votes"
+#     class Meta:
+#         ordering = ["-pub_date"]
 
 
-class Voting_voters(models.Model):
-    """
-    records students who has voted in the poll.
+# class Voting_choices(models.Model):
+#     """
+#     poll_event - name of the poll_event
+#     title - name of the poll
+#     description - description about choices if any
+#     votes - no.of votes recorded
 
-    poll_event - name of the poll
-    student_id - roll number of student
+#     """
 
-    """
+#     poll_event = models.ForeignKey(Voting_polls, on_delete=models.CASCADE)
+#     title = models.CharField(max_length=200, null=False)
+#     description = models.CharField(max_length=500, default="")
+#     votes = models.IntegerField(default=0)
 
-    poll_event = models.ForeignKey(Voting_polls, on_delete=models.CASCADE)
-    student_id = models.CharField(max_length=50, null=False)
+#     def __str__(self):
+#         return self.title
 
-    def __str__(self):
-        return self.student_id
+#     class Meta:
+#         get_latest_by = "votes"
+
+
+# class Voting_voters(models.Model):
+#     """
+#     records students who has voted in the poll.
+
+#     poll_event - name of the poll
+#     student_id - roll number of student
+
+#     """
+
+#     poll_event = models.ForeignKey(Voting_polls, on_delete=models.CASCADE)
+#     student_id = models.CharField(max_length=50, null=False)
+
+#     def __str__(self):
+#         return self.student_id
 
 
 class Inventory(models.Model):
@@ -527,3 +538,66 @@ class Inventory(models.Model):
 
     class Meta:
         db_table = "Inventory"
+class Budget(models.Model):
+    id = models.AutoField(primary_key=True)
+    club = models.ForeignKey(
+        Club_info, on_delete=models.CASCADE, max_length=50, null=False
+    )
+    budget_for = models.CharField(max_length=256, null=False)
+    budget_amt = models.IntegerField(default=0, null=False)
+    budget_file = models.FileField(upload_to="uploads/", null=True)
+    description = models.TextField(max_length=256, null=False)
+    status = models.CharField(max_length=50, choices=Constants.STATUS_CHOICES, default="COORDINATOR")
+    remarks = models.CharField(max_length=256, null=True)
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        db_table = "Budget"
+class Budget_Comments(models.Model):
+    """
+    This table stores the comments related to budgets.
+
+    Fields:
+    - budget_id: ForeignKey to the related budget entry
+    - commentator_designation: Designation of the person commenting
+    - comment: The content of the comment
+    - comment_date: The date the comment was made
+    - comment_time: The time the comment was made
+    """
+
+    budget_id = models.ForeignKey('Budget', on_delete=models.CASCADE, related_name='comments') 
+    commentator_designation = models.CharField(max_length=100, null=False)  
+    comment = models.TextField(null=False)  # The actual comment
+    comment_date = models.DateField(default=timezone.now, null=False)  # Date of the comment
+    comment_time = models.TimeField(default=timezone.now, null=False)  # Time of the comment
+
+    def __str__(self):
+        return f"Comment by {self.commentator_designation} on {self.comment_date}"
+
+    class Meta:
+        db_table = "Budget_Comments"
+class Event_Comments(models.Model):
+    """
+    This table stores the comments related to budgets.
+
+    Fields:
+    - Event_id: ForeignKey to the related budget entry
+    - commentator_designation: Designation of the person commenting
+    - comment: The content of the comment
+    - comment_date: The date the comment was made
+    - comment_time: The time the comment was made
+    """
+
+    Event_id = models.ForeignKey('Event_info', on_delete=models.CASCADE, related_name='comments') 
+    commentator_designation = models.CharField(max_length=100, null=False)  
+    comment = models.TextField(null=False)  # The actual comment
+    comment_date = models.DateField(default=timezone.now, null=False)  # Date of the comment
+    comment_time = models.TimeField(default=timezone.now, null=False)  # Time of the comment
+
+    def __str__(self):
+        return f"Comment by {self.commentator_designation} on {self.comment_date}"
+
+    class Meta:
+        db_table = "Event_Comments"

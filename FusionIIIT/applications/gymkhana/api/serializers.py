@@ -2,13 +2,13 @@ from attr import fields
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 from rest_framework import serializers
-from applications.gymkhana.models import Club_info,Session_info,Event_info, Voting_choices
-from applications.gymkhana.models import Club_member,Core_team,Club_budget,Club_report,Fest_budget,Registration_form,Voting_polls
+from applications.gymkhana.models import Club_info,Session_info,Event_info
+from applications.gymkhana.models import Club_member,Club_budget,Club_report,Fest_budget,Registration_form,Budget,Budget_Comments,Event_Comments
 
-class Voting_choicesSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Voting_choices
-        fields = ['poll_event', 'title', 'description', 'votes']
+# class Voting_choicesSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Voting_choices
+#         fields = ['poll_event', 'title', 'description', 'votes']
 
 
 class Club_infoSerializer(serializers.ModelSerializer):
@@ -28,11 +28,11 @@ class Club_memberSerializer(serializers.ModelSerializer):
         fields = ['member','club','description', 'status','remarks','id']
     
 
-class Core_teamSerializer(serializers.ModelSerializer):
+# class Core_teamSerializer(serializers.ModelSerializer):
 
-    class Meta:
-        model=Core_team
-        fields=('all')
+#     class Meta:
+#         model=Core_team
+#         fields=('all')
 
 class Club_DetailsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -50,7 +50,7 @@ class event_infoserializer(serializers.ModelSerializer):
 
     class Meta:
         model=Event_info
-        fields=['club','event_name','incharge','date','venue','start_time','id','details','status']
+        fields=['club','event_name','incharge','start_date','end_date','venue','start_time','id','details','status']
 
 class club_budgetserializer(serializers.ModelSerializer):
 
@@ -73,8 +73,12 @@ class Registration_formSerializer(serializers.ModelSerializer):
         model=Registration_form
         fields=['roll','user_name','branch','cpi','programme']
 
-class Voting_pollSerializer(serializers.ModelSerializer):
+# class Voting_pollSerializer(serializers.ModelSerializer):
 
+#     class Meta:
+#         model=Voting_polls
+#         fields=['title','pub_date','exp_date','created_by','groups','id','description']
+class BudgetSerializer(serializers.ModelSerializer):
     class Meta:
-        model=Voting_polls
-        fields=['title','pub_date','exp_date','created_by','groups','id','description']
+        model = Budget
+        fields = ['id', 'club', 'budget_for', 'budget_amt', 'budget_file', 'description', 'status', 'remarks']

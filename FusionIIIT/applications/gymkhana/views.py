@@ -1169,45 +1169,45 @@ def club_membership(request):
     # return redirect('/gymkhana/')
 
 
-@login_required
-def core_team(request):
-    """
-    core_team:
-    This view takes the data of students. Data like, their name, fest name, team, pda and
-    year. And finally saving this data to the database of the core team.
-    This will done only when the method is POST and at the end it will redirect to '/gymkhana/'
-    @params:
-            request : trivial
-    @variables:
-            user 		 : Name of the user
-            fest 		 : Name of the fest
-            team 		 : Name of the team
-            achievements : Achievements of the user
-            year		 : Acedamic year of the core team
+# @login_required
+# def core_team(request):
+#     """
+#     core_team:
+#     This view takes the data of students. Data like, their name, fest name, team, pda and
+#     year. And finally saving this data to the database of the core team.
+#     This will done only when the method is POST and at the end it will redirect to '/gymkhana/'
+#     @params:
+#             request : trivial
+#     @variables:
+#             user 		 : Name of the user
+#             fest 		 : Name of the fest
+#             team 		 : Name of the team
+#             achievements : Achievements of the user
+#             year		 : Acedamic year of the core team
 
-    """
-    if request.method == "POST":
-        # getting form data
-        user = request.POST.get("user_name")
-        fest = request.POST.get("fest")
-        team = request.POST.get("team")
-        achievements = request.POST.get("pda")
-        year = request.POST.get("year")
+#     """
+#     if request.method == "POST":
+#         # getting form data
+#         user = request.POST.get("user_name")
+#         fest = request.POST.get("fest")
+#         team = request.POST.get("team")
+#         achievements = request.POST.get("pda")
+#         year = request.POST.get("year")
 
-        # getting queryset class objects
-        USER = user.split(" - ")
-        user_name = get_object_or_404(User, username=USER[1])
-        extra = get_object_or_404(ExtraInfo, id=USER[00], user=user_name)
-        student = get_object_or_404(Student, id=extra)
+#         # getting queryset class objects
+#         USER = user.split(" - ")
+#         user_name = get_object_or_404(User, username=USER[1])
+#         extra = get_object_or_404(ExtraInfo, id=USER[00], user=user_name)
+#         student = get_object_or_404(Student, id=extra)
 
-        # saving data to the database
-        core_team = Core_team(
-            student_id=student, fest_name=fest, team=team, pda=achievements, year=year
-        )
-        core_team.save()
-        messages.success(request, "Successfully applied for the post !!!")
+#         # saving data to the database
+#         core_team = Core_team(
+#             student_id=student, fest_name=fest, team=team, pda=achievements, year=year
+#         )
+#         core_team.save()
+#         messages.success(request, "Successfully applied for the post !!!")
 
-    return redirect("/gymkhana/")
+#     return redirect("/gymkhana/")
 
 
 @login_required

@@ -11,8 +11,8 @@ from rest_framework.decorators import api_view, permission_classes,authenticatio
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.shortcuts import render
-from applications.gymkhana.models import Voting_choices, Registration_form, Student ,Club_info,Club_member,Core_team,Session_info,Event_info,Club_budget,Club_report,Fest_budget,Registration_form,Voting_polls
-from .serializers import Club_memberSerializer,Core_teamSerializer,Club_DetailsSerializer,Session_infoSerializer, Voting_choicesSerializer,event_infoserializer,club_budgetserializer,Club_reportSerializers,Fest_budgerSerializer,Registration_formSerializer,Voting_pollSerializer, Club_infoSerializer
+from applications.gymkhana.models import Registration_form, Student ,Club_info,Club_member,Session_info,Event_info,Club_budget,Club_report,Fest_budget,Registration_form,Budget
+from .serializers import Club_memberSerializer,Club_DetailsSerializer,Session_infoSerializer, event_infoserializer,club_budgetserializer,Club_reportSerializers,Fest_budgerSerializer,Registration_formSerializer, Club_infoSerializer,BudgetSerializer
 
 from django.contrib.auth.models import User
 from applications.gymkhana.views import *
@@ -21,7 +21,31 @@ from django.core.files.base import ContentFile
 import base64
 
 from rest_framework.parsers import MultiPartParser
+class Budgetinfo(APIView):
+    def get(self, request):
+        budgets = Budget.objects.all()
+        serializer = BudgetSerializer(budgets, many=True)
+        return Response(serializer.data)
 
+class Club_Detail(APIView):
+    def post(self, request):
+        club_name = request.data.get('club_name')
+        if not club_name:
+            return Response({"error": "club_name is required"}, status=status.HTTP_400_BAD_REQUEST)
+        clubdetail = get_object_or_404(Club_info, club_name=club_name)
+        serializer = Club_DetailsSerializer(clubdetail)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+class UpcomingEventsAPIView(APIView):
+    def get(self, request):
+        events = Event_info.objects.filter(start_date__gte=datetime.datetime.now()).order_by('start_date')
+        serializer = event_infoserializer(events, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class PastEventsAPIView(APIView):
+    def get(self, request):
+        events = Event_info.objects.filter(end_date__lt=datetime.datetime.now()).order_by('end_date')
+        serializer = event_infoserializer(events, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 class UploadActivityCalendarAPIView(APIView):
     parser_classes = [MultiPartParser]
 
@@ -44,45 +68,45 @@ class UploadActivityCalendarAPIView(APIView):
         return Response({'message': 'Activity calendar updated successfully'}, status=status.HTTP_200_OK)
 
 
-class VoteIncrementAPIView(APIView):
-    def post(self, request):
-        serializer = Voting_choicesSerializer(data=request.data, many=True)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+# class VoteIncrementAPIView(APIView):
+#     def post(self, request):
+#         serializer = Voting_choicesSerializer(data=request.data, many=True)
+#         if not serializer.is_valid():
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-        data = serializer.validated_data
-        for choice_data in data:
-            poll_event_id = choice_data.get('poll_event')
-            title = choice_data.get('title')
-            try:
-                choice_instance = Voting_choices.objects.get(poll_event_id=poll_event_id, title=title)
-                choice_instance.votes += 1
-                choice_instance.save()
-            except Voting_choices.DoesNotExist:
-                pass  # Do nothing if the choice with the given poll_event and title doesn't exist
+#         data = serializer.validated_data
+#         for choice_data in data:
+#             poll_event_id = choice_data.get('poll_event')
+#             title = choice_data.get('title')
+#             try:
+#                 choice_instance = Voting_choices.objects.get(poll_event_id=poll_event_id, title=title)
+#                 choice_instance.votes += 1
+#                 choice_instance.save()
+#             except Voting_choices.DoesNotExist:
+#                 pass  # Do nothing if the choice with the given poll_event and title doesn't exist
         
-        return Response({'message': 'Votes incremented successfully'}, status=status.HTTP_200_OK)
+        # return Response({'message': 'Votes incremented successfully'}, status=status.HTTP_200_OK)
 
 
-class VotingPollsDeleteAPIView(APIView):
-   def post(self, request):
-        Voting_poll_id = request.data.get('id')  # Assuming the ID is sent in the request body
-        try:
-            Voting_poll  = Voting_polls.objects.get(id=Voting_poll_id)
-        except Voting_polls.DoesNotExist:
-            return Response({"error": "Voting Poll not found."}, status=status.HTTP_404_NOT_FOUND)
+# class VotingPollsDeleteAPIView(APIView):
+#    def post(self, request):
+#         Voting_poll_id = request.data.get('id')  # Assuming the ID is sent in the request body
+#         try:
+#             Voting_poll  = Voting_polls.objects.get(id=Voting_poll_id)
+#         except Voting_polls.DoesNotExist:
+#             return Response({"error": "Voting Poll not found."}, status=status.HTTP_404_NOT_FOUND)
         
-        # Delete the club member object
-        Voting_poll.delete()
+#         # Delete the club member object
+#         Voting_poll.delete()
 
-        return Response({"message": "POll deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+#         return Response({"message": "POll deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
 
-class ShowVotingChoicesAPIView(APIView):
-    def get(self, request):
-        voting_choices = Voting_choices.objects.all()
-        serializer = Voting_choicesSerializer(voting_choices, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+# class ShowVotingChoicesAPIView(APIView):
+#     def get(self, request):
+#         voting_choices = Voting_choices.objects.all()
+#         serializer = Voting_choicesSerializer(voting_choices, many=True)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class ClubMemberApproveView(generics.UpdateAPIView):
     def post(self, request):
@@ -281,14 +305,14 @@ def coordinator_club(request):
         if str(request.user) in [club.co_ordinator, club.co_coordinator]:
             serialized_club = Club_infoSerializer(club).data
             club_info.append(serialized_club)
-    return club_info
+            return club_info
 
-class core(APIView):
-    def get(self,request):
-        co=Core_team.objects.all()
-        serializer=Core_teamSerializer(co, many=True)
-        print(serializer.data)
-        return Response(serializer.data)
+# class core(APIView):
+#     def get(self,request):
+#         co=Core_team.objects.all()
+#         serializer=Core_teamSerializer(co, many=True)
+#         print(serializer.data)
+#         return Response(serializer.data)
 
 class clubname(APIView):
     permission_classes = [IsAuthenticated]
@@ -344,12 +368,12 @@ class Registraion_form(APIView):
         return Response(serializer.data)
 
 
-class Voting_Polls(APIView):
+# class Voting_Polls(APIView):
 
-    def get(self,respect):
-        votingpolls=Voting_polls.objects.all()
-        serializer=Voting_pollSerializer(votingpolls, many=True)
-        return Response(serializer.data)
+#     def get(self,respect):
+#         votingpolls=Voting_polls.objects.all()
+#         serializer=Voting_pollSerializer(votingpolls, many=True)
+#         return Response(serializer.data)
 
 ##logger = logging.getLogger(_NamedFuncPointer)
 class NewSessionAPIView(APIView):
@@ -536,28 +560,28 @@ class DeleteSessionsView(APIView):
             return JsonResponse({"error": str(e)}, status=500)
 
 
-class CreateVotingPollAPIView(APIView):
-    def post(self, request):
-        voting_poll_serializer = Voting_pollSerializer(data=request.data)
-        if voting_poll_serializer.is_valid():
-            voting_poll_instance = voting_poll_serializer.save()
+# class CreateVotingPollAPIView(APIView):
+#     def post(self, request):
+#         voting_poll_serializer = Voting_pollSerializer(data=request.data)
+#         if voting_poll_serializer.is_valid():
+#             voting_poll_instance = voting_poll_serializer.save()
 
-            # Extract ID of the created Voting_poll instance
-            voting_poll_id = voting_poll_instance.id
+#             # Extract ID of the created Voting_poll instance
+#             voting_poll_id = voting_poll_instance.id
 
-            # Modify the request data to include poll_event ID for each choice
-            choices_data = request.data.get('choices', [])
-            for choice_data in choices_data:
-                choice_data['poll_event'] = voting_poll_id
+#             # Modify the request data to include poll_event ID for each choice
+#             choices_data = request.data.get('choices', [])
+#             for choice_data in choices_data:
+#                 choice_data['poll_event'] = voting_poll_id
 
-            voting_choices_serializer = Voting_choicesSerializer(data=choices_data, many=True)
-            if voting_choices_serializer.is_valid():
-                voting_choices_serializer.save()
-                return Response({'message': 'Voting poll created successfully'}, status=status.HTTP_201_CREATED)
-            else:
-                return Response({'voting_choices_errors': voting_choices_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({'voting_poll_errors': voting_poll_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+#             voting_choices_serializer = Voting_choicesSerializer(data=choices_data, many=True)
+#             if voting_choices_serializer.is_valid():
+#                 voting_choices_serializer.save()
+#                 return Response({'message': 'Voting poll created successfully'}, status=status.HTTP_201_CREATED)
+#             else:
+#                 return Response({'voting_choices_errors': voting_choices_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+#         else:
+#             return Response({'voting_poll_errors': voting_poll_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         
 class UpdateClubBudgetAPIView(APIView):
     def post(self, request):
@@ -817,22 +841,14 @@ class UpdateClubNameAPIView(APIView):
 
 class ApproveEvent(APIView):
     def post(self, request):
-        # Retrieve data from request
         event_data = request.data
-
-        # Extract fields for filtering
         event_name = event_data.get('event_name')
         incharge = event_data.get('incharge')
         date = event_data.get('date')
         venue = event_data.get('venue')
         event_id = event_data.get('id')
-        # status = event_data.get('status')
-
-        # Check if all required fields are provided
         if not all([event_name, incharge, date, venue, event_id]):
             return Response({"error": "Missing required fields"}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Try to find the event based on provided fields
         try:
             event = Event_info.objects.get(
                 event_name=event_name,
@@ -843,9 +859,103 @@ class ApproveEvent(APIView):
             )
         except Event_info.DoesNotExist:
             return Response({"error": "Event not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        # Update the status of the event
         event.status = 'confirmed'
         event.save()
-
         return Response({"message": "event status updated successfully"}, status=status.HTTP_200_OK)   
+    
+class AddClubAPI(APIView):
+    def post(self, request):
+        serializer = Club_infoSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Club added successfully!"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class NewEventAPIView(APIView):
+    def put(self, request):
+        request.data['status'] = 'FIC'
+        serializer = event_infoserializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save() 
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class FICApproveEventAPIView(APIView):
+    def put(self, request):
+        event_id = request.data.get('id')
+        event = get_object_or_404(Event_info, id=event_id)
+        if event.status != 'FIC':
+            return Response({"error": "Event is not under FIC review."}, status=status.HTTP_400_BAD_REQUEST)
+        event.status = 'COUNSELLOR'
+        event.save()
+
+        return Response({"message": "Event status changed to 'Counsellor Review'."}, status=status.HTTP_200_OK)
+class CounsellorApproveEventAPIView(APIView):
+    def put(self, request):
+        event_id = request.data.get('id')
+        event = get_object_or_404(Event_info, id=event_id)
+        if event.status != 'COUNSELLOR':
+            return Response({"error": "Event is not under Counsellor review."}, status=status.HTTP_400_BAD_REQUEST)
+        event.status = 'DEAN'
+        event.save()
+
+        return Response({"message": "Event status changed to 'Dean Review'."}, status=status.HTTP_200_OK)
+class DeanApproveEventAPIView(APIView):
+    def put(self, request):
+        event_id = request.data.get('id')
+        event = get_object_or_404(Event_info, id=event_id)
+        if event.status != 'DEAN':
+            return Response({"error": "Event is not under Dean review."}, status=status.HTTP_400_BAD_REQUEST)
+        event.status = 'ACCEPT'
+        event.save()
+
+        return Response({"message": "Event status changed to 'Accepted'."}, status=status.HTTP_200_OK)
+class NewBudgetAPIView(APIView):
+    def put(self, request):
+        request.data['status'] = 'FIC'
+        serializer = BudgetSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save() 
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class FICApproveBudgetAPIView(APIView):
+    def put(self, request):
+        budget_id = request.data.get('id')
+        budget = get_object_or_404(Budget, id=budget_id)
+        if budget.status != 'FIC':
+            return Response({"error": "Budget is not under FIC review."}, status=status.HTTP_400_BAD_REQUEST)
+        budget.status = 'COUNSELLOR'
+        budget.save()
+        return Response({"message": "Budget status changed to 'Counsellor Review'."}, status=status.HTTP_200_OK)
+class CounsellorApproveBudgetAPIView(APIView):
+    def put(self, request):
+        budget_id = request.data.get('id')
+        budget = get_object_or_404(Budget, id=budget_id)
+        if budget.status != 'COUNSELLOR':
+            return Response({"error": "Budget is not under Counsellor review."}, status=status.HTTP_400_BAD_REQUEST)
+        budget.status = 'DEAN'
+        budget.save()
+        return Response({"message": "Budget status changed to 'Dean Review'."}, status=status.HTTP_200_OK)
+class DeanApproveBudgetAPIView(APIView):
+    def put(self, request):
+        budget_id = request.data.get('id')
+        budget = get_object_or_404(Budget, id=budget_id)
+        if budget.status != 'DEAN':
+            return Response({"error": "Budget is not under Dean review."}, status=status.HTTP_400_BAD_REQUEST)
+        budget.status = 'ACCEPT'
+        budget.save()
+        return Response({"message": "Budget status changed to 'Accepted'."}, status=status.HTTP_200_OK)
+class RejectBudgetAPIView(APIView):
+    def put(self, request):
+        budget_id = request.data.get('id')
+        budget = get_object_or_404(Budget, id=budget_id)
+        budget.status = 'REJECT'
+        budget.save()
+        return Response({"message": "Budget status changed to 'Rejected'."}, status=status.HTTP_200_OK)
+class RejectEventAPIView(APIView):
+    def put(self, request):
+        event_id = request.data.get('id')
+        event = get_object_or_404(Event_info, id=event_id)
+        event.status = 'REJECT'
+        event.save()
+        return Response({"message": "Event status changed to 'Rejected'."}, status=status.HTTP_200_OK)

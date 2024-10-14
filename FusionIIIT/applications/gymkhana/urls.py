@@ -4,13 +4,18 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from applications.gymkhana.api.views import AddClub_BudgetAPIView, AddMemberToClub, ApproveEvent, ChangeHeadAPIView,   ClubMemberAPIView, ClubMemberApproveView, ClubMemberDeleteAPIView, CreateClubAPIView,  DeleteClubAPIView, DeleteClubBudgetAPIView,  EventDeleteAPIView, EventUpdateAPIView, SessionUpdateAPIView, UpdateClubBudgetAPIView, UpdateClubNameAPIView, UpdateClubStatusAPIView, UploadActivityCalendarAPIView
 from applications.gymkhana.api.views import clubname,Club_Details,club_events,club_budgetinfo,Fest_Budget,club_report,Registraion_form
 from applications.gymkhana.api.views import session_details
-from applications.gymkhana.api.views import DeleteSessionsView, NewEventAPIView, NewSessionAPIView, ShowVotingChoicesAPIView, VoteIncrementAPIView,  VotingPollsDeleteAPIView
+from applications.gymkhana.api.views import DeleteSessionsView, NewEventAPIView, NewSessionAPIView,Club_Detail,UpcomingEventsAPIView,PastEventsAPIView,Budgetinfo,AddClubAPI,NewBudgetAPIView,FICApproveBudgetAPIView,CounsellorApproveBudgetAPIView,DeanApproveBudgetAPIView,FICApproveEventAPIView,CounsellorApproveEventAPIView,DeanApproveEventAPIView
 from . import views
 from rest_framework.authtoken.views import obtain_auth_token
 
 app_name = 'gymkhana'
 
 urlpatterns = [
+    #for club_detail,upcomingevents and past events
+    url(r"^club_detail/$", Club_Detail.as_view()),
+    url(r"^upcoming_events/$", UpcomingEventsAPIView.as_view()),
+    url(r"^past_events/$", PastEventsAPIView.as_view()),
+    url(r"^budget/$", Budgetinfo.as_view()),
     url(r"^session_details/$", session_details.as_view()),
     url(r"^event_info/$", club_events.as_view()),
     url(r"^club_budgetinfo/$", club_budgetinfo.as_view()),
@@ -85,10 +90,10 @@ urlpatterns = [
         views.studentsClubMembers, name="students_data"),
     url(r"^get_venue/$", views.getVenue, name="get_venue"),
     # core_team
-    url(r"^core_team/$", views.core_team, name="core_team"),
+    # url(r"^core_team/$", views.core_team, name="core_team"),
     url(r"^festbudget/$", views.fest_budget, name="fest_budget"),
     # fic
-    url(r"^Inventory_update/$", views.core_team, name="Inventory_update"),
+    # url(r"^Inventory_update/$", views.core_team, name="Inventory_update"),
     url(r"^del_club/$", views.del_club, name="del_club"),
     url(r"^approve_events/$", views.approve_events, name="approve_events"),
     url(r"^update-club-name/$", views.update_club_name, name='update-club-name'),
@@ -112,9 +117,9 @@ urlpatterns = [
     url(r'^api/member_approve/$', ClubMemberApproveView.as_view(), name='approval'),
     url(r'^api/member_reject/$', ClubMemberDeleteAPIView.as_view(), name='reject'),
     url(r'^api/club_membership/$', AddMemberToClub.as_view(), name='new_club_member'),
-    url(r'^api/show_voting_choices/$', ShowVotingChoicesAPIView.as_view(), name='voting_choices'),
-    url(r'^api/delete_poll/$', VotingPollsDeleteAPIView.as_view(), name='delete poll'),
-    url(r'^api/vote/$', VoteIncrementAPIView.as_view(), name='give vote'),
+    # url(r'^api/show_voting_choices/$', ShowVotingChoicesAPIView.as_view(), name='voting_choices'),
+    # url(r'^api/delete_poll/$', VotingPollsDeleteAPIView.as_view(), name='delete poll'),
+    # url(r'^api/vote/$', VoteIncrementAPIView.as_view(), name='give vote'),
     url(r'^api/edit_session/$', SessionUpdateAPIView.as_view(), name='edit session'),
     url(r'^api/edit_event/$', EventUpdateAPIView.as_view(), name='edit event'),
     url(r'^api/delete_budget/$',DeleteClubBudgetAPIView.as_view(), name='delete budget'),
@@ -123,5 +128,23 @@ urlpatterns = [
     url(r'^api/update_clubStatus/$', UpdateClubStatusAPIView.as_view(),name = 'update club status' ),
     url(r'^api/updateClubName/$', UpdateClubNameAPIView.as_view(), name = 'update club name'),
     url(r'^api/approve_event/$', ApproveEvent.as_view(), name = 'approve event'),
+    #add club api
+    url(r'^api/add_club/$',  AddClubAPI.as_view(), name='add club'),
+    #new budget api
+    url(r'^api/new_budget/$',  NewBudgetAPIView.as_view(), name='new budget'),
+    #fic approve budget api
+    url(r'^api/fic_approve_budget/$',  FICApproveBudgetAPIView.as_view(), name='fic approve budget'),
+    #counsellor approve budget api
+    url(r'^api/counsellor_approve_budget/$',  CounsellorApproveBudgetAPIView.as_view(), name='counsellor approve budget'),
+    #dean approve budget api
+    url(r'^api/dean_approve_budget/$',  DeanApproveBudgetAPIView.as_view(), name='dean approve budget'),
+    #new event api
+    url(r'^api/new_events/$',  NewEventAPIView.as_view(), name='new events'),
+    #fic approve event api
+    url(r'^api/fic_approve_event/$',  FICApproveEventAPIView.as_view(), name='fic approve event'),
+    #counsellor approve event api
+    url(r'^api/counsellor_approve_event/$',  CounsellorApproveEventAPIView.as_view(), name='counsellor approve event'),
+    #dean approve event api
+    url(r'^api/dean_approve_event/$',  DeanApproveEventAPIView.as_view(), name='dean approve event')
    
 ]
