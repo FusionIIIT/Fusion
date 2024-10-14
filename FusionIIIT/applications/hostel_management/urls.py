@@ -12,7 +12,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     #Home 
     path('', views.hostel_view, name="hostel_view"),
-    path('/hello', views.hostel_view, name="hello"),
+    path('hello', views.hostel_view, name="hello"),
 
     #Notice Board
     path('notice_form/', views.notice_board, name="notice_board"),
