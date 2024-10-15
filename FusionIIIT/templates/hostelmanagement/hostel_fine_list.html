@@ -1,0 +1,127 @@
+{% block fine_list  %}
+    <h2 align ="center">Hostel Fine List</h2>
+    <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: auto;">
+    <table  class= "ui table" border="1">
+        <thead>
+            <tr>
+                <th>Fine ID</th>
+                <th>Student</th>
+                <th>Hall</th>
+                <th>Student Name</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Reason</th>
+                <th>Action</th>  <!-- Added column for action -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for hostel_fine in hostel_fines %}
+            <tr>
+                <td>{{ hostel_fine.fine_id }}</td>
+                <td>{{ hostel_fine.student }}</td>
+                <td>{{ hostel_fine.hall }}</td>
+                <td>{{ hostel_fine.student_name }}</td>
+                <td>{{ hostel_fine.amount }}</td>
+                <td>
+                    <select name="status" onchange="updateStatus('{{ hostel_fine.fine_id }}', this.value)">
+                        <option value="Pending" {% if hostel_fine.status == 'Pending' %} selected {% endif %}>Pending</option>
+                        <option value="Paid" {% if hostel_fine.status == 'Paid' %} selected {% endif %}>Paid</option>
+                    </select>
+                </td>
+                <td>{{ hostel_fine.reason }}</td>
+
+                <td>
+                    <button class="ui negative mini button" onclick="cancelFine('{{ hostel_fine.fine_id }}')">Cancel</button>
+
+                    <button id="edit-button" class="ui positive medium button" onclick="editFine('{{ hostel_fine.fine_id }}')">Edit</button>
+
+                </td>
+                
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+ <style>
+    td,th{
+        text-align: center;
+        padding: 5px;
+    }
+
+    #edit-button{
+        margin-top: 2px;
+        padding: 8px;
+        width: 67px;
+    }
+ </style>
+
+    <script>
+        function editFine(fineId) {
+            // Redirect to the edit page for the fine
+            window.location.href = '/hostelmanagement/fine/impose/edit/' + fineId + '/';
+        }
+
+        function updateStatus(fineId, status) {
+            // Send an AJAX request to update the status
+            fetch('/hostelmanagement/fine/impose/list/update/' + fineId + '/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    fine_id: fineId,
+                    status: status
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Status updated successfully
+                    console.log('Status updated successfully');
+                } else {
+                    // Error occurred
+                    console.error('Error updating status');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating status:', error);
+            });
+        }
+
+
+        function cancelFine(fineId) {
+
+            var confirmation = confirm("Are you sure you want to remove this fine?");
+
+            if(!confirmation) {
+                return;
+            }
+
+            // Send a DELETE request to delete the fine
+            fetch('/hostelmanagement/fine/delete/' + fineId + '/', {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Fine deleted successfully");
+                    window.location.reload(); // Refresh the page to reflect changes
+                } 
+                else {
+                    // alert("Failed to delete inventory");
+                    alert("You are not authorized to access this page"); 
+                    window.location.href = "/hostelmanagement/"
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting fine:', error);
+            });
+        }
+    </script>
+
+{% endblock %}
+
+

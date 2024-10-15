@@ -1,0 +1,105 @@
+{% extends 'ps1/ps2.html' %}
+{% load static %}
+
+{% block filetracking_tab %} 
+
+
+    <div class="ui pointing secondary menu">
+        <h3>
+            <a class="active item" data-tab="composefile">
+            Stocks present in database
+            </a>
+        </h3>
+    </div>
+    <div class="ui divider"></div> 
+
+    <div class="ui active tab" data-tab="composefile">
+        <div class="ui vertical stripe team segment" style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+    <div class="ui pointing secondary menu" >
+        <h3>
+            <a class="active item" data-tab="inward">
+           Procuremented  stock entry view
+            </a>
+        </h3>
+    
+    </div> 
+
+    
+    <div class="ui divider"></div>
+    {% if stocks %}
+    <div class="table-container" style="overflow-x: scroll;max-height: 500px;  overflow-y: scroll;">
+        
+        <div class="field">
+            <label >File ID : {{first_stock.StockEntryId.item_id.file_info.id}} </label><br>
+        </div>
+
+        <div class="field">
+            <label >Item Type :{{first_stock.StockEntryId.item_id.item_type}}</label><br>
+        </div>
+
+        <div class="field">
+            <label >Item Name: :{{first_stock.StockEntryId.item_id.item_name}} </label><br>
+        </div>
+
+        <div class="field">
+            <label >Dealing Assistant :{{first_stock.StockEntryId.dealing_assistant_id}} </label><br>
+        </div>
+
+        <div class="field">
+            <label >Grade :{{first_stock.StockEntryId.item_id.grade}} </label><br>
+        </div>
+
+        <div class="field">
+            <label >Vendor Name: :{{first_stock.StockEntryId.vendor}} </label><br>
+        </div>
+        <div class="field">
+            <label >Bill: :{{first_stock.StockEntryId.bill}} </label><br>
+        </div>
+        <div class="field">
+            <label >Received Date: :{{first_stock.StockEntryId.recieved_date}} </label><br>
+        </div>
+
+
+    <table class="ui very basic celled sortable table">
+        <thead>
+        <tr>
+                <th>Nomenclature</th>
+                <th>Current Department</th>
+                <th >Current Location</th>
+                <th >Transferred</th>
+            
+        </tr>
+        </thead>
+        <!-- -->
+        <tbody>
+            {% for s in stocks %}
+                {% if s.StockEntryId.item_id.purchased %}
+            <tr>
+                <td> {{s.nomenclature}} </td>
+                <td>{{s.department}}</td>
+                <td>{{s.location}}</td>
+                <td>{{s.isTransferred}}</td>
+            
+              </tr>
+              {% endif %}
+
+                {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+
+    <br>
+    {% else %}
+        <h4 >No Records present in database</h4>
+     {% endif %}
+
+
+       
+   
+
+    </div>  
+
+    {% endblock %}
