@@ -560,6 +560,119 @@ def handleEngineerProcessRequests(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+def engineer_processed_requests(request):
+    obj = []
+    desg = request.session.get('currentDesignationSelected')
+    
+    inbox_files = view_inbox(
+        username=request.user.username,
+        designation=desg,
+        src_module="IWD"
+    )
+
+    for result in inbox_files:
+        src_object_id = result['src_object_id']
+        request_object = Requests.objects.filter(id=src_object_id).first()
+        file_obj = File.objects.get(src_object_id=src_object_id, src_module="IWD")
+        if request_object:
+            element = {
+                'id': request_object.id,
+                'name': request_object.name,
+                'area': request_object.area,
+                'description': request_object.description,
+                'requestCreatedBy': request_object.requestCreatedBy,
+                'file_id': file_obj.id
+            }
+            obj.append(element)
+
+    return Response(obj)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def handle_dean_process_requests(request):
+    data = request.data
+    fileid = data.get('fileid')
+    request_id = File.objects.get(id=fileid).src_object_id
+    
+    remarks = data.get('remarks')
+    attachment = request.FILES.get('attachment')
+    receiver_user, receiver_desg = data['designation'].split('|')
+
+    forward_file(
+        file_id=fileid,
+        receiver=receiver_user,
+        receiver_designation=receiver_desg,
+        file_extra_JSON={"message": "Request forwarded."},
+        remarks=remarks,
+        file_attachment=attachment,
+    )
+    
+    Requests.objects.filter(id=request_id).update(deanProcessed=1, status="Approved by the dean")
+    
+    return Response({'message': 'File Forwarded'}, status=200)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def dean_processed_requests(request):
+    obj = []
+    desg = request.session.get('currentDesignationSelected')
+
+    inbox_files = view_inbox(
+        username=request.user.username,
+        designation=desg,
+        src_module="IWD"
+    )
+
+    for result in inbox_files:
+        src_object_id = result['src_object_id']
+        request_object = Requests.objects.filter(id=src_object_id).first()
+        file_obj = File.objects.get(src_object_id=src_object_id, src_module="IWD")
+        if request_object:
+            element = {
+                'id': request_object.id,
+                'name': request_object.name,
+                'area': request_object.area,
+                'description': request_object.description,
+                'requestCreatedBy': request_object.requestCreatedBy,
+                'file_id': file_obj.id
+            }
+            obj.append(element)
+
+    return Response(obj)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def handle_director_approval_requests(request):
+    data = request.data
+    fileid = data.get('fileid')
+    request_id = File.objects.get(id=fileid).src_object_id
+
+    remarks = data.get('remarks')
+    attachment = request.FILES.get('attachment')
+    receiver_user, receiver_desg = data['designation'].split('|')
+
+    forward_file(
+        file_id=fileid,
+        receiver=receiver_user,
+        receiver_designation=receiver_desg,
+        file_extra_JSON={"message": "Request forwarded."},
+        remarks=remarks,
+        file_attachment=attachment,
+    )
+
+    message = ""
+
+    if data.get('action') == 'approve':
+        message = "Request_approved"
+        Requests.objects.filter(id=request_id).update(directorApproval=1, status="Approved by the director")
+    else:
+        message = "Request_rejected"
+        Requests.objects.filter(id=request_id).update(directorApproval=-1, status="Rejected by the director")
+
+    return Response({'message': message})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def rejectedRequests(request):
     obj = []
     desg = request.session.get('currentDesignationSelected')
@@ -840,6 +953,40 @@ def requestsInProgress(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+def work_completed(request):
+    # Get the request ID from the POST data
+    request_id = request.data.get('id')
+    
+    # Update the workCompleted and status fields
+    Requests.objects.filter(id=request_id).update(workCompleted=1, status="Work Completed")
+
+    # Fetch the requests that have an issued work order but the bill is not generated yet
+    requests_object = Requests.objects.filter(issuedWorkOrder=1, billGenerated=0)
+    obj = []
+
+    # Construct the response object with the request details
+    for request_obj in requests_object:
+        element = {
+            'id': request_obj.id,
+            'name': request_obj.name,
+            'area': request_obj.area,
+            'description': request_obj.description,
+            'requestCreatedBy': request_obj.requestCreatedBy,
+            'workCompleted': request_obj.workCompleted
+        }
+        obj.append(element)
+
+    # Return a JSON response with a success message and the updated list of requests
+    return Response(
+        {
+            'message': 'Work Completed',
+            'data': obj
+        },
+        status=status.HTTP_200_OK
+    )
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def generateFinalBill(request):
     request_id = request.data.get("id", 0)
 
@@ -1009,6 +1156,108 @@ def handleProcessedBills(request):
     iwd_notif(request.user, receiver_user_obj, "file_forward")
 
     return Response({'obj': obj}, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def audit_document_view(request):
+    desg = request.session.get('currentDesignationSelected')
+    inbox_files = view_inbox(username=request.user, designation=desg, src_module="IWD")
+    
+    obj = [
+        {
+            'requestId': x['src_object_id'],
+            'file': Bills.objects.get(request_id=x['src_object_id']).file,
+            'fileUrl': Bills.objects.get(request_id=x['src_object_id']).file.url,
+            'fileId': File.objects.get(src_object_id=x['src_object_id'], src_module="IWD").id
+        }
+        for x in inbox_files
+    ]
+    
+    return Response({'data': obj}, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def audit_document(request):
+    fileid = request.data.get('fileid')
+    remarks = request.data.get('remarks')
+    attachment = request.FILES.get('attachment')
+    receiver_user, receiver_desg = request.data['designation'].split('|')
+
+    if fileid:
+        request_id = File.objects.get(id=fileid).src_object_id
+
+        forward_file(
+            file_id=fileid,
+            receiver=receiver_user,
+            receiver_designation=receiver_desg,
+            file_extra_JSON={"message": "Request forwarded."},
+            remarks=remarks,
+            file_attachment=attachment,
+        )
+        
+        Requests.objects.filter(id=request_id).update(status="Bill Audited")
+
+        # Fetch files again
+        desg = request.session.get('currentDesignationSelected')
+        inbox_files = view_inbox(username=request.user, designation=desg, src_module="IWD")
+
+        obj = [
+            {
+                'requestId': x['src_object_id'],
+                'file': Bills.objects.get(request_id=x['src_object_id']).file,
+                'fileUrl': Bills.objects.get(request_id=x['src_object_id']).file.url,
+                'fileId': File.objects.get(src_object_id=x['src_object_id'], src_module="IWD").id
+            }
+            for x in inbox_files
+        ]
+
+        return Response({'message': "File Audit done", 'data': obj}, status=status.HTTP_200_OK)
+    
+    return Response({'error': 'File ID not provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def settle_bills_view(request):
+    desg = request.session.get('currentDesignationSelected')
+    inbox_files = view_inbox(username=request.user, designation=desg, src_module="IWD")
+    
+    obj = [
+        {
+            'requestId': x['src_object_id'],
+            'file': Bills.objects.get(request_id=x['src_object_id']).file,
+            'fileUrl': Bills.objects.get(request_id=x['src_object_id']).file.url,
+            'billSettled': Requests.objects.get(id=x['src_object_id']).billSettled,
+            'fileId': File.objects.get(src_object_id=x['src_object_id'], src_module="IWD").id
+        }
+        for x in inbox_files
+    ]
+    
+    return Response({'data': obj}, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def handle_settle_bill_requests(request):
+    request_id = request.data.get('id')
+    if request_id:
+        Requests.objects.filter(id=request_id).update(status="Final Bill Settled", billSettled=1)
+
+        desg = request.session.get('currentDesignationSelected')
+        inbox_files = view_inbox(username=request.user, designation=desg, src_module="IWD")
+
+        obj = [
+            {
+                'requestId': x['src_object_id'],
+                'file': Bills.objects.get(request_id=x['src_object_id']).file,
+                'fileUrl': Bills.objects.get(request_id=x['src_object_id']).file.url,
+                'billSettled': Requests.objects.get(id=x['src_object_id']).billSettled,
+                'fileId': File.objects.get(src_object_id=x['src_object_id'], src_module="IWD").id
+            }
+            for x in inbox_files
+        ]
+
+        return Response({'message': "Final Bill settled", 'data': obj}, status=status.HTTP_200_OK)
+    
+    return Response({'error': 'Request ID not provided'}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
