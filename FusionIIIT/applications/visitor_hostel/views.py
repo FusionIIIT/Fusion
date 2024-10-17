@@ -24,6 +24,12 @@ from applications.complaint_system.models import Caretaker
 # from notification.views import visitor_hostel_caretaker_notif
 import numpy as np
 from django.contrib.auth.models import User
+from django.http import JsonResponse
+from .models import BookingDetail  # Make sure to import your BookingDetail model
+from django.utils import timezone
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.decorators import api_view, permission_classes,authentication_classes
 
 # from .forms import InventoryForm
 
@@ -281,15 +287,46 @@ def visitorhostel(request):
 # Get methods for bookings
 
 
-@login_required(login_url='/accounts/login/')
-def get_booking_requests(request):
-    if request.method == 'POST':
-        pending_bookings = BookingDetail.objects.select_related(
-            'intender', 'caretaker').filter(status="Pending")
 
-        return render(request, "vhModule/visitorhostel.html", {'pending_bookings': pending_bookings})
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def get_booking_requests(request):
+    print("works? in the original request")
+    
+    if request.method == 'GET':
+        pending_bookings = BookingDetail.objects.select_related('intender', 'caretaker').filter(status="Pending")
+
+        # Serialize the queryset to a list of dictionaries
+        bookings_list = [
+            {
+                'id': booking.id,
+                'intender': booking.intender.first_name,
+                'email': booking.intender.email,
+                'bookingFrom': booking.booking_from.isoformat() if booking.booking_from else None,
+                'bookingTo': booking.booking_to.isoformat() if booking.booking_to else None,
+                'category': booking.visitor_category,
+                'status': booking.status,
+            }
+            for booking in pending_bookings
+        ]
+
+        return JsonResponse({'pending_bookings': bookings_list})
     else:
-        return HttpResponseRedirect('/visitorhostel/')
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+#@login_required(login_url='/accounts/login/')
+# def get_booking_requests(request):
+#     print("works? in the original request")
+#     if request.method == 'GET':
+#         pending_bookings = BookingDetail.objects.select_related(
+#             'intender', 'caretaker').filter(status="Pending")
+#         print(pending_bookings)
+
+#         return render(request, "vhModule/visitorhostel.html", {'pending_bookings': pending_bookings})
+#     else:
+#         return HttpResponseRedirect('/visitorhostel/')
 
 # getting active bookings
 
