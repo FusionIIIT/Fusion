@@ -27,7 +27,7 @@ class Constants:
         ("Sports", "Sports"),
         ("Cultural", "Cultural"),
     )
-    status = (("open", "Open"), ("confirmed", "Confirmed"), ("rejected", "Rejected"))
+    status = (("open", "Open"), ("confirmed", "Confirmed"), ("rejected", "Rejected") ,("member", "Member"),("co-ordinator", "Co-ordinator"),("Co-cordinator", "Co-cordinator"))
     STATUS_CHOICES = (
         ('ACCEPT', 'Accepted'),
         ('REJECT', 'Rejected'),
@@ -601,3 +601,13 @@ class Event_Comments(models.Model):
 
     class Meta:
         db_table = "Event_Comments"
+class Achievements(models.Model):
+    id = models.AutoField(primary_key=True) 
+    club_name = models.CharField(max_length=100, null=False) 
+    title = models.CharField(max_length=100, null=False)
+    achievement = models.TextField(null=False)
+    def _str_(self):
+        return f"{self.club_name} - {self.achievement}"
+
+    class Meta:
+        db_table = "Achievements"

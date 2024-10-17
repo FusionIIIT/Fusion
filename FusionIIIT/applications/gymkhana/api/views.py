@@ -11,8 +11,8 @@ from rest_framework.decorators import api_view, permission_classes,authenticatio
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.shortcuts import render
-from applications.gymkhana.models import Registration_form, Student ,Club_info,Club_member,Session_info,Event_info,Club_budget,Club_report,Fest_budget,Registration_form,Budget
-from .serializers import Club_memberSerializer,Club_DetailsSerializer,Session_infoSerializer, event_infoserializer,club_budgetserializer,Club_reportSerializers,Fest_budgerSerializer,Registration_formSerializer, Club_infoSerializer,BudgetSerializer
+from applications.gymkhana.models import Registration_form, Student ,Club_info,Club_member,Session_info,Event_info,Club_budget,Club_report,Fest_budget,Registration_form,Budget,Achievements
+from .serializers import Club_memberSerializer,Club_DetailsSerializer,Session_infoSerializer, event_infoserializer,club_budgetserializer,Club_reportSerializers,Fest_budgerSerializer,Registration_formSerializer, Club_infoSerializer,BudgetSerializer,AchievementsSerializer
 
 from django.contrib.auth.models import User
 from applications.gymkhana.views import *
@@ -233,27 +233,27 @@ class ChangeHeadAPIView(APIView):
         club_info.save()
 
         return JsonResponse({'status': "success", 'message': message})
+
 class AddMemberToClub(APIView):
     def post(self, request):
-        serializer = Club_memberSerializer(data=request.data)
+        data = {
+            'member': request.data.get('member'),
+            'club': request.data.get('club'),
+            'description': request.data.get('description'),
+            'status': 'open'
+        }
+        serializer = Club_memberSerializer(data=data)
         if serializer.is_valid():
-            club_id = request.data.get('club')  # Assuming 'club_id' is passed in the request data
-            try:
-                club_member = serializer.save()
-                # Implement logic to add member to the club here
-                # For example, you can retrieve the club instance and add the member to it
-                # club = Club.objects.get(pk=club_id)
-                # club.members.add(club_member)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            except Exception as e:
-                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ClubMemberAPIView(APIView):
-    def get(self, request):
-        club_members = Club_member.objects.all()
+    def post(self, request):
+        club_member_id = request.data.get('club_name')
+        club_members = Club_member.objects.filter(club_id=club_member_id)
         serializer = Club_memberSerializer(club_members, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data,status=status.HTTP_200_OK)
     
 class RegistrationFormAPIView(APIView):
     """
@@ -959,3 +959,19 @@ class RejectEventAPIView(APIView):
         event.status = 'REJECT'
         event.save()
         return Response({"message": "Event status changed to 'Rejected'."}, status=status.HTTP_200_OK)
+class AchievementsAPIView(APIView):
+    def post(self, request):
+        club_name = request.data.get('club_name') 
+        achievements = Achievements.objects.filter(club_name=club_name) 
+        if not achievements.exists():
+            return Response({"message": "No achievements found for this club."}, status=404)
+
+        serializer = AchievementsSerializer(achievements, many=True)
+        return Response(serializer.data, status=200)
+class AddAchievementAPIView(APIView):
+    def post(self, request):
+        serializer = AchievementsSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
