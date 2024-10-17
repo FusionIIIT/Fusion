@@ -1,0 +1,36 @@
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('dashboard/', views.dashboard, name='dashboard'),
+    path('page1-1/', views.page1_1, name='page1_1'),
+    path('aes-form/', views.AESForm, name='AESForm'),
+    path('page2-1/', views.page2_1, name='page2_1'),
+    path('corrigendum-input/', views.corrigendumInput, name='corrigendumInput'),
+    path('addendum-input/', views.addendumInput, name='addendumInput'),
+    path('pre-bid-form/', views.PreBidForm, name='PreBidForm'),
+    path('no-of-entries-technical-bid/', views.noOfEntriesTechnicalBid, name='noOfEntriesTechnicalBid'),
+    path('technical-bid-form/', views.TechnicalBidForm, name='TechnicalBidForm'),
+    path('no-of-entries-financial-bid/', views.noOfEntriesFinancialBid, name='noOfEntriesFinancialBid'),
+    path('letter-of-intent/', views.letterOfIntent, name='letterOfIntent'),
+    path('work-order-form/', views.workOrderForm, name='workOrderForm'),
+    path('agreement-input/', views.AgreementInput, name='AgreementInput'),
+    path('milestones-form/', views.milestonesForm, name='milestonesForm'),
+        path('page3-1/', views.page3_1, name='page3_1'),
+    path('extension-of-time-form/', views.ExtensionOfTimeForm, name='ExtensionOfTimeForm'),
+    path('page1-view/', views.page1View, name='page1View'),
+    path('page2-view/', views.page2View, name='page2View'),
+    path('aes-view/', views.AESView, name='AESView'),
+    path('financial-bid-view/', views.financialBidView, name='financialBidView'),
+    path('technical-bid-view/', views.technicalBidView, name='technicalBidView'),
+    path('pre-bid-details-view/', views.preBidDetailsView, name='preBidDetailsView'),
+    path('corrigendum-view/', views.corrigendumView, name='corrigendumView'),
+    path('addendum-view/', views.addendumView, name='addendumView'),
+    path('letter-of-intent-view/', views.letterOfIntentView, name='letterOfIntentView'),
+    path('work-order-form-view/', views.workOrderFormView, name='workOrderFormView'),
+    path('agreement-view/', views.agreementView, name='agreementView'),
+    path('milestone-view/', views.milestoneView, name='milestoneView'),
+    path('page3-view/', views.page3View, name='page3View'),
+    path('extension-form-view/', views.extensionFormView, name='extensionFormView'),
+]
+
