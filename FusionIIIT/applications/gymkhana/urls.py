@@ -1,10 +1,10 @@
 from django.conf.urls import url
 from django.urls import path
 from rest_framework.urlpatterns import format_suffix_patterns
-from applications.gymkhana.api.views import AddClub_BudgetAPIView, AddMemberToClub, ApproveEvent, ChangeHeadAPIView,   ClubMemberAPIView, ClubMemberApproveView, ClubMemberDeleteAPIView, CreateClubAPIView,  DeleteClubAPIView, DeleteClubBudgetAPIView,  EventDeleteAPIView, EventUpdateAPIView, SessionUpdateAPIView, UpdateClubBudgetAPIView, UpdateClubNameAPIView, UpdateClubStatusAPIView, UploadActivityCalendarAPIView
+from applications.gymkhana.api.views import AddClub_BudgetAPIView, AddMemberToClub, ApproveEvent, ChangeHeadAPIView,   ClubMemberAPIView, ClubMemberApproveView, ClubMemberDeleteAPIView, CreateClubAPIView,  DeleteClubAPIView, DeleteClubBudgetAPIView,  EventDeleteAPIView, EventUpdateAPIView, SessionUpdateAPIView, UpdateClubBudgetAPIView, UpdateClubNameAPIView, UpdateClubStatusAPIView, UploadActivityCalendarAPIView,ModifyEventAPIView,ModifyBudgetAPIView,RejectEventAPIView,RejectBudgetAPIView
 from applications.gymkhana.api.views import clubname,Club_Details,club_events,club_budgetinfo,Fest_Budget,club_report,Registraion_form
 from applications.gymkhana.api.views import session_details
-from applications.gymkhana.api.views import DeleteSessionsView, NewEventAPIView, NewSessionAPIView,Club_Detail,UpcomingEventsAPIView,PastEventsAPIView,Budgetinfo,AddClubAPI,NewBudgetAPIView,FICApproveBudgetAPIView,CounsellorApproveBudgetAPIView,DeanApproveBudgetAPIView,FICApproveEventAPIView,CounsellorApproveEventAPIView,DeanApproveEventAPIView,AddAchievementAPIView,AchievementsAPIView
+from applications.gymkhana.api.views import DeleteSessionsView, NewEventAPIView, NewSessionAPIView,Club_Detail,UpcomingEventsAPIView,PastEventsAPIView,Budgetinfo,AddClubAPI,NewBudgetAPIView,FICApproveBudgetAPIView,CounsellorApproveBudgetAPIView,DeanApproveBudgetAPIView,FICApproveEventAPIView,CounsellorApproveEventAPIView,DeanApproveEventAPIView,AddAchievementAPIView,AchievementsAPIView,CreateBudgetCommentAPIView,CreateEventCommentAPIView,ListBudgetCommentsAPIView,ListEventCommentsAPIView
 from . import views
 from rest_framework.authtoken.views import obtain_auth_token
 
@@ -147,5 +147,13 @@ urlpatterns = [
     #dean approve event api
     url(r'^api/dean_approve_event/$',  DeanApproveEventAPIView.as_view(), name='dean approve event'),
     url(r'^api/add_achievement/$', AddAchievementAPIView.as_view(), name = 'approve event'),
-    url(r'^api/show_achievement/$', AchievementsAPIView.as_view(), name = 'approve event')
+    url(r'^api/show_achievement/$', AchievementsAPIView.as_view(), name = 'approve event'),
+    url(r'^api/create_budget_comment/$',  CreateBudgetCommentAPIView.as_view(), name='create budget comment'),
+    url(r'^api/create_event_comment/$',  CreateEventCommentAPIView.as_view(), name='create event comment'),
+    url(r'^api/list_budget_comments/$',  ListBudgetCommentsAPIView.as_view(),name='list budget comments'),
+    url(r'^api/list_event_comments/$',  ListEventCommentsAPIView.as_view(), name='list event comments'),
+    url(r'^api/modify_event/$',  ModifyEventAPIView.as_view(), name='modify event'),
+    url(r'^api/modify_budget/$',  ModifyBudgetAPIView.as_view(), name='modify budget'),
+    url(r'^api/reject_event/$',  RejectEventAPIView.as_view(), name='reject event'),
+    url(r'^api/reject_budget/$',  RejectBudgetAPIView.as_view(), name='reject budget'),
 ]

@@ -12,7 +12,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.shortcuts import render
 from applications.gymkhana.models import Registration_form, Student ,Club_info,Club_member,Session_info,Event_info,Club_budget,Club_report,Fest_budget,Registration_form,Budget,Achievements
-from .serializers import Club_memberSerializer,Club_DetailsSerializer,Session_infoSerializer, event_infoserializer,club_budgetserializer,Club_reportSerializers,Fest_budgerSerializer,Registration_formSerializer, Club_infoSerializer,BudgetSerializer,AchievementsSerializer
+from .serializers import Club_memberSerializer,Club_DetailsSerializer,Session_infoSerializer, event_infoserializer,club_budgetserializer,Club_reportSerializers,Fest_budgerSerializer,Registration_formSerializer, Club_infoSerializer,BudgetSerializer,AchievementsSerializer,Event_CommentsSerializer,Budget_CommentsSerializer
 
 from django.contrib.auth.models import User
 from applications.gymkhana.views import *
@@ -117,7 +117,7 @@ class ClubMemberApproveView(generics.UpdateAPIView):
             return Response({"error": "Club member not found."}, status=status.HTTP_404_NOT_FOUND)
         
         # Update the status of the club member
-        club_member.status = 'confirmed'  # Assuming 'confirmed' is the status for approval
+        club_member.status = 'member'  # Assuming 'member' is the status for approval
         club_member.save()
 
         return Response({"message": "Status updated successfully."}, status=status.HTTP_200_OK)
@@ -233,7 +233,6 @@ class ChangeHeadAPIView(APIView):
         club_info.save()
 
         return JsonResponse({'status': "success", 'message': message})
-
 class AddMemberToClub(APIView):
     def post(self, request):
         data = {
@@ -876,7 +875,7 @@ class NewEventAPIView(APIView):
         request.data['status'] = 'FIC'
         serializer = event_infoserializer(data=request.data)
         if serializer.is_valid():
-            serializer.save() 
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -975,3 +974,73 @@ class AddAchievementAPIView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class CreateBudgetCommentAPIView(APIView):
+    def post(self, request):
+        data = request.data.copy()
+        data['comment_date'] = timezone.now().date()
+        data['comment_time'] = timezone.now().time()
+        
+        serializer = Budget_CommentsSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class CreateEventCommentAPIView(APIView):
+    def post(self, request):
+        data = request.data.copy()
+        data['comment_date'] = timezone.now().date()
+        data['comment_time'] = timezone.now().time()
+        
+        serializer = Event_CommentsSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class ListBudgetCommentsAPIView(APIView):
+    def post(self, request):
+        budget_id = request.data.get('budget_id')
+        if not budget_id:
+            return Response({"error": "Budget ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        comments = Budget_Comments.objects.filter(budget_id=budget_id).order_by('comment_date', 'comment_time')
+        serializer = Budget_CommentsSerializer(comments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+class ListEventCommentsAPIView(APIView):
+    def post(self, request):
+        event_id = request.data.get('event_id')
+        if not event_id:
+            return Response({"error": "Event ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        comments = Event_Comments.objects.filter(event_id=event_id).order_by('comment_date', 'comment_time')
+        serializer = Event_CommentsSerializer(comments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+class RejectEventAPIView(APIView):
+    def put(self, request):
+        event_id = request.data.get('id')
+        event = get_object_or_404(Event_info, id=event_id)
+        event.status = 'REJECT'
+        event.save()
+        return Response({"message": "Event status changed to 'Rejected'."}, status=status.HTTP_200_OK)
+class ModifyEventAPIView(APIView):
+    def put(self, request):
+        event_id = request.data.get('id')
+        event = get_object_or_404(Event_info, id=event_id)
+        event.status = 'COORDINATOR'
+        event.save()
+        return Response({"message": "Event status changed to 'Coordinator review'."}, status=status.HTTP_200_OK)
+class ModifyBudgetAPIView(APIView):
+    def put(self, request):
+        budget_id = request.data.get('id')
+        budget = get_object_or_404(Budget, id=budget_id)
+        budget.status = 'COORDINATOR'
+        budget.save()
+        return Response({"message": "Budget status changed to 'Coordinator Review'."}, status=status.HTTP_200_OK)
+    
+class RejectMemberAPIView(APIView):
+    def put(self, request):
+        member_id = request.data.get('id')
+        member = get_object_or_404(Club_member, id=member_id)
+        member.status = 'rejected'
+        member.save()
+        return Response({"message": "Member status changed to 'rejected'."}, status=status.HTTP_200_OK)

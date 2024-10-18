@@ -86,3 +86,11 @@ class AchievementsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Achievements
         fields = ['id', 'club_name', 'title', 'achievement']
+class Budget_CommentsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Budget_Comments
+        fields = ['budget_id', 'commentator_designation', 'comment', 'comment_date', 'comment_time']
+class Event_CommentsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event_Comments
+        fields = ['event_id', 'commentator_designation', 'comment', 'comment_date', 'comment_time']

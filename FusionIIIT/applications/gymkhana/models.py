@@ -590,7 +590,7 @@ class Event_Comments(models.Model):
     - comment_time: The time the comment was made
     """
 
-    Event_id = models.ForeignKey('Event_info', on_delete=models.CASCADE, related_name='comments') 
+    event_id = models.ForeignKey('Event_info', on_delete=models.CASCADE, related_name='comments') 
     commentator_designation = models.CharField(max_length=100, null=False)  
     comment = models.TextField(null=False)  # The actual comment
     comment_date = models.DateField(default=timezone.now, null=False)  # Date of the comment
