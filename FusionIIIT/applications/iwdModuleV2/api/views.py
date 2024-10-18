@@ -373,32 +373,23 @@ def fetchDesignations(request):
 @permission_classes([IsAuthenticated])
 def requestsView(request):
     data = request.data
-    desg = request.session.get('currentDesignationSelected')
-    
-    # Create a formObject using the serializer
-    serializer = RequestsSerializer(data=data)
+    serializer = RequestsSerializer(data=data, context={'request': request})
+    print("WOW1", data)
     
     if serializer.is_valid():
-        formObject = serializer.save(
-            engineerProcessed=0,
-            directorApproval=0,
-            deanProcessed=0,
-            requestCreatedBy=request.user.username,
-            status="Pending",
-            issuedWorkOrder=0,
-            workCompleted=0,
-            billGenerated=0,
-            billProcessed=0,
-            billSettled=0
-        )
-        
+        formObject = serializer.save()
+        print(formObject)
         request_object = Requests.objects.get(pk=formObject.pk)
-        receiver_user, receiver_desg = data.get('designation').split('|')
-        
-        # Call create_file function with parameters
+        receiver_desg, receiver_user = data.get('designation').split('|')
+        print("WOW", receiver_desg, receiver_user, data)
+        try:
+            receiver_user_obj = User.objects.get(username=receiver_user)
+        except User.DoesNotExist:
+            print("hahahaha")
+            return Response({'error': 'Receiver user does not exist'}, status=status.HTTP_400_BAD_REQUEST)
         create_file(
             uploader=request.user.username,
-            uploader_designation=desg,
+            uploader_designation=data.get('role'),
             receiver=receiver_user,
             receiver_designation=receiver_desg,
             src_module="IWD",
@@ -407,18 +398,16 @@ def requestsView(request):
             attached_file=None
         )
         
-        receiver_user_obj = User.objects.get(username=receiver_user)
         
         # Send notification
         iwd_notif(request.user, receiver_user_obj, "Request_added")
         
         # Eligible value for response
-        eligible = request.session.get('currentDesignationSelected')
+        # eligible = request.session.get('currentDesignationSelected')
         
         # Return successful response
-        return Response({'message': "Request Successfully Created", 'eligible': eligible}, status=status.HTTP_201_CREATED)
+        return Response({'message': "Request Successfully Created"}, status=status.HTTP_201_CREATED)
     
-    # If the serializer is invalid, return errors
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])

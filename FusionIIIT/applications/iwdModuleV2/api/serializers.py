@@ -100,11 +100,11 @@ class DesignationSerializer(serializers.ModelSerializer):
 
 class HoldsDesignationSerializer(serializers.ModelSerializer):
     designation = DesignationSerializer()
+    username = serializers.CharField(source='user.username')
 
     class Meta:
         model = HoldsDesignation
-        fields = ['id', 'designation', 'user']
-
+        fields = ['id', 'designation', 'username']
 # class RequestsSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = Requests
@@ -113,4 +113,17 @@ class HoldsDesignationSerializer(serializers.ModelSerializer):
 class RequestsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Requests
-        fields = ['id', 'name', 'area', 'description', 'requestCreatedBy', 'status', 'workCompleted']
+        fields = ['id', 'name', 'area', 'description']
+
+    def create(self, validated_data):
+        validated_data['engineerProcessed'] = 0
+        validated_data['directorApproval'] = 0
+        validated_data['deanProcessed'] = 0
+        validated_data['status'] = "Pending"
+        validated_data['issuedWorkOrder'] = 0
+        validated_data['workCompleted'] = 0
+        validated_data['billGenerated'] = 0
+        validated_data['billProcessed'] = 0
+        validated_data['billSettled'] = 0
+        validated_data['requestCreatedBy'] = ""
+        return super().create(validated_data)

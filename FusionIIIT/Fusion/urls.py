@@ -38,9 +38,7 @@ urlpatterns = [
     url(r'^research_procedures/', include('applications.research_procedures.urls')),
     url(r'^accounts/', include('allauth.urls')),
     
-     
-    url(r'^api/', include('applications.iwdModuleV2.api.urls')),
-   
+    # url(r'^api/iwdModuleV2/', include('applications.iwdModuleV2.api.urls')),
 
 
     url(r'^eis/', include('applications.eis.urls')),
