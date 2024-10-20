@@ -1,6 +1,7 @@
 from django.conf.urls import url
 
 from . import views
+from applications.scholarships.api.views import GetWinnersView
 
 app_name = 'spacs'
 
@@ -17,5 +18,7 @@ urlpatterns = [
     url(r'^getConvocationFlag/$', views.getConvocationFlag, name='getConvocationFlag'),
     url(r'^getContent/$', views.getContent, name='getContent'),
     url(r'^updateEndDate/$', views.updateEndDate, name='updateEndDate'),
+    #app
+    url(r'get-winners/', GetWinnersView.as_view(), name='get-winners')
 
 ]
