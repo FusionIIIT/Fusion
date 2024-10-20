@@ -7,7 +7,7 @@ from applications.scholarships.models import Award_and_scholarship,Previous_winn
 class AwardAndScholarshipSerializer(serializers.ModelSerializer):
     class Meta:
         model = Award_and_scholarship
-        fields = ['award_name', 'catalog']  
+        fields = '__all__'  # This will include all fields of the model
 
 
 class PreviousWinnerSerializer(serializers.ModelSerializer):

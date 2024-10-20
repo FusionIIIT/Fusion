@@ -72,7 +72,7 @@ class Award_and_scholarship(models.Model):
 
     class Meta:
         db_table = 'Award_and_scholarship'
-
+        
     def __str__(self):
         return self.award_name
 

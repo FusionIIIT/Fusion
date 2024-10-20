@@ -19,6 +19,7 @@ urlpatterns = [
     url(r'^getContent/$', views.getContent, name='getContent'),
     url(r'^updateEndDate/$', views.updateEndDate, name='updateEndDate'),
     #app
-    url(r'get-winners/', GetWinnersView.as_view(), name='get-winners')
+    url(r'get-winners/', GetWinnersView.as_view(), name='get-winners'),
+    
 
 ]

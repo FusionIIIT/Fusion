@@ -5,7 +5,20 @@ from applications.scholarships.models import Previous_winner, Award_and_scholars
 from applications.academic_information.models import Spi, Student
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation)
-from .serializers import PreviousWinnerSerializer
+from rest_framework import viewsets
+from .serializers import PreviousWinnerSerializer,AwardAndScholarshipSerializer
+
+
+
+
+
+class AwardAndScholarshipViewSet(viewsets.ModelViewSet):
+    queryset = Award_and_scholarship.objects.all()  # Fetches all records
+    serializer_class = AwardAndScholarshipSerializer  # Links the serializer to the ViewSet
+
+
+
+
 
 class GetWinnersView(APIView):
 
