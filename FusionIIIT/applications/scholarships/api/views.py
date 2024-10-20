@@ -1,20 +1,22 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.decorators import api_view
 from rest_framework import status
 from applications.scholarships.models import Previous_winner, Award_and_scholarship
 from applications.academic_information.models import Spi, Student
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation)
 from rest_framework import viewsets
-from .serializers import PreviousWinnerSerializer,AwardAndScholarshipSerializer
+from applications.scholarships.api.serializers import PreviousWinnerSerializer,AwardAndScholarshipSerializer
+
+class create_award(APIView):
+
+    def get(self, request, *args, **kwargs):
+        awards = Award_and_scholarship.objects.all()  # Fetch all awards
+        serializer = AwardAndScholarshipSerializer(awards, many=True)  # Serialize the awards
+        return Response(serializer.data, status=status.HTTP_200_OK)  
 
 
-
-
-
-class AwardAndScholarshipViewSet(viewsets.ModelViewSet):
-    queryset = Award_and_scholarship.objects.all()  # Fetches all records
-    serializer_class = AwardAndScholarshipSerializer  # Links the serializer to the ViewSet
 
 
 

@@ -1,7 +1,10 @@
 from django.conf.urls import url
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 
 from . import views
 from applications.scholarships.api.views import GetWinnersView
+from applications.scholarships.api.views import create_award
 
 app_name = 'spacs'
 
@@ -20,6 +23,9 @@ urlpatterns = [
     url(r'^updateEndDate/$', views.updateEndDate, name='updateEndDate'),
     #app
     url(r'get-winners/', GetWinnersView.as_view(), name='get-winners'),
-    
+    url(r'create-award/', create_award.as_view(), name='create-award'),
+
+
+
 
 ]
