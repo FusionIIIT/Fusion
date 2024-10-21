@@ -42,9 +42,9 @@
   <a class="item" href="{% url 'examination:updateGrades' %}">Verify
     <i class="right floated chevron right icon"></i>
   </a>
-  <a class="item" href="{% url 'examination:authenticate' %}">Authenticate Course
+  {% comment %} <a class="item" href="{% url 'examination:authenticate' %}">Authenticate Course
     <i class="right floated chevron right icon"></i>
-  </a>
+  </a> {% endcomment %}
 
   
   <a class="item" href="{% url 'examination:announcement' %}">Announcement
@@ -75,9 +75,7 @@
             <th>Course ID</th>
             <th>semester </th>
             <th>
-              Total Marks
-              <i class="arrow up icon sortable-icon"></i>
-              <i class="arrow down icon sortable-icon"></i>
+              Remarks
           </th>
             <th>Grade</th>
           </tr>
@@ -89,7 +87,7 @@
                 <td>{{ registration.batch }}</td>
                 <td>{{ registration.course_id }}</td>
                 <td>{{ registration.semester }}</td>
-                <td>{{ registration.total_marks }}</td>
+                <td>{{ registration.remarks }}</td>
 
             <td>
               <input type="hidden" name="student_ids[]" value="{{ registration.roll_no}}">
@@ -209,8 +207,9 @@
     function finalizeGrades() {
         // Submit the form
         document.querySelector('form').submit();
-
+        console.log("hyee")
         // Redirect to the URL that handles Excel download
+        alert('Course verification Successful please refresh the page')
         window.location.href = "{% url 'examination:submit' %}";
     }
 </script>
