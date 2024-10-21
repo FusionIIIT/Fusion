@@ -52,6 +52,9 @@ urlpatterns = [
          name='generate_transcript_form'),#new
     # Announcement
     url(r'announcement/', views.announcement, name='announcement'),#new
-    
+    path('upload_grades/',views.upload_grades,name='upload_grades'),
+    path('message/',views.show_message,name='message'),
+    path('submitGradesProf/',views.submitGradesProf,name='submitGradesProf'),
+    path('download_template/',views.download_template,name='download_template')
 
 ]
