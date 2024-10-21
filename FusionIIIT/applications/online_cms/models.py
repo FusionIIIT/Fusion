@@ -271,7 +271,7 @@ class Student_grades(models.Model):
     batch = models.IntegerField(default=2021)
     remarks = models.CharField(max_length=500,null=True)
     verified = models.BooleanField(default=False) 
- 
+    reSubmit = models.BooleanField(default=True) 
     def __str__(self):
         return '{} - {}'.format(self.pk, self.course_id)
 

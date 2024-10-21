@@ -635,6 +635,7 @@ class moderate_student_grades(APIView):
         semester_ids = request.POST.getlist('semester_ids[]')
         course_ids = request.POST.getlist('course_ids[]')
         grades = request.POST.getlist('grades[]')
+        allow_resubmission = request.POST.get('allow_resubmission', 'NO')
 
         if len(student_ids) != len(semester_ids) != len(course_ids) != len(grades):
             return Response({'error': 'Invalid grade data provided'}, status=status.HTTP_400_BAD_REQUEST)
@@ -646,6 +647,8 @@ class moderate_student_grades(APIView):
                     course_id=course_id, roll_no=student_id, semester=semester_id)
                 grade_of_student.grade = grade
                 grade_of_student.verified = True
+                if allow_resubmission == 'YES':
+                    grade_of_student.reSubmit = True
                 grade_of_student.save()
             except Student_grades.DoesNotExist:
                 # If the grade doesn't exist, create a new one
@@ -998,7 +1001,7 @@ def download_template(request):
 
 
 def verifyGradesDean(request):
-    unique_course_ids = Student_grades.objects.values("course_id").distinct()
+    unique_course_ids = Student_grades.objects.filter(verified=True).values("course_id").distinct()
 
     # Cast the course IDs to integers
     unique_course_ids = unique_course_ids.annotate(
@@ -1037,3 +1040,117 @@ def updateEntergradesDean(request):
     context = {"registrations": course_present}
 
     return render(request, "../templates/examination/updateEntergradesDean.html", context)
+
+
+
+def upload_grades_prof(request):
+    if request.method == "POST" and request.FILES.get("csv_file"):
+        csv_file = request.FILES["csv_file"]
+
+        if not csv_file.name.endswith(".csv"):
+            return JsonResponse(
+                {"error": "Invalid file format. Please upload a CSV file."}, status=400
+            )
+
+        course_id = request.POST.get("course_id")
+        academic_year = request.POST.get("academic_year")
+        # semester = request.POST.get('semester')
+
+        if academic_year == "None" or not academic_year.isdigit():
+            return JsonResponse(
+                {"error": "Academic year must be a valid number."}, status=400
+            )
+
+        if not course_id or not academic_year:
+            return JsonResponse(
+                {"error": "Course ID and Academic Year are required."}, status=400
+            )
+
+        courses_info = Courses.objects.get(id=course_id)
+
+        courses = Student_grades.objects.filter(
+            course_id=courses_info.id, year=academic_year
+        )
+        students = course_registration.objects.filter(
+            course_id_id=course_id, working_year=academic_year
+        )
+
+        if not students:
+            message = "NO STUDENTS REGISTERED IN THIS COURSE THIS SEMESTER"
+            redirect_url = reverse("examination:message") + f"?message={message}"
+            return JsonResponse(
+                {"error": message, "redirect_url": redirect_url}, status=400
+            )
+        print(courses.first().reSubmit)
+        if courses and not courses.first().reSubmit:
+            
+            message = "THIS Course was Already Submitted"
+            redirect_url = reverse("examination:message") + f"?message={message}"
+            return JsonResponse(
+                {"error": message, "redirect_url": redirect_url}, status=400
+            )
+
+        semester = students.first().semester_id_id
+
+        try:
+            # Parse the CSV file
+            decoded_file = csv_file.read().decode("utf-8").splitlines()
+            reader = csv.DictReader(decoded_file)
+
+            required_columns = ["roll_no", "name", "grade", "remarks"]
+            if not all(column in reader.fieldnames for column in required_columns):
+                return JsonResponse(
+                    {
+                        "error": "CSV file must contain the following columns: roll_no, name, grade, remarks."
+                    },
+                    status=400,
+                )
+
+            for row in reader:
+                roll_no = row["roll_no"]
+                grade = row["grade"]
+                remarks = row["remarks"]
+                batch_prefix = roll_no[:2]
+                batch = int(f"20{batch_prefix}")
+                reSubmit=False
+                Student_grades.objects.update_or_create(
+                 roll_no=roll_no,
+                 course_id_id=course_id,
+                 year=academic_year,
+                 semester=semester,
+        # Fields that will be updated if a match is found
+                 defaults={
+                    'grade': grade,
+                    'remarks': remarks,
+                    'reSubmit': reSubmit,
+                }
+                )
+            des = request.session.get("currentDesignationSelected")
+            if (
+             str(des) == "Associate Professor"
+             or str(des) == "Professor"
+             or str(des) == "Assistant Professor"
+              ):
+             return JsonResponse(
+                {
+                    "message": "Grades uploaded successfully.",
+                    "redirect_url": "/examination/submitGradesProf",
+                }
+             )
+            return JsonResponse(
+                {
+                    "message": "Grades uploaded successfully.",
+                    "redirect_url": "/examination/submitGrades",
+                }
+            )
+
+        except Courses.DoesNotExist:
+            return JsonResponse({"error": "Invalid course ID."}, status=400)
+
+        except Exception as e:
+            return JsonResponse({"error": f"An error occurred: {e}"}, status=500)
+
+    return JsonResponse(
+        {"error": "Invalid request. Please upload a CSV file."}, status=400
+    )
+

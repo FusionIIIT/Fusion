@@ -103,6 +103,13 @@
         </tbody>
       </table>
     </div>
+    <div class="ui form field">
+        <label for="allow_resubmission">Allow Resubmission:</label>
+        <select name="allow_resubmission" id="allow_resubmission" class="ui dropdown">
+          <option value="NO">NO</option>
+          <option value="YES">YES</option>
+        </select>
+      </div>
     {% comment %} <button class="ui primary button" type="submit">FINALISE Grades</button> {% endcomment %}
     <button class="ui primary button" id="finalize-grades" onclick="finalizeGrades()"> FINALISE Grades & Download Excel</button>
     
