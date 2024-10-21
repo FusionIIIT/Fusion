@@ -82,6 +82,8 @@ def exam(request):
         return HttpResponseRedirect("/examination/submitGradesProf/")
     elif request.session.get("currentDesignationSelected") == "acadadmin":
         return HttpResponseRedirect("/examination/updateGrades/")
+    elif request.session.get("currentDesignationSelected") == "Dean Academic":
+        return HttpResponseRedirect("/examination/verifyGradesDean/")
 
     return HttpResponseRedirect("/dashboard/")
 
@@ -992,3 +994,46 @@ def download_template(request):
     writer.writerow(["roll_no", "name", "grade", "remarks"])
 
     return response
+
+
+
+def verifyGradesDean(request):
+    unique_course_ids = Student_grades.objects.values("course_id").distinct()
+
+    # Cast the course IDs to integers
+    unique_course_ids = unique_course_ids.annotate(
+        course_id_int=Cast("course_id", IntegerField())
+    )
+
+    # Retrieve course names and course codes based on unique course IDs
+
+    # print(unique_course_ids)
+    courses_info = Courses.objects.filter(
+        id__in=unique_course_ids.values_list("course_id_int", flat=True)
+    )
+
+    unique_batch_ids = Student_grades.objects.values("batch").distinct()
+
+    context = {
+        "courses_info": courses_info,
+        "unique_batch_ids": unique_batch_ids,
+    }
+
+    return render(request, "../templates/examination/submitGradeDean.html", context)
+
+
+def updateEntergradesDean(request):
+    course_id = request.GET.get("course")
+    semester_id = request.GET.get("semester")
+    batch = request.GET.get("batch")
+    course_present = Student_grades.objects.filter(
+        course_id=course_id, semester=semester_id, batch=batch
+    )
+
+    if not course_present:
+        context = {"message": "THIS COURSE IS NOT SUBMITTED BY THE INSTRUCTOR"}
+        return render(request, "../templates/examination/message.html", context)
+
+    context = {"registrations": course_present}
+
+    return render(request, "../templates/examination/updateEntergradesDean.html", context)

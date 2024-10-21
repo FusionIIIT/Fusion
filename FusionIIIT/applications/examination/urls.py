@@ -55,6 +55,7 @@ urlpatterns = [
     path('upload_grades/',views.upload_grades,name='upload_grades'),
     path('message/',views.show_message,name='message'),
     path('submitGradesProf/',views.submitGradesProf,name='submitGradesProf'),
-    path('download_template/',views.download_template,name='download_template')
-
+    path('download_template/',views.download_template,name='download_template'),
+    path('verifyGradesDean/',views.verifyGradesDean,name='verifyGradesDean'),
+    path('updateEntergradesDean/',views.updateEntergradesDean,name='updateEnterGradesDean')
 ]

@@ -110,7 +110,10 @@
             return;
         }
 
-       
+        if (!confirm('Are you sure you want to submit?')) {
+            // If the user clicks "Cancel", do not proceed
+            return;
+        }
         var formData = new FormData();
         formData.append('course_id', selectedCourse);
         formData.append('academic_year', selectedYear);

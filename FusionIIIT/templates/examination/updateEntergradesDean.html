@@ -92,13 +92,11 @@
                 <td>{{ registration.semester }}</td>
                 <td>{{ registration.remarks }}</td>
                 
-
-
             <td>
               <input type="hidden" name="student_ids[]" value="{{ registration.roll_no}}">
               <input type="hidden" name="semester_ids[]" value="{{ registration.semester }}">
               <input type="hidden" name="course_ids[]" value="{{ registration.course_id.id }}">
-              <input type="text" name="grades[]" value="{{ registration.grade }}" readonly>
+              <input type="text" name="grades[]" value="{{ registration.grade }}">
             </td>
           </tr>
           {% endfor %}
@@ -107,7 +105,7 @@
     </div>
     {% comment %} <button class="ui primary button" type="submit">FINALISE Grades</button> {% endcomment %}
     <button class="ui primary button" id="finalize-grades" onclick="finalizeGrades()"> FINALISE Grades & Download Excel</button>
-
+    
   </form>
   <div class="ui segment">
     <canvas id="gradesChart" width="400" height="400"></canvas>
