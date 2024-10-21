@@ -374,18 +374,15 @@ def fetchDesignations(request):
 def requestsView(request):
     data = request.data
     serializer = RequestsSerializer(data=data, context={'request': request})
-    print("WOW1", data)
     
     if serializer.is_valid():
         formObject = serializer.save()
         print(formObject)
         request_object = Requests.objects.get(pk=formObject.pk)
         receiver_desg, receiver_user = data.get('designation').split('|')
-        print("WOW", receiver_desg, receiver_user, data)
         try:
             receiver_user_obj = User.objects.get(username=receiver_user)
         except User.DoesNotExist:
-            print("hahahaha")
             return Response({'error': 'Receiver user does not exist'}, status=status.HTTP_400_BAD_REQUEST)
         create_file(
             uploader=request.user.username,
@@ -413,27 +410,19 @@ def requestsView(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def created_requests_view(request):
+    # print("REQUESTT:", request)
+    params = request.query_params
     obj = []
-    desg = request.session.get('currentDesignationSelected')
-
-    # Fetch inbox files based on username and designation
     inbox_files = view_inbox(
         username=request.user,
-        designation=desg,
+        designation=params.get('role'),
         src_module="IWD"
     )
-
-    # Iterate through inbox files to find requests and related file info
     for result in inbox_files:
         src_object_id = result['src_object_id']
-        
-        # Get the associated request object
         request_object = Requests.objects.filter(id=src_object_id).first()
         if request_object:
-            # Get the associated file object
             file_obj = get_object_or_404(File, src_object_id=request_object.id, src_module="IWD")
-
-            # Prepare the data to append to the response list
             element = {
                 'request_id': request_object.id,
                 'name': request_object.name,
@@ -444,48 +433,26 @@ def created_requests_view(request):
             }
             obj.append(element)
 
-    # Return the response as JSON
     return Response(obj, status=200)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def view_file_api(request, id, url):
-    # Get the File object using the provided ID or return 404 if not found
+def view_file_api(request):
+    params = request.query_params
+    id = params.get('file_id')
+    print(id)
     file1 = get_object_or_404(File, id=id)
 
-    # Get the related tracking records
     tracks = Tracking.objects.filter(file_id=file1)
 
-    # Get the current user from the last tracking record
-    current_user = Tracking.objects.filter(file_id=file1).order_by('-receive_date').first().receiver_id
-
-    # Fetch all designations
-    designations = Designation.objects.all()
-
-    # Filter HoldsDesignation based on designations_list (assuming it comes from session or another source)
-    designations_list = request.session.get('designations_list', [])  # assuming designations_list is stored in session
-    holds_designations = []
-    
-    for d in designations:
-        if d.name in designations_list:
-            holds_designations_objs = HoldsDesignation.objects.filter(designation=d)
-            holds_designations += holds_designations_objs
-
-    # Get the current eligible designation from session
     eligible = request.session.get('currentDesignationSelected')
 
-    # Serialize the data
     file_serializer = FileSerializer(file1)
     tracks_serializer = TrackingSerializer(tracks, many=True)
-    holds_designations_serializer = HoldsDesignationSerializer(holds_designations, many=True)
-
-    # Return the serialized data as JSON
     return Response({
         "file": file_serializer.data,
         "tracks": tracks_serializer.data,
-        "current_user": current_user,
-        "holds_designations": holds_designations_serializer.data,
-        "url": url,
+        "url": "url",
         "eligible": eligible
     }, status=200)
 
