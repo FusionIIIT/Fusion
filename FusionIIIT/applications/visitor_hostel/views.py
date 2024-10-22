@@ -5,6 +5,7 @@ import os
 import sys
 
 from django.core.files.storage import FileSystemStorage
+from django.views.decorators.csrf import csrf_exempt
 
 from Fusion import settings
 from applications.visitor_hostel.models import RoomDetail
@@ -36,6 +37,8 @@ from django.utils import timezone
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view, permission_classes,authentication_classes
+
+from django.views.decorators.http import require_GET
 
 # from .forms import InventoryForm
 
@@ -290,6 +293,24 @@ def visitorhostel(request):
                    'cancel_booking_requested': cancel_booking_requested,
                    'user_designation': user_designation})
 
+#### NEW
+@login_required
+@require_GET
+def get_intenders(request):
+    intenders = User.objects.all().values('id', 'username')
+    return JsonResponse(list(intenders), safe=False)
+
+@login_required
+def get_user_details(request):
+    user = request.user
+    user_details = {
+        'id': user.id,
+        'username': user.username,
+        'role': 'student' if user.groups.filter(name='Students').exists() else 'other',
+        'intender_id': user.id  # Assuming the intender_id is the same as the user ID
+    }
+    return JsonResponse(user_details)
+
 # Get methods for bookings
 
 
@@ -303,6 +324,7 @@ def get_booking_requests(request):
     # intenders
     intenders = User.objects.all()
     user = request.user
+    print("Intenders: ",intenders)
     vhcaretaker = request.user.holds_designations.filter(
         designation__name='VhCaretaker').exists()
     vhincharge = request.user.holds_designations.filter(
@@ -318,11 +340,11 @@ def get_booking_requests(request):
     if request.method == 'GET':
         print("User Designation: ", user_designation)
         if user_designation in ["VhIncharge", "VhCaretaker"]:
-            # Fetch all pending bookings
-            pending_bookings = BookingDetail.objects.select_related('intender', 'caretaker').filter(status="Pending")
+             # Fetch all bookings for VhIncharge and VhCaretaker
+            all_bookings = BookingDetail.objects.select_related('intender', 'caretaker').all()
         else:
             # Filter bookings by the authenticated user
-            pending_bookings = BookingDetail.objects.select_related('intender', 'caretaker').filter(status="Pending", intender=request.user)
+            all_bookings = BookingDetail.objects.select_related('intender', 'caretaker').filter(intender=request.user)
 
         # Serialize the queryset to a list of dictionaries
         bookings_list = [
@@ -333,9 +355,12 @@ def get_booking_requests(request):
                 'bookingFrom': booking.booking_from.isoformat() if booking.booking_from else None,
                 'bookingTo': booking.booking_to.isoformat() if booking.booking_to else None,
                 'category': booking.visitor_category,
+                'modifiedCategory': booking.modified_visitor_category,
                 'status': booking.status,
+                'remarks': booking.remark,
+                'rooms': [room.room_number for room in booking.rooms.all()]
             }
-            for booking in pending_bookings
+            for booking in all_bookings
         ]
 
         return JsonResponse({'pending_bookings': bookings_list})
@@ -417,138 +442,249 @@ def get_booking_form(request):
         return HttpResponseRedirect('/visitorhostel/')
 
 # request booking form action view starts here
-
-
-@login_required(login_url='/accounts/login/')
+# request booking form action view
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 def request_booking(request):
-
     if request.method == 'POST':
-        flag = 0
+        try:
+            # Getting details from request form
+            intenders = User.objects.all()
+            user = request.user
+            # intender = request.POST.get('intender')
+            # user = User.objects.get(id=intenders)
+            print("jiihuhhih")
+            print("USER is: ", user)
+            booking_id = request.data.get('booking_id')  # Fixed field name
+            category = request.data.get('category')
+            person_count = request.data.get('number-of-people')
+            purpose_of_visit = request.data.get('purpose-of-visit')
+            booking_from = request.data.get('booking_from')
+            booking_to = request.data.get('booking_to')
+            booking_from_time = request.data.get('booking_from_time')
+            booking_to_time = request.data.get('booking_to_time')
+            remarks_during_booking_request = request.data.get('remarks_during_booking_request')
+            bill_to_be_settled_by = request.data.get('bill_settlement')
+            number_of_rooms = request.data.get('number-of-rooms')
+            intenders_list = list(intenders)
+            # print("INTENDERS :",intenders_list)
+            # Visitor details
+            visitor_name = request.data.get('visitor_name')
+            visitor_email = request.data.get('visitor_email')
+            visitor_phone = request.data.get('visitor_phone')
+            visitor_organization = request.data.get('visitor_organization')
+            visitor_address = request.data.get('visitor_address')
+            nationality = request.data.get('nationality')
 
-        # getting details from request form
-        intender = request.POST.get('intender')
-        user = User.objects.get(id=intender)
-        print("jiihuhhih")
-        print(user)
-        booking_id = request.POST.get('booking-id')
-        category = request.POST.get('category')
-        person_count = request.POST.get('number-of-people')
-        bookingObject = []
-        # if person_count and (int(person_count)<20):
-        #   person_count = person_count
+            # Fetching caretaker
+            care_taker = HoldsDesignation.objects.select_related('user', 'working', 'designation') \
+                .filter(designation__name="VhCaretaker").first()
+            care_taker_user = care_taker.user if care_taker else None
 
-        # else:
-        #  flag = 1    # for error
+            if care_taker_user:
+                # Create a VisitorDetail object for the visitor
+                visitor = VisitorDetail.objects.create(
+                    visitor_name=visitor_name,
+                    visitor_email=visitor_email,
+                    visitor_phone=visitor_phone,
+                    visitor_organization=visitor_organization,
+                    visitor_address=visitor_address,
+                    nationality=nationality,
+                )
 
-        #     person_count = 1
-        purpose_of_visit = request.POST.get('purpose-of-visit')
-        booking_from = request.POST.get('booking_from')
-        booking_to = request.POST.get('booking_to')
-        booking_from_time = request.POST.get('booking_from_time')
-        booking_to_time = request.POST.get('booking_to_time')
-        remarks_during_booking_request = request.POST.get(
-            'remarks_during_booking_request')
-        bill_to_be_settled_by = request.POST.get('bill_settlement')
-        number_of_rooms = request.POST.get('number-of-rooms')
-        caretaker = 'shailesh'
+                # Create a BookingDetail object
+                booking = BookingDetail.objects.create(
+                    caretaker=care_taker_user,
+                    purpose=purpose_of_visit,
+                    intender=user,
+                    booking_from=booking_from,
+                    booking_to=booking_to,
+                    visitor_category=category,
+                    person_count=person_count,
+                    arrival_time=booking_from_time,
+                    departure_time=booking_to_time,
+                    number_of_rooms=number_of_rooms,
+                    bill_to_be_settled_by=bill_to_be_settled_by,
+                    remark=remarks_during_booking_request,  # Correct field name
+                )
+                
+                # Associate visitor with the booking
+                booking.visitor.set([visitor])
 
-     #   if (int(person_count)<int(number_of_rooms)):
-      #      flag=1
+                return JsonResponse({'success': 'Booking successfully created', 'booking_id': booking.id})
+            else:
+                return JsonResponse({'error': 'Caretaker not found'}, status=400)
 
-      #  if flag ==0:
-        # print(sys.getsizeof(booking_from_time))
-        # print(sys.getsizeof(booking_from))
-        # print(sys.getsizeof(purpose_of_visit))
-        # print(sys.getsizeof(bill_to_be_settled_by))
-        # print("gfcfhcghv")
-        care_taker = HoldsDesignation.objects.select_related('user','working','designation').filter(designation__name = "VhCaretaker")
-        care_taker = care_taker[0]
-        # print(care_taker,"care_taker")
-        care_taker = care_taker.user
-        bookingObject = BookingDetail.objects.create(
-            caretaker=care_taker,
-            purpose=purpose_of_visit,
-            intender=user,
-            booking_from=booking_from,
-            booking_to=booking_to,
-            visitor_category=category,
-            person_count=person_count,
-            arrival_time=booking_from_time,
-            departure_time=booking_to_time,
-            # remark=remarks_during_booking_request,
-            number_of_rooms=number_of_rooms,
-            bill_to_be_settled_by=bill_to_be_settled_by)
-        # visitor_hostel_caretaker_notif(request.user,care_taker,"Submitted")
-        # print (bookingObject)
-        # print("Hello")
-#        {% if messages %}
-#   {% for message in messages %}
-#     <div class="alert alert-dismissible alert-success">
-#       <button type="button" class="close" data-dismiss="alert">
-#       ×
-#       </button>
-#       <strong>{{message}}<strong>
-#     </div>
-#  {% endfor %}
-# {% endif %}
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
 
-        # in case of any attachment
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
+# request booking form action view starts here
 
-        doc = request.FILES.get('files-during-booking-request')
-        remark = remarks_during_booking_request,
-        if doc:
-            print("hello")
-            filename, file_extenstion = os.path.splitext(
-                request.FILES.get('files-during-booking-request').booking_id)
-            filename = booking_id
-            full_path = settings.MEDIA_ROOT + "/VhImage/"
-            url = settings.MEDIA_URL + filename + file_extenstion
-            if not os.path.isdir(full_path):
-                cmd = "mkdir " + full_path
-                os.subprocess.call(cmd, shell=True)
-            fs = FileSystemStorage(full_path, url)
-            fs.save(filename + file_extenstion, doc)
-            uploaded_file_url = "/media/online_cms/" + filename
-            uploaded_file_url = uploaded_file_url + file_extenstion
-            bookingObject.image = uploaded_file_url
-            bookingObject.save()
+# @login_required(login_url='/accounts/login/')
+# def request_booking(request):
 
-        # visitor datails from place request form
+#     if request.method == 'POST':
+#         print("Received Data:", request)
+#         print("Request POST Data:", request.POST)
+#         print("Request FILES Data:", request.FILES)
+#         # print("Request Headers:", request.headers)
+#         # print("Request Method:", request.method)
+#         # print("Request User:", request.user)
+#         flag = 0
 
-        visitor_name = request.POST.get('name')
-        visitor_phone = request.POST.get('phone')
-        visitor_email = request.POST.get('email')
-        visitor_address = request.POST.get('address')
-        visitor_organization = request.POST.get('organization')
-        visitor_nationality = request.POST.get('nationality')
-        # visitor_nationality="jk"
-        if visitor_organization == '':
-            visitor_organization = ' '
+#         # getting details from request form
+#         intender = request.POST.get('intender')
+#         user = User.objects.get(id=intender)
+#         print("jiihuhhih")
+#         print(user)
+#         booking_id = request.POST.get('booking-id')
+#         category = request.POST.get('category')
+#         person_count = request.POST.get('number-of-people')
+#         bookingObject = []
+#         # if person_count and (int(person_count)<20):
+#         #   person_count = person_count
 
-        visitor = VisitorDetail.objects.create(
-            visitor_phone=visitor_phone, visitor_name=visitor_name, visitor_email=visitor_email, visitor_address=visitor_address, visitor_organization=visitor_organization, nationality=visitor_nationality
-        )
+#         # else:
+#         #  flag = 1    # for error
 
-        # try:
-        # bd = BookingDetail.objects.get(id=booking_id)
+#         #     person_count = 1
+#         purpose_of_visit = request.POST.get('purpose-of-visit')
+#         booking_from = request.POST.get('booking_from')
+#         booking_to = request.POST.get('booking_to')
+#         booking_from_time = request.POST.get('booking_from_time')
+#         booking_to_time = request.POST.get('booking_to_time')
+#         remarks_during_booking_request = request.POST.get(
+#             'remarks_during_booking_request')
+#         bill_to_be_settled_by = request.POST.get('bill_settlement')
+#         number_of_rooms = request.POST.get('number-of-rooms')
+#         caretaker = 'shailesh'
 
-        bookingObject.visitor.add(visitor)
-        bookingObject.save()
+#      #   if (int(person_count)<int(number_of_rooms)):
+#       #      flag=1
 
-        # except:
-        # print("exception occured")
-        # return HttpResponse('/visitorhostel/')
+#       #  if flag ==0:
+#         # print(sys.getsizeof(booking_from_time))
+#         # print(sys.getsizeof(booking_from))
+#         # print(sys.getsizeof(purpose_of_visit))
+#         # print(sys.getsizeof(bill_to_be_settled_by))
+#         # print("gfcfhcghv")
+#         care_taker = HoldsDesignation.objects.select_related('user','working','designation').filter(designation__name = "VhCaretaker")
+#         care_taker = care_taker[0]
+#         # print(care_taker,"care_taker")
+#         care_taker = care_taker.user
+#         bookingObject = BookingDetail.objects.create(
+#             caretaker=care_taker,
+#             purpose=purpose_of_visit,
+#             intender=user,
+#             booking_from=booking_from,
+#             booking_to=booking_to,
+#             visitor_category=category,
+#             person_count=person_count,
+#             arrival_time=booking_from_time,
+#             departure_time=booking_to_time,
+#             # remark=remarks_during_booking_request,
+#             number_of_rooms=number_of_rooms,
+#             bill_to_be_settled_by=bill_to_be_settled_by)
+#         # visitor_hostel_caretaker_notif(request.user,care_taker,"Submitted")
+#         # print (bookingObject)
+#         # print("Hello")
+# #        {% if messages %}
+# #   {% for message in messages %}
+# #     <div class="alert alert-dismissible alert-success">
+# #       <button type="button" class="close" data-dismiss="alert">
+# #       ×
+# #       </button>
+# #       <strong>{{message}}<strong>
+# #     </div>
+# #  {% endfor %}
+# # {% endif %}
 
-        # for sending notification of booking request to caretaker
+# #         # in case of any attachment
 
-        # caretaker_name = HoldsDesignation.objects.select_related('user','working','designation').get(designation__name = "VhCaretaker")
-        # visitors_hostel_notif(request.user, care_taker.user, 'booking_request')
+# #         doc = request.FILES.get('files-during-booking-request')
+# #         remark = remarks_during_booking_request,
+# #         if doc:
+# #             print("hello")
+# #             filename, file_extenstion = os.path.splitext(
+# #                 request.FILES.get('files-during-booking-request').booking_id)
+# #             filename = booking_id
+# #             full_path = settings.MEDIA_ROOT + "/VhImage/"
+# #             url = settings.MEDIA_URL + filename + file_extenstion
+# #             if not os.path.isdir(full_path):
+# #                 cmd = "mkdir " + full_path
+# #                 os.subprocess.call(cmd, shell=True)
+# #             fs = FileSystemStorage(full_path, url)
+# #             fs.save(filename + file_extenstion, doc)
+# #             uploaded_file_url = "/media/online_cms/" + filename
+# #             uploaded_file_url = uploaded_file_url + file_extenstion
+# #             bookingObject.image = uploaded_file_url
+# #             bookingObject.save()
 
-        return HttpResponseRedirect('/visitorhostel/')
-    else:
-        return HttpResponseRedirect('/visitorhostel/')
+# #         # visitor datails from place request form
 
+#         visitor_name = request.POST.get('name')
+#         visitor_phone = request.POST.get('phone')
+#         visitor_email = request.POST.get('email')
+#         visitor_address = request.POST.get('address')
+#         visitor_organization = request.POST.get('organization')
+#         visitor_nationality = request.POST.get('nationality')
+#         # visitor_nationality="jk"
+#         if visitor_organization == '':
+#             visitor_organization = ' '
 
+#         visitor = VisitorDetail.objects.create(
+#             visitor_phone=visitor_phone, visitor_name=visitor_name, visitor_email=visitor_email, visitor_address=visitor_address, visitor_organization=visitor_organization, nationality=visitor_nationality
+#         )
+
+#         # try:
+#         # bd = BookingDetail.objects.get(id=booking_id)
+
+#         bookingObject.visitor.add(visitor)
+#         bookingObject.save()
+
+#         # except:
+#         # print("exception occured")
+#         # return HttpResponse('/visitorhostel/')
+
+#         # for sending notification of booking request to caretaker
+
+#         # caretaker_name = HoldsDesignation.objects.select_related('user','working','designation').get(designation__name = "VhCaretaker")
+#         # visitors_hostel_notif(request.user, care_taker.user, 'booking_request')
+
+#         return HttpResponseRedirect('/visitorhostel/')
+#     else:
+#         return HttpResponseRedirect('/visitorhostel/')
+
+#get booking details as Caretaker
+
+def get_booking_details(request, booking_id):
+    try:
+        booking = BookingDetail.objects.select_related('intender').prefetch_related('visitor', 'rooms').get(id=booking_id)
+        booking_data = {
+            'intenderUsername': booking.intender.username,
+            'intenderEmail': booking.intender.email,
+            'bookingFrom': booking.booking_from,
+            'bookingTo': booking.booking_to,
+            'visitorCategory': booking.visitor_category,
+            'personCount': booking.person_count,
+            'numberOfRooms': booking.number_of_rooms,
+            'purpose': booking.purpose,
+            'billToBeSettledBy': booking.bill_to_be_settled_by,
+            'remarks': booking.remark,
+            'visitorName': booking.visitor.first().visitor_name if booking.visitor.exists() else '',
+            'visitorEmail': booking.visitor.first().visitor_email if booking.visitor.exists() else '',
+            'visitorPhone': booking.visitor.first().visitor_phone if booking.visitor.exists() else '',
+            'visitorOrganization': booking.visitor.first().visitor_organization if booking.visitor.exists() else '',
+            'visitorAddress': booking.visitor.first().visitor_address if booking.visitor.exists() else '',
+            'availableRooms': list(RoomDetail.objects.filter(room_status='Available').values('room_number'))
+        }
+        return JsonResponse(booking_data)
+    except BookingDetail.DoesNotExist:
+        return JsonResponse({'error': 'Booking not found'}, status=404)
+    
 # updating a booking request
 
 @login_required(login_url='/accounts/login/')
@@ -601,6 +737,51 @@ def update_booking(request):
 
     else:
         return HttpResponseRedirect('/visitorhostel/')
+
+# new confirm booking byVhIncharge
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@login_required(login_url='/accounts/login/')
+def confirm_booking_new(request):
+    if request.method == 'POST':
+        try:
+            booking_id = request.data.get('booking_id')
+            modified_category = request.data.get('modified_category')
+            rooms = request.data.get('rooms', [])
+            remarks = request.data.get('remarks')
+            action = request.data.get('action')
+
+            booking = BookingDetail.objects.select_related('intender', 'caretaker').get(id=booking_id)
+            if action == 'accept':
+                booking.status = 'Confirmed'
+            elif action == 'reject':
+                booking.status = 'Rejected'
+            booking.modified_visitor_category = modified_category
+            booking.remark = remarks
+
+            # Clear existing rooms and add new rooms
+            booking.rooms.clear()
+            for room in rooms:
+                room_object = RoomDetail.objects.get(room_number=room)
+                booking.rooms.add(room_object)
+            booking.number_of_rooms_alloted = len(rooms)
+            booking.save()
+
+            # Notification of booking confirmation or rejection
+            visitors_hostel_notif(request.user, booking.intender, 'booking_confirmation' if action == 'accept' else 'booking_rejection')
+
+            return JsonResponse({'success': f'Booking successfully {action}ed'})
+        except BookingDetail.DoesNotExist:
+            return JsonResponse({'error': 'Booking not found'}, status=404)
+        except RoomDetail.DoesNotExist:
+            return JsonResponse({'error': 'One or more rooms not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 
 # confirm booking by VhIncharge
@@ -1091,3 +1272,53 @@ def forward_booking(request):
         return HttpResponseRedirect('/visitorhostel/')
     else:
         return HttpResponseRedirect('/visitorhostel/')
+
+import logging  
+logger = logging.getLogger(__name__)
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def forward_booking_new(request):
+    try:
+        booking_id = request.data.get('booking_id')
+        modified_category = request.data.get('modified_category')
+        rooms = request.data.get('rooms', [])
+        remarks = request.data.get('remarks')
+
+        logger.info(f"Received rooms: {rooms}")
+
+        booking = BookingDetail.objects.select_related('intender', 'caretaker').get(id=booking_id)
+        booking.status = "Forward"
+        booking.modified_visitor_category = modified_category
+        booking.remark = remarks
+
+        # Clear existing rooms and add new rooms
+        booking.rooms.clear()
+        for room in rooms:
+            try:
+                room_object = RoomDetail.objects.get(room_number=room)
+                booking.rooms.add(room_object)
+            except RoomDetail.DoesNotExist:
+                logger.error(f"Room {room} does not exist")
+                return JsonResponse({'error': f'Room {room} not found'}, status=404)
+        booking.number_of_rooms_alloted = len(rooms)
+        booking.save()
+
+        # Notify the VhIncharge about the forwarded booking
+        incharge_designations = HoldsDesignation.objects.select_related(
+            'user', 'working', 'designation').filter(designation__name="VhIncharge")
+        
+        if not incharge_designations.exists():
+            return JsonResponse({'error': 'VhIncharge not found'}, status=404)
+        
+        incharge_name = incharge_designations.first()
+        visitors_hostel_notif(request.user, incharge_name.user, 'booking_forwarded')
+
+        return JsonResponse({'success': 'Booking successfully forwarded'})
+    except BookingDetail.DoesNotExist:
+        return JsonResponse({'error': 'Booking not found'}, status=404)
+    except RoomDetail.DoesNotExist:
+        return JsonResponse({'error': 'One or more rooms not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
