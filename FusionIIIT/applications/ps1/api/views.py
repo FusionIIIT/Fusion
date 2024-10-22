@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from applications.filetracking.sdk.methods import *
 from datetime import datetime
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden,JsonResponse
 from django.db.models import Q,Count
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
@@ -272,21 +272,42 @@ def createProposal(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def indentView(request, id):
-    if request.method == 'GET':
-        tracking_objects = Tracking.objects.all()
-        tracking_obj_ids = [obj.file_id for obj in tracking_objects]
-        draft_indent = IndentFile.objects.filter(file_info__in=tracking_obj_ids)
-        draft = [indent.file_info.id for indent in draft_indent]
-        draft_files = File.objects.filter(id__in=draft).order_by('-upload_date')
-        indents = [file.indentfile for file in draft_files]
-        abcd = HoldsDesignation.objects.get(pk=id)
-        s = str(abcd).split(" - ")
+    currentDesignation = request.GET.get('role')  # Capture role from headers
+    if currentDesignation=="student":
+        return Response({'error': 'Student are not allowd to access this view'}, status=403)
+    
+    designation = HoldsDesignation.objects.filter(user=request.user, designation__name=currentDesignation).first()
+    
+    # if str(id) != str(designation.id):
+    #     return JsonResponse({'redirect': f'/purchase-and-store/indentview/{designation.id}'}, status=302)
 
-        serializer = IndentFileSerializer(indents, many=True)
-        return Response(serializer.data)
-    else:
-        return Response({"message": "Method not allowed"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    tracking_objects = Tracking.objects.all()
+    tracking_obj_ids = [obj.file_id for obj in tracking_objects]
+    draft_indent = IndentFile.objects.filter(file_info__in=tracking_obj_ids)
+    draft = [indent.file_info.id for indent in draft_indent]
+    draft_files = File.objects.filter(id__in=draft).order_by('-upload_date')
+    indents = [file.indentfile for file in draft_files]
+    serializer = IndentFileSerializer(indents, many=True)
+    serializer_draft = FileSerializer(draft_files, many=True)
 
+    combined_data = []
+    for indent_data, draft_file_data in zip(serializer.data, serializer_draft.data):
+        combined_data.append({
+            'indent': indent_data,
+            'draft_file': draft_file_data
+        })
+    extrainfo = list(ExtraInfo.objects.all().values())
+    abcd = HoldsDesignation.objects.get(pk=id)
+    s = str(abcd).split(" - ")
+    designations = s[1]
+    notifs = list(request.user.notifications.all().values())
+
+    response_data = {
+        'Data': combined_data,
+        'notifications': list(notifs),
+    }
+    
+    return Response(response_data)
 
 
 @api_view(['GET'])
@@ -298,17 +319,7 @@ def indentView2(request, id):
         return Response({'error': 'Student are not allowd to access this view'}, status=403)
     # if request.session.get('currentDesignationSelected') == "student":
     #     return Response({'error': 'Students are not allowed to access this view'}, status=403)
-    print(request.user)
-    print(currentDesignation)
-    print(currentDesignation)
-    print(currentDesignation)
-    print(currentDesignation)
-    print(currentDesignation)
-    print(currentDesignation)
-    print(currentDesignation)
-    print(currentDesignation)
-    print(currentDesignation)
-    print(currentDesignation)
+ 
     designation = HoldsDesignation.objects.filter(user=request.user, designation__name=currentDesignation).first()
 
     if not designation:
