@@ -787,7 +787,8 @@ def handleUpdateRequests(request):
 @permission_classes([IsAuthenticated])
 def issueWorkOrder(request):
     obj = []
-    desg = request.session.get('currentDesignationSelected')
+    params = request.query_params
+    desg = params.get('role')
 
     # Retrieve inbox files
     inbox_files = view_inbox(
@@ -801,10 +802,10 @@ def issueWorkOrder(request):
         src_object_id = result['src_object_id']
         request_object = Requests.objects.filter(
             id=src_object_id,
-            directorApproval=1,
+            # directorApproval=1,
             issuedWorkOrder=0
         ).first()
-
+        print(request_object, 11)
         if request_object:
             element = {
                 "id": request_object.id,
