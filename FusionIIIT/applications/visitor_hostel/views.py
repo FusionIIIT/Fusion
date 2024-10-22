@@ -386,9 +386,30 @@ def get_booking_requests(request):
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def get_active_bookings(request):
+    # intenders
+    intenders = User.objects.all()
+    user = request.user
+    vhcaretaker = request.user.holds_designations.filter(
+        designation__name='VhCaretaker').exists()
+    vhincharge = request.user.holds_designations.filter(
+        designation__name='VhIncharge').exists()
+
+    # finding designation of user
+    user_designation = "Intender"
+    if vhincharge:
+        user_designation = "VhIncharge"
+    elif vhcaretaker:
+        user_designation = "VhCaretaker"
+
     if request.method == 'GET':
-        active_bookings = BookingDetail.objects.select_related(
-            'intender', 'caretaker').filter(status="Confirmed")
+        print("User Designation: ", user_designation)
+
+        if user_designation in ["VhIncharge", "VhCaretaker"]:
+            # Fetch all confirmed bookings for VhCaretaker or VhIncharge
+            active_bookings = BookingDetail.objects.select_related('intender', 'caretaker').filter( Q(status="Forward") | Q(status="CheckedIn") | Q(status="Pending"), booking_to__gte=datetime.datetime.today())
+        else:
+            # Filter active bookings for the logged-in user (intender)
+            active_bookings = BookingDetail.objects.select_related('intender', 'caretaker').filter( Q(status="Forward") | Q(status="CheckedIn") | Q(status="Pending"), booking_to__gte=datetime.datetime.today())
 
         # Serialize the queryset to a list of dictionaries
         bookings_list = [
@@ -409,6 +430,7 @@ def get_active_bookings(request):
         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 
+
 # @login_required(login_url='/accounts/login/')
 # def get_active_bookings(request):
 #     if request.method == 'POST':
@@ -420,17 +442,113 @@ def get_active_bookings(request):
 #         return HttpResponseRedirect('/visitorhostel/')
 
 
-@login_required(login_url='/accounts/login/')
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 def get_inactive_bookings(request):
-    if request.method == 'POST':
-        inactive_bookings = BookingDetail.objects.select_related('intender', 'caretaker').filter(
-            Q(status="Cancelled") | Q(status="Rejected") | Q(status="Complete"))
+    # intenders
+    intenders = User.objects.all()
+    user = request.user
+    vhcaretaker = request.user.holds_designations.filter(
+        designation__name='VhCaretaker').exists()
+    vhincharge = request.user.holds_designations.filter(
+        designation__name='VhIncharge').exists()
 
-        return render(request, "vhModule/visitorhostel.html", {'inactive_bookings': inactive_bookings})
+    # finding designation of user
+    user_designation = "Intender"
+    if vhincharge:
+        user_designation = "VhIncharge"
+    elif vhcaretaker:
+        user_designation = "VhCaretaker"
+
+    if request.method == 'GET':
+        print("User Designation: ", user_designation)
+
+        if user_designation in ["VhIncharge", "VhCaretaker"]:
+            # Fetch all cancelled bookings for VhCaretaker or VhIncharge
+            cancelled_bookings = BookingDetail.objects.select_related('intender', 'caretaker').filter(Q(status="Canceled") | Q(status="Rejected"))
+        else:
+            # Filter cancelled bookings for the logged-in user (intender)
+            cancelled_bookings = BookingDetail.objects.select_related('intender', 'caretaker').filter(Q(status="Canceled") | Q(status="Rejected"), intender=request.user)
+
+        # Serialize the queryset to a list of dictionaries
+        bookings_list = [
+            {
+                'id': booking.id,
+                'intender': booking.intender.first_name,
+                'email': booking.intender.email,
+                'bookingFrom': booking.booking_from.isoformat() if booking.booking_from else None,
+                'bookingTo': booking.booking_to.isoformat() if booking.booking_to else None,
+                'category': booking.visitor_category,
+                # 'status': booking.status,  # Optional, if you need to include it
+            }
+            for booking in cancelled_bookings
+        ]
+
+        return JsonResponse({'cancelled_bookings': bookings_list})
     else:
-        return HttpResponseRedirect('/visitorhostel/')
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+# @login_required(login_url='/accounts/login/')
+# def get_inactive_bookings(request):
+#     if request.method == 'POST':
+#         inactive_bookings = BookingDetail.objects.select_related('intender', 'caretaker').filter(
+#             Q(status="Cancelled") | Q(status="Rejected") | Q(status="Complete"))
+
+#         return render(request, "vhModule/visitorhostel.html", {'inactive_bookings': inactive_bookings})
+#     else:
+#         return HttpResponseRedirect('/visitorhostel/')
 
 # Method for making booking request
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def get_completed_bookings(request):
+    # intenders
+    intenders = User.objects.all()
+    user = request.user
+    vhcaretaker = request.user.holds_designations.filter(
+        designation__name='VhCaretaker').exists()
+    vhincharge = request.user.holds_designations.filter(
+        designation__name='VhIncharge').exists()
+
+    # Determine the user's designation
+    user_designation = "Intender"
+    if vhincharge:
+        user_designation = "VhIncharge"
+    elif vhcaretaker:
+        user_designation = "VhCaretaker"
+
+    if request.method == 'GET':
+        print("User Designation: ", user_designation)
+
+        if user_designation in ["VhIncharge", "VhCaretaker"]:
+            # Fetch all completed bookings for VhCaretaker or VhIncharge
+            completed_bookings = BookingDetail.objects.select_related(
+                'intender', 'caretaker').filter(check_out__lt=datetime.datetime.today(), intender=user).order_by('booking_from').reverse()
+        else:
+            # Filter completed bookings for the logged-in user (intender)
+            completed_bookings = BookingDetail.objects.select_related(
+                'intender', 'caretaker').filter(check_out__lt=datetime.datetime.today(), intender=user).order_by('booking_from').reverse()
+
+        # Serialize the queryset to a list of dictionaries
+        bookings_list = [
+            {
+                'id': booking.id,
+                'intender': booking.intender.first_name,
+                'email': booking.intender.email,
+                'bookingFrom': booking.booking_from.isoformat() if booking.booking_from else None,
+                'bookingTo': booking.booking_to.isoformat() if booking.booking_to else None,
+                'category': booking.visitor_category,
+            }
+            for booking in completed_bookings
+        ]
+
+        return JsonResponse({'completed_bookings': bookings_list})
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 
 @login_required(login_url='/accounts/login/')
@@ -820,7 +938,9 @@ def confirm_booking(request):
         return HttpResponseRedirect('/visitorhostel/')
 
 
-@login_required(login_url='/accounts/login/')
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 def cancel_booking(request):
     if request.method == 'POST':
         user = request.user
@@ -879,8 +999,10 @@ def cancel_booking_request(request):
 
 
 # rehject a booking request
-
-@login_required(login_url='/accounts/login/')
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 def reject_booking(request):
     if request.method == 'POST':
         booking_id = request.POST.get('booking-id')
