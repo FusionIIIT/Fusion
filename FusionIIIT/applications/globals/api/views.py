@@ -75,6 +75,7 @@ def logout(request):
 def auth_view(request):
     user=request.user
     name = request.user.first_name +"_"+ request.user.last_name
+    roll_no = request.user.username
 
     extra_info = get_object_or_404(ExtraInfo, user=user)
     last_selected_role = extra_info.last_selected_role
@@ -86,10 +87,11 @@ def auth_view(request):
         name_ = get_object_or_404(Designation, id = id)
         designation_info.append(str(name_.name))
 
+    print(designation_info)
     accessible_modules = {}
     
     for designation in designation_info:
-        module_access = ModuleAccess.objects.filter(designation=designation).first()
+        module_access = ModuleAccess.objects.filter(designation__iexact=designation).first()
         if module_access:
             filtered_modules = {}
 
@@ -103,6 +105,7 @@ def auth_view(request):
     resp={
         'designation_info' : designation_info,
         'name': name,
+        'roll_no': roll_no,
         'accessible_modules': accessible_modules,
         'last_selected_role': last_selected_role
     }
