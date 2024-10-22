@@ -1,0 +1,84 @@
+{% load static %}
+{% block  start_elective_allocation %}
+
+
+{% comment %}The tab menu starts here!{% endcomment %}
+<div class="ui active tab" data-tab="this">
+    <div class="ui vertical segment">
+        <form class="ui form" method="post" id="allocation-check">
+            {% csrf_token %}
+            <div class="field">
+                <label>Batch</label>
+                <input type="text" id="batch-check" name="batch-check" required>
+            </div>
+            <div class="field">
+                <label>Semester</label>
+                <input type="text" id="semester-check" name="semester-check" required>
+            </div>            
+            <div class="field">
+                <button id="check-allocation" class="ui fluid primary button">
+                    Check allocation
+                </button>
+            </div>
+            <div>
+                <p id="message">
+                </p>
+            </div>
+            <div class="field">
+                <button id="start-allocation" class="ui fluid primary button">
+                    start allocation
+                </button>
+            </div>
+        </form>
+
+        <div id="student_elective_list" style="margin-top: 30px"></div>
+        <div class="ui divider"></div>
+
+    </div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"> </script>
+<script type="text/javascript">
+    // document.getElementById('start-allocation').style.display = 'none';
+    $('#check-allocation').click(function(e){
+        e.preventDefault();
+        $.ajax({
+            type:'post',
+            url:'/aims/',
+            data:{
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+                batch:$("#batch-check").val(),
+                sem:$("#semester-check").val(),
+                check_allocation:1,
+            },
+            success: function(data){
+                if(data.status == 1){
+                    console.log("COOL")
+                    console.log(data) 
+                    document.getElementById('start-allocation').style.display = 'block';
+                }
+                else{
+                    document.getElementById('message').innerHTML = data.message;
+                }    
+            }
+        })
+    })
+
+    $('#start-allocation').click(function(e){
+        e.preventDefault();
+        $.ajax({
+            type:'post',
+            url:'/aims/',
+            data:{
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+                batch:$("#batch-check").val(),
+                sem:$("#semester-check").val(),
+                start_allocation:1,
+            },
+            sussess:function(data){
+                console.log(data)
+            }
+        })
+    })
+</script>
+
+{% endblock %}
