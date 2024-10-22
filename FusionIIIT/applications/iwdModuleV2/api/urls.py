@@ -36,7 +36,6 @@ urlpatterns = [
     path('requests-view/', views.requestsView, name='requestsView'),
     path('created-requests-view/', views.created_requests_view, name='createdRequests'),
     path('view-file/', views.view_file_api, name='viewFile'),
-    path('view-file/', views.view_file_api, name='viewFile'),
     path('handle-engineer-process-requests/', views.handleEngineerProcessRequests, name='handleEngineerProcessRequests'),
     path('engineer-processed-requests/', views.engineer_processed_requests, name='engineerProcessedRequests'),
     path('handle-dean-process-requests/', views.handle_dean_process_requests, name='handleDeanProcessRequests'),
