@@ -405,12 +405,18 @@ def get_active_bookings(request):
         print("User Designation: ", user_designation)
 
         if user_designation in ["VhIncharge", "VhCaretaker"]:
-            # Fetch all confirmed bookings for VhCaretaker or VhIncharge
-            active_bookings = BookingDetail.objects.select_related('intender', 'caretaker').filter( Q(status="Forward") | Q(status="CheckedIn") | Q(status="Pending"), booking_to__gte=datetime.datetime.today())
+            # Fetch all relevant bookings for VhCaretaker or VhIncharge
+            active_bookings = BookingDetail.objects.select_related('intender', 'caretaker').filter(
+                Q(status="Forward") | Q(status="CheckedIn") | Q(status="Pending"),
+                booking_to__gte=date.today()
+            )
         else:
-            # Filter active bookings for the logged-in user (intender)
-            active_bookings = BookingDetail.objects.select_related('intender', 'caretaker').filter( Q(status="Forward") | Q(status="CheckedIn") | Q(status="Pending"), booking_to__gte=datetime.datetime.today())
-
+            # Fetch only the logged-in user's bookings
+            active_bookings = BookingDetail.objects.select_related('intender', 'caretaker').filter(
+                Q(status="Forward") | Q(status="CheckedIn") | Q(status="Pending"),
+                booking_to__gte=date.today(),
+                intender=user
+            )
         # Serialize the queryset to a list of dictionaries
         bookings_list = [
             {
@@ -1185,6 +1191,29 @@ def bill_generation(request):
 
         else:
             return HttpResponseRedirect('/visitorhostel/')
+        
+# get available rooms list between date range
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def room_availabity_new(request):
+    if request.method == 'POST':
+        date_1 = request.data.get('start_date')
+        date_2 = request.data.get('end_date')
+        available_rooms_list = []
+
+        available_rooms_bw_dates = booking_details(date_1, date_2)
+
+        for room in available_rooms_bw_dates:
+            available_rooms_list.append(room.room_number)
+
+        available_rooms_array = np.asarray(available_rooms_list)
+        
+        # Return available rooms in a JSON response
+        return JsonResponse({'available_rooms': available_rooms_array.tolist()})
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 # get available rooms list between date range
 
