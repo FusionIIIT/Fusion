@@ -1,4 +1,5 @@
 from django.conf.urls import url
+from applications.visitor_hostel.api.views  import AddToInventory, InventoryListView
 
 from . import views
 
@@ -30,9 +31,7 @@ urlpatterns = [
     url(r'^edit-room-status/', views.edit_room_status, name = 'edit_room_status'),
     url(r'^booking-details/', views.booking_details, name = 'booking_details'),
     url(r'^forward-booking/', views.forward_booking, name = 'forward_booking'),
-    url(r'^intenders/', views.get_intenders, name='get_intenders'),  # 
-    url(r'^user-details/', views.get_user_details, name='get_user_details'),  #
-    url(r'^get-booking-details/(?P<booking_id>\d+)/$', views.get_booking_details, name='get_booking_details'),  #
-    url(r'^forward-booking-new/$', views.forward_booking_new, name='forward_booking_new'),
-     url(r'^confirm-booking-new/$', views.confirm_booking_new, name='confirm_booking_new'),  #
+    #api
+    url('api/inventory_add/', AddToInventory.as_view(), name='add-to-inventory'),
+    url('api/inventory_list/', InventoryListView.as_view(), name='inventory-list'),
 ]
