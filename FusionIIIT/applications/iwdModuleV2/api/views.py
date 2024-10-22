@@ -571,8 +571,8 @@ def handle_dean_process_requests(request):
 @permission_classes([IsAuthenticated])
 def dean_processed_requests(request):
     obj = []
-    desg = request.session.get('currentDesignationSelected')
-
+    params = request.query_params
+    desg = params.get('role')
     inbox_files = view_inbox(
         username=request.user.username,
         designation=desg,
@@ -631,7 +631,7 @@ def handle_director_approval_requests(request):
 @permission_classes([IsAuthenticated])
 def rejectedRequests(request):
     obj = []
-    desg = request.session.get('currentDesignationSelected')
+    desg = request.query_params.get('role')
 
     # Fetch inbox files for the current user and designation
     inbox_files = view_inbox(
@@ -682,8 +682,7 @@ def rejectedRequests(request):
 @permission_classes([IsAuthenticated])
 def updateRejectedRequests(request):
     request_id = request.data.get("id", 0)
-
-    desg = request.session.get('currentDesignationSelected')
+    desg = request.data.get("role", "")
 
     # Fetch the inbox files for the current user and designation
     inbox_files = view_inbox(
