@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     # to create a new indent file
     url(r'^create_proposal/', views.createProposal, name='create-proposal'),
+    url(r'^create_draft/', views.createDraft, name='create-draft'),
 
     # PENDING : TO CREATE A INDENT FILE DRAFT
 
@@ -13,12 +14,17 @@ urlpatterns = [
 
     # to get the indent files created by the user
     url(r'^indentview/(?P<id>\d+)$', views.indentView, name='indent-view'),
+    url(r'^indentview2/(?P<id>\d+)$', views.indentView2, name='indent-view2'),
 
     # to get the indent Files drafts by a user
     url(r'^draftview/(?P<id>\d+)$', views.draftView, name='draft-view'),
     
     # to get all the indent files inwarded to the user  'id' is holdsDesignation id.
     url(r'^inwardIndents/(?P<id>\d+)$', views.inwardIndents, name='inward-indents'),
+
+
+    url(r'^outboxview2/(?P<id>\d+)/$', views.outboxview2, name='outboxview2'),
+
 
     # to see the details of a specifc indent file
     url(r'^indentFile/(?P<id>\d+)$', views.indentFile, name='indent-file'),
