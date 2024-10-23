@@ -47,6 +47,33 @@ def getDesignations(request):
     except Exception as e:
         return Response({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def getOneFiledIndent(request):
+    try:
+        file_id = request.data.get('file_id')
+        # console.log(file_id)
+        indent = IndentFile.objects.get(file_info_id=file_id)
+        # console.log(indent)
+        serializer = IndentFileSerializer(indent)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except IndentFile.DoesNotExist:
+        return Response({"error": "Indent not found."}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def delete_indent(request):
+    try:
+        file_id = request.data.get('file_id')  
+        indent = IndentFile.objects.get(file_info_id=file_id)
+        indent.delete()
+        return Response({"message": "Indent deleted successfully."}, status=status.HTTP_200_OK)
+    except IndentFile.DoesNotExist:
+        return Response({"error": "Indent not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
 
@@ -189,6 +216,7 @@ def createProposal(request):
             purpose = request.data.get('purpose')
             specification = request.data.get('specification')
             item_type = request.data.get('item_type')
+            item_subtype = request.data.get('itemSubtype')
             # nature = request.data.get('nature')
             # equipment = request.data.get('indigenous')
             # replaced = request.data.get('replaced')
@@ -236,6 +264,7 @@ def createProposal(request):
                 purpose=purpose,
                 specification=specification,
                 item_type=item_type,
+                item_subtype=item_subtype,
                 # nature=nature,
                 # equipment=equipment,
                 # replaced=replaced,
@@ -366,7 +395,7 @@ def draftView(request, id):
 
         indents = IndentFile.objects.filter(file_info__in=request.user.extrainfo.uploaded_files.all()).select_related('file_info')
         department = request.user.extrainfo.department.name
-        print("gaurva")
+        # print("gaurva")
         print(department)
         indent_ids = [indent.file_info for indent in indents]
         filed_indents = Tracking.objects.filter(file_id__in=indent_ids)
@@ -374,6 +403,7 @@ def draftView(request, id):
         draft = list(set(indent_ids) - set(filed_indent_ids))
         draft_indent = IndentFile.objects.filter(file_info__in=draft).values("file_info")
         draft_files = File.objects.filter(id__in=draft_indent).order_by('-upload_date')
+        print(draft_files)
         abcd = HoldsDesignation.objects.get(pk=id)
         s = str(abcd).split(" - ")
         serializer = FileSerializer(draft_files, many=True)

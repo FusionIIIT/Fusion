@@ -6,7 +6,8 @@ urlpatterns = [
     # to create a new indent file
     url(r'^create_proposal/', views.createProposal, name='create-proposal'),
     url(r'^create_draft/', views.createDraft, name='create-draft'),
-
+    url(r'^delete_indent/', views.delete_indent, name='delete-indents'),
+    url(r'^view_indent/', views.getOneFiledIndent, name='view-indent'),
     # PENDING : TO CREATE A INDENT FILE DRAFT
 
     # GET DESIGNATIONS USING USER TOKEN 
