@@ -70,7 +70,7 @@ class LetterOfIntentDetailsSerializer(serializers.ModelSerializer):
 
 class WorkOrderFormSerializer(serializers.ModelSerializer):
     class Meta:
-        model = WorkOrderForm
+        model = WorkOrder
         fields = '__all__'
 
 class AgreementSerializer(serializers.ModelSerializer):

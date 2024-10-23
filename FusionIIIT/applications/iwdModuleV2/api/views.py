@@ -620,9 +620,10 @@ def handle_director_approval_requests(request):
     )
 
     message = ""
-
+    print(data)
     if data.get('action') == 'approve':
         message = "Request_approved"
+        print(message)
         Requests.objects.filter(id=request_id).update(directorApproval=1, status="Approved by the director")
     else:
         message = "Request_rejected"
@@ -636,7 +637,6 @@ def rejectedRequests(request):
     obj = []
     desg = request.query_params.get('role')
 
-    # Fetch inbox files for the current user and designation
     inbox_files = view_inbox(
         username=request.user,
         designation=desg,
@@ -657,28 +657,9 @@ def rejectedRequests(request):
             }
             obj.append(element)
 
-    # Collect designations and holdsDesignations
-    designations = Designation.objects.all()
-    holdsDesignations = []
-
-    designations_list = request.session.get('designations_list', [])
-
-    for d in designations:
-        if d.name in designations_list:
-            holds_list = HoldsDesignation.objects.filter(designation=d)
-            holdsDesignations.extend(holds_list)
-
-    # Prepare and return the response with rejected requests and designations
+    # Prepare and return the response with rejected requests
     return Response({
         "rejected_requests": obj,
-        "holds_designations": [
-            {
-                "id": hold.id,
-                "designation": hold.designation.name,
-                "user": hold.user.username
-            }
-            for hold in holdsDesignations
-        ]
     }, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
@@ -739,17 +720,14 @@ def updateRejectedRequests(request):
         "holds_designations": holdsDesignations_data
     }, status=status.HTTP_200_OK)
 
-@api_view(['POST'])
+@api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def handleUpdateRequests(request):
-    # Extract request data
-    request_id = request.data.get("id", 0)
-    desg = request.session.get('currentDesignationSelected')
+    data = request.data
+    request_id = data.get("id", 0)
+    desg = data.get('role')
+    receiver_desg, receiver_user = data.get('designation').split('|')
 
-    # Split receiver information
-    receiver_user, receiver_desg = request.data['designation'].split('|')
-
-    # Update the request object
     Requests.objects.filter(id=request_id).update(
         name=request.data.get('name'),
         description=request.data.get('description'),
@@ -765,8 +743,9 @@ def handleUpdateRequests(request):
         billProcessed=0,
         billSettled=0
     )
-
-    # Create a file using the utility function
+    file_obj = File.objects.get(src_object_id=request_id, src_module="IWD")
+    if file_obj:
+        delete_file(file_obj.id)
     create_file(
         uploader=request.user.username,
         uploader_designation=desg,
@@ -775,14 +754,12 @@ def handleUpdateRequests(request):
         src_module="IWD",
         src_object_id=str(request_id),
         file_extra_JSON={"value": 2},
-        attached_file=None  # Adjust if attachments are allowed
+        attached_file=None
     )
 
-    # Notify the receiver user
     receiver_user_obj = User.objects.get(username=receiver_user)
     iwd_notif(request.user, receiver_user_obj, "Request_added")
 
-    # Return a success response
     return Response({"message": "Request updated successfully"}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
@@ -807,8 +784,7 @@ def issueWorkOrder(request):
             # directorApproval=1,
             issuedWorkOrder=0
         ).first()
-        print(request_object, 11)
-        if request_object:
+        if request_object and request_object.directorApproval==1:
             element = {
                 "id": request_object.id,
                 "name": request_object.name,
@@ -853,11 +829,13 @@ def fetchRequest(request):
 @permission_classes([IsAuthenticated])
 def workOrder(request):
     # Retrieve data from request
-    request_id = request.data.get('id')
+    request_id = request.data.get('request_id')
+    print(request_id)
     request_instance = get_object_or_404(Requests, pk=request_id)
-
+    
     # Use the serializer to validate and save the WorkOrder instance
     serializer = WorkOrderFormSerializer(data=request.data)
+    print(serializer)
     if serializer.is_valid():
         # Create the WorkOrder instance with validated data
         work_order = serializer.save(request_id=request_instance)
@@ -867,32 +845,32 @@ def workOrder(request):
         request_instance.issuedWorkOrder = 1
         request_instance.save()
 
-        # Fetch inbox files
-        desg = request.session.get('currentDesignationSelected')  # Consider passing this in a different way for REST
-        inbox_files = view_inbox(
-            username=request.user.username,
-            designation=desg,
-            src_module="IWD"
-        )
+        # # Fetch inbox files
+        # desg = request.session.get('currentDesignationSelected')  # Consider passing this in a different way for REST
+        # inbox_files = view_inbox(
+        #     username=request.user.username,
+        #     designation=desg,
+        #     src_module="IWD"
+        # )
 
-        obj = []
+        # obj = []
 
-        # Build the response object
-        for result in inbox_files:
-            src_object_id = result['src_object_id']
-            request_object = Requests.objects.filter(id=src_object_id).first()
-            if request_object and request_object.issuedWorkOrder == 0:
-                element = {
-                    "id": request_object.id,
-                    "name": request_object.name,
-                    "area": request_object.area,
-                    "description": request_object.description,
-                    "requestCreatedBy": request_object.requestCreatedBy
-                }
-                obj.append(element)
+        # # Build the response object
+        # for result in inbox_files:
+        #     src_object_id = result['src_object_id']
+        #     request_object = Requests.objects.filter(id=src_object_id).first()
+        #     if request_object and request_object.issuedWorkOrder == 0:
+        #         element = {
+        #             "id": request_object.id,
+        #             "name": request_object.name,
+        #             "area": request_object.area,
+        #             "description": request_object.description,
+        #             "requestCreatedBy": request_object.requestCreatedBy
+        #         }
+        #         obj.append(element)
 
         messages.success(request, "Work Order Issued")
-        return Response({'obj': obj}, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_200_OK)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
