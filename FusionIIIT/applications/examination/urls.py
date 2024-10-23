@@ -59,5 +59,8 @@ urlpatterns = [
     path('verifyGradesDean/',views.verifyGradesDean,name='verifyGradesDean'),
     path('updateEntergradesDean/',views.updateEntergradesDean,name='updateEnterGradesDean'),
     path('upload_grades_prof/',views.upload_grades_prof,name='upload_grades_prof'),
+    path('validateDean/',views.validateDean,name='validateDean'),
+    path('validateDeanSubmit/',views.validateDeanSubmit,name='validateDeanSubmit'),
+
 
 ]

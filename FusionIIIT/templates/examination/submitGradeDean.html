@@ -6,12 +6,12 @@
   <a class="item" href="{% url 'examination:submitGrades' %}">Submit
     <i class="right floated chevron right icon"></i>
   </a> {% endcomment %}
-  <a class="active item" href="{% url 'examination:updateGrades' %}"><B>Verify</B>
+  <a class="active item" href="{% url 'examination:verifyGradesDean' %}"><B>Verify</B>
     <i class="right floated chevron right icon"></i>
   </a>
-  {% comment %} <a class="item" href="{% url 'examination:authenticate' %}">Authenticate Course
+  <a class="item" href="{% url 'examination:validateDean' %}"> Validate
     <i class="right floated chevron right icon"></i>
-  </a> {% endcomment %}
+  </a>
 
   {% comment %} <a class="item" href="{% url 'examination:announcement' %}">Announcement
     <i class="right floated chevron right icon"></i>
