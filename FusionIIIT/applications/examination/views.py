@@ -1035,7 +1035,7 @@ def updateEntergradesDean(request):
 
     if not course_present:
         context = {"message": "THIS COURSE IS NOT SUBMITTED BY THE INSTRUCTOR"}
-        return render(request, "../templates/examination/message.html", context)
+        return render(request, "../templates/examination/messageDean.html", context)
 
     context = {"registrations": course_present}
 
@@ -1182,23 +1182,29 @@ def validateDeanSubmit(request):
         csv_file = request.FILES["csv_file"]
 
         if not csv_file.name.endswith(".csv"):
-            return JsonResponse(
-                {"error": "Invalid file format. Please upload a CSV file."}, status=400
-            )
+            message = "Please Submit a csv file "
+            context = {
+                 "message":message,
+                }
+            return render(request, "../templates/examination/messageDean.html", context)
 
         course_id = request.POST.get("course")
         academic_year = request.POST.get("year")
         # semester = request.POST.get('semester')
         print(academic_year)
         if academic_year is None or not academic_year.isdigit():
-            return JsonResponse(
-                {"error": "Academic year must be a valid number."}, status=400
-            )
+            message = "Academic Year must be a number"
+            context = {
+                 "message":message,
+                }
+            return render(request, "../templates/examination/messageDean.html", context)
 
         if not course_id or not academic_year:
-            return JsonResponse(
-                {"error": "Course ID and Academic Year are required."}, status=400
-            )
+            message = "Course and Academic year are required"
+            context = {
+                 "message":message,
+                }
+            return render(request, "../templates/examination/messageDean.html", context)
 
         # courses_info = Courses.objects.get(id=course_id)
 
@@ -1218,12 +1224,12 @@ def validateDeanSubmit(request):
 
             required_columns = ["roll_no", "name", "grade", "remarks"]
             if not all(column in reader.fieldnames for column in required_columns):
-                return JsonResponse(
-                    {
-                        "error": "CSV file must contain the following columns: roll_no, name, grade, remarks."
-                    },
-                    status=400,
-                )
+                message = "CSV file must contain the following columns: roll_no, name, grade, remarks."
+                context = {
+                 "message":message,
+                }
+                return render(request, "../templates/examination/messageDean.html", context)
+                   
             semester = students.first().semester_id_id
             mismatch=[]
             for row in reader:
@@ -1259,7 +1265,7 @@ def validateDeanSubmit(request):
                 context = {
                  "message":message,
                 }
-                return render(request, "../templates/examination/message.html", context)
+                return render(request, "../templates/examination/messageDean.html", context)
             context = {
                  "mismatch": mismatch,
                 }
@@ -1271,4 +1277,4 @@ def validateDeanSubmit(request):
             context = {
                 "message": error_message,
             }
-            return render(request, "../templates/examination/message.html", context)
+            return render(request, "../templates/examination/messageDean.html", context)
