@@ -17,12 +17,15 @@ time = timezone.now()
 def check_for_registration_complete (request):
     batch = int(request.POST.get('batch'))
     sem = int(request.POST.get('sem'))
+    programme = request.POST.get('programme')
+    year = request.POST.get('year')
+
 
     date = time.date()
 
     try:
 
-        pre_registration_date = Calendar.objects.all().filter(description=f"Pre Registration {sem} {batch}").first()
+        pre_registration_date = Calendar.objects.all().filter(description=f"Pre Registration {sem} {year}").first()
         prd_start_date = pre_registration_date.from_date
         prd_end_date = pre_registration_date.to_date
 
@@ -31,7 +34,7 @@ def check_for_registration_complete (request):
         if date>=prd_start_date and date<=prd_end_date:
             return JsonResponse({'status':-1 , "message":"registration is under process"})
         
-        if course_registration.objects.filter(Q(semester_id__semester_no = sem) & Q(student_id__batch = batch)).exists() : 
+        if course_registration.objects.filter(Q(semester_id__semester_no = sem) & Q(student_id__batch = batch) & Q(student_id__programme = programme)).exists() : 
             return JsonResponse({'status':2,"message":"courses already allocated"})
         
         return JsonResponse({"status":1 , "message" : "courses not yet allocated"})
@@ -43,7 +46,11 @@ def random_algo(request) :
     print("hi")
     batch = request.POST.get('batch')
     sem = request.POST.get('sem')
-    unique_course = InitialRegistration.objects.filter(Q(semester_id__semester_no = sem) & Q(student_id__batch = batch)).values_list('course_id',flat=True).distinct()
+    programme = request.POST.get('programme')
+    year = request.POST.get('year')
+
+
+    unique_course = InitialRegistration.objects.filter(Q(semester_id__semester_no = sem) & Q(student_id__batch = batch) & Q(student_id__programme = programme)).values_list('course_id',flat=True).distinct()
     print("unique course")
     print(len(unique_course))
     max_seats={}
@@ -58,7 +65,7 @@ def random_algo(request) :
         present_priority[course] = []
         next_priority[course] = []
 
-    priority_1 = InitialRegistration.objects.filter(Q(semester_id__semester_no = sem) & Q(student_id__batch = batch) & Q(priority=1))
+    priority_1 = InitialRegistration.objects.filter(Q(semester_id__semester_no = sem) & Q(student_id__batch = batch) & Q(student_id__programme = programme) & Q(priority=1))
     print(priority_1)
     rem=0
     for p in priority_1 :
@@ -83,7 +90,7 @@ def random_algo(request) :
                         course_slot_object = CourseSlot.objects.get(id = random_student_selected[1])
                         course_registration.objects.create(
                             student_id = stud,
-                            working_year = time.year,
+                            working_year = year,
                             semester_id = sem,
                             course_id = course_object,
                             course_slot_id = course_slot_object
@@ -91,10 +98,11 @@ def random_algo(request) :
                         seats_alloted[course] += 1
                         rem-=1
                     else :
-                        next = InitialRegistration.objects.get(Q(student_id__id = random_student_selected[0]) & Q(course_id__id = course) & Q(priority = present_priority+1))
+                        next = InitialRegistration.objects.get(Q(student_id__id = random_student_selected[0]) & Q(course_id__id = course) & Q(student_id__programme = programme) & Q(priority = present_priority+1))
                         next_priority[course].append([next.student_id.id.id,next.course_slot_id.id])
             present_priority = next_priority
             next_priority = {course : [] for course in unique_course}
+            present_priority+=1
 
     print(rem)
     return JsonResponse({'status':1})

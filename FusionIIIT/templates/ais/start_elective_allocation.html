@@ -14,7 +14,16 @@
             <div class="field">
                 <label>Semester</label>
                 <input type="text" id="semester-check" name="semester-check" required>
-            </div>            
+            </div>
+            <div class="field">
+                <label>year</label>
+                <input type="text" id="year-check" name="year-check" required>
+            </div>
+            <div class="field">
+                <label>Programme</label>
+                <input type="text" id="programme-check" name="programme-check" required>
+            </div>
+
             <div class="field">
                 <button id="check-allocation" class="ui fluid primary button">
                     Check allocation
@@ -48,6 +57,8 @@
                 csrfmiddlewaretoken: '{{ csrf_token }}',
                 batch:$("#batch-check").val(),
                 sem:$("#semester-check").val(),
+                year:$("#year-check").val(),
+                programme:$('#programme-check').val(),
                 check_allocation:1,
             },
             success: function(data){
@@ -72,6 +83,8 @@
                 csrfmiddlewaretoken: '{{ csrf_token }}',
                 batch:$("#batch-check").val(),
                 sem:$("#semester-check").val(),
+                year:$("#year-check").val(),
+                programme:$('#programme-check').val(),
                 start_allocation:1,
             },
             sussess:function(data){
