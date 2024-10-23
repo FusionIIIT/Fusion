@@ -1215,31 +1215,25 @@ def viewBudget(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def addBudget(request):
-    if request.method == 'POST':
-        name = request.data.get('name')
-        budget_issued = request.data.get('budget')
+    name = request.data.get('name')
+    budget_issued = request.data.get('budget')
 
-        if name and budget_issued:
-            formObject = Budget(name=name, budgetIssued=budget_issued)
-            formObject.save()
-            return Response({'message': 'Budget added successfully.'}, status=status.HTTP_201_CREATED)
-        else:
-            return Response({'error': 'Name and budget are required.'}, status=status.HTTP_400_BAD_REQUEST)
-
-    return Response({'error': 'Invalid request method.'}, status=status.HTTP_400_BAD_REQUEST)
+    if name and budget_issued:
+        formObject = Budget(name=name, budgetIssued=budget_issued)
+        formObject.save()
+        return Response({'message': 'Budget added successfully.'}, status=status.HTTP_201_CREATED)
+    else:
+        return Response({'error': 'Name and budget are required.'}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def editBudget(request):
-    if request.method == "POST":
-        budget_id = request.data.get('id')
-        budget_name = request.data.get('name')
-        budget_issued = request.data.get('budget')
+    budget_id = request.data.get('id')
+    budget_name = request.data.get('name')
+    budget_issued = request.data.get('budget')
 
-        if budget_id and budget_name and budget_issued:
-            Budget.objects.filter(id=budget_id).update(name=budget_name, budgetIssued=budget_issued)
-            return Response({'message': 'Budget updated successfully.'}, status=status.HTTP_200_OK)
-        else:
-            return Response({'error': 'ID, name, and budget are required.'}, status=status.HTTP_400_BAD_REQUEST)
-
-    return Response({'error': 'Invalid request method.'}, status=status.HTTP_400_BAD_REQUEST)
+    if budget_id and budget_name and budget_issued:
+        Budget.objects.filter(id=budget_id).update(name=budget_name, budgetIssued=budget_issued)
+        return Response({'message': 'Budget updated successfully.'}, status=status.HTTP_200_OK)
+    else:
+        return Response({'error': 'ID, name, and budget are required.'}, status=status.HTTP_400_BAD_REQUEST)
