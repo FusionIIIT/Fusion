@@ -47,7 +47,7 @@
 </div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"> </script>
 <script type="text/javascript">
-    // document.getElementById('start-allocation').style.display = 'none';
+    document.getElementById('start-allocation').style.display = 'none';
     $('#check-allocation').click(function(e){
         e.preventDefault();
         $.ajax({
@@ -64,7 +64,8 @@
             success: function(data){
                 if(data.status == 1){
                     console.log("COOL")
-                    console.log(data) 
+                    console.log(data)
+                    document.getElementById('message').innerHTML = "";
                     document.getElementById('start-allocation').style.display = 'block';
                 }
                 else{
@@ -88,7 +89,9 @@
                 start_allocation:1,
             },
             sussess:function(data){
-                console.log(data)
+                if(data.status == -1){
+                    alert("not enough seats to allocate students")
+                }
             }
         })
     })

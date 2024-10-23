@@ -31,7 +31,7 @@ from applications.programme_curriculum.models import (CourseSlot, Course as Cour
 from applications.academic_procedures.views import acad_proced_global_context , get_sem_courses
 from applications.programme_curriculum.models import Batch
 from django.db.models import Q
-from .utils import check_for_registration_complete, random_algo
+from .utils import check_for_registration_complete,allocate
 
 
 @login_required
@@ -220,7 +220,7 @@ def homepage(request):
         if 'check_allocation' in request.POST : 
             return  check_for_registration_complete(request)
         if 'start_allocation' in request.POST :
-            return random_algo(request)
+            return allocate(request)
     context = get_context(request)
 
     return render(request, "ais/ais.html", context)
