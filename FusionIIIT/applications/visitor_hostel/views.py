@@ -40,6 +40,24 @@ from rest_framework.decorators import api_view, permission_classes,authenticatio
 
 from django.views.decorators.http import require_GET
 
+
+#----
+#account staments 
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.response import Response
+from .models import Inventory, InventoryBill
+from .serializers import InventorySerializer, InventoryBillSerializer
+
+#income
+from rest_framework import generics
+from .models import BookingDetail
+from .serializers import BookingDetailSerializer
+#--
+
+
+
 # from .forms import InventoryForm
 
 # for notifications
@@ -1473,3 +1491,117 @@ def forward_booking_new(request):
         return JsonResponse({'error': 'One or more rooms not found'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
+
+
+#account statements
+
+# Fetch all inventory items
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def get_inventory_items(request):
+    inventories = Inventory.objects.all()
+    serializer = InventorySerializer(inventories, many=True)
+    return Response(serializer.data)
+
+# Fetch a specific inventory item by ID
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def get_inventory_item(request, pk):
+    try:
+        inventory = Inventory.objects.get(id=pk)
+        serializer = InventorySerializer(inventory)
+        return Response(serializer.data)
+    except Inventory.DoesNotExist:
+        return Response({"error": "Inventory item not found"}, status=404)
+
+# Fetch all bills
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def get_inventory_bills(request):
+    bills = InventoryBill.objects.all()
+    serializer = InventoryBillSerializer(bills, many=True)
+    return Response(serializer.data)
+
+# Fetch a specific bill by ID
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def get_inventory_bill(request, pk):
+    try:
+        bill = InventoryBill.objects.get(id=pk)
+        serializer = InventoryBillSerializer(bill)
+        return Response(serializer.data)
+    except InventoryBill.DoesNotExist:
+        return Response({"error": "Bill not found"}, status=404)
+
+
+#income
+# account statements
+
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+from .models import BookingDetail
+from .serializers import BookingDetailSerializer
+
+# Fetch all booking details
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def get_all_bills(request):
+    bookings = BookingDetail.objects.all()
+    response_data = []
+
+    for booking in bookings:
+        # Check if the related bill exists
+        if hasattr(booking, 'bill'):
+            total_bill = booking.bill.meal_bill + booking.bill.room_bill
+            bill_id = booking.bill.id
+            bill_date = booking.bill.bill_date
+        else:
+            total_bill = 0
+            bill_id = None
+            bill_date = None
+            
+        response_data.append({
+            'intender_name': booking.intender.username,  # Assuming `username` for the user's name
+            'booking_from': booking.booking_from,
+            'booking_to': booking.booking_to,
+            'total_bill': total_bill,
+            'bill_id': bill_id,
+            'bill_date': bill_date,
+        })
+
+    return Response(response_data)
+
+# Fetch a specific booking detail by ID
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def get_bills_id(request, pk):
+    try:
+        booking = BookingDetail.objects.get(id=pk)
+        if hasattr(booking, 'bill'):
+            total_bill = booking.bill.meal_bill + booking.bill.room_bill
+            bill_id = booking.bill.id
+            bill_date = booking.bill.bill_date
+        else:
+            total_bill = 0
+            bill_id = None
+            bill_date = None
+
+        response_data = {
+            'intender_name': booking.intender.username,  # Assuming `username` for the user's name
+            'booking_from': booking.booking_from,
+            'booking_to': booking.booking_to,
+            'total_bill': total_bill,
+            'bill_id': bill_id,
+            'bill_date': bill_date,
+        }
+        return Response(response_data)
+    except BookingDetail.DoesNotExist:
+        return Response({"error": "Booking detail not found"}, status=404)

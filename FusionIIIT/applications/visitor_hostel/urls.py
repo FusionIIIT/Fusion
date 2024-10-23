@@ -36,8 +36,21 @@ urlpatterns = [
     url(r'^user-details/', views.get_user_details, name='get_user_details'),  #
     url(r'^get-booking-details/(?P<booking_id>\d+)/$', views.get_booking_details, name='get_booking_details'),  #
     url(r'^forward-booking-new/$', views.forward_booking_new, name='forward_booking_new'),
-    url(r'^confirm-booking-new/$', views.confirm_booking_new, name='confirm_booking_new'),  #
+
+     url(r'^confirm-booking-new/$', views.confirm_booking_new, name='confirm_booking_new'),  #
+
+    url(r'^inventory/$', views.get_inventory_items, name='get_inventory_items'),
+    url(r'^inventory/(?P<pk>\d+)/$', views.get_inventory_item, name='get_inventory_item'),
+    url(r'^inventory-bills/$', views.get_inventory_bills, name='get_inventory_bills'),
+    url(r'^inventory-bills/(?P<pk>\d+)/$', views.get_inventory_bill, name='get_inventory_bill'),
+
+   url(r'^accounts-income/$', views.get_all_bills, name='get_all_bills'),
+    url(r'^accounts-income/(?P<pk>\d+)/$', views.get_bills_id, name='get_bills_id'),
+
+    # url(r'^confirm-booking-new/$', views.confirm_booking_new, name='confirm_booking_new'),  #
     #api
     url('api/inventory_add/', AddToInventory.as_view(), name='add-to-inventory'),
     url('api/inventory_list/', InventoryListView.as_view(), name='inventory-list'),
+
 ]
+
