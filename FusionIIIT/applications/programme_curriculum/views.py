@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from .models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot,NewProposalFile,Proposal_Tracking
-from .forms import ProgrammeForm, DisciplineForm, CurriculumForm, SemesterForm, CourseForm, BatchForm, CourseSlotForm, ReplicateCurriculumForm,NewCourseProposalFile,CourseProposalTrackingFile
+from .forms import ProgrammeForm, DisciplineForm, CurriculumForm, SemesterForm, CourseForm, BatchForm, CourseSlotForm, ReplicateCurriculumForm,NewCourseProposalFile,CourseProposalTrackingFile, CourseInstructorForm
 from .filters import CourseFilter, BatchFilter, CurriculumFilter
 from django.db import IntegrityError
 from django.utils import timezone
@@ -1622,3 +1622,17 @@ def file_unarchive(request,FileId):
     file.is_archive=False
     file.save()
     return HttpResponseRedirect('/programme_curriculum/view_course_proposal_forms/')
+
+@login_required(login_url='/accounts/login')
+def add_course_instructor(request):
+    if request.session['currentDesignationSelected'] == "acadadmin":
+        if request.method == 'POST':
+            form = CourseInstructorForm(request.POST)
+            if form.is_valid():
+                form.save()  # Save the form data to the database
+                return redirect('/programme_curriculum/')  # Redirect to a success page after saving
+        else:
+            form = CourseInstructorForm()
+        
+        return render(request, 'programme_curriculum/acad_admin/add_course_instructor.html', {'form': form})
+    return HttpResponseRedirect('/programme_curriculum/')
