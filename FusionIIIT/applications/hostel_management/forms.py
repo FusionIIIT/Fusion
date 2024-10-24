@@ -31,3 +31,19 @@ class GuestRoomBookingForm(forms.ModelForm):
             'nationality',
             'room_type'
         )
+
+
+class AddNewHallForm(forms.ModelForm):
+    single_seater = forms.IntegerField(min_value=0, label='Single Seater Rooms')
+    double_seater = forms.IntegerField(min_value=0, label='Double Seater Rooms')
+    triple_seater = forms.IntegerField(min_value=0, label='Triple Seater Rooms')
+
+    class Meta:
+        model = Hall
+        fields = ['hall_id', 'hall_name','single_seater', 'double_seater', 'triple_seater']
+        help_texts = {
+            'hall_id': 'Hall ID should be like hall1, hall2, hall3, etc.',
+        }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['hall_id'].help_text = '<span style="color: red;">Hall ID should be like hall1, hall2, hall3, etc.</span>'

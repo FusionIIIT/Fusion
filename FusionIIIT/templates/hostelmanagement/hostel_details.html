@@ -1,0 +1,149 @@
+<!-- templates/hostelmanagement/hostel_details.html -->
+{% extends 'globals/base.html' %}
+{% load custom_filters %}
+{% load static %}
+
+{% block title %}
+Hostel Allotment
+{% endblock %}
+
+{% block body %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
+
+<div class="ui stackable doubling grid">
+    <div class="column"></div>
+    <div class="three wide column">
+        <div class="row">
+            {% block userCard %}
+            {% include 'globals/usercard.html' %}
+            {% endblock %}
+        </div>
+    </div>
+    <div class="eight wide column">
+        <div class="ui container">
+            <div class="ui stackable grid">
+                <div class="sixteen wide column">
+                    <h1 class="ui header">{{ hall.hall_name }} Room Details</h1>
+                    <button class="mini ui button"><a href="{% url 'hostelmanagement:hostel_view' %}">Back To
+                            Homepage</a></button>
+
+                </div>
+
+
+                <div class="sixteen wide column">
+                    <div class=" small ui buttons right floated">
+                        <a href="#" id="allotRoomsBtn" class="ui primary button">Allot Rooms</a>
+                        <a href="#" id="removeAllotmentBtn" class="ui red button">Remove Allotment</a>
+
+
+                    </div>
+                    <a class="ui primary button"
+                        href="{% url 'hostelmanagement:manual_room_allocation' hall.hall_id %}">
+                        <i class="tasks icon"></i>Manual Allocation
+                    </a>
+
+                </div>
+            </div>
+
+            {% for type in room_types %}
+            <div class="ui segment">
+                <div class="ui top attached label">{{ type }}</div>
+                <div class="ui divided items">
+                    <div class="item">
+                        <div class="content">
+                            <div class="meta">
+                                <span>
+                                    <i class="bed icon"></i> Total Rooms: {{ rooms|filter_by_type:type|length }}
+                                </span>
+                                <span>
+                                    <i class="user icon"></i> Occupied Seats: {{rooms|filter_by_type:type|occupied_seats }}
+                                    
+                                </span>
+                                <span>
+                                    <i class="door open icon"></i> Vacant Seats: {{rooms|filter_by_type:type|vacant_seats }}
+                                    
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui stackable grid" style="max-height: 400px; overflow-y: auto;">
+                    {% for room in rooms|filter_by_type:type %}
+                    <div class="four wide column">
+                        <div class="ui card {% if room.available_seats == 0 %}red{% else %}green{% endif %}">
+                            <div class="content">
+                                <div class="header">Room Number: {{ room.room_number }}</div>
+                                <div class="meta">
+                                    <i class="door closed icon"></i> Vacant Seats: {{ room.available_seats }}
+                                </div>
+                                {% if room.occupants.all %}
+                                <div class="description">
+                                    <ul class="ui list">
+                                        {% for occupant in room.occupants.all %}
+                                        <li class="item">
+                                            {{ occupant.id.user.username }}
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                {% else %}
+                                <div class="description">
+                                    <p class="text-muted">No occupants</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script src="https://kit.fontawesome.com/a076d05399.js"></script>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#allotRoomsBtn').click(function (e) {
+            e.preventDefault();
+            $.ajax({
+                url: "{% url 'hostelmanagement:allot_rooms' hall.hall_id %}",
+                type: 'POST',
+                success: function (response) {
+                    alert(response.message);
+                    location.reload(); // Reload the page to reflect changes
+                },
+                error: function (xhr, status, error) {
+                    alert("Error: " + xhr.responseJSON.message);
+                }
+            });
+        });
+
+        // Remove Allotment Button
+        $('#removeAllotmentBtn').click(function (e) {
+            e.preventDefault();
+            if (confirm("Are you sure you want to remove the allotment?")) {
+
+
+                $.ajax({
+                    url: "{% url 'hostelmanagement:remove_room_allotments' hall.hall_id %}",
+                    type: 'POST',
+                    success: function (response) {
+                        alert(response.message);
+                        location.reload(); // Reload the page to reflect changes
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Error: " + xhr.responseJSON.message);
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+{% endblock %}

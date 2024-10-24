@@ -29,29 +29,29 @@ Hostel
             <form method="post" class="ui form" action="{% url 'hostelmanagement:edit_student' student.id.id %}">
                 {% csrf_token %}
                 <label for="roll_number">Roll Number</label>
-                <input type="text" id="roll_number" name="roll_number" value="{{student.id.id}}"><br>
+                <input type="text" id="roll_number" name="roll_number" value="{{student.id.id}}" readonly style="border: 1px solid grey;"><br>
                 <span id="roll_error" style="color: red;"></span><br>
 
                 <label for="first_name">First Name:</label>
-                <input type="text" id="first_name" name="first_name" value="{{ student.id.user.first_name }}"><br>
+                <input type="text" id="first_name" name="first_name" value="{{ student.id.user.first_name }}" readonly style="border: 1px solid grey;"><br>
                 <span id="first_name_error" style="color: red;"></span><br>
 
                 <label for="programme">Programme:</label>
-                <input type="text" id="programme" name="programme" value="{{ student.programme }}"><br>
+                <input type="text" id="programme" name="programme" value="{{ student.programme }}" readonly style="border: 1px solid grey;"><br>
                 <span id="programme_error" style="color: red;"></span><br>
 
                 <label for="batch">Batch:</label>
-                <input type="text" id="batch" name="batch" value="{{ student.batch }}"><br>
+                <input type="text" id="batch" name="batch" value="{{ student.batch }}" readonly style="border: 1px solid grey;"><br>
                 <span id="batch_error" style="color: red;"></span><br>
                 
                 <label for="hall_number">Hall Number:</label>
-                <input type="text" id="hall_number" name="hall_number" value="{{ student.hall_no }}"><br>
+                <input type="text" id="hall_number" name="hall_number" value="{{ student.hall_no }}" readonly style="border: 1px solid grey;"><br>
 
                 <label for="room_number">Room Number:</label>
-                <input type="text" id="room_number" name="room_number" value="{{ student.room_no }}"><br>
+                <input type="text" id="room_number" name="room_number" value="{{ student.room_no }}" readonly style="border: 1px solid grey;"><br>
 
                 <label for="specialization">Specialization:</label>
-                <input type="text" id="specialization" name="specialization" value="{{ student.specialization }}"><br>
+                <input type="text" id="specialization" name="specialization" value="{{ student.specialization }}" readonly style="border: 1px solid grey;"><br>
 
                 <label for="phone_number">Contact Number:</label>
                 <input type="number" id="phone_number" name="phone_number" value="{{ student.id.phone_no }}"><br>
