@@ -6,9 +6,9 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from .models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot,NewProposalFile,Proposal_Tracking
-from .forms import ProgrammeForm, DisciplineForm, CurriculumForm, SemesterForm, CourseForm, BatchForm, CourseSlotForm, ReplicateCurriculumForm,NewCourseProposalFile,CourseProposalTrackingFile
-from .filters import CourseFilter, BatchFilter, CurriculumFilter
+from .models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot,NewProposalFile,Proposal_Tracking,CourseInstructor
+from .forms import ProgrammeForm, DisciplineForm, CurriculumForm, SemesterForm, CourseForm, BatchForm, CourseSlotForm, ReplicateCurriculumForm,NewCourseProposalFile,CourseProposalTrackingFile, CourseInstructorForm
+from .filters import CourseFilter, BatchFilter, CurriculumFilter,CourseInstructorFilter
 from django.db import IntegrityError
 from django.utils import timezone
 
@@ -16,6 +16,33 @@ from notification.views import prog_and_curr_notif
 # from applications.academic_information.models import Student
 from applications.globals.models import (DepartmentInfo, Designation,ExtraInfo, Faculty, HoldsDesignation)
 # ------------module-functions---------------#
+
+
+
+
+@login_required(login_url='/accounts/login')
+def admin_view_all_course_instructor(request):
+    # Fetch all records from the CourseInstructor table
+    course_instructors = CourseInstructor.objects.all()
+
+    # Passing the data to the template
+    context = {
+        'course_instructors': course_instructors,
+    }
+
+    return render(request, 'programme_curriculum/acad_admin/admin_view_all_course_instructor.html', context)
+@login_required(login_url='/accounts/login')
+def update_course_instructor_form(request, id):
+
+    instructor = get_object_or_404(CourseInstructor, id=id)
+    course_instructors = CourseInstructor.objects.all()
+
+    # Passing the data to the template
+    context = {
+        'course_instructors': course_instructors,
+    }
+    # Handle the update logic here
+    return render(request, 'programme_curriculum/acad_admin/admin_view_all_course_instructor.html', context)
 
 @login_required(login_url='/accounts/login')
 def programme_curriculum(request):
@@ -1622,3 +1649,55 @@ def file_unarchive(request,FileId):
     file.is_archive=False
     file.save()
     return HttpResponseRedirect('/programme_curriculum/view_course_proposal_forms/')
+
+@login_required(login_url='/accounts/login')
+def add_course_instructor(request):
+    if request.session['currentDesignationSelected'] == "acadadmin":
+        if request.method == 'POST':
+            form = CourseInstructorForm(request.POST)
+            if form.is_valid():
+                form.save()  # Save the form data to the database
+                return redirect('/programme_curriculum/')  # Redirect to a success page after saving
+        else:
+            form = CourseInstructorForm()
+        
+        return render(request, 'programme_curriculum/acad_admin/add_course_instructor.html', {'form': form})
+    return HttpResponseRedirect('/programme_curriculum/')
+
+@login_required(login_url='/accounts/login')
+def admin_view_all_course_instructor(request):
+    if request.session.get('currentDesignationSelected') == "acadadmin":
+        course_instructors = CourseInstructor.objects.all()
+        
+        # Apply filtering
+        course_instructor_filter = CourseInstructorFilter(request.GET, queryset=course_instructors)
+        filtered_course_instructors = course_instructor_filter.qs
+
+        return render(request, 'programme_curriculum/acad_admin/admin_view_all_course_instructor.html', {
+            'course_instructors': filtered_course_instructors,
+            'courseinstructorfilter': course_instructor_filter
+        })
+
+    return HttpResponseRedirect('/programme_curriculum/')
+
+@login_required(login_url='/accounts/login')
+def update_course_instructor_form(request, instructor_id):
+    
+    if request.session.get('currentDesignationSelected') == "acadadmin":
+        # Retrieve the CourseInstructor object or return 404 if not found
+        course_instructor = get_object_or_404(CourseInstructor, id=instructor_id)
+
+        if request.method == 'POST':
+            # Bind the form to the POST data for validation and save
+            form = CourseInstructorForm(request.POST, instance=course_instructor)
+            if form.is_valid():
+                form.save()  # Save the updated data to the database
+                return redirect('/programme_curriculum/')  # Redirect after successful update
+        else:
+            # Create the form with existing data (pre-populated)
+            form = CourseInstructorForm(instance=course_instructor)
+        
+        return render(request, 'programme_curriculum/acad_admin/add_course_instructor.html', {'form': form, 'instructor': course_instructor})
+    
+    # Redirect to the main page if the user is not 'acadadmin'
+    return HttpResponseRedirect('/programme_curriculum/')

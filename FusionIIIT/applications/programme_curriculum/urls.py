@@ -31,6 +31,7 @@ urlpatterns = [
     path('admin_course/<course_id>/', views.admin_view_a_course, name='admin_view_a_course'),
     path('admin_disciplines/', views.admin_view_all_discplines, name='admin_view_all_discplines'),
     path('admin_batches/', views.admin_view_all_batches, name='admin_view_all_batches'),
+    path('admin_instructor/',views.admin_view_all_course_instructor,name='admin_view_all_course_instructor'),
     
     path('admin_add_programme/', views.add_programme_form, name='add_programme_form'),
     path('admin_add_discipline/', views.add_discipline_form, name='add_discipline_form'),
@@ -39,7 +40,9 @@ urlpatterns = [
     path('admin_add_courseslot/', views.add_courseslot_form, name='add_courseslot_form'),
     path('admin_add_course/', views.add_course_form, name='add_course_form'),
     path('admin_add_batch/', views.add_batch_form, name='add_batch_form'),
+    path('admin_add_course_instructor/', views.add_course_instructor, name='add_course_instructor'),
 
+    path('admin_update_course_instructor/<instructor_id>/', views.update_course_instructor_form, name='update_course_instructor_form'),
     path('admin_update_course/<course_id>/', views.update_course_form, name='update_course_form'),
     path('admin_edit_curriculum/<curriculum_id>/', views.edit_curriculum_form, name='edit_curriculum_form'),
     path('admin_edit_programme/<programme_id>/', views.edit_programme_form, name='edit_programme_form'),

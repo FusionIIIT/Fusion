@@ -3,7 +3,7 @@ from django.db.models import fields
 from django.forms import ModelForm, widgets
 from django.forms import Form, ValidationError
 from django.forms.models import ModelChoiceField
-from .models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot, PROGRAMME_CATEGORY_CHOICES,NewProposalFile,Proposal_Tracking
+from .models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot, PROGRAMME_CATEGORY_CHOICES,NewProposalFile,Proposal_Tracking, CourseInstructor
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
 from applications.globals.models import (DepartmentInfo, Designation,ExtraInfo, Faculty, HoldsDesignation)
@@ -382,6 +382,14 @@ class CourseProposalTrackingFile(ModelForm):
         
         
         return self.cleaned_data
+
+class CourseInstructorForm(forms.ModelForm):
+    course_id = forms.ModelChoiceField(queryset=Course.objects.all(), label="Select Course", empty_label="Choose a course")
+    instructor_id = forms.ModelChoiceField(queryset=ExtraInfo.objects.filter(user_type='faculty'), label="Select Instructor", empty_label="Choose an instructor")
+    batch_id = forms.ModelChoiceField(queryset=Batch.objects.all(), label="Select Batch", empty_label="Choose a batch")
+    class Meta:
+        model = CourseInstructor
+        fields = ['course_id', 'instructor_id', 'batch_id']
         
         
     # def sed(self):
