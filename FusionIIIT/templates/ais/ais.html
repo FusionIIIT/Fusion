@@ -111,6 +111,10 @@ Academic Information System
                 Student Dashboard
                 <i class="right floated chevron right icon"></i>
             </a>
+            <a class="item" data-tab="start-elective">
+                Start elective assignment
+                <i class="right floated chevron right icon"></i>
+            </a>
             
             <!-- <a class="item" disabled="disabled" href="/aims">
                 Manage Student Profile
@@ -223,6 +227,12 @@ Academic Information System
         <div class="ui tab segment" data-tab="ninth">
             {% block student_dashboard %}
             {% include 'ais/student_dashboard.html' %}
+            {% endblock %}
+        </div>
+
+        <div class="ui tab segment" data-tab="start-elective">
+            {% block start_elective_allocation %}
+            {% include 'ais/start_elective_allocation.html' %}
             {% endblock %}
         </div>
         

@@ -247,7 +247,7 @@
         </table>
         <div class="extra content">
             <div class="" style="text-align: center;">
-                <button class="ui primary button">Register</button>
+                <button id="register-button" class="ui primary button">Register</button>
             </div>
         </div>
     </form>
@@ -291,6 +291,8 @@
             var inp = document.getElementsByClassName("Prechoices");
             var count = 0;
 
+            document.getElementById('register-button').style.display = 'none';
+
             let course_slots = document.getElementsByName("course_slot");
             let credits = document.getElementsByClassName("credit_values");
 
@@ -303,6 +305,7 @@
             //         // console.log("course_priority-" + course_slot_id , course_priority[j].value  )
                     if ((!(course_slot_type.startsWith("Optional") && course_slot_type != "Optional Elective") && !course_slot_type.startsWith("Swayam") )&& course_priority[j].value == "NULL") {
                         alert("Please select all choices for " + parseInt(i + 1) + "  " + course_slot_type + " slot");
+                        document.getElementById('register-button').style = "text-allign:center;";
                         return false;
                     }
                     let selected_course = course_priority[j].value.split("-");
