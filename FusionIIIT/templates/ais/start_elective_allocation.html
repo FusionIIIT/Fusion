@@ -3,7 +3,15 @@
 
 
 {% comment %}The tab menu starts here!{% endcomment %}
-<div class="ui active tab" data-tab="this">
+<div class="ui pointing secondary menu">
+      <a class="active item" data-tab="check-start">
+          check/start allocation
+      </a>
+      <a class="item" data-tab="view-allocation">
+          view allocation details
+      </a>
+  </div>
+<div class="ui active tab segmment" data-tab="check-start">
     <div class="ui vertical segment">
         <form class="ui form" method="post" id="allocation-check">
             {% csrf_token %}
@@ -20,11 +28,6 @@
                 <input type="text" id="year-check" name="year-check" required>
             </div>
             <div class="field">
-                <label>Programme</label>
-                <input type="text" id="programme-check" name="programme-check" required>
-            </div>
-
-            <div class="field">
                 <button id="check-allocation" class="ui fluid primary button">
                     Check allocation
                 </button>
@@ -40,7 +43,48 @@
             </div>
         </form>
 
-        <div id="student_elective_list" style="margin-top: 30px"></div>
+        <div class="ui divider"></div>
+
+    </div>
+</div>
+<div class="ui tab segment " data-tab="view-allocation">
+    <div class="ui vertical segment">
+        <form class="ui form" method="post" id="allocation-check">
+            {% csrf_token %}
+            <div class="field">
+                <label>Batch</label>
+                <input type="text" id="batch-check-view" name="batch-check-view" required>
+            </div>
+            <div class="field">
+                <label>Semester</label>
+                <input type="text" id="semester-check-view" name="semester-check-view" required>
+            </div>
+            <div class="field">
+                <label>year</label>
+                <input type="text" id="year-check-view" name="year-check-view" required>
+            </div>
+            <div class="field">
+                <label>Course Code</label>
+                <input type="text" id="course-check-view" name="Course-check-view" required>                
+            </div>
+            <div class="field">
+                <button id="allocation-view" class="ui fluid primary button">
+                    View allocation
+                </button>
+            </div>
+        </form>
+        <div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>students in course</th>
+                    </tr>
+                </thead>
+                <tbody id="student-list-registration" style="text-align: center;">
+                </tbody>
+            </table>
+        </div>
+
         <div class="ui divider"></div>
 
     </div>
@@ -58,7 +102,6 @@
                 batch:$("#batch-check").val(),
                 sem:$("#semester-check").val(),
                 year:$("#year-check").val(),
-                programme:$('#programme-check').val(),
                 check_allocation:1,
             },
             success: function(data){
@@ -77,6 +120,9 @@
 
     $('#start-allocation').click(function(e){
         e.preventDefault();
+        document.getElementById('start-allocation').style.display = 'none';
+        document.getElementById('check-allocation').style.display = 'none';
+        document.getElementById('message').innerHTML = "THIS WILL TAKE SOME TIME CHECK VIEW PAGE AFTER SOME TIME";
         $.ajax({
             type:'post',
             url:'/aims/',
@@ -85,13 +131,40 @@
                 batch:$("#batch-check").val(),
                 sem:$("#semester-check").val(),
                 year:$("#year-check").val(),
-                programme:$('#programme-check').val(),
                 start_allocation:1,
             },
-            sussess:function(data){
+            success: function(data){
+                console.log("console",data)
                 if(data.status == -1){
                     alert("not enough seats to allocate students")
                 }
+            }
+        })
+    })
+    $('#allocation-view').click( function(e){
+        e.preventDefault();
+        console.log('allocation');
+        document.getElementById('allocation-view').disabled = true; 
+        document.getElementById('student-list-registration').innerHTML="";
+        $.ajax({
+            type:'post',
+            url:'/aims/',
+            data:{
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+                batch:$("#batch-check-view").val(),
+                sem:$("#semester-check-view").val(),
+                year:$("#year-check-view").val(),
+                course:$('#course-check-view').val(),
+                view_allocation:1,
+            },
+            success : function(data){
+                if(data.student_list.length == 0){
+                    $('#student-list-registration').append("<tr><td>No Students Found</td></tr>")
+                }
+                for(ele in data.student_list){
+                    $('#student-list-registration').append("<tr><td>"+data.student_list[ele].student+"</td></tr>")
+                }
+                document.getElementById('allocation-view').disabled = false;
             }
         })
     })
