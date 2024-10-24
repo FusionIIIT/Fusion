@@ -1474,14 +1474,14 @@ def auto_pre_registration(request):
                             course_slot_id = course_slot_id_for_model,
                             priority = priority_of_current_course
                         )
-                        f =FinalRegistration(student_id=current_user ,course_slot_id=course_slot_id_for_model , course_id=course_id_for_model ,semester_id=sem_id)
-                        final_reg_curr.append(f)
+                        # f =FinalRegistration(student_id=current_user ,course_slot_id=course_slot_id_for_model , course_id=course_id_for_model ,semester_id=sem_id)
+                        # final_reg_curr.append(f)
                         reg_curr.append(p)
                         existing_entries.add(current_combination)
             try:
 
                 InitialRegistration.objects.bulk_create(reg_curr)
-                FinalRegistration.objects.bulk_create(final_reg_curr)
+                # FinalRegistration.objects.bulk_create(final_reg_curr)
                 registration_check = StudentRegistrationChecks(
                             student_id = current_user,
                             pre_registration_flag = True,

@@ -267,10 +267,11 @@ class Student_grades(models.Model):
     semester = models.IntegerField(default=1)
     year = models.IntegerField(default=2016)
     roll_no = models.TextField(max_length=2000)
-    total_marks = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     grade = models.TextField(max_length=2000)
     batch = models.IntegerField(default=2021)
- 
+    remarks = models.CharField(max_length=500,null=True)
+    verified = models.BooleanField(default=False) 
+    reSubmit = models.BooleanField(default=True) 
     def __str__(self):
         return '{} - {}'.format(self.pk, self.course_id)
 
