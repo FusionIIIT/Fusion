@@ -21,9 +21,37 @@ from notification.views import department_notif
 
 
 class ListCreateAnnouncementView(generics.ListCreateAPIView):
-    queryset = Announcements.objects.all()
-    serializer_class = AnnouncementSerializer
-    permission_classes = (IsAuthenticated, IsFacultyStaffOrReadOnly)
+    
+    def post(self, request):
+        # Get the current user from the request
+        user = request.user
+        usrnm = get_object_or_404(User, username=user.username)
+        user_info = ExtraInfo.objects.select_related('user', 'department').filter(user=usrnm).first()
+        
+        if not user_info:
+            return Response({'error': 'User information not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        ann_maker_id = user_info.id
+        department = user_info.department.name  # Get department name
+        
+        # Get the data from the request
+        data = request.data.copy()  # Copy request data to modify
+        
+        # Add the department and announcement maker to the data
+        data['ann_maker'] = ann_maker_id
+        
+        # Instantiate the serializer with the modified data
+        serializer = AnnouncementSerializer(data=data, context={'request': request})
+        
+        # Validate and save if the data is valid
+        if serializer.is_valid():
+            # Save the data to the Announcement model
+            serializer.save()  # This automatically saves the data in the Announcements table
+            
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        # If invalid, return the errors
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     
 class DepMainAPIView(APIView):
@@ -161,7 +189,7 @@ def browse_announcements():
     ece_ann = Announcements.objects.filter(department="ECE")
     me_ann = Announcements.objects.filter(department="ME")
     sm_ann = Announcements.objects.filter(department="SM")
-    all_ann = Announcements.objects.filter(department="ALL")
+    all_ann = Announcements.objects.filter(department="All")
     
     # serailizing the data
     cse_ann_serialized = AnnouncementSerializer(cse_ann, many=True)
