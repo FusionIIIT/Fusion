@@ -65,10 +65,10 @@ class Constants:
         ('academic', 'Academic Designation'),
         ('administrative', 'Administrative Designation'),
     )
-    USER_STATUS = {
+    USER_STATUS = (
         ("NEW", "NEW"),
         ("PRESENT", "PRESENT"),
-    }
+    )
 
 
 class Designation(models.Model):
