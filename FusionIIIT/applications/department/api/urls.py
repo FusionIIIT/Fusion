@@ -7,6 +7,6 @@ urlpatterns = [
     url(r'dep-main/$', views.DepMainAPIView.as_view(), name='depmain'),
     url(r'fac-view/$', views.FacAPIView.as_view(), name='facapi'),
     url(r'staff-view/$',views.StaffAPIView.as_view(),name='staffapi'),
-    url(r'all-students/(?P<bid>[0-9]+)/$', views.AllStudentsAPIView.as_view() ,name='all_students')
+    url(r'all-students/(?P<bid>\w+)/$', views.AllStudentsAPIView.as_view(), name='all_students')
     
 ]
