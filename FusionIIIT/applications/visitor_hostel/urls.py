@@ -27,6 +27,10 @@ urlpatterns = [
     url(r'^bill_between_date_range/', views.bill_between_dates, name = 'generate_records'),
     url(r'^room-availability/', views.room_availabity, name = 'room_availabity'),
     url(r'^room_availabity_new/', views.room_availabity_new, name = 'room_availabity_new'),
+
+    url(r'^check-partial-booking/', views.check_partial_booking, name='check_partial_booking'),
+
+
     url(r'^add-to-inventory/', views.add_to_inventory, name = 'add_to_inventory'),
     url(r'^update-inventory/', views.update_inventory, name = 'update_inventory'),
     url(r'^edit-room-status/', views.edit_room_status, name = 'edit_room_status'),

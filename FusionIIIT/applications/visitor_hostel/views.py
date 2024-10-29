@@ -4,6 +4,7 @@ import xlrd
 import os
 import sys
 
+
 from django.core.files.storage import FileSystemStorage
 from django.views.decorators.csrf import csrf_exempt
 
@@ -1252,6 +1253,79 @@ def room_availabity(request):
         return render(request, "vhModule/room-availability.html", {'available_rooms': available_rooms_array})
     else:
         return HttpResponseRedirect('/visitorhostel/')
+
+
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def check_partial_booking(request):
+    """
+    API to check room availability with partial booking support.
+    """
+    if request.method == 'POST':
+        date_1 = request.data.get('start_date')
+        date_2 = request.data.get('end_date')
+        room_id = request.data.get('room_id')
+        
+        if not (date_1 and date_2 and room_id):
+            return JsonResponse({'error': 'Start date, end date, and room ID are required.'}, status=400)
+        
+        # Convert input dates to datetime objects
+        start_date = datetime.datetime.strptime(date_1, "%Y-%m-%d").date()
+        end_date = datetime.datetime.strptime(date_2, "%Y-%m-%d").date()
+
+        # Fetch room details
+        try:
+            room = RoomDetail.objects.get(id=room_id)
+        except RoomDetail.DoesNotExist:
+            return JsonResponse({'error': 'Room not found'}, status=404)
+
+        room_type = room.room_type
+
+        # Check for existing bookings for the given room
+        overlapping_bookings = BookingDetail.objects.filter(
+            rooms__id=room_id,
+            booking_from__lt=end_date,
+            booking_to__gt=start_date,
+            status="Confirmed"
+        )
+
+        # Initialize response data
+        partial_available = False
+        available_from = start_date
+        available_to = end_date
+
+        # If there are overlapping bookings, find the partial availability
+        if overlapping_bookings.exists():
+            partial_available = True
+            for booking in overlapping_bookings:
+                # Check if the requested range can be partially accommodated
+                if booking.booking_from > start_date:
+                    available_to = min(available_to, booking.booking_from)
+                if booking.booking_to < end_date:
+                    available_from = max(available_from, booking.booking_to)
+
+            # Ensure the available dates are within the original range
+            available_from = max(start_date, available_from)
+            available_to = min(end_date, available_to)
+
+        # Response preparation
+        response_data = {
+            'room_id': room_id,
+            'room_type': room_type, 
+            'requested_from': date_1,
+            'requested_to': date_2,
+            'is_fully_available': not overlapping_bookings.exists(),
+            'is_partial_available': partial_available,
+            'partial_available_from': available_from if partial_available else None,
+            'partial_available_to': available_to if partial_available else None,
+        }
+        return JsonResponse(response_data)
+    
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 
 @login_required(login_url='/accounts/login/')
