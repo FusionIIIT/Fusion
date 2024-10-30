@@ -11,8 +11,8 @@ from rest_framework.decorators import api_view, permission_classes,authenticatio
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.shortcuts import render
-from applications.gymkhana.models import Registration_form, Student ,Club_info,Club_member,Session_info,Event_info,Club_budget,Club_report,Fest_budget,Registration_form,Budget,Achievements
-from .serializers import Club_memberSerializer,Club_DetailsSerializer,Session_infoSerializer, event_infoserializer,club_budgetserializer,Club_reportSerializers,Fest_budgerSerializer,Registration_formSerializer, Club_infoSerializer,BudgetSerializer,AchievementsSerializer,Event_CommentsSerializer,Budget_CommentsSerializer
+from applications.gymkhana.models import Registration_form, Student ,Club_info,Club_member,Session_info,Event_info,Club_budget,Club_report,Fest_budget,Registration_form,Budget,Achievements,ClubPosition
+from .serializers import Club_memberSerializer,Club_DetailsSerializer,Session_infoSerializer, event_infoserializer,club_budgetserializer,Club_reportSerializers,Fest_budgerSerializer,Registration_formSerializer, Club_infoSerializer,BudgetSerializer,AchievementsSerializer,Event_CommentsSerializer,Budget_CommentsSerializer,ClubPositionSerializer
 
 from django.contrib.auth.models import User
 from applications.gymkhana.views import *
@@ -1044,3 +1044,41 @@ class RejectMemberAPIView(APIView):
         member.status = 'rejected'
         member.save()
         return Response({"message": "Member status changed to 'rejected'."}, status=status.HTTP_200_OK)
+class AddClubPositionAPIView(APIView):
+    def post(self, request):
+        serializer = ClubPositionSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class ListClubPositionAPIView(APIView):
+    def post(self, request):
+        name=request.data.get('name')
+        positions = ClubPosition.objects.filter(name=name)
+        serializer = ClubPositionSerializer(positions, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+class UpdateEventAPIView(APIView):
+    def put(self, request):
+        try:
+            # Fetch the event to be updated
+            pk = request.data.get('id')
+            event = Event_info.objects.get(pk=pk)
+        except Event_info.DoesNotExist:
+            return Response({"error": "Event not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Partial update for 'details' and 'event_poster'
+        data = {}
+        if 'details' in request.data:
+            data['details'] = request.data['details']
+        if 'event_poster' in request.FILES:
+            data['event_poster'] = request.FILES['event_poster']
+        data['status'] = 'FIC'
+        
+        # Create serializer instance with partial=True to allow partial updates
+        serializer = event_infoserializer(event, data=data, partial=True)
+
+        # Validate and update
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

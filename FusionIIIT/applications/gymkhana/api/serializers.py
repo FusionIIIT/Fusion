@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 from rest_framework import serializers
 from applications.gymkhana.models import Club_info,Session_info,Event_info
-from applications.gymkhana.models import Club_member,Club_budget,Club_report,Fest_budget,Registration_form,Budget,Budget_Comments,Event_Comments,Achievements
+from applications.gymkhana.models import Club_member,Club_budget,Club_report,Fest_budget,Registration_form,Budget,Budget_Comments,Event_Comments,Achievements,ClubPosition
 
 # class Voting_choicesSerializer(serializers.ModelSerializer):
 #     class Meta:
@@ -50,7 +50,7 @@ class event_infoserializer(serializers.ModelSerializer):
 
     class Meta:
         model=Event_info
-        fields=['club','event_name','incharge','start_date','end_date','venue','start_time','id','details','status']
+        fields=['club','event_name','incharge','start_date','end_date','venue','start_time','id','details','status','end_time','details']
 
 class club_budgetserializer(serializers.ModelSerializer):
 
@@ -94,3 +94,7 @@ class Event_CommentsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event_Comments
         fields = ['event_id', 'commentator_designation', 'comment', 'comment_date', 'comment_time']
+class ClubPositionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ClubPosition
+        fields = ['id', 'name', 'position', 'club']

@@ -611,3 +611,20 @@ class Achievements(models.Model):
 
     class Meta:
         db_table = "Achievements"
+class ClubPosition(models.Model):
+    POSITION_CHOICES = [
+        ('FIC', 'FIC'),
+        ('COORDINATOR', 'Coordinator'),
+        ('TECHNICAL_COUNSELLOR','Technical counsellor'),
+        ('SPORTS_COUNSELLOR','Sports counsellor'),
+        ('CULTURAL_COUNSELLOR','Cultural counsellor')
+    ]
+    name = models.CharField(max_length=100, null=False)
+    position = models.CharField(max_length=50, choices=POSITION_CHOICES, null=False)
+    club = models.ForeignKey(Club_info, on_delete=models.CASCADE)
+    class Meta:
+        db_table = 'ClubPosition'
+    def _str_(self):
+        return f"{self.club.club_name} - {self.name} - {self.position}"
+    class Meta:
+        db_table = "ClubPosition"
