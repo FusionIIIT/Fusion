@@ -4,7 +4,7 @@ from applications.academic_information.models import Spi, Student
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation,Faculty)
 from applications.eis.models import (faculty_about, emp_research_projects)
-
+from applications.department.models import Information
 
 class AnnouncementSerializer(serializers.ModelSerializer):
     class Meta:
@@ -60,3 +60,8 @@ class emp_research_projectsSerializer(serializers.ModelSerializer):
     class Meta:
         model = emp_research_projects 
         fields = ('__all__')
+
+class InformationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Information
+        fields = '__all__'  # or specify fields as needed
