@@ -12,4 +12,5 @@ urlpatterns = [
     url(r'information/update-create/$', views.InformationUpdateAPIView.as_view(), name='update_create_information'),  # New endpoint
     url(r'^labs/$', views.LabListView.as_view(), name='lab-list'),
     url(r'labsadd/$', views.LabAPIView.as_view(), name='add_lab'),  # Add Lab endpoint
+        url(r'labs/delete/$', views.LabDeleteAPIView.as_view(), name='delete_lab')
 ]

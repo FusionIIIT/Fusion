@@ -317,3 +317,21 @@ class LabAPIView(APIView):
             return Response(LabSerializer(lab).data, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class LabDeleteAPIView(APIView):
+    def delete(self, request):
+        lab_ids = request.data.get('lab_ids', [])
+        
+        if not lab_ids:
+            return Response({"detail": "No lab IDs provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        deleted_count = 0
+        for lab_id in lab_ids:
+            try:
+                lab = Lab.objects.get(id=lab_id)
+                lab.delete()
+                deleted_count += 1
+            except Lab.DoesNotExist:
+                return Response({"detail": f"Lab with id {lab_id} does not exist."}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response({"detail": f"Successfully deleted {deleted_count} labs."}, status=status.HTTP_204_NO_CONTENT)
