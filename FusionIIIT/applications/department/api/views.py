@@ -20,7 +20,9 @@ from datetime import date
 from notification.views import department_notif
 from applications.department.models import Information
 from .serializers import InformationSerializer
+from .serializers import LabSerializer
 from applications.globals.models import DepartmentInfo
+from applications.department.models import Lab
 
 class ListCreateAnnouncementView(generics.ListCreateAPIView):
     queryset = Announcements.objects.all()
@@ -280,3 +282,38 @@ class InformationUpdateAPIView(APIView):
 #             return Response({"message": "Information created successfully.", "data": serializer.data}, status=status.HTTP_201_CREATED)
 #         else:
 #             return Response({"message": "Information updated successfully.", "data": serializer.data}, status=status.HTTP_200_OK)
+
+class LabListView(generics.ListAPIView):
+    queryset = Lab.objects.all()  # Fetch all lab entries
+    serializer_class = LabSerializer
+
+
+class LabAPIView(APIView):
+    def post(self, request):
+        data = request.data
+        department_name = data.get("department")
+
+        # Find department using the name
+        department_info = DepartmentInfo.objects.filter(name=department_name).first()
+
+        if not department_info:
+            return Response({"detail": "Department not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Validate required fields in the data
+        if not all(key in data for key in ["location", "name", "capacity"]):
+            return Response({"detail": "Missing required fields."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create a new Lab entry with department_info object directly
+        lab_data = {
+            "location": data["location"],
+            "name": data["name"],
+            "capacity": data["capacity"]
+        }
+
+        # Create Lab instance and assign the department before saving
+        serializer = LabSerializer(data=lab_data)
+        if serializer.is_valid():
+            lab = serializer.save(department=department_info)  # Set department explicitly
+            return Response(LabSerializer(lab).data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

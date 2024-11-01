@@ -5,6 +5,7 @@ from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation,Faculty)
 from applications.eis.models import (faculty_about, emp_research_projects)
 from applications.department.models import Information
+from applications.department.models import Lab
 
 class AnnouncementSerializer(serializers.ModelSerializer):
     class Meta:
@@ -65,3 +66,14 @@ class InformationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Information
         fields = '__all__'  # or specify fields as needed
+
+class LabSerializer(serializers.ModelSerializer):
+    department = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Lab
+        fields = '__all__'
+
+    def get_department(self, obj):
+        # Return the department name instead of the primary key
+        return obj.department.name
