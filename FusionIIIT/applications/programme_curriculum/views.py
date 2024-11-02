@@ -845,7 +845,7 @@ def update_course_form(request, course_id):
                 ver=0
                 if(new_course.version>previous.version):
                     # Check if a course with the same values (except version, latest_version, disciplines, and pre_requisit_courses) already exists
-                    old_course=Course.objects.filter(code=new_course.code, name=new_course.name, credit=new_course.credit, lecture_hours=new_course.lecture_hours, tutorial_hours=new_course.tutorial_hours, pratical_hours=new_course.pratical_hours, discussion_hours=new_course.discussion_hours, project_hours=new_course.project_hours, pre_requisits=new_course.pre_requisits, syllabus=new_course.syllabus, percent_quiz_1=new_course.percent_quiz_1, percent_midsem=new_course.percent_midsem, percent_quiz_2=new_course.percent_quiz_2, percent_endsem=new_course.percent_endsem, percent_project=new_course.percent_project, percent_lab_evaluation=new_course.percent_lab_evaluation, percent_course_attendance=new_course.percent_course_attendance, ref_books=new_course.ref_books)
+                    old_course=Course.objects.filter(code=new_course.code, name=new_course.name, credit=new_course.credit, lecture_hours=new_course.lecture_hours, tutorial_hours=new_course.tutorial_hours, pratical_hours=new_course.pratical_hours, discussion_hours=new_course.discussion_hours, project_hours=new_course.project_hours, pre_requisits=new_course.pre_requisits, syllabus=new_course.syllabus, percent_quiz_1=new_course.percent_quiz_1, percent_midsem=new_course.percent_midsem, percent_quiz_2=new_course.percent_quiz_2, percent_endsem=new_course.percent_endsem, percent_project=new_course.percent_project, percent_lab_evaluation=new_course.percent_lab_evaluation, percent_course_attendance=new_course.percent_course_attendance, ref_books=new_course.ref_books,max_seats=new_course.max_seats)
                     if old_course:
                         # Check if disciplines or pre_requisit_courses have been changed
                         for i in old_course:
@@ -1657,7 +1657,7 @@ def add_course_instructor(request):
             form = CourseInstructorForm(request.POST)
             if form.is_valid():
                 form.save()  # Save the form data to the database
-                return redirect('/programme_curriculum/')  # Redirect to a success page after saving
+                return redirect('/programme_curriculum/admin_instructor/')  # Redirect to a success page after saving
         else:
             form = CourseInstructorForm()
         
@@ -1692,7 +1692,7 @@ def update_course_instructor_form(request, instructor_id):
             form = CourseInstructorForm(request.POST, instance=course_instructor)
             if form.is_valid():
                 form.save()  # Save the updated data to the database
-                return redirect('/programme_curriculum/')  # Redirect after successful update
+                return redirect('/programme_curriculum/admin_instructor/')  # Redirect after successful update
         else:
             # Create the form with existing data (pre-populated)
             form = CourseInstructorForm(instance=course_instructor)
