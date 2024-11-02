@@ -636,7 +636,7 @@ class moderate_student_grades(APIView):
         course_ids = request.POST.getlist('course_ids[]')
         grades = request.POST.getlist('grades[]')
         allow_resubmission = request.POST.get('allow_resubmission', 'NO')
-
+        
         if len(student_ids) != len(semester_ids) != len(course_ids) != len(grades):
             return Response({'error': 'Invalid grade data provided'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -970,7 +970,7 @@ def submitGradesProf(request):
     # unique_course_ids = course_registration.objects.values(
     #     'course_id').distinct()
     working_years = course_registration.objects.values("working_year").distinct()
-
+    course_ids_final=course_registration.objects.filter()
     # Cast the course IDs to integers
     unique_course_ids = unique_course_ids.annotate(
         course_id_int=Cast("course_id", IntegerField())
@@ -1035,7 +1035,7 @@ def updateEntergradesDean(request):
 
     if not course_present:
         context = {"message": "THIS COURSE IS NOT SUBMITTED BY THE INSTRUCTOR"}
-        return render(request, "../templates/examination/message.html", context)
+        return render(request, "../templates/examination/messageDean.html", context)
 
     context = {"registrations": course_present}
 
@@ -1154,3 +1154,127 @@ def upload_grades_prof(request):
         {"error": "Invalid request. Please upload a CSV file."}, status=400
     )
 
+def validateDean(request):
+    unique_course_ids = Student_grades.objects.filter(verified=True).values("course_id").distinct()
+
+    # Cast the course IDs to integers
+    unique_course_ids = unique_course_ids.annotate(
+        course_id_int=Cast("course_id", IntegerField())
+    )
+
+    # Retrieve course names and course codes based on unique course IDs
+
+    # print(unique_course_ids)
+    courses_info = Courses.objects.filter(
+        id__in=unique_course_ids.values_list("course_id_int", flat=True)
+    )
+    working_years = course_registration.objects.values("working_year").distinct()
+
+    unique_batch_ids = Student_grades.objects.values("batch").distinct()
+
+    context = {"courses_info": courses_info, "working_years": working_years}
+
+    return render(request, "../templates/examination/validation.html", context)
+
+
+def validateDeanSubmit(request):
+    if request.method == "POST" and request.FILES.get("csv_file"):
+        csv_file = request.FILES["csv_file"]
+
+        if not csv_file.name.endswith(".csv"):
+            message = "Please Submit a csv file "
+            context = {
+                 "message":message,
+                }
+            return render(request, "../templates/examination/messageDean.html", context)
+
+        course_id = request.POST.get("course")
+        academic_year = request.POST.get("year")
+        # semester = request.POST.get('semester')
+        print(academic_year)
+        if academic_year is None or not academic_year.isdigit():
+            message = "Academic Year must be a number"
+            context = {
+                 "message":message,
+                }
+            return render(request, "../templates/examination/messageDean.html", context)
+
+        if not course_id or not academic_year:
+            message = "Course and Academic year are required"
+            context = {
+                 "message":message,
+                }
+            return render(request, "../templates/examination/messageDean.html", context)
+
+        # courses_info = Courses.objects.get(id=course_id)
+
+        # courses = Student_grades.objects.filter(
+        #     course_id=courses_info.id, year=academic_year
+        # )
+        students = course_registration.objects.filter(
+            course_id_id=course_id, working_year=academic_year
+        )
+        
+        
+        
+        try:
+            # Parse the CSV file
+            decoded_file = csv_file.read().decode("utf-8").splitlines()
+            reader = csv.DictReader(decoded_file)
+
+            required_columns = ["roll_no", "name", "grade", "remarks"]
+            if not all(column in reader.fieldnames for column in required_columns):
+                message = "CSV file must contain the following columns: roll_no, name, grade, remarks."
+                context = {
+                 "message":message,
+                }
+                return render(request, "../templates/examination/messageDean.html", context)
+                   
+            semester = students.first().semester_id_id
+            mismatch=[]
+            for row in reader:
+                roll_no = row["roll_no"]
+                grade = row["grade"]
+                remarks = row["remarks"]
+                batch_prefix = roll_no[:2]
+                batch = int(f"20{batch_prefix}")
+                Student_grades.objects.filter(
+                 roll_no=roll_no,
+                 course_id_id=course_id,
+                 year=academic_year,
+                 batch=batch,
+                )
+                student_grade = Student_grades.objects.get(
+                roll_no=roll_no,
+                course_id_id=course_id,
+                year=academic_year,
+                batch=batch
+                )
+                if student_grade.grade != grade:
+                 mismatch.append({
+                    "roll_no": roll_no,
+                    "csv_grade": grade,
+                    "db_grade": student_grade.grade,
+                    "remarks": remarks,
+                    "batch": batch,
+                    "semester": semester,
+                    "course_id": course_id, 
+                 })
+            if not mismatch:
+                message = "There Are no Mismatches"
+                context = {
+                 "message":message,
+                }
+                return render(request, "../templates/examination/messageDean.html", context)
+            context = {
+                 "mismatch": mismatch,
+                }
+            return render(request, "../templates/examination/validationSubmit.html", context)
+            
+        except Exception as e:
+
+            error_message = f"An error occurred while processing the file: {str(e)}"
+            context = {
+                "message": error_message,
+            }
+            return render(request, "../templates/examination/messageDean.html", context)

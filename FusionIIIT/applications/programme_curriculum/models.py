@@ -261,7 +261,7 @@ class Course(models.Model):
     working_course = models.BooleanField(default=True)
     disciplines = models.ManyToManyField(Discipline, blank=True)
     latest_version = models.BooleanField(default=True)
-
+    max_seats = models.IntegerField(default=90)
     class Meta:
         unique_together = ('code', 'version')
 

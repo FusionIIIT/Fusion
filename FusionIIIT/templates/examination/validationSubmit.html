@@ -36,19 +36,15 @@
   
 </style>
 <div class="ui medium fluid vertical pointing menu" style="max-width: 320px;">
-  {% if 'acadadmin' == request.user.extrainfo.user_type %}
-  <a class="item" href="{% url 'examination:submitGrades' %}">Submit
-    <i class="right floated chevron right icon"></i>
-  </a>
-  {% endif %}
-  <a class="item" href="{% url 'examination:updateGrades' %}">Verify
+  
+  <a class="item" href="{% url 'examination:verifyGradesDean' %}">Verify
     <i class="right floated chevron right icon"></i>
   </a>
   {% comment %} <a class="item" href="{% url 'examination:authenticate' %}">Authenticate Course
     <i class="right floated chevron right icon"></i>
   </a> {% endcomment %}
 
-  <a class="item" href="{% url 'examination:validateDean' %}"> Validate
+  <a class="item" href="{% url 'examination:validateDean' %}"><B> Validate</B>
     <i class="right floated chevron right icon"></i>
   </a>
 </div>
@@ -56,9 +52,9 @@
 
 {% block content %}
 <div class="ui segment">
-  <h1 class="ui header">VERIFY STUDENT MARKS</h1>
-  {% if registrations %}
-  <form method="post" action="{% url 'examination:moderate_student_grades' %}">
+  <h1 class="ui header">MISMATCHES IN STUDENT MARKS</h1>
+  {% if mismatch %}
+  <div>
     {% csrf_token %}
     <div class="ui celled table" id="gradesTable">
       <table class="ui selectable striped table">
@@ -75,43 +71,27 @@
             <th>
               Remarks
           </th>
-            <th>Grade</th>
+            <th>Grade in DB</th>
+            <th>Grade in CSV</th>
+
           </tr>
         </thead>
         <tbody>
-          {% for registration in registrations %}
+          {% for registration in mismatch %}
           <tr>
                <td>{{ registration.roll_no }}</td>
                 <td>{{ registration.batch }}</td>
                 <td>{{ registration.course_id }}</td>
                 <td>{{ registration.semester }}</td>
                 <td>{{ registration.remarks }}</td>
-                
-            <td>
-              <input type="hidden" name="student_ids[]" value="{{ registration.roll_no}}">
-              <input type="hidden" name="semester_ids[]" value="{{ registration.semester }}">
-              <input type="hidden" name="course_ids[]" value="{{ registration.course_id.id }}">
-              <input type="text" name="grades[]" value="{{ registration.grade }}">
-            </td>
+                <td>{{ registration.db_grade }}</td>
+                <td>{{ registration.csv_grade }}</td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
-    <div class="ui form field">
-        <label for="allow_resubmission">Allow Resubmission:</label>
-        <select name="allow_resubmission" id="allow_resubmission" class="ui dropdown">
-          <option value="NO">NO</option>
-          <option value="YES">YES</option>
-        </select>
-      </div>
     {% comment %} <button class="ui primary button" type="submit">FINALISE Grades</button> {% endcomment %}
-    <button class="ui primary button" id="finalize-grades" onclick="finalizeGrades()"> FINALISE Grades & Download Excel</button>
-    
-  </form>
-  <div class="ui segment">
-    <canvas id="gradesChart" width="400" height="400"></canvas>
-  </div>
   {% else %}
   <div class="ui message">
     <div class="header">
@@ -127,7 +107,7 @@
 
 <!-- JavaScript code for generating the pie chart -->
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    {% comment %} document.addEventListener('DOMContentLoaded', function () {
         function updateChart() {
             var gradesData = [];
             var gradesLabels = [];
@@ -207,15 +187,6 @@
         inputs.forEach(function (input) {
             input.addEventListener('input', updateChart);
         });
-    });
-
-    function finalizeGrades() {
-        // Submit the form
-        document.querySelector('form').submit();
-        console.log("hyee")
-        // Redirect to the URL that handles Excel download
-        alert('Course verification Successful please refresh the page')
-        window.location.href = "{% url 'examination:submit' %}";
-    }
+    }); {% endcomment %}
 </script>
 {% endblock %}
