@@ -23,6 +23,8 @@ from .serializers import InformationSerializer
 from .serializers import LabSerializer
 from applications.globals.models import DepartmentInfo
 from applications.department.models import Lab
+from .serializers import FeedbackSerializer
+from applications.department.models import Feedback
 
 class ListCreateAnnouncementView(generics.ListCreateAPIView):
     queryset = Announcements.objects.all()
@@ -335,3 +337,11 @@ class LabDeleteAPIView(APIView):
                 return Response({"detail": f"Lab with id {lab_id} does not exist."}, status=status.HTTP_404_NOT_FOUND)
 
         return Response({"detail": f"Successfully deleted {deleted_count} labs."}, status=status.HTTP_204_NO_CONTENT)
+    
+class FeedbackCreateAPIView(generics.CreateAPIView):
+    queryset = Feedback.objects.all()
+    serializer_class = FeedbackSerializer
+
+class FeedbackListView(generics.ListAPIView):
+    queryset = Feedback.objects.all()
+    serializer_class = FeedbackSerializer

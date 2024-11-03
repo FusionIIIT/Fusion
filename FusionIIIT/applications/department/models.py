@@ -54,3 +54,11 @@ class Lab(models.Model):
 
     # def __str__(self):
     #     return f"{self.name} ({self.department})"  # Displays lab name with department for clarity
+
+class Feedback(models.Model):
+    department = models.CharField(max_length=50)  # no need to validate department name
+    rating = models.CharField(max_length=20)
+    remark = models.TextField()
+
+    def __str__(self):
+        return f"{self.department} - {self.rating}"
