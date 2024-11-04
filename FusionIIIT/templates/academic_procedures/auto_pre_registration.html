@@ -184,7 +184,7 @@
                             </td>
                         </tr>
                         <input type="text" name="ct" value="{{forloop.counter}}" hidden="True">
-                    {% elif course_slot.type == "Optional Elective" %}
+                    {% elif course_slot.type == "Open Elective" %}
                         {% for course in course_slot.courses.all %}
                         <input type="text" name='course_slot' value='{{ course_slot.id }}' hidden="True"
                         data-value2='{{course_slot.type}}'>
@@ -303,7 +303,7 @@
                 let unique_choices = new Set();
                 for (let j = 0; j < course_priority.length; j++) {
             //         // console.log("course_priority-" + course_slot_id , course_priority[j].value  )
-                    if ((!(course_slot_type.startsWith("Optional") && course_slot_type != "Optional Elective") && !course_slot_type.startsWith("Swayam") )&& course_priority[j].value == "NULL") {
+                    if ((!(course_slot_type.startsWith("Open") && course_slot_type != "Open Elective") && !course_slot_type.startsWith("Swayam") )&& course_priority[j].value == "NULL") {
                         alert("Please select all choices for " + parseInt(i + 1) + "  " + course_slot_type + " slot");
                         document.getElementById('register-button').style = "text-allign:center;";
                         return false;
