@@ -426,13 +426,13 @@ def get_active_bookings(request):
         if user_designation in ["VhIncharge", "VhCaretaker"]:
             # Fetch all relevant bookings for VhCaretaker or VhIncharge
             active_bookings = BookingDetail.objects.select_related('intender', 'caretaker').filter(
-                Q(status="Forward") | Q(status="CheckedIn") | Q(status="Pending"),
+                Q(status="Forward") | Q(status="CheckedIn") | Q(status="Pending")| Q(status="Confirmed"),
                 booking_to__gte=date.today()
             )
         else:
             # Fetch only the logged-in user's bookings
             active_bookings = BookingDetail.objects.select_related('intender', 'caretaker').filter(
-                Q(status="Forward") | Q(status="CheckedIn") | Q(status="Pending"),
+                Q(status="Forward") | Q(status="CheckedIn") | Q(status="Pending")| Q(status="Confirmed"),
                 booking_to__gte=date.today(),
                 intender=user
             )
@@ -1267,67 +1267,70 @@ def check_partial_booking(request):
     if request.method == 'POST':
         date_1 = request.data.get('start_date')
         date_2 = request.data.get('end_date')
-        room_id = request.data.get('room_id')
         
-        if not (date_1 and date_2 and room_id):
-            return JsonResponse({'error': 'Start date, end date, and room ID are required.'}, status=400)
+        if not (date_1 and date_2):
+            return JsonResponse({'error': 'Start date and end date are required.'}, status=400)
         
         # Convert input dates to datetime objects
         start_date = datetime.datetime.strptime(date_1, "%Y-%m-%d").date()
         end_date = datetime.datetime.strptime(date_2, "%Y-%m-%d").date()
 
-        # Fetch room details
-        try:
-            room = RoomDetail.objects.get(id=room_id)
-        except RoomDetail.DoesNotExist:
-            return JsonResponse({'error': 'Room not found'}, status=404)
+        # Fetch all rooms
+        rooms = RoomDetail.objects.all()
+        response_data = []
 
-        room_type = room.room_type
+        for room in rooms:
+            room_id = room.id
+            room_number = room.room_number
+            room_type = room.room_type
 
-        # Check for existing bookings for the given room
-        overlapping_bookings = BookingDetail.objects.filter(
-            rooms__id=room_id,
-            booking_from__lt=end_date,
-            booking_to__gt=start_date,
-            status="Confirmed"
-        )
+            # Check for existing bookings for the given room
+            overlapping_bookings = BookingDetail.objects.filter(
+                rooms__id=room_id,
+                booking_from__lt=end_date,
+                booking_to__gt=start_date,
+                status="Confirmed"
+            ).order_by('booking_from')
 
-        # Initialize response data
-        partial_available = False
-        available_from = start_date
-        available_to = end_date
+            # Initialize response data
+            partial_available = False
+            available_ranges = []
 
-        # If there are overlapping bookings, find the partial availability
-        if overlapping_bookings.exists():
-            partial_available = True
-            for booking in overlapping_bookings:
-                # Check if the requested range can be partially accommodated
-                if booking.booking_from > start_date:
-                    available_to = min(available_to, booking.booking_from)
-                if booking.booking_to < end_date:
-                    available_from = max(available_from, booking.booking_to)
+            # If there are overlapping bookings, find the partial availability
+            if overlapping_bookings.exists():
+                partial_available = True
+                current_start = start_date
 
-            # Ensure the available dates are within the original range
-            available_from = max(start_date, available_from)
-            available_to = min(end_date, available_to)
+                for booking in overlapping_bookings:
+                    if booking.booking_from > current_start:
+                        available_ranges.append({
+                            'from': current_start,
+                            'to': booking.booking_from
+                        })
+                    current_start = booking.booking_to
 
-        # Response preparation
-        response_data = {
-            'room_id': room_id,
-            'room_type': room_type, 
-            'requested_from': date_1,
-            'requested_to': date_2,
-            'is_fully_available': not overlapping_bookings.exists(),
-            'is_partial_available': partial_available,
-            'partial_available_from': available_from if partial_available else None,
-            'partial_available_to': available_to if partial_available else None,
-        }
-        return JsonResponse(response_data)
+                if current_start < end_date:
+                    available_ranges.append({
+                        'from': current_start,
+                        'to': end_date
+                    })
+
+            # Append room data to response
+            response_data.append({
+                'room_id': room_id,
+                'room_number': room_number,
+                'room_type': room_type, 
+                'requested_from': date_1,
+                'requested_to': date_2,
+                'is_fully_available': not overlapping_bookings.exists(),
+                'is_partial_available': partial_available,
+                'available_ranges': available_ranges if partial_available else None,
+            })
+
+        return JsonResponse(response_data, safe=False)
     
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
-
-
 @login_required(login_url='/accounts/login/')
 def add_to_inventory(request):
     if request.method == 'POST':
