@@ -174,6 +174,7 @@ class CourseForm(ModelForm):
             'percent_project' : forms.NumberInput(attrs={'placeholder': '%'}, ),
             'percent_lab_evaluation' : forms.NumberInput(attrs={'placeholder': '%'}, ),
             'percent_course_attendance' : forms.NumberInput(attrs={'placeholder': '%'}, ),
+            'max_seats' : forms.NumberInput(attrs={'placeholder': 'max_seats',}, ), 
         }
         labels = {
             'code' : 'Course Code',
@@ -197,7 +198,8 @@ class CourseForm(ModelForm):
             'percent_lab_evaluation' : 'percent_lab_evaluation',
             'percent_course_attendance' : 'percent_course_attendance',
             'working_course' : 'working_course',
-            'disciplines' : 'disciplines'
+            'disciplines' : 'disciplines',
+            'max_seats' : 'max_seats'
         }
         
 
