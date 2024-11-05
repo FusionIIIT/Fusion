@@ -184,7 +184,7 @@
                             </td>
                         </tr>
                         <input type="text" name="ct" value="{{forloop.counter}}" hidden="True">
-                    {% elif course_slot.type == "Optional Elective" %}
+                    {% elif course_slot.type == "Open Elective" %}
                         {% for course in course_slot.courses.all %}
                         <input type="text" name='course_slot' value='{{ course_slot.id }}' hidden="True"
                         data-value2='{{course_slot.type}}'>
@@ -254,9 +254,6 @@
 
     <br>
     <br>
-    <CENTER>
-        <p>You need minimum {{curr_sem.curriculum.min_credit}} credits for semester {{next_sem.semester_no}}</p>
-    </CENTER>
 
     {% endif %}
     {% else %}
@@ -302,42 +299,41 @@
                 let course_priority = document.getElementsByName("course_priority-" + course_slot_id);
                 let unique_choices = new Set();
                 for (let j = 0; j < course_priority.length; j++) {
-            //         // console.log("course_priority-" + course_slot_id , course_priority[j].value  )
-                    if ((!(course_slot_type.startsWith("Optional") && course_slot_type != "Optional Elective") && !course_slot_type.startsWith("Swayam") )&& course_priority[j].value == "NULL") {
+                    if ((!(course_slot_type.startsWith("Optional")) && !course_slot_type.startsWith("Swayam") )&& course_priority[j].value == "NULL") {
                         alert("Please select all choices for " + parseInt(i + 1) + "  " + course_slot_type + " slot");
                         document.getElementById('register-button').style = "text-allign:center;";
                         return false;
                     }
                     let selected_course = course_priority[j].value.split("-");
                     unique_choices.add(selected_course[1]);
-                    if (course_priority[0].value != "NULL" && course_priority[j].value.split("-")[0] == '1' ) {
+                    if ((i==0 || course_slots[i].value != course_slots[i-1].value) && j==0 && course_priority[0].value != "NULL" && course_priority[j].value.split("-")[0] == '1' ) {
                         count = count + parseInt(credits[i].innerHTML);
+                        console.log(count)
                     }
                 }
-                
             }
 
-            // alert("Total Credits for Registered Courses :" + count);
+            alert("Total Credits for Registered Courses :" + count);
 
-            var minimum_credits = parseInt(document.getElementById("mincr").value);
-            if (count < minimum_credits) {
-                alert("You Can't Register as Minimum Credits: " + minimum_credits);
-                return false;
-            } else {
-                event.preventDefault();
-                var friendForm = $(this);
-                console.log(friendForm.serialize());
-                var posting = $.post(friendForm.attr('action'), friendForm.serialize());
-                // if success
-                posting.done(function (data) {
-                    alert('You have successfully registered');
-                    window.location = "/academic-procedures/stu";
-                });
-                //if failure
-                posting.fail(function (data) {
-                    alert('Registration Failed');
-                });
-            }
+            // var minimum_credits = parseInt(document.getElementById("mincr").value);
+            // if (count < minimum_credits) {
+            //     alert("You Can't Register as Minimum Credits: " + minimum_credits);
+            //     return false;
+            // } else {
+            event.preventDefault();
+            var friendForm = $(this);
+            console.log(friendForm.serialize());
+            var posting = $.post(friendForm.attr('action'), friendForm.serialize());
+            // if success
+            posting.done(function (data) {
+                alert('You have successfully registered');
+                window.location = "/academic-procedures/stu";
+            });
+            //if failure
+            posting.fail(function (data) {
+                alert('Registration Failed');
+            });
+            // }
         });
     });
 
