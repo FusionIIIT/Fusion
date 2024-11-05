@@ -1682,3 +1682,57 @@ def get_bills_id(request, pk):
         return Response(response_data)
     except BookingDetail.DoesNotExist:
         return Response({"error": "Booking detail not found"}, status=404)
+
+
+from django.utils import timezone
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def completed_bookings(request):
+    # Check the user's designation
+    vhcaretaker = request.user.holds_designations.filter(
+        designation__name='VhCaretaker').exists()
+    vhincharge = request.user.holds_designations.filter(
+        designation__name='VhIncharge').exists()
+
+    # Determine the user's designation
+    user_designation = "Intender"
+    if vhincharge:
+        user_designation = "VhIncharge"
+    elif vhcaretaker:
+        user_designation = "VhCaretaker"
+
+    if request.method == 'GET':
+        current_date = timezone.now().date()
+
+        # Fetch completed bookings based on the user's designation
+        if user_designation in ["VhIncharge", "VhCaretaker"]:
+            # For VhIncharge or VhCaretaker, fetch all completed bookings with booking_to date older than the current date
+            all_bookings = BookingDetail.objects.select_related('intender').filter(
+                status='Confirmed',
+                booking_to__lt=current_date
+            )
+        else:
+            # For Intenders, fetch only their completed bookings with booking_to date older than the current date
+            all_bookings = BookingDetail.objects.select_related('intender').filter(
+                intender=request.user,
+                status='Confirmed',
+                booking_to__lt=current_date
+            )
+
+        # Serialize the queryset to a list of dictionaries with required fields
+        bookings_list = [
+            {
+                'intender': booking.intender.first_name,
+                'bookingDate': booking.booking_date.isoformat() if booking.booking_date else None,
+                'checkIn': booking.booking_from.isoformat() if booking.booking_from else None,
+                'checkOut': booking.booking_to.isoformat() if booking.booking_to else None,
+                'category': booking.visitor_category,
+            }
+            for booking in all_bookings
+        ]
+
+        return JsonResponse({'completed_bookings': bookings_list})
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)

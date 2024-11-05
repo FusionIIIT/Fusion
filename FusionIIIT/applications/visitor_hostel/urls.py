@@ -55,6 +55,8 @@ urlpatterns = [
     #api
     url('api/inventory_add/', AddToInventory.as_view(), name='add-to-inventory'),
     url('api/inventory_list/', InventoryListView.as_view(), name='inventory-list'),
+    # completed bookings
+    url(r'^completed-bookings/', views.completed_bookings, name='completed_bookings'),
 
 ]
 
