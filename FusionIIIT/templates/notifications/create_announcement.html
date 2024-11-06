@@ -1,0 +1,76 @@
+{% load static %}
+{% block make_announcements %}
+
+    <div class="ui vertical segment">
+        <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST" enctype="multipart/form-data" action="">
+            {% csrf_token %}
+            <div class="ui header">
+                Make a new Announcement:
+            </div>
+            <br>
+
+            {{ form.non_field_errors }}
+
+            <div class="field">
+                {{ form.message.label_tag }}
+                {{ form.message }}
+            </div>
+
+            <div class="field">
+                {{ form.target_group.label_tag }}
+                {{ form.target_group }}
+            </div>
+
+            <div class="field">
+                {{ form.department.label_tag }}
+                {{ form.department }}
+            </div>
+
+            <div class="field">
+                {{ form.batch.label_tag }}
+                {{ form.batch }}
+            </div>
+
+
+            <div class="field">
+                {{ form.specific_users.label_tag }}
+                <div class="ui fluid multiple search selection dropdown" style="max-height: 300px; overflow-y: auto;">
+                    {{ form.specific_users }}
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="file">Attach Files (PDF, JPEG, PNG, JPG)</label>
+                <input type="file" id="file" name="upload_announcement" accept=".pdf, .jpg, .jpeg, .png">
+            </div>
+
+            <br>
+
+            <button type="submit" class="ui large primary button right floated">
+                Publish
+            </button>
+
+            <br>
+            <br>
+
+        </form>
+
+        <br>
+        <div class="ui divider"></div>
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <script type="text/javascript" src="{% static 'department/js/function.js' %}"></script>
+    <script>
+        // Initialize the dropdowns
+        $('.ui.dropdown').dropdown({
+            fullTextSearch: true,
+            maxSelections: 50
+        });
+    </script>
+{% endblock %}

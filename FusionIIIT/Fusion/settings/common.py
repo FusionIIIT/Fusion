@@ -50,7 +50,12 @@ EMAIL_HOST = 'smtp.gmail.com'
 
 # email of sender
 
+<<<<<<< HEAD
 EMAIL_HOST_USER = 'fusion@iiitdmj.ac.in'
+=======
+EMAIL_HOST_USER = 'fusionmailservice@iiitdmj.ac.in'
+# EMAIL_HOST_PASSWORD  = 'password'
+>>>>>>> c22db726 (Setup Email Notifications and architected new announcement system)
 
 EMAIL_PORT = 587
 ACCOUNT_EMAIL_REQUIRED = True
@@ -79,8 +84,8 @@ SOCIALACCOUNT_ADAPTER = 'applications.globals.adapters.MySocialAccountAdapter'
 
 
 # CELERY STUFF
-# CELERY_BROKER_URL = 'redis://localhost:6379'
-# CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
