@@ -1149,7 +1149,52 @@ def generate_preregistration_report(request):
         st = 'attachment; filename = ' + batch.name + batch.discipline.acronym + str(batch.year) + '-preresgistration.xlsx'
         response['Content-Disposition'] = st
         return response
+    
+@login_required
+def get_excel(request):
+    batch = request.POST.get('batch-check-view')
+    sem = request.POST.get('semester-check-view')
+    year = request.POST.get('year-check-view')
+    course = request.POST.get('Course-check-view')
+    registrations = course_registration.objects.filter(Q(student_id__batch = batch) & Q(working_year = year) & Q(semester_id__semester_no = sem) & Q(course_id__code = course))
+    return_list = []
+    for registration in registrations:
+            return_list.append(registration.student_id.id.id)
+    
+    return_list.sort()
+    output = BytesIO()
 
+    book = Workbook(output,{'in_memory':True})
+    title = book.add_format({'bold': True,
+                                    'font_size': 22,
+                                    'align': 'center',
+                                    'valign': 'vcenter'})
+    subtitle = book.add_format({'bold': True,
+                                    'font_size': 15,
+                                    'align': 'center',
+                                    'valign': 'vcenter'})
+    normaltext = book.add_format({'bold': False,
+                                    'font_size': 15,
+                                    'align': 'center',
+                                    'valign': 'vcenter'})
+    sheet = book.add_worksheet()
+    sheet.set_default_row(25)
+    sheet.write_string('A1','Student Roll no',subtitle)
+    sheet.write_string('B1','Student name',subtitle)
+    k=2
+    for no in return_list :
+        student= User.objects.get(username=no)
+        sheet.write_string('A'+str(k),no,normaltext)
+        sheet.write_string('B'+str(k),student.first_name+student.last_name,normaltext)
+        k+=1
+    
+    book.close()
+    output.seek(0)
+
+    response = HttpResponse(output.read(),content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename='+ course +'_student_list.xlsx'
+    response['Content-Transfer-Encoding'] = 'binary'
+    return response
 
 @login_required
 def add_new_profile (request):

@@ -105,20 +105,20 @@ def allocate(request) :
     unique_course_name = []
     try: 
         with transaction.atomic() :
-            for course_slot in unique_course_slot :
-                course_slot_object = CourseSlot.objects.get(id=course_slot)
-                if course_slot_object.type == "Professional Elective": # Runs only for open elective course slots
-                    if course_slot_object.name not in unique_course_name:
-                        stat = random_algo(batch,sem,year,course_slot_object.name)
-                        unique_course_name.append(course_slot_object.name)
-                        if(stat == -1) :
-                            raise Exception("seats not enough for course_slot"+str(course_slot_object.name))
+                for course_slot in unique_course_slot :
+                    course_slot_object = CourseSlot.objects.get(id=course_slot)
+                    if course_slot_object.type == "Open Elective": # Runs only for open elective course slots
+                        if course_slot_object.name not in unique_course_name:
+                            stat = random_algo(batch,sem,year,course_slot_object.name)
+                            unique_course_name.append(course_slot_object.name)
+                            if(stat == -1) :
+                                print(course_slot_object.name)
+                                raise Exception("seats not enough for course_slot"+str(course_slot_object.name))
 
         return JsonResponse({'status': 1 , 'message' : "course allocation successful"})
     except:
-        return JsonResponse({'status': -1 , 'message' : "seats not enough for course_slot"+str(course_slot_object.name) })
-
-
+        return JsonResponse({'status': -1 , 'message' : "seats not enough for some course_slot"})
+    
 def view_alloted_course(request) : 
     batch = request.POST.get('batch')
     sem = request.POST.get('sem')

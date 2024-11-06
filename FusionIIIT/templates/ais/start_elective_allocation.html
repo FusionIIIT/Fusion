@@ -49,7 +49,7 @@
 </div>
 <div class="ui tab segment " data-tab="view-allocation">
     <div class="ui vertical segment">
-        <form class="ui form" method="post" id="allocation-check">
+        <form class="ui form" method="post" id="allocation-check"  action="/aims/course_allocated_students">
             {% csrf_token %}
             <div class="field">
                 <label>Batch</label>
@@ -70,6 +70,11 @@
             <div class="field">
                 <button id="allocation-view" class="ui fluid primary button">
                     View allocation
+                </button>
+            </div>
+            <div class="field">
+                <button id="download-allocation-view" type="submit" class="ui fluid primary button">
+                    download allocation list
                 </button>
             </div>
         </form>
@@ -137,6 +142,9 @@
                 console.log("console",data)
                 if(data.status == -1){
                     alert("not enough seats to allocate students")
+                }
+                else{
+                    alert("allocation done")
                 }
             }
         })
