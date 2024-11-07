@@ -10,28 +10,48 @@ from applications.globals.models import ExtraInfo
 from applications.academic_information.models import Student
 from django.contrib import messages
 from django.db.models import Q
+import ast
 # Create your views here.
 
 
-def create_announcement(request, template_name='notifications/create_announcement.html', extra_context=None):
+def create_announcement(request, template_name='notifications/create_announcement.html', module='Module', extra_context=None):
     if request.method == 'POST':
         form = AnnouncementForm(request.POST)
+        print(form)
         if form.is_valid():
             announcement = form.save(commit=False)
             announcement.created_by = request.user
+            announcement.module = module
             announcement.save()
 
             # If specific users are selected, create entries in AnnouncementRecipients
             if form.cleaned_data['target_group'] == 'specific_users':
                 specific_users = form.cleaned_data['specific_users']
-                for user in specific_users:
+                print(specific_users, type(specific_users))
+                                # Split the input into individual user IDs and clean them
+                specific_user_ids = ast.literal_eval(specific_users)
+                print(specific_user_ids)
+
+                # Fetch corresponding ExtraInfo objects for these user IDs
+                extra_info_users = ExtraInfo.objects.filter(id__in=specific_user_ids)
+                print(extra_info_users)
+
+                # Create entries in AnnouncementRecipients for each valid user
+                for extra_info in extra_info_users:
                     AnnouncementRecipients.objects.create(
                         announcement=announcement,
-                        user=user
+                        user=extra_info  # This links the ExtraInfo object, not User
                     )
 
             messages.success(request, 'Announcement created successfully.')
             return redirect('/')
+        else:
+            # Handle invalid form and return the errors to the template
+            messages.error(request, 'There were errors in the form. Please correct them and try again.')
+            context = {'form': form}  # Pass form with errors back to the template
+            if extra_context:
+                context.update(extra_context)
+            return render(request, template_name, context)
     else:
         form = AnnouncementForm()
         # print(form)

@@ -383,7 +383,7 @@ def staff_view(request):
     #     "fac_list": context_f,
     #     "department_info": department_context
     # })
-    return create_announcement(request, 'department/dep_request.html', {"user_designation": user_info.user_type})
+    return create_announcement(request, 'department/dep_request.html', 'Department', {"user_designation": user_info.user_type})
     
    
 

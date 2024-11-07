@@ -17,6 +17,7 @@ class Announcements(models.Model):
     department = models.ForeignKey(DepartmentInfo, on_delete=models.CASCADE, null=True, blank=True)
     batch = models.IntegerField(null=True, blank=True)
     upload_announcement = models.FileField(upload_to='notifications/upload_announcement', null=True, default=" ")
+    module = models.CharField(max_length=200, default='Fusion')
     def __str__(self):
         return str(self.created_by.username)
     

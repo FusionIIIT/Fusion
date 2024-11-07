@@ -14,6 +14,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes,authentication_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from django.http import JsonResponse
 
 
 from . import serializers
@@ -377,3 +378,16 @@ def delete_notification(request):
             'details': str(e)
         }
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
+    
+
+def search_users(request):
+    query = request.GET.get('q', '')
+    if query:
+        users = ExtraInfo.objects.filter(user__username__icontains=query).values('id', 'user__username')
+    else:
+        users = ExtraInfo.objects.none()
+
+    results = [
+        {'id': user['id'], 'text': user['user__username']} for user in users
+    ]
+    return JsonResponse({'results': results})
