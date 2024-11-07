@@ -885,39 +885,30 @@ def requestsStatus(request):
 @permission_classes([IsAuthenticated])
 def requestsInProgress(request):
     requestsObject = Requests.objects.filter(issuedWorkOrder=1, billGenerated=0)
-    serializer = RequestsSerializer(requestsObject, many=True)
+    serializer = RequestsInProgressSerializer(requestsObject, many=True)
     return Response({'obj': serializer.data}, status=200)
 
-@api_view(['POST'])
+@api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def work_completed(request):
-    # Get the request ID from the POST data
     request_id = request.data.get('id')
-    
-    # Update the workCompleted and status fields
     Requests.objects.filter(id=request_id).update(workCompleted=1, status="Work Completed")
-
-    # Fetch the requests that have an issued work order but the bill is not generated yet
-    requests_object = Requests.objects.filter(issuedWorkOrder=1, billGenerated=0)
-    obj = []
-
-    # Construct the response object with the request details
-    for request_obj in requests_object:
-        element = {
-            'id': request_obj.id,
-            'name': request_obj.name,
-            'area': request_obj.area,
-            'description': request_obj.description,
-            'requestCreatedBy': request_obj.requestCreatedBy,
-            'workCompleted': request_obj.workCompleted
-        }
-        obj.append(element)
-
-    # Return a JSON response with a success message and the updated list of requests
     return Response(
         {
             'message': 'Work Completed',
-            'data': obj
+        },
+        status=status.HTTP_200_OK
+    )
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getCompletedWork(request):
+    requestsObject= Requests.objects.filter(workCompleted=1)
+    serializer = RequestsSerializer(requestsObject, many=True)
+    return Response(
+        {
+            'message': 'Work Completed',
+            'response': serializer,
         },
         status=status.HTTP_200_OK
     )
@@ -996,7 +987,7 @@ def handleBillGeneratedRequests(request):
     request_id = request.data.get("id", 0)
     if request_id:
         Requests.objects.filter(id=request_id).update(status="Bill Generated", billGenerated=1)
-        
+
     requests_object = Requests.objects.filter(issuedWorkOrder=1, billGenerated=0)
     obj = []
     for x in requests_object:
