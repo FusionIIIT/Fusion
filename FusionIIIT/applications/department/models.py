@@ -41,3 +41,24 @@ class Information(models.Model):
     email = models.CharField(max_length=200)
     facilites = models.TextField()
     labs = models.TextField()
+
+
+class Lab(models.Model):
+    department = models.OneToOneField(
+        DepartmentInfo,
+        on_delete=models.CASCADE,
+    )
+    location = models.CharField(max_length=200)  # Adjust max_length as needed
+    name = models.CharField(max_length=100)  # Adjust max_length as needed
+    capacity = models.IntegerField()  # You can adjust the field type if needed
+
+    # def __str__(self):
+    #     return f"{self.name} ({self.department})"  # Displays lab name with department for clarity
+
+class Feedback(models.Model):
+    department = models.CharField(max_length=50)  # no need to validate department name
+    rating = models.CharField(max_length=20)
+    remark = models.TextField()
+
+    def __str__(self):
+        return f"{self.department} - {self.rating}"

@@ -21,6 +21,13 @@ from notification.views import department_notif
 from collections import defaultdict
 import re
 
+from applications.department.models import Information
+from .serializers import InformationSerializer
+from .serializers import LabSerializer
+from applications.globals.models import DepartmentInfo
+from applications.department.models import Lab
+from .serializers import FeedbackSerializer
+from applications.department.models import Feedback
 
 class ListCreateAnnouncementView(generics.ListCreateAPIView):
     def post(self, request):
@@ -253,3 +260,128 @@ def faculty():
         "staff" : staff.data,
     }
     return context_f
+
+class InformationAPIView(generics.ListAPIView):
+    queryset = Information.objects.all()
+    serializer_class = InformationSerializer
+    permission_classes = (IsFacultyStaffOrReadOnly,)
+class InformationUpdateAPIView(APIView):
+    def put(self, request):
+        # Ensure the data only contains phone_number, email, and facilities
+        data = request.data
+        fields_to_update = {key: data[key] for key in ["phone_number", "email", "facilites"] if key in data}
+
+        # Get the department string from the request
+        department_name = data.get("department")
+
+        # Get the department info using the department name string
+        department_info = DepartmentInfo.objects.filter(name=department_name).first()
+
+        if not department_info:
+            return Response({"detail": "Department not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Update or create the Information entry for the department
+        information_instance, created = Information.objects.update_or_create(
+            department=department_info,
+            defaults=fields_to_update
+        )
+
+        serializer = InformationSerializer(information_instance)
+        if created:
+            message = "Information created successfully."
+        else:
+            message = "Information updated successfully."
+
+        return Response({"message": message, "data": serializer.data}, status=status.HTTP_200_OK)
+# class UpdateOrCreateInformationAPIView(APIView):
+#     """
+#     This view will handle POST requests to either update or create
+#     an Information entry for a department.
+#     """
+#     def post(self, request):
+#         department_name = request.data.get('department')
+#         phone_number = request.data.get('phone_number')
+#         email = request.data.get('email')
+#         facilities = request.data.get('facilities')
+
+#         # Retrieve the department
+#         department = DepartmentInfo.objects.filter(name=department_name).first()
+#         if not department:
+#             return Response({"error": "Department not found."}, status=status.HTTP_400_BAD_REQUEST)
+
+#         # Check if an entry exists for the department
+#         information_entry, created = Information.objects.update_or_create(
+#             department=department,
+#             defaults={
+#                 'phone_number': phone_number,
+#                 'email': email,
+#                 'facilities': facilities
+#             }
+#         )
+
+#         serializer = InformationSerializer(information_entry)
+#         if created:
+#             return Response({"message": "Information created successfully.", "data": serializer.data}, status=status.HTTP_201_CREATED)
+#         else:
+#             return Response({"message": "Information updated successfully.", "data": serializer.data}, status=status.HTTP_200_OK)
+
+class LabListView(generics.ListAPIView):
+    queryset = Lab.objects.all()  # Fetch all lab entries
+    serializer_class = LabSerializer
+
+
+class LabAPIView(APIView):
+    def post(self, request):
+        data = request.data
+        department_name = data.get("department")
+
+        # Find department using the name
+        department_info = DepartmentInfo.objects.filter(name=department_name).first()
+
+        if not department_info:
+            return Response({"detail": "Department not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Validate required fields in the data
+        if not all(key in data for key in ["location", "name", "capacity"]):
+            return Response({"detail": "Missing required fields."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create a new Lab entry with department_info object directly
+        lab_data = {
+            "location": data["location"],
+            "name": data["name"],
+            "capacity": data["capacity"]
+        }
+
+        # Create Lab instance and assign the department before saving
+        serializer = LabSerializer(data=lab_data)
+        if serializer.is_valid():
+            lab = serializer.save(department=department_info)  # Set department explicitly
+            return Response(LabSerializer(lab).data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class LabDeleteAPIView(APIView):
+    def delete(self, request):
+        lab_ids = request.data.get('lab_ids', [])
+        
+        if not lab_ids:
+            return Response({"detail": "No lab IDs provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        deleted_count = 0
+        for lab_id in lab_ids:
+            try:
+                lab = Lab.objects.get(id=lab_id)
+                lab.delete()
+                deleted_count += 1
+            except Lab.DoesNotExist:
+                return Response({"detail": f"Lab with id {lab_id} does not exist."}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response({"detail": f"Successfully deleted {deleted_count} labs."}, status=status.HTTP_204_NO_CONTENT)
+    
+class FeedbackCreateAPIView(generics.CreateAPIView):
+    queryset = Feedback.objects.all()
+    serializer_class = FeedbackSerializer
+
+class FeedbackListView(generics.ListAPIView):
+    queryset = Feedback.objects.all()
+    serializer_class = FeedbackSerializer
