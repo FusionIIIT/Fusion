@@ -5,10 +5,9 @@ from django.contrib.auth.models import User
 
 
 class AnnouncementForm(forms.ModelForm):
-    specific_users = forms.ModelMultipleChoiceField(
-        queryset=ExtraInfo.objects.all(),
+    specific_users = forms.CharField(
         required=False,
-        widget=forms.CheckboxSelectMultiple
+        widget=forms.SelectMultiple(attrs={'class': 'ui fluid multiple search selection dropdown'})
     )
 
     class Meta:

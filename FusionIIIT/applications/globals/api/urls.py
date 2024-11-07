@@ -19,5 +19,6 @@ urlpatterns = [
     url(r'^notification/',views.notification,name='notification'),
     url(r'^notificationread',views.NotificationRead,name='notifications-read'),
     url(r'^notificationdelete',views.delete_notification,name='notifications-delete'),
-    url(r'^notificationunread',views.NotificationUnread,name='notifications-unread')
+    url(r'^notificationunread',views.NotificationUnread,name='notifications-unread'),
+    url(r'^search-users/', views.search_users, name='search_users'),
 ]
