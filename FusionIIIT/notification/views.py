@@ -70,7 +70,7 @@ def announcement_list(request):
         announcements = Announcements.objects.filter(
             Q(target_group='all') |
             (Q(target_group='faculty') & (Q(department=user_extrainfo.department) | Q(department__isnull=True)))
-        )
+        ).order_by('-created_at')
     elif user_extrainfo.user_type == 'student':
         student = Student.objects.filter(id=user_extrainfo).first()
         announcements = Announcements.objects.filter(
@@ -79,15 +79,15 @@ def announcement_list(request):
              (Q(department=user_extrainfo.department) | Q(department__isnull=True)) &
              (Q(batch=student.batch) | Q(batch__isnull=True))
             )
-        )
+        ).order_by('-created_at')
     else:
         announcements = Announcements.objects.filter(target_group='all')
 
     # Include specific user announcements
-    specific_announcements = Announcements.objects.filter(recipients__user=user_extrainfo)
+    specific_announcements = Announcements.objects.filter(recipients__user=user_extrainfo).order_by('-created_at')
 
     context = {
-        'announcements': announcements | specific_announcements
+        'announcements': (announcements | specific_announcements).distinct().order_by('-created_at')
     }
     return context
 
@@ -192,6 +192,7 @@ def central_mess_notif(sender, recipient, type, message=None):
 
     if type == 'feedback_submitted':
         verb = 'Your feedback has been successfully submitted.'
+        send_notification_email(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
     elif type == 'menu_change_accepted':
         verb = 'Menu request has been approved'
     elif type == 'leave_request':
@@ -206,7 +207,6 @@ def central_mess_notif(sender, recipient, type, message=None):
         verb = "You have been added to the mess committee. "
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
-    # send_notification_email(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
     
 def placement_cellNotif(sender, recipient, type):
     url = 'placement:placement'
