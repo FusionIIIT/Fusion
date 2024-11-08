@@ -67,17 +67,11 @@ class InformationSerializer(serializers.ModelSerializer):
         model = Information
         fields = '__all__'  # or specify fields as needed
 
+# serializers.py
 class LabSerializer(serializers.ModelSerializer):
-    department = serializers.SerializerMethodField()
-
     class Meta:
         model = Lab
         fields = '__all__'
-
-    def get_department(self, obj):
-        # Return the department name instead of the primary key
-        return obj.department.name
-    
 
 
 class FeedbackSerializer(serializers.ModelSerializer):

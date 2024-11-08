@@ -28,7 +28,12 @@ from applications.globals.models import DepartmentInfo
 from applications.department.models import Lab
 from .serializers import FeedbackSerializer
 from applications.department.models import Feedback
+from datetime import datetime
 
+current_year = datetime.now().year
+current_month = datetime.now().month
+yearset = current_year if current_month > 8 else current_year - 1
+# print(year)
 class ListCreateAnnouncementView(generics.ListCreateAPIView):
     def post(self, request):
         # Get the current user from the request
@@ -155,6 +160,7 @@ class AllStudentsAPIView(APIView):
             year = student.batch  # E.g., '2022'
             department = student.specialization  # E.g., 'CSE'
             serializer = StudentSerializer(student)
+            print(year, programme, department)
             response_data[programme][year][department].append(serializer.data)
 
         # Convert defaultdict to a regular dict for JSON response
@@ -175,6 +181,7 @@ def decode_bid(bid):
             # Map the level to program name and process year
             programme = {
                 'btech': 'B.Tech',
+                'bdes': 'B.Des',
                 'mtech': 'M.Tech',
                 'phd': 'PhD',  
             }.get(level.lower(), None)
@@ -183,7 +190,7 @@ def decode_bid(bid):
                 print(year, programme, specialization)
                 return {
                     'programme': programme,
-                    'batch': 2022 - int(year) + 1,  # Example: calculate batch based on year
+                    'batch': int(yearset) - int(year) + 1,  # Example: calculate batch based on year
                     'specialization': specialization.upper()  # Normalize specialization to uppercase
                 }
     except (IndexError, KeyError):
@@ -333,29 +340,15 @@ class LabListView(generics.ListAPIView):
 class LabAPIView(APIView):
     def post(self, request):
         data = request.data
-        department_name = data.get("department")
 
-        # Find department using the name
-        department_info = DepartmentInfo.objects.filter(name=department_name).first()
-
-        if not department_info:
-            return Response({"detail": "Department not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        # Validate required fields in the data
-        if not all(key in data for key in ["location", "name", "capacity"]):
+        # Ensure all required fields are in the data
+        if not all(key in data for key in ["department", "location", "name", "capacity"]):
             return Response({"detail": "Missing required fields."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Create a new Lab entry with department_info object directly
-        lab_data = {
-            "location": data["location"],
-            "name": data["name"],
-            "capacity": data["capacity"]
-        }
-
-        # Create Lab instance and assign the department before saving
-        serializer = LabSerializer(data=lab_data)
+        # Create the Lab instance directly with the data provided
+        serializer = LabSerializer(data=data)
         if serializer.is_valid():
-            lab = serializer.save(department=department_info)  # Set department explicitly
+            lab = serializer.save()  # No need to set a department object
             return Response(LabSerializer(lab).data, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

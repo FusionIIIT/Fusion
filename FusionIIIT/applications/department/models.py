@@ -44,16 +44,13 @@ class Information(models.Model):
 
 
 class Lab(models.Model):
-    department = models.OneToOneField(
-        DepartmentInfo,
-        on_delete=models.CASCADE,
-    )
-    location = models.CharField(max_length=200)  # Adjust max_length as needed
-    name = models.CharField(max_length=100)  # Adjust max_length as needed
-    capacity = models.IntegerField()  # You can adjust the field type if needed
+    department = models.CharField(max_length=50)  # Store department as a string field instead of a foreign key
+    location = models.CharField(max_length=200)
+    name = models.CharField(max_length=100)
+    capacity = models.IntegerField()
 
-    # def __str__(self):
-    #     return f"{self.name} ({self.department})"  # Displays lab name with department for clarity
+    def __str__(self):
+        return f"{self.name} ({self.department})"
 
 class Feedback(models.Model):
     department = models.CharField(max_length=50)  # no need to validate department name
