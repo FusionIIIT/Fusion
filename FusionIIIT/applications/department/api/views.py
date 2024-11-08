@@ -18,6 +18,9 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from datetime import date
 from notification.views import department_notif
+from collections import defaultdict
+import re
+
 from applications.department.models import Information
 from .serializers import InformationSerializer
 from .serializers import LabSerializer
@@ -27,9 +30,36 @@ from .serializers import FeedbackSerializer
 from applications.department.models import Feedback
 
 class ListCreateAnnouncementView(generics.ListCreateAPIView):
-    queryset = Announcements.objects.all()
-    serializer_class = AnnouncementSerializer
-    permission_classes = (IsAuthenticated, IsFacultyStaffOrReadOnly)
+    def post(self, request):
+        # Get the current user from the request
+        user = request.user
+        usrnm = get_object_or_404(User, username=user.username)
+        user_info = ExtraInfo.objects.select_related('user', 'department').filter(user=usrnm).first()
+        
+        if not user_info:
+            return Response({'error': 'User information not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        ann_maker_id = user_info.id
+        department = user_info.department.name  # Get department name
+        
+        # Get the data from the request
+        data = request.data.copy()  # Copy request data to modify
+        
+        # Add the department and announcement maker to the data
+        data['ann_maker'] = ann_maker_id
+        
+        # Instantiate the serializer with the modified data
+        serializer = AnnouncementSerializer(data=data, context={'request': request})
+        
+        # Validate and save if the data is valid
+        if serializer.is_valid():
+            # Save the data to the Announcement model
+            serializer.save()  # This automatically saves the data in the Announcements table
+            
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        # If invalid, return the errors
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     
 class DepMainAPIView(APIView):
@@ -104,48 +134,58 @@ class StaffAPIView(APIView):
         return Response(data)
     
 class AllStudentsAPIView(APIView):
-    def get(self,request,bid):
-        print(self.request.query_params) 
-        # bid = self.request.query_params.get()
-
-        # Decode bid into filter criteria
+    def get(self, request, bid):
+        # Decode bid to filter criteria
         filter_criteria = decode_bid(bid)
         if not filter_criteria:
             return Response({'detail': 'Invalid bid value'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Apply additional department filter since it seems fixed
-        filter_criteria['id__department__name'] = 'CSE'
-
-        student_list1 = Student.objects.order_by('id').filter(
+        # Query the student list based on filter criteria
+        student_list = Student.objects.filter(
             id__user_type='student',
             **filter_criteria
         ).select_related('id')
 
-        # paginator = Paginator(student_list1, 25, orphans=5)
-        # page_number = request.GET.get('page')
-        # student_list = paginator.get_page(page_number)
+        # Create a nested dictionary with programme, year, and specialization
+        response_data = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
 
-        # Serialize the queryset
-        serializer = StudentSerializer(student_list1, many=True)
-        serialized_data = serializer.data
+        # Populate the dictionary by programme, year, and department
+        for student in student_list:
+            programme = student.programme  # E.g., 'B.Tech'
+            year = student.batch  # E.g., '2022'
+            department = student.specialization  # E.g., 'CSE'
+            serializer = StudentSerializer(student)
+            response_data[programme][year][department].append(serializer.data)
 
-        # Create a response dictionary
-        response_data = {'student_list': serialized_data}
+        # Convert defaultdict to a regular dict for JSON response
+        response_data = {prog: {yr: dict(depts) for yr, depts in years.items()} for prog, years in response_data.items()}
 
-        return Response(response_data)
+        return Response(response_data, status=status.HTTP_200_OK)
 
-        
 def decode_bid(bid):
-    """Decodes the bid structure into programme, batch, and department (if applicable)."""
+    """Decode bid into filter criteria."""
     try:
-        department_code = bid[0]
-        programme = {
-            '1': 'B.Tech',
-            '2': 'M.Tech',
-            '3': 'PhD',  # Assuming there are more departments
-        }[department_code]
-        batch = 2021 - len(bid) + 1
-        return {'programme': programme, 'batch': batch}
+        match = re.match(r"([a-zA-Z]+)(\d+)([a-zA-Z]+)", bid)
+        print(match)
+        if match:
+            level = match.group(1)  # e.g., 'btech'
+            year = match.group(2)   # e.g., '1'
+            specialization = match.group(3)  # e.g., 'CSE'
+        
+            # Map the level to program name and process year
+            programme = {
+                'btech': 'B.Tech',
+                'mtech': 'M.Tech',
+                'phd': 'PhD',  
+            }.get(level.lower(), None)
+
+            if programme:
+                print(year, programme, specialization)
+                return {
+                    'programme': programme,
+                    'batch': 2022 - int(year) + 1,  # Example: calculate batch based on year
+                    'specialization': specialization.upper()  # Normalize specialization to uppercase
+                }
     except (IndexError, KeyError):
         return None  # Handle malformed bid values
     
