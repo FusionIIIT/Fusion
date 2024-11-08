@@ -34,7 +34,7 @@ def check_for_registration_complete (request):
         if date>=prd_start_date and date<=prd_end_date:
             return JsonResponse({'status':-1 , "message":"registration is under process"})
         
-        if course_registration.objects.filter(Q(semester_id__semester_no = sem) & Q(student_id__batch = batch)).exists() : 
+        if FinalRegistration.objects.filter(Q(semester_id__semester_no = sem) & Q(student_id__batch = batch)).exists() : 
             return JsonResponse({'status':2,"message":"courses already allocated"})
         
         return JsonResponse({"status":1 , "message" : "courses not yet allocated"})
@@ -78,9 +78,9 @@ def random_algo(batch,sem,year,course_slot) :
                         course_object = Course.objects.get(id=course)
                         course_slot_object = CourseSlot.objects.get(id = random_student_selected[1])
                         semester_object = Semester.objects.get(Q(semester_no = sem) & Q(curriculum = curriculum_object))
-                        course_registration.objects.create(
+                        FinalRegistration.objects.create(
                             student_id = stud,
-                            working_year = year,
+                            verified=False,
                             semester_id = semester_object,
                             course_id = course_object,
                             course_slot_id = course_slot_object
@@ -107,7 +107,38 @@ def allocate(request) :
         with transaction.atomic() :
                 for course_slot in unique_course_slot :
                     course_slot_object = CourseSlot.objects.get(id=course_slot)
-                    if course_slot_object.type == "Open Elective": # Runs only for open elective course slots
+                    print(course_slot_object)
+                    if course_slot_object.type != "Open Elective":
+                        # Fetch students registered in this course slot
+                        students = InitialRegistration.objects.filter(
+                            Q(semester_id__semester_no=sem) &
+                            Q(course_slot_id=course_slot_object) &
+                            Q(student_id__batch=batch)
+                        ).values_list('student_id', flat=True)
+
+                        # Allocate each student directly to FinalRegistration
+                        for student_id in students:
+                            student = Student.objects.get(id=student_id)
+                            semester = Semester.objects.get(semester_no=sem, curriculum=student.batch_id.curriculum)
+                            print(semester.id)
+                            # course = Course.objects.get(id=course_slot_object.courses.id)
+                            course_id = course_slot_object.courses.values_list('id', flat=True).first()
+                            # Retrieve the Course instance
+                            course = Course.objects.get(id=course_id)
+                            print(course)
+                            print(student)
+                            print(course_slot_object)
+                            # Insert directly into FinalRegistration
+                            FinalRegistration.objects.create(
+                                student_id=student,
+                                verified=False,
+                                semester_id=semester,
+                                course_id=course,
+                                course_slot_id=course_slot_object
+                            )
+                            print("gaurav")
+                        unique_course_name.append(course_slot_object.name)
+                    elif course_slot_object.type == "Open Elective": # Runs only for open elective course slots
                         if course_slot_object.name not in unique_course_name:
                             stat = random_algo(batch,sem,year,course_slot_object.name)
                             unique_course_name.append(course_slot_object.name)
@@ -122,10 +153,10 @@ def allocate(request) :
 def view_alloted_course(request) : 
     batch = request.POST.get('batch')
     sem = request.POST.get('sem')
-    year = request.POST.get('year')
+    verified = request.POST.get('year')
     course = request.POST.get('course')
 
-    registrations = course_registration.objects.filter(Q(student_id__batch = batch) & Q(working_year = year) & Q(semester_id__semester_no = sem) & Q(course_id__code = course))
+    registrations = FinalRegistration.objects.filter(Q(student_id__batch = batch) & Q(verified = False) & Q(semester_id__semester_no = sem) & Q(course_id__code = course))
     return_list = []
     for registration in registrations:
         obj = {
