@@ -1625,6 +1625,8 @@ from rest_framework.authentication import TokenAuthentication
 from .models import BookingDetail
 from .serializers import BookingDetailSerializer
 
+from datetime import date
+
 # Fetch all booking details
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -1634,16 +1636,33 @@ def get_all_bills(request):
     response_data = []
 
     for booking in bookings:
+        # Calculate the number of days of stay
+        num_days = (booking.booking_to - booking.booking_from).days + 1
+
+        # Determine the per-day cost based on the visitor category
+        if booking.visitor_category == 'A':
+            per_day_cost = 0
+        elif booking.visitor_category == 'B':
+            per_day_cost = 500
+        elif booking.visitor_category == 'C':
+            per_day_cost = 800
+        elif booking.visitor_category == 'D':
+            per_day_cost = 1400
+        else:
+            per_day_cost = 900  # Default per-day cost
+
+        room_bill = num_days * per_day_cost
+
         # Check if the related bill exists
         if hasattr(booking, 'bill'):
-            total_bill = booking.bill.meal_bill + booking.bill.room_bill
+            total_bill = booking.bill.meal_bill + room_bill
             bill_id = booking.bill.id
             bill_date = booking.bill.bill_date
         else:
-            total_bill = 0
+            total_bill = room_bill
             bill_id = None
             bill_date = None
-            
+
         response_data.append({
             'intender_name': booking.intender.username,  # Assuming `username` for the user's name
             'booking_from': booking.booking_from,
@@ -1662,12 +1681,29 @@ def get_all_bills(request):
 def get_bills_id(request, pk):
     try:
         booking = BookingDetail.objects.get(id=pk)
+        # Calculate the number of days of stay
+        num_days = (booking.booking_to - booking.booking_from).days + 1
+
+        # Determine the per-day cost based on the visitor category
+        if booking.visitor_category == 'A':
+            per_day_cost = 0
+        elif booking.visitor_category == 'B':
+            per_day_cost = 500
+        elif booking.visitor_category == 'C':
+            per_day_cost = 800
+        elif booking.visitor_category == 'D':
+            per_day_cost = 1400
+        else:
+            per_day_cost = 900  # Default per-day cost
+
+        room_bill = num_days * per_day_cost
+
         if hasattr(booking, 'bill'):
-            total_bill = booking.bill.meal_bill + booking.bill.room_bill
+            total_bill = booking.bill.meal_bill + room_bill
             bill_id = booking.bill.id
             bill_date = booking.bill.bill_date
         else:
-            total_bill = 0
+            total_bill = room_bill
             bill_id = None
             bill_date = None
 
@@ -1682,8 +1718,7 @@ def get_bills_id(request, pk):
         return Response(response_data)
     except BookingDetail.DoesNotExist:
         return Response({"error": "Booking detail not found"}, status=404)
-
-
+    
 from django.utils import timezone
 
 @api_view(['GET'])
