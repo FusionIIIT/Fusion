@@ -125,9 +125,7 @@ def allocate(request) :
                             course_id = course_slot_object.courses.values_list('id', flat=True).first()
                             # Retrieve the Course instance
                             course = Course.objects.get(id=course_id)
-                            print(course)
-                            print(student)
-                            print(course_slot_object)
+
                             # Insert directly into FinalRegistration
                             FinalRegistration.objects.create(
                                 student_id=student,
@@ -136,7 +134,7 @@ def allocate(request) :
                                 course_id=course,
                                 course_slot_id=course_slot_object
                             )
-                            print("gaurav")
+
                         unique_course_name.append(course_slot_object.name)
                     elif course_slot_object.type == "Open Elective": # Runs only for open elective course slots
                         if course_slot_object.name not in unique_course_name:
@@ -156,7 +154,7 @@ def view_alloted_course(request) :
     verified = request.POST.get('year')
     course = request.POST.get('course')
 
-    registrations = FinalRegistration.objects.filter(Q(student_id__batch = batch) & Q(verified = False) & Q(semester_id__semester_no = sem) & Q(course_id__code = course))
+    registrations = FinalRegistration.objects.filter(Q(student_id__batch = batch) &  Q(semester_id__semester_no = sem) & Q(course_id__code = course))
     return_list = []
     for registration in registrations:
         obj = {

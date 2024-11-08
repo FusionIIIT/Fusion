@@ -1156,7 +1156,7 @@ def get_excel(request):
     sem = request.POST.get('semester-check-view')
     year = request.POST.get('year-check-view')
     course = request.POST.get('Course-check-view')
-    registrations = FinalRegistration.objects.filter(Q(student_id__batch = batch) & Q(verified = False) & Q(semester_id__semester_no = sem) & Q(course_id__code = course))
+    registrations = FinalRegistration.objects.filter(Q(student_id__batch = batch) & Q(semester_id__semester_no = sem) & Q(course_id__code = course))
     return_list = []
     for registration in registrations:
             return_list.append(registration.student_id.id.id)
