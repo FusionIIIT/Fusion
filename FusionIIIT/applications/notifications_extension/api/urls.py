@@ -24,6 +24,8 @@ from .views import (
     MarkAsRead,
     Delete,
     NotificationsList,
+    AnnouncementCreateView,
+    AnnouncementListView,
 )
 
 urlpatterns = [
@@ -50,4 +52,6 @@ urlpatterns = [
     path('office_dean_RSPC_notification/', OfficeDeanRSPCNotificationAPIView.as_view(), name='office_dean_RSPC_notification'),
     path('research_procedures_notification/', ResearchProceduresNotificationAPIView.as_view(), name='research_procedures_notification'),
     path('hostel_notifications/', HostelModuleNotificationAPIView.as_view(), name='hostel_notifications'),
+    path('announcements/create', AnnouncementCreateView.as_view(), name='announcement_create'),
+    path('announcements/', AnnouncementListView.as_view(), name='announcement_list')
 ]
