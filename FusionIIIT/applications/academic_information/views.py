@@ -17,7 +17,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
 
-from applications.academic_procedures.models import MinimumCredits, Register, InitialRegistration, course_registration, AssistantshipClaim,Assistantship_status
+from applications.academic_procedures.models import MinimumCredits, Register, InitialRegistration, course_registration, AssistantshipClaim,Assistantship_status,FinalRegistration
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation, DepartmentInfo)
 
@@ -1156,7 +1156,7 @@ def get_excel(request):
     sem = request.POST.get('semester-check-view')
     year = request.POST.get('year-check-view')
     course = request.POST.get('Course-check-view')
-    registrations = course_registration.objects.filter(Q(student_id__batch = batch) & Q(working_year = year) & Q(semester_id__semester_no = sem) & Q(course_id__code = course))
+    registrations = FinalRegistration.objects.filter(Q(student_id__batch = batch) & Q(semester_id__semester_no = sem) & Q(course_id__code = course))
     return_list = []
     for registration in registrations:
             return_list.append(registration.student_id.id.id)
