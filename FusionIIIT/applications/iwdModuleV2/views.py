@@ -360,13 +360,13 @@ def page1View(request):
     if request.POST:
         request.session['projectId'] = request.POST['id']
     projectPageOne = PageOneDetails.objects.get(
-        id=Projects.objects.get(id=request.session['projectId']))
+        id=Projects.objects.get(page_id=request.session['projectId']))
     return render(request, 'iwdModuleV2/Page1.html', {'x': projectPageOne})
 
 
 def page2View(request):
     projectPageTwo = PageTwoDetails.objects.get(
-        id=Projects.objects.get(id=request.session['projectId']))
+        id=Projects.objects.get(page_id=request.session['projectId']))
     return render(request, 'iwdModuleV2/Page2.html', {'x': projectPageTwo})
 
 
@@ -445,7 +445,7 @@ def milestoneView(request):
 
 def page3View(request):
     pageThreeDetails = PageThreeDetails.objects.get(
-        id=Projects.objects.get(id=request.session['projectId']))
+        id=Projects.objects.get(page_id=request.session['projectId']))
     return render(request, 'iwdModuleV2/Page3.html', {'x': pageThreeDetails})
 
 
