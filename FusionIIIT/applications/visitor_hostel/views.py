@@ -1627,44 +1627,54 @@ from .serializers import BookingDetailSerializer
 
 from datetime import date
 
+from datetime import date
+from django.db.models import Q
+
 # Fetch all booking details
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def get_all_bills(request):
-    bookings = BookingDetail.objects.all()
+    bookings = BookingDetail.objects.filter(Q(status="Confirmed") | Q(status="Active"))
     response_data = []
+    print("BOOKING DATA >>>> ", bookings)
 
     for booking in bookings:
         # Calculate the number of days of stay
         num_days = (booking.booking_to - booking.booking_from).days + 1
 
         # Determine the per-day cost based on the visitor category
-        if booking.visitor_category == 'A':
-            per_day_cost = 0
-        elif booking.visitor_category == 'B':
-            per_day_cost = 500
-        elif booking.visitor_category == 'C':
-            per_day_cost = 800
-        elif booking.visitor_category == 'D':
-            per_day_cost = 1400
-        else:
-            per_day_cost = 900  # Default per-day cost
-
+        visitor_costs = {'A': 0, 'B': 500, 'C': 800, 'D': 1400}
+        per_day_cost = visitor_costs.get(booking.visitor_category, 900)
         room_bill = num_days * per_day_cost
 
-        # Check if the related bill exists
-        if hasattr(booking, 'bill'):
-            total_bill = booking.bill.meal_bill + room_bill
-            bill_id = booking.bill.id
-            bill_date = booking.bill.bill_date
-        else:
-            total_bill = room_bill
-            bill_id = None
-            bill_date = None
+        # Use a transaction to ensure atomicity of bill creation
+        with transaction.atomic():
+            # Check if booking already has an associated bill
+            if hasattr(booking, 'bill') and booking.bill:
+                bill = booking.bill
+                total_bill = bill.meal_bill + room_bill
+                bill_id = bill.id
+                bill_date = bill.bill_date
+            else:
+                # Create a new bill if it doesn't exist
+                bill = Bill.objects.create(
+                    booking=booking,
+                    meal_bill=0.0,  # Assuming initial meal bill is 0
+                    room_bill=room_bill,
+                    payment_status=False,
+                    bill_date=booking.booking_to,  # Set bill_date to the checkout date
+                    caretaker=booking.caretaker  # Ensure caretaker is set
+                )
+                # Refresh booking instance to ensure it's linked to the new bill
+                booking.refresh_from_db()
+                total_bill = bill.room_bill
+                bill_id = bill.id
+                bill_date = bill.bill_date
 
+        # Append the booking's billing information to the response list
         response_data.append({
-            'intender_name': booking.intender.username,  # Assuming `username` for the user's name
+            'intender_name': booking.intender.username,  # Assuming `username` for the intender's name
             'booking_from': booking.booking_from,
             'booking_to': booking.booking_to,
             'total_bill': total_bill,
@@ -1674,41 +1684,51 @@ def get_all_bills(request):
 
     return Response(response_data)
 
-# Fetch a specific booking detail by ID
+from django.http import JsonResponse
+from rest_framework.response import Response
+from django.db import transaction
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def get_bills_id(request, pk):
     try:
-        booking = BookingDetail.objects.get(id=pk)
+        booking = BookingDetail.objects.get(id=pk, status="Confirmed")
+        
         # Calculate the number of days of stay
         num_days = (booking.booking_to - booking.booking_from).days + 1
 
         # Determine the per-day cost based on the visitor category
-        if booking.visitor_category == 'A':
-            per_day_cost = 0
-        elif booking.visitor_category == 'B':
-            per_day_cost = 500
-        elif booking.visitor_category == 'C':
-            per_day_cost = 800
-        elif booking.visitor_category == 'D':
-            per_day_cost = 1400
-        else:
-            per_day_cost = 900  # Default per-day cost
-
+        visitor_costs = {'A': 0, 'B': 500, 'C': 800, 'D': 1400}
+        per_day_cost = visitor_costs.get(booking.visitor_category, 900)
         room_bill = num_days * per_day_cost
 
-        if hasattr(booking, 'bill'):
-            total_bill = booking.bill.meal_bill + room_bill
-            bill_id = booking.bill.id
-            bill_date = booking.bill.bill_date
-        else:
-            total_bill = room_bill
-            bill_id = None
-            bill_date = None
+        # Use a transaction to ensure bill creation is committed immediately
+        with transaction.atomic():
+            # Check if booking already has a bill
+            if hasattr(booking, 'bill') and booking.bill:
+                bill = booking.bill
+                total_bill = bill.meal_bill + room_bill
+                bill_id = bill.id
+                bill_date = bill.bill_date
+            else:
+                # Create and link a new bill if it doesn't exist
+                bill = Bill.objects.create(
+                    booking=booking,
+                    meal_bill=0,   # Assuming meal bill starts at 0
+                    room_bill=room_bill,
+                    payment_status=False,
+                    bill_date=booking.booking_to  # Checkout date as bill_date
+                )
+                # Refresh the booking to link the new bill
+                booking.refresh_from_db()  
+                total_bill = bill.room_bill
+                bill_id = bill.id
+                bill_date = bill.bill_date
 
+        # Prepare response data with all necessary billing details
         response_data = {
-            'intender_name': booking.intender.username,  # Assuming `username` for the user's name
+            'intender_name': booking.intender.username,  # Assuming `username` for intender's name
             'booking_from': booking.booking_from,
             'booking_to': booking.booking_to,
             'total_bill': total_bill,
@@ -1716,8 +1736,10 @@ def get_bills_id(request, pk):
             'bill_date': bill_date,
         }
         return Response(response_data)
+
     except BookingDetail.DoesNotExist:
         return Response({"error": "Booking detail not found"}, status=404)
+
     
 from django.utils import timezone
 
