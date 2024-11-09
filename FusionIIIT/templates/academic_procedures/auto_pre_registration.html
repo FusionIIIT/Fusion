@@ -69,7 +69,6 @@
 <center><b>Pre-Registration for Next Semester Courses</b></center>
 <div class="ui vertical segment">
     {% if curr_sem.semester_no != 8 %}
-    {% if prd %}
     {% if pre_registration_flag %}
     <B style="color:red">
         <CENTER> You have already registered at
@@ -137,6 +136,7 @@
         </center>
     </CENTER>
     {% else %}
+    {% if prd %}
     <form id='student_register' action='/academic-procedures/auto_pre_registration/'>
         {% csrf_token %}
         <table id="registration_courses_table" class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%;
@@ -254,8 +254,6 @@
 
     <br>
     <br>
-
-    {% endif %}
     {% else %}
     {% if prd_start_date%}
     <B>
@@ -265,6 +263,8 @@
     <B>
         <CENTER> Pre Registration date hasn't come yet
     </B></CENTER>
+    {% endif %}
+
     {% endif %}
     {% endif %}
     {% else %}
