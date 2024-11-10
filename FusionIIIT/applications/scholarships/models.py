@@ -117,6 +117,7 @@ class Mcm(models.Model):
     college_fee = models.IntegerField(blank=True, null=True)
     college_name = models.CharField(max_length=30, null=True)
     income_certificate = models.FileField(null=True, blank=True)
+    # marksheet = models.FileField(upload_to='marksheets/', null=False, blank=False)
     forms = models.FileField(null=True, blank=True)
     status = models.CharField(max_length=10, choices=Constants.STATUS_CHOICES, default='INCOMPLETE')
     student = models.ForeignKey(Student,
