@@ -2,12 +2,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
-from applications.scholarships.models import Previous_winner, Award_and_scholarship
+from applications.scholarships.models import Previous_winner, Award_and_scholarship,Director_gold,Director_silver
 from applications.academic_information.models import Spi, Student
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation)
 from rest_framework import viewsets
-from applications.scholarships.api.serializers import PreviousWinnerSerializer,AwardAndScholarshipSerializer
+from applications.scholarships.api.serializers import PreviousWinnerSerializer,AwardAndScholarshipSerializer,DirectorGoldSerializer,DirectorSilverSerializer,ProficiencyDMSerializer,McmSerializer
 
 class create_award(APIView):
 
@@ -62,3 +62,57 @@ class GetWinnersView(APIView):
 
         else:
             return Response({'result': 'Failure', 'error': 'No winners found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+class DirectorGoldUpdateView(APIView):
+    def put(self, request):
+        # Deserialize the data without specifying an instance, allowing for creation or update
+        serializer = DirectorGoldSerializer(data=request.data)
+
+        if serializer.is_valid():
+            # Save the object; if the data contains an 'id', it will update the existing record
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class DirectorSilverUpdateView(APIView):
+    def put(self, request):
+        # Deserialize the data, which includes the ID for identifying the record to update
+        serializer = DirectorSilverSerializer(data=request.data)
+
+        if serializer.is_valid():
+            # Save the object; if the data contains an 'id', it will update the existing record
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class ProficiencyDMUpdateView(APIView):
+    def put(self, request):
+        # Deserialize the data, which includes the ID for identifying the record to update
+        serializer = ProficiencyDMSerializer(data=request.data)
+
+        if serializer.is_valid():
+            # Save the object; if the data contains an 'id', it will update the existing record
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class McmUpdateView(APIView):
+    def put(self, request):
+        # Deserialize the data from the request
+        serializer = McmSerializer(data=request.data)
+
+        # Validate and save data if valid
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        # Return error details if validation fails
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
