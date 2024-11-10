@@ -386,9 +386,25 @@ class CourseProposalTrackingFile(ModelForm):
         return self.cleaned_data
 
 class CourseInstructorForm(forms.ModelForm):
-    course_id = forms.ModelChoiceField(queryset=Course.objects.all(), label="Select Course", empty_label="Choose a course")
-    instructor_id = forms.ModelChoiceField(queryset=ExtraInfo.objects.filter(user_type='faculty'), label="Select Instructor", empty_label="Choose an instructor")
-    batch_id = forms.ModelChoiceField(queryset=Batch.objects.all(), label="Select Batch", empty_label="Choose a batch")
+    course_id = forms.ModelChoiceField(
+        queryset=Course.objects.all(),
+        label="Select Course",
+        empty_label="Choose a course",
+        widget=forms.Select(attrs={'class': 'ui fluid search selection dropdown'})
+    )
+    instructor_id = forms.ModelChoiceField(
+        queryset=ExtraInfo.objects.filter(user_type='faculty'),
+        label="Select Instructor",
+        empty_label="Choose an instructor",
+        widget=forms.Select(attrs={'class': 'ui fluid search selection dropdown'})
+    )
+    batch_id = forms.ModelChoiceField(
+        queryset=Batch.objects.all(),
+        label="Select Batch",
+        empty_label="Choose a batch",
+        widget=forms.Select(attrs={'class': 'ui fluid search selection dropdown'})
+    )
+
     class Meta:
         model = CourseInstructor
         fields = ['course_id', 'instructor_id', 'batch_id']

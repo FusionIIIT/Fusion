@@ -446,7 +446,7 @@
                     var suffix = selectedOption.split('-')[1];
                     var prefix = selectedOption.split('-')[0];
                     console.log(suffix);
-                    var allSelects = document.querySelectorAll('select[name="' + selectElement.getAttribute("name") + '"]');
+                    var allSelects = document.querySelectorAll('select');
                     // console.log(allSelects);
                     allSelects.forEach(function (currentSelectElement) {
                         // Skip the current dropdown where the selection was made
