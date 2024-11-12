@@ -4,9 +4,7 @@ from rest_framework.routers import DefaultRouter
 
 from . import views
 from applications.scholarships.api.views import GetWinnersView
-from applications.scholarships.api.views import create_award
-from applications.scholarships.api.views import DirectorGoldUpdateView,DirectorSilverUpdateView,ProficiencyDMUpdateView,McmUpdateView
-
+from applications.scholarships.api.views import create_award,McmUpdateView, McmRetrieveView, DirectorSilverRetrieveView,DirectorSilverUpdateView,DirectorGoldRetrieveView,DirectorGoldUpdateView,ProficiencyDmRetrieveView,ProficiencyDmUpdateView
 app_name = 'spacs'
 
 urlpatterns = [
@@ -25,10 +23,16 @@ urlpatterns = [
     #app
     url(r'get-winners/', GetWinnersView.as_view(), name='get-winners'),
     url(r'create-award/', create_award.as_view(), name='create-award'),
-    url(r'director-gold/', DirectorGoldUpdateView.as_view(), name='director-gold-update'),
-    path('director-silver/', DirectorSilverUpdateView.as_view(), name='director-silver-update'),
-    path('proficiency-dm/', ProficiencyDMUpdateView.as_view(), name='proficiency-dm-update'),
-    path('mcm/', McmUpdateView.as_view(), name='mcm-update'),
+    url(r'mcm_update/', McmUpdateView.as_view(), name='mcm-update'),
+    url(r'mcm_show/', McmRetrieveView.as_view(), name='mcm-show'),
+    url(r'directorsilver_show/', DirectorSilverRetrieveView.as_view(), name='director-silver--show'),
+    url(r'directorsilver_update/', DirectorSilverUpdateView.as_view(), name='director-silver-update'),
+    url(r'directorgold_show/', DirectorGoldRetrieveView.as_view(), name='director-gold-show'),
+    url(r'directorgold_update/', DirectorGoldUpdateView.as_view(), name='director-gold-update'),
+    url(r'proficiencydm_update/', ProficiencyDmUpdateView.as_view(), name='proficiency-dm-update'),
+    url(r'proficiencydm_show/', ProficiencyDmRetrieveView.as_view(), name='proficiency-dm-update'),
+
+
 
 
 ]
