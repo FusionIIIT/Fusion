@@ -2,24 +2,18 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
-from applications.scholarships.models import Previous_winner, Award_and_scholarship
+from applications.scholarships.models import Previous_winner, Award_and_scholarship,Mcm,Director_gold,Notional_prize,Director_silver,Proficiency_dm
 from applications.academic_information.models import Spi, Student
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation)
 from rest_framework import viewsets
-from applications.scholarships.api.serializers import PreviousWinnerSerializer,AwardAndScholarshipSerializer
-
+from applications.scholarships.api.serializers import PreviousWinnerSerializer,AwardAndScholarshipSerializer,McmSerializer,NotionalPrizeSerializer,DirectorGoldSerializer,DirectorSilverSerializer,ProficiencyDmSerializer
 class create_award(APIView):
 
     def get(self, request, *args, **kwargs):
         awards = Award_and_scholarship.objects.all()  # Fetch all awards
         serializer = AwardAndScholarshipSerializer(awards, many=True)  # Serialize the awards
         return Response(serializer.data, status=status.HTTP_200_OK)  
-
-
-
-
-
 
 
 class GetWinnersView(APIView):
@@ -62,3 +56,93 @@ class GetWinnersView(APIView):
 
         else:
             return Response({'result': 'Failure', 'error': 'No winners found'}, status=status.HTTP_404_NOT_FOUND)
+class McmUpdateView(APIView):
+    def post(self, request):
+        serializer = McmSerializer(data=request.data)
+        if serializer.is_valid():
+            mcm_instance = serializer.save()
+            return Response(McmSerializer(mcm_instance).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class McmRetrieveView(APIView):
+    def post(self, request):
+        roll_number = request.data.get('roll_number')
+        
+        if not roll_number:
+            return Response({"detail": "Roll number is required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        mcm_data = Mcm.objects.filter(student=roll_number)
+        
+        if not mcm_data.exists():
+            return Response({"detail": "No Mcm data found for this roll number."}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = McmSerializer(mcm_data, many=True)
+        
+        return Response(serializer.data, status=status.HTTP_200_OK)
+class DirectorSilverRetrieveView(APIView):
+    def post(self, request):
+        roll_number = request.data.get('roll_number')
+        
+        if not roll_number:
+            return Response({"detail": "Roll number is required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        director_silver_data = Director_silver.objects.filter(student=roll_number)
+        
+        if not director_silver_data.exists():
+            return Response({"detail": "No Director Silver data found for this roll number."}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = DirectorSilverSerializer(director_silver_data, many=True)
+        
+        return Response(serializer.data, status=status.HTTP_200_OK)
+class DirectorSilverUpdateView(APIView):
+    def post(self, request):
+        serializer = DirectorSilverSerializer(data=request.data)
+        if serializer.is_valid():
+            director_silver_instance = serializer.save()
+            return Response(DirectorSilverSerializer(director_silver_instance).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class DirectorGoldRetrieveView(APIView):
+    def post(self, request):
+        roll_number = request.data.get('roll_number')
+        
+        if not roll_number:
+            return Response({"detail": "Roll number is required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        director_gold_data = Director_gold.objects.filter(student=roll_number)
+        
+        if not director_gold_data.exists():
+            return Response({"detail": "No Director Gold data found for this roll number."}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = DirectorGoldSerializer(director_gold_data, many=True)
+        
+        return Response(serializer.data, status=status.HTTP_200_OK)
+class DirectorGoldUpdateView(APIView):
+    def post(self, request):
+        serializer = DirectorGoldSerializer(data=request.data)
+        if serializer.is_valid():
+            director_gold_instance = serializer.save()
+            return Response(DirectorGoldSerializer(director_gold_instance).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class ProficiencyDmUpdateView(APIView):
+    def post(self, request):
+        serializer = ProficiencyDmSerializer(data=request.data)
+        if serializer.is_valid():
+            proficiency_dm_instance = serializer.save()
+            return Response(ProficiencyDmSerializer(proficiency_dm_instance).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class ProficiencyDmRetrieveView(APIView):
+    def post(self, request):
+        roll_number = request.data.get('roll_number')
+        
+        if not roll_number:
+            return Response({"detail": "Roll number is required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        proficiency_dm_data = Proficiency_dm.objects.filter(student=roll_number)
+        
+        if not proficiency_dm_data.exists():
+            return Response({"detail": "No Proficiency DM data found for this roll number."}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = ProficiencyDmSerializer(proficiency_dm_data, many=True)
+        
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
