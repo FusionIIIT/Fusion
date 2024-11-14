@@ -1088,9 +1088,13 @@ def handleProcessedBills(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def audit_document_view(request):
-    desg = request.session.get('currentDesignationSelected')
+    params = request.query_params
+    desg = params.get('role')
+    if not desg:
+        return Response({"error": "Designation not provided"}, status=status.HTTP_400_BAD_REQUEST)
+
     inbox_files = view_inbox(username=request.user, designation=desg, src_module="IWD")
-    
+
     obj = [
         {
             'requestId': x['src_object_id'],
@@ -1100,8 +1104,9 @@ def audit_document_view(request):
         }
         for x in inbox_files
     ]
-    
+
     return Response({'data': obj}, status=status.HTTP_200_OK)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
