@@ -1,5 +1,5 @@
 from django.conf.urls import url
-
+from django.urls import path
 from . import views
 
 urlpatterns = [
@@ -8,17 +8,20 @@ urlpatterns = [
     url(r'^create_draft/', views.createDraft, name='create-draft'),
     url(r'^delete_indent/', views.delete_indent, name='delete-indents'),
     url(r'^view_indent/', views.getOneFiledIndent, name='view-indent'),
+    # path('create_indent/<int:id>/', views.createIndent, name='create-indent'),
+    path('forward_indent/<int:id>/', views.forwardIndent, name='create-indent'),
     # PENDING : TO CREATE A INDENT FILE DRAFT
 
     # GET DESIGNATIONS USING USER TOKEN 
     url(r'^getDesignations/', views.getDesignations, name='get-designations'),
 
     # to get the indent files created by the user
-    url(r'^indentview/(?P<id>\d+)$', views.indentView, name='indent-view'),
-    url(r'^indentview2/(?P<id>\d+)$', views.indentView2, name='indent-view2'),
+    path('indentview/<str:username>/', views.indentView, name='indent-view'),
+    path('indentview2/<str:username>/', views.indentView2, name='indent-view2'),
+    # url(r'^indentview2/(?P<id>\d+)$', views.indentView2, name='indent-view2'),
 
     # to get the indent Files drafts by a user
-    url(r'^draftview/(?P<id>\d+)$', views.draftView, name='draft-view'),
+    path('draftview/<str:username>/', views.draftView, name='draft-view'),
     
     # to get all the indent files inwarded to the user  'id' is holdsDesignation id.
     url(r'^inwardIndents/(?P<id>\d+)$', views.inwardIndents, name='inward-indents'),

@@ -54,9 +54,17 @@ def getOneFiledIndent(request):
         file_id = request.data.get('file_id')
         # console.log(file_id)
         indent = IndentFile.objects.get(file_info_id=file_id)
+        fileinfo = File.objects.get(pk=file_id)
         # console.log(indent)
         serializer = IndentFileSerializer(indent)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer_file = FileSerializer(fileinfo) 
+        department = request.user.extrainfo.department.name
+        return Response({
+            'indent': serializer.data,
+            'file': serializer_file.data,
+            'department': department
+        }, status=status.HTTP_200_OK)
+        # return Response(serializer.data, status=status.HTTP_200_OK)
     except IndentFile.DoesNotExist:
         return Response({"error": "Indent not found."}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
@@ -76,6 +84,50 @@ def delete_indent(request):
         return Response({"error": "Indent not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def forwardIndent(request, id):
+    try:
+        indent=IndentFile.objects.select_related('file_info').get(file_info=id)
+        file=indent.file_info
+
+        upload_file = request.FILES.get('file')
+        receiverName = request.data.get('receiverName')
+        receiver_id = User.objects.get(username=receiverName)
+        receive_design = request.data.get('receiverDesignation')
+        remarks = request.data.get('remarks')
+        print(receiver_id)
+        print(receive_design)
+        print(remarks)
+        print(upload_file)
+        print(file)
+        print(receiverName)
+
+        # if not receiverName:
+        #     return Response({"error": "Receiver name is required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # if not receive_design:
+        #     return Response({"error": "Receiver designation is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # # Retrieve the receiver user instance
+        # try:
+        #     receiver_id = User.objects.get(username=receiverName)
+        # except ObjectDoesNotExist:
+        #     return Response({"error": "Receiver user not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        forwarded_file_id = forward_file(
+                    file_id=file.id,
+                    receiver=receiver_id,
+                    receiver_designation=receive_design,
+                    file_extra_JSON={"key": 2},
+                    remarks=remarks,
+                    file_attachment=upload_file
+                )
+        return Response({"message": "File forwarded successfully.", "forwarded_file_id": forwarded_file_id}, status=status.HTTP_200_OK)
+    except IndentFile.DoesNotExist:
+        return Response({"error": "Indent not found."}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -197,15 +249,18 @@ def createProposal(request):
             # design = request.data.get('designation')
             username = request.data.get('receiverName')
             print(username)
-            uname = "atul"
-            user = User.objects.get(username=uname)
-            user_id = user.id
-            print(user_id)
-            # Ensure the design exists or raise a 404 error
-            holds_designation = get_object_or_404(HoldsDesignation, user_id=user_id)
-            print(holds_designation)
+            # uname = "atul"
+            designation = request.GET.get('role')
+            # print(uname)
+            # user = User.objects.get(username=uname)
+            # user_id = user.id
+            # print(user_id)
+            # # Ensure the design exists or raise a 404 error
+            # holds_designation = get_object_or_404(HoldsDesignation, user_id=user_id)
+            
+            # print(holds_designation)
             # idd = 1
-            designation = get_object_or_404(Designation, id=holds_designation.designation_id)
+            designation = get_object_or_404(Designation, name=designation)
             print(designation)
 
             upload_file = request.FILES.get('file')
@@ -242,19 +297,7 @@ def createProposal(request):
                 file_extra_JSON={"value": 2},
                 attached_file=upload_file
             )
-
-            # file = File.objects.create(
-            #     uploader=uploader,
-            #     description=description,
-            #     subject=subject,
-            #     designation=designation,
-            #     upload_file=upload_file,
-            #     src_module="ps1",
-            #     src_object_id="",
-            #     file_extra_JSON={"value": 2},
-            # )
-
-            # Create IndentFile object
+            
             indent_file = IndentFile.objects.create(
                 file_info=get_object_or_404(File, pk=file_id),
                 item_name=item_name,
@@ -300,7 +343,14 @@ def createProposal(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def indentView(request, id):
+def indentView(request, username):
+    print(username)
+    user = User.objects.get(username=username)
+    user_id = user.id
+
+    hold_designation = HoldsDesignation.objects.filter(user_id=user_id)
+    id = hold_designation[0].id
+    print(id)
     currentDesignation = request.GET.get('role')  # Capture role from headers
     if currentDesignation=="student":
         return Response({'error': 'Student are not allowd to access this view'}, status=403)
@@ -338,40 +388,56 @@ def indentView(request, id):
     
     return Response(response_data)
 
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def indentView2(request, id):
+def indentView2(request, username):
+    user = User.objects.get(username=username)
+    user_id = user.id
 
-    currentDesignation = request.GET.get('role')  # Capture role from headers
-    if currentDesignation=="student":
-        return Response({'error': 'Student are not allowd to access this view'}, status=403)
-    # if request.session.get('currentDesignationSelected') == "student":
-    #     return Response({'error': 'Students are not allowed to access this view'}, status=403)
- 
-    designation = HoldsDesignation.objects.filter(user=request.user, designation__name=currentDesignation).first()
+    # Capture role from request parameters
+    current_designation_name = request.GET.get('role')
+    if current_designation_name == "student":
+        return Response({'error': 'Students are not allowed to access this view'}, status=403)
 
+    # Check if the current designation is associated with the user
+    designation = HoldsDesignation.objects.filter(user=request.user, designation__name=current_designation_name).first()
     if not designation:
         return Response({'error': 'Designation not found'}, status=404)
 
-    # if str(id) != str(designation.id):
-    #     return redirect(f'/purchase-and-store/indentview2/{designation.id}')
+    # Assuming the HoldsDesignation for the role is needed to access the view
+    abcd = HoldsDesignation.objects.filter(user_id=user_id, designation__name=current_designation_name).first()
+    if not abcd:
+        return Response({'error': 'User does not hold the specified designation.'}, status=404)
 
-    abcd = get_object_or_404(HoldsDesignation, pk=id)
-    s = str(abcd).split(" - ")
-    designations = s[1]
-    
-    # Fetch inbox and outbox data
+    designations = abcd.designation.name
+
+    # Fetch inbox data and filter Tracking records based on username and role
     data = view_inbox(request.user.username, designations, "ps1")
+    for item in data:
+        file_id = item['id']
+        
+        # Filter Tracking entries where receiver_id matches the user and receive_design matches the role
+        tracking_entry = Tracking.objects.filter(
+            file_id=file_id,
+            receiver_id=user,
+            receive_design__name=current_designation_name
+        ).first()
+        
+        if tracking_entry:
+            item['receiver_id_id'] = tracking_entry.receiver_id.id if tracking_entry.receiver_id else None
+            item['receiver_design_id'] = tracking_entry.receive_design.id if tracking_entry.receive_design else None
+            item['receiver_designation_name'] = tracking_entry.receive_design.name if tracking_entry.receive_design else None
+    
     outboxd = view_outbox(request.user.username, designations, "ps1")
 
     # Sort the inbox data by upload_date
     data = sorted(data, key=lambda x: datetime.fromisoformat(x['upload_date']), reverse=True)
 
-    # Format the upload_date to datetime object
+    # Convert upload_date to a datetime object for each item in the data
     for item in data:
         item['upload_date'] = datetime.fromisoformat(item['upload_date'])
 
+    # Fetch user notifications if any
     notifs = request.user.notifications.all().values()  # Assuming notifications are a related field
 
     context = {
@@ -383,11 +449,19 @@ def indentView2(request, id):
 
     return Response(context)
 
+
 # TO GET ALL THE USER DRAFTS USING HOLDS DESIGNATION ID 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def draftView(request, id):
+def draftView(request, username):
 
+    print(username)
+    user = User.objects.get(username=username)
+    user_id = user.id
+
+    hold_designation = HoldsDesignation.objects.filter(user_id=user_id)
+    id = hold_designation[0].id
+    print(id)
     if request.method == 'GET':
         designation = str(Designation.objects.get(id=HoldsDesignation.objects.select_related('user', 'working', 'designation').get(id=id).designation_id))
         if designation == "student":
@@ -667,44 +741,47 @@ def ForwardIndentFile(request, id):
     # except Exception as e:
         # return Response({'error': str(e)}, status=500)
     
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def outboxview2(request, id):
-    try:
-        # Set a static designation
-        static_designation = "Assistant Professor"  # Replace with the desired static value
+    currentDesignation = request.GET.get('role')  # Capture role from headers
+    if currentDesignation=="student":
+        return Response({'error': 'Student are not allowd to access this view'}, status=403)
+    # if request.session.get('currentDesignationSelected') == "student":
+    #     return Response({'error': 'Students are not allowed to access this view'}, status=403)
+ 
+    designation = HoldsDesignation.objects.filter(user=request.user, designation__name=currentDesignation).first()
 
-        # Assuming `view_outbox` is a function that returns a list of outbox data
-        # You need to implement or import this function according to your backend logic
-        data = view_outbox(request.user.username, static_designation, "ps1")
+    if not designation:
+        return Response({'error': 'Designation not found'}, status=404)
 
-        # Sort the data by upload date (descending order)
-        data = sorted(data, key=lambda x: datetime.fromisoformat(x['upload_date']), reverse=True)
+    # if str(id) != str(designation.id):
+    #     return redirect(f'/purchase-and-store/indentview2/{designation.id}')
 
-        # Format the upload date for each item
-        for item in data:
-            item['upload_date'] = datetime.fromisoformat(item['upload_date']).strftime('%Y-%m-%d')
+    abcd = get_object_or_404(HoldsDesignation, pk=id)
+    s = str(abcd).split(" - ")
+    designations = s[1]
+    
+    # Fetch inbox and outbox data
+    data = view_outbox(request.user.username, designations, "ps1")
 
-        # Create JSON response
-        return Response({
-            'receive_design': static_designation,  # Return the static designation
-            'in_file': data  # Return the sorted outbox data
-        }, status=200)
+    # Sort the inbox data by upload_date
+    data = sorted(data, key=lambda x: datetime.fromisoformat(x['upload_date']), reverse=True)
 
-    except Exception as e:
-        return Response({'error': str(e)}, status=500)
+    # Format the upload_date to datetime object
+    for item in data:
+        item['upload_date'] = datetime.fromisoformat(item['upload_date'])
 
+    notifs = request.user.notifications.all().values()  # Assuming notifications are a related field
 
+    context = {
+        'receive_design': HoldsDesignationSerializer(abcd).data,
+        'in_file': data,
+        'department': request.user.extrainfo.department.name,
+        'notifications': list(notifs),
+    }
 
-
-
-
-
-
-
-
-
+    return Response(context)
 
 
 
