@@ -189,3 +189,36 @@ class StudentDetailView(APIView):
 
         serializer = McmSerializer(mcm_entry)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class DirectorSilverDetailView(APIView):
+    def post(self, request):
+        student_id = request.data.get('student')
+        
+        if not student_id:
+            return Response({"error": "Student ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            director_silver_entry = Director_silver.objects.get(student__id=student_id)
+        except Director_silver.DoesNotExist:
+            return Response({"error": "No record found for the given student ID."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = DirectorSilverSerializer(director_silver_entry)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+class DirectorGoldDetailView(APIView):
+    def post(self, request):
+        student_id = request.data.get('student')
+
+        if not student_id:
+            return Response({"error": "Student ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            director_gold_entry = Director_gold.objects.get(student__id=student_id)
+        except Director_gold.DoesNotExist:
+            return Response({"error": "No record found for the given student ID."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = DirectorGoldSerializer(director_gold_entry)
+        return Response(serializer.data, status=status.HTTP_200_OK)
