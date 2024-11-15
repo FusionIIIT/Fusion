@@ -595,11 +595,11 @@ def updateGrades(request):
         id__in=unique_course_ids.values_list("course_id_int", flat=True)
     )
 
-    unique_batch_ids = Student_grades.objects.values("batch").distinct()
+    unique_year_ids = Student_grades.objects.values("year").distinct()
 
     context = {
         "courses_info": courses_info,
-        "unique_batch_ids": unique_batch_ids,
+        "unique_year_ids": unique_year_ids,
     }
 
     return render(request, "../templates/examination/submitGrade.html", context)
@@ -608,9 +608,9 @@ def updateGrades(request):
 def updateEntergrades(request):
     course_id = request.GET.get("course")
     semester_id = request.GET.get("semester")
-    batch = request.GET.get("batch")
+    year = request.GET.get("year")
     course_present = Student_grades.objects.filter(
-        course_id=course_id, semester=semester_id, batch=batch
+        course_id=course_id, semester=semester_id, year=year
     )
 
     if not course_present:
@@ -669,29 +669,39 @@ class moderate_student_grades(APIView):
         return render(request, '../templates/examination/grades_updated.html', {})
 
 
-@login_required(login_url="/accounts/login")
-def submitGrades(request):
-
-    unique_course_ids = course_registration.objects.values("course_id").distinct()
-    working_years = course_registration.objects.values("working_year").distinct()
-
-    # Cast the course IDs to integers
-    unique_course_ids = unique_course_ids.annotate(
-        course_id_int=Cast("course_id", IntegerField())
-    )
-
-    # Retrieve course names and course codes based on unique course IDs
-
-    # print(unique_course_ids)
-    courses_info = Courses.objects.filter(
-        id__in=unique_course_ids.values_list("course_id_int", flat=True)
-    )
-
-    context = {"courses_info": courses_info, "working_years": working_years}
-
-    # print(working_years)
-
-    return render(request, "../templates/examination/gradeSubmission.html", context)
+class submitGrades(APIView):
+    login_url = "/accounts/login"
+    
+    def get(self, request):
+        academic_year = request.GET.get('academic_year')
+        
+        if academic_year:
+            if academic_year is None or not academic_year.isdigit():
+                return JsonResponse({})
+            # Filter course registration based on the academic year and get unique course IDs
+            unique_course_ids = course_registration.objects.filter(
+                working_year=academic_year
+            ).values("course_id").distinct()
+            
+            # Cast the course IDs to integers
+            unique_course_ids = unique_course_ids.annotate(
+                course_id_int=Cast("course_id", IntegerField())
+            )
+            
+            # Retrieve course information based on the unique course IDs
+            courses_info = Courses.objects.filter(
+                id__in=unique_course_ids.values_list("course_id_int", flat=True)
+            )
+            
+            # Return the course information as JSON response
+            return JsonResponse({"courses": list(courses_info.values())})
+        
+        # If no academic year is provided, return the working years for the dropdown
+        working_years = course_registration.objects.values("working_year").distinct()
+        
+        context = {"working_years": working_years}
+        
+        return render(request, "../templates/examination/gradeSubmission.html", context)
 
 
 def submitEntergrades(request):
@@ -978,7 +988,7 @@ def submitGradesProf(request):
 
     # Retrieve course names and course codes based on unique course IDs
 
-    print(unique_course_ids)
+    # print(unique_course_ids)
     courses_info = Courses.objects.filter(
         id__in=unique_course_ids.values_list("course_id_int", flat=True)
     )
@@ -1278,3 +1288,38 @@ def validateDeanSubmit(request):
                 "message": error_message,
             }
             return render(request, "../templates/examination/messageDean.html", context)
+
+
+def downloadGrades(request):
+    # print(request.user,1)
+    unique_course_ids = (
+        CourseInstructor.objects.filter(instructor_id_id=request.user.username)
+        .values("course_id_id")
+        .distinct()
+    )
+    # unique_course_ids = course_registration.objects.values(
+    #     'course_id').distinct()
+    working_years = Student_grades.objects.values("year").distinct()
+    # Cast the course IDs to integers
+    unique_course_ids = unique_course_ids.annotate(
+        course_id_int=Cast("course_id", IntegerField())
+    )
+
+    # Retrieve course names and course codes based on unique course IDs
+
+    # print(unique_course_ids)
+    courses_info = Student_grades.objects.filter(
+        id__in=unique_course_ids.values_list("course_id_int", flat=True)
+    )
+
+    context = {"courses_info": courses_info, "working_years": working_years}
+
+    print(working_years)
+
+    return render(request, "../templates/examination/submitGradesProf.html", context)
+
+
+
+# def get_courses(request):
+     
+    
