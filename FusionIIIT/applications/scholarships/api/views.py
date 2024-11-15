@@ -167,3 +167,25 @@ class ProficiencyDmRetrieveView(APIView):
         
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+class ScholarshipDetailView(APIView):
+    def get(self, request):
+        # Fetch all records from the Mcm table
+        mcm_data = Mcm.objects.all()
+        # Serialize the data
+        serializer = McmSerializer(mcm_data, many=True)
+        # Return the serialized data as a response
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class StudentDetailView(APIView):
+    def post(self, request):
+        student_id = request.data.get('student')
+        if not student_id:
+            return Response({"error": "Student ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            mcm_entry = Mcm.objects.get(student__id=student_id)
+        except Mcm.DoesNotExist:
+            return Response({"error": "No record found for the given student ID."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = McmSerializer(mcm_entry)
+        return Response(serializer.data, status=status.HTTP_200_OK)
