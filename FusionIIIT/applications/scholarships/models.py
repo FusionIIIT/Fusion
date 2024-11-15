@@ -116,8 +116,12 @@ class Mcm(models.Model):
     loan_amount = models.IntegerField(blank=True, null=True)
     college_fee = models.IntegerField(blank=True, null=True)
     college_name = models.CharField(max_length=30, null=True)
-    income_certificate = models.FileField(null=True, blank=True)
-    # marksheet = models.FileField(upload_to='marksheets/', null=False, blank=False)
+    income_certificate = models.FileField(null=False, blank=False)
+    Marksheet = models.FileField(null=False, blank=False)
+    Bank_details = models.FileField(null=False, blank=False)
+    Affidavit = models.FileField(null=False, blank=False)
+    Aadhar_card = models.FileField(null=False, blank=False)
+    Fee_Receipt = models.FileField(null=False, blank=False)
     forms = models.FileField(null=True, blank=True)
     status = models.CharField(max_length=10, choices=Constants.STATUS_CHOICES, default='INCOMPLETE')
     student = models.ForeignKey(Student,
@@ -202,7 +206,7 @@ class Director_silver(models.Model):
     award_id = models.ForeignKey(Award_and_scholarship, on_delete=models.CASCADE)
     award_type = models.CharField(max_length=50, null=True)
     status = models.CharField(max_length=10, choices=Constants.STATUS_CHOICES,default='INCOMPLETE')
-    relevant_document = models.FileField(null=True, blank=True)
+    Marksheet = models.FileField(null=False, blank=False)
     date = models.DateField(default=datetime.date.today)
     financial_assistance = models.TextField(max_length=1000 ,null=True)
     grand_total = models.IntegerField(null=True)
@@ -216,7 +220,7 @@ class Director_silver(models.Model):
 
 
 class Proficiency_dm(models.Model):
-    relevant_document = models.FileField(null=True, blank=True)
+    Marksheet = models.FileField(null=False, blank=False)
     title_name = models.CharField(max_length=30, null=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     award_id = models.ForeignKey(Award_and_scholarship, on_delete=models.CASCADE)
@@ -261,7 +265,7 @@ class Director_gold(models.Model):
     correspondence_address = models.TextField(max_length=40, default='address')
     nearest_policestation = models.TextField(max_length=30, default='station')
     nearest_railwaystation = models.TextField(max_length=30, default='station')
-    relevant_document = models.FileField(null=True, blank=True)
+    Marksheet = models.FileField(null=False, blank=False)
     date = models.DateField(default=datetime.date.today)
     award_id = models.ForeignKey(Award_and_scholarship, default=4, on_delete=models.CASCADE)
     financial_assistance = models.TextField(max_length=1000 ,null=True)
