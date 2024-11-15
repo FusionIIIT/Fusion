@@ -30,6 +30,7 @@ from django.contrib.auth.models import User
 from applications.globals.models import (
     Designation, ExtraInfo, HoldsDesignation, DepartmentInfo
 )
+
 from applications.academic_information.models import Student
 import datetime
 from datetime import time, date
@@ -1364,51 +1365,90 @@ class AssignWardenView(APIView):
             return JsonResponse({"status": "error", "error": str(e)}, status=500)
 
 
-@method_decorator(user_passes_test(is_superuser), name="dispatch")
+# @method_decorator(user_passes_test(is_superuser), name="dispatch")
+# class AddHostelView(View):
+#     template_name = "hostelmanagement/add_hostel.html"
+
+#     def get(self, request, *args, **kwargs):
+#         form = HallForm()
+#         return render(request, self.template_name, {"form": form})
+
+#     def post(self, request, *args, **kwargs):
+#         form = HallForm(request.POST)
+#         if form.is_valid():
+#             hall_id = form.cleaned_data["hall_id"]
+
+#             # # Check if a hall with the given hall_id already exists
+#             # if Hall.objects.filter(hall_id=hall_id).exists():
+#             #     messages.error(request, f'Hall with ID {hall_id} already exists.')
+#             #     return redirect('hostelmanagement:add_hostel')
+
+#             # Check if a hall with the given hall_id already exists
+#             if Hall.objects.filter(hall_id=hall_id).exists():
+#                 error_message = f"Hall with ID {hall_id} already exists."
+
+#                 return HttpResponse(error_message, status=400)
+
+#             # If not, create a new hall
+#             form.save()
+#             messages.success(request, "Hall added successfully!")
+#             # Redirect to the view showing all hostels
+#             return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+#             # return render(request, 'hostelmanagement/admin_hostel_list.html')
+
+#         # If form is not valid, render the form with errors
+#         return render(request, self.template_name, {"form": form})
+
+
+# class CheckHallExistsView(View):
+#     def get(self, request, *args, **kwargs):
+#         hall_id = request.GET.get("hall_id")
+#         try:
+#             hall = Hall.objects.get(hall_id=hall_id)
+#             exists = True
+#         except Hall.DoesNotExist:
+#             exists = False
+#         messages.MessageFailure(request, f"Hall {hall_id} already exist.")
+#         return JsonResponse({"exists": exists})
+
+#new
+@method_decorator(csrf_exempt, name="dispatch")  # Disable CSRF for API compatibility
 class AddHostelView(View):
-    template_name = "hostelmanagement/add_hostel.html"
-
-    def get(self, request, *args, **kwargs):
-        form = HallForm()
-        return render(request, self.template_name, {"form": form})
-
     def post(self, request, *args, **kwargs):
-        form = HallForm(request.POST)
+        import json
+        data = json.loads(request.body)  # Parse JSON data from the React frontend
+        form = HallForm(data)
+
         if form.is_valid():
             hall_id = form.cleaned_data["hall_id"]
 
-            # # Check if a hall with the given hall_id already exists
-            # if Hall.objects.filter(hall_id=hall_id).exists():
-            #     messages.error(request, f'Hall with ID {hall_id} already exists.')
-            #     return redirect('hostelmanagement:add_hostel')
-
             # Check if a hall with the given hall_id already exists
             if Hall.objects.filter(hall_id=hall_id).exists():
-                error_message = f"Hall with ID {hall_id} already exists."
-
-                return HttpResponse(error_message, status=400)
+                return JsonResponse(
+                    {"success": False, "message": f"Hall with ID {hall_id} already exists."},
+                    status=400,
+                )
 
             # If not, create a new hall
             form.save()
-            messages.success(request, "Hall added successfully!")
-            # Redirect to the view showing all hostels
-            return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
-            # return render(request, 'hostelmanagement/admin_hostel_list.html')
+            return JsonResponse(
+                {"success": True, "message": "Hall added successfully!"},
+                status=201,
+            )
 
-        # If form is not valid, render the form with errors
-        return render(request, self.template_name, {"form": form})
-
-
+        # If form is not valid, return errors
+        return JsonResponse(
+            {"success": False, "errors": form.errors},
+            status=400,
+        )
+    
 class CheckHallExistsView(View):
     def get(self, request, *args, **kwargs):
         hall_id = request.GET.get("hall_id")
-        try:
-            hall = Hall.objects.get(hall_id=hall_id)
-            exists = True
-        except Hall.DoesNotExist:
-            exists = False
-        messages.MessageFailure(request, f"Hall {hall_id} already exist.")
+        exists = Hall.objects.filter(hall_id=hall_id).exists()
+
         return JsonResponse({"exists": exists})
+
 
 
 # @method_decorator(user_passes_test(is_superuser), name="dispatch")

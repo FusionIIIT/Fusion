@@ -57,7 +57,7 @@ urlpatterns = [
     ),
     path("get_caretakers/", views.get_caretakers, name="get_caretakers"),
     path("assign-warden", views.AssignWardenView.as_view(), name="AssignWardenView"),
-    path("add-hostel", views.AddHostelView.as_view(), name="add_hostel"),
+    path("add-hostel/", views.AddHostelView.as_view(), name="add_hostel"),
     path(
         "admin-hostel-list",
         views.AdminHostelListView.as_view(),
