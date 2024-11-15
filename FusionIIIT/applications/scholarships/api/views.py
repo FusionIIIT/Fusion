@@ -77,6 +77,7 @@ class GetWinnersView(APIView):
 
         else:
             return Response({'result': 'Failure', 'error': 'No winners found'}, status=status.HTTP_404_NOT_FOUND)
+
 class McmUpdateView(APIView):
     def post(self, request):
         serializer = McmSerializer(data=request.data)
@@ -84,6 +85,7 @@ class McmUpdateView(APIView):
             mcm_instance = serializer.save()
             return Response(McmSerializer(mcm_instance).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class McmRetrieveView(APIView):
     def post(self, request):
@@ -100,6 +102,8 @@ class McmRetrieveView(APIView):
         serializer = McmSerializer(mcm_data, many=True)
         
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class DirectorSilverRetrieveView(APIView):
     def post(self, request):
         roll_number = request.data.get('roll_number')
@@ -115,6 +119,8 @@ class DirectorSilverRetrieveView(APIView):
         serializer = DirectorSilverSerializer(director_silver_data, many=True)
         
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class DirectorSilverUpdateView(APIView):
     def post(self, request):
         serializer = DirectorSilverSerializer(data=request.data)
@@ -137,6 +143,8 @@ class DirectorGoldRetrieveView(APIView):
         serializer = DirectorGoldSerializer(director_gold_data, many=True)
         
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class DirectorGoldUpdateView(APIView):
     def post(self, request):
         serializer = DirectorGoldSerializer(data=request.data)
@@ -144,6 +152,8 @@ class DirectorGoldUpdateView(APIView):
             director_gold_instance = serializer.save()
             return Response(DirectorGoldSerializer(director_gold_instance).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class ProficiencyDmUpdateView(APIView):
     def post(self, request):
         serializer = ProficiencyDmSerializer(data=request.data)
@@ -151,6 +161,8 @@ class ProficiencyDmUpdateView(APIView):
             proficiency_dm_instance = serializer.save()
             return Response(ProficiencyDmSerializer(proficiency_dm_instance).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class ProficiencyDmRetrieveView(APIView):
     def post(self, request):
         roll_number = request.data.get('roll_number')
@@ -166,6 +178,7 @@ class ProficiencyDmRetrieveView(APIView):
         serializer = ProficiencyDmSerializer(proficiency_dm_data, many=True)
         
         return Response(serializer.data, status=status.HTTP_200_OK)
+        
 
 class ScholarshipDetailView(APIView):
     def get(self, request):
@@ -175,6 +188,17 @@ class ScholarshipDetailView(APIView):
         serializer = McmSerializer(mcm_data, many=True)
         # Return the serialized data as a response
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class DirectorGoldListView(APIView):
+    def get(self, request):
+        # Fetch all entries
+        director_gold_entries = Director_gold.objects.all()  
+        # Serialize all entries
+        serializer = DirectorGoldSerializer(director_gold_entries, many=True)  
+        # Return the serialized data as a response
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     
 class StudentDetailView(APIView):
     def post(self, request):
