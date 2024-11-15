@@ -3,7 +3,7 @@ from django.http import (
     HttpResponseBadRequest, JsonResponse, HttpResponse, HttpResponseRedirect,
 )
 from .models import (
-    HostelLeave, HallCaretaker, HallWarden, StudentDetails, HostelNoticeBoard, Hall, Staff, HostelAllotment, HostelHistory
+    HostelLeave, HallCaretaker, HallWarden, StudentDetails, HostelNoticeBoard, Hall, Staff, HostelAllotment, HostelHistory, HostelTransactionHistory
 )
 from applications.hostel_management.models import HallCaretaker, HallWarden
 from django.db import IntegrityError, transaction
@@ -1114,7 +1114,6 @@ class AssignCaretakerView(APIView):
         hall = list(hall.values())
         caretaker_usernames = Staff.objects.all()
         caretaker_usernames = list(caretaker_usernames.values())
-        print(Faculty.objects.all().values())
         return JsonResponse({"halls": hall, "caretaker_usernames": caretaker_usernames}, status=status.HTTP_200_OK)
 
 
@@ -1197,16 +1196,14 @@ class AssignCaretakerView(APIView):
             return JsonResponse({"status": "error", "error": str(e)}, status=500)
 
 
-@method_decorator(user_passes_test(is_superuser), name="dispatch")
-class AssignBatchView(View):
+class AssignBatchView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
-    # Assuming the HTML file is directly in the 'templates' folder
-    template_name = "hostelmanagement/assign_batch.html"
 
     def get(self, request, *args, **kwargs):
         hall = Hall.objects.all()
-        return render(request, self.template_name, {"halls": hall})
+        hall = list(hall.values())
+        return JsonResponse({"halls": hall}, status=status.HTTP_200_OK)
 
     def update_student_hall_allotment(self, hall, assigned_batch):
         hall_number = int("".join(filter(str.isdigit, hall.hall_id)))
@@ -1273,17 +1270,15 @@ class AssignBatchView(View):
                 )
 
         except Hall.DoesNotExist:
+            print("NOOOO")
             return JsonResponse(
                 {"status": "error", "error": f"Hall with ID {hall_id} not found"},
                 status=404,
             )
 
         except Exception as e:
+            print(e)
             return JsonResponse({"status": "error", "error": str(e)}, status=500)
-
-    def test_func(self):
-        # Check if the user is a superuser
-        return self.request.user.is_superuser
 
 class AssignWardenView(APIView):
     authentication_classes = [TokenAuthentication]

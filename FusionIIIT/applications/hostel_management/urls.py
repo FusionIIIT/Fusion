@@ -67,6 +67,14 @@ urlpatterns = [
         name="AssignWardenView"
     ),
 
+    # Admin - Assign Batch
+    path("get_batches/", views.AssignBatchView.as_view(), name="get_batches"),
+    path(
+        "assign_batch/",
+        views.AssignBatchView.as_view(),
+        name="AssignBatch"
+    ),
+
     path("add-hostel/", views.AddHostelView.as_view(), name="add_hostel"),
     path(
         "admin-hostel-list",
