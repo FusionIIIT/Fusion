@@ -3,7 +3,7 @@ from django.http import (
     HttpResponseBadRequest, JsonResponse, HttpResponse, HttpResponseRedirect,
 )
 from .models import (
-    HostelLeave, HallCaretaker, HallWarden, StudentDetails, HostelNoticeBoard, Hall, Staff
+    HostelLeave, HallCaretaker, HallWarden, StudentDetails, HostelNoticeBoard, Hall, Staff, HostelAllotment, HostelHistory
 )
 from applications.hostel_management.models import HallCaretaker, HallWarden
 from django.db import IntegrityError, transaction
@@ -28,7 +28,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
 from applications.globals.models import (
-    Designation, ExtraInfo, HoldsDesignation, DepartmentInfo
+    Designation, ExtraInfo, HoldsDesignation, DepartmentInfo, Faculty
 )
 
 from applications.academic_information.models import Student
@@ -490,31 +490,31 @@ def staff_delete_schedule(request):
         staff_schedule.delete()
     return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
-@api_view(["POST"])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
-def notice_board(request):
-    """
-    This function is used to create a form to show the notice on the Notice Board.
-    @param:
-        request - HttpRequest object containing metadata about the user request.
+class NoticeBoardCreate(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
-    @variables:
-        hall - stores hall of residence related to the notice.
-        head_line - stores headline of the notice.
-        content - stores content of the notice.
-        description - stores description of the notice.
-        scope - stores the scope of the notice.
-    """
-    if request.method == "POST":
+    def post(self,request):
+        """
+        This function is used to create a form to show the notice on the Notice Board.
+        @param:
+            request - HttpRequest object containing metadata about the user request.
+
+        @variables:
+            hall - stores hall of residence related to the notice.
+            head_line - stores headline of the notice.
+            content - stores content of the notice.
+            description - stores description of the notice.
+            scope - stores the scope of the notice.
+        """
         data = request.data
-        hall = Hall.objects.get(hall_id="hall1")
+        hall = Hall.objects.get(hall_id='hall4')
         posted_by = request.user.extrainfo
         head_line = request.data.get('headline', '')
         content = request.data.get('content','')
         description = request.data.get('description','')
         scope = '1' if request.data.get('scope') == "global" else '0'
-        print(request.data, hall, posted_by, head_line, content, description, scope)
+
         # Creating a new notice entry
         new_notice = HostelNoticeBoard.objects.create(
             hall=hall,
@@ -528,30 +528,31 @@ def notice_board(request):
         messages.success(request, "Notice created successfully.")
         return Response({"status": "done"}, status=status.HTTP_201_CREATED)
 
-    return Response({"error": "Invalid request method"}, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request):
+        return Response({"error": "Invalid request method"}, status=status.HTTP_400_BAD_REQUEST)
 
-    # You can add the GET method or other logic here if necessary
+class NoticeBoardDelete(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
+    def post(self, request):
+        """
+        This function is responsible for deleting ana existing notice from the notice board.
+        @param:
+          request - HttpRequest object containing metadata about the user request.
 
-@api_view(["POST"])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
-def delete_notice(request):
-    """
-    This function is responsible for deleting ana existing notice from the notice board.
-    @param:
-      request - HttpRequest object containing metadata about the user request.
+        @variables:
+          notice_id - stores id of the notice.
+          notice - stores HostelNoticeBoard object related to 'notice_id'
+        """
 
-    @variables:
-      notice_id - stores id of the notice.
-      notice - stores HostelNoticeBoard object related to 'notice_id'
-    """
-    if request.method == "POST":
         notice_id = request.data.get("id")
         notice = HostelNoticeBoard.objects.get(pk=notice_id)
         notice.delete()
-    return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+        return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
+    def get(self, request):
+        return Response({"error": "Invalid request method"}, status=status.HTTP_400_BAD_REQUEST)
 
 def edit_student_rooms_sheet(request):
     """
@@ -854,12 +855,15 @@ class GeneratePDF(View):
         return HttpResponse("Not found")
 
 
-def hostel_notice_board(request):
-    notices = HostelNoticeBoard.objects.all().values(
-        "id", "hall", "posted_by", "head_line", "content", "description", "scope"
-    )
-    data = list(notices)
-    return JsonResponse(data, safe=False)
+class NoticeBoardView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        notices = HostelNoticeBoard.objects.all().values(
+            "id", "hall", "posted_by", "head_line", "content", "description", "scope"
+        )
+        data = list(notices)
+        return JsonResponse(data, safe=False)
 
 
 @login_required
@@ -880,21 +884,19 @@ def all_leave_data(request):
         return HttpResponse(
             '<script>alert("You are not authorized to access this page"); window.location.href = "/hostelmanagement/"</script>'
         )
+class CreateHostelLeave(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
-
-@login_required
-def create_hostel_leave(request):
-    if request.method == "GET":
-        return render(request, "hostelmanagement/create_leave.html")
-    elif request.method == "POST":
-        data = request.POST  # Assuming you are sending form data via POST request
+    def post(self, request):
+        data = request.data  # Assuming you are sending form data via POST request
         student_name = data.get("student_name")
         roll_num = data.get("roll_num")
         phone_number = data.get("phone_number")  # Retrieve phone number from form data
         reason = data.get("reason")
-        start_date = data.get("start_date", timezone.now())
+        start_date = data.get("start_date", datetime.datetime.now())
         end_date = data.get("end_date")
-
+        print(data)
         # Create HostelLeave object and save to the database
         leave = HostelLeave.objects.create(
             student_name=student_name,
@@ -905,6 +907,7 @@ def create_hostel_leave(request):
             end_date=end_date,
         )
         caretakers = HallCaretaker.objects.all()
+        print(caretakers)
         sender = request.user
         type = "leave_request"
         for caretaker in caretakers:
@@ -921,8 +924,6 @@ def create_hostel_leave(request):
             {"message": "HostelLeave created successfully"},
             status=status.HTTP_201_CREATED,
         )
-
-
 # hostel_complaints_list caretaker can see all hostel complaints
 
 
@@ -1065,12 +1066,12 @@ def logout_view(request):
     logout(request)
     return redirect("/")
 
-def get_caretakers(request):
-    hall = Hall.objects.all()
-    hall = list(hall.values())
-    caretaker_usernames = Staff.objects.all()
-    caretaker_usernames = list(caretaker_usernames.values())
-    return JsonResponse({"halls": hall, "caretaker_usernames": caretaker_usernames}, status=status.HTTP_200_OK)
+# def get_caretakers(request):
+#     hall = Hall.objects.all()
+#     hall = list(hall.values())
+#     caretaker_usernames = Staff.objects.all()
+#     caretaker_usernames = list(caretaker_usernames.values())
+#     return JsonResponse({"halls": hall, "caretaker_usernames": caretaker_usernames}, status=status.HTTP_200_OK)
 
     """
     Get list of all halls and available caretakers
@@ -1110,8 +1111,12 @@ class AssignCaretakerView(APIView):
 
     def get(self, request, *args, **kwargs):
         hall = Hall.objects.all()
+        hall = list(hall.values())
         caretaker_usernames = Staff.objects.all()
-        return {"halls": hall, "caretaker_usernames": caretaker_usernames},
+        caretaker_usernames = list(caretaker_usernames.values())
+        print(Faculty.objects.all().values())
+        return JsonResponse({"halls": hall, "caretaker_usernames": caretaker_usernames}, status=status.HTTP_200_OK)
+
 
     def post(self, request, *args, **kwargs):
         hall_id = request.data.get("hall_id")
@@ -1280,16 +1285,20 @@ class AssignBatchView(View):
         # Check if the user is a superuser
         return self.request.user.is_superuser
 
-
-@method_decorator(user_passes_test(is_superuser), name="dispatch")
 class AssignWardenView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
-    template_name = "hostelmanagement/assign_warden.html"
+
+    def get(self, request, *args, **kwargs):
+        hall = Hall.objects.all()
+        hall = list(hall.values())
+        warden_usernames = Faculty.objects.all().values()
+        warden_usernames = list(warden_usernames)
+        return JsonResponse({"halls": hall, "warden_usernames": warden_usernames}, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
         hall_id = request.data.get("hall_id")
-        warden_id = request.data.get("warden_id")
+        warden_id = request.data.get("warden_username")
         try:
             hall = Hall.objects.get(hall_id=hall_id)
             warden = Faculty.objects.get(id__user__username=warden_id)
@@ -1311,7 +1320,6 @@ class AssignWardenView(APIView):
 
             # current caretker
             current_caretaker = HallCaretaker.objects.filter(hall=hall).first()
-            print(current_caretaker)
 
             # Update the assigned warden in Hostelallottment table
             hostel_allotments = HostelAllotment.objects.filter(hall=hall)

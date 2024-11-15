@@ -13,8 +13,8 @@ urlpatterns = [
     path("", views.hostel_view, name="hostel_view"),
     path("hello", views.hostel_view, name="hello"),
     # Notice Board
-    path("create_notice/", views.notice_board, name="create_notice"),
-    path("delete_notice/", views.delete_notice, name="delete_notice"),
+    path("create_notice/", views.NoticeBoardCreate.as_view(), name="create_notice"),
+    path("delete_notice/", views.NoticeBoardDelete.as_view(), name="delete_notice"),
     # Worker Schedule
     path("edit_schedule/", views.staff_edit_schedule, name="staff_edit_schedule"),
     path("delete_schedule/", views.staff_delete_schedule, name="staff_delete_schedule"),
@@ -33,13 +33,13 @@ urlpatterns = [
     path("worker_report/", views.generate_worker_report, name="workerreport"),
     path("pdf/", views.GeneratePDF.as_view(), name="pdf"),
     # for superUser
-    path("hostel_notices/", views.hostel_notice_board, name="hostel_notices_board"),
+    path("hostel_notices/", views.NoticeBoardView.as_view(), name="hostel_notices_board"),
     # //caretaker and warden can see all leaves
     path("all_leave_data/", views.all_leave_data, name="all_leave_data"),
     # caretaker  or wardern can approve leave
     path("update_leave_status/", views.update_leave_status, name="update_leave_status"),
     # //apply for leave
-    path("create_hostel_leave/", views.create_hostel_leave, name="create_hostel_leave"),
+    path("create_hostel_leave/", views.CreateHostelLeave.as_view(), name="create_hostel_leave"),
     # caretaker and warden can get all complaints
     path(
         "hostel_complaints/", views.hostel_complaint_list, name="hostel_complaint_list"
@@ -50,13 +50,23 @@ urlpatterns = [
     path("get_students/", views.get_students, name="get_students"),
     path("assign-batch/", views.AssignBatchView.as_view(), name="AssignBatchView"),
     path("hall-ids/", views.HallIdView.as_view(), name="hall"),
+
+    # Admin - Assign Caretaker
     path(
-        "assign-caretaker",
+        "assign_caretakers/",
         views.AssignCaretakerView.as_view(),
         name="AssignCaretakerView",
     ),
-    path("get_caretakers/", views.get_caretakers, name="get_caretakers"),
-    path("assign-warden", views.AssignWardenView.as_view(), name="AssignWardenView"),
+    path("get_caretakers/", views.AssignCaretakerView.as_view(), name="get_caretakers"),
+
+    # Admin - Assign Warden
+    path("get_wardens/", views.AssignWardenView.as_view(), name="get_wardens"),
+    path(
+        "assign_warden/",
+        views.AssignWardenView.as_view(),
+        name="AssignWardenView"
+    ),
+
     path("add-hostel/", views.AddHostelView.as_view(), name="add_hostel"),
     path(
         "admin-hostel-list",
