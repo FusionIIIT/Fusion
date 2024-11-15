@@ -393,22 +393,33 @@ class CourseInstructorForm(forms.ModelForm):
         widget=forms.Select(attrs={'class': 'ui fluid search selection dropdown'})
     )
     instructor_id = forms.ModelChoiceField(
-        queryset=ExtraInfo.objects.filter(user_type='faculty'),
+        # queryset=ExtraInfo.objects.filter(user_type='faculty'),
+        queryset = Faculty.objects.all(),
         label="Select Instructor",
         empty_label="Choose an instructor",
         widget=forms.Select(attrs={'class': 'ui fluid search selection dropdown'})
     )
-    batch_id = forms.ModelChoiceField(
-        queryset=Batch.objects.all(),
-        label="Select Batch",
-        empty_label="Choose a batch",
+    year = forms.ChoiceField(
+        choices=[('', 'Choose a year')] + [(year, year) for year in Batch.objects.values_list('year', flat=True).distinct()],
+        label="Select Year",
         widget=forms.Select(attrs={'class': 'ui fluid search selection dropdown'})
     )
-
+    semester_no = forms.ChoiceField(
+        choices=[('', 'Choose a semester')] + [(i, str(i)) for i in range(1, 9)],  # Choices from 1 to 8
+        label="Select Semester Number",
+        # empty_label="Choose a semester",
+        widget=forms.Select(attrs={'class': 'ui fluid search selection dropdown'})
+    )
     class Meta:
         model = CourseInstructor
-        fields = ['course_id', 'instructor_id', 'batch_id']
-        
+        fields = ['course_id', 'instructor_id', 'year', 'semester_no']
+
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     # Query all unique years from the Batch table
+    #     unique_years = Batch.objects.values_list('year', flat=True).distinct()
+    #     # Set the choices for the 'year' field dynamically
+    #     self.fields['year'].choices = [(year, year) for year in unique_years] 
         
     # def sed(self):
     #     r_id = self.cleaned_data.get('receive_id')

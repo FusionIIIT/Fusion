@@ -1,5 +1,6 @@
 import django_filters
 from django import forms
+from django.db.models import Q
 from .models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot, PROGRAMME_CATEGORY_CHOICES,CourseInstructor
 
 class CourseFilter(django_filters.FilterSet):
@@ -43,12 +44,31 @@ class CurriculumFilter(django_filters.FilterSet):
             }
         
 class CourseInstructorFilter(django_filters.FilterSet):
-    course_id = django_filters.CharFilter(field_name='course_id__code', lookup_expr='icontains', label='Course Code')  # Course code filter
-    instructor_id = django_filters.CharFilter(field_name='instructor_id__id', lookup_expr='icontains', label='Instructor Name')  # Assuming 'username' field in related faculty model
-    batch_id = django_filters.CharFilter(field_name='batch_id__name', lookup_expr='icontains', label='Programme')  # Batch name, adjust if necessary
-    year = django_filters.NumberFilter(field_name='batch_id__year', lookup_expr='exact', label='Year')  # Year filter
-    discipline_acronym = django_filters.CharFilter(field_name='batch_id__discipline__acronym', lookup_expr='icontains', label='Branch')  # Discipline acronym filter
-
+    course_id = django_filters.CharFilter(
+        field_name='course_id__code', 
+        lookup_expr='icontains', 
+        label='Course Code'
+    )
+    
+    instructor_name = django_filters.CharFilter(
+        method='filter_instructor_name', 
+        label='Instructor Name'
+    )  
+    
+    year = django_filters.NumberFilter(
+        field_name='year', 
+        lookup_expr='exact', 
+        label='Year'
+    )
     class Meta:
         model = CourseInstructor
-        fields = ['course_id', 'instructor_id', 'batch_id', 'year', 'discipline_acronym']
+        fields = ['course_id', 'instructor_name',  'year']
+
+    def filter_instructor_name(self, queryset, name, value):
+        """
+        Custom filter method to filter by first_name and last_name.
+        """
+        return queryset.filter(
+            Q(instructor_id__id__user__first_name__icontains=value) |
+            Q(instructor_id__id__user__last_name__icontains=value)
+        )

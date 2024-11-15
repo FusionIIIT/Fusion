@@ -9,12 +9,12 @@
             var errorMessages = "";
 
             {% if form.non_field_errors %}
-                errorMessages += "A Course Instructor with this Course, Instructor, and Batch combination already exists. Please choose different values.\n";
+                errorMessages += "A Course Instructor with this Course, Instructor, and year combination already exists. Please choose different values.\n";
             {% endif %}
 
             {% for field in form %}
                 {% if field.errors %}
-                    errorMessages += "A Course Instructor with this Course, Instructor, and Batch combination already exists. Please choose different values.\n";
+                    errorMessages += "A Course Instructor with this Course, Instructor, and year combination already exists. Please choose different values.\n";
                 {% endif %}
             {% endfor %}
 
