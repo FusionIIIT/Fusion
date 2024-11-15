@@ -8,12 +8,33 @@ from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation)
 from rest_framework import viewsets
 from applications.scholarships.api.serializers import PreviousWinnerSerializer,AwardAndScholarshipSerializer,McmSerializer,NotionalPrizeSerializer,DirectorGoldSerializer,DirectorSilverSerializer,ProficiencyDmSerializer
+
+
+
+
+class AwardAndScholarshipCreateView(APIView): 
+    def post(self, request):
+        
+        serializer = AwardAndScholarshipSerializer(data=request.data)
+
+        if serializer.is_valid():
+            # Save the new entry to the database
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)  # 201 Created response
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)  # 400 Bad Request if data is invalid
+
+
+
+
+
+
 class create_award(APIView):
 
     def get(self, request, *args, **kwargs):
         awards = Award_and_scholarship.objects.all()  # Fetch all awards
         serializer = AwardAndScholarshipSerializer(awards, many=True)  # Serialize the awards
         return Response(serializer.data, status=status.HTTP_200_OK)  
+
 
 
 class GetWinnersView(APIView):
