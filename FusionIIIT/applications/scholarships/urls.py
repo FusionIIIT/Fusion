@@ -4,7 +4,7 @@ from rest_framework.routers import DefaultRouter
 
 from . import views
 from applications.scholarships.api.views import GetWinnersView
-from applications.scholarships.api.views import create_award,McmUpdateView, McmRetrieveView, DirectorSilverRetrieveView,DirectorSilverUpdateView,DirectorGoldRetrieveView,DirectorGoldUpdateView,ProficiencyDmRetrieveView,ProficiencyDmUpdateView
+from applications.scholarships.api.views import create_award,McmUpdateView, McmRetrieveView, DirectorSilverRetrieveView,DirectorSilverUpdateView,DirectorGoldRetrieveView,DirectorGoldUpdateView,ProficiencyDmRetrieveView,ProficiencyDmUpdateView,AwardAndScholarshipCreateView
 app_name = 'spacs'
 
 urlpatterns = [
@@ -31,7 +31,7 @@ urlpatterns = [
     url(r'directorgold_update/', DirectorGoldUpdateView.as_view(), name='director-gold-update'),
     url(r'proficiencydm_update/', ProficiencyDmUpdateView.as_view(), name='proficiency-dm-update'),
     url(r'proficiencydm_show/', ProficiencyDmRetrieveView.as_view(), name='proficiency-dm-update'),
-
+    path('award/', AwardAndScholarshipCreateView.as_view(), name='award-create'),  # URL for creating a new award
 
 
 

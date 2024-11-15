@@ -7,6 +7,12 @@ from applications.scholarships.models import Award_and_scholarship,Previous_winn
 class AwardAndScholarshipSerializer(serializers.ModelSerializer):
     class Meta:
         model = Award_and_scholarship
+        fields = '_all_'
+
+
+class AwardAndScholarshipSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Award_and_scholarship
         fields = ['id', 'award_name', 'catalog']
         extra_kwargs = {
             'catalog': {'required': True, 'allow_null': False}  # Make catalog optional
