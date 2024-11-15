@@ -2,12 +2,21 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
-from applications.scholarships.models import Previous_winner, Award_and_scholarship,Mcm,Director_gold,Notional_prize,Director_silver,Proficiency_dm
+from applications.scholarships.models import Previous_winner, Award_and_scholarship,Mcm,Director_gold,Notional_prize,Director_silver,Proficiency_dm,Release
 from applications.academic_information.models import Spi, Student
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation)
 from rest_framework import viewsets
-from applications.scholarships.api.serializers import PreviousWinnerSerializer,AwardAndScholarshipSerializer,McmSerializer,NotionalPrizeSerializer,DirectorGoldSerializer,DirectorSilverSerializer,ProficiencyDmSerializer
+from applications.scholarships.api.serializers import PreviousWinnerSerializer,AwardAndScholarshipSerializer,McmSerializer,NotionalPrizeSerializer,DirectorGoldSerializer,DirectorSilverSerializer,ProficiencyDmSerializer,ReleaseSerializer
+
+
+class ReleaseCreateView(APIView):
+    def post(self, request):
+        serializer = ReleaseSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()  # Save the data to the database
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -178,7 +187,7 @@ class ProficiencyDmRetrieveView(APIView):
         serializer = ProficiencyDmSerializer(proficiency_dm_data, many=True)
         
         return Response(serializer.data, status=status.HTTP_200_OK)
-        
+
 
 class ScholarshipDetailView(APIView):
     def get(self, request):

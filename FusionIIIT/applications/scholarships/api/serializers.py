@@ -1,7 +1,16 @@
 from rest_framework import serializers
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo
-from applications.scholarships.models import Award_and_scholarship,Previous_winner,Mcm,Director_silver,Director_gold,Notional_prize,Proficiency_dm
+from applications.scholarships.models import Award_and_scholarship,Previous_winner,Mcm,Director_silver,Director_gold,Notional_prize,Proficiency_dm,Release
+
+
+
+class ReleaseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Release
+        fields = '__all__'
+
+
 
 # This serializer is used for editing the catalog by convenor and assistant
 class AwardAndScholarshipSerializer(serializers.ModelSerializer):
