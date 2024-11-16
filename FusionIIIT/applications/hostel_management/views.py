@@ -2027,7 +2027,6 @@ def update_allotment(request, pk):
 #             messages.error(request, "Something went wrong")
 #             return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
-
 @api_view(['POST'])
 @login_required
 def request_guest_room(request):
