@@ -393,7 +393,7 @@ def academic_procedures_student(request):
             final_registered_courses = FinalRegistration.objects.all().filter(student_id = user_details.id,semester_id = next_sem_id)
             final_registered_course_show=[]
             for final_registered_course in final_registered_courses:
-                final_registered_course_show.append({"course_code":final_registered_course.course_id.code,"course_name":final_registered_course.course_id.name,"course_credit":final_registered_course.course_id.credit})
+                final_registered_course_show.append({"course_code":final_registered_course.course_id.code,"course_name":final_registered_course.course_id.name,"course_credit":final_registered_course.course_id.credit, "registration_type": final_registered_course.registration_type})
             add_courses_options = get_add_course_options(current_sem_branch_course, currently_registered_course, batch.year)
             drop_courses_options = get_drop_course_options(currently_registered_course)
             replace_courses_options = get_replace_course_options(currently_registered_course, batch.year)
@@ -1454,6 +1454,7 @@ def auto_pre_registration(request):
             existing_entries = set()
             for course_slot in course_slots :
                 course_priorities = request.POST.getlist("course_priority-"+course_slot)
+                registration_type = request.POST.get('registration_type-'+course_slot, 'Regular')
                 if(course_priorities[0] == 'NULL'):
                     continue
                 course_slot_id_for_model = CourseSlot.objects.get(id = int(course_slot))
@@ -1472,7 +1473,8 @@ def auto_pre_registration(request):
                             semester_id = sem_id,
                             student_id = current_user,
                             course_slot_id = course_slot_id_for_model,
-                            priority = priority_of_current_course
+                            priority = priority_of_current_course,
+                            registration_type = registration_type
                         )
                         # f =FinalRegistration(student_id=current_user ,course_slot_id=course_slot_id_for_model , course_id=course_id_for_model ,semester_id=sem_id)
                         # final_reg_curr.append(f)
