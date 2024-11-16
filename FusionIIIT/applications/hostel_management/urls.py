@@ -35,7 +35,7 @@ urlpatterns = [
     # for superUser
     path("hostel_notices/", views.NoticeBoardView.as_view(), name="hostel_notices_board"),
     # //caretaker and warden can see all leaves
-    path("all_leave_data/", views.all_leave_data, name="all_leave_data"),
+    path("all_leave_data/", views.AllLeaveData.as_view(), name="all_leave_data"),
     # caretaker  or wardern can approve leave
     path("update_leave_status/", views.update_leave_status, name="update_leave_status"),
     # //apply for leave
