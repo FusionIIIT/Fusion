@@ -48,6 +48,7 @@ urlpatterns = [
     #  Student can view his leave status
     path("my_leaves/", views.my_leaves.as_view(), name="my_leaves"),
     path("get_students/", views.get_students, name="get_students"),
+    path("students_get_students_info/", views.students_get_students_info.as_view(), name="students_get_students_info"),
     path("assign-batch/", views.AssignBatchView.as_view(), name="AssignBatchView"),
     path("hall-ids/", views.HallIdView.as_view(), name="hall"),
 

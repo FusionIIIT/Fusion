@@ -949,14 +949,50 @@ def hostel_complaint_list(request):
             '<script>alert("You are not authorized to access this page"); window.location.href = "/hostelmanagement/"</script>'
         )
 
+class students_get_students_info(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        """
+        Fetches and returns student details for the hall associated with the requesting user.
+        """
+        try:
+            # Get the hall_id of the logged-in user
+            hall_id = Student.objects.filter(id=request.user.extrainfo.id).values("hall_id").first()
+            print(hall_id)
+            if not hall_id:
+                return JsonResponse({"error": "Hall ID not found for the user."}, status=404)
+            
+            # Get the students in the same hall
+            student_details = Student.objects.filter(hall_id=hall_id["hall_id"]).values(
+                "id__user__username",  # Assuming `id` is linked to `ExtraInfo` and `user`
+                "programme",
+                "batch",
+                "cpi",
+                "category",
+                "father_name",
+                "mother_name",
+                "hall_no",
+                "room_no",
+                "specialization",
+                "curr_semester_no",
+            )
+            
+            # Return the data as a JSON response
+            return JsonResponse(list(student_details), safe=False, status=200)
+        
+        except Exception as e:
+            print(e)
+            return JsonResponse({"error": str(e)}, status=500)
 
-@login_required
+@csrf_exempt
 def get_students(request):
     try:
         staff = request.user.extrainfo.id
         print(staff)
-    except AttributeError:
+    except AttributeError as e:
         staff = None
+        print(e)
 
     if HallCaretaker.objects.filter(staff_id=staff).exists():
         hall_id = HallCaretaker.objects.get(staff_id=staff).hall_id
