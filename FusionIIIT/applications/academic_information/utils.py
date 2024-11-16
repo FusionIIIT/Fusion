@@ -101,12 +101,12 @@ def allocate(request) :
     batch = request.POST.get('batch')
     sem = request.POST.get('sem')
     year = request.POST.get('year')
-    unique_course_slot = InitialRegistration.objects.filter(Q(semester_id__semester_no = sem) & Q(student_id__batch = batch)).values_list('course_slot_id',flat=True).distinct()
+    unique_course_slot = InitialRegistration.objects.filter(Q(semester_id__semester_no = sem) & Q(student_id__batch = batch)).values('course_slot_id', 'registration_type').distinct()
     unique_course_name = []
     try: 
         with transaction.atomic() :
-                for course_slot in unique_course_slot :
-                    course_slot_object = CourseSlot.objects.get(id=course_slot)
+                for entry in unique_course_slot :
+                    course_slot_object = CourseSlot.objects.get(id=entry['course_slot_id'])
                     print(course_slot_object)
                     if course_slot_object.type != "Open Elective":
                         # Fetch students registered in this course slot
@@ -132,7 +132,8 @@ def allocate(request) :
                                 verified=False,
                                 semester_id=semester,
                                 course_id=course,
-                                course_slot_id=course_slot_object
+                                course_slot_id=course_slot_object,
+                                registration_type=entry['registration_type']
                             )
 
                         unique_course_name.append(course_slot_object.name)
