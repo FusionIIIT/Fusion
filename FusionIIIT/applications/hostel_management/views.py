@@ -867,24 +867,131 @@ class NoticeBoardView(APIView):
         return JsonResponse(data, safe=False)
 
 
-@login_required
-def all_leave_data(request):
-    user_id = request.user.id  # Using request.user to get the user ID
-    try:
-        # Assuming the user's profile is stored in extrainfo
-        staff = request.user.extrainfo.id
-    except AttributeError:
-        staff = None
+# @login_required
+# def all_leave_data(request):
+#     user_id = request.user.id  # Using request.user to get the user ID
+#     try:
+#         # Assuming the user's profile is stored in extrainfo
+#         staff = request.user.extrainfo.id
+#     except AttributeError:
+#         staff = None
 
-    if staff is not None and HallCaretaker.objects.filter(staff_id=staff).exists():
-        all_leave = HostelLeave.objects.all()
-        return render(
-            request, "hostelmanagement/all_leave_data.html", {"all_leave": all_leave}
-        )
+#     if staff is not None and HallCaretaker.objects.filter(staff_id=staff).exists():
+#         all_leave = HostelLeave.objects.all()
+#         return render(
+#             request, "hostelmanagement/all_leave_data.html", {"all_leave": all_leave}
+#         )
+#     else:
+#         return HttpResponse(
+#             '<script>alert("You are not authorized to access this page"); window.location.href = "/hostelmanagement/"</script>'
+#         )
+
+
+class AllLeaveData(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        print(request.user)
+        try:
+            staff = request.user.extrainfo.id
+        except AttributeError:
+            staff = None
+        print(staff)
+        if staff is not None and HallCaretaker.objects.filter(staff_id=staff).exists():
+            all_leave = list(
+                HostelLeave.objects.values(
+                    "id", "student_name", "roll_num", "reason", "start_date", "end_date", "status", "remark"
+                )
+            )
+            return JsonResponse(all_leave, safe=False)
+        
+        
+        else:
+            return JsonResponse(
+                {"error": "You are not authorized to access this page."}, status=403
+            )
+
+# # //Caretaker can approve or reject leave applied by the student
+# @csrf_exempt
+# def update_leave_status(request):
+#     if request.method == "POST":
+#         leave_id = request.POST.get("leave_id")
+#         status = request.POST.get("status")
+#         try:
+#             leave = HostelLeave.objects.get(id=leave_id)
+#             leave.status = status
+#             leave.remark = request.POST.get("remark")
+#             leave.save()
+
+#             # Send notification to the student
+#             sender = request.user  # Assuming request.user is the caretaker
+
+#             student_id = (
+#                 leave.roll_num
+#             )  # Assuming student is a foreign key field in HostelLeave model
+#             recipient = User.objects.get(username=student_id)
+#             type = "leave_accept" if status == "Approved" else "leave_reject"
+#             hostel_notifications(sender, recipient, type)
+
+#             return JsonResponse(
+#                 {
+#                     "status": status,
+#                     "remarks": leave.remark,
+#                     "message": "Leave status updated successfully.",
+#                 }
+#             )
+#         except HostelLeave.DoesNotExist:
+#             return JsonResponse(
+#                 {"status": "error", "message": "Leave not found."}, status=404
+#             )
+#     else:
+#         return JsonResponse(
+#             {"status": "error", "message": "Only POST requests are allowed."},
+#             status=405,
+#         )
+
+
+
+@csrf_exempt
+def update_leave_status(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            leave_id = data.get("leave_id")
+            status = data.get("status")
+            remark = data.get("remark", "")
+
+            leave = HostelLeave.objects.get(id=leave_id)
+            leave.status = status
+            leave.remark = remark
+            leave.save()
+
+            return JsonResponse(
+                {
+                    "status": "success",
+                    "message": "Leave status updated successfully.",
+                    "leave_id": leave_id,
+                    "status_update": status,
+                    "remark": remark,
+                }
+            )
+        except HostelLeave.DoesNotExist:
+            return JsonResponse(
+                {"status": "error", "message": "Leave not found."}, status=404
+            )
+        except Exception as e:
+            return JsonResponse(
+                {"status": "error", "message": str(e)}, status=500
+            )
     else:
-        return HttpResponse(
-            '<script>alert("You are not authorized to access this page"); window.location.href = "/hostelmanagement/"</script>'
+        return JsonResponse(
+            {"status": "error", "message": "Only POST requests are allowed."},
+            status=405,
         )
+
+
+
+
 class CreateHostelLeave(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -2218,44 +2325,6 @@ def available_guestrooms_api(request):
     return JsonResponse({"error": "Invalid request"}, status=400)
 
 
-# //Caretaker can approve or reject leave applied by the student
-@csrf_exempt
-def update_leave_status(request):
-    if request.method == "POST":
-        leave_id = request.POST.get("leave_id")
-        status = request.POST.get("status")
-        try:
-            leave = HostelLeave.objects.get(id=leave_id)
-            leave.status = status
-            leave.remark = request.POST.get("remark")
-            leave.save()
-
-            # Send notification to the student
-            sender = request.user  # Assuming request.user is the caretaker
-
-            student_id = (
-                leave.roll_num
-            )  # Assuming student is a foreign key field in HostelLeave model
-            recipient = User.objects.get(username=student_id)
-            type = "leave_accept" if status == "Approved" else "leave_reject"
-            hostel_notifications(sender, recipient, type)
-
-            return JsonResponse(
-                {
-                    "status": status,
-                    "remarks": leave.remark,
-                    "message": "Leave status updated successfully.",
-                }
-            )
-        except HostelLeave.DoesNotExist:
-            return JsonResponse(
-                {"status": "error", "message": "Leave not found."}, status=404
-            )
-    else:
-        return JsonResponse(
-            {"status": "error", "message": "Only POST requests are allowed."},
-            status=405,
-        )
 
 
 # //! Manage Fine
