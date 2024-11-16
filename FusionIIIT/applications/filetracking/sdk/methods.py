@@ -12,8 +12,8 @@ def create_file(
         uploader_designation: str,
         receiver: str,
         receiver_designation: str,
-        subject: str = "", 
-        description: str = "", 
+        subject: str = "",
+        description: str = "",
         src_module: str = "filetracking",
         src_object_id: str = "",
         file_extra_JSON: dict = {},
@@ -29,7 +29,7 @@ def create_file(
     if both complete then return id of file
     else raise error
 
-    also, delete file object if tracking isnt created
+    also, delete file object if tracking isn't created
     '''
     uploader_user_obj = get_user_object_from_username(uploader)
     uploader_extrainfo_obj = get_ExtraInfo_object_from_username(uploader)

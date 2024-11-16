@@ -8,7 +8,7 @@ from rest_framework import status, permissions
 from rest_framework.authentication import TokenAuthentication
 from ..models import File, Tracking
 from applications.globals.models import Designation
-from ..sdk.methods import create_draft, create_file, view_drafts, view_file, delete_file, view_inbox, view_outbox, view_history, forward_file, get_designations, archive_file, view_archived
+from ..sdk.methods import create_draft, create_file, view_drafts, view_file, delete_file, view_inbox, view_outbox, view_history, forward_file, get_designations, archive_file, view_archived, unarchive_file
 
 class CreateFileView(APIView):
     authentication_classes = [TokenAuthentication]
@@ -16,7 +16,7 @@ class CreateFileView(APIView):
 
     def post(self, request):
         try:
-            current_user = request.user.username
+            current_user = 'atul'
             current_designation = request.data.get('designation')
             receiver_username = request.data.get('receiver_username')
             receiver_designation = request.data.get('receiver_designation')
@@ -30,11 +30,10 @@ class CreateFileView(APIView):
 
             file_id = create_file(uploader=current_user, uploader_designation=current_designation,
                                   receiver=receiver_username, receiver_designation=receiver_designation, subject=subject, description=description, attached_file=uploaded_file)
-
+            # print("Api call made from frontend")
             return Response({'file_id': file_id}, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
 
 class ViewFileView(APIView):
     authentication_classes = [TokenAuthentication]
@@ -43,7 +42,7 @@ class ViewFileView(APIView):
     def get(self, request, file_id):
         try:
             file_details = view_file(int(file_id))
-            # print(file_details)
+            print(file_details)
             return Response(file_details, status=status.HTTP_200_OK)
         except ValueError:
             return Response({'error': 'Invalid file ID format.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -51,7 +50,7 @@ class ViewFileView(APIView):
             return Response({'error': 'File not found.'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        
+
     def delete(self, request, file_id):
         try:
             # file_details = view_file(int(file_id))
@@ -281,6 +280,25 @@ class CreateArchiveFile(APIView):
        except Exception as e:
            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class UnArchiveFile(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request):
+         file_id = request.data.get('file_id', None)
+    
+         if file_id is None:
+              return Response({'error': 'Missing file_id'}, status=status.HTTP_400_BAD_REQUEST)
+    
+         try:
+              success = unarchive_file(file_id)
+              if success:
+                return Response({'success': True})
+              else:
+                return Response({'error': 'File does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    
+         except Exception as e:
+              return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     
 class GetDesignationsView(APIView):
