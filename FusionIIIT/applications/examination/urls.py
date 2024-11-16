@@ -62,6 +62,7 @@ urlpatterns = [
     path('validateDean/',views.validateDean,name='validateDean'),
     path('validateDeanSubmit/',views.validateDeanSubmit,name='validateDeanSubmit'),
     path('downloadGrades/',views.downloadGrades,name='downloadGrades'),
+    path('generate_pdf/',views.generate_pdf,name='generate_pdf'),
 #     path('get_courses/',views.get_courses,name='get_courses'), 
 
 ]

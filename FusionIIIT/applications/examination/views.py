@@ -29,7 +29,7 @@ from applications.globals.models import (
 )
 from applications.eis.models import faculty_about, emp_research_projects
 from applications.academic_information.models import Course
-from applications.academic_procedures.models import course_registration, Register
+from applications.academic_procedures.models import course_registration, Register,Semester
 from applications.programme_curriculum.filters import CourseFilter
 from notification.views import examination_notif
 from applications.department.models import SpecialRequest, Announcements
@@ -58,8 +58,13 @@ from django.http import JsonResponse
 import csv
 from applications.programme_curriculum.models import Course as Courses, CourseInstructor
 from django.urls import reverse
-
-
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib import colors
+from reportlab.lib.colors import HexColor
+from reportlab.lib.units import inch 
 @login_required(login_url="/accounts/login")
 def exam(request):
     """
@@ -1091,7 +1096,7 @@ def upload_grades_prof(request):
             return JsonResponse(
                 {"error": message, "redirect_url": redirect_url}, status=400
             )
-        print(courses.first().reSubmit)
+        
         if courses and not courses.first().reSubmit:
             
             message = "THIS Course was Already Submitted"
@@ -1291,6 +1296,11 @@ def validateDeanSubmit(request):
 
 
 def downloadGrades(request):
+  academic_year = request.GET.get('academic_year')
+        
+  if academic_year:
+    if academic_year is None or not academic_year.isdigit():
+     return JsonResponse({})
     # print(request.user,1)
     unique_course_ids = (
         CourseInstructor.objects.filter(instructor_id_id=request.user.username)
@@ -1299,7 +1309,7 @@ def downloadGrades(request):
     )
     # unique_course_ids = course_registration.objects.values(
     #     'course_id').distinct()
-    working_years = Student_grades.objects.values("year").distinct()
+    
     # Cast the course IDs to integers
     unique_course_ids = unique_course_ids.annotate(
         course_id_int=Cast("course_id", IntegerField())
@@ -1309,17 +1319,150 @@ def downloadGrades(request):
 
     # print(unique_course_ids)
     courses_info = Student_grades.objects.filter(
-        id__in=unique_course_ids.values_list("course_id_int", flat=True)
+        year=academic_year,
+        course_id_id__in=unique_course_ids.values_list("course_id_int", flat=True)
     )
-
-    context = {"courses_info": courses_info, "working_years": working_years}
-
-    print(working_years)
-
-    return render(request, "../templates/examination/submitGradesProf.html", context)
-
+    courses_details=Courses.objects.filter(
+        id__in=courses_info.values_list("course_id_id", flat=True)
+    )
+    # print(courses_info.values(),'abcd')
+    return JsonResponse({"courses": list(courses_details.values())})
+    
+    
+  working_years = course_registration.objects.values("working_year").distinct()
+        
+  context = {"working_years": working_years}
+        
+  return render(request, "../templates/examination/download_resultProf.html", context)
 
 
 # def get_courses(request):
+def generate_pdf(request):
+    course_id=request.POST.get('course_id')
+    academic_year = request.POST.get('academic_year')
+    course_info= get_object_or_404(Courses, id=course_id)
+    grades = Student_grades.objects.filter(course_id_id=course_id,year=academic_year).order_by("roll_no")
+    print(course_id,'sddefh',course_info,'abcdefh',academic_year)
+
+    # Calculate grade counts
+    grade_counts = {grade: grades.filter(grade=grade).count() for grade in ["A+", "O", "A", "B+", "B", "C+", "D+", "D", "F"]}
+
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = (
+        f'attachment; filename="{course_info.code}_grades.pdf"'
+    )
+
+    doc = SimpleDocTemplate(response, pagesize=letter)
+    elements = []
+    styles = getSampleStyleSheet()
+
+    # Custom Header Style
+    header_style = ParagraphStyle(
+        "HeaderStyle",
+        parent=styles["Heading1"],
+        fontName="Helvetica-Bold",
+        fontSize=16,
+        textColor=HexColor("#003366"),
+        spaceAfter=20,
+    )
+    subheader_style = ParagraphStyle(
+        "SubheaderStyle",
+        parent=styles["Normal"],
+        fontSize=12,
+        textColor=HexColor("#333333"),
+        spaceAfter=10,
+    )
+    instructor=request.user.first_name+" "+request.user.last_name
+    # Add Header
+    elements.append(Paragraph(f"Grade Sheet", header_style))
+    elements.append(Paragraph(f"Session: {academic_year}", subheader_style))
+    elements.append(Paragraph(f"Semester: {grades.first().semester}", subheader_style))
+    elements.append(Paragraph(f"Course Code: {course_info.code}", subheader_style))
+    elements.append(Paragraph(f"Course Name: {course_info.name}", subheader_style))
+    elements.append(Paragraph(f"Instructor: {instructor}", subheader_style))
+
+    # Add Spacer
+    
+
+    # Table Data with Wider Column Widths
+    data = [["S.No.", "Roll Number", "Grade"]]
+    for i, grade in enumerate(grades, 1):
+        data.append([i, grade.roll_no, grade.grade])
+    table = Table(data, colWidths=[80, 300, 100])  # Adjusted column widths
+
+    # Improved Table Style
+    table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), HexColor("#003366")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("ALIGN", (0, 0), (-1, 0), "CENTER"),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, 0), 14),
+                ("BOTTOMPADDING", (0, 0), (-1, 0), 10),
+                ("BACKGROUND", (0, 1), (-1, -1), HexColor("#F9F9F9")),
+                (
+                    "ROWBACKGROUNDS",
+                    (0, 1),
+                    (-1, -1),
+                    [HexColor("#F9F9F9"), colors.white],
+                ),
+                ("TEXTCOLOR", (0, 1), (-1, -1), colors.black),
+                ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
+                ("FONTSIZE", (0, 1), (-1, -1), 12),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ]
+        )
+    )
+
+    elements.append(table)
+    
+    elements.append(Spacer(1, 20))
+
+    # Add Grade Counts
+    elements.append(Paragraph(f"Grade Distribution:", header_style))
+    grade_data = [["Grade", "Count"]]
+    for grade, count in grade_counts.items():
+        grade_data.append([grade, count])
+
+    grade_table = Table(grade_data, colWidths=[100, 100])
+    grade_table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), HexColor("#003366")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, 0), 12),
+                ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+                ("BACKGROUND", (0, 1), (-1, -1), colors.white),
+                ("TEXTCOLOR", (0, 1), (-1, -1), colors.black),
+            ]
+        )
+    )
+    elements.append(grade_table)
+    elements.append(Spacer(1, 20))
+    # Footer Signatures
+    def draw_signatures(canvas, doc):
+        canvas.saveState()
+        width, height = letter
+
+        # Director's Signature (left-aligned)
+        canvas.drawString(inch, 0.75 * inch, "______________________________")
+        canvas.drawString(inch, 0.5 * inch, "Director's Signature")
+
+        # Course Instructor's Signature (right-aligned)
+        canvas.drawString(width - 4 * inch, 0.75 * inch, "______________________________")
+        canvas.drawString(width - 4 * inch, 0.5 * inch, "Course Instructor's Signature")
+
+        canvas.restoreState()
+
+    # Attach Footer Function
+    doc.build(elements, onLaterPages=draw_signatures, onFirstPage=draw_signatures)
+    return response
+
      
     
