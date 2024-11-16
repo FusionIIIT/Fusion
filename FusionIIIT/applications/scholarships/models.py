@@ -76,15 +76,6 @@ class Award_and_scholarship(models.Model):
     def __str__(self):
         return self.award_name
 
-# class Award_and_scholarship(models.Model):
-#     award_name = models.CharField(max_length=100, default='')
-#     catalog = models.TextField(max_length=5000, blank=True, null=False)  # blank=True for forms, null=True for database
-
-#     class Meta:
-#         db_table = 'Award_and_scholarship'
-
-#     def __str__(self):
-#         return self.award_name
 
 
 class Mcm(models.Model):
@@ -293,3 +284,8 @@ class Director_gold(models.Model):
 
     class Meta:
         db_table = 'Director_gold'
+
+
+
+
+

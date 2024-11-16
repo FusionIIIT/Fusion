@@ -5,7 +5,7 @@ from rest_framework.routers import DefaultRouter
 from . import views
 from applications.scholarships.api.views import GetWinnersView
 from applications.scholarships.api.views import create_award,McmUpdateView, McmRetrieveView, DirectorSilverRetrieveView,DirectorSilverUpdateView,DirectorGoldRetrieveView,DirectorGoldUpdateView,ProficiencyDmRetrieveView,ProficiencyDmUpdateView,AwardAndScholarshipCreateView
-from applications.scholarships.api.views import ScholarshipDetailView,StudentDetailView
+from applications.scholarships.api.views import ScholarshipDetailView,StudentDetailView,DirectorSilverDetailView,DirectorGoldDetailView,DirectorGoldListView,ReleaseCreateView
 
 
 app_name = 'spacs'
@@ -23,7 +23,7 @@ urlpatterns = [
     url(r'^getConvocationFlag/$', views.getConvocationFlag, name='getConvocationFlag'),
     url(r'^getContent/$', views.getContent, name='getContent'),
     url(r'^updateEndDate/$', views.updateEndDate, name='updateEndDate'),
-    #app
+    #app -->
     url(r'get-winners/', GetWinnersView.as_view(), name='get-winners'),
     url(r'create-award/', create_award.as_view(), name='create-award'),
     url(r'mcm_update/', McmUpdateView.as_view(), name='mcm-update'),
@@ -37,9 +37,10 @@ urlpatterns = [
     path('award/', AwardAndScholarshipCreateView.as_view(), name='award-create'),  # URL for creating a new award
     
     path('scholarship-details/', ScholarshipDetailView.as_view(), name='scholarship-list'),
+    path('director_gold_list/', DirectorGoldListView.as_view(), name='director_gold_list'),
     #path('scholarship-details/<int:student_id>/', ScholarshipDetailView.as_view(), name='scholarship-detail'),
-    url(r'student_file_show/', StudentDetailView.as_view(), name='student-file-show')
-
-
-
+    url(r'student_file_show/', StudentDetailView.as_view(), name='student-file-show'),
+    path('director_silver_show/', DirectorSilverDetailView.as_view(), name='director_silver_detail'),    
+    path('director_gold_view/', DirectorGoldDetailView.as_view(), name='director_gold_detail'),
+    path('release', ReleaseCreateView.as_view(), name='release_create'),
 ]
