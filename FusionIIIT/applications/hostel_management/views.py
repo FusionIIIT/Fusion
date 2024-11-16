@@ -3,7 +3,7 @@ from django.http import (
     HttpResponseBadRequest, JsonResponse, HttpResponse, HttpResponseRedirect,
 )
 from .models import (
-    HostelLeave, HallCaretaker, HallWarden, StudentDetails, HostelNoticeBoard, Hall, Staff, HostelAllotment, HostelHistory, HostelTransactionHistory
+    HostelLeave, HallCaretaker, HallWarden, StudentDetails, HostelNoticeBoard, Hall, Staff, HostelAllotment, HostelHistory, HostelTransactionHistory,GuestRoom,GuestRoomBooking
 )
 from applications.hostel_management.models import HallCaretaker, HallWarden
 from django.db import IntegrityError, transaction
@@ -1994,88 +1994,157 @@ def update_allotment(request, pk):
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
 
+# @login_required
+# def request_guest_room(request):
+#     """
+#     This function is used by the student to book a guest room.
+#     @param:
+#       request - HttpRequest object containing metadata about the user request.
+#     """
+#     if request.method == "POST":
+#         form = GuestRoomBookingForm(request.POST)
+
+#         if form.is_valid():
+#             # print("Inside valid")
+#             hall = form.cleaned_data["hall"]
+#             guest_name = form.cleaned_data["guest_name"]
+#             guest_phone = form.cleaned_data["guest_phone"]
+#             guest_email = form.cleaned_data["guest_email"]
+#             guest_address = form.cleaned_data["guest_address"]
+#             rooms_required = form.cleaned_data["rooms_required"]
+#             total_guest = form.cleaned_data["total_guest"]
+#             purpose = form.cleaned_data["purpose"]
+#             arrival_date = form.cleaned_data["arrival_date"]
+#             arrival_time = form.cleaned_data["arrival_time"]
+#             departure_date = form.cleaned_data["departure_date"]
+#             departure_time = form.cleaned_data["departure_time"]
+#             nationality = form.cleaned_data["nationality"]
+#             room_type = form.cleaned_data["room_type"]  # Add room type
+
+#             max_guests = {
+#                 "single": 1,
+#                 "double": 2,
+#                 "triple": 3,
+#             }
+#             # Fetch available room count based on room type and hall
+#             available_rooms_count = GuestRoom.objects.filter(
+#                 hall=hall, room_type=room_type, vacant=True
+#             ).count()
+
+#             # Check if there are enough available rooms
+#             if available_rooms_count < rooms_required:
+#                 messages.error(request, "Not enough available rooms.")
+#                 return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+
+#             # Check if the number of guests exceeds the capacity of selected rooms
+#             if total_guest > rooms_required * max_guests.get(room_type, 1):
+#                 messages.error(
+#                     request, "Number of guests exceeds the capacity of selected rooms."
+#                 )
+#                 return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+
+#             newBooking = GuestRoomBooking.objects.create(
+#                 hall=hall,
+#                 intender=request.user,
+#                 guest_name=guest_name,
+#                 guest_address=guest_address,
+#                 guest_phone=guest_phone,
+#                 guest_email=guest_email,
+#                 rooms_required=rooms_required,
+#                 total_guest=total_guest,
+#                 purpose=purpose,
+#                 arrival_date=arrival_date,
+#                 arrival_time=arrival_time,
+#                 departure_date=departure_date,
+#                 departure_time=departure_time,
+#                 nationality=nationality,
+#                 room_type=room_type,
+#             )
+#             newBooking.save()
+#             messages.success(request, "Room request submitted successfully!")
+
+#             # Get the caretaker for the selected hall
+#             hall_caretaker = HallCaretaker.objects.get(hall=hall)
+#             caretaker = hall_caretaker.staff.id.user
+#             # Send notification to caretaker
+#             hostel_notifications(
+#                 sender=request.user, recipient=caretaker, type="guestRoom_request"
+#             )
+
+#             return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+#         else:
+#             messages.error(request, "Something went wrong")
+#             return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+
+@api_view(['POST'])
 @login_required
 def request_guest_room(request):
     """
     This function is used by the student to book a guest room.
-    @param:
-      request - HttpRequest object containing metadata about the user request.
     """
-    if request.method == "POST":
-        form = GuestRoomBookingForm(request.POST)
+    if request.method == 'POST':
+        data = request.data
+        
+        # Extract the data
+        hall = data['hall']
+        guest_name = data['guest_name']
+        guest_phone = data['guest_phone']
+        guest_email = data['guest_email']
+        guest_address = data['guest_address']
+        rooms_required = data['rooms_required']
+        total_guest = data['total_guest']
+        purpose = data['purpose']
+        arrival_date = data['arrival_date']
+        arrival_time = data['arrival_time']
+        departure_date = data['departure_date']
+        departure_time = data['departure_time']
+        nationality = data['nationality']
+        room_type = data['room_type']
+        
+        max_guests = {
+            "single": 1,
+            "double": 2,
+            "triple": 3,
+        }
+        
+        # Check room availability
+        available_rooms_count = GuestRoom.objects.filter(
+            hall=int(hall), room_type=room_type, vacant=True
+        ).count()
 
-        if form.is_valid():
-            # print("Inside valid")
-            hall = form.cleaned_data["hall"]
-            guest_name = form.cleaned_data["guest_name"]
-            guest_phone = form.cleaned_data["guest_phone"]
-            guest_email = form.cleaned_data["guest_email"]
-            guest_address = form.cleaned_data["guest_address"]
-            rooms_required = form.cleaned_data["rooms_required"]
-            total_guest = form.cleaned_data["total_guest"]
-            purpose = form.cleaned_data["purpose"]
-            arrival_date = form.cleaned_data["arrival_date"]
-            arrival_time = form.cleaned_data["arrival_time"]
-            departure_date = form.cleaned_data["departure_date"]
-            departure_time = form.cleaned_data["departure_time"]
-            nationality = form.cleaned_data["nationality"]
-            room_type = form.cleaned_data["room_type"]  # Add room type
+        if available_rooms_count < rooms_required:
+            return Response({"error": "Not enough available rooms."}, status=status.HTTP_400_BAD_REQUEST)
 
-            max_guests = {
-                "single": 1,
-                "double": 2,
-                "triple": 3,
-            }
-            # Fetch available room count based on room type and hall
-            available_rooms_count = GuestRoom.objects.filter(
-                hall=hall, room_type=room_type, vacant=True
-            ).count()
+        if total_guest > rooms_required * max_guests.get(room_type, 1):
+            return Response({"error": "Number of guests exceeds the capacity of selected rooms."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Check if there are enough available rooms
-            if available_rooms_count < rooms_required:
-                messages.error(request, "Not enough available rooms.")
-                return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+        # Create the booking
+        newBooking = GuestRoomBooking.objects.create(
+            hall=Hall.objects.filter(hall_id = int(hall)).values(),
+            intender=request.user,
+            guest_name=guest_name,
+            guest_address=guest_address,
+            guest_phone=guest_phone,
+            guest_email=guest_email,
+            rooms_required=rooms_required,
+            total_guest=total_guest,
+            purpose=purpose,
+            arrival_date=arrival_date,
+            arrival_time=arrival_time,
+            departure_date=departure_date,
+            departure_time=departure_time,
+            nationality=nationality,
+            room_type=room_type,
+        )
+        newBooking.save()
 
-            # Check if the number of guests exceeds the capacity of selected rooms
-            if total_guest > rooms_required * max_guests.get(room_type, 1):
-                messages.error(
-                    request, "Number of guests exceeds the capacity of selected rooms."
-                )
-                return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+        # Notify the caretaker
+        hall_caretaker = get_object_or_404(HallCaretaker, hall=hall)
+        caretaker = hall_caretaker.staff.id.user
+        # Send notification (implement `hostel_notifications` as needed)
+        hostel_notifications(sender=request.user, recipient=caretaker, type="guestRoom_request")
 
-            newBooking = GuestRoomBooking.objects.create(
-                hall=hall,
-                intender=request.user,
-                guest_name=guest_name,
-                guest_address=guest_address,
-                guest_phone=guest_phone,
-                guest_email=guest_email,
-                rooms_required=rooms_required,
-                total_guest=total_guest,
-                purpose=purpose,
-                arrival_date=arrival_date,
-                arrival_time=arrival_time,
-                departure_date=departure_date,
-                departure_time=departure_time,
-                nationality=nationality,
-                room_type=room_type,
-            )
-            newBooking.save()
-            messages.success(request, "Room request submitted successfully!")
-
-            # Get the caretaker for the selected hall
-            hall_caretaker = HallCaretaker.objects.get(hall=hall)
-            caretaker = hall_caretaker.staff.id.user
-            # Send notification to caretaker
-            hostel_notifications(
-                sender=request.user, recipient=caretaker, type="guestRoom_request"
-            )
-
-            return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
-        else:
-            messages.error(request, "Something went wrong")
-            return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
-
+        return Response({"message": "Room request submitted successfully!"}, status=status.HTTP_201_CREATED)
 
 @login_required
 def update_guest_room(request):
