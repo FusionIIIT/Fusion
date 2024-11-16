@@ -18,6 +18,7 @@ from django.urls import reverse
 from rest_framework.authentication import (
     TokenAuthentication, BasicAuthentication
 )
+from .models import HostelFine, Student, Hall
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import (
     login_required, user_passes_test
@@ -972,7 +973,7 @@ class students_get_students_info(APIView):
                 "category",
                 "father_name",
                 "mother_name",
-                "hall_no",
+                "hall_id",
                 "room_no",
                 "specialization",
                 "curr_semester_no",
@@ -985,44 +986,92 @@ class students_get_students_info(APIView):
             print(e)
             return JsonResponse({"error": str(e)}, status=500)
 
-@csrf_exempt
-def get_students(request):
-    try:
-        staff = request.user.extrainfo.id
-        print(staff)
-    except AttributeError as e:
-        staff = None
-        print(e)
 
-    if HallCaretaker.objects.filter(staff_id=staff).exists():
-        hall_id = HallCaretaker.objects.get(staff_id=staff).hall_id
-        print(hall_id)
-        hall_no = Hall.objects.get(id=hall_id)
-        print(hall_no)
-        student_details = StudentDetails.objects.filter(hall_id=hall_no)
+class caretaker_get_students_info(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        """
+        Fetches and returns student details for the hall associated with the requesting caretaker.
+        """
+        try:
+            hall_id = None
+            user_id = request.user.id
+            staff = request.user.extrainfo.id
+            caretaker = HallCaretaker.objects.filter(staff_id=staff)
+            print(caretaker)
+            # Check if the logged-in user is a Caretaker and get the hall_id
+            if len(caretaker) != 0:  # User is a Caretaker
+                hall_id = caretaker[0].hall.hall_id
+                print(hall_id)  # Assuming hall_id is a ForeignKey in CaretakerInfo
+            else:
+                print("work2")
+                return JsonResponse({"error": "User is not a caretaker."}, status=403)
+            
+            if not hall_id:
+                return JsonResponse({"error": "Hall ID not found for the caretaker."}, status=404)
 
-        return render(
-            request,
-            "hostelmanagement/student_details.html",
-            {"students": student_details},
-        )
+            # Get the students in the same hall
+            student_details = Student.objects.filter(hall_id=hall_id).values(
+                "id__user__username",  # Assuming `id` is linked to `ExtraInfo` and `user`
+                "programme",
+                "batch",
+                "cpi",
+                "category",
+                "father_name",
+                "mother_name",
+                "hall_id",
+                "room_no",
+                "specialization",
+                "curr_semester_no",
+            )
+            
+            # Return the data as a JSON response
+            return JsonResponse(list(student_details), safe=False, status=200)
+        
+        except Exception as e:
+            print(f"Error: {e}")
+            return JsonResponse({"error": str(e)}, status=500)
 
-    elif HallWarden.objects.filter(faculty_id=staff).exists():
-        hall_id = HallWarden.objects.get(faculty_id=staff).hall_id
-        student_details = StudentDetails.objects.filter(hall_id=hall_no)
 
-        return render(
-            request,
-            "hostelmanagement/student_details.html",
-            {"students": student_details},
-        )
-    else:
-        return HttpResponse(
-            '<script>alert("You are not authorized to access this page"); window.location.href = "/hostelmanagement/"</script>'
-        )
+# @csrf_exempt
+# def get_students(request):
+#     try:
+#         staff = request.user.extrainfo.id
+#         print(staff)
+#     except AttributeError as e:
+#         staff = None
+#         print(e)
+
+#     if HallCaretaker.objects.filter(staff_id=staff).exists():
+#         hall_id = HallCaretaker.objects.get(staff_id=staff).hall_id
+#         print(hall_id)
+#         hall_no = Hall.objects.get(id=hall_id)
+#         print(hall_no)
+#         student_details = StudentDetails.objects.filter(hall_id=hall_no)
+
+#         return render(
+#             request,
+#             "hostelmanagement/student_details.html",
+#             {"students": student_details},
+#         )
+
+#     elif HallWarden.objects.filter(faculty_id=staff).exists():
+#         hall_id = HallWarden.objects.get(faculty_id=staff).hall_id
+#         student_details = StudentDetails.objects.filter(hall_id=hall_no)
+
+#         return render(
+#             request,
+#             "hostelmanagement/student_details.html",
+#             {"students": student_details},
+#         )
+#     else:
+#         return HttpResponse(
+#             '<script>alert("You are not authorized to access this page"); window.location.href = "/hostelmanagement/"</script>'
+#         )
 
 
-# Student can post complaints
+# # Student can post complaints
 
 
 class PostComplaint(APIView):
@@ -2142,8 +2191,59 @@ def update_leave_status(request):
 
 # //! Manage Fine
 # //! Add Fine Functionality
+#
+class ImposeFineView(APIView):
+    """
+    API endpoint to impose fines on students.
+    """
 
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
+    def post(self, request):
+        """
+        This view is used to impose a fine on a student.
+        """
+        print(request.data)
+        # Check if the required data is provided in the request
+        student_id = request.data.get("studentId")
+        fine_amount = request.data.get("fineAmount")
+        fine_reason = request.data.get("fineReason")
+
+        if not all([student_id, fine_amount, fine_reason]):
+            return JsonResponse(
+                {"error": "All fields (studentId, fineAmount, fineReason) are required."},
+                status=400
+            )
+
+        try:
+            # Fetch the student object based on student ID
+            student = Student.objects.get(id=student_id)
+        except Student.DoesNotExist:
+            return JsonResponse(
+                {"error": "Student not found."},
+                status=404
+            )
+
+        # Get the hall from the student object (assuming student has a hall associated)
+        hall_id = student.hall_id
+
+        # Create the fine record
+        fine = HostelFine.objects.create(
+            student=student,
+            hall=Hall.objects.filter(hall_id = hall_id)[0],
+            student_name=student.id.user.username,  # Assuming student has a user field
+            amount=fine_amount,
+            reason=fine_reason,
+            status="Pending"  # Default status is Pending
+        )
+
+        # Return success response
+        return JsonResponse(
+            {"message": "Fine imposed successfully.", "fineId": fine.fine_id},
+            status=201
+        )
+##
 @login_required
 def show_fine_edit_form(request, fine_id):
     user_id = request.user

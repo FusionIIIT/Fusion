@@ -47,8 +47,9 @@ urlpatterns = [
     path("register_complaint/", views.PostComplaint.as_view(), name="PostComplaint"),
     #  Student can view his leave status
     path("my_leaves/", views.my_leaves.as_view(), name="my_leaves"),
-    path("get_students/", views.get_students, name="get_students"),
+    
     path("students_get_students_info/", views.students_get_students_info.as_view(), name="students_get_students_info"),
+    path("caretaker_get_students_info/", views.caretaker_get_students_info.as_view(), name="caretaker_get_students_info"),
     path("assign-batch/", views.AssignBatchView.as_view(), name="AssignBatchView"),
     path("hall-ids/", views.HallIdView.as_view(), name="hall"),
 
@@ -140,6 +141,7 @@ urlpatterns = [
     ),
     # !!todo: Add Fine Functionality
     path("fine/", views.impose_fine_view, name="fine_form_show"),
+    path('impose-fine/', views.ImposeFineView.as_view(), name='impose-fine'),
     path("fine/impose/", views.HostelFineView.as_view(), name="fine_form_show"),
     path("fine/impose/list/", views.hostel_fine_list, name="fine_list_show"),
     path(
