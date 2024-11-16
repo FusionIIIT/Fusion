@@ -347,3 +347,32 @@ class DirectorSilverListView(APIView):
         director_silver_entries = Director_silver.objects.all()
         serializer = DirectorSilverSerializer(director_silver_entries, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class DirectorSilverAcceptRejectView(APIView):
+    def post(self, request):
+        # Get the ID of the Director_silver entry to update
+        director_silver_id = request.data.get('id')
+        action = request.data.get('action')  # 'accept' or 'reject'
+
+        # Check if the action is valid
+        if action not in ['accept', 'reject']:
+            return Response({'error': 'Invalid action. Choose either "accept" or "reject".'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Fetch the Director_silver entry from the database using the ID
+            director_silver = Director_silver.objects.get(id=director_silver_id)
+        except Director_silver.DoesNotExist:
+            return Response({'error': 'Director_silver entry not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Update the status based on the action
+        if action == 'accept':
+            director_silver.status = 'ACCEPTED'
+        else:
+            director_silver.status = 'REJECTED'
+
+        # Save the updated Director_silver entry
+        director_silver.save()
+
+        # Return the updated entry as a response
+        serializer = DirectorSilverSerializer(director_silver)
+        return Response(serializer.data, status=status.HTTP_200_OK)

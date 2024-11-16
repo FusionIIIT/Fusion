@@ -5,7 +5,7 @@ from rest_framework.routers import DefaultRouter
 from . import views
 from applications.scholarships.api.views import GetWinnersView
 from applications.scholarships.api.views import create_award,McmUpdateView, McmRetrieveView, DirectorSilverRetrieveView,DirectorSilverUpdateView,DirectorGoldRetrieveView,DirectorGoldUpdateView,ProficiencyDmRetrieveView,ProficiencyDmUpdateView,AwardAndScholarshipCreateView
-from applications.scholarships.api.views import ScholarshipDetailView,StudentDetailView,DirectorSilverDetailView,DirectorGoldDetailView,DirectorGoldListView,ReleaseCreateView,McmStatusUpdateView,DirectorSilverDecisionView,DirectorGoldAcceptRejectView,DirectorSilverListView
+from applications.scholarships.api.views import ScholarshipDetailView,StudentDetailView,DirectorSilverDetailView,DirectorGoldDetailView,DirectorGoldListView,ReleaseCreateView,McmStatusUpdateView,DirectorSilverDecisionView,DirectorGoldAcceptRejectView,DirectorSilverListView,DirectorSilverAcceptRejectView
 
 
 
@@ -50,5 +50,5 @@ urlpatterns = [
     path('api/director_silver/decision/', DirectorSilverDecisionView.as_view(), name='director_silver_decision'),
     path('director-gold/accept-reject/', DirectorGoldAcceptRejectView.as_view(), name='director-gold-accept-reject'),   
     path('director-silver/', DirectorSilverListView.as_view(), name='director-silver-list'),
-
+    path('director-silver/accept-reject/', DirectorSilverAcceptRejectView.as_view(), name='director-silver-accept-reject'),
 ]
