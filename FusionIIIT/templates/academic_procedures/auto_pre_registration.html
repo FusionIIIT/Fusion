@@ -153,6 +153,7 @@
                     <th>Credits</th>
                     <th>Priority</th>
                     <th>Select</th>
+                    <th>Registration Type</th>
                 </tr>
             </thead>
 
@@ -235,6 +236,19 @@
                                     </select>
                                 </div>
                             </td>
+                            {% if course_slot.type == "Backlog" %}
+                            <td>
+                                <div style="margin-top: 5px;margin-bottom:5px;">
+                                    <select  class="ui dropdown choicesBox" required="True" name="registration_type-{{course_slot.id}}">
+                                        <option value="NULL">Choices</option>
+                                        <option value='Regular' class="Registration_Type">Regular</option>
+                                        <option value='Audit' class="Registration_Type">Audit</option>
+                                        <option value='Improvement' class="Registration_Type">Improvement</option>
+                                        <option value='Backlog' class="Registration_Type">Backlog</option>
+                                    </select>
+                                </div>
+                            </td>
+                            {% endif %}
                         </tr>
                         <input type="text" name="ct" value="{{forloop.counter}}" hidden="True">
                     
@@ -299,7 +313,13 @@
                 let course_priority = document.getElementsByName("course_priority-" + course_slot_id);
                 let unique_choices = new Set();
                 for (let j = 0; j < course_priority.length; j++) {
-                    if ((!(course_slot_type.startsWith("Optional")) && !course_slot_type.startsWith("Swayam") )&& course_priority[j].value == "NULL") {
+                    let registration_type = document.getElementsByName("registration_type-" + course_slot_id);
+                    if (course_slot_type=="Backlog" && course_priority[j].value != "NULL" && registration_type[0].value == "NULL") {
+                        alert("Please select registration_type for selected Backlog Courses.");
+                        document.getElementById('register-button').style = "text-allign:center;";
+                        return false;
+                    }
+                    if ((!(course_slot_type.startsWith("Optional") || course_slot_type=="Backlog") && !course_slot_type.startsWith("Swayam") )&& course_priority[j].value == "NULL") {
                         alert("Please select all choices for " + parseInt(i + 1) + "  " + course_slot_type + " slot");
                         document.getElementById('register-button').style = "text-allign:center;";
                         return false;

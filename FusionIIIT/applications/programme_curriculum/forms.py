@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from applications.globals.models import (DepartmentInfo, Designation,ExtraInfo, Faculty, HoldsDesignation)
 from applications.filetracking.sdk.methods import *
 from django.db.models import Q
+from datetime import datetime
 
 class ProgrammeForm(ModelForm):
     class Meta:
@@ -386,6 +387,7 @@ class CourseProposalTrackingFile(ModelForm):
         return self.cleaned_data
 
 class CourseInstructorForm(forms.ModelForm):
+    next_year = datetime.now().year +1
     course_id = forms.ModelChoiceField(
         queryset=Course.objects.all(),
         label="Select Course",
@@ -399,8 +401,9 @@ class CourseInstructorForm(forms.ModelForm):
         empty_label="Choose an instructor",
         widget=forms.Select(attrs={'class': 'ui fluid search selection dropdown'})
     )
+
     year = forms.ChoiceField(
-        choices=[('', 'Choose a year')] + [(year, year) for year in Batch.objects.values_list('year', flat=True).distinct()],
+        choices=[('', 'Choose a year')] + [(year, year) for year in Batch.objects.values_list('year', flat=True).distinct()]+[(next_year, next_year)],
         label="Select Year",
         widget=forms.Select(attrs={'class': 'ui fluid search selection dropdown'})
     )
