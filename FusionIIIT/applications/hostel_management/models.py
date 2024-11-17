@@ -357,6 +357,7 @@ class GuestRoom(models.Model):
         ("double", "Double"),
         ("triple", "Triple"),
     ]
+    id = models.IntegerField(null = False, primary_key=True)
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
     room = models.CharField(max_length=255)
     occupied_till = models.DateField(null=True, blank=True)
