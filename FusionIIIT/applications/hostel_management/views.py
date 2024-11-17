@@ -2559,87 +2559,170 @@ def student_fine_details(request):
 
     # return JsonResponse({'message': 'Nice'}, status=status.HTTP_200_OK)
 
+##
+class HostelFineListView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+    def get(self, request):
+        user_id = request.user
+        staff = user_id.extrainfo.id
+
+        try:
+            caretaker = HallCaretaker.objects.get(staff_id=staff)
+        except HallCaretaker.DoesNotExist:
+            return Response({"error": "Unauthorized access"}, status=403)
+
+        hall_id = caretaker.hall_id
+        fines = HostelFine.objects.filter(hall_id=hall_id).values(
+            "fine_id", "student_id", "amount", "status"
+        )
+        print(fines)
+        return Response({"fines": list(fines)}, status=200)
+    
 
 class HostelFineUpdateView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    @method_decorator(login_required)
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
+    def post(self, request, *args, **kwargs):
+        # Extract the fine_id from kwargs
+        fine_id = kwargs.get("fine_id")
+        if not fine_id:
+            return Response({"error": "Fine ID is required."}, status=400)
 
-    def post(self, request, fine_id):
+        # Get the logged-in user's info
         user_id = request.user
         staff = user_id.extrainfo.id
 
+        # Parse the incoming data
         data = request.data
-        fine_idd = data.get("fine_id")
-        status_ = data.get("status")
-        # print("fine_idd",fine_idd)
-        # print("status_",status_)
+        new_status = data.get("status")
 
+        # Validate the status
+        if new_status not in ["Pending", "Paid", "Unpaid"]:
+            return Response(
+                {"error": "Invalid status value. Only 'Pending', 'Paid', or 'Unpaid' are allowed."},
+                status=400,
+            )
+
+        # Check if the user is a caretaker
         try:
             caretaker = HallCaretaker.objects.get(staff_id=staff)
         except HallCaretaker.DoesNotExist:
             return Response(
-                {"error": "You are not authorized to access this page"},
-                status=status.HTTP_403_FORBIDDEN,
+                {"error": "Unauthorized: Only caretakers can update fines."},
+                status=403,
             )
 
+        # Get the caretaker's hall ID
         hall_id = caretaker.hall_id
 
-        # Convert fine_id to integer
-        fine_id = int(fine_id)
-
-        # Get hostel fine object
+        # Check if the fine exists and belongs to the caretaker's hall
         try:
-            hostel_fine = HostelFine.objects.get(hall_id=hall_id, fine_id=fine_id)
+            fine = HostelFine.objects.get(fine_id=fine_id, hall_id=hall_id)
         except HostelFine.DoesNotExist:
-            raise NotFound(detail="Hostel fine not found")
-
-        # Validate required fields
-        if status_ not in ["Pending", "Paid"]:
             return Response(
-                {"error": "Invalid status value"}, status=status.HTTP_400_BAD_REQUEST
+                {"error": "Fine not found for the specified hall."},
+                status=404,
             )
 
-        # # Update status of the hostel fine
-        hostel_fine.status = status_
-        hostel_fine.save()
+        # Check if the current fine status is different from the new status
+        if fine.status == new_status:
+            return Response(
+                {"error": f"Fine ID {fine_id} already has the status '{new_status}'."},
+                status=400,
+            )
+
+        # Update the fine status
+        fine.status = new_status
+        fine.save()
 
         # Return success response
         return Response(
-            {"message": "Hostel fine status updated successfully!"},
-            status=status.HTTP_200_OK,
+            {"message": f"Fine ID {fine_id} status updated to '{new_status}' successfully."},
+            status=200,
         )
+##
+# class HostelFineUpdateView(APIView):
+#     authentication_classes = [TokenAuthentication]
+#     permission_classes = [IsAuthenticated]
 
-    def delete(self, request, fine_id):
-        user_id = request.user
-        staff = user_id.extrainfo.id
+#     @method_decorator(login_required)
+#     def dispatch(self, *args, **kwargs):
+#         return super().dispatch(*args, **kwargs)
 
-        try:
-            caretaker = HallCaretaker.objects.get(staff_id=staff)
-        except HallCaretaker.DoesNotExist:
-            return Response(
-                {"error": "You are not authorized to access this page"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+#     def post(self, request, fine_id):
+#         user_id = request.user
+#         staff = user_id.extrainfo.id
 
-        hall_id = caretaker.hall_id
+#         data = request.data
+#         fine_idd = data.get("fine_id")
+#         status_ = data.get("status")
+#         # print("fine_idd",fine_idd)
+#         # print("status_",status_)
 
-        # Convert fine_id to integer
-        fine_id = int(fine_id)
+#         try:
+#             caretaker = HallCaretaker.objects.get(staff_id=staff)
+#         except HallCaretaker.DoesNotExist:
+#             return Response(
+#                 {"error": "You are not authorized to access this page"},
+#                 status=status.HTTP_403_FORBIDDEN,
+#             )
 
-        # Get hostel fine object
-        try:
-            hostel_fine = HostelFine.objects.get(hall_id=hall_id, fine_id=fine_id)
-            hostel_fine.delete()
-        except HostelFine.DoesNotExist:
-            raise NotFound(detail="Hostel fine not found")
+#         hall_id = caretaker.hall_id
 
-        return Response(
-            {"message": "Fine deleted successfully."}, status=status.HTTP_204_NO_CONTENT
-        )
+#         # Convert fine_id to integer
+#         fine_id = int(fine_id)
+
+#         # Get hostel fine object
+#         try:
+#             hostel_fine = HostelFine.objects.get(hall_id=hall_id, fine_id=fine_id)
+#         except HostelFine.DoesNotExist:
+#             raise NotFound(detail="Hostel fine not found")
+
+#         # Validate required fields
+#         if status_ not in ["Pending", "Paid"]:
+#             return Response(
+#                 {"error": "Invalid status value"}, status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         # # Update status of the hostel fine
+#         hostel_fine.status = status_
+#         hostel_fine.save()
+
+#         # Return success response
+#         return Response(
+#             {"message": "Hostel fine status updated successfully!"},
+#             status=status.HTTP_200_OK,
+#         )
+
+#     def delete(self, request, fine_id):
+#         user_id = request.user
+#         staff = user_id.extrainfo.id
+
+#         try:
+#             caretaker = HallCaretaker.objects.get(staff_id=staff)
+#         except HallCaretaker.DoesNotExist:
+#             return Response(
+#                 {"error": "You are not authorized to access this page"},
+#                 status=status.HTTP_403_FORBIDDEN,
+#             )
+
+#         hall_id = caretaker.hall_id
+
+#         # Convert fine_id to integer
+#         fine_id = int(fine_id)
+
+#         # Get hostel fine object
+#         try:
+#             hostel_fine = HostelFine.objects.get(hall_id=hall_id, fine_id=fine_id)
+#             hostel_fine.delete()
+#         except HostelFine.DoesNotExist:
+#             raise NotFound(detail="Hostel fine not found")
+
+#         return Response(
+#             {"message": "Fine deleted successfully."}, status=status.HTTP_204_NO_CONTENT
+#         )
 
 
 class EditStudentView(View):

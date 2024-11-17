@@ -176,4 +176,14 @@ urlpatterns = [
         views.RemoveStudentView.as_view(),
         name="remove-student",
     ),
+    path(
+        "fetch-fine/",
+        views.HostelFineListView.as_view(),
+        name="fetch-fine",
+    ),
+    path(
+        "update-fine-status/<int:fine_id>/",
+        views.HostelFineUpdateView.as_view(),
+        name="update-fine-status",
+    ),
 ]
