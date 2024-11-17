@@ -8,6 +8,7 @@ from django.conf.urls import url, include
 app_name = "hostelmanagement"
 
 urlpatterns = [
+
     path("admin/", admin.site.urls),
     # Home
     path("", views.hostel_view, name="hostel_view"),

@@ -3,7 +3,7 @@ from django.http import (
     HttpResponseBadRequest, JsonResponse, HttpResponse, HttpResponseRedirect,
 )
 from .models import (
-    HostelLeave, HallCaretaker, HallWarden, StudentDetails, HostelNoticeBoard, Hall, Staff, HostelAllotment, HostelHistory, HostelTransactionHistory,GuestRoom,GuestRoomBooking
+    HostelLeave, HallCaretaker, HallWarden, StudentDetails, HostelNoticeBoard, Hall, Staff, HostelAllotment, HostelHistory, HostelTransactionHistory,GuestRoom,GuestRoomBooking, HostelComplaint
 )
 from applications.hostel_management.models import HallCaretaker, HallWarden
 from django.db import IntegrityError, transaction
@@ -991,47 +991,133 @@ def update_leave_status(request):
 
 
 
+# @login_required
+# def create_hostel_leave(request):
+#     if request.method == "GET":
+#         return render(request, "hostelmanagement/create_leave.html")
+#     elif request.method == "POST":
+#         data = request.POST  # Assuming you are sending form data via POST request
+#         student_name = data.get("student_name")
+#         roll_num = data.get("roll_num")
+#         phone_number = data.get("phone_number")  # Retrieve phone number from form data
+#         reason = data.get("reason")
+#         start_date = data.get("start_date", timezone.now())
+#         end_date = data.get("end_date")
+
+#         # Create HostelLeave object and save to the database
+#         leave = HostelLeave.objects.create(
+#             student_name=student_name,
+#             roll_num=roll_num,
+#             phone_number=phone_number,  # Include phone number in the object creation
+#             reason=reason,
+#             start_date=start_date,
+#             end_date=end_date,
+#         )
+#         caretakers = HallCaretaker.objects.all()
+#         sender = request.user
+#         type = "leave_request"
+#         for caretaker in caretakers:
+#             try:
+#                 # Send notification
+#                 hostel_notifications(sender, caretaker.staff.id.user, type)
+#             except Exception as e:
+#                 # Handle notification sending error
+#                 print(
+#                     f"Error sending notification to caretaker {caretaker.staff.user.username}: {e}"
+#                 )
+
+#         return JsonResponse(
+#             {"message": "HostelLeave created successfully"},
+#             status=status.HTTP_201_CREATED,
+#         )
+
+#here
+# @login_required
 
 class CreateHostelLeave(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        data = request.data  # Assuming you are sending form data via POST request
-        student_name = data.get("student_name")
-        roll_num = data.get("roll_num")
-        phone_number = data.get("phone_number")  # Retrieve phone number from form data
-        reason = data.get("reason")
-        start_date = data.get("start_date", datetime.datetime.now())
-        end_date = data.get("end_date")
-        print(data)
-        # Create HostelLeave object and save to the database
-        leave = HostelLeave.objects.create(
-            student_name=student_name,
-            roll_num=roll_num,
-            phone_number=phone_number,  # Include phone number in the object creation
-            reason=reason,
-            start_date=start_date,
-            end_date=end_date,
-        )
-        caretakers = HallCaretaker.objects.all()
-        print(caretakers)
-        sender = request.user
-        type = "leave_request"
-        for caretaker in caretakers:
-            try:
-                # Send notification
-                hostel_notifications(sender, caretaker.staff.id.user, type)
-            except Exception as e:
-                # Handle notification sending error
-                print(
-                    f"Error sending notification to caretaker {caretaker.staff.user.username}: {e}"
-                )
+        try:
+            # Parsing the request body
+            data = json.loads(request.body.decode('utf-8'))
 
-        return JsonResponse(
-            {"message": "HostelLeave created successfully"},
-            status=status.HTTP_201_CREATED,
-        )
+            # Extracting fields from the request
+            student_name = data.get("student_name")
+            roll_num = data.get("roll_num")
+            phone_number = data.get("phone_number")
+            reason = data.get("reason")
+            start_date_str = data.get("start_date")
+            end_date_str = data.get("end_date")
+
+            # Initializing error dictionary
+            errors = {}
+
+            # Validation checks
+            if not student_name:
+                errors["student_name"] = "Student name is required."
+            if not roll_num:
+                errors["roll_num"] = "Roll number is required."
+            if not phone_number or len(phone_number) != 10 or not phone_number.isdigit():
+                errors["phone_number"] = "A valid 10-digit phone number is required."
+            if not reason:
+                errors["reason"] = "Reason is required."
+            if not start_date_str:
+                errors["start_date"] = "Start date is required."
+            if not end_date_str:
+                errors["end_date"] = "End date is required."
+
+            # Parsing the date fields
+            start_date = None
+            end_date = None
+            date_format = "%Y-%m-%d"
+
+            if start_date_str and "start_date" not in errors:
+                try:
+                    start_date = datetime.strptime(start_date_str, date_format).date()
+                except ValueError:
+                    errors["start_date"] = "Start date must be in YYYY-MM-DD format."
+
+            if end_date_str and "end_date" not in errors:
+                try:
+                    end_date = datetime.strptime(end_date_str, date_format).date()
+                except ValueError:
+                    errors["end_date"] = "End date must be in YYYY-MM-DD format."
+
+            # Date comparison check
+            if start_date and end_date and start_date > end_date:
+                errors["date"] = "Start date cannot be later than the end date."
+
+            # If there are validation errors, return 400 with the errors
+            if errors:
+                return JsonResponse({"errors": errors}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Creating the leave request entry in the database
+            leave = HostelLeave.objects.create(
+                student_name=student_name,
+                roll_num=roll_num,
+                phone_number=phone_number,
+                reason=reason,
+                start_date=start_date,
+                end_date=end_date,
+            )
+            # Return success message after successful creation
+            return JsonResponse(
+                {"message": "Hostel leave request created successfully"},
+                status=status.HTTP_201_CREATED,
+            )
+
+        except json.JSONDecodeError:
+            # Log and return specific error if the JSON is malformed
+            return JsonResponse({"error": "Invalid JSON format."}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception:
+            # Log unexpected errors with stack trace for debugging
+            return JsonResponse(
+                {"error": "An unexpected error occurred while processing your request."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+    #here
 # hostel_complaints_list caretaker can see all hostel complaints
 
 
