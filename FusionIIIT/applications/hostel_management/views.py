@@ -34,7 +34,7 @@ from applications.globals.models import (
 
 from applications.academic_information.models import Student
 import datetime
-from datetime import time, date
+from datetime import time, date, datetime
 from .forms import GuestRoomBookingForm, HostelNoticeBoardForm, HallForm
 import xlrd
 import re
@@ -1108,10 +1108,10 @@ class CreateHostelLeave(APIView):
                 status=status.HTTP_201_CREATED,
             )
 
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as e:
             # Log and return specific error if the JSON is malformed
             return JsonResponse({"error": "Invalid JSON format."}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception:
+        except Exception as e:
             # Log unexpected errors with stack trace for debugging
             return JsonResponse(
                 {"error": "An unexpected error occurred while processing your request."},
