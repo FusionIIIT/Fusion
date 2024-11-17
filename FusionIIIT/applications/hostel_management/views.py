@@ -2346,64 +2346,171 @@ def request_guest_room(request):
         hostel_notifications(sender=request.user, recipient=caretaker, type="guestRoom_request")
 
         return Response({"message": "Room request submitted successfully!"}, status=status.HTTP_201_CREATED)
+    
 
-@login_required
-def update_guest_room(request):
+# api for fethching the guestroom booking request information form the guest room booking table ..........
+class AllGuestRoomBookingData(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        print(request.user)
+        try:
+            staff = request.user.extrainfo.id
+        except AttributeError:
+            staff = None
+        print(staff)
+        if staff is not None and HallCaretaker.objects.filter(staff_id=staff).exists():
+            all_bookings = list(
+                GuestRoomBooking.objects.values(
+                    "id",
+                    "guest_name",
+                    "guest_phone",
+                    "guest_email",
+                    "guest_address",
+                    "rooms_required",
+                    "guest_room_id",
+                    "total_guest",
+                    "purpose",
+                    "arrival_date",
+                    "arrival_time",
+                    "departure_date",
+                    "departure_time",
+                    "status",
+                    "booking_date",
+                    "nationality",
+                    "room_type",
+                )
+            )
+            return JsonResponse(all_bookings, safe=False)
+        else:
+            return JsonResponse(
+                {"error": "You are not authorized to access this page."}, status=403
+            )
+
+# @login_required
+# def update_guest_room(request):
+#     if request.method == "POST":
+#         if "accept_request" in request.POST:
+#             status = request.POST["status"]
+#             guest_room_request = GuestRoomBooking.objects.get(
+#                 pk=request.POST["accept_request"]
+#             )
+#             guest_room_instance = GuestRoom.objects.get(
+#                 hall=guest_room_request.hall, room=request.POST["guest_room_id"]
+#             )
+
+#             # Assign the guest room ID to guest_room_id field
+#             guest_room_request.guest_room_id = str(guest_room_instance.id)
+
+#             # Update the assigned guest room's occupancy details
+#             guest_room_instance.occupied_till = guest_room_request.departure_date
+#             guest_room_instance.vacant = False  # Mark the room as occupied
+#             guest_room_instance.save()
+
+#             # Update the occupied_till field of the room_booked
+#             room_booked = GuestRoom.objects.get(
+#                 hall=guest_room_request.hall, room=request.POST["guest_room_id"]
+#             )
+#             room_booked.occupied_till = guest_room_request.departure_date
+#             room_booked.save()
+
+#             # Save the guest room request after updating the fields
+#             guest_room_request.status = status
+#             guest_room_request.save()
+#             messages.success(request, "Request accepted successfully!")
+
+#             hostel_notifications(
+#                 sender=request.user,
+#                 recipient=guest_room_request.intender,
+#                 type="guestRoom_accept",
+#             )
+
+#         elif "reject_request" in request.POST:
+#             guest_room_request = GuestRoomBooking.objects.get(
+#                 pk=request.POST["reject_request"]
+#             )
+#             guest_room_request.status = "Rejected"
+#             guest_room_request.save()
+
+#             messages.success(request, "Request rejected successfully!")
+
+#             hostel_notifications(
+#                 sender=request.user,
+#                 recipient=guest_room_request.intender,
+#                 type="guestRoom_reject",
+#             )
+
+#         else:
+#             messages.error(request, "Invalid request!")
+#     return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+
+
+
+@csrf_exempt
+def update_guest_room_status(request):
     if request.method == "POST":
-        if "accept_request" in request.POST:
-            status = request.POST["status"]
-            guest_room_request = GuestRoomBooking.objects.get(
-                pk=request.POST["accept_request"]
-            )
-            guest_room_instance = GuestRoom.objects.get(
-                hall=guest_room_request.hall, room=request.POST["guest_room_id"]
-            )
+        try:
+            data = json.loads(request.body)
+            booking_id = data.get("booking_id")
+            status = data.get("status")
+            guest_room_id = data.get("guest_room_id", None)
+            guest_room_request = GuestRoomBooking.objects.get(id=booking_id)
 
-            # Assign the guest room ID to guest_room_id field
-            guest_room_request.guest_room_id = str(guest_room_instance.id)
+            if status.lower() == "accepted" and guest_room_id:
+                guest_room_instance = GuestRoom.objects.get(
+                    id=guest_room_id
+                )
+                if(guest_room_instance.vacant == False):
+                    return JsonResponse(
+                        {
+                            "status": "notVacant",
+                            "message": f"Guest room booking {status} not vacant.",
+                            "booking_id": booking_id,
+                            "status_update": status,
+                            "guest_room_id": guest_room_id,
+                        }
+                        
+                    )
 
-            # Update the assigned guest room's occupancy details
-            guest_room_instance.occupied_till = guest_room_request.departure_date
-            guest_room_instance.vacant = False  # Mark the room as occupied
-            guest_room_instance.save()
+                # Assign the guest room ID to guest_room_id field
+                guest_room_request.guest_room_id = str(guest_room_instance.id)
+                # Update guest room's occupancy details
+                guest_room_instance.occupied_till = guest_room_request.departure_date
+                guest_room_instance.vacant = False
+                guest_room_instance.save()
 
-            # Update the occupied_till field of the room_booked
-            room_booked = GuestRoom.objects.get(
-                hall=guest_room_request.hall, room=request.POST["guest_room_id"]
-            )
-            room_booked.occupied_till = guest_room_request.departure_date
-            room_booked.save()
-
-            # Save the guest room request after updating the fields
+            # Update status and save guest room request
             guest_room_request.status = status
             guest_room_request.save()
-            messages.success(request, "Request accepted successfully!")
 
-            hostel_notifications(
-                sender=request.user,
-                recipient=guest_room_request.intender,
-                type="guestRoom_accept",
+            return JsonResponse(
+                {
+                    "status": "success",
+                    "message": f"Guest room booking {status} successfully.",
+                    "booking_id": booking_id,
+                    "status_update": status,
+                    "guest_room_id": guest_room_id,
+                }
+                
             )
-
-        elif "reject_request" in request.POST:
-            guest_room_request = GuestRoomBooking.objects.get(
-                pk=request.POST["reject_request"]
+        except GuestRoomBooking.DoesNotExist:
+            return JsonResponse(
+                {"status": "error", "message": "Guest room booking not found."},
+                status=404,
             )
-            guest_room_request.status = "Rejected"
-            guest_room_request.save()
-
-            messages.success(request, "Request rejected successfully!")
-
-            hostel_notifications(
-                sender=request.user,
-                recipient=guest_room_request.intender,
-                type="guestRoom_reject",
+        except GuestRoom.DoesNotExist:
+            return JsonResponse(
+                {"status": "error", "message": "Guest room not found."}, status=404
             )
-
-        else:
-            messages.error(request, "Invalid request!")
-    return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
-
+        except Exception as e:
+            print(e)
+            return JsonResponse({"status": "error", "message": str(e)}, status=500)
+    else:
+        return JsonResponse(
+            {"status": "error", "message": "Only POST requests are allowed."},
+            status=405,
+        )
 
 def available_guestrooms_api(request):
     if request.method == "GET":

@@ -134,7 +134,9 @@ urlpatterns = [
     path("all_staff/", views.all_staff, name="all_staff"),
     # guest room
     path("book_guest_room/", views.request_guest_room, name="book_guest_room"),
-    path("update_guest_room/", views.update_guest_room, name="update_guest_room"),
+    # This th url for the fethcing the all the guestrooms booking..
+    path("fetching_guest_room_request/", views.AllGuestRoomBookingData.as_view(), name="fetching_guest_room_request"),
+    path("update_guest_room/", views.update_guest_room_status, name="update_guest_room"),
     path(
         "available_guest_rooms/",
         views.available_guestrooms_api,
