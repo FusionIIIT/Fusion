@@ -1065,14 +1065,22 @@ class students_get_students_info(APIView):
         Fetches and returns student details for the hall associated with the requesting user.
         """
         try:
+            hall = None
+            hall_id = None
             # Get the hall_id of the logged-in user
-            hall_id = Student.objects.filter(id=request.user.extrainfo.id).values("hall_id").first()
-            print(hall_id)
-            if not hall_id:
-                return JsonResponse({"error": "Hall ID not found for the user."}, status=404)
-            
+            staff_student_info = request.user.extrainfo.id
+            if HallWarden.objects.filter(faculty_id=staff_student_info).exists():
+                hall = HallWarden.objects.filter(faculty_id=staff_student_info).first()
+                print(HallWarden.objects.filter(faculty_id=staff_student_info))
+                hall_id = hall.hall.hall_id
+            if(hall is None):
+                hall = Student.objects.filter(id=staff_student_info).values("hall_id").first()
+                if not hall:
+                    return JsonResponse({"error": "Hall ID not found for the user."}, status=404)
+                hall_id = hall["hall_id"]
+            if(hall_id is None): return JsonResponse({"error": "Hall ID not found for the user."}, status=404)
             # Get the students in the same hall
-            student_details = Student.objects.filter(hall_id=hall_id["hall_id"]).values(
+            student_details = Student.objects.filter(hall_id=hall_id).values(
                 "id__user__username",  # Assuming `id` is linked to `ExtraInfo` and `user`
                 "programme",
                 "batch",
@@ -1085,7 +1093,7 @@ class students_get_students_info(APIView):
                 "specialization",
                 "curr_semester_no",
             )
-            
+            print(hall_id)
             # Return the data as a JSON response
             return JsonResponse(list(student_details), safe=False, status=200)
         
