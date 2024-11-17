@@ -159,15 +159,69 @@ def academic_procedures_faculty(request):
         approved_assistantship_request_list = ta_approved_assistantship_request_list | thesis_approved_assistantship_request_list
         mtechseminar_request_list = MTechGraduateSeminarReport.objects.all().filter(Overall_grade = '')
         phdprogress_request_list = PhDProgressExamination.objects.all().filter(Overall_grade = '')
-        courses_list = list(CourseInstructor.objects.select_related('course_id', 'batch_id', 'batch_id__discipline').filter(instructor_id__id=fac_id.id).only('course_id__code', 'course_id__name', 'batch_id'))
 
-        assigned_courses = CourseInstructor.objects.select_related('course_id', 'batch_id', 'batch_id__discipline').filter(
-                            instructor_id__id=fac_id.id,  # Filter by faculty ID
-                            batch_id__running_batch=True,  # Filter by currently running batches
-                            course_id__working_course=True  # Filter by currently active courses
-                            ).only('course_id__code', 'course_id__name', 'batch_id')
-        assigned_courses = list(assigned_courses)
+        # courses_list = list(CourseInstructor.objects.select_related('course_id', 'batch_id', 'batch_id__discipline').filter(instructor_id__id=fac_id.id).only('course_id__code', 'course_id__name', 'batch_id'))
+        # print(fac_id.id)
+        courses_list = list(
+            CourseInstructor.objects.filter(instructor_id=fac_id.id)
+            .values('course_id_id','course_id__code','course_id__version','course_id__name', 'year', 'semester_no')
+        )
+        for course in courses_list:
+            # Calculate the batch as an integer
+            course['batch'] = int(course['year'] - (course['semester_no'] // 2))
+
+        # print(courses_list)
+        # # courses_list = list(
+        #     CourseInstructor.objects.select_related('course_id', 'instructor_id')
+        #     .filter(instructor_id=fac_id)
+        #     # .only('course_id__code', 'course_id__name', 'course_id')
+        # )
+
+
+        # assigned_courses = CourseInstructor.objects.select_related('course_id', 'batch_id', 'batch_id__discipline').filter(
+        #                     instructor_id__id=fac_id.id,  # Filter by faculty ID
+        #                     batch_id__running_batch=True,  # Filter by currently running batches
+        #                     course_id__working_course=True  # Filter by currently active courses
+        #                     ).only('course_id__code', 'course_id__name', 'batch_id')
         
+
+        course_years = (
+            CourseInstructor.objects
+            .select_related('course_id', 'instructor_id')
+            .filter(
+                instructor_id=fac_id.id,
+                course_id__working_course=True
+            )
+        )
+
+        assigned_courses = []
+        excluded_years = set() 
+
+        for course_instructor in course_years:
+        # Calculate target year based on course year and semester
+            target_year = course_instructor.year - course_instructor.semester_no // 2
+            
+            # Check if all batches for this target year are inactive
+            batches_for_year = Batch.objects.filter(year=target_year)
+            if batches_for_year.exists() and not batches_for_year.filter(running_batch=True).exists():
+                excluded_years.add(course_instructor.year)
+
+        # Second pass: filter courses based on excluded years
+        filtered_courses = (
+            CourseInstructor.objects
+            .select_related('course_id', 'instructor_id')
+            .filter(
+                instructor_id=fac_id.id,
+                course_id__working_course=True
+            )
+            .exclude(year__in=excluded_years)
+        )
+        # Ensure unique results in the final list
+        assigned_courses = list(filtered_courses)
+        
+        # assigned_courses = list(assigned_courses)
+        # assigned_courses = []
+        # courses_list = []
         # print('------------------------------------------------------------------------------------------------------------------' , list(assigned_courses))
         r = range(4)
         return render(
