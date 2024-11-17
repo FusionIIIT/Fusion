@@ -35,7 +35,7 @@ COURSESLOT_TYPE_CHOICES = [
     ('Swayam', 'Swayam'),
     ('Project', 'Project'),
     ('Optional', 'Optional'),
-    ('Backlog','Backlog'),
+    ('Backlog', 'Backlog'),
     ('Others', 'Others')
 ]
 

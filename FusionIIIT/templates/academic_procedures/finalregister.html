@@ -76,6 +76,7 @@
                             <th>Course Name</th>
                             <th>Credits</th>
                             <th>Semester</th>
+                            <th>Registration Type</th>
                         </tr>
                     </thead>
 
@@ -92,6 +93,7 @@
                             </td>
                             <td>{{ items.course_credit }}</td>
                             <td>{{next_sem.semester_no}}</td>
+                            <td>{{ items.registration_type }}</td>
                             <input name="choice" value="{{ items.course_id.id }}" hidden="True">
                             <input name="slot" value="{{ items.course_slot_id.id }}" hidden="True">
                         </tr>
