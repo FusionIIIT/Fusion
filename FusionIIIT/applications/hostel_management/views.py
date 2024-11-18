@@ -509,7 +509,23 @@ class NoticeBoardCreate(APIView):
             scope - stores the scope of the notice.
         """
         data = request.data
-        hall = Hall.objects.get(hall_id='hall4')
+
+        hall = None
+        hall_id = None
+        # Get the hall_id of the logged-in user
+        staff_student_info = request.user.extrainfo.id
+        if HallWarden.objects.filter(faculty_id=staff_student_info).exists():
+            hall = HallWarden.objects.filter(faculty_id=staff_student_info).first()
+            hall_id = hall.hall.hall_id
+        if(HallCaretaker.objects.filter(staff_id=staff_student_info).exists()):
+            caretaker = HallCaretaker.objects.filter(staff_id=staff_student_info)
+            if len(caretaker) != 0: hall_id = caretaker[0].hall.hall_id
+        if(hall_id is None):
+            hall = Student.objects.filter(id=staff_student_info).values("hall_id").first()
+            if not hall: return JsonResponse({"error": "Hall ID not found for the user."}, status=404)
+            hall_id = hall["hall_id"]
+        if(hall_id is None): return JsonResponse({"error": "Hall ID not found for the user."}, status=404)
+        hall = Hall.objects.get(hall_id=hall_id)
         posted_by = request.user.extrainfo
         head_line = request.data.get('headline', '')
         content = request.data.get('content','')
@@ -860,11 +876,42 @@ class NoticeBoardView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     def get(self, request):
-        notices = HostelNoticeBoard.objects.all().values(
-            "id", "hall", "posted_by", "head_line", "content", "description", "scope"
-        )
-        data = list(notices)
-        return JsonResponse(data, safe=False)
+        hall = None
+        hall_id = None
+        # Get the hall_id of the logged-in user
+        staff_student_info = request.user.extrainfo.id
+        if(staff_student_info == "HostelSuperUser"):
+            notices = HostelNoticeBoard.objects.filter(scope=1).values(
+                "id", "hall", "posted_by", "head_line", "content", "description", "scope"
+            )
+            #.values("id", "hall", "posted_by", "head_line", "content", "description", "scope")
+            data = list(notices)
+            for notice in data:
+                notice["hall_id"] = Hall.objects.filter(id=int(notice["hall"])).values("hall_id").first()["hall_id"]
+            return JsonResponse(data, safe=False)
+
+
+        else:
+            if HallWarden.objects.filter(faculty_id=staff_student_info).exists():
+                hall = HallWarden.objects.filter(faculty_id=staff_student_info).first()
+                hall_id = hall.hall.hall_id
+            if(HallCaretaker.objects.filter(staff_id=staff_student_info).exists()):
+                caretaker = HallCaretaker.objects.filter(staff_id=staff_student_info)
+                if len(caretaker) != 0: hall_id = caretaker[0].hall.hall_id
+            if(hall_id is None):
+                hall = Student.objects.filter(id=staff_student_info).values("hall_id").first()
+                if not hall: return JsonResponse({"error": "Hall ID not found for the user."}, status=404)
+                hall_id = hall["hall_id"]
+            if(hall_id is None): return JsonResponse({"error": "Hall ID not found for the user."}, status=404)
+            hall = Hall.objects.get(hall_id=hall_id)
+            notices = HostelNoticeBoard.objects.filter(Q(hall = hall) | Q(scope=1)).values(
+                "id", "hall", "posted_by", "head_line", "content", "description", "scope"
+            )
+            #.values("id", "hall", "posted_by", "head_line", "content", "description", "scope")
+            data = list(notices)
+            for notice in data:
+                notice["hall_id"] = Hall.objects.filter(id=int(notice["hall"])).values("hall_id").first()["hall_id"]
+            return JsonResponse(data, safe=False)
 
 
 # @login_required
@@ -1204,9 +1251,7 @@ class caretaker_get_students_info(APIView):
             # Check if the logged-in user is a Caretaker and get the hall_id
             if len(caretaker) != 0:  # User is a Caretaker
                 hall_id = caretaker[0].hall.hall_id
-                print(hall_id)  # Assuming hall_id is a ForeignKey in CaretakerInfo
             else:
-                print("work2")
                 return JsonResponse({"error": "User is not a caretaker."}, status=403)
             
             if not hall_id:

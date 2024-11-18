@@ -44,7 +44,7 @@ class Hall(models.Model):
     'max_accomodation' stores maximum accomodation limit of a Hall of Residence.
     'number_students' stores number of students currently residing in a Hall of Residence.
     """
-
+    id = models.IntegerField(primary_key = True)
     hall_id = models.CharField(max_length=10)
     hall_name = models.CharField(max_length=50)
     max_accomodation = models.IntegerField(default=0)
