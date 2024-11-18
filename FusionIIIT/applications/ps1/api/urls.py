@@ -60,4 +60,7 @@ urlpatterns = [
 
     
     url(r'^perform_transfer/(?P<id>\d+)$', views.performTransfer, name='perform-transfer'),
+    url(r'^archieveview/(?P<id>\d+)$', views.archieveview, name='archievedview'),
+
+    url(r'^archieve_indent/(?P<id>\d+)/$', views.archieve_file, name='archieve-file'),
 ]

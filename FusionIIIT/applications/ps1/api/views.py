@@ -1,3 +1,4 @@
+from django.contrib import messages
 from rest_framework.permissions import IsAuthenticated #type:ignore
 from rest_framework.response import Response #type:ignore
 from rest_framework import status #type:ignore
@@ -262,7 +263,10 @@ def createProposal(request):
             # idd = 1
             designation = get_object_or_404(Designation, name=designation)
             print(designation)
-
+            # receiver_id = User.objects.get(username=username)
+            # print(receiver_id)
+        #     receiverName = request.data.get('receiverName')
+        # receiver_id = User.objects.get(username=receiverName)
             upload_file = request.FILES.get('file')
             item_name = request.data.get('item_name')
             quantity = request.data.get('quantity')
@@ -323,7 +327,8 @@ def createProposal(request):
             # Serialize response data
             # file_serializer = FileSerializer(file)
             indent_file_serializer = IndentFileSerializer(indent_file)
-
+            # office_module_notif(username, receiver_id)
+            # messages.success(request,'Indent Filed Successfully!')
             # Return response
             return Response({
                 # 'file': file_serializer.data,
@@ -356,9 +361,6 @@ def indentView(request, username):
         return Response({'error': 'Student are not allowd to access this view'}, status=403)
     
     designation = HoldsDesignation.objects.filter(user=request.user, designation__name=currentDesignation).first()
-    
-    # if str(id) != str(designation.id):
-    #     return JsonResponse({'redirect': f'/purchase-and-store/indentview/{designation.id}'}, status=302)
 
     tracking_objects = Tracking.objects.all()
     tracking_obj_ids = [obj.file_id for obj in tracking_objects]
@@ -523,7 +525,7 @@ def indentFile(request, id):
             return Response({"message": "Indent file does not exist"}, status=status.HTTP_404_NOT_FOUND)
         
         # Retrieve tracking details for the indent file
-        track = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(file_id=indent_file.file_info)
+        track = Tracking.objects.select_related('file_id_uploaderuser','file_iduploaderdepartment','file_iddesignation','current_iduser','current_iddepartment','current_designuser','current_designworking','current_design_designation','receiver_id','receive_design').filter(file_id=indent_file.file_info)
         
         # Retrieve ExtraInfo, HoldsDesignation, and filtered designations
         extrainfo = ExtraInfo.objects.select_related('user','department').all()
@@ -563,10 +565,10 @@ def indentFile(request, id):
 #             indent = IndentFile.objects.select_related('file_info').get(file_info=id)
 #             file = indent.file_info
 #             track = Tracking.objects.select_related(
-#                 'file_id__uploader__user', 'file_id__uploader__department',
-#                 'file_id__designation', 'current_id__user', 
-#                 'current_id__department', 'current_design__user', 
-#                 'current_design__working', 'current_design__designation', 
+#                 'file_id_uploaderuser', 'file_iduploader_department',
+#                 'file_id_designation', 'current_id_user', 
+#                 'current_id_department', 'current_design_user', 
+#                 'current_design_working', 'current_design_designation', 
 #                 'receiver_id', 'receive_design'
 #             ).filter(file_id=file)
 #         except IndentFile.DoesNotExist:
@@ -643,7 +645,7 @@ def ForwardIndentFile(request, id):
         try:
             indent = IndentFile.objects.select_related('file_info').get(file_info=id)
             file = indent.file_info
-            track = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(file_id=file)
+            track = Tracking.objects.select_related('file_id_uploaderuser','file_iduploaderdepartment','file_iddesignation','current_iduser','current_iddepartment','current_designuser','current_designworking','current_design_designation','receiver_id','receive_design').filter(file_id=file)
         except IndentFile.DoesNotExist:
             return Response({"message": "Indent file does not exist"}, status=status.HTTP_404_NOT_FOUND)
         
@@ -713,34 +715,6 @@ def ForwardIndentFile(request, id):
 
 
 
-# def outboxview2(request, id):
-    # try:
-        #  return Response({"message":"successfull"},status=200)
-    #     # Fetch the designation of the user
-    #     abcd = HoldsDesignation.objects.get(pk=id)
-    #     s = str(abcd).split(" - ")
-    #     designations = s[1]
-
-    #     # Get the outbox data
-    #     data = view_outbox(request.user.username, designations, "ps1")
-    #     # Sort the data by upload date (descending order)
-    #     data = sorted(data, key=lambda x: datetime.fromisoformat(x['upload_date']), reverse=True)
-
-    #     # Format upload date for each item
-    #     for item in data:
-    #         item['upload_date'] = datetime.fromisoformat(item['upload_date']).isoformat()
-
-    #     # Create JSON response
-    #     return Response({
-    #         'receive_design': str(abcd),  # Assuming this is needed for your frontend
-    #         'in_file': data
-    #     })
-
-    # except HoldsDesignation.DoesNotExist:
-    #     return Response({'error': 'Designation not found'}, status=404)
-    # except Exception as e:
-        # return Response({'error': str(e)}, status=500)
-    
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def outboxview2(request, id):
@@ -784,13 +758,62 @@ def outboxview2(request, id):
     return Response(context)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def archieveview(request,id):
+    currentDesignation = request.GET.get('role')  # Capture role from headers
+    if currentDesignation=="student":
+        return Response({'error': 'Student are not allowd to access this view'}, status=403)
+    
+    designation = HoldsDesignation.objects.filter(user=request.user, designation__name=currentDesignation).first()
+    
+    if str(id) != str(designation.id):
+        return redirect(f'/purchase-and-store/archieveview/{designation.id}')
+    print("id : ",id);
+    print("request.user : ",request.user);
+    
+    abcd = HoldsDesignation.objects.get(pk=id)
+    s = str(abcd).split(" - ")
+    designations = s[1]
+    print("designations : ",designations);
+
+    archived_files = view_archived(
+    username=request.user,
+    designation=designations,
+    src_module="ps1"
+    )
+
+    print("archived_files : ",archived_files);
+    for files in archived_files:
+        files['upload_date']=datetime.fromisoformat(files['upload_date'])
+        files['upload_date']=files['upload_date'].strftime("%B %d, %Y, %I:%M %p") 
+    
+    notifs = request.user.notifications.all().values()
+    context = {
+        'archieves' : archived_files,
+        'designations': designations,
+        'notifications':list(notifs)
+    }
+    return Response(context)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def archieve_file(request,id):
+    file_id=request.GET.get('file_id')
+    print(file_id)
+    res = archive_file(file_id)
+    if res:
+        return Response({"message": "File has been archived successfully"})
+    else:
+        return Response({"message": "Unsuccessful in archiving file"})
+
 
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def entry(request,id):
 
     designation = str(Designation.objects.get(id=HoldsDesignation.objects.select_related('user', 'working', 'designation').get(id=id).designation_id))
-    if request.method == 'GET':
+    if request.method == 'GET': 
 
         if  designation not in dept_admin_design + ["ps_admin"]:
             return Response({"message": "Not authorized"}, status=status.HTTP_403_FORBIDDEN)
@@ -800,7 +823,7 @@ def entry(request,id):
 
         # Filter indent files based on user's designation
         if request.session.get('currentDesignationSelected') == "dept_admin":
-            indent_files = IndentFile.objects.filter(file_info__uploader__department__name=department)
+            indent_files = IndentFile.objects.filter(file_info_uploaderdepartment_name=department)
         else:
             indent_files = IndentFile.objects.all()
 
@@ -834,29 +857,30 @@ def entry(request,id):
         except IndentFile.DoesNotExist:
             return Response({"message": "Corresponding indent file does not exist"}, status=status.HTTP_404_NOT_FOUND)
         
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def stockEntry(request,id):
-
     # print(request.data);
     
     designation = str(Designation.objects.get(id=HoldsDesignation.objects.select_related('user', 'working', 'designation').get(id=id).designation_id))
-    # print(designation)
-    if str(designation) not in dept_admin_design + ["ps_admin"]:
-            return Response({"message": "Not authorized"}, status=status.HTTP_403_FORBIDDEN)
+    # if str(designation) not in dept_admin_design + ["ps_admin"]:
+    #         return Response({"message": "Not authorized"}, status=status.HTTP_403_FORBIDDEN)
 
     if request.method == 'POST':
+        print(designation)
 
-        id = request.POST.get('id')
+        idd = request.POST.get('id')
         vendor = request.POST.get('vendor')
         current_stock = request.POST.get('current_stock')
-        # received_date = request.POST.get('received_date')
+        try:
+            recieved_date = request.data.get('recieved_date')  # Match the typo for now
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
         bill = request.FILES.get('bill')
         location = request.POST.get('location')
 
         try:
-            temp1 = File.objects.get(id=id)
+            temp1 = File.objects.get(id=idd)
             temp = IndentFile.objects.get(file_info=temp1)
         except (File.DoesNotExist, IndentFile.DoesNotExist):
             return Response({"message": "File with given ID does not exist"}, status=status.HTTP_404_NOT_FOUND)
@@ -865,24 +889,23 @@ def stockEntry(request,id):
         dealing_assistant_id = request.user.extrainfo
 
         print(request.data)
-
+        print("HI Stockentry")
         stock_entry = StockEntry.objects.create(
                 item_id=item_id,
                 vendor=vendor,
                 current_stock=current_stock,
                 dealing_assistant_id=dealing_assistant_id,
                 bill=bill,
-                # received_date=received_date,
+                recieved_date=recieved_date,
                 location=location
             )
 
-        # Marking the indent file as done
         temp.purchased = True
         temp.save()
 
         serializer = StockEntrySerializer(stock_entry)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -896,7 +919,7 @@ def stockEntryView(request,id):
     department = request.user.extrainfo.department
 
     if designation in dept_admin_design:
-        stocks = StockEntry.objects.filter(item_id__file_info__uploader__department=department)
+        stocks = StockEntry.objects.filter(item_id_file_infouploader_department=department)
     elif designation == "ps_admin":
         stocks = StockEntry.objects.all()
     else:
@@ -930,11 +953,11 @@ def currentStockView(request,id):
         else:
             return Response({"message": "Invalid designation"}, status=status.HTTP_403_FORBIDDEN)
 
-        grouped_items = stocks.values('StockEntryId__item_id__item_type', 'department').annotate(total_quantity=Count('id'))
+        grouped_items = stocks.values('StockEntryId_item_id_item_type', 'department').annotate(total_quantity=Count('id'))
 
         grouped_items_list = [
             {
-                'item_type': item['StockEntryId__item_id__item_type'],
+                'item_type': item['StockEntryId_item_id_item_type'],
                 'department': DepartmentInfo.objects.get(id=item['department']).name,
                 'total_quantity': item['total_quantity']
             }
@@ -954,14 +977,14 @@ def currentStockView(request,id):
         # Filter StockItem based on provided filters
         StockItems = StockItem.objects.filter(
             department=department,
-            StockEntryId__item_id__item_type=item_type
+            StockEntryId_item_id_item_type=item_type
         )
 
-        grouped_items = StockItems.values('StockEntryId__item_id__item_type', 'department').annotate(total_quantity=Count('id'))
+        grouped_items = StockItems.values('StockEntryId_item_id_item_type', 'department').annotate(total_quantity=Count('id'))
 
         grouped_items_list = [
             {
-                'item_type': item['StockEntryId__item_id__item_type'],
+                'item_type': item['StockEntryId_item_id_item_type'],
                 'department': DepartmentInfo.objects.get(id=department).name,
                 'total_quantity': item['total_quantity']
             }
@@ -1027,7 +1050,7 @@ def stockTransfer(request,id):
     item_type_required =temp1.item_type
 
     available_items=StockItem.objects.filter(
-        StockEntryId__item_id__item_type=item_type_required,
+        StockEntryId_item_id_item_type=item_type_required,
         inUse=False  
     )
 
