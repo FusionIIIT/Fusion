@@ -18,12 +18,452 @@ from io import BytesIO
 from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 
+# @api_view(['GET'])
+# def dashboard(request):
+#     userObj = request.user
+#     userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
+#     eligible = any(p.designation.name == 'Admin IWD' for p in userDesignationObjects)
+#     return Response({'eligible': eligible})
+
+'''
+    Fully Implemented
+'''
+
 @api_view(['GET'])
-def dashboard(request):
-    userObj = request.user
-    userDesignationObjects = HoldsDesignation.objects.filter(user=userObj)
-    eligible = any(p.designation.name == 'Admin IWD' for p in userDesignationObjects)
-    return Response({'eligible': eligible})
+@permission_classes([IsAuthenticated])
+def fetch_designations(request):
+    '''
+        to return a list of cincerned designations in the module's scope
+    '''
+    holdsDesignations = []
+        
+    designations = Designation.objects.filter(name__in=designations_list)
+
+    for designation in designations:
+        holds = HoldsDesignation.objects.filter(designation=designation)
+        serializer = HoldsDesignationSerializer(holds, many=True)
+        holdsDesignations.extend(serializer.data)
+
+    return Response({'holdsDesignations': holdsDesignations}, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_request(request):
+
+    '''
+        to create a new request
+    '''
+
+    data = request.data
+    serializer = RequestsSerializer(data=data, context={'request': request})
+    
+    if serializer.is_valid():
+        formObject = serializer.save()
+        print(formObject)
+        request_object = Requests.objects.get(pk=formObject.pk)
+        receiver_desg, receiver_user = data.get('designation').split('|')
+        try:
+            receiver_user_obj = User.objects.get(username=receiver_user)
+        except User.DoesNotExist:
+            return Response({'error': 'Receiver user does not exist'}, status=status.HTTP_400_BAD_REQUEST)
+        create_file(
+            uploader=request.user.username,
+            uploader_designation=data.get('role'),
+            receiver=receiver_user,
+            receiver_designation=receiver_desg,
+            src_module="IWD",
+            src_object_id=str(request_object.id),
+            file_extra_JSON={"value": 2},
+            attached_file=None
+        )
+        
+        
+        iwd_notif(request.user, receiver_user_obj, "Request_added")
+        
+        return Response({'message': "Request Successfully Created"}, status=status.HTTP_201_CREATED)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def created_requests(request):
+
+    '''
+        to get a list of requests in current user's inbox
+    '''
+
+    params = request.query_params
+    obj = []
+    inbox_files = view_inbox(
+        username=request.user,
+        designation=params.get('role'),
+        src_module="IWD"
+    )
+    for result in inbox_files:
+        src_object_id = result['src_object_id']
+        request_object = Requests.objects.filter(id=src_object_id).first()
+        if request_object:
+            file_obj = get_object_or_404(File, src_object_id=request_object.id, src_module="IWD")
+            element = {
+                'request_id': request_object.id,
+                'name': request_object.name,
+                'area': request_object.area,
+                'description': request_object.description,
+                'requestCreatedBy': request_object.requestCreatedBy,
+                'file_id': file_obj.id,
+                'processed_by_director': request_object.directorApproval,
+            }
+            obj.append(element)
+
+    return Response(obj, status=200)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def view_file(request):
+    
+    '''
+        get complete file data and track records
+    '''
+
+    params = request.query_params
+    id = params.get('file_id')
+    print(id)
+    file1 = get_object_or_404(File, id=id)
+
+    tracks = Tracking.objects.filter(file_id=file1)
+
+    eligible = request.session.get('currentDesignationSelected')
+
+    file_serializer = FileSerializer(file1)
+    tracks_serializer = TrackingSerializer(tracks, many=True)
+    return Response({
+        "file": file_serializer.data,
+        "tracks": tracks_serializer.data,
+        "url": "url",
+        "eligible": eligible
+    }, status=200)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def dean_processed_requests(request):
+
+    '''
+        to get requests that have been processed through the dean and are ready for director's approval
+    '''
+
+    obj = []
+    params = request.query_params
+    desg = params.get('role')
+
+    inbox_files = view_inbox(
+        username=request.user.username,
+        designation=desg,
+        src_module="IWD"
+    )
+
+    for result in inbox_files:
+        src_object_id = result['src_object_id']
+        request_object = Requests.objects.filter(id=src_object_id, directorApproval=0).first()
+        file_obj = File.objects.get(src_object_id=src_object_id, src_module="IWD")
+        if request_object:
+            element = {
+                'request_id': request_object.id,
+                'name': request_object.name,
+                'area': request_object.area,
+                'description': request_object.description,
+                'requestCreatedBy': request_object.requestCreatedBy,
+                'file_id': file_obj.id,
+                'processed_by_director': request_object.directorApproval,
+            }
+            obj.append(element)
+
+    return Response(obj)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def handle_director_approval(request):
+
+    '''
+        approve or reject file based on director's action
+    '''
+
+    data = request.data
+    fileid = data.get('fileid')
+    request_id = File.objects.get(id=fileid).src_object_id
+
+    remarks = data.get('remarks')
+    attachment = request.FILES.get('file')
+    receiver_desg, receiver_user = data.get('designation').split('|')
+
+    forward_file(
+        file_id=fileid,
+        receiver=receiver_user,
+        receiver_designation=receiver_desg,
+        file_extra_JSON={"message": "Request forwarded."},
+        remarks=remarks,
+        file_attachment=attachment,
+    )
+
+    message = ""
+    print(data)
+    if data.get('action') == 'approve':
+        message = "Request_approved"
+        print(message)
+        Requests.objects.filter(id=request_id).update(directorApproval=1, status="Approved by the director")
+    else:
+        message = "Request_rejected"
+        Requests.objects.filter(id=request_id).update(directorApproval=-1, status="Rejected by the director")
+
+    return Response({'message': message})
+
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def rejected_requests(request):
+    
+    '''
+        get requests rejected by director (-1)
+    '''
+    
+    obj = []
+    desg = request.query_params.get('role')
+
+    inbox_files = view_inbox(
+        username=request.user,
+        designation=desg,
+        src_module="IWD"
+    )
+
+    for result in inbox_files:
+        src_object_id = result['src_object_id']
+        request_object = Requests.objects.filter(id=src_object_id, directorApproval=-1).first()
+        if request_object:
+            element = {
+                'id': request_object.id,
+                'name': request_object.name,
+                'area': request_object.area,
+                'description': request_object.description,
+                'requestCreatedBy': request_object.requestCreatedBy
+            }
+            obj.append(element)
+
+    return Response({
+        "rejected_requests": obj,
+    }, status=status.HTTP_200_OK)
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def handle_update_requests(request):
+    
+    '''
+        to update an old request(delete and make a new one)
+    '''
+    
+    data = request.data
+    request_id = data.get("id", 0)
+    desg = data.get('role')
+    receiver_desg, receiver_user = data.get('designation').split('|')
+
+    Requests.objects.filter(id=request_id).update(
+        name=request.data.get('name'),
+        description=request.data.get('description'),
+        area=request.data.get('area'),
+        engineerProcessed=0,
+        directorApproval=0,
+        deanProcessed=0,
+        requestCreatedBy=request.user.username,
+        status="Pending",
+        issuedWorkOrder=0,
+        workCompleted=0,
+        billGenerated=0,
+        billProcessed=0,
+        billSettled=0
+    )
+    file_obj = File.objects.get(src_object_id=request_id, src_module="IWD")
+    if file_obj:
+        delete_file(file_obj.id)
+    create_file(
+        uploader=request.user.username,
+        uploader_designation=desg,
+        receiver=receiver_user,
+        receiver_designation=receiver_desg,
+        src_module="IWD",
+        src_object_id=str(request_id),
+        file_extra_JSON={"value": 2},
+        attached_file=None
+    )
+
+    receiver_user_obj = User.objects.get(username=receiver_user)
+    iwd_notif(request.user, receiver_user_obj, "Request_added")
+
+    return Response({"message": "Request updated successfully"}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def director_approved_requests(request):
+    
+    '''
+        requests approved by director and can issue work order
+    '''
+    
+    obj = []
+    params = request.query_params
+    desg = params.get('role')
+
+    inbox_files = view_inbox(
+        username=request.user,
+        designation=desg,
+        src_module="IWD"
+    )
+
+    for result in inbox_files:
+        src_object_id = result['src_object_id']
+        request_object = Requests.objects.filter(
+            id=src_object_id,
+            directorApproval=1,
+            issuedWorkOrder=0
+        ).first()
+        if request_object and request_object.directorApproval==1:
+            element = {
+                "id": request_object.id,
+                "name": request_object.name,
+                "area": request_object.area,
+                "description": request_object.description,
+                "requestCreatedBy": request_object.requestCreatedBy
+            }
+            obj.append(element)
+
+    return Response({"requests": obj}, status=status.HTTP_200_OK)
+
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def issue_work_order(request):
+    
+    '''
+        issue work order
+    '''
+    
+    request_id = request.data.get('request_id')
+    print(request_id)
+    request_instance = get_object_or_404(Requests, pk=request_id)
+    
+    serializer = WorkOrderFormSerializer(data=request.data)
+    print(serializer)
+    if serializer.is_valid():
+        work_order = serializer.save(request_id=request_instance)
+
+        request_instance.status = "Work Order issued"
+        request_instance.issuedWorkOrder = 1
+        request_instance.save()
+
+        messages.success(request, "Work Order Issued")
+        return Response(status=status.HTTP_200_OK)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def requests_in_progress(request):
+
+    '''
+        work order issued but not completed
+    '''
+    
+    requestsObject = Requests.objects.filter(issuedWorkOrder=1, billGenerated=0)
+    serializer = RequestsInProgressSerializer(requestsObject, many=True)
+    return Response({'obj': serializer.data}, status=200)
+
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def work_completed(request):
+
+    '''
+        to mark the work as completed
+    '''
+
+    request_id = request.data.get('id')
+    Requests.objects.filter(id=request_id).update(workCompleted=1, status="Work Completed")
+    return Response(
+        {
+            'message': 'Work Completed',
+        },
+        status=status.HTTP_200_OK
+    )
+
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def view_budget(request):
+
+    '''
+        view budget list
+    '''
+
+    budget_objects = Budget.objects.all()
+    obj = []
+
+    for x in budget_objects:
+        element = {
+            "id": x.id,
+            "name": x.name,
+            "budgetIssued": x.budgetIssued
+        }
+        obj.append(element)
+    
+    return Response({'obj': obj}, status=status.HTTP_200_OK)
+
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_budget(request):
+    '''
+        add new budget
+    '''
+    name = request.data.get('name')
+    budget_issued = request.data.get('budget')
+
+    if name and budget_issued:
+        formObject = Budget(name=name, budgetIssued=budget_issued)
+        formObject.save()
+        return Response({'message': 'Budget added successfully.'}, status=status.HTTP_201_CREATED)
+    else:
+        return Response({'error': 'Name and budget are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def edit_budget(request):
+    
+    '''
+        edit an existing budget
+    '''
+    
+    budget_id = request.data.get('id')
+    budget_name = request.data.get('name')
+    budget_issued = request.data.get('budget')
+
+    if budget_id and budget_name and budget_issued:
+        Budget.objects.filter(id=budget_id).update(name=budget_name, budgetIssued=budget_issued)
+        return Response({'message': 'Budget updated successfully.'}, status=status.HTTP_200_OK)
+    else:
+        return Response({'error': 'ID, name, and budget are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
 
 @api_view(['POST'])
 def page1_1(request):
@@ -355,124 +795,23 @@ def extensionFormView(request):
 
 designations_list = ["Junior Engineer", "Executive Engineer (Civil)", "Electrical_AE", "Electrical_JE", "EE", "Civil_AE", "Civil_JE", "Dean (P&D)", "Director", "Accounts Admin", "Admin IWD", "Auditor"]
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def fetchDesignations(request):
-    holdsDesignations = []
-        
-    designations = Designation.objects.filter(name__in=designations_list)
 
-    for designation in designations:
-        holds = HoldsDesignation.objects.filter(designation=designation)
-        serializer = HoldsDesignationSerializer(holds, many=True)
-        holdsDesignations.extend(serializer.data)
 
-    return Response({'holdsDesignations': holdsDesignations}, status=status.HTTP_200_OK)
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def requestsView(request):
-    data = request.data
-    serializer = RequestsSerializer(data=data, context={'request': request})
-    
-    if serializer.is_valid():
-        formObject = serializer.save()
-        print(formObject)
-        request_object = Requests.objects.get(pk=formObject.pk)
-        receiver_desg, receiver_user = data.get('designation').split('|')
-        try:
-            receiver_user_obj = User.objects.get(username=receiver_user)
-        except User.DoesNotExist:
-            return Response({'error': 'Receiver user does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-        create_file(
-            uploader=request.user.username,
-            uploader_designation=data.get('role'),
-            receiver=receiver_user,
-            receiver_designation=receiver_desg,
-            src_module="IWD",
-            src_object_id=str(request_object.id),
-            file_extra_JSON={"value": 2},
-            attached_file=None
-        )
-        
-        
-        # Send notification
-        iwd_notif(request.user, receiver_user_obj, "Request_added")
-        
-        # Eligible value for response
-        # eligible = request.session.get('currentDesignationSelected')
-        
-        # Return successful response
-        return Response({'message': "Request Successfully Created"}, status=status.HTTP_201_CREATED)
-    
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def created_requests_view(request):
-    # print("REQUESTT:", request)
-    params = request.query_params
-    obj = []
-    inbox_files = view_inbox(
-        username=request.user,
-        designation=params.get('role'),
-        src_module="IWD"
-    )
-    for result in inbox_files:
-        src_object_id = result['src_object_id']
-        request_object = Requests.objects.filter(id=src_object_id).first()
-        if request_object:
-            file_obj = get_object_or_404(File, src_object_id=request_object.id, src_module="IWD")
-            element = {
-                'request_id': request_object.id,
-                'name': request_object.name,
-                'area': request_object.area,
-                'description': request_object.description,
-                'requestCreatedBy': request_object.requestCreatedBy,
-                'file_id': file_obj.id,
-                'processed_by_director': request_object.directorApproval,
-            }
-            obj.append(element)
-
-    return Response(obj, status=200)
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def view_file_api(request):
-    params = request.query_params
-    id = params.get('file_id')
-    print(id)
-    file1 = get_object_or_404(File, id=id)
-
-    tracks = Tracking.objects.filter(file_id=file1)
-
-    eligible = request.session.get('currentDesignationSelected')
-
-    file_serializer = FileSerializer(file1)
-    tracks_serializer = TrackingSerializer(tracks, many=True)
-    return Response({
-        "file": file_serializer.data,
-        "tracks": tracks_serializer.data,
-        "url": "url",
-        "eligible": eligible
-    }, status=200)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def handleEngineerProcessRequests(request):
-    # Extract POST data and file from the request
     file_id = request.data.get('fileid')
     remarks = request.data.get('remarks')
     attachment = request.FILES.get('attachment')
 
-    # Get the file and corresponding request object
     file_instance = get_object_or_404(File, id=file_id)
     request_id = file_instance.src_object_id
 
-    # Parse receiver user and designation from the request
     receiver_user, receiver_desg = request.data.get('designation').split('|')
 
-    # Forward the file with necessary details
     forward_file(
         file_id=file_id,
         receiver=receiver_user,
@@ -482,10 +821,8 @@ def handleEngineerProcessRequests(request):
         file_attachment=attachment,
     )
 
-    # Update the request object after being processed by the engineer
     Requests.objects.filter(id=request_id).update(engineerProcessed=1, status="Approved by the Engineer")
 
-    # Fetch inbox files based on the current designation
     desg = request.session.get('currentDesignationSelected')
     inbox_files = view_inbox(username=request.user, designation=desg, src_module="IWD")
 
@@ -568,99 +905,12 @@ def handle_dean_process_requests(request):
     
     return Response({'message': 'File Forwarded'}, status=200)
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def dean_processed_requests(request):
-    obj = []
-    params = request.query_params
-    desg = params.get('role')
 
-    inbox_files = view_inbox(
-        username=request.user.username,
-        designation=desg,
-        src_module="IWD"
-    )
 
-    for result in inbox_files:
-        src_object_id = result['src_object_id']
-        request_object = Requests.objects.filter(id=src_object_id, directorApproval=0).first()
-        file_obj = File.objects.get(src_object_id=src_object_id, src_module="IWD")
-        if request_object:
-            element = {
-                'request_id': request_object.id,
-                'name': request_object.name,
-                'area': request_object.area,
-                'description': request_object.description,
-                'requestCreatedBy': request_object.requestCreatedBy,
-                'file_id': file_obj.id,
-                'processed_by_director': request_object.directorApproval,
-            }
-            obj.append(element)
 
-    return Response(obj)
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def handle_director_approval_requests(request):
-    data = request.data
-    fileid = data.get('fileid')
-    request_id = File.objects.get(id=fileid).src_object_id
 
-    remarks = data.get('remarks')
-    attachment = request.FILES.get('file')
-    receiver_desg, receiver_user = data.get('designation').split('|')
 
-    forward_file(
-        file_id=fileid,
-        receiver=receiver_user,
-        receiver_designation=receiver_desg,
-        file_extra_JSON={"message": "Request forwarded."},
-        remarks=remarks,
-        file_attachment=attachment,
-    )
-
-    message = ""
-    print(data)
-    if data.get('action') == 'approve':
-        message = "Request_approved"
-        print(message)
-        Requests.objects.filter(id=request_id).update(directorApproval=1, status="Approved by the director")
-    else:
-        message = "Request_rejected"
-        Requests.objects.filter(id=request_id).update(directorApproval=-1, status="Rejected by the director")
-
-    return Response({'message': message})
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def rejectedRequests(request):
-    obj = []
-    desg = request.query_params.get('role')
-
-    inbox_files = view_inbox(
-        username=request.user,
-        designation=desg,
-        src_module="IWD"
-    )
-
-    # Collect requests where directorApproval is -1 (Rejected)
-    for result in inbox_files:
-        src_object_id = result['src_object_id']
-        request_object = Requests.objects.filter(id=src_object_id, directorApproval=-1).first()
-        if request_object:
-            element = {
-                'id': request_object.id,
-                'name': request_object.name,
-                'area': request_object.area,
-                'description': request_object.description,
-                'requestCreatedBy': request_object.requestCreatedBy
-            }
-            obj.append(element)
-
-    # Prepare and return the response with rejected requests
-    return Response({
-        "rejected_requests": obj,
-    }, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -720,82 +970,8 @@ def updateRejectedRequests(request):
         "holds_designations": holdsDesignations_data
     }, status=status.HTTP_200_OK)
 
-@api_view(['PATCH'])
-@permission_classes([IsAuthenticated])
-def handleUpdateRequests(request):
-    data = request.data
-    request_id = data.get("id", 0)
-    desg = data.get('role')
-    receiver_desg, receiver_user = data.get('designation').split('|')
 
-    Requests.objects.filter(id=request_id).update(
-        name=request.data.get('name'),
-        description=request.data.get('description'),
-        area=request.data.get('area'),
-        engineerProcessed=0,
-        directorApproval=0,
-        deanProcessed=0,
-        requestCreatedBy=request.user.username,
-        status="Pending",
-        issuedWorkOrder=0,
-        workCompleted=0,
-        billGenerated=0,
-        billProcessed=0,
-        billSettled=0
-    )
-    file_obj = File.objects.get(src_object_id=request_id, src_module="IWD")
-    if file_obj:
-        delete_file(file_obj.id)
-    create_file(
-        uploader=request.user.username,
-        uploader_designation=desg,
-        receiver=receiver_user,
-        receiver_designation=receiver_desg,
-        src_module="IWD",
-        src_object_id=str(request_id),
-        file_extra_JSON={"value": 2},
-        attached_file=None
-    )
 
-    receiver_user_obj = User.objects.get(username=receiver_user)
-    iwd_notif(request.user, receiver_user_obj, "Request_added")
-
-    return Response({"message": "Request updated successfully"}, status=status.HTTP_200_OK)
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def issueWorkOrder(request):
-    obj = []
-    params = request.query_params
-    desg = params.get('role')
-
-    # Retrieve inbox files
-    inbox_files = view_inbox(
-        username=request.user,
-        designation=desg,
-        src_module="IWD"
-    )
-
-    # Iterate over the inbox files and filter for relevant requests
-    for result in inbox_files:
-        src_object_id = result['src_object_id']
-        request_object = Requests.objects.filter(
-            id=src_object_id,
-            # directorApproval=1,
-            issuedWorkOrder=0
-        ).first()
-        if request_object and request_object.directorApproval==1:
-            element = {
-                "id": request_object.id,
-                "name": request_object.name,
-                "area": request_object.area,
-                "description": request_object.description,
-                "requestCreatedBy": request_object.requestCreatedBy
-            }
-            obj.append(element)
-
-    # Return a JSON response with the filtered requests
-    return Response({"requests": obj}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -825,54 +1001,7 @@ def fetchRequest(request):
     
     return Response(response_data, status=status.HTTP_200_OK)
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def workOrder(request):
-    # Retrieve data from request
-    request_id = request.data.get('request_id')
-    print(request_id)
-    request_instance = get_object_or_404(Requests, pk=request_id)
-    
-    # Use the serializer to validate and save the WorkOrder instance
-    serializer = WorkOrderFormSerializer(data=request.data)
-    print(serializer)
-    if serializer.is_valid():
-        # Create the WorkOrder instance with validated data
-        work_order = serializer.save(request_id=request_instance)
 
-        # Update the Requests instance
-        request_instance.status = "Work Order issued"
-        request_instance.issuedWorkOrder = 1
-        request_instance.save()
-
-        # # Fetch inbox files
-        # desg = request.session.get('currentDesignationSelected')  # Consider passing this in a different way for REST
-        # inbox_files = view_inbox(
-        #     username=request.user.username,
-        #     designation=desg,
-        #     src_module="IWD"
-        # )
-
-        # obj = []
-
-        # # Build the response object
-        # for result in inbox_files:
-        #     src_object_id = result['src_object_id']
-        #     request_object = Requests.objects.filter(id=src_object_id).first()
-        #     if request_object and request_object.issuedWorkOrder == 0:
-        #         element = {
-        #             "id": request_object.id,
-        #             "name": request_object.name,
-        #             "area": request_object.area,
-        #             "description": request_object.description,
-        #             "requestCreatedBy": request_object.requestCreatedBy
-        #         }
-        #         obj.append(element)
-
-        messages.success(request, "Work Order Issued")
-        return Response(status=status.HTTP_200_OK)
-    else:
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -881,24 +1010,7 @@ def requestsStatus(request):
     serializer = RequestsSerializer(requestsObject, many=True)
     return Response({'obj': serializer.data}, status=200)
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def requestsInProgress(request):
-    requestsObject = Requests.objects.filter(issuedWorkOrder=1, billGenerated=0)
-    serializer = RequestsInProgressSerializer(requestsObject, many=True)
-    return Response({'obj': serializer.data}, status=200)
 
-@api_view(['PATCH'])
-@permission_classes([IsAuthenticated])
-def work_completed(request):
-    request_id = request.data.get('id')
-    Requests.objects.filter(id=request_id).update(workCompleted=1, status="Work Completed")
-    return Response(
-        {
-            'message': 'Work Completed',
-        },
-        status=status.HTTP_200_OK
-    )
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -1192,44 +1304,5 @@ def handle_settle_bill_requests(request):
     
     return Response({'error': 'Request ID not provided'}, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def viewBudget(request):
-    budget_objects = Budget.objects.all()
-    obj = []
 
-    for x in budget_objects:
-        element = {
-            "id": x.id,
-            "name": x.name,
-            "budgetIssued": x.budgetIssued
-        }
-        obj.append(element)
-    
-    return Response({'obj': obj}, status=status.HTTP_200_OK)
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def addBudget(request):
-    name = request.data.get('name')
-    budget_issued = request.data.get('budget')
-
-    if name and budget_issued:
-        formObject = Budget(name=name, budgetIssued=budget_issued)
-        formObject.save()
-        return Response({'message': 'Budget added successfully.'}, status=status.HTTP_201_CREATED)
-    else:
-        return Response({'error': 'Name and budget are required.'}, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def editBudget(request):
-    budget_id = request.data.get('id')
-    budget_name = request.data.get('name')
-    budget_issued = request.data.get('budget')
-
-    if budget_id and budget_name and budget_issued:
-        Budget.objects.filter(id=budget_id).update(name=budget_name, budgetIssued=budget_issued)
-        return Response({'message': 'Budget updated successfully.'}, status=status.HTTP_200_OK)
-    else:
-        return Response({'error': 'ID, name, and budget are required.'}, status=status.HTTP_400_BAD_REQUEST)
