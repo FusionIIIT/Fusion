@@ -140,6 +140,7 @@ INSTALLED_APPS = [
     'applications.income_expenditure',
     'applications.hr2',
     'applications.department',
+    'applications.inventory',
     'applications.iwdModuleV2',
     'allauth',
     'allauth.account',
@@ -209,6 +210,17 @@ WSGI_APPLICATION = 'Fusion.wsgi.application'
 #         'NAME': os.path.join(PROJECT_DIR, 'fusion.db'),
 #     }
 # }
+
+DATABASES = {
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.postgresql',
+    #     'NAME': 'Inventory',
+    #     'USER': 'postgres',
+    #     'PASSWORD': 'asdfghjkl',
+    #     'HOST': 'localhost',  # or your database host
+    #     'PORT': '5432',       # default PostgreSQL port
+    # }
+}
 
 
 # Password validation
