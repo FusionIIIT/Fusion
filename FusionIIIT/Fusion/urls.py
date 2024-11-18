@@ -52,6 +52,7 @@ urlpatterns = [
     url(r'^finance/', include('applications.finance_accounts.urls')),
     url(r'^purchase-and-store/', include('applications.ps1.urls')),
     url(r'^gymkhana/', include('applications.gymkhana.urls')),
+    url(r'^inventory/', include('applications.inventory.urls')),
     url(r'^library/', include('applications.library.urls')),
     url(r'^establishment/', include('applications.establishment.urls')),
     url(r'^ocms/', include('applications.online_cms.urls')),

@@ -212,14 +212,14 @@ WSGI_APPLICATION = 'Fusion.wsgi.application'
 # }
 
 DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.postgresql',
-    #     'NAME': 'Inventory',
-    #     'USER': 'postgres',
-    #     'PASSWORD': 'asdfghjkl',
-    #     'HOST': 'localhost',  # or your database host
-    #     'PORT': '5432',       # default PostgreSQL port
-    # }
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'Inventory',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': 'localhost',  # or your database host
+        'PORT': '5432',       # default PostgreSQL port
+    }
 }
 
 
