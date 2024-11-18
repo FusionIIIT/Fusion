@@ -53,13 +53,13 @@ def create_request(request):
     '''
         to create a new request
     '''
-
     data = request.data
+    data['requestCreatedBy'] = request.user.username 
     serializer = RequestsSerializer(data=data, context={'request': request})
     
     if serializer.is_valid():
         formObject = serializer.save()
-        print(formObject)
+        print(formObject.requestCreatedBy)
         request_object = Requests.objects.get(pk=formObject.pk)
         receiver_desg, receiver_user = data.get('designation').split('|')
         try:
@@ -462,6 +462,36 @@ def edit_budget(request):
     else:
         return Response({'error': 'ID, name, and budget are required.'}, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def requests_status(request):
+
+    '''
+        this api will get status of all the requests in outbox of user
+    '''
+
+    params = request.query_params
+    desg = params.get('role')
+    outbox_files = view_outbox(username=request.user, designation=desg, src_module="IWD")
+    obj = []
+    for result in outbox_files:
+        src_object_id = result['src_object_id']
+        request_object = Requests.objects.filter(id=src_object_id).first()
+        file_obj = File.objects.get(src_object_id=src_object_id, src_module="IWD")
+        print(request_object)
+        if request_object:
+            element = {
+                'request_id': request_object.id,
+                'name': request_object.name,
+                'area': request_object.area,
+                'description': request_object.description,
+                'requestCreatedBy': request_object.requestCreatedBy,
+                'file_id': file_obj.id,
+                'processed_by_director': request_object.directorApproval,
+            }
+            obj.append(element)
+    return Response(obj, status=200)
+
 
 
 
@@ -842,11 +872,10 @@ def handleEngineerProcessRequests(request):
             }
             obj.append(element)
 
-    # Send a notification to the receiver
     receiver_user_obj = get_object_or_404(User, username=receiver_user)
     iwd_notif(request.user, receiver_user_obj, "file_forward")
 
-    # Return a success message and updated list of requests
+
     return Response({
         "message": "File forwarded successfully",
         "requests": obj
@@ -1005,7 +1034,7 @@ def fetchRequest(request):
     
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def requestsStatus(request):
+def getAllRequests(request):
     requestsObject = Requests.objects.all()
     serializer = RequestsSerializer(requestsObject, many=True)
     return Response({'obj': serializer.data}, status=200)

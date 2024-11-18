@@ -22,6 +22,7 @@ urlpatterns = [
     path('view-budget/', views.view_budget, name='viewBudget'),
     path('add-budget/', views.add_budget, name='addBudget'),
     path('edit-budget/', views.edit_budget, name='editBudget'),
+    path('requests-status/', views.requests_status, name='requestsStatus'),
     
     # partially integrated on frontend
 
@@ -29,7 +30,7 @@ urlpatterns = [
     path('handle-engineer-process-requests/', views.handleEngineerProcessRequests, name='handleEngineerProcessRequests'),
     path('handle-dean-process-requests/', views.handle_dean_process_requests, name='handleDeanProcessRequests'),
     path('update-rejected-requests/', views.updateRejectedRequests, name='updateRejectedRequests'),
-    path('requests-status/', views.requestsStatus, name='requestsStatus'),
+    path('get-all-requests/', views.getAllRequests, name='requestsStatus'),
     path('fetch-request/', views.fetchRequest, name='fetchRequest'),
     path('generate-final-bill/', views.generateFinalBill, name='generateFinalBill'),
     path('handle-bill-generated-requests/', views.handleBillGeneratedRequests, name='handleBillGeneratedRequests'),
