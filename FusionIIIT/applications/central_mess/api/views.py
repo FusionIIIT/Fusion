@@ -61,6 +61,29 @@ class FeedbackApi(APIView):
         feedback_request.save()
 
         return Response({'status':200})
+    
+    def delete(self, request):
+        data = request.data
+        student_id = data.get('student_id')
+        mess = data.get('mess')
+        feedback_type = data.get('feedback_type')
+        description = data.get('description')
+        fdate = data.get('fdate')
+
+        # Locate the feedback record
+        feedback_request = get_object_or_404(
+            Feedback,
+            student_id=student_id,
+            mess=mess,
+            feedback_type=feedback_type,
+            description=description,
+            fdate=fdate,
+        )
+        
+        # Delete the feedback record
+        feedback_request.delete()
+        
+        return Response({'status': 200, 'message': 'Feedback deleted successfully.'})
 
 
 class MessinfoApi(APIView):
@@ -126,6 +149,7 @@ class MessBillBaseApi(APIView):
 
 class Monthly_billApi(APIView):
     def get(self, request):
+        
         monthly_bill_obj = Monthly_bill.objects.all();
         serialized_obj = Monthly_billSerializer(monthly_bill_obj, many=True)
         return Response({'status':200, 'payload':serialized_obj.data})    
@@ -168,7 +192,11 @@ class Monthly_billApi(APIView):
 
 class PaymentsApi(APIView):
     def get(self, request):
+        username = get_object_or_404(User,username=request.user.username)
+        idd = ExtraInfo.objects.get(user=username)
+        student = Student.objects.get(id=idd.id)
         payments_obj = Payments.objects.all();
+        payments_obj = payments_obj.filter(student_id=student)
         serialized_obj = PaymentsSerializer(payments_obj, many=True)
         return Response({'status':200, 'payload':serialized_obj.data})   
 
@@ -201,6 +229,7 @@ class MenuApi(APIView):
 
     def post(self, request):
         data = request.data
+        print(data)
         
         mess_option = data['mess_option']
         meal_time = data['meal_time']
@@ -228,6 +257,12 @@ class RebateApi(APIView):
         end_date = data['end_date']
         purpose = data['purpose']
         status = data['status']
+        """
+            status:
+                '2' -> approved
+                '1' -> pending
+                '0' -> declined
+        """
         app_date = data['app_date']
         leave_type = data['leave_type']
 
