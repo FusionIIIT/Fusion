@@ -60,6 +60,14 @@ def is_superuser(user):
 
 
 # //! My change
+class GetIntenderId(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        print("hi")
+        return JsonResponse(
+                {"intender_id": request.user.id}, status=200
+        )
 
 
 @login_required
@@ -2424,12 +2432,11 @@ class AllGuestRoomBookingData(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        print(request.user)
         try:
             staff = request.user.extrainfo.id
         except AttributeError:
             staff = None
-        print(staff)
+        
         if staff is not None and HallCaretaker.objects.filter(staff_id=staff).exists():
             all_bookings = list(
                 GuestRoomBooking.objects.values(
@@ -2452,11 +2459,41 @@ class AllGuestRoomBookingData(APIView):
                     "room_type",
                 )
             )
+            # print(all_bookings)
             return JsonResponse(all_bookings, safe=False)
         else:
             return JsonResponse(
                 {"error": "You are not authorized to access this page."}, status=403
             )
+        
+class GetGuestRoomForStudents(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        all_bookings = list(
+            GuestRoomBooking.objects.values(
+                "id",
+                "guest_name",
+                "guest_phone",
+                "guest_email",
+                "guest_address",
+                "rooms_required",
+                "guest_room_id",
+                "total_guest",
+                "purpose",
+                "arrival_date",
+                "arrival_time",
+                "departure_date",
+                "departure_time",
+                "status",
+                "booking_date",
+                "nationality",
+                "room_type",
+            )
+        )
+        print(all_bookings)
+        return JsonResponse(all_bookings, safe=False)
 
 # @login_required
 # def update_guest_room(request):
