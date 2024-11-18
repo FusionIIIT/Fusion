@@ -35,7 +35,7 @@ urlpatterns = [
     url(r'directorgold_update/', DirectorGoldUpdateView.as_view(), name='director-gold-update'),
     url(r'proficiencydm_update/', ProficiencyDmUpdateView.as_view(), name='proficiency-dm-update'),
     url(r'proficiencydm_show/', ProficiencyDmRetrieveView.as_view(), name='proficiency-dm-update'),
-    path('award/', AwardAndScholarshipCreateView.as_view(), name='award-create'),  # URL for creating a new award
+    path('award/', AwardAndScholarshipCreateView.as_view(), name='award-create'),  # URL for convenor catalog
     
     path('scholarship-details/', ScholarshipDetailView.as_view(), name='scholarship-list'),
     path('director_gold_list/', DirectorGoldListView.as_view(), name='director_gold_list'),
@@ -43,7 +43,7 @@ urlpatterns = [
     url(r'student_file_show/', StudentDetailView.as_view(), name='student-file-show'),
     path('director_silver_show/', DirectorSilverDetailView.as_view(), name='director_silver_detail'),    
     path('director_gold_view/', DirectorGoldDetailView.as_view(), name='director_gold_detail'),
-    path('release', ReleaseCreateView.as_view(), name='release_create'),
+    path(r'release', ReleaseCreateView.as_view(), name='release_create'),
     
     url(r'student_file_show/', StudentDetailView.as_view(), name='student-file-show'),
     path('mcm/status-update/', McmStatusUpdateView.as_view(), name='mcm-status-update'),
