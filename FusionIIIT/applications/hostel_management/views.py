@@ -1386,25 +1386,27 @@ class PostComplaint(APIView):
 # // student can see his leave status
 
 
-class my_leaves(View):
-    @method_decorator(login_required, name="dispatch")
+class my_leaves(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
     def get(self, request, *args, **kwargs):
         try:
             # Get the user ID from the request's user
-            user_id = str(request.user)
+            user_id = str(request.user.extrainfo.id)
 
             # Retrieve leaves registered by the current student based on their roll number
-            my_leaves = HostelLeave.objects.filter(roll_num__iexact=user_id)
+            print(HostelLeave.objects.all().values("roll_num"), user_id.lower())
+            my_leaves = HostelLeave.objects.filter(roll_num=user_id.lower()).values( "student_name", "roll_num", "reason", "phone_number", "start_date", "end_date", "status", "remark" )
+            print(my_leaves)
             # Construct the context to pass to the template
-            context = {"leaves": my_leaves}
-
+            context = {"leaves": list(my_leaves)}
+            print(context)
             # Render the template with the context data
-            return render(request, "hostelmanagement/my_leaves.html", context)
+            return JsonResponse(context, status=200)
 
         except User.DoesNotExist:
             # Handle the case where the user with the given ID doesn't exist
-            return HttpResponse(f"User with ID {user_id} does not exist.")
-
+            return JsonResponse({"leaves": "na"}, status=403)
 
 class HallIdView(APIView):
     authentication_classes = []  # Allow public access for testing
