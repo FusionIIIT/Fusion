@@ -38,6 +38,7 @@ from datetime import time, date
 from .forms import GuestRoomBookingForm, HostelNoticeBoardForm, HallForm
 import xlrd
 import re
+import logging
 from django.template.loader import get_template
 from django.views.generic import View
 from django.contrib import messages
@@ -1119,29 +1120,51 @@ class CreateHostelLeave(APIView):
             )
     #here
 # hostel_complaints_list caretaker can see all hostel complaints
-
-
-@login_required
+@api_view(['GET'])
 def hostel_complaint_list(request):
-    user_id = request.user.id
-
+    """
+    Fetches and returns all data entries related to the logged-in student based on roll_number.
+    """
     try:
-        # Assuming the user's profile is stored in extrainfo
-        staff = request.user.extrainfo.id
-    except AttributeError:
-        staff = None
+        # Get the logged-in user's roll number
+        user_profile = request.user.extrainfo  # Assuming 'extrainfo' holds the user's profile data
+        roll_number = user_profile.id
+        print("hello")
+        # Fetching all the complaints for the logged-in student
+        complaints = HostelComplaint.objects.filter(roll_number=roll_number.lower()).values(
+            "id", "hall_name", "student_name", "roll_number", "description", "contact_number"
+        )
+        print(complaints)
+        # Return the complaints as a JSON response
+        return JsonResponse({"complaints": list(complaints)}, safe=False, status=200)
 
-    if staff is not None and HallCaretaker.objects.filter(staff_id=staff).exists():
-        complaints = HostelComplaint.objects.all()
-        return render(
-            request,
-            "hostelmanagement/hostel_complaint.html",
-            {"complaints": complaints},
-        )
-    else:
-        return HttpResponse(
-            '<script>alert("You are not authorized to access this page"); window.location.href = "/hostelmanagement/"</script>'
-        )
+    except Exception as e:
+        # Handle errors and send a failure response
+        return JsonResponse({"error": str(e)}, status=500)
+    
+class HostelComplaintListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """
+        Fetches and returns all hostel complaints related to the logged-in user's roll number.
+        """
+        try:
+            # Get the logged-in user's roll number
+            user_profile = request.user.extrainfo  # Assuming the user's profile is stored in 'extrainfo'
+            roll_number = user_profile.id
+
+            # Fetch all hostel complaints related to the logged-in user's roll number
+            complaints = HostelComplaint.objects.filter(roll_number=roll_number).values(
+                "id", "hall_name", "student_name", "roll_number", "description", "contact_number"
+            )
+            # Return the complaints as a JSON response
+            return JsonResponse({"complaints": list(complaints)}, safe=False, status=200)
+
+        except Exception as e:
+            # Log the exception and send an error response
+            print(f"Error: {str(e)}")
+            return JsonResponse({"error": str(e)}, status=500)
 
 class students_get_students_info(APIView):
     authentication_classes = [TokenAuthentication]
@@ -2621,35 +2644,36 @@ def hostel_fine_list(request):
     )
 
 
-@login_required
+@api_view(['GET'])
 def student_fine_details(request):
-    user_id = request.user.username
-    # print(user_id)
-    # staff=user_id.extrainfo.id
-
-    # Check if the user_id exists in the Student table
-    # if HallCaretaker.objects.filter(staff_id=staff).exists():
-    #     return HttpResponse('<script>alert("You are not authorized to access this page"); window.location.href = "/hostelmanagement/";</script>')
-
+    print("ok")
+    user_id = request.user.extrainfo.id
+    print(user_id)
+    # Check if user is authorized
     if not Student.objects.filter(id_id=user_id).exists():
-        return HttpResponse(
-            '<script>alert("You are not authorized to access this page"); window.location.href = "/hostelmanagement/";</script>'
-        )
+        return Response({"error": "Unauthorized access"}, status=403)
 
-    # # Check if the user_id exists in the HostelFine table
-    if not HostelFine.objects.filter(student_id=user_id).exists():
-        return HttpResponse(
-            '<script>alert("You have no fines recorded"); window.location.href = "/hostelmanagement/";</script>'
-        )
+    # Check if user has fines
+    if not HostelFine.objects.filter(student__id_id=user_id).exists():
+        return Response({"error": "No fines recorded"}, status=404)
 
-    # # Retrieve the fines associated with the current student
-    student_fines = HostelFine.objects.filter(student_id=user_id)
-
-    return render(
-        request,
-        "hostelmanagement/student_fine_details.html",
-        {"student_fines": student_fines},
-    )
+    # Retrieve fines
+    student_fines = HostelFine.objects.filter(student__id_id=user_id)
+    print(student_fines)
+    # print(student_fines)
+    fines_data = [
+        {
+            "fine_id": fine.fine_id,
+            "student_name": fine.student_name,
+            "hall": fine.hall.hall_id,  # Assuming Hall has a 'name' field
+            "amount": str(fine.amount),  # Convert Decimal to string for JSON serialization
+            "status": fine.status,
+            "reason": fine.reason,
+        }
+        for fine in student_fines
+    ]
+    print(fines_data)
+    return Response({"student_fines": fines_data}, status=200)
 
     # return JsonResponse({'message': 'Nice'}, status=status.HTTP_200_OK)
 

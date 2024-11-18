@@ -48,7 +48,7 @@ urlpatterns = [
     path("register_complaint/", views.PostComplaint.as_view(), name="PostComplaint"),
     #  Student can view his leave status
     path("my_leaves/", views.my_leaves.as_view(), name="my_leaves"),
-    
+    # path("hostel_complaints/", views.HostelComplaintListView.as_view(), name="HostelComplaintList"),
     path("students_get_students_info/", views.students_get_students_info.as_view(), name="students_get_students_info"),
     path("caretaker_get_students_info/", views.caretaker_get_students_info.as_view(), name="caretaker_get_students_info"),
     path("assign-batch/", views.AssignBatchView.as_view(), name="AssignBatchView"),
@@ -165,7 +165,7 @@ urlpatterns = [
         views.HostelFineUpdateView.as_view(),
         name="fine_delete",
     ),
-    path("fine/show/", views.student_fine_details, name="fine_show"),
+    path("fine-show/", views.student_fine_details, name="fine_show"),
     path("student/<str:username>/name/", views.get_student_name, name="find_name"),
     path(
         "edit-student/<str:student_id>/",
