@@ -74,6 +74,7 @@ class DepMainAPIView(APIView):
         user_info = ExtraInfo.objects.all().select_related('user', 'department').filter(user=usrnm).first()
         ann_maker_id = user_info.id
         user_info = ExtraInfo.objects.all().select_related('user', 'department').get(id=ann_maker_id)
+        department_name = user_info.department.name if user_info.department else "Unknown" 
 
         fac_view = user.holds_designations.filter(designation__name='faculty').exists()
         student = user.holds_designations.filter(designation__name='student').exists()
@@ -96,6 +97,7 @@ class DepMainAPIView(APIView):
 
         response_data = {
             "user_designation": user_designation,
+            "department": department_name,
             "announcements": context,
             "fac_list": context_f
         }
