@@ -55,6 +55,7 @@ def create_request(request):
     '''
     data = request.data
     data['requestCreatedBy'] = request.user.username 
+    data['requestCreatedBy'] = request.user.username 
     serializer = RequestsSerializer(data=data, context={'request': request})
     
     if serializer.is_valid():
@@ -461,36 +462,6 @@ def edit_budget(request):
         return Response({'message': 'Budget updated successfully.'}, status=status.HTTP_200_OK)
     else:
         return Response({'error': 'ID, name, and budget are required.'}, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def requests_status(request):
-
-    '''
-        this api will get status of all the requests in outbox of user
-    '''
-
-    params = request.query_params
-    desg = params.get('role')
-    outbox_files = view_outbox(username=request.user, designation=desg, src_module="IWD")
-    obj = []
-    for result in outbox_files:
-        src_object_id = result['src_object_id']
-        request_object = Requests.objects.filter(id=src_object_id).first()
-        file_obj = File.objects.get(src_object_id=src_object_id, src_module="IWD")
-        print(request_object)
-        if request_object:
-            element = {
-                'request_id': request_object.id,
-                'name': request_object.name,
-                'area': request_object.area,
-                'description': request_object.description,
-                'requestCreatedBy': request_object.requestCreatedBy,
-                'file_id': file_obj.id,
-                'processed_by_director': request_object.directorApproval,
-            }
-            obj.append(element)
-    return Response(obj, status=200)
 
 
 
