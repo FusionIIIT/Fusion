@@ -74,10 +74,10 @@
                 <i class="dropdown icon"></i>
                 <div class="default text">Select Item</div>
                 <div class="menu">
-                  {% for unique_batch_id in unique_batch_ids %}
+                  {% for unique_year_id in unique_year_ids %}
                   <div class="item" data-value="{{ unique_year_id.year }}">{{unique_year_id.year }}</div>
               {% empty %}
-                  <div class="item">No Batch</div>
+              <div class="item">Unique Batch IDs: {{ unique_batch_ids }}</div>
               {% endfor %}  
                 </div>
             </div>
@@ -97,11 +97,11 @@
       var selectedCourse = $('#course-dropdown .menu .item.active').attr('data-value');
       var selectedSemester = $('#semester-dropdown .menu .item.active').attr('data-value');
       var selectedYear = $('#year-dropdown .menu .item.active').attr('data-value');
-  
+   console.log('unique_year_id')
       // Check if both course and semester are selected
       if (selectedCourse && selectedSemester&&selectedYear) {
         // Redirect to the new page with parameters
-        window.location.href = `/examination/updateEntergrades?course=${selectedCourse}&semester=${selectedSemester}&batch=${selectedYear}`;
+        window.location.href = `/examination/updateEntergrades?course=${selectedCourse}&semester=${selectedSemester}&year=${selectedYear}`;
       } else {
         alert('Please select all course,semester and year.');
       }

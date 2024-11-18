@@ -4,6 +4,10 @@ from django.views.generic import View
 from django.http import HttpResponse
 import csv
 import json
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Font
+from openpyxl.utils import get_column_letter
+from io import BytesIO,StringIO
 from django.db.models import IntegerField
 from django.db.models.functions import Cast
 from django.db.models.query_utils import Q
@@ -56,7 +60,7 @@ from rest_framework.permissions import AllowAny
 from applications.online_cms.models import Student_grades
 from django.http import JsonResponse
 import csv
-from applications.programme_curriculum.models import Course as Courses, CourseInstructor
+from applications.programme_curriculum.models import Course as Courses, CourseInstructor,Discipline,Batch, CourseSlot
 from django.urls import reverse
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
@@ -510,29 +514,29 @@ def generate_transcript(request):
             # course_detail = Curriculum.objects.get(
             #     course_id=course.course_id, batch=grade.batch)
             course_instance = Courses.objects.get(id=course.course_id_id)
-            check_authentication_object = authentication.objects.filter(
-                course_id=course_instance, course_year=grade.year)
-            all_authenticators_true = True
+            # check_authentication_object = authentication.objects.filter(
+            #     course_id=course_instance, course_year=grade.year)
+            # all_authenticators_true = True
 
-            if check_authentication_object:
-                # Iterate over each authentication object
-                for auth_obj in check_authentication_object:
-                    # Check if all authenticators are true
-                    if not (auth_obj.authenticator_1 and auth_obj.authenticator_2 and auth_obj.authenticator_3):
-                        all_authenticators_true = False
-                        break  # No need to check further if any authenticator is False
-            else:
+            # if check_authentication_object:
+            #     # Iterate over each authentication object
+            #     for auth_obj in check_authentication_object:
+            #         # Check if all authenticators are true
+            #         if not (auth_obj.authenticator_1 and auth_obj.authenticator_2 and auth_obj.authenticator_3):
+            #             all_authenticators_true = False
+            #             break  # No need to check further if any authenticator is False
+            # else:
                 # Create authentication object if it doesn't exist
-                authentication_object = authentication.objects.create(
-                    course_id=course_instance, course_year=grade.year)
+                # authentication_object = authentication.objects.create(
+                #     course_id=course_instance, course_year=grade.year)
                 # Get all registrations for the course and year
-                registrations = authentication.objects.filter(
-                    course_id=course_instance, course_year=grade.year)
-                all_authenticators_true = False
+                # registrations = authentication.objects.filter(
+                #     course_id=course_instance, course_year=grade.year)
+                # all_authenticators_true = False
 
             course_grades[course_instance] = {
                 'grade': grade,
-                'all_authenticators_true': all_authenticators_true
+                # 'all_authenticators_true': all_authenticators_true
             }  # Store the grade
         except Student_grades.DoesNotExist:
             # Grade not available
@@ -600,8 +604,8 @@ def updateGrades(request):
         id__in=unique_course_ids.values_list("course_id_int", flat=True)
     )
 
-    unique_year_ids = Student_grades.objects.values("year").distinct()
-
+    unique_year_ids = Student_grades.objects.values('year').distinct()
+    # print(unique_year_ids)
     context = {
         "courses_info": courses_info,
         "unique_year_ids": unique_year_ids,
@@ -614,6 +618,7 @@ def updateEntergrades(request):
     course_id = request.GET.get("course")
     semester_id = request.GET.get("semester")
     year = request.GET.get("year")
+    # print(course_id,semester_id ,year)
     course_present = Student_grades.objects.filter(
         course_id=course_id, semester=semester_id, year=year
     )
@@ -900,8 +905,8 @@ def upload_grades(request):
                 {"error": message, "redirect_url": redirect_url}, status=400
             )
 
-        semester = students.first().semester_id_id
-
+        semester_id = students.first().semester_id_id
+        semester=Semester.objects.get(id=semester_id)
         try:
             # Parse the CSV file
             decoded_file = csv_file.read().decode("utf-8").splitlines()
@@ -1105,7 +1110,8 @@ def upload_grades_prof(request):
                 {"error": message, "redirect_url": redirect_url}, status=400
             )
 
-        semester = students.first().semester_id_id
+        semester_id = students.first().semester_id_id
+        semester=Semester.objects.get(id=semester_id)
 
         try:
             # Parse the CSV file
@@ -1245,7 +1251,8 @@ def validateDeanSubmit(request):
                 }
                 return render(request, "../templates/examination/messageDean.html", context)
                    
-            semester = students.first().semester_id_id
+            semester_id = students.first().semester_id_id
+            semester=Semester.objects.get(id=semester_id)
             mismatch=[]
             for row in reader:
                 roll_no = row["roll_no"]
@@ -1464,5 +1471,113 @@ def generate_pdf(request):
     doc.build(elements, onLaterPages=draw_signatures, onFirstPage=draw_signatures)
     return response
 
-     
-    
+
+
+
+
+def generate_result(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            semester = data.get('semester')
+            branch = data.get('specialization')
+            batch = data.get('batch')
+
+            branch_info = Discipline.objects.filter(acronym=branch).first()
+            if not branch_info:
+                return JsonResponse({'error': 'Branch not found'}, status=404)
+
+            curriculum_id = Batch.objects.filter(
+                year=batch, discipline_id=branch_info.id
+            ).values_list('curriculum_id', flat=True).first()
+            if not curriculum_id:
+                return JsonResponse({'error': 'Curriculum not found'}, status=404)
+
+            semester_info = Semester.objects.filter(
+                curriculum_id=curriculum_id, semester_no=semester
+            ).first()
+            if not semester_info:
+                return JsonResponse({'error': 'Semester not found'}, status=404)
+
+            course_slots = CourseSlot.objects.filter(semester_id=semester_info)
+            course_ids = course_slots.values_list('courses', flat=True)
+            courses = Courses.objects.filter(id__in=course_ids)
+
+            students = Student.objects.filter(batch=batch, specialization=branch).order_by('id')
+            print(students.first().id_id,"studejt id")
+      
+            wb = Workbook()
+            ws = wb.active
+            ws.title = "Student Grades"
+
+        
+            ws.merge_cells(start_row=1, start_column=1, end_row=2, end_column=1) 
+            ws.merge_cells(start_row=1, start_column=2, end_row=2, end_column=2) 
+            ws["A1"] = "S. No"
+            ws["B1"] = "Roll No"
+            for cell in ("A1", "B1"):
+                ws[cell].alignment = Alignment(horizontal="center", vertical="center")
+                ws[cell].font = Font(bold=True)
+
+      
+            ws.column_dimensions[get_column_letter(1)].width = 12  
+            ws.column_dimensions[get_column_letter(2)].width = 18 
+            col_idx = 3
+            for course in courses:
+           
+                ws.merge_cells(start_row=1, start_column=col_idx, end_row=1, end_column=col_idx + 1)
+                ws.cell(row=1, column=col_idx).value = course.code
+                ws.cell(row=1, column=col_idx).alignment = Alignment(horizontal="center", vertical="center")
+                ws.cell(row=1, column=col_idx).font = Font(bold=True)
+                ws.cell(row=2, column=col_idx).value = "Grade"
+                ws.cell(row=2, column=col_idx + 1).value = "Remarks"
+                col_idx += 2
+
+            ws.merge_cells(start_row=1, start_column=col_idx, end_row=2, end_column=col_idx)  # SPI
+            ws.cell(row=1, column=col_idx).value = "SPI"
+            ws.cell(row=1, column=col_idx).alignment = Alignment(horizontal="center", vertical="center")
+            ws.cell(row=1, column=col_idx).font = Font(bold=True)
+
+            ws.merge_cells(start_row=1, start_column=col_idx + 1, end_row=2, end_column=col_idx + 1)  # CPI
+            ws.cell(row=1, column=col_idx + 1).value = "CPI"
+            ws.cell(row=1, column=col_idx + 1).alignment = Alignment(horizontal="center", vertical="center")
+            ws.cell(row=1, column=col_idx + 1).font = Font(bold=True)
+
+         
+            row_idx = 3
+            for idx, student in enumerate(students, start=1):
+                ws.cell(row=row_idx, column=1).value = idx
+                ws.cell(row=row_idx, column=2).value = student.id_id
+
+                
+                student_grades = Student_grades.objects.filter(
+                    roll_no=student.id_id, course_id_id__in=course_ids
+                )
+
+                grades_map = {}
+                for grade in student_grades:
+                    grades_map[grade.course_id_id] = (grade.grade, grade.remarks)
+
+                col_idx = 3
+                for course in courses:
+                    grade, remark = grades_map.get(course.id, ("N/A", "N/A"))
+                    ws.cell(row=row_idx, column=col_idx).value = grade
+                    ws.cell(row=row_idx, column=col_idx + 1).value = remark
+                    col_idx += 2
+
+                ws.cell(row=row_idx, column=col_idx).value = 0
+                ws.cell(row=row_idx, column=col_idx + 1).value = 0
+
+                row_idx += 1
+
+            response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = 'attachment; filename="student_grades.xlsx"'
+            wb.save(response)
+            return response
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
