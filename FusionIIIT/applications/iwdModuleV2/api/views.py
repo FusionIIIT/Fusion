@@ -251,9 +251,7 @@ def rejected_requests(request):
             }
             obj.append(element)
 
-    return Response({
-        "rejected_requests": obj,
-    }, status=status.HTTP_200_OK)
+    return Response(obj, status=status.HTTP_200_OK)
 
 
 @api_view(['PATCH'])
@@ -339,7 +337,7 @@ def director_approved_requests(request):
             }
             obj.append(element)
 
-    return Response({"requests": obj}, status=status.HTTP_200_OK)
+    return Response(obj, status=status.HTTP_200_OK)
 
 
 
@@ -381,7 +379,7 @@ def requests_in_progress(request):
     
     requestsObject = Requests.objects.filter(issuedWorkOrder=1, billGenerated=0)
     serializer = RequestsInProgressSerializer(requestsObject, many=True)
-    return Response({'obj': serializer.data}, status=200)
+    return Response(serializer.data, status=200)
 
 
 
