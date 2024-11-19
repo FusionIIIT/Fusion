@@ -398,6 +398,197 @@ def view_all_extra_infos(request):
     return JsonResponse(extra_info_list, safe=False)
 
 # Main profile landing view
+@csrf_exempt
+def profile(request, username=None):
+
+    if request.method == 'POST':
+        print(request.POST.get('username'))
+        user = get_object_or_404(User, username=request.POST.get('username'))
+    else:
+        if username:
+            print("eis", username)
+        else:
+            user = get_object_or_404(User, username=request.GET.get('username'))
+
+    extra_info = get_object_or_404(ExtraInfo, user=user)
+
+    pf = extra_info.user_id
+    print("pf", pf)
+
+    # Forms and project management data
+    project_r = Project_Registration.objects.filter(PI_id=pf).order_by('PI_id__user')
+    project_ext = Project_Extension.objects.filter(project_id__PI_id=pf).order_by('project_id__PI_id__user')
+    project_closure = Project_Closure.objects.filter(project_id__PI_id=pf).order_by('project_id__PI_id__user')
+    project_reall = Project_Reallocation.objects.filter(project_id__PI_id=pf).order_by('project_id__PI_id__user')
+
+    # Research data
+    journal = emp_research_papers.objects.filter(pf_no=pf, rtype='Journal').order_by('-year')
+    print(pf, "journal", journal)
+    conference = emp_research_papers.objects.filter(pf_no=pf, rtype='Conference').order_by('-year')
+    books = emp_published_books.objects.filter(pf_no=pf).order_by('-pyear')
+    projects = emp_research_projects.objects.filter(pf_no=pf).order_by('-start_date')
+    consultancy = emp_consultancy_projects.objects.filter(pf_no=pf).order_by('-date_entry')
+    patents = emp_patents.objects.filter(pf_no=pf).order_by('-date_entry')
+    techtransfers = emp_techtransfer.objects.filter(pf_no=pf).order_by('-date_entry')
+    mtechs = emp_mtechphd_thesis.objects.filter(pf_no=pf, degree_type=1).order_by('-date_entry')
+    phds = emp_mtechphd_thesis.objects.filter(pf_no=pf, degree_type=2).order_by('-date_entry')
+    fvisits = emp_visits.objects.filter(pf_no=pf, v_type=2).order_by('-entry_date')
+    ivisits = emp_visits.objects.filter(pf_no=pf, v_type=1).order_by('-entry_date')
+    consymps = emp_confrence_organised.objects.filter(pf_no=pf).order_by('-date_entry')
+    awards = emp_achievement.objects.filter(pf_no=pf).order_by('-date_entry')
+    talks = emp_expert_lectures.objects.filter(pf_no=pf).order_by('-date_entry')
+    chairs = emp_session_chair.objects.filter(pf_no=pf).order_by('-date_entry')
+    keynotes = emp_keynote_address.objects.filter(pf_no=pf).order_by('-date_entry')
+    events = emp_event_organized.objects.filter(pf_no=pf).order_by('-start_date')
+
+    # Get year range
+    y = list(range(1995, datetime.datetime.now().year + 1))
+
+    # Personal information
+    try:
+        pers = get_object_or_404(faculty_about, user_id=pf)
+    except:
+        pers = None
+
+    # Designations
+    a1 = HoldsDesignation.objects.select_related('user', 'working', 'designation').filter(working=user)
+    flag_rspc = 0
+    for i in a1:
+        if str(i.designation) == 'Dean (RSPC)':
+            flag_rspc = 1
+
+    designations = [str(i.designation) for i in a1]
+
+    # Prepare data to be returned in JSON format
+    data = {
+        'user': {
+            'username': user.username,
+            'email': user.email,
+        },
+        'designations': designations,
+        'pf': pf,
+        'flag_rspc': flag_rspc,
+        'research': {
+            'journal': list(journal.values()),  # Convert queryset to list of dictionaries
+            'conference': list(conference.values()),
+            'books': list(books.values()),
+            'projects': list(projects.values()),
+            'consultancy': list(consultancy.values()),
+            'patents': list(patents.values()),
+            'techtransfers': list(techtransfers.values()),
+            'mtechs': list(mtechs.values()),
+            'phds': list(phds.values()),
+            'fvisits': list(fvisits.values()),
+            'ivisits': list(ivisits.values()),
+            'consymps': list(consymps.values()),
+            'awards': list(awards.values()),
+            'talks': list(talks.values()),
+            'chairs': list(chairs.values()),
+            'keynotes': list(keynotes.values()),
+            'events': list(events.values()),
+        },
+        'year_range': y,
+        'personal_info': {
+            'faculty_about': pers.about if pers else None,
+            'date_of_joining': pers.doj if pers else None,
+            'contact': pers.contact if pers else None,
+            'interest': pers.interest if pers else None,
+            'education': pers.education if pers else None,
+            'linkedin': pers.linkedin if pers else None,
+            'github': pers.github if pers else None
+        },
+        'projects': {
+            'registrations': list(project_r.values()),
+            'extensions': list(project_ext.values()),
+            'closures': list(project_closure.values()),
+            'reallocations': list(project_reall.values()),
+        },
+    }
+
+    # Return data as JSON response
+    return JsonResponse(data, safe=False)
+
+# Dean RSPC Profile
+@csrf_exempt
+def rspc_profile(request):
+    if request.method == 'POST':
+        user = get_object_or_404(faculty_about, user=request.user)
+        pf = user.user
+
+        form = ConfrenceForm()  # Form can be excluded if not needed in the frontend response
+
+        # Retrieve data for various research elements
+        journal = emp_research_papers.objects.filter(rtype='Journal').order_by('-year', '-a_month')
+        conference = emp_research_papers.objects.filter(rtype='Conference').order_by('-year', '-a_month')
+        books = emp_published_books.objects.all().order_by('-pyear', '-authors')
+        projects = emp_research_projects.objects.all().order_by('-start_date')
+        consultancy = emp_consultancy_projects.objects.all().order_by('-start_date')
+        patents = emp_patents.objects.all().order_by('-p_year', '-a_month')
+        techtransfers = emp_techtransfer.objects.all().order_by('-date_entry')
+        mtechs = emp_mtechphd_thesis.objects.filter(degree_type=1).order_by('-s_year', '-a_month')
+        phds = emp_mtechphd_thesis.objects.filter(degree_type=2).order_by('-s_year', '-a_month')
+        fvisits = emp_visits.objects.filter(v_type=2).order_by('-start_date')
+        ivisits = emp_visits.objects.filter(v_type=1).order_by('-start_date')
+
+        # Add countryfull to foreign visits
+        for fvisit in fvisits:
+            fvisit.countryfull = countries[fvisit.country]  # assuming `countries` is a valid dictionary
+
+        consymps = emp_confrence_organised.objects.all().order_by('-start_date')
+        awards = emp_achievement.objects.all().order_by('-a_year', '-a_month')
+        talks = emp_expert_lectures.objects.all().order_by('-l_year', '-a_month')
+        chairs = emp_session_chair.objects.all().order_by('-start_date')
+        keynotes = emp_keynote_address.objects.all().order_by('-start_date')
+        events = emp_event_organized.objects.all().order_by('-start_date')
+
+        # Get year range
+        y = list(range(1995, datetime.datetime.now().year + 1))
+
+        # Get personal info
+        pers = get_object_or_404(faculty_about, user=request.user)
+
+        # Designation
+        design = HoldsDesignation.objects.select_related('user', 'working', 'designation').filter(working=request.user)
+        desig = [str(i.designation) for i in design]
+
+        # Prepare data to be returned in JSON format
+        data = {
+            'user': {
+                'username': user.username,  # Assuming `user` has a `username` attribute
+                'email': user.email,        # Assuming `user` has an `email` attribute
+            },
+            'desig': desig,
+            'pf': pf,
+            'research': {
+                'journal': list(journal.values()),  # Converting QuerySets to a list of dictionaries
+                'conference': list(conference.values()),
+                'books': list(books.values()),
+                'projects': list(projects.values()),
+                'consultancy': list(consultancy.values()),
+                'patents': list(patents.values()),
+                'techtransfers': list(techtransfers.values()),
+                'mtechs': list(mtechs.values()),
+                'phds': list(phds.values()),
+                'fvisits': list(fvisits.values('country', 'countryfull', 'start_date')),  # Example fields
+                'ivisits': list(ivisits.values('country', 'start_date')),
+                'consymps': list(consymps.values()),
+                'awards': list(awards.values()),
+                'talks': list(talks.values()),
+                'chairs': list(chairs.values()),
+                'keynotes': list(keynotes.values()),
+                'events': list(events.values()),
+            },
+            'year_range': y,
+            'personal_info': {
+                'faculty_about': pers.details if pers else None  # Assuming `details` field exists
+            }
+        }
+
+        # Return data as JSON response
+        return JsonResponse(data, safe=False)
+    else:
+        return JsonResponse({"x" : "You are not authorized to hit this URL", "status" : 400})
+
 
 # View for editing persnal Information
 @csrf_exempt
