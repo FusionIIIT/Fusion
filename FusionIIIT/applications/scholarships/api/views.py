@@ -9,11 +9,13 @@ from applications.globals.models import (Designation, ExtraInfo,
 from rest_framework import viewsets
 from applications.scholarships.api.serializers import PreviousWinnerSerializer,AwardAndScholarshipSerializer,McmSerializer,NotionalPrizeSerializer,DirectorGoldSerializer,DirectorSilverSerializer,ProficiencyDmSerializer,ReleaseSerializer,McmStatusUpdateSerializer,DirectorSilverDecisionSerializer
 from django.shortcuts import get_object_or_404
+import datetime
 
 
 #This api is for invite application 
 class ReleaseCreateView(APIView):
     def post(self, request):
+
         serializer = ReleaseSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()  # Save the data to the database
@@ -99,6 +101,9 @@ class GetWinnersView(APIView):
 
 class McmUpdateView(APIView):
     def post(self, request):
+       
+        request.data['student']=request.user.username
+        request.data['date'] = datetime.date.today()
         serializer = McmSerializer(data=request.data)
         if serializer.is_valid():
             mcm_instance = serializer.save()
