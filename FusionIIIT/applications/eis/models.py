@@ -3,7 +3,8 @@ import datetime
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.db import models
-from applications.globals.models import ExtraInfo
+from applications.globals.models import ExtraInfo, Designation, DepartmentInfo, HoldsDesignation, Staff, Faculty, Feedback, Issue_image_directory, IssueImage, Issue, ModuleAccess
+from applications.office_module.models import Project_Registration, Project_Extension, Project_Closure, Project_Reallocation
 
 class emp_visits(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
