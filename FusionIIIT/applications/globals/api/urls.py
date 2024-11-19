@@ -1,4 +1,6 @@
 from django.conf.urls import url
+from django.urls import path
+from .views import department_info
 
 from . import views
 
@@ -21,4 +23,7 @@ urlpatterns = [
     url(r'^notificationdelete',views.delete_notification,name='notifications-delete'),
     url(r'^notificationunread',views.NotificationUnread,name='notifications-unread'),
     url(r'^search-users/', views.search_users, name='search_users'),
+    # url(r'^department-info/', views.department_info, name='department_info'),
+    path('department-info/', department_info, name='department-info'),
+
 ]
