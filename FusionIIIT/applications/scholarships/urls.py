@@ -42,5 +42,5 @@ urlpatterns = [
     url(r'student_file_show/', StudentDetailView.as_view(), name='student-file-show'),
     path('director_silver_show/', DirectorSilverDetailView.as_view(), name='director_silver_detail'),    
     path('director_gold_view/', DirectorGoldDetailView.as_view(), name='director_gold_detail'),
-    path('release', ReleaseCreateView.as_view(), name='release_create'),
+    path(r'release', ReleaseCreateView.as_view(), name='release_create'),
 ]
