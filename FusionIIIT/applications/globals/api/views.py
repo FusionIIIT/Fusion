@@ -391,3 +391,17 @@ def search_users(request):
         {'id': user['id'], 'text': user['user__username']} for user in users
     ]
     return JsonResponse({'results': results})
+
+@api_view(['GET'])  # Declare that this view handles GET requests
+@permission_classes([])  # No permissions required
+@authentication_classes([])  # No authentication required
+def department_info(request):
+    """
+    Retrieve department information and return as JSON.
+    """
+    try:
+        departments = DepartmentInfo.objects.all()  # Fetch all department objects
+        serializer = serializers.DepartmentInfoSerializer(departments, many=True)  # Serialize the data
+        return Response(serializer.data, status=status.HTTP_200_OK)  # Return serialized data as JSON
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
