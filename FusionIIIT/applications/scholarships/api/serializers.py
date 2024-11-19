@@ -4,6 +4,26 @@ from applications.globals.models import ExtraInfo
 from applications.scholarships.models import Award_and_scholarship,Previous_winner,Mcm,Director_silver,Director_gold,Notional_prize,Proficiency_dm,Release
 
 
+class McmStatusUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Mcm
+        fields = ['status']
+
+
+
+
+class DirectorSilverDecisionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Director_silver
+        fields = ['id', 'status']
+        
+    def validate_status(self, value):
+        if value not in ['ACCEPTED', 'REJECTED']:
+            raise serializers.ValidationError("Status must be either 'ACCEPTED' or 'REJECTED'.")
+        return value
+
+
+
 
 class ReleaseSerializer(serializers.ModelSerializer):
     class Meta:
