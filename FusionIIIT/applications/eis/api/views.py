@@ -793,9 +793,112 @@ def fvisit_insert(request):
 
         eis.save()
         return JsonResponse({'x' : 'Your data is saved '})
-
-
     
+@csrf_exempt
+def ivisit_insert(request):
+    user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
+    pf = user.user_id
+
+    # eis = emp_visits()
+
+    if (request.POST.get('ivisit_id')==None or request.POST.get('ivisit_id')==""):
+        eis = emp_visits()
+    else:
+        eis = get_object_or_404(emp_visits, id=request.POST.get('ivisit_id'))
+    
+    eis.pf_no = pf
+    eis.v_type = 1
+    eis.country = "India"
+    eis.place = request.POST.get('place')
+    eis.purpose = request.POST.get('purpose')
+    
+    x = request.POST.get('start_date')
+    x = x.split()
+    x = x[1:4]
+    x = ' '.join(x)
+
+    eis.start_date = datetime.datetime.strptime(x, "%b %d %Y")
+
+    x = request.POST.get('end_date')
+    x = x.split()
+    x = x[1:4]
+    x = ' '.join(x)
+
+    eis.end_date = datetime.datetime.strptime(x, "%b %d %Y")
+
+    eis.save()
+    return JsonResponse({'x' : 'Your data is saved '})
+
+
+#Function to save journal of employee
+@csrf_exempt
+def journal_insert(request):
+    if request.method=="POST":
+        user = get_object_or_404(faculty_about, user_id=request.POST['user_id'])
+        print(user.user_id)
+        eis = emp_research_papers.objects.create(pf_no = user.user_id)
+        eis.rtype = 'Journal'
+        eis.authors = request.POST.get('authors')
+        eis.title_paper = request.POST.get('title')
+        try:
+            myfile = request.FILES['journal']
+            fs = FileSystemStorage()
+            filename = fs.save(myfile.name, myfile)
+            uploaded_file_url = fs.url(filename)
+            eis.paper=uploaded_file_url
+        except:
+            eis.paper = None
+
+        eis.co_authors = request.POST.get('co_author')
+        eis.name = request.POST.get('name')
+        eis.doc_id = request.POST.get('doc_id')
+        eis.doc_description = request.POST.get('doc_description')
+        eis.status = request.POST.get('status')
+        eis.reference_number = request.POST.get('ref')
+        eis.is_sci = request.POST.get('sci')
+        volume_no = request.POST.get('volume')
+        page_no = request.POST.get('page')
+        year = request.POST.get('year')
+        if volume_no != '':
+            eis.volume_no=volume_no
+        if page_no != '':
+            eis.page_no=page_no
+        if year != '':
+            eis.year = year
+        if(request.POST.get('doi') != None and request.POST.get('doi') != '' and request.POST.get('doi') != 'None'):
+            try:
+                eis.doi = datetime.datetime.strptime(
+                    request.POST.get('doi'), "%B %d, %Y")
+            except:
+                try:
+                    eis.doi = datetime.datetime.strptime(
+                        request.POST.get('doi'), "%b. %d, %Y")
+                except:
+                    eis.doi = request.POST.get('doi')
+        if (request.POST.get('doa') != None and request.POST.get('doa') != '' and request.POST.get('doa') != 'None'):
+            try:
+                eis.date_acceptance = datetime.datetime.strptime(
+                    request.POST.get('doa'), "%B %d, %Y")
+            except:
+                eis.date_acceptance = datetime.datetime.strptime(
+                    request.POST.get('doa'), "%b. %d, %Y")
+        if (request.POST.get('dop') != None and request.POST.get('dop') != '' and request.POST.get('dop') != 'None'):
+            try:
+                eis.date_publication = datetime.datetime.strptime(
+                    request.POST.get('dop'), "%B %d, %Y")
+            except:
+                eis.date_publication = datetime.datetime.strptime(
+                    request.POST.get('dop'), "%b. %d, %Y")
+        if (request.POST.get('dos') != None and request.POST.get('dos') != '' and request.POST.get('dos') != 'None'):
+            try:
+                eis.date_submission = datetime.datetime.strptime(
+                    request.POST.get('dos'), "%B %d, %Y")
+            except:
+                eis.date_submission = datetime.datetime.strptime(
+                    request.POST.get('dos'), "%b. %d, %Y")
+        eis.save()
+        return JsonResponse({'x' : 'Your data is saved '})
+
 @csrf_exempt
 def editjournal(request):
     eis = emp_research_papers.objects.get(pk=request.POST.get('journalpk'))
@@ -899,6 +1002,230 @@ def editforeignvisit(request):
         eis.end_date = datetime.datetime.strptime(x, "%b. %d, %Y") if x else None
     eis.save()
     return JsonResponse({'x' : 'Your data is updated '})
+
+@csrf_exempt
+def editindianvisit(request):
+    eis = emp_visits.objects.get(pk=request.POST.get('indianvisitpk'))
+    eis.country = request.POST.get('country')
+    eis.place = request.POST.get('place')
+    eis.purpose = request.POST.get('purpose')
+    x = request.POST.get('start_date')
+    if x and x[:5] == "Sept." :
+            x = "Sep." + x[5:]
+    try:
+        eis.start_date = datetime.datetime.strptime(x, "%B %d, %Y") if x else None
+    except:
+        eis.start_date = datetime.datetime.strptime(x, "%b. %d, %Y") if x else None
+    x = request.POST.get('end_date')
+    if x and x[:5] == "Sept." :
+            x = "Sep." + x[5:]
+    try:
+        eis.end_date = datetime.datetime.strptime(x, "%B %d, %Y") if x else None
+    except:
+        eis.end_date = datetime.datetime.strptime(x, "%b. %d, %Y") if x else None
+    eis.save()
+    return JsonResponse({'success': True})
+
+
+@csrf_exempt
+def conference_insert(request):
+    if request.method == 'POST':
+        user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
+        pf = user.user_id
+        eis = emp_research_papers()
+        eis.pf_no = pf
+        eis.rtype = 'Conference'
+        eis.authors = request.POST.get('author')
+        eis.co_authors = request.POST.get('co_authors')
+        eis.title_paper = request.POST.get('title')
+        try:
+            myfile = request.FILES['journal']
+            fs = FileSystemStorage()
+            filename = fs.save(myfile.name, myfile)
+            uploaded_file_url = fs.url(filename)
+            eis.paper=uploaded_file_url
+        except:
+            logging.warning('Journal file not Uploaded')
+        eis.name = request.POST.get('name')
+        eis.venue = request.POST.get('venue')
+        if request.POST.get('page_no') != '':
+            eis.page_no = request.POST.get('page_no')
+        if request.POST.get('isbn_no') != '':
+            eis.isbn_no = request.POST.get('isbn_no')
+        if request.POST.get('year') != '':
+            eis.year = request.POST.get('year')
+        eis.status = request.POST.get('status')
+        if(request.POST.get('doi') != None and request.POST.get('doi') != '' and request.POST.get('doi') != 'None'):
+            x = request.POST.get('doi')
+            x = x.split()
+            x = x[1:4]
+            x = ' '.join(x)
+            eis.doi = datetime.datetime.strptime(x, "%b %d %Y")
+
+        if (request.POST.get('doa') != None and request.POST.get('doa') != '' and request.POST.get('doa') != 'None'):
+            x = request.POST.get('doa')
+            x = x.split()
+            x = x[1:4]
+            x = ' '.join(x)
+            eis.date_acceptance = datetime.datetime.strptime(x, "%b %d %Y")
+
+        if (request.POST.get('dop') != None and request.POST.get('dop') != '' and request.POST.get('dop') != 'None'):
+            x = request.POST.get('dop')
+            x = x.split()
+            x = x[1:4]
+            x = ' '.join(x)
+            eis.date_publication = datetime.datetime.strptime(x, "%b %d %Y")
+
+        if (request.POST.get('dos') != None and request.POST.get('dos') != '' and request.POST.get('dos') != 'None'):
+            x = request.POST.get('dos')
+            x = x.split()
+            x = x[1:4]
+            x = ' '.join(x)
+            eis.date_submission = datetime.datetime.strptime(x, "%b %d %Y")
+
+        eis.save()
+        return JsonResponse({'x' : 'Your data is saved '})
+
+@csrf_exempt
+def editconference(request):
+    eis = emp_research_papers.objects.get(pk=request.POST.get('conferencepk'))
+    eis.authors = request.POST.get('author')
+    eis.co_authors = request.POST.get('co_authors')
+    eis.title_paper = request.POST.get('title')
+    try:
+        myfile = request.FILES['journal']
+        fs = FileSystemStorage()
+        filename = fs.save(myfile.name, myfile)
+        uploaded_file_url = fs.url(filename)
+        eis.paper=uploaded_file_url
+    except:
+        logging.warning('Journal File not Uploaded.')
+
+    eis.name = request.POST.get('name')
+    eis.venue = request.POST.get('venue')
+    isbn  = request.POST.get('isbn_no')
+
+    eis.page_no = request.POST.get('page_no')
+
+    eis.year = request.POST.get('year')
+    eis.status = request.POST.get('status')
+    if(request.POST.get('doi') != None and request.POST.get('doi') != '' and request.POST.get('doi') != 'None'):
+        x = request.POST.get('doi')
+        if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
+        try:
+            eis.doi = datetime.datetime.strptime(
+                x, "%B %d, %Y")
+        except:
+            try:
+                eis.doi = datetime.datetime.strptime(
+                    x, "%b. %d, %Y")
+            except:
+                eis.doi = x
+    if (request.POST.get('doa') != None and request.POST.get('doa') != '' and request.POST.get('doa') != 'None'):
+        x = request.POST.get('doa')
+        if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
+        try:
+            eis.date_acceptance = datetime.datetime.strptime(
+                x, "%B %d, %Y")
+        except:
+            eis.date_acceptance = datetime.datetime.strptime(
+                x, "%b. %d, %Y")
+
+    if (request.POST.get('dop') != None and request.POST.get('dop') != '' and request.POST.get('dop') != 'None'):
+        x = request.POST.get('dop')
+        if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
+        try:
+            eis.date_publication = datetime.datetime.strptime(
+                x, "%B %d, %Y")
+        except:
+            eis.date_publication = datetime.datetime.strptime(
+                x, "%b. %d, %Y")
+    if (request.POST.get('dos') != None and request.POST.get('dos') != '' and request.POST.get('dos') != 'None'):
+        x = request.POST.get('dos')
+        if x[-10:] == ', midnight':
+            x = x[0:-10]
+        if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
+        try:
+            eis.date_submission = datetime.datetime.strptime(
+                x, "%B %d, %Y")
+        except:
+            eis.date_submission = datetime.datetime.strptime(
+                x, "%b. %d, %Y")
+    eis.save()
+    return JsonResponse({'success': True})
+
+
+@csrf_exempt
+def book_insert(request):
+    print(request.POST)
+    user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
+    pf = user.user_id
+    print(pf)
+    eis = emp_published_books()
+    eis.pf_no = pf
+    eis.p_type = request.POST.get('book_p_type')
+    eis.title = request.POST.get('book_title')
+    eis.publisher = request.POST.get('book_publisher')
+    eis.pyear = request.POST.get('book_year')
+    eis.authors = request.POST.get('book_author')
+    eis.save()
+    return JsonResponse({'x' : 'Your data is saved '})
+
+
+@csrf_exempt
+def editbooks(request):
+    eis = emp_published_books.objects.get(pk=request.POST.get('bookspk'))
+    eis.p_type = request.POST.get('book_p_type')
+    eis.title = request.POST.get('book_title')
+    eis.publisher = request.POST.get('book_publisher')
+    eis.pyear = request.POST.get('book_year')
+    eis.authors = request.POST.get('book_author')
+    eis.save()
+    return JsonResponse({'x' : 'Your data is updated '})
+
+@csrf_exempt
+def consym_insert(request):
+    user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
+    pf = user.user_id
+    eis = emp_confrence_organised()
+    eis.pf_no = pf
+    eis.name = request.POST.get('conference_name')
+    eis.venue = request.POST.get('conference_venue')
+    eis.role1 = request.POST.get('conference_role')
+    if(eis.role1 == 'Any Other'):
+        eis.role2 = request.POST.get('conference_organised')
+    if(eis.role1 == 'Organised'):
+        if(request.POST.get('conference_organised') == 'Any Other'):
+            eis.role2 = request.POST.get('myDIV1')
+        else:
+            eis.role2 = request.POST.get('conference_organised')
+    if (eis.role1 == "" or eis.role1==None):
+        eis.role1 = "Any Other"
+        eis.role2 = "Any Other"
+
+    x = request.POST.get('conference_start_date')
+    x = x.split()
+    x = x[1:4]
+    x = ' '.join(x)
+
+    print(x)
+
+    eis.start_date = datetime.datetime.strptime(x, "%b %d %Y")
+
+    x = request.POST.get('conference_end_date')
+    x = x.split()
+    x = x[1:4]
+    x = ' '.join(x)
+    print(x)
+
+    eis.end_date = datetime.datetime.strptime(x, "%b %d %Y")
+
+    eis.save()
+    return JsonResponse({ "success": True})
 
 
 @csrf_exempt
