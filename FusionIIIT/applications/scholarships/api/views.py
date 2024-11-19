@@ -3,13 +3,15 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
 from applications.scholarships.models import Previous_winner, Award_and_scholarship,Mcm,Director_gold,Notional_prize,Director_silver,Proficiency_dm,Release
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 from applications.academic_information.models import Spi, Student
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation)
 from rest_framework import viewsets
-from applications.scholarships.api.serializers import PreviousWinnerSerializer,AwardAndScholarshipSerializer,McmSerializer,NotionalPrizeSerializer,DirectorGoldSerializer,DirectorSilverSerializer,ProficiencyDmSerializer,ReleaseSerializer,McmStatusUpdateSerializer,DirectorSilverDecisionSerializer
+from applications.scholarships.api.serializers import PreviousWinnerSerializer,AwardAndScholarshipSerializer,McmSerializer,NotionalPrizeSerializer,DirectorGoldSerializer,DirectorSilverSerializer,ProficiencyDmSerializer,ReleaseSerializer
 from django.shortcuts import get_object_or_404
-
 
 #This api is for invite application 
 class ReleaseCreateView(APIView):
@@ -37,10 +39,9 @@ class AwardAndScholarshipCreateView(APIView):
 
         if serializer.is_valid():
             serializer.save()
-            status_code = status.HTTP_200_OK if pk is not None else status.HTTP_201_CREATED
-            return Response(serializer.data, status=status_code)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)  # 201 Created response
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)  # 400 Bad Request if data is invalid
+
 
 
 
@@ -270,6 +271,49 @@ class DirectorGoldDetailView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+
+class GetReleaseByAwardView(APIView):
+
+    def post(self, request, *args, **kwargs):
+        # Get the award name from the request
+        award_name = request.data.get('award')
+
+        # Check if the award variable is provided
+        if not award_name:
+            return Response(
+                {'result': 'Failure', 'error': 'Award is a required field'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Fetch records from the Release table where the award matches
+        releases = Release.objects.filter(award=award_name)
+
+        # Check if any records were found
+        if releases.exists():
+            # Build the response data
+            data = []
+            for release in releases:
+                data.append({
+                    'id': release.id,
+                    'date_time': release.date_time,
+                    'programme': release.programme,
+                    'startdate': release.startdate,
+                    'enddate': release.enddate,
+                    'award': release.award,
+                    'remarks': release.remarks,
+                    'batch': release.batch,
+                    'notif_visible': release.notif_visible,
+                })
+
+            return Response({'result': 'Success', 'data': data}, status=status.HTTP_200_OK)
+
+        # If no records found
+        return Response(
+            {'result': 'Failure', 'error': 'No releases found for the specified award'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+
 #This api for MCM status that is accept, reject and under review
 
 class McmStatusUpdateView(APIView):
@@ -387,3 +431,45 @@ class DirectorSilverListView(APIView):
 #         # Return the updated entry as a response
 #         serializer = DirectorSilverSerializer(director_silver)
 #         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class GetReleaseByAwardView(APIView):
+
+    def post(self, request, *args, **kwargs):
+        # Get the award name from the request
+        award_name = request.data.get('award')
+
+        # Check if the award variable is provided
+        if not award_name:
+            return Response(
+                {'result': 'Failure', 'error': 'Award is a required field'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Fetch records from the Release table where the award matches
+        releases = Release.objects.filter(award=award_name)
+
+        # Check if any records were found
+        if releases.exists():
+            # Build the response data
+            data = []
+            for release in releases:
+                data.append({
+                    'id': release.id,
+                    'date_time': release.date_time,
+                    'programme': release.programme,
+                    'startdate': release.startdate,
+                    'enddate': release.enddate,
+                    'award': release.award,
+                    'remarks': release.remarks,
+                    'batch': release.batch,
+                    'notif_visible': release.notif_visible,
+                })
+
+            return Response({'result': 'Success', 'data': data}, status=status.HTTP_200_OK)
+
+        # If no records found
+        return Response(
+            {'result': 'Failure', 'error': 'No releases found for the specified award'},
+            status=status.HTTP_404_NOT_FOUND
+        )
