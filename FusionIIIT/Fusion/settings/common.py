@@ -50,12 +50,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 
 # email of sender
 
-<<<<<<< HEAD
-EMAIL_HOST_USER = 'fusionmailservice@iiitdmj.ac.in'
-# EMAIL_HOST_PASSWORD  = 'password'
-=======
 EMAIL_HOST_USER = 'fusion@iiitdmj.ac.in'
->>>>>>> dashboard_client
 
 EMAIL_PORT = 587
 ACCOUNT_EMAIL_REQUIRED = True
