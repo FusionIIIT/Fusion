@@ -270,6 +270,8 @@ def create_proposal(request):
                     financial_approval=financial_approval,
                     purchased =purchased,
                 )
+                # print(request.user.id)
+                # print("her"+receiver_id)
 
                 office_module_notif(request.user, receiver_id)
                 messages.success(request,'Indent Filed Successfully!')
