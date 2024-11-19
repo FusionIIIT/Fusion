@@ -146,6 +146,7 @@ class DirectorSilverRetrieveView(APIView):
 
 
 class DirectorSilverUpdateView(APIView):
+    
     def post(self, request):
         serializer = DirectorSilverSerializer(data=request.data)
         if serializer.is_valid():
