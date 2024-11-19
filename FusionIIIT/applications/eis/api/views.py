@@ -104,7 +104,7 @@ from django.views import generic
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from xhtml2pdf import pisa
 
-from . import admin
+from .. import admin
 from django.http import JsonResponse
 from django.core.serializers import serialize
 from ..forms import *
@@ -897,6 +897,87 @@ def journal_insert(request):
                     request.POST.get('dos'), "%b. %d, %Y")
         eis.save()
         return JsonResponse({'x' : 'Your data is saved '})
+    
+@csrf_exempt
+def editjournal(request):
+    eis = emp_research_papers.objects.get(pk=request.POST.get('journalpk'))
+    eis.authors = request.POST.get('authors')
+    eis.title_paper = request.POST.get('title')
+    try:
+        myfile = request.FILES['journal']
+        fs = FileSystemStorage()
+        filename = fs.save(myfile.name, myfile)
+        uploaded_file_url = fs.url(filename)
+        eis.paper=uploaded_file_url
+    except:
+        logging.warning('No New Journal Found for Update, Older one will be kept.')
+    eis.co_authors = request.POST.get('co_author')
+    eis.name = request.POST.get('name')
+    eis.doc_id = request.POST.get('doc_id')
+    eis.doc_description = request.POST.get('doc_description')
+    eis.status = request.POST.get('status')
+    eis.reference_number = request.POST.get('ref')
+    eis.is_sci = request.POST.get('sci')
+    volume_no = request.POST.get('volume')
+    eis.page_no = request.POST.get('page')
+    eis.year = request.POST.get('year')
+
+    if(request.POST.get('doi') != None and request.POST.get('doi') != '' and request.POST.get('doi') != 'None'):
+        x = request.POST.get('doi')
+
+
+
+        if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
+        try:
+            eis.doi = datetime.datetime.strptime(
+                x, "%B %d, %Y")
+        except:
+            try:
+                eis.doi = datetime.datetime.strptime(
+                    x, "%b. %d, %Y")
+            except:
+                eis.doi = x
+    if (request.POST.get('doa') != None and request.POST.get('doa') != '' and request.POST.get('doa') != 'None'):
+        x = request.POST.get('doa')
+        if x[:-10] == ', midnight':
+            x = x[0:-10]
+
+        if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
+        try:
+            eis.date_acceptance = datetime.datetime.strptime(
+                x, "%B %d, %Y")
+        except:
+            eis.date_acceptance = datetime.datetime.strptime(
+                x, "%b. %d, %Y")
+
+    if (request.POST.get('dop') != None and request.POST.get('dop') != '' and request.POST.get('dop') != 'None'):
+        x = request.POST.get('dop')
+        if x[:-10] == ', midnight':
+            x = x[0:-10]
+        if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
+        try:
+            eis.date_publication = datetime.datetime.strptime(
+                x, "%B %d, %Y")
+        except:
+            eis.date_publication = datetime.datetime.strptime(
+                x, "%b. %d, %Y")
+    if (request.POST.get('dos') != None and request.POST.get('dos') != '' and request.POST.get('dos') != 'None'):
+        x = request.POST.get('dos')
+        if x[-10:] == ', midnight':
+            x = x[0:-10]
+        if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
+        try:
+            eis.date_submission = datetime.datetime.strptime(
+                x, "%B %d, %Y")
+        except:
+            eis.date_submission = datetime.datetime.strptime(
+                x, "%b. %d, %Y")
+    eis.save()
+    return JsonResponse({'x' : 'Your data is updated '})
     
 @csrf_exempt
 def editforeignvisit(request):
