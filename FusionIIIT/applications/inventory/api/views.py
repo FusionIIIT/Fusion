@@ -33,3 +33,19 @@ class DepartmentInfoViewSet(viewsets.ModelViewSet):
 class SectionInfoViewSet(viewsets.ModelViewSet):
     queryset = SectionInfo.objects.all()
     serializer_class = SectionInfoSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['section_name']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        section = self.request.query_params.get('section', None)
+        
+        if section:
+            # Case-insensitive filtering
+            queryset = queryset.filter(section_name__iexact=section)
+        else:
+            # Return an empty queryset if no department is provided
+            queryset = queryset.none()
+
+        return queryset
