@@ -162,7 +162,7 @@ class NoOfTechnicalBidTimes(models.Model):
 
 class Requests(models.Model):
     name = models.CharField(max_length=200)
-    description = models.CharField(max_length=200)
+    description = models.CharField(max_length=1000)
     area = models.CharField(max_length=200)
     requestCreatedBy = models.CharField(max_length=200)
     engineerProcessed = models.IntegerField(default=0)
@@ -176,7 +176,6 @@ class Requests(models.Model):
     billSettled = models.IntegerField(default=0)
 
 class WorkOrder(models.Model):
-    # request_id = models.IntegerField()
     request_id = models.ForeignKey(Requests, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
     date = models.DateField(default=date.today)
@@ -188,9 +187,11 @@ class WorkOrder(models.Model):
     completion_date = models.DateField()
     
 class Bills(models.Model):
-    # requestId = models.IntegerField()
     request_id = models.ForeignKey(Requests, on_delete=models.CASCADE)
     file = models.FileField()
+    # item = models.CharField(max_length=200)
+    # quantity = models.IntegerField(default=1)
+
 
 class Budget(models.Model):
     name = models.CharField(max_length=200)

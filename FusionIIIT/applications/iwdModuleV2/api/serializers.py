@@ -41,7 +41,7 @@ class HoldsDesignationSerializer(serializers.ModelSerializer):
         model = HoldsDesignation
         fields = ['id', 'designation', 'username']
 
-class RequestsSerializer(serializers.ModelSerializer):
+class CreateRequestsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Requests
         fields = ['id', 'name', 'area', 'description', 'requestCreatedBy']
@@ -58,24 +58,21 @@ class RequestsSerializer(serializers.ModelSerializer):
         validated_data['billSettled'] = 0
         return super().create(validated_data)
     
+class DirectorApprovedRequestsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Requests
+        fields = ['id', 'name', 'area', 'description', 'requestCreatedBy']
+
+class WorkUnderProgressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Requests
+        fields = ['id', 'name', 'area', 'description', 'requestCreatedBy', 'issuedWorkOrder', 'workCompleted']
+
+
 class RequestsInProgressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Requests
-        fields = ['id', 'name', 'area', 'description', 'requestCreatedBy', 'workCompleted']
-
-    def create(self, validated_data):
-        validated_data['engineerProcessed'] = 0
-        validated_data['directorApproval'] = 0
-        validated_data['deanProcessed'] = 0
-        validated_data['status'] = "Pending"
-        validated_data['issuedWorkOrder'] = 0
-        validated_data['workCompleted'] = 0
-        validated_data['billGenerated'] = 0
-        validated_data['billProcessed'] = 0
-        validated_data['billSettled'] = 0
-        return super().create(validated_data)
-    
-
+        fields = ['id', 'name', 'area', 'description', 'requestCreatedBy', 'issuedWorkOrder', 'workCompleted']
 
 class PageOneDetailsSerializer(serializers.ModelSerializer):
     class Meta:
