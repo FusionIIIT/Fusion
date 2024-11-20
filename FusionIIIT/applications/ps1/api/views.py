@@ -19,6 +19,8 @@ from django.http import HttpResponse
 import ast
 from datetime import datetime
 from django.shortcuts import redirect
+from notification.views import office_module_notif
+from django.contrib import messages
 
 dept_admin_to_dept = {
     "deptadmin_cse": "CSE",
@@ -131,7 +133,10 @@ def forwardIndent(request, id):
                     remarks=remarks,
                     file_attachment=upload_file
                 )
-        
+        # print("request user ", request.user)
+        # print("receiver_id " , receiver_id)
+        # print("type " ,type(receiver_id))
+        office_module_notif(request.user, receiver_id)
         if((sender_designation_name in ["HOD (CSE)", "HOD (ECE)", "HOD (ME)", "HOD (SM)", "HOD (Design)", "HOD (Liberal Arts)", "HOD (Natural Science)"]) and (str(receive_design) in ["Director","Registrar"])):
             indent.head_approval=True
         elif ((sender_designation_name in ["Director","Registrar"]) and (str(receive_design) in ["Professor"]) and indent.purchased==True):
@@ -351,6 +356,11 @@ def createProposal(request):
                 financial_approval=financial_approval,
                 purchased=purchased,
             )
+            receiver_id = User.objects.get(username=username)
+            print(type(receiver_id))
+            office_module_notif(request.user, receiver_id)
+            # messages.success(request,'Indent Filed Successfully!')
+
             if sender_designation_name == "Professor" and str(receiver_designation) == "ps_admin":
                 indent_file.purchased = True
 
@@ -639,7 +649,11 @@ def ForwardIndentFile(request, id):
             remarks=remarks,
             file_attachment=upload_file
         )
-
+        # receiver_id = User.objects.get(username=username)
+        print("request user ", request.user)
+        print("receiver_id " , receiver_id)
+        print("type " ,type(receiver_id))
+        office_module_notif(request.user, receiver_id)
         # Updating indent approvals if necessary
         if (str(receive_design) in dept_admin_design):
                         indent.head_approval=True
