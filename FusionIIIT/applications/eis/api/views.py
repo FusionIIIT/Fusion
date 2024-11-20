@@ -404,18 +404,16 @@ def view_all_extra_infos(request):
 def profile(request, username=None):
 
     if request.method == 'POST':
-        print(request.POST.get('username'))
         user = get_object_or_404(User, username=request.POST.get('username'))
     else:
         if username:
-            print("eis", username)
+            pass
         else:
             user = get_object_or_404(User, username=request.GET.get('username'))
 
     extra_info = get_object_or_404(ExtraInfo, user=user)
 
     pf = extra_info.user_id
-    print("pf", pf)
 
     # Forms and project management data
     project_r = Project_Registration.objects.filter(PI_id=pf).order_by('PI_id__user')
@@ -939,7 +937,6 @@ def ivisit_insert(request):
 def journal_insert(request):
     if request.method=="POST":
         user = get_object_or_404(faculty_about, user_id=request.POST['user_id'])
-        print(user.user_id)
         eis = emp_research_papers.objects.create(pf_no = user.user_id)
         eis.rtype = 'Journal'
         eis.authors = request.POST.get('authors')
