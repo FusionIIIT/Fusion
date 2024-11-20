@@ -43,6 +43,8 @@ urlpatterns = [
     re_path(r'^conference/edit$', views.editconference, name='editconference'),
     re_path(r'^books/edit$', views.editbooks, name='editbooks'),
 
+    re_path(r'^update_personal_info/$', views.update_personal_info, name='update_personal_info'),
+
     # # insert
     re_path(r'^pg/$', views.pg_insert, name='pg_insert'),
     re_path(r'^phd/$', views.phd_insert, name='phd_insert'),
@@ -79,6 +81,7 @@ urlpatterns = [
     re_path(r'^ivisits/pf_no/$', views.get_ivisits, name='ivisits_by_pf_no'),
     re_path(r'^consym/pf_no/$', views.get_consym, name='consym_by_pf_no'),
     re_path(r'^fetch_book/$', views.get_books, name="get_books_of_prof"),
+    re_path(r'^fetch_journal/$', views.get_journals, name="get_journals_of_prof"),
     re_path(r'^fetch_conference/$', views.get_conference, name="get_conference_of_prof"),
     re_path(r'^award/pf_no/$', views.get_achievements, name="get_achievements_of_prof"),
     re_path(r'^talk/pf_no/$', views.get_talks, name="get_talks_of_prof"),
