@@ -372,7 +372,33 @@ def index(request):
     return HttpResponse("Hello, world. You're at the FPF index.")
 
 def view_all_extra_infos(request):
+    
     # Retrieve all ExtraInfo objects
+    """
+    View to retrieve all ExtraInfo objects, and return them as a JSON response.
+
+    The response will contain a list of dictionaries, each containing the following
+    information about an ExtraInfo object:
+
+    - id: The ID of the ExtraInfo object
+    - user: The username of the User object associated with the ExtraInfo
+    - title: The title of the ExtraInfo object
+    - sex: The sex of the ExtraInfo object
+    - date_of_birth: The date of birth of the ExtraInfo object as a string
+    - user_status: The status of the ExtraInfo object
+    - address: The address of the ExtraInfo object
+    - phone_no: The phone number of the ExtraInfo object
+    - user_type: The type of the ExtraInfo object
+    - department: The name of the DepartmentInfo object associated with the ExtraInfo
+    - profile_picture: The URL of the profile picture of the ExtraInfo object
+    - about_me: The about me of the ExtraInfo object
+    - date_modified: The date modified of the ExtraInfo object as a string
+    - age: The age of the ExtraInfo object
+
+    The response will be a JSON object with a single key, 'extra_info_list', which
+    contains the list of dictionaries.
+    """
+
     extra_infos = ExtraInfo.objects.all()
 
     # Serialize the queryset into a list of dictionaries
@@ -403,6 +429,21 @@ def view_all_extra_infos(request):
 @csrf_exempt
 def profile(request, username=None):
 
+    """
+    Main profile landing view that retrieves and returns detailed information
+    about a faculty member based on their username. The information includes
+    personal data, research activities, project management records, and designation
+    details.
+
+    Args:
+        request (HttpRequest): The request object.
+        username (str, optional): The username of the faculty member. Defaults to None.
+
+    Returns:
+        JsonResponse: A JSON response containing user information, research data, 
+        project details, personal information, and designations.
+    """
+    
     if request.method == 'POST':
         user = get_object_or_404(User, username=request.POST.get('username'))
     else:
@@ -509,6 +550,16 @@ def profile(request, username=None):
 
 @csrf_exempt
 def generate_report(request, username=None):
+
+    """Generate a PDF report for a given faculty member based on their research data and personal information.
+
+    Args:
+        request (HttpRequest): The request object.
+        username (str): The username of the faculty member.
+
+    Returns:
+        HttpResponse: The PDF report as a response."""
+    
     if request.method == 'POST':
         user = get_object_or_404(User, username=request.POST.get('username'))
     else:
@@ -624,6 +675,78 @@ def generate_report(request, username=None):
 # Dean RSPC Profile
 @csrf_exempt
 def rspc_profile(request):
+    """
+    Return a JSON response with the research data and personal information of the
+    Dean RSPC profile.
+
+    The research data includes the following elements:
+
+    - Journal and conference papers
+    - Books
+    - Projects
+    - Consultancy projects
+    - Patents
+    - Technology transfers
+    - M.Tech and Ph.D theses supervised
+    - Foreign and Indian visits
+    - Conferences organized
+    - Awards received
+    - Talks given
+    - Sessions chaired
+    - Keynote addresses given
+    - Events organized
+
+    The personal information includes the following:
+
+    - Faculty about
+    - Date of joining
+    - Contact information
+    - Interests
+    - Education
+    - LinkedIn profile
+    - GitHub profile
+
+    The year range is also included in the response.
+
+    The response is sent as a JSON object with the following keys:
+
+    - user: a dictionary with the username and email of the user
+    - desig: a list of strings representing the designations of the user
+    - pf: the pf number of the user
+    - research: a dictionary with the research data
+    - year_range: a list of integers representing the year range
+    - personal_info: a dictionary with the personal information of the user
+
+    The research data is organized as follows:
+
+    - Journal and conference papers are organized by year and month
+    - Books are organized by year and authors
+    - Projects are organized by start date
+    - Consultancy projects are organized by start date
+    - Patents are organized by year and month
+    - Technology transfers are organized by date entry
+    - M.Tech and Ph.D theses are organized by year and month
+    - Foreign and Indian visits are organized by start date
+    - Conferences organized are organized by start date
+    - Awards are organized by year and month
+    - Talks are organized by year and month
+    - Sessions chaired are organized by start date
+    - Keynote addresses are organized by start date
+    - Events organized are organized by start date
+
+    The personal information is organized as follows:
+
+    - Faculty about is a string
+    - Date of joining is a date
+    - Contact information is a string
+    - Interests is a string
+    - Education is a string
+    - LinkedIn profile is a string
+    - GitHub profile is a string
+
+    The year range is a list of integers representing the year range.
+    """
+    
     if request.method == 'POST':
         user = get_object_or_404(faculty_about, user=request.user)
         pf = user.user
@@ -703,6 +826,21 @@ def rspc_profile(request):
 # View for editing persnal Information
 @csrf_exempt
 def persinfo(request):
+    """
+    Update the personal information of a faculty member.
+
+    This view handles POST requests to update various fields of the faculty
+    member's profile, including contact information, about section, interests,
+    education, and social media links.
+
+    Args:
+        request (HttpRequest): The request object containing user data.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success or failure of the 
+        update operation. A successful update returns a message confirming the 
+        data update, while an unauthorized attempt returns an error message.
+    """
     if request.method == 'POST':
         try:
             faculty = get_object_or_404(faculty_about, user_id = request.POST.get('user_id'))
@@ -726,6 +864,22 @@ def persinfo(request):
 # Views for deleting the EIS fields
 @csrf_exempt
 def achievementDelete(request):
+    """
+    Delete an achievement entry from the database.
+
+    This view handles POST requests to delete a specific achievement
+    identified by its primary key ('pk') sent in the request data.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key
+        of the achievement to be deleted.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success or failure of
+        the delete operation. If successful, returns a success message. If the
+        achievement is not found, returns an error message. If the request
+        method is not POST, returns an invalid request method error.
+    """
     if request.method == 'POST':
         try:
             instance = emp_achievement.objects.get(pk=request.POST['pk'])
@@ -738,83 +892,322 @@ def achievementDelete(request):
 
 @csrf_exempt
 def emp_confrence_organisedDelete(request):
+    """
+    Delete an emp_confrence_organised entry from the database.
+
+    This view handles POST requests to delete a specific
+    emp_confrence_organised identified by its primary key ('pk') sent in
+    the request data.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key
+        of the emp_confrence_organised to be deleted.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the delete
+        operation. If successful, returns a success message. If the
+        emp_confrence_organised is not found, returns an error message. If the
+        request method is not POST, returns an invalid request method error.
+    """
     instance = emp_confrence_organised.objects.get(pk=request.POST['pk'])
     instance.delete()
     return JsonResponse({'success': True})
 
 @csrf_exempt
 def emp_consymDelete(request):
+    """
+    Delete an emp_consym entry from the database.
+
+    This view handles POST requests to delete a specific
+    emp_consym identified by its primary key ('pk') sent in
+    the request data.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key
+        of the emp_consym to be deleted.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the delete
+        operation. If successful, returns a success message. If the
+        emp_consym is not found, returns an error message. If the
+        request method is not POST, returns an invalid request method error.
+    """
     instance = emp_confrence_organised.objects.get(pk=request.POST['pk'])
     instance.delete()
     return JsonResponse({'success': True})
 
 @csrf_exempt
 def emp_consultancy_projectsDelete(request):
+    """
+    Delete an emp_consultancy_projects entry from the database.
+
+    This view handles POST requests to delete a specific
+    emp_consultancy_projects identified by its primary key ('pk') sent in
+    the request data.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key
+        of the emp_consultancy_projects to be deleted.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the delete
+        operation. If successful, returns a success message. If the
+        emp_consultancy_projects is not found, returns an error message. If the
+        request method is not POST, returns an invalid request method error.
+    """
     instance = emp_consultancy_projects.objects.get(pk=request.POST['pk'])
     instance.delete()
     return JsonResponse({'success': True})
 
 @csrf_exempt
 def emp_event_organizedDelete(request):
+    """
+    Delete an emp_event_organized entry from the database.
+
+    This view handles POST requests to delete a specific
+    emp_event_organized identified by its primary key ('pk') sent in
+    the request data.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key
+        of the emp_event_organized to be deleted.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the delete
+        operation. If successful, returns a success message. If the
+        emp_event_organized is not found, returns an error message. If the
+        request method is not POST, returns an invalid request method error.
+    """
     instance = emp_event_organized.objects.get(pk=request.POST['pk'])
     instance.delete()
     return JsonResponse({'success': True})
 
 @csrf_exempt
 def emp_expert_lecturesDelete(request):
+    """
+    Delete an emp_expert_lectures entry from the database.
+
+    This view handles POST requests to delete a specific
+    emp_expert_lectures identified by its primary key ('pk') sent in
+    the request data.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key
+        of the emp_expert_lectures to be deleted.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the delete
+        operation. If successful, returns a success message. If the
+        emp_expert_lectures is not found, returns an error message. If the
+        request method is not POST, returns an invalid request method error.
+    """
     instance = emp_expert_lectures.objects.get(pk=request.POST['pk'])
     instance.delete()
     return JsonResponse({'success': True})
 
 @csrf_exempt
 def emp_keynote_addressDelete(request):
+    """
+    Delete an emp_keynote_address entry from the database.
+
+    This view handles POST requests to delete a specific
+    emp_keynote_address identified by its primary key ('pk') sent in
+    the request data.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key
+        of the emp_keynote_address to be deleted.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the delete
+        operation. If successful, returns a success message. If the
+        emp_keynote_address is not found, returns an error message. If the
+        request method is not POST, returns an invalid request method error.
+    """
     instance = emp_keynote_address.objects.get(pk=request.POST['pk'])
     instance.delete()
     return JsonResponse({'success': True})
 
 @csrf_exempt
 def emp_mtechphd_thesisDelete(request):
+    """
+    Delete an emp_mtechphd_thesis entry from the database.
+
+    This view handles POST requests to delete a specific
+    emp_mtechphd_thesis identified by its primary key ('pk') sent in
+    the request data.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key
+        of the emp_mtechphd_thesis to be deleted.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the delete
+        operation. If successful, returns a success message. If the
+        emp_mtechphd_thesis is not found, returns an error message. If the
+        request method is not POST, returns an invalid request method error.
+    """
     instance = emp_mtechphd_thesis.objects.get(pk=request.POST['pk'])
     instance.delete()
     return JsonResponse({'success': True})
 
 @csrf_exempt
 def emp_patentsDelete(request):
+    """
+    Delete an emp_patents entry from the database.
+
+    This view handles POST requests to delete a specific
+    emp_patents identified by its primary key ('pk') sent in
+    the request data.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key
+        of the emp_patents to be deleted.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the delete
+        operation. If successful, returns a success message. If the
+        emp_patents is not found, returns an error message. If the
+        request method is not POST, returns an invalid request method error.
+    """
     instance = emp_patents.objects.get(pk=request.POST['pk'])
     instance.delete()
     return JsonResponse({'success': True})
 
 @csrf_exempt
 def emp_published_booksDelete(request):
+    """
+    Delete an emp_published_books entry from the database.
+
+    This view handles POST requests to delete a specific
+    emp_published_books identified by its primary key ('pk') sent in
+    the request data.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key
+        of the emp_published_books to be deleted.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the delete
+        operation. If successful, returns a success message. If the
+        emp_published_books is not found, returns an error message. If the
+        request method is not POST, returns an invalid request method error.
+    """
     instance = emp_published_books.objects.get(pk=request.POST['pk'])
     instance.delete()
     return JsonResponse({'success': True})
+
 @csrf_exempt
 def emp_research_papersDelete(request):
+    """
+    Delete an emp_research_papers entry from the database.
+
+    This view handles POST requests to delete a specific
+    emp_research_papers identified by its primary key ('pk') sent in
+    the request data.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key
+        of the emp_research_papers to be deleted.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the delete
+        operation. If successful, returns a success message. If the
+        emp_research_papers is not found, returns an error message. If the
+        request method is not POST, returns an invalid request method error.
+    """
     instance = emp_research_papers.objects.get(pk=request.POST['pk'])
     instance.delete()
     return JsonResponse({'success': True})
 
 @csrf_exempt
 def emp_research_projectsDelete(request):
+    """
+    Delete an emp_research_projects entry from the database.
+
+    This view handles POST requests to delete a specific
+    emp_research_projects identified by its primary key ('pk') sent in
+    the request data.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key
+        of the emp_research_projects to be deleted.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the delete
+        operation. If successful, returns a success message. If the
+        emp_research_projects is not found, returns an error message. If the
+        request method is not POST, returns an invalid request method error.
+    """
     instance = emp_research_projects.objects.get(pk=request.POST['pk'])
     instance.delete()
     return JsonResponse({'success': True})
 
 @csrf_exempt
 def emp_session_chairDelete(request):
+    """
+    Delete an emp_session_chair entry from the database.
+
+    This view handles POST requests to delete a specific
+    emp_session_chair identified by its primary key ('pk') sent in
+    the request data.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key
+        of the emp_session_chair to be deleted.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the delete
+        operation. If successful, returns a success message. If the
+        emp_session_chair is not found, returns an error message. If the
+        request method is not POST, returns an invalid request method error.
+    """
     instance = emp_session_chair.objects.get(pk=request.POST['pk'])
     instance.delete()
     return JsonResponse({'success': True})
 
 @csrf_exempt
 def emp_techtransferDelete(request):
+    """
+    Delete an emp_techtransfer entry from the database.
+
+    This view handles POST requests to delete a specific
+    emp_techtransfer identified by its primary key ('pk') sent in
+    the request data.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key
+        of the emp_techtransfer to be deleted.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the delete
+        operation. If successful, returns a success message. If the
+        emp_techtransfer is not found, returns an error message. If the
+        request method is not POST, returns an invalid request method error.
+    """
     instance = emp_techtransfer.objects.get(pk=request.POST['pk'])
     instance.delete()
     return JsonResponse({'success': True})
 
 @csrf_exempt
 def emp_visitsDelete(request):
+    """
+    Delete an emp_visits entry from the database.
+
+    This view handles POST requests to delete a specific
+    emp_visits identified by its primary key ('pk') sent in
+    the request data.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key
+        of the emp_visits to be deleted.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the delete
+        operation. If successful, returns a success message. If the
+        emp_visits is not found, returns an error message. If the
+        request method is not POST, returns an invalid request method error.
+    """
     instance = emp_visits.objects.get(pk=request.POST['pk'])
     instance.delete()
     return JsonResponse({'success': True})
@@ -823,6 +1216,29 @@ def emp_visitsDelete(request):
 # Views for inserting fields in EIS
 @csrf_exempt
 def pg_insert(request):
+    """
+    Insert a new or update an existing Post Graduate student entry in the emp_mtechphd_thesis table.
+
+    This view handles POST requests to insert a new or update an existing
+    Post Graduate student entry in the emp_mtechphd_thesis table. The
+    request data should contain the primary key ('user_id') of the faculty
+    about, the primary key ('pg_id') of the emp_mtechphd_thesis entry to be
+    updated, the title of the thesis, the starting year, the month of
+    completion, the supervisors, the roll number and the name of the student.
+
+    If the 'pg_id' is not provided, a new emp_mtechphd_thesis entry is
+    created. Otherwise, the existing entry is updated.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key
+        of the faculty about and the details of the Post Graduate student entry
+        to be inserted or updated.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the insert or
+        update operation. If successful, returns a success message. If the
+        request method is not POST, returns an invalid request method error.
+    """
     user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
     pf = user.user_id
 
@@ -844,6 +1260,30 @@ def pg_insert(request):
 
 @csrf_exempt
 def phd_insert(request):
+    """
+    Insert a new or update an existing PhD student entry in the emp_mtechphd_thesis table.
+
+    This view handles POST requests to insert a new or update an existing
+    PhD student entry in the emp_mtechphd_thesis table. The request data
+    should contain the primary key ('user_id') of the faculty about, the
+    primary key ('phd_id') of the emp_mtechphd_thesis entry to be updated,
+    the title of the thesis, the starting year, the month of completion,
+    the supervisors, the roll number, and the name of the student.
+
+    If the 'phd_id' is not provided, a new emp_mtechphd_thesis entry is
+    created. Otherwise, the existing entry is updated. The 'degree_type' is
+    set to 2 for PhD entries.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key
+        of the faculty about and the details of the PhD student entry to be
+        inserted or updated.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the insert or
+        update operation. If successful, returns a success message. If the
+        request method is not POST, returns an invalid request method error.
+    """
     user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
     pf = user.user_id
 
@@ -866,6 +1306,30 @@ def phd_insert(request):
 
 @csrf_exempt
 def fvisit_insert(request):
+    """
+    Insert a new or update an existing foreign visit entry in the emp_visits table.
+
+    This view handles POST requests to insert a new or update an existing
+    foreign visit entry in the emp_visits table. The request data
+    should contain the primary key ('user_id') of the faculty about, the
+    primary key ('fvisit_id') of the emp_visits entry to be updated, the
+    country of visit, the place of visit, the purpose of visit, the
+    start date and end date of visit.
+
+    If the 'fvisit_id' is not provided, a new emp_visits entry is
+    created. Otherwise, the existing entry is updated. The 'v_type' is
+    set to 2 for foreign visit entries.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key
+        of the faculty about and the details of the foreign visit entry to be
+        inserted or updated.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the insert or
+        update operation. If successful, returns a success message. If the
+        request method is not POST, returns an invalid request method error.
+    """
     if request.method=='POST':
         user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
         pf = user.user_id
@@ -896,10 +1360,19 @@ def fvisit_insert(request):
         eis.end_date = datetime.datetime.strptime(x, "%b %d %Y")
 
         eis.save()
-        return JsonResponse({'x' : 'Your data is saved '})
+        return JsonResponse({'message' : 'Your data is saved '})
 
 @csrf_exempt
 def ivisit_insert(request):
+    """
+    API endpoint to insert or update a research data entry of type 'International Visit' in the database.
+
+    Parameters:
+        request (HttpRequest): The POST request containing the data to be inserted or updated.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the insert or update operation. If successful, returns a success message. If the request method is not POST, returns an invalid request method error.
+    """
     user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
     pf = user.user_id
 
@@ -929,12 +1402,21 @@ def ivisit_insert(request):
     eis.end_date = datetime.datetime.strptime(x, "%b %d %Y")
 
     eis.save()
-    return JsonResponse({'x' : 'Your data is saved '})
+    return JsonResponse({'message' : 'Your data is saved '})
 
 
 #Function to save journal of employee
 @csrf_exempt
 def journal_insert(request):
+    """
+    This function is used to create a journal for an employee.
+
+    @param:
+        request (HttpRequest): The POST request containing the data to be inserted or updated.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the insert or update operation. If successful, returns a success message. If the request method is not POST, returns an invalid request method error.
+    """
     if request.method=="POST":
         user = get_object_or_404(faculty_about, user_id=request.POST['user_id'])
         eis = emp_research_papers.objects.create(pf_no = user.user_id)
@@ -998,10 +1480,23 @@ def journal_insert(request):
                 eis.date_submission = datetime.datetime.strptime(
                     request.POST.get('dos'), "%b. %d, %Y")
         eis.save()
-        return JsonResponse({'x' : 'Your data is saved '})
+        return JsonResponse({'message' : 'Your data is saved '})
     
 @csrf_exempt
 def editjournal(request):
+    """
+    Update the details of an existing journal entry in the database with the provided data.
+
+    The function retrieves a specific journal entry based on a primary key passed in the request,
+    updates its fields with the new data from the request, and saves the changes to the database.
+    If a new journal file is uploaded, it is saved and its URL is updated in the entry.
+
+    Args:
+        request (HttpRequest): The request object containing POST data with journal details and files.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the update operation.
+    """
     eis = emp_research_papers.objects.get(pk=request.POST.get('journalpk'))
     eis.authors = request.POST.get('authors')
     eis.title_paper = request.POST.get('title')
@@ -1079,10 +1574,33 @@ def editjournal(request):
             eis.date_submission = datetime.datetime.strptime(
                 x, "%b. %d, %Y")
     eis.save()
-    return JsonResponse({'x' : 'Your data is updated '})
+    return JsonResponse({'message' : 'Your data is updated '})
     
 @csrf_exempt
 def editforeignvisit(request):
+    """
+    Edit a foreign visit entry in the emp_visits table.
+
+    This view handles POST requests to edit a foreign visit entry in the
+    emp_visits table. The request data should contain the primary key
+    ('foreignvisitpk') of the emp_visits entry to be updated, the
+    country of visit, the place of visit, the purpose of visit, the
+    start date and end date of visit.
+
+    If the 'foreignvisitpk' is not provided, a new emp_visits entry is
+    created. Otherwise, the existing entry is updated. The 'v_type' is
+    set to 2 for foreign visit entries.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key
+        of the faculty about and the details of the foreign visit entry to be
+        inserted or updated.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the insert or
+        update operation. If successful, returns a success message. If the
+        request method is not POST, returns an invalid request method error.
+    """
     eis = emp_visits.objects.get(pk=request.POST.get('foreignvisitpk'))
     eis.country = request.POST.get('country')
     eis.place = request.POST.get('place')
@@ -1102,10 +1620,33 @@ def editforeignvisit(request):
     except:
         eis.end_date = datetime.datetime.strptime(x, "%b. %d, %Y") if x else None
     eis.save()
-    return JsonResponse({'x' : 'Your data is updated '})
+    return JsonResponse({'message' : 'Your data is updated '})
 
 @csrf_exempt
 def editindianvisit(request):
+    """
+    Edit an Indian visit entry in the emp_visits table.
+
+    This view handles POST requests to edit an Indian visit entry in the
+    emp_visits table. The request data should contain the primary key
+    ('indianvisitpk') of the emp_visits entry to be updated, the
+    country of visit, the place of visit, the purpose of visit, the
+    start date and end date of visit.
+
+    If the 'indianvisitpk' is not provided, a new emp_visits entry is
+    created. Otherwise, the existing entry is updated. The 'v_type' is
+    set to 1 for Indian visit entries.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key
+        of the faculty about and the details of the Indian visit entry to be
+        inserted or updated.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the insert or
+        update operation. If successful, returns a success message. If the
+        request method is not POST, returns an invalid request method error.
+    """
     eis = emp_visits.objects.get(pk=request.POST.get('indianvisitpk'))
     eis.country = request.POST.get('country')
     eis.place = request.POST.get('place')
@@ -1130,6 +1671,28 @@ def editindianvisit(request):
 
 @csrf_exempt
 def conference_insert(request):
+    """
+    Insert a conference paper entry in the emp_research_papers table.
+
+    This view handles POST requests to insert a conference paper entry in the
+    emp_research_papers table. The request data should contain the primary key
+    ('user_id') of the faculty about, the authors, the co-authors, the title of
+    the paper, the journal name, the venue, the page number, the isbn number,
+    the year, the status, the date of acceptance, the date of publication, and
+    the date of submission.
+
+    The 'rtype' is set to 'Conference' for conference paper entries.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key of
+        the faculty about and the details of the conference paper entry to be
+        inserted.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the insert
+        operation. If successful, returns a success message. If the request
+        method is not POST, returns an invalid request method error.
+    """
     if request.method == 'POST':
         user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
         pf = user.user_id
@@ -1185,10 +1748,19 @@ def conference_insert(request):
             eis.date_submission = datetime.datetime.strptime(x, "%b %d %Y")
 
         eis.save()
-        return JsonResponse({'x' : 'Your data is saved '})
+        return JsonResponse({'message' : 'Your data is saved '})
 
 @csrf_exempt
 def editconference(request):
+    """
+    This function is used to update a conference for an employee.
+
+    @param:
+        request (HttpRequest): The POST request containing the data to be updated.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the update operation. If successful, returns a success message. If the request method is not POST, returns an invalid request method error.
+    """
     eis = emp_research_papers.objects.get(pk=request.POST.get('conferencepk'))
     eis.authors = request.POST.get('author')
     eis.co_authors = request.POST.get('co_authors')
@@ -1262,6 +1834,19 @@ def editconference(request):
 
 @csrf_exempt
 def book_insert(request):
+    """
+    Insert a book entry in the emp_published_books table.
+
+    This view handles POST requests to insert a book entry in the
+    emp_published_books table. The request data should contain the primary key
+    ('user_id') of the faculty about, the type of publication, the title of
+    the publication, the publisher of the publication, the year of publication,
+    and the authors of the publication.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the insert
+        operation. If successful, returns a success message.
+    """
     user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
     pf = user.user_id
     eis = emp_published_books()
@@ -1272,11 +1857,24 @@ def book_insert(request):
     eis.pyear = request.POST.get('book_year')
     eis.authors = request.POST.get('book_author')
     eis.save()
-    return JsonResponse({'x' : 'Your data is saved '})
+    return JsonResponse({'message' : 'Your data is saved '})
 
 
 @csrf_exempt
 def editbooks(request):
+    """
+    Edit a book entry in the emp_published_books table.
+
+    This view handles POST requests to edit a book entry in the
+    emp_published_books table. The request data should contain the primary key
+    ('pk') of the book entry, the type of publication, the title of the
+    publication, the publisher of the publication, the year of publication,
+    and the authors of the publication.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the edit
+        operation. If successful, returns a success message.
+    """
     eis = emp_published_books.objects.get(pk=request.POST.get('bookspk'))
     eis.p_type = request.POST.get('book_p_type')
     eis.title = request.POST.get('book_title')
@@ -1284,10 +1882,29 @@ def editbooks(request):
     eis.pyear = request.POST.get('book_year')
     eis.authors = request.POST.get('book_author')
     eis.save()
-    return JsonResponse({'x' : 'Your data is updated '})
+    return JsonResponse({'message' : 'Your data is updated '})
 
 @csrf_exempt
 def consym_insert(request):
+    """
+    Insert a new conference entry in the emp_confrence_organised table.
+
+    This view handles POST requests to insert a new conference entry. The request
+    data should include the primary key ('user_id') of the faculty about, the
+    conference name, venue, role, and the start and end dates of the conference.
+
+    The 'role1' is set based on the provided conference role and can be further
+    specified with 'role2' if applicable.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key
+        of the faculty about and the details of the conference entry to be
+        inserted.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the insert
+        operation. If successful, returns a success message.
+    """
     user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
     pf = user.user_id
     eis = emp_confrence_organised()
@@ -1325,6 +1942,16 @@ def consym_insert(request):
 
 @csrf_exempt
 def editconsym(request):
+    """
+    Edit a conference organised entry for a faculty member.
+
+    Args:
+        request (HttpRequest): The request object.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the edit
+        operation. If successful, returns a success message.
+    """
     eis = emp_confrence_organised.objects.get(pk=request.POST.get('conferencepk2'))
     eis.name = request.POST.get('conference_name')
     eis.venue = request.POST.get('conference_venue')
@@ -1359,6 +1986,17 @@ def editconsym(request):
 
 @csrf_exempt
 def event_insert(request):
+    """
+    Insert a new event organized entry for a faculty member.
+
+    Args:
+        request (HttpRequest): The request object.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the insert
+        operation. If successful, returns a success message.
+    """
+    
     user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
     pf = user.user_id
     eis = emp_event_organized()
@@ -1388,10 +2026,21 @@ def event_insert(request):
     eis.end_date = datetime.datetime.strptime(x, "%b %d %Y")
 
     eis.save()
-    return JsonResponse({'x' : 'Your data is saved '})
+    return JsonResponse({'message' : 'Your data is saved '})
 
 @csrf_exempt
 def editevent(request):
+    """
+    Edit an event organized entry for a faculty member.
+
+    Args:
+        request (HttpRequest): The request object.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the edit
+        operation. If successful, returns a success message.
+    """
+    
     eis = emp_event_organized.objects.get(pk=request.POST.get('eventpk'))
 
     eis.type = request.POST.get('event_type')
@@ -1420,6 +2069,27 @@ def editevent(request):
 
 @csrf_exempt
 def award_insert(request):
+    """
+    Insert or update an award entry in the emp_achievement table.
+
+    This view handles POST requests to insert a new or update an existing
+    award entry in the emp_achievement table. The request data should
+    contain the primary key ('user_id') of the faculty about, the award type,
+    and other optional details such as the day, month, and year of the award.
+
+    If the 'ach_id' is not provided, a new emp_achievement entry is created.
+    Otherwise, the existing entry is updated.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key
+        of the faculty about and the details of the award entry to be
+        inserted or updated.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the insert or
+        update operation. If successful, returns a success message. If the
+        request method is not POST, returns an invalid request method error.
+    """
     user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
     pf = user.user_id
 
@@ -1438,10 +2108,29 @@ def award_insert(request):
         eis.a_year = request.POST.get('a_year')
     eis.details = request.POST.get('details')
     eis.save()
-    return JsonResponse({'x' : 'Your data is saved '})
+    return JsonResponse({'message' : 'Your data is saved '})
 
 @csrf_exempt
 def talk_insert(request):
+    """
+    This view handles POST requests to insert a new or update an existing
+    expert lecture entry in the emp_expert_lectures table. The request data
+    should contain the primary key ('user_id') of the faculty about, the
+    lecture type, the place, title, and date of the lecture.
+
+    If the 'lec_id' is not provided, a new emp_expert_lectures entry is
+    created. Otherwise, the existing entry is updated.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key
+        of the faculty about and the details of the lecture entry to be
+        inserted or updated.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the insert or
+        update operation. If successful, returns a success message. If the
+        request method is not POST, returns an invalid request method error.
+    """
     user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
     pf = user.user_id
     if (request.POST.get('lec_id')==None or request.POST.get('lec_id')=="" or request.POST.get('lec_id')==0):
@@ -1461,10 +2150,25 @@ def talk_insert(request):
     eis.l_date = datetime.datetime.strptime(x, "%b %d %Y")
 
     eis.save()
-    return JsonResponse({'x' : 'Your data is saved '})
+    return JsonResponse({'message' : 'Your data is saved '})
 
 @csrf_exempt
 def chaired_insert(request):
+    """
+    Insert a session chair entry in the emp_session_chair table.
+
+    The request data should contain the primary key ('user_id') of the faculty about, the
+    event name, the name of the session, and the start and end dates of the session.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key of the
+        faculty about and the details of the session chair entry to be inserted.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the insert operation.
+        If successful, returns a success message. If the request method is not POST,
+        returns an invalid request method error.
+    """
     user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
     pf = user.user_id
 
@@ -1483,10 +2187,26 @@ def chaired_insert(request):
         eis.end_date = datetime.datetime.strptime(request.POST.get('end'), "%b. %d, %Y") if request.POST.get('end') else None
 
     eis.save()
-    return JsonResponse({'x' : 'Your data is saved '})
+    return JsonResponse({'message' : 'Your data is saved '})
 
 @csrf_exempt
 def keynote_insert(request):
+    """
+    Insert a keynote address entry in the emp_keynote_address table.
+
+    The request data should contain the primary key ('user_id') of the faculty about, the
+    type of the address, the name of the event, the title of the address, the venue, the
+    page number and isbn number of the address, and the year of the address.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key of the
+        faculty about and the details of the address entry to be inserted.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the insert operation.
+        If successful, returns a success message. If the request method is not POST,
+        returns an invalid request method error.
+    """
     user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
     pf = user.user_id
 
@@ -1505,10 +2225,33 @@ def keynote_insert(request):
         eis.start_date = datetime.datetime.strptime(request.POST.get('start'), "%b. %d, %Y") if request.POST.get('start') else None
 
     eis.save()
-    return JsonResponse({'x' : 'Your data is saved '})
+    return JsonResponse({'message' : 'Your data is saved '})
 
 @csrf_exempt
 def project_insert(request):
+    """
+    Insert a research project entry in the emp_research_projects table.
+
+    The request data should contain the primary key ('user_id') of the faculty about, the
+    primary key ('project_id') of the emp_research_projects entry to be updated, the
+    principal investigator, the co-investigator, the title of the project, the financial
+    outlay, the funding agency, the status of the project, the start date and end date of
+    the project.
+
+    If the 'project_id' is not provided, a new emp_research_projects entry is
+    created. Otherwise, the existing entry is updated.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key
+        of the faculty about and the details of the research project entry to be
+        inserted or updated.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the insert or
+        update operation. If successful, returns a success message. If the
+        request method is not POST, returns an invalid request method error.
+    """
+
     user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
     pf = user.user_id
 
@@ -1549,6 +2292,27 @@ def project_insert(request):
 
 @csrf_exempt
 def consult_insert(request):
+    """
+    Insert a new consultancy project entry in the emp_consultancy_projects table.
+
+    This view handles POST requests to insert a new consultancy project entry in the
+    emp_consultancy_projects table. The request data should contain the primary key
+    ('user_id') of the faculty about, the consultants, the client, the title of the
+    project, the financial outlay, the start date and the end date of the project.
+
+    If the 'consultancy_id' is not provided, a new emp_consultancy_projects entry is
+    created. Otherwise, the existing entry is updated.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key
+        of the faculty about and the details of the consultancy project entry to be
+        inserted or updated.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the insert or
+        update operation. If successful, returns a success message. If the
+        request method is not POST, returns an invalid request method error.
+    """
     user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
     pf = user.user_id
 
@@ -1574,10 +2338,31 @@ def consult_insert(request):
 
     eis.end_date = datetime.datetime.strptime(x, "%b %d %Y")
     eis.save()
-    return JsonResponse({'x' : 'Your data is saved '})
+    return JsonResponse({'message' : 'Your data is saved '})
 
 @csrf_exempt
 def patent_insert(request):
+    """
+    Insert or update a patent entry in the emp_patents table.
+
+    This view handles POST requests to insert a new patent entry or update an
+    existing one in the emp_patents table. The request data should include the 
+    primary key ('user_id') of the faculty, the patent number, earnings, title, 
+    year, status, and application month.
+
+    If the 'patent_id' is not provided, a new emp_patents entry is created. 
+    Otherwise, the existing entry is updated.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key
+        of the faculty and the details of the patent entry to be inserted or 
+        updated.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the insert or 
+        update operation. If successful, returns a success message. If the 
+        request method is not POST, returns an invalid request method error.
+    """
     user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
     pf = user.user_id
 
@@ -1594,17 +2379,34 @@ def patent_insert(request):
     eis.status = request.POST.get('status')
     eis.a_month = request.POST.get('month')
     eis.save()
-    return JsonResponse({'x' : 'Your data is saved '})
+    return JsonResponse({'message' : 'Your data is saved '})
 
 @csrf_exempt
 def transfer_insert(request):
+    """
+    Insert a new technology transfer entry in the emp_techtransfer table.
+
+    This view handles POST requests to insert a new technology transfer entry in the
+    emp_techtransfer table. The request data should contain the primary key
+    ('user_id') of the faculty about and the details of the technology transfer.
+
+    Args:
+        request (HttpRequest): The request object containing the primary key
+        of the faculty about and the details of the technology transfer entry to be
+        inserted.
+
+    Returns:
+        JsonResponse: A JSON response indicating the success of the insert
+        operation. If successful, returns a success message. If the
+        request method is not POST, returns an invalid request method error.
+    """
     user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
     pf = user.user_id
     eis = emp_techtransfer()
     eis.pf_no = pf
     eis.details = request.POST.get('details')
     eis.save()
-    return JsonResponse({'x' : 'Your data is saved '})
+    return JsonResponse({'message' : 'Your data is saved '})
 
 def get_personal_info(request):
     # Fetch all entries where pf_no is '5318'
@@ -1693,6 +2495,24 @@ def get_talks(request):
 
 
 def edit_research_project(request, pk):
+    """
+    Edit an existing research project entry in the emp_research_projects table.
+
+    This view handles the editing of a research project based on the provided
+    primary key (pk). The project details are updated using the data from a
+    POST request. If the request method is not POST, an error response is returned.
+
+    Args:
+        request (HttpRequest): The request object containing POST data for the
+        project to be updated.
+        pk (int): The primary key of the research project to be edited.
+
+    Returns:
+        JsonResponse: A response indicating the success or failure of the update
+        operation. On success, returns a success message with status 200.
+        On failure, returns the form errors with status 400.
+        If the request method is invalid, returns an error message with status 400.
+    """
     project = get_object_or_404(emp_research_projects, pk=pk)
 
     if request.method == 'POST':
