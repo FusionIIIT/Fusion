@@ -94,7 +94,7 @@ from html import escape
 from io import BytesIO
 
 from django.contrib.auth.models import User
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import FileResponse, HttpResponse, HttpResponseRedirect
 from django.shortcuts import (get_object_or_404, redirect, render,
                               render)
 from django.template import loader
@@ -112,6 +112,10 @@ from ..models import *
 from django.core.files.storage import FileSystemStorage
 import logging
 from django.views.decorators.csrf import csrf_exempt
+import google.generativeai as genai
+import os
+import pdfkit
+import tempfile
 
 countries = {
         'AF': 'Afghanistan',
@@ -508,6 +512,123 @@ def profile(request, username=None):
     # Return data as JSON response
     return JsonResponse(data, safe=False)
 
+@csrf_exempt
+def generate_report(request, username=None):
+    if request.method == 'POST':
+        print(request.POST.get('username'))
+        user = get_object_or_404(User, username=request.POST.get('username'))
+    else:
+        return JsonResponse({'error': 'Only POST method is allowed.'}, status=405)
+
+    extra_info = get_object_or_404(ExtraInfo, user=user)
+
+    pf = extra_info.user_id
+    print("pf", pf)
+
+    # Forms and project management data
+    project_r = Project_Registration.objects.filter(PI_id=pf).order_by('PI_id__user')
+    project_ext = Project_Extension.objects.filter(project_id__PI_id=pf).order_by('project_id__PI_id__user')
+    project_closure = Project_Closure.objects.filter(project_id__PI_id=pf).order_by('project_id__PI_id__user')
+    project_reall = Project_Reallocation.objects.filter(project_id__PI_id=pf).order_by('project_id__PI_id__user')
+
+    # Research data
+    journal = emp_research_papers.objects.filter(pf_no=pf, rtype='Journal').order_by('-year')
+    print(pf, "journal", journal)
+    conference = emp_research_papers.objects.filter(pf_no=pf, rtype='Conference').order_by('-year')
+    books = emp_published_books.objects.filter(pf_no=pf).order_by('-pyear')
+    projects = emp_research_projects.objects.filter(pf_no=pf).order_by('-start_date')
+    consultancy = emp_consultancy_projects.objects.filter(pf_no=pf).order_by('-date_entry')
+    patents = emp_patents.objects.filter(pf_no=pf).order_by('-date_entry')
+    techtransfers = emp_techtransfer.objects.filter(pf_no=pf).order_by('-date_entry')
+    mtechs = emp_mtechphd_thesis.objects.filter(pf_no=pf, degree_type=1).order_by('-date_entry')
+    phds = emp_mtechphd_thesis.objects.filter(pf_no=pf, degree_type=2).order_by('-date_entry')
+    fvisits = emp_visits.objects.filter(pf_no=pf, v_type=2).order_by('-entry_date')
+    ivisits = emp_visits.objects.filter(pf_no=pf, v_type=1).order_by('-entry_date')
+    consymps = emp_confrence_organised.objects.filter(pf_no=pf).order_by('-date_entry')
+    awards = emp_achievement.objects.filter(pf_no=pf).order_by('-date_entry')
+    talks = emp_expert_lectures.objects.filter(pf_no=pf).order_by('-date_entry')
+    chairs = emp_session_chair.objects.filter(pf_no=pf).order_by('-date_entry')
+    keynotes = emp_keynote_address.objects.filter(pf_no=pf).order_by('-date_entry')
+    events = emp_event_organized.objects.filter(pf_no=pf).order_by('-start_date')
+
+    # Get year range
+    y = list(range(1995, datetime.datetime.now().year + 1))
+
+    # Personal information
+    try:
+        pers = get_object_or_404(faculty_about, user_id=pf)
+    except:
+        pers = None
+
+    # Designations
+    a1 = HoldsDesignation.objects.select_related('user', 'working', 'designation').filter(working=user)
+    flag_rspc = 0
+    for i in a1:
+        if str(i.designation) == 'Dean (RSPC)':
+            flag_rspc = 1
+
+    designations = [str(i.designation) for i in a1]
+
+    data = {
+        'user': {
+            'username': user.username,
+            'email': user.email,
+        },
+        'designations': designations,
+        'pf': pf,
+        'flag_rspc': flag_rspc,
+        'research': {
+            'journal': list(journal.values()),  # Convert queryset to list of dictionaries
+            'conference': list(conference.values()),
+            'books': list(books.values()),
+            'projects': list(projects.values()),
+            'consultancy': list(consultancy.values()),
+            'patents': list(patents.values()),
+            'techtransfers': list(techtransfers.values()),
+            'mtechs': list(mtechs.values()),
+            'phds': list(phds.values()),
+            'fvisits': list(fvisits.values()),
+            'ivisits': list(ivisits.values()),
+            'consymps': list(consymps.values()),
+            'awards': list(awards.values()),
+            'talks': list(talks.values()),
+            'chairs': list(chairs.values()),
+            'keynotes': list(keynotes.values()),
+            'events': list(events.values()),
+        },
+        'year_range': y,
+        'personal_info': {
+            'faculty_about': pers.about if pers else None,
+            'date_of_joining': pers.doj if pers else None,
+            'contact': pers.contact if pers else None,
+            'interest': pers.interest if pers else None,
+            'education': pers.education if pers else None,
+            'linkedin': pers.linkedin if pers else None,
+            'github': pers.github if pers else None
+        },
+        'projects': {
+            'registrations': list(project_r.values()),
+            'extensions': list(project_ext.values()),
+            'closures': list(project_closure.values()),
+            'reallocations': list(project_reall.values()),
+        },
+    }
+
+        # Generate HTML content using Gemini API
+    model = genai.GenerativeModel("gemini-1.5-flash")
+    json_input = f"Generate an HTML report for the following data: {data}"
+    response = model.generate_content(json_input)
+    html_content = response.text.strip("```html").strip("```")
+
+    # Convert HTML to PDF
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_pdf:
+        pdfkit.from_string(html_content, temp_pdf.name)
+        temp_pdf.seek(0)
+        pdf_file_path = temp_pdf.name
+
+    # Send the PDF as a response
+    return FileResponse(open(pdf_file_path, 'rb'), content_type='application/pdf', as_attachment=True, filename="report.pdf")
+
 # Dean RSPC Profile
 @csrf_exempt
 def rspc_profile(request):
@@ -793,8 +914,6 @@ def fvisit_insert(request):
         eis.save()
         return JsonResponse({'x' : 'Your data is saved '})
 
-# View for editing persnal Information
-
 @csrf_exempt
 def ivisit_insert(request):
     user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
@@ -1003,7 +1122,6 @@ def editforeignvisit(request):
         eis.end_date = datetime.datetime.strptime(x, "%b. %d, %Y") if x else None
     eis.save()
     return JsonResponse({'x' : 'Your data is updated '})
-
 
 @csrf_exempt
 def editindianvisit(request):
@@ -1228,7 +1346,6 @@ def consym_insert(request):
 
     eis.save()
     return JsonResponse({ "success": True})
-
 
 @csrf_exempt
 def editconsym(request):

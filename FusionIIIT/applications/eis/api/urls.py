@@ -62,9 +62,8 @@ urlpatterns = [
     re_path(r'^patent_insert/$', views.patent_insert, name='patent_insert'),
     re_path(r'^transfer_insert/$', views.transfer_insert, name='transfer_insert'),
 
-    # # generate report
-    # url(r'^report/$', views.generate_report, name='generate_report'),
-    # url(r'^rspc_report/$', views.rspc_generate_report, name='rspc_generate_report'),
+    # generate report
+    url(r'^report/$', views.generate_report, name='generate_report'),
 
 
     # # Fetch Details from Database
