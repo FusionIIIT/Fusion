@@ -12,7 +12,7 @@ class File(models.Model):
     subject = models.CharField(max_length=100, null=True, blank=True)
     description = models.CharField(max_length=400, null=True, blank=True)
     upload_date = models.DateTimeField(auto_now_add=True)
-    upload_file = models.FileField(blank=True)
+    upload_file = models.FileField(blank=True) # if you want to access the attachment, use this field, not attached_file or uploaded_file.
     is_read = models.BooleanField(default = False)
 
 
