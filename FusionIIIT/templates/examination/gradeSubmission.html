@@ -135,8 +135,57 @@
     }
 
     function dwn_temp() {
-        window.location.href = '/examination/download_template';
+        let selectedCourse = document.getElementById('course-select').value;
+        let selectedYear = document.getElementById('year-select').value;
+    
+        if (!selectedCourse || !selectedYear) {
+            alert("Please select both course and year.");
+            return;
+        }
+
+        $.ajax({
+            url: `/examination/download_template/`,
+            type: 'GET',
+            data: { 
+                course: selectedCourse, 
+                year: selectedYear 
+            },
+            xhrFields: {
+                responseType: 'blob' // Set response type to 'blob' for file download
+            },
+            success: function (data, status, xhr) {
+                // Extract the filename from the response headers
+                const disposition = xhr.getResponseHeader('Content-Disposition');
+                const matches = /filename="([^"]+)"/.exec(disposition);
+                const filename = (matches != null && matches[1]) ? matches[1] : 'template.csv';
+        
+                // Create a link element to trigger download
+                const link = document.createElement('a');
+                const url = window.URL.createObjectURL(data);
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+        
+                // Clean up
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(link);
+            },
+            error: function (xhr, status, error) {
+                // Handle errors more gracefully
+                try {
+                    // Check if response is JSON
+                    const errorResponse = xhr.responseJSON || { error: 'Unknown error occurred' };
+                    alert(`Error: ${errorResponse.error}`);
+                } catch (e) {
+                    // If not JSON, show generic error message
+                    alert('An error occurred while downloading the file.');
+                }
+            }
+        });
+        
     }
+    
 </script>
 
 {% endblock %}
