@@ -231,12 +231,12 @@ class DirectorGoldListView(APIView):
 #This api is for showing the all the documnet to the convenor or assistant submitted by the student in browse application 
 class StudentDetailView(APIView):
     def post(self, request):
-        student_id = request.data.get('student')
+        student_id = request.data.get('student_id')
         if not student_id:
             return Response({"error": "Student ID is required."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            mcm_entry = Mcm.objects.get(student__id=student_id)
+            mcm_entry = Mcm.objects.get(student_id=student_id)
         except Mcm.DoesNotExist:
             return Response({"error": "No record found for the given student ID."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -246,7 +246,7 @@ class StudentDetailView(APIView):
 #This api is for showing the list of student who has applied for director silver in browse application in convenor and assistant
 class DirectorSilverDetailView(APIView):
     def post(self, request):
-        student_id = request.data.get('student')
+        student_id = request.data.get('student_id')
         
         if not student_id:
             return Response({"error": "Student ID is required."}, status=status.HTTP_400_BAD_REQUEST)
@@ -263,7 +263,7 @@ class DirectorSilverDetailView(APIView):
 #This api is for showing the list of student who has applied for director gold in browse application in convenor and assistant
 class DirectorGoldDetailView(APIView):
     def post(self, request):
-        student_id = request.data.get('student')
+        student_id = request.data.get('student_id')
 
         if not student_id:
             return Response({"error": "Student ID is required."}, status=status.HTTP_400_BAD_REQUEST)
