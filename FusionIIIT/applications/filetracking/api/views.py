@@ -16,21 +16,20 @@ class CreateFileView(APIView):
 
     def post(self, request):
         try:
-            current_user = 'atul'
+            current_user = request.user
             current_designation = request.data.get('designation')
             receiver_username = request.data.get('receiver_username')
             receiver_designation = request.data.get('receiver_designation')
             subject = request.data.get('subject')
             description = request.data.get('description')
 
-            uploaded_file = request.FILES.get('file')  # Get the file if provided
+            uploaded_file = request.data.get('file')  # Get the file if provided
 
             if None in [current_designation, receiver_username, receiver_designation, subject, description]:
                 return Response({'error': 'One or more required fields are missing.'}, status=status.HTTP_400_BAD_REQUEST)
 
             file_id = create_file(uploader=current_user, uploader_designation=current_designation,
                                   receiver=receiver_username, receiver_designation=receiver_designation, subject=subject, description=description, attached_file=uploaded_file)
-            # print("Api call made from frontend")
             return Response({'file_id': file_id}, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
