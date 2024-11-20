@@ -926,7 +926,7 @@ def upload_grades(request):
                 remarks = row["remarks"]
                 batch_prefix = roll_no[:2]
                 batch = int(f"20{batch_prefix}")
-                semester=Student.objects.filter(id_id=roll_no).curr_semester_no
+                semester=Student.objects.get(id_id=roll_no).curr_semester_no
                 
                 Student_grades.objects.create(
                     roll_no=roll_no,
@@ -1156,7 +1156,7 @@ def upload_grades_prof(request):
                 remarks = row["remarks"]
                 batch_prefix = roll_no[:2]
                 batch = int(f"20{batch_prefix}")
-                semester=Student.objects.filter(id_id=roll_no).curr_semester_no
+                semester=Student.objects.get(id_id=roll_no).curr_semester_no
                 reSubmit=False
                 Student_grades.objects.update_or_create(
                  roll_no=roll_no,
@@ -1284,7 +1284,7 @@ def validateDeanSubmit(request):
                 remarks = row["remarks"]
                 batch_prefix = roll_no[:2]
                 batch = int(f"20{batch_prefix}")
-                semester=Student.objects.filter(id_id=roll_no).curr_semester_no
+                semester=Student.objects.get(id_id=roll_no).curr_semester_no
                 Student_grades.objects.filter(
                  roll_no=roll_no,
                  course_id_id=course_id,
@@ -1538,8 +1538,8 @@ def generate_result(request):
             ws.title = "Student Grades"
 
         
-            ws.merge_cells(start_row=1, start_column=1, end_row=4, end_column=1) 
-            ws.merge_cells(start_row=1, start_column=2, end_row=4, end_column=2) 
+            # ws.merge_cells(start_row=1, start_column=1, end_row=4, end_column=1) 
+            # ws.merge_cells(start_row=1, start_column=2, end_row=4, end_column=2) 
             ws["A1"] = "S. No"
             ws["B1"] = "Roll No"
             for cell in ("A1", "B1"):
@@ -1568,16 +1568,18 @@ def generate_result(request):
                 ws.cell(row=3, column=col_idx).font = Font(bold=True)
                 ws.cell(row=4, column=col_idx).value = "Grade"
                 ws.cell(row=4, column=col_idx + 1).value = "Remarks"
-                ws.column_dimensions[get_column_letter(col_idx)].width = 18
-                ws.column_dimensions[get_column_letter(col_idx+1)].width = 18 
+                ws.cell(row=4, column=col_idx).alignment = Alignment(horizontal="center", vertical="center")
+                ws.cell(row=4, column=col_idx+1).alignment = Alignment(horizontal="center", vertical="center")
+                ws.column_dimensions[get_column_letter(col_idx)].width = 25
+                ws.column_dimensions[get_column_letter(col_idx+1)].width = 25 
                 col_idx += 2
 
-            ws.merge_cells(start_row=1, start_column=col_idx, end_row=4, end_column=col_idx)  # SPI
+            # ws.merge_cells(start_row=1, start_column=col_idx, end_row=4, end_column=col_idx)  # SPI
             ws.cell(row=1, column=col_idx).value = "SPI"
             ws.cell(row=1, column=col_idx).alignment = Alignment(horizontal="center", vertical="center")
             ws.cell(row=1, column=col_idx).font = Font(bold=True)
 
-            ws.merge_cells(start_row=1, start_column=col_idx + 1, end_row=4, end_column=col_idx + 1)  # CPI
+            # ws.merge_cells(start_row=1, start_column=col_idx + 1, end_row=4, end_column=col_idx + 1)  # CPI
             ws.cell(row=1, column=col_idx + 1).value = "CPI"
             ws.cell(row=1, column=col_idx + 1).alignment = Alignment(horizontal="center", vertical="center")
             ws.cell(row=1, column=col_idx + 1).font = Font(bold=True)
@@ -1588,7 +1590,8 @@ def generate_result(request):
                 ws.cell(row=row_idx, column=1).value = idx
                 ws.cell(row=row_idx, column=2).value = student.id_id
 
-                
+                ws.cell(row=row_idx, column=1).alignment = Alignment(horizontal="center", vertical="center")
+                ws.cell(row=row_idx, column=2).alignment = Alignment(horizontal="center", vertical="center")
                 student_grades = Student_grades.objects.filter(
                     roll_no=student.id_id, course_id_id__in=course_ids
                 )
@@ -1604,6 +1607,8 @@ def generate_result(request):
                     grade, remark, credits = grades_map.get(course.id, ("N/A", "N/A",0))
                     ws.cell(row=row_idx, column=col_idx).value = grade
                     ws.cell(row=row_idx, column=col_idx + 1).value = remark
+                    ws.cell(row=row_idx, column=col_idx).alignment = Alignment(horizontal="center", vertical="center")
+                    ws.cell(row=row_idx, column=col_idx+1).alignment = Alignment(horizontal="center", vertical="center")
                     if grade=="O" or grade=="A+":
                         gained_credit+=1*credits
                         total_credit+=credits
@@ -1639,6 +1644,8 @@ def generate_result(request):
                 else:
                  ws.cell(row=row_idx, column=col_idx).value = 10*(gained_credit/total_credit)
                 ws.cell(row=row_idx, column=col_idx + 1).value = 0
+                ws.cell(row=row_idx, column=col_idx).alignment = Alignment(horizontal="center", vertical="center")
+                ws.cell(row=row_idx, column=col_idx+1).alignment = Alignment(horizontal="center", vertical="center")
 
                 row_idx += 1
 

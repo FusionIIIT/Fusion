@@ -102,46 +102,35 @@
         }
 
         if (!confirm('Are you sure you want to submit?')) {
-            // If the user clicks "Cancel", do not proceed
+    
             return;
         }
         var formData = new FormData();
         formData.append('course_id', selectedCourse);
         formData.append('academic_year', selectedYear);
-        //formData.append('semester', selectedSemester);
+       
         formData.append('csv_file', file);
 
      
         $.ajax({
-            url: `/examination/download_template/`,
-            type: 'GET',
-            data: { 
-                course: selectedCourse, 
-                year: selectedYear 
+            url: '/examination/upload_grades_prof/',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.redirect_url) {
+                    alert(response.message);
+                    window.location.href = response.redirect_url;
+                }
             },
-            xhrFields: {
-                responseType: 'blob' // Set response type to 'blob' for file download
-            },
-            success: function (data, status, xhr) {
-                // Extract the filename from the response headers
-                const disposition = xhr.getResponseHeader('Content-Disposition');
-                const matches = /filename="([^"]+)"/.exec(disposition);
-                const filename = (matches != null && matches[1]) ? matches[1] : 'template.csv';
-    
-                // Create a link element to trigger download
-                const link = document.createElement('a');
-                const url = window.URL.createObjectURL(data);
-                link.href = url;
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-    
-                // Clean up
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(link);
-            },
-            error: function (xhr, status, error) {
-                alert(`Error: ${xhr.responseJSON.error}`);
+            error: function(xhr, status, error) {
+                if (xhr.responseJSON && xhr.responseJSON.redirect_url) {
+                    window.location.href = xhr.responseJSON.redirect_url;
+                } else {
+                    var errorMessage = xhr.responseJSON ? xhr.responseJSON.error : 'An unexpected error occurred.';
+                    alert(errorMessage);
+                }
             }
         });
         
@@ -163,15 +152,13 @@
                 year: selectedYear 
             },
             xhrFields: {
-                responseType: 'blob' // Set response type to 'blob' for file download
+                responseType: 'blob' 
             },
             success: function (data, status, xhr) {
-                // Extract the filename from the response headers
                 const disposition = xhr.getResponseHeader('Content-Disposition');
                 const matches = /filename="([^"]+)"/.exec(disposition);
                 const filename = (matches != null && matches[1]) ? matches[1] : 'template.csv';
         
-                // Create a link element to trigger download
                 const link = document.createElement('a');
                 const url = window.URL.createObjectURL(data);
                 link.href = url;
@@ -179,18 +166,15 @@
                 document.body.appendChild(link);
                 link.click();
         
-                // Clean up
                 window.URL.revokeObjectURL(url);
                 document.body.removeChild(link);
             },
             error: function (xhr, status, error) {
-                // Handle errors more gracefully
-                try {
-                    // Check if response is JSON
+              
+                try {                
                     const errorResponse = xhr.responseJSON || { error: 'Unknown error occurred' };
                     alert(`Error: ${errorResponse.error}`);
                 } catch (e) {
-                    // If not JSON, show generic error message
                     alert('An error occurred while downloading the file.');
                 }
             }
