@@ -17,6 +17,7 @@ class CreateFileView(APIView):
     def post(self, request):
         try:
             current_user = request.user
+
             current_designation = request.data.get('designation')
             receiver_username = request.data.get('receiver_username')
             receiver_designation = request.data.get('receiver_designation')
@@ -301,8 +302,8 @@ class UnArchiveFile(APIView):
 
     
 class GetDesignationsView(APIView):
-    #authentication_classes = [TokenAuthentication]
-    #permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, username, *args, **kwargs):
         user_designations = get_designations(username)
