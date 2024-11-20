@@ -396,8 +396,6 @@ def view_all_extra_infos(request):
         for info in extra_infos
     ]
 
-    print("here", extra_info_list)
-
     # Return the data as a JSON response
     return JsonResponse(extra_info_list, safe=False)
 
@@ -427,7 +425,6 @@ def profile(request, username=None):
 
     # Research data
     journal = emp_research_papers.objects.filter(pf_no=pf, rtype='Journal').order_by('-year')
-    print(pf, "journal", journal)
     conference = emp_research_papers.objects.filter(pf_no=pf, rtype='Conference').order_by('-year')
     books = emp_published_books.objects.filter(pf_no=pf).order_by('-pyear')
     projects = emp_research_projects.objects.filter(pf_no=pf).order_by('-start_date')
@@ -515,7 +512,6 @@ def profile(request, username=None):
 @csrf_exempt
 def generate_report(request, username=None):
     if request.method == 'POST':
-        print(request.POST.get('username'))
         user = get_object_or_404(User, username=request.POST.get('username'))
     else:
         return JsonResponse({'error': 'Only POST method is allowed.'}, status=405)
@@ -523,7 +519,6 @@ def generate_report(request, username=None):
     extra_info = get_object_or_404(ExtraInfo, user=user)
 
     pf = extra_info.user_id
-    print("pf", pf)
 
     # Forms and project management data
     project_r = Project_Registration.objects.filter(PI_id=pf).order_by('PI_id__user')
@@ -533,7 +528,6 @@ def generate_report(request, username=None):
 
     # Research data
     journal = emp_research_papers.objects.filter(pf_no=pf, rtype='Journal').order_by('-year')
-    print(pf, "journal", journal)
     conference = emp_research_papers.objects.filter(pf_no=pf, rtype='Conference').order_by('-year')
     books = emp_published_books.objects.filter(pf_no=pf).order_by('-pyear')
     projects = emp_research_projects.objects.filter(pf_no=pf).order_by('-start_date')
@@ -614,7 +608,7 @@ def generate_report(request, username=None):
         },
     }
 
-        # Generate HTML content using Gemini API
+    # Generate HTML content using Gemini API
     model = genai.GenerativeModel("gemini-1.5-flash")
     json_input = f"Generate an HTML report for the following data: {data}"
     response = model.generate_content(json_input)
@@ -635,8 +629,6 @@ def rspc_profile(request):
     if request.method == 'POST':
         user = get_object_or_404(faculty_about, user=request.user)
         pf = user.user
-
-        form = ConfrenceForm()  # Form can be excluded if not needed in the frontend response
 
         # Retrieve data for various research elements
         journal = emp_research_papers.objects.filter(rtype='Journal').order_by('-year', '-a_month')
@@ -715,9 +707,7 @@ def rspc_profile(request):
 def persinfo(request):
     if request.method == 'POST':
         try:
-            print("here")
             faculty = get_object_or_404(faculty_about, user_id = request.POST.get('user_id'))
-            print(faculty)
             contact = request.POST['contact']
             faculty.contact = contact
             faculty.about = request.POST['about']
@@ -837,7 +827,6 @@ def emp_visitsDelete(request):
 def pg_insert(request):
     user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
     pf = user.user_id
-    # eis = emp_mtechphd_thesis()
 
     if (request.POST.get('pg_id')==None or request.POST.get('pg_id')==""):
         eis = emp_mtechphd_thesis()
@@ -859,7 +848,6 @@ def pg_insert(request):
 def phd_insert(request):
     user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
     pf = user.user_id
-    # eis = emp_mtechphd_thesis()
 
     if (request.POST.get('phd_id')==None or request.POST.get('phd_id')==""):
         eis = emp_mtechphd_thesis()
@@ -883,8 +871,6 @@ def fvisit_insert(request):
     if request.method=='POST':
         user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
         pf = user.user_id
-
-        # eis = emp_visits()
 
         if (request.POST.get('fvisit_id')==None or request.POST.get('fvisit_id')==""):
             eis = emp_visits()
@@ -918,8 +904,6 @@ def fvisit_insert(request):
 def ivisit_insert(request):
     user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
     pf = user.user_id
-
-    # eis = emp_visits()
 
     if (request.POST.get('ivisit_id')==None or request.POST.get('ivisit_id')==""):
         eis = emp_visits()
@@ -1039,7 +1023,7 @@ def editjournal(request):
     eis.status = request.POST.get('status')
     eis.reference_number = request.POST.get('ref')
     eis.is_sci = request.POST.get('sci')
-    volume_no = request.POST.get('volume')
+    eis.volume_no = request.POST.get('volume')
     eis.page_no = request.POST.get('page')
     eis.year = request.POST.get('year')
 
@@ -1281,10 +1265,8 @@ def editconference(request):
 
 @csrf_exempt
 def book_insert(request):
-    print(request.POST)
     user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
     pf = user.user_id
-    print(pf)
     eis = emp_published_books()
     eis.pf_no = pf
     eis.p_type = request.POST.get('book_p_type')
@@ -1332,15 +1314,12 @@ def consym_insert(request):
     x = x[1:4]
     x = ' '.join(x)
 
-    print(x)
-
     eis.start_date = datetime.datetime.strptime(x, "%b %d %Y")
 
     x = request.POST.get('conference_end_date')
     x = x.split()
     x = x[1:4]
     x = ' '.join(x)
-    print(x)
 
     eis.end_date = datetime.datetime.strptime(x, "%b %d %Y")
 
@@ -1369,15 +1348,12 @@ def editconsym(request):
     x = x[1:4]
     x = ' '.join(x)
 
-    print(x)
-
     eis.start_date = datetime.datetime.strptime(x, "%b %d %Y")
 
     x = request.POST.get('conference_end_date')
     x = x.split()
     x = x[1:4]
     x = ' '.join(x)
-    print(x)
 
     eis.end_date = datetime.datetime.strptime(x, "%b %d %Y")
 
@@ -1389,11 +1365,6 @@ def event_insert(request):
     user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
     pf = user.user_id
     eis = emp_event_organized()
-
-    # if (request.POST.get('event_id')==None or request.POST.get('event_id')==""):
-    #     eis = emp_event_organized()
-    # else:
-    #     eis = get_object_or_404(emp_event_organized, id=request.POST.get('event_id'))
     
     eis.pf_no = pf
     eis.type = request.POST.get('event_type')
@@ -1454,7 +1425,6 @@ def editevent(request):
 def award_insert(request):
     user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
     pf = user.user_id
-    # eis = emp_achievement()
 
     if (request.POST.get('ach_id')==None or request.POST.get('ach_id')==""):
         eis = emp_achievement()
@@ -1477,7 +1447,6 @@ def award_insert(request):
 def talk_insert(request):
     user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
     pf = user.user_id
-    # eis = emp_expert_lectures()
     if (request.POST.get('lec_id')==None or request.POST.get('lec_id')=="" or request.POST.get('lec_id')==0):
         eis = emp_expert_lectures()
     else:
@@ -1503,11 +1472,6 @@ def chaired_insert(request):
     pf = user.user_id
 
     eis = emp_session_chair()
-
-    # if (request.POST.get('ses_id')==None or request.POST.get('ses_id')==""):
-    #     eis = emp_session_chair()
-    # else:
-    #     eis = get_object_or_404(emp_session_chair, id=request.POST.get('ses_id'))
     eis.pf_no = pf
     eis.event = request.POST.get('event')
     eis.name = request.POST.get('name')
@@ -1530,11 +1494,6 @@ def keynote_insert(request):
     pf = user.user_id
 
     eis = emp_keynote_address()
-
-    # if (request.POST.get('keyid')==None or request.POST.get('keyid')==""):
-    #     eis = emp_keynote_address()
-    # else:
-    #     eis = get_object_or_404(emp_keynote_address, id=request.POST.get('keyid'))
     eis.pf_no = pf
     eis.type = request.POST.get('type')
     eis.name = request.POST.get('name')
@@ -1556,8 +1515,6 @@ def project_insert(request):
     user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
     pf = user.user_id
 
-    # eis = emp_research_projects()
-
     if (request.POST.get('project_id')==None or request.POST.get('project_id')==""):
         eis = emp_research_projects()
     else:
@@ -1574,15 +1531,12 @@ def project_insert(request):
     x = x[1:4]
     x = ' '.join(x)
 
-    print(x)
-
     eis.start_date = datetime.datetime.strptime(x, "%b %d %Y")
 
     x = request.POST.get('end')
     x = x.split()
     x = x[1:4]
     x = ' '.join(x)
-    print(x)
 
     eis.finish_date = datetime.datetime.strptime(x, "%b %d %Y")
 
@@ -1590,7 +1544,6 @@ def project_insert(request):
     x = x.split()
     x = x[1:4]
     x = ' '.join(x)
-    print(x)
 
     eis.date_submission = datetime.datetime.strptime(x, "%b %d %Y")
 
@@ -1601,7 +1554,7 @@ def project_insert(request):
 def consult_insert(request):
     user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
     pf = user.user_id
-    # eis = emp_consultancy_projects()
+
     if (request.POST.get('consultancy_id')==None or request.POST.get('consultancy_id')==""):
         eis = emp_consultancy_projects()
     else:
@@ -1616,15 +1569,11 @@ def consult_insert(request):
     x = x[1:4]
     x = ' '.join(x)
 
-    print(x)
-
     eis.start_date = datetime.datetime.strptime(x, "%b %d %Y")
     x = request.POST.get('end')
     x = x.split()
     x = x[1:4]
     x = ' '.join(x)
-
-    print(x)
 
     eis.end_date = datetime.datetime.strptime(x, "%b %d %Y")
     eis.save()
@@ -1634,7 +1583,6 @@ def consult_insert(request):
 def patent_insert(request):
     user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
     pf = user.user_id
-    # eis = emp_patents()
 
     if (request.POST.get('patent_id')==None or request.POST.get('patent_id')==""):
         eis = emp_patents()
@@ -1656,11 +1604,6 @@ def transfer_insert(request):
     user = get_object_or_404(faculty_about, user_id=request.POST.get('user_id'))
     pf = user.user_id
     eis = emp_techtransfer()
-
-    # if (request.POST.get('tech_id')==None or request.POST.get('tech_id')==""):
-    #     eis = emp_techtransfer()
-    # else:
-    #     eis = get_object_or_404(emp_techtransfer, id=request.POST.get('tech_id'))
     eis.pf_no = pf
     eis.details = request.POST.get('details')
     eis.save()
