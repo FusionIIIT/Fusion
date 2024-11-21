@@ -1,5 +1,9 @@
 from rest_framework import viewsets
 from rest_framework import filters
+from rest_framework.views import APIView 
+from rest_framework.response import Response
+from django.db.models import Sum  # Import Sum directly
+from ..models import DepartmentInfo, SectionInfo  
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
 from ..models import Item, DepartmentInfo, SectionInfo
@@ -49,3 +53,21 @@ class SectionInfoViewSet(viewsets.ModelViewSet):
             queryset = queryset.none()
 
         return queryset
+
+
+class ItemCountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            # Aggregating total quantity for departments and sections
+            department_total = DepartmentInfo.objects.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
+            section_total = SectionInfo.objects.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
+
+            # Returning the response
+            return Response({
+                "department_total_quantity": department_total,
+                "section_total_quantity": section_total,
+            })
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
