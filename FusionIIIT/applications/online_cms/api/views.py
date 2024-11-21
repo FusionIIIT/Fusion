@@ -1,4 +1,8 @@
 from django.conf import settings
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.decorators import permission_classes, authentication_classes
+from rest_framework.permissions import AllowAny
 from django.shortcuts import render
 from django.utils import timezone
 from rest_framework.views import APIView
@@ -10,7 +14,10 @@ from applications.academic_information.models import Student
 from applications.programme_curriculum.models import Course as Courses, CourseInstructor
 from applications.academic_procedures.models import course_registration
 from applications.globals.models import ExtraInfo
-
+from rest_framework.permissions import IsAuthenticated
+from applications.online_cms.models import  Student_grades
+from .serializers import StudentGradesSerializer
+import datetime
 
 @api_view(['GET'])
 def courseview(request):
@@ -40,8 +47,11 @@ def courseview(request):
 
 
 @api_view(['GET'])
-def course(request, course_code, version):
+@permission_classes([AllowAny])
+def course(request):
     user = request.user
+    course_code = request.GET.get('course_code')
+    version = request.GET.get('version')
     extrainfo = ExtraInfo.objects.select_related().get(user=user)
     
     if extrainfo.user_type == 'student':
@@ -124,3 +134,84 @@ def course(request, course_code, version):
                 }
                 
                 return Response(data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def view_attendance(request, course_code, version):
+    user = request.user
+
+    if not course_code or not version:
+        return Response({"error": "course_code and version are required parameters"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        extrainfo = ExtraInfo.objects.select_related().get(user=user)
+    except ExtraInfo.DoesNotExist:
+        return Response({"error": "User information not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    if extrainfo.user_type == 'student':
+        try:
+            student = Student.objects.select_related('id').get(id=extrainfo)
+            course = Courses.objects.select_related().get(code=course_code, version=version)
+            instructor = CourseInstructor.objects.select_related().get(course_id=course, batch_id=student.batch_id)
+            print(instructor)
+            print(student)
+            print(course)
+        except (Student.DoesNotExist, Courses.DoesNotExist, CourseInstructor.DoesNotExist):
+            return Response({"error": "Course or instructor not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        attendance_records = Attendance.objects.select_related().filter(student_id=student, instructor_id=instructor)
+        attendance_serializer = AttendanceSerializer(attendance_records, many=True)
+
+        return Response(attendance_serializer.data, status=status.HTTP_200_OK)
+
+    elif extrainfo.user_type == 'instructor':
+        try:
+            instructor = CourseInstructor.objects.select_related('course_id').get(instructor_id=extrainfo, course_id__code=course_code, course_id__version=version)
+        except CourseInstructor.DoesNotExist:
+            return Response({"error": "Instructor or course not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        registered_students = course_registration.objects.select_related('student_id').filter(course_id=instructor.course_id)
+        attendance_records = Attendance.objects.select_related().filter(instructor_id=instructor, student_id__in=[stu.student_id for stu in registered_students])
+        attendance_serializer = AttendanceSerializer(attendance_records, many=True)
+
+        return Response(attendance_serializer.data, status=status.HTTP_200_OK)
+
+    return Response({"error": "Invalid user type"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def submit_marks(request, course_code, version):
+    user = request.user
+    extrainfo = ExtraInfo.objects.select_related().get(user=user)
+    course_id = Courses.objects.select_related().get(code=course_code, version=version)
+    
+    if extrainfo.user_type == 'faculty':
+        form_data = request.data.copy()
+        year = datetime.datetime.now().year
+        
+        for i in range(int(len(form_data.getlist('stu_marks'))/3)):
+            student = Student.objects.select_related().get(id=str(form_data.getlist('stu_marks')[(i*3)]))
+            batch = str(student.batch)
+            already_existing_data = Student_grades.objects.filter(roll_no=str(form_data.getlist('stu_marks')[(i*3)]))
+            
+            data = {
+                'semester': student.curr_semester_no,
+                'year': year,
+                'roll_no': str(form_data.getlist('stu_marks')[(i*3)]),
+                'total_marks': form_data.getlist('stu_marks')[(i*3+1)],
+                'grade': str(form_data.getlist('stu_marks')[(i*3+2)]),
+                'batch': batch,
+                'course_id': course_id.id,
+            }
+            
+            if already_existing_data.exists():
+                already_existing_data.update(**data)
+            else:
+                serializer = StudentGradesSerializer(data=data)
+                if serializer.is_valid():
+                    serializer.save()
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response({"message": "Upload successful."}, status=status.HTTP_200_OK)
+    return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)

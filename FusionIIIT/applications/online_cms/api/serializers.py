@@ -12,8 +12,11 @@ from applications.online_cms.models import (
     ForumReply, 
     GradingScheme, 
     GradingScheme_grades, 
-    Topics
+    Topics,
+    Student_grades
 )
+
+
 
 class ExtraInfoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -91,4 +94,8 @@ class GradingSchemeGradesSerializer(serializers.ModelSerializer):
 class TopicsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Topics
+        fields = '__all__'
+class StudentGradesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Student_grades
         fields = '__all__'
