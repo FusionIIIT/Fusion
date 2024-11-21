@@ -1195,6 +1195,12 @@ def emp_session_chairDelete(request):
     return JsonResponse({'success': True})
 
 @csrf_exempt
+def emp_journal_delete(request):
+    instance = emp_research_papers.objects.get(pk=request.POST['pk'])
+    instance.delete()
+    return JsonResponse({'success': True})
+
+@csrf_exempt
 def emp_techtransferDelete(request):
     """
     Delete an emp_techtransfer entry from the database.
@@ -2438,93 +2444,91 @@ def transfer_insert(request):
 
 def get_personal_info(request):
     # Fetch all entries where pf_no is '5318'
-    projects = faculty_about.objects.filter(user_id='5318').values()
+    projects = faculty_about.objects.filter(user_id=request.GET.get("pfNo")).values()
 
     return JsonResponse(list(projects), safe=False)
 
 
 def get_research_projects(request):
     # Fetch all entries where pf_no is '5318'
-    projects = emp_research_projects.objects.filter(pf_no='5318').values()
+    projects = emp_research_projects.objects.filter(pf_no=request.GET.get("pfNo")).values()
 
     return JsonResponse(list(projects), safe=False)
 
 def get_consultancy_projects(request):
     # Fetch all entries where pf_no is '5318'
-    projects = emp_consultancy_projects.objects.filter(pf_no='5318').values()
+    projects = emp_consultancy_projects.objects.filter(pf_no=request.GET.get("pfNo")).values()
 
     return JsonResponse(list(projects), safe=False)
 
 def get_patents(request):
     # Fetch all entries where pf_no is '5318'
-    projects = emp_patents.objects.filter(pf_no='5318').values()
+    projects = emp_patents.objects.filter(pf_no=request.GET.get("pfNo")).values()
 
     return JsonResponse(list(projects), safe=False)
 
 def get_pg_thesis(request):
     # Fetch all entries where pf_no is '5318'
-    projects = emp_mtechphd_thesis.objects.filter(pf_no='5318', degree_type='1').values()
+    projects = emp_mtechphd_thesis.objects.filter(pf_no=request.GET.get("pfNo"), degree_type='1').values()
 
     return JsonResponse(list(projects), safe=False)
 
 def get_phd_thesis(request):
     # Fetch all entries where pf_no is '5318'
-    projects = emp_mtechphd_thesis.objects.filter(pf_no='5318', degree_type='2').values()
+    projects = emp_mtechphd_thesis.objects.filter(pf_no=request.GET.get("pfNo"), degree_type='2').values()
 
     return JsonResponse(list(projects), safe=False)
 
 def get_event(request):
     # Fetch all entries where pf_no is '5318'
-    projects = emp_event_organized.objects.filter(pf_no='5318').values()
+    projects = emp_event_organized.objects.filter(pf_no=request.GET.get("pfNo")).values()
 
     return JsonResponse(list(projects), safe=False)
 
 def get_fvisits(request):
     # Fetch all entries where pf_no is '5318'
-    projects = emp_visits.objects.filter(pf_no='5318', v_type='2').values()
+    projects = emp_visits.objects.filter(pf_no=request.GET.get("pfNo"), v_type='2').values()
 
     return JsonResponse(list(projects), safe=False)
 
 def get_ivisits(request):
     # Fetch all entries where pf_no is '5318'
-    projects = emp_visits.objects.filter(pf_no='5318',  v_type='1').values()
+    projects = emp_visits.objects.filter(pf_no=request.GET.get("pfNo"),  v_type='1').values()
 
     return JsonResponse(list(projects), safe=False)
 
 def get_consym(request):
     # Fetch all entries where pf_no is '5318'
-    projects = emp_confrence_organised.objects.filter(pf_no='5318').values()
+    projects = emp_confrence_organised.objects.filter(pf_no=request.GET.get("pfNo")).values()
 
     return JsonResponse(list(projects), safe=False)
 
 def get_books(request):
     # Fetch all entries where pf_no is '5318'
-    books = emp_published_books.objects.filter(pf_no="5318").order_by('-pyear').values()
-
+    books = emp_published_books.objects.filter(pf_no=request.GET.get("pfNo")).order_by('-pyear').values()
+    
     return JsonResponse(list(books), safe=False)
 
 def get_journals(request):
-    # Fetch all entries where pf_no is '5318'
-    journals = emp_research_papers.objects.filter(pf_no="5318", rtype='Journal').order_by('-pyear').values()
+    journals = emp_research_papers.objects.filter(pf_no=request.GET.get("pfNo")).values()
 
     return JsonResponse(list(journals), safe=False)
 
-
 def get_conference(request):
     # Fetch all entries where pf_no is '5318'
-    conference = emp_research_papers.objects.filter(pf_no="5318", rtype='Conference').order_by('-year').values()
+    conference = emp_research_papers.objects.filter(pf_no=request.GET.get("pfNo")).order_by('-year').values()
 
     return JsonResponse(list(conference), safe=False)
 
 def get_achievements(request):
     # Fetch all entries where pf_no is '5318'
-    achievements = emp_achievement.objects.filter(pf_no="5318").order_by('-a_year').values()
+    achievements = emp_achievement.objects.filter(pf_no=request.GET.get("pfNo")).order_by('-a_year').values()
 
     return JsonResponse(list(achievements), safe=False)
 
 def get_talks(request):
     # Fetch all entries where pf_no is '5318'
-    talks = emp_expert_lectures.objects.filter(pf_no="5318").values()
+    talks = emp_expert_lectures.objects.filter(pf_no=request.GET.get("pfNo")).values()
 
     return JsonResponse(list(talks), safe=False)
 
