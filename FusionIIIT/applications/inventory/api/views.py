@@ -2,8 +2,7 @@ from rest_framework import viewsets
 from rest_framework import filters
 from rest_framework.views import APIView 
 from rest_framework.response import Response
-from django.db.models import Sum  # Import Sum directly
-from ..models import DepartmentInfo, SectionInfo  
+from django.db.models import Sum  # Import Sum directly 
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
 from ..models import Item, DepartmentInfo, SectionInfo
@@ -73,7 +72,7 @@ class ItemCountView(APIView):
             })
         except Exception as e:
             return Response({"error": str(e)}, status=500)
-        
+    
 
 class TransferProductView(APIView):
     permission_classes = [IsAuthenticated]
@@ -83,44 +82,62 @@ class TransferProductView(APIView):
         quantity = request.data.get('quantity')
         from_department = request.data.get('fromDepartment')
         to_department = request.data.get('toDepartment')
-        description = request.data.get('description')
-        category = request.data.get('category')
-        
-        if not all([product_name, quantity, from_department, to_department, description, category]):
+
+        if not all([product_name, quantity, from_department, to_department]):
             return Response({"error": "All fields are required."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             with transaction.atomic():
                 product = Item.objects.filter(
-                    name=product_name,
+                    item_name=product_name,
                     department__department_name=from_department
                 ).first()
 
                 if not product:
-                    return Response({"error": "Product not found in the source department."}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        {"error": f"Product '{product_name}' not found in department '{from_department}'."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
-                if product.quantity < quantity:
-                    return Response({"error": "Not enough stock in the source department."}, status=status.HTTP_400_BAD_REQUEST)
+                if product.quantity < int(quantity):
+                    return Response(
+                        {"error": f"Not enough stock in department '{from_department}'. Available: {product.quantity}."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
-                product.quantity -= quantity
+                product.quantity -= int(quantity)
                 product.save()
 
                 to_department_info = DepartmentInfo.objects.filter(department_name=to_department).first()
                 if not to_department_info:
-                    return Response({"error": "Target department not found."}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        {"error": f"Target department '{to_department}' not found."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
-                new_product = Item.objects.create(
-                    name=product_name,
-                    quantity=quantity,
+                target_item, created = Item.objects.get_or_create(
+                    item_name=product_name,
                     department=to_department_info,
-                    description=description,
-                    category=category
+                    defaults={"quantity": 0, "type": product.type, "unit": product.unit}
                 )
 
-                return Response({
-                    "message": "Product transferred successfully.",
-                    "product": ItemSerializer(new_product).data
-                }, status=status.HTTP_200_OK)
+                target_item.quantity += int(quantity)
+                target_item.save()
+
+                return Response(
+                    {
+                        "message": f"Successfully transferred {quantity} of '{product_name}' from '{from_department}' to '{to_department}'.",
+                        "from_department": {
+                            "department_name": from_department,
+                            "remaining_quantity": product.quantity
+                        },
+                        "to_department": {
+                            "department_name": to_department,
+                            "new_quantity": target_item.quantity
+                        }
+                    },
+                    status=status.HTTP_200_OK
+                )
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
