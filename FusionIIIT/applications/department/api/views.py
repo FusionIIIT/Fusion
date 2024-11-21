@@ -216,6 +216,8 @@ def browse_announcements():
     ece_ann = Announcements.objects.filter(department="ECE")
     me_ann = Announcements.objects.filter(department="ME")
     sm_ann = Announcements.objects.filter(department="SM")
+    ns_ann = Announcements.objects.filter(department="Natural Science")
+    ds_ann = Announcements.objects.filter(department="Design")
     all_ann = Announcements.objects.filter(department="ALL")
     
     # serailizing the data
@@ -223,6 +225,8 @@ def browse_announcements():
     ece_ann_serialized = AnnouncementSerializer(ece_ann, many=True)
     me_ann_serialized = AnnouncementSerializer(me_ann, many=True)
     sm_ann_serialized = AnnouncementSerializer(sm_ann, many=True)
+    ns_ann_serialized = AnnouncementSerializer(ns_ann, many=True)
+    ds_ann_serialized = AnnouncementSerializer(ds_ann, many=True)
     all_ann_serialized = AnnouncementSerializer(all_ann, many=True)
 
     context = {
@@ -230,6 +234,8 @@ def browse_announcements():
         "ece" : ece_ann_serialized.data,
         "me" : me_ann_serialized.data,
         "sm" : sm_ann_serialized.data,
+        "ds" : ds_ann_serialized.data,
+        "ns" : ns_ann_serialized.data,
         "all" : all_ann_serialized.data
     }
 
@@ -251,6 +257,8 @@ def faculty():
     ece_f=ExtraInfo.objects.filter(department__name='ECE',user_type='faculty')
     me_f=ExtraInfo.objects.filter(department__name='ME',user_type='faculty')
     sm_f=ExtraInfo.objects.filter(department__name='SM',user_type='faculty')
+    ds_f=ExtraInfo.objects.filter(department__name='Design', user_type='faculty')
+    ns_f=ExtraInfo.objects.filter(department__name='Natural Science', user_type='faculty')
     staff=ExtraInfo.objects.filter(user_type='staff')
 
     # serailizing the data
@@ -258,6 +266,8 @@ def faculty():
     ece_f = ExtraInfoSerializer(ece_f, many=True)
     me_f = ExtraInfoSerializer(me_f, many=True)
     sm_f = ExtraInfoSerializer(sm_f, many=True)
+    ds_f = ExtraInfoSerializer(ds_f, many=True)
+    ns_f = ExtraInfoSerializer(ns_f, many=True)
     staff = ExtraInfoSerializer(staff, many=True)
     
 
@@ -266,6 +276,8 @@ def faculty():
         "ece_f" : ece_f.data,
         "me_f" : me_f.data,
         "sm_f" : sm_f.data,
+        "ds_f" : ds_f.data,
+        "ns_f" : ns_f.data,
         "staff" : staff.data,
     }
     return context_f
