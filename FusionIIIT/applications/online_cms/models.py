@@ -7,22 +7,22 @@ from applications.globals.models import ExtraInfo
 #the modules for containing course content
 class Modules(models.Model):
     module_name = models.CharField(max_length=50)
-    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    course = models.ForeignKey(Courses, on_delete=models.CASCADE, db_column='course_id_id')
 
     def __str__(self):
         return self.module_name
 
 #the documents in the course (slides , ppt) added by the faculty  and can be downloaded by the students
 class CourseDocuments(models.Model):
-    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
-    module_id = models.ForeignKey(Modules, on_delete=models.CASCADE, default = 1)
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE, db_column='course_id_id')
+    module_id = models.ForeignKey(Modules, on_delete=models.CASCADE, db_column='module_id_id')
     upload_time = models.DateTimeField(auto_now=True)
     description = models.CharField(max_length=100)
     document_name = models.CharField(max_length=40)
     document_url = models.CharField(max_length=100, null=True)
 
     def __str__(self):
-        return '{} - {}'.format(self.course_id, self.document_name)
+        return f'{self.course_id} - {self.document_name}'
     
 #the attendance files added by the faculty and can be downloaded by the students
 class AttendanceFiles(models.Model):

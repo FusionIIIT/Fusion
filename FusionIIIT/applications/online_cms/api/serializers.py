@@ -44,15 +44,15 @@ class CourseRegistrationSerializer(serializers.ModelSerializer):
         model = Courses
         fields = ('__all__')
 
-class ModulesSerializer(serializers.ModelSerializer):
+class ModuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Modules
-        fields = '__all__'
+        fields = ['id', 'module_name', 'course']
         
 class CourseDocumentsSerializer(serializers.ModelSerializer):
     class Meta:
         model = CourseDocuments
-        fields = '__all__'
+        fields = ['id', 'course_id', 'module_id', 'upload_time', 'description', 'document_name', 'document_file', 'document_url']
 
 class AssignmentSerializer(serializers.ModelSerializer):
     class Meta:
