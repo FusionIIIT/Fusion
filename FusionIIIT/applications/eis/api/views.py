@@ -111,6 +111,7 @@ from ..forms import *
 from ..models import *
 from django.core.files.storage import FileSystemStorage
 import logging
+import json
 from django.views.decorators.csrf import csrf_exempt
 import google.generativeai as genai
 import os
@@ -859,6 +860,33 @@ def persinfo(request):
             return JsonResponse({'x' : 'You are not authorized to update '})
 
 
+@csrf_exempt
+def update_personal_info(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            user_id = data.get("user_id")
+            
+            # Fetch the faculty_about entry
+            faculty = faculty_about.objects.get(user_id=user_id)
+            
+            # Update fields
+            faculty.about = data.get("aboutMe", faculty.about)
+            faculty.doj = data.get("dateOfJoining", faculty.doj)
+            faculty.education = data.get("education", faculty.education)
+            faculty.interest = data.get("interestAreas", faculty.interest)
+            faculty.contact = data.get("contact", faculty.contact)
+            faculty.github = data.get("github", faculty.github)
+            faculty.linkedin = data.get("linkedIn", faculty.linkedin)
+            
+            faculty.save()
+            
+            return JsonResponse({"message": "Details updated successfully."}, status=200)
+        except faculty_about.DoesNotExist:
+            return JsonResponse({"error": "Faculty not found."}, status=404)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    return JsonResponse({"error": "Invalid request method."}, status=405)
 
 
 # Views for deleting the EIS fields
@@ -2475,9 +2503,16 @@ def get_books(request):
 
     return JsonResponse(list(books), safe=False)
 
+def get_journals(request):
+    # Fetch all entries where pf_no is '5318'
+    journals = emp_research_papers.objects.filter(pf_no="5318", rtype='Journal').order_by('-pyear').values()
+
+    return JsonResponse(list(journals), safe=False)
+
+
 def get_conference(request):
     # Fetch all entries where pf_no is '5318'
-    conference = emp_research_papers.objects.filter(pf_no="5318").order_by('-year').values()
+    conference = emp_research_papers.objects.filter(pf_no="5318", rtype='Conference').order_by('-year').values()
 
     return JsonResponse(list(conference), safe=False)
 
