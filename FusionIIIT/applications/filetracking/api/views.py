@@ -23,14 +23,14 @@ class CreateFileView(APIView):
             receiver_designation = request.data.get('receiver_designation')
             subject = request.data.get('subject')
             description = request.data.get('description')
-
-            uploaded_file = request.data.get('file')  # Get the file if provided
-
-            if None in [current_designation, receiver_username, receiver_designation, subject, description]:
+            src_module = request.data.get('src_module')
+            uploaded_file = request.FILES.get('file')  # Get the file if provided
+            if None in [current_designation, receiver_username, receiver_designation, subject, description, src_module]:
                 return Response({'error': 'One or more required fields are missing.'}, status=status.HTTP_400_BAD_REQUEST)
 
             file_id = create_file(uploader=current_user, uploader_designation=current_designation,
-                                  receiver=receiver_username, receiver_designation=receiver_designation, subject=subject, description=description, attached_file=uploaded_file)
+                                  receiver=receiver_username, receiver_designation=receiver_designation, subject=subject, description=description, attached_file=uploaded_file, src_module=src_module)
+            print("File id: ", file_id)
             return Response({'file_id': file_id}, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -42,7 +42,7 @@ class ViewFileView(APIView):
     def get(self, request, file_id):
         try:
             file_details = view_file(int(file_id))
-            print(file_details)
+            print("File: ",file_details)
             return Response(file_details, status=status.HTTP_200_OK)
         except ValueError:
             return Response({'error': 'Invalid file ID format.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -99,8 +99,8 @@ class ViewInboxView(APIView):
 
         # if not username or not src_module:
         #     return Response({'error': 'Missing required query parameters: username and src_module.'}, status=400)
-
         inbox_files = view_inbox(username, designation, src_module)
+        print("inbox viewed", inbox_files)
         return Response(inbox_files)
 
 class ViewOutboxView(APIView):
@@ -175,13 +175,15 @@ class ForwardFileView(APIView):
         receiver_designation = request.data.get('receiver_designation')
         file_extra_JSON = request.data.get('file_extra_JSON', {})
         remarks = request.data.get('remarks', "")
-
+        print(receiver)
+        print(receiver_designation)
         # Validate data
         if not receiver or not receiver_designation:
             raise ValidationError("Missing required fields: receiver and receiver_designation")
 
         # # Extract and validate file attachment (if present)
         file_attachment = request.FILES.get('file_attachment')
+        print(file_attachment)
         if file_attachment:
             if file_attachment.size > 10 * 1024 * 1024:  # Adjust size limit as needed
                 raise ValidationError("File size exceeds limit (10 MB)")
@@ -209,12 +211,11 @@ class CreateDraftFile(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        uploader = request.data.get('uploader')
-        uploader_designation = request.data.get('uploader_designation')
-        src_module = request.data.get('src_module', 'filetracking')
+        uploader = request.user
+        uploader_designation = request.data.get('designation')
+        src_module = request.data.get('src_module')
         src_object_id = request.data.get('src_object_id', '')
-        file_extra_JSON = request.data.get('file_extra_JSON', {})
-        attached_file = request.FILES.get('attached_file', None)
+        attached_file = request.data.get('file', None)
 
         try:
             file_id = create_draft(
@@ -222,7 +223,6 @@ class CreateDraftFile(APIView):
                 uploader_designation=uploader_designation,
                 src_module=src_module,
                 src_object_id=src_object_id,
-                file_extra_JSON=file_extra_JSON,
                 attached_file=attached_file
             )
             return Response({'file_id': file_id}, status=status.HTTP_201_CREATED)
