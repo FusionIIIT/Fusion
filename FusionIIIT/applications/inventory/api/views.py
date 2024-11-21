@@ -43,7 +43,7 @@ class SectionInfoViewSet(viewsets.ModelViewSet):
         
         if section:
             # Case-insensitive filtering
-            queryset = queryset.filter(section_name__iexact=section)
+            queryset = queryset.filter(section_name=section)
         else:
             # Return an empty queryset if no department is provided
             queryset = queryset.none()
