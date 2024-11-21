@@ -152,6 +152,7 @@ class ExtraInfo(models.Model):
         null=True, blank=True, upload_to='globals/profile_pictures')
     about_me = models.TextField(default='NA', max_length=1000, blank=True)
     date_modified = models.DateTimeField('date_updated', blank=True, null=True)
+    last_selected_role = models.CharField(max_length=20, null=True, blank=True)
 
     @property
     def age(self):
