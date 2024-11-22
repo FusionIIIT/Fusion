@@ -113,10 +113,19 @@ from django.core.files.storage import FileSystemStorage
 import logging
 import json
 from django.views.decorators.csrf import csrf_exempt
-import google.generativeai as genai
+# import google.generativeai as genai
 import os
-import pdfkit
+# import pdfkit
 import tempfile
+
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
+import os
+import tempfile
+from django.http import FileResponse, JsonResponse
+
 
 countries = {
         'AF': 'Afghanistan',
@@ -549,9 +558,134 @@ def profile(request, username=None):
     # Return data as JSON response
     return JsonResponse(data, safe=False)
 
+# @csrf_exempt
+# def generate_report(request, username=None):
+
+#     """Generate a PDF report for a given faculty member based on their research data and personal information.
+
+#     Args:
+#         request (HttpRequest): The request object.
+#         username (str): The username of the faculty member.
+
+#     Returns:
+#         HttpResponse: The PDF report as a response."""
+    
+#     if request.method == 'POST':
+#         user = get_object_or_404(User, username=request.POST.get('username'))
+#     else:
+#         return JsonResponse({'error': 'Only POST method is allowed.'}, status=405)
+
+#     extra_info = get_object_or_404(ExtraInfo, user=user)
+
+#     pf = extra_info.user_id
+
+#     # Forms and project management data
+#     project_r = Project_Registration.objects.filter(PI_id=pf).order_by('PI_id__user')
+#     project_ext = Project_Extension.objects.filter(project_id__PI_id=pf).order_by('project_id__PI_id__user')
+#     project_closure = Project_Closure.objects.filter(project_id__PI_id=pf).order_by('project_id__PI_id__user')
+#     project_reall = Project_Reallocation.objects.filter(project_id__PI_id=pf).order_by('project_id__PI_id__user')
+
+#     # Research data
+#     journal = emp_research_papers.objects.filter(pf_no=pf, rtype='Journal').order_by('-year')
+#     conference = emp_research_papers.objects.filter(pf_no=pf, rtype='Conference').order_by('-year')
+#     books = emp_published_books.objects.filter(pf_no=pf).order_by('-pyear')
+#     projects = emp_research_projects.objects.filter(pf_no=pf).order_by('-start_date')
+#     consultancy = emp_consultancy_projects.objects.filter(pf_no=pf).order_by('-date_entry')
+#     patents = emp_patents.objects.filter(pf_no=pf).order_by('-date_entry')
+#     techtransfers = emp_techtransfer.objects.filter(pf_no=pf).order_by('-date_entry')
+#     mtechs = emp_mtechphd_thesis.objects.filter(pf_no=pf, degree_type=1).order_by('-date_entry')
+#     phds = emp_mtechphd_thesis.objects.filter(pf_no=pf, degree_type=2).order_by('-date_entry')
+#     fvisits = emp_visits.objects.filter(pf_no=pf, v_type=2).order_by('-entry_date')
+#     ivisits = emp_visits.objects.filter(pf_no=pf, v_type=1).order_by('-entry_date')
+#     consymps = emp_confrence_organised.objects.filter(pf_no=pf).order_by('-date_entry')
+#     awards = emp_achievement.objects.filter(pf_no=pf).order_by('-date_entry')
+#     talks = emp_expert_lectures.objects.filter(pf_no=pf).order_by('-date_entry')
+#     chairs = emp_session_chair.objects.filter(pf_no=pf).order_by('-date_entry')
+#     keynotes = emp_keynote_address.objects.filter(pf_no=pf).order_by('-date_entry')
+#     events = emp_event_organized.objects.filter(pf_no=pf).order_by('-start_date')
+
+#     # Get year range
+#     y = list(range(1995, datetime.datetime.now().year + 1))
+
+#     # Personal information
+#     try:
+#         pers = get_object_or_404(faculty_about, user_id=pf)
+#     except:
+#         pers = None
+
+#     # Designations
+#     a1 = HoldsDesignation.objects.select_related('user', 'working', 'designation').filter(working=user)
+#     flag_rspc = 0
+#     for i in a1:
+#         if str(i.designation) == 'Dean (RSPC)':
+#             flag_rspc = 1
+
+#     designations = [str(i.designation) for i in a1]
+
+#     data = {
+#         'user': {
+#             'username': user.username,
+#             'email': user.email,
+#         },
+#         'designations': designations,
+#         'pf': pf,
+#         'flag_rspc': flag_rspc,
+#         'research': {
+#             'journal': list(journal.values()),  # Convert queryset to list of dictionaries
+#             'conference': list(conference.values()),
+#             'books': list(books.values()),
+#             'projects': list(projects.values()),
+#             'consultancy': list(consultancy.values()),
+#             'patents': list(patents.values()),
+#             'techtransfers': list(techtransfers.values()),
+#             'mtechs': list(mtechs.values()),
+#             'phds': list(phds.values()),
+#             'fvisits': list(fvisits.values()),
+#             'ivisits': list(ivisits.values()),
+#             'consymps': list(consymps.values()),
+#             'awards': list(awards.values()),
+#             'talks': list(talks.values()),
+#             'chairs': list(chairs.values()),
+#             'keynotes': list(keynotes.values()),
+#             'events': list(events.values()),
+#         },
+#         'year_range': y,
+#         'personal_info': {
+#             'faculty_about': pers.about if pers else None,
+#             'date_of_joining': pers.doj if pers else None,
+#             'contact': pers.contact if pers else None,
+#             'interest': pers.interest if pers else None,
+#             'education': pers.education if pers else None,
+#             'linkedin': pers.linkedin if pers else None,
+#             'github': pers.github if pers else None
+#         },
+#         'projects': {
+#             'registrations': list(project_r.values()),
+#             'extensions': list(project_ext.values()),
+#             'closures': list(project_closure.values()),
+#             'reallocations': list(project_reall.values()),
+#         },
+#     }
+
+#     # Generate HTML content using Gemini API
+#     model = genai.GenerativeModel("gemini-1.5-flash")
+#     json_input = f"Generate an HTML report for the following data: {data}"
+#     response = model.generate_content(json_input)
+#     html_content = response.text.strip("```html").strip("```")
+
+#     # Convert HTML to PDF
+#     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_pdf:
+#         pdfkit.from_string(html_content, temp_pdf.name)
+#         temp_pdf.seek(0)
+#         pdf_file_path = temp_pdf.name
+
+#     # Send the PDF as a response
+#     return FileResponse(open(pdf_file_path, 'rb'), content_type='application/pdf', as_attachment=True, filename="report.pdf")
+
+
+
 @csrf_exempt
 def generate_report(request, username=None):
-
     """Generate a PDF report for a given faculty member based on their research data and personal information.
 
     Args:
@@ -559,119 +693,81 @@ def generate_report(request, username=None):
         username (str): The username of the faculty member.
 
     Returns:
-        HttpResponse: The PDF report as a response."""
-    
-    if request.method == 'POST':
-        user = get_object_or_404(User, username=request.POST.get('username'))
-    else:
+        HttpResponse: The PDF report as a response.
+    """
+    if request.method != 'POST':
         return JsonResponse({'error': 'Only POST method is allowed.'}, status=405)
+    
+    print(request.POST.get('username'), "hehe")
 
+    user = get_object_or_404(User, username=request.POST.get('username'))
     extra_info = get_object_or_404(ExtraInfo, user=user)
-
     pf = extra_info.user_id
+    extra_info = get_object_or_404(faculty_about, user_id=pf)
 
-    # Forms and project management data
-    project_r = Project_Registration.objects.filter(PI_id=pf).order_by('PI_id__user')
-    project_ext = Project_Extension.objects.filter(project_id__PI_id=pf).order_by('project_id__PI_id__user')
-    project_closure = Project_Closure.objects.filter(project_id__PI_id=pf).order_by('project_id__PI_id__user')
-    project_reall = Project_Reallocation.objects.filter(project_id__PI_id=pf).order_by('project_id__PI_id__user')
-
-    # Research data
-    journal = emp_research_papers.objects.filter(pf_no=pf, rtype='Journal').order_by('-year')
-    conference = emp_research_papers.objects.filter(pf_no=pf, rtype='Conference').order_by('-year')
-    books = emp_published_books.objects.filter(pf_no=pf).order_by('-pyear')
-    projects = emp_research_projects.objects.filter(pf_no=pf).order_by('-start_date')
-    consultancy = emp_consultancy_projects.objects.filter(pf_no=pf).order_by('-date_entry')
-    patents = emp_patents.objects.filter(pf_no=pf).order_by('-date_entry')
-    techtransfers = emp_techtransfer.objects.filter(pf_no=pf).order_by('-date_entry')
-    mtechs = emp_mtechphd_thesis.objects.filter(pf_no=pf, degree_type=1).order_by('-date_entry')
-    phds = emp_mtechphd_thesis.objects.filter(pf_no=pf, degree_type=2).order_by('-date_entry')
-    fvisits = emp_visits.objects.filter(pf_no=pf, v_type=2).order_by('-entry_date')
-    ivisits = emp_visits.objects.filter(pf_no=pf, v_type=1).order_by('-entry_date')
-    consymps = emp_confrence_organised.objects.filter(pf_no=pf).order_by('-date_entry')
-    awards = emp_achievement.objects.filter(pf_no=pf).order_by('-date_entry')
-    talks = emp_expert_lectures.objects.filter(pf_no=pf).order_by('-date_entry')
-    chairs = emp_session_chair.objects.filter(pf_no=pf).order_by('-date_entry')
-    keynotes = emp_keynote_address.objects.filter(pf_no=pf).order_by('-date_entry')
-    events = emp_event_organized.objects.filter(pf_no=pf).order_by('-start_date')
-
-    # Get year range
-    y = list(range(1995, datetime.datetime.now().year + 1))
-
-    # Personal information
-    try:
-        pers = get_object_or_404(faculty_about, user_id=pf)
-    except:
-        pers = None
-
-    # Designations
-    a1 = HoldsDesignation.objects.select_related('user', 'working', 'designation').filter(working=user)
-    flag_rspc = 0
-    for i in a1:
-        if str(i.designation) == 'Dean (RSPC)':
-            flag_rspc = 1
-
-    designations = [str(i.designation) for i in a1]
-
-    data = {
-        'user': {
-            'username': user.username,
-            'email': user.email,
-        },
-        'designations': designations,
-        'pf': pf,
-        'flag_rspc': flag_rspc,
-        'research': {
-            'journal': list(journal.values()),  # Convert queryset to list of dictionaries
-            'conference': list(conference.values()),
-            'books': list(books.values()),
-            'projects': list(projects.values()),
-            'consultancy': list(consultancy.values()),
-            'patents': list(patents.values()),
-            'techtransfers': list(techtransfers.values()),
-            'mtechs': list(mtechs.values()),
-            'phds': list(phds.values()),
-            'fvisits': list(fvisits.values()),
-            'ivisits': list(ivisits.values()),
-            'consymps': list(consymps.values()),
-            'awards': list(awards.values()),
-            'talks': list(talks.values()),
-            'chairs': list(chairs.values()),
-            'keynotes': list(keynotes.values()),
-            'events': list(events.values()),
-        },
-        'year_range': y,
-        'personal_info': {
-            'faculty_about': pers.about if pers else None,
-            'date_of_joining': pers.doj if pers else None,
-            'contact': pers.contact if pers else None,
-            'interest': pers.interest if pers else None,
-            'education': pers.education if pers else None,
-            'linkedin': pers.linkedin if pers else None,
-            'github': pers.github if pers else None
-        },
-        'projects': {
-            'registrations': list(project_r.values()),
-            'extensions': list(project_ext.values()),
-            'closures': list(project_closure.values()),
-            'reallocations': list(project_reall.values()),
-        },
+    # Fetch data
+    research_data = {
+        'Journal Publications': emp_research_papers.objects.filter(pf_no=pf, rtype='Journal').order_by('-year'),
+        'Conference Publications': emp_research_papers.objects.filter(pf_no=pf, rtype='Conference').order_by('-year'),
+        'Books Published': emp_published_books.objects.filter(pf_no=pf).order_by('-pyear'),
+        'Research Projects': emp_research_projects.objects.filter(pf_no=pf).order_by('-start_date'),
+        'Consultancy Projects': emp_consultancy_projects.objects.filter(pf_no=pf).order_by('-date_entry'),
+        'Patents': emp_patents.objects.filter(pf_no=pf).order_by('-date_entry'),
+        'Technical Transfers': emp_techtransfer.objects.filter(pf_no=pf).order_by('-date_entry'),
+        'Awards': emp_achievement.objects.filter(pf_no=pf).order_by('-date_entry'),
     }
 
-    # Generate HTML content using Gemini API
-    model = genai.GenerativeModel("gemini-1.5-flash")
-    json_input = f"Generate an HTML report for the following data: {data}"
-    response = model.generate_content(json_input)
-    html_content = response.text.strip("```html").strip("```")
+    personal_info = {
+        'About': extra_info.about if hasattr(extra_info, 'about') else "N/A",
+        'Date of Joining': extra_info.doj if hasattr(extra_info, 'doj') else "N/A",
+        'Contact': extra_info.contact if hasattr(extra_info, 'contact') else "N/A",
+    }
 
-    # Convert HTML to PDF
+    # Create PDF using ReportLab
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_pdf:
-        pdfkit.from_string(html_content, temp_pdf.name)
-        temp_pdf.seek(0)
         pdf_file_path = temp_pdf.name
 
-    # Send the PDF as a response
+    doc = SimpleDocTemplate(pdf_file_path, pagesize=letter)
+    styles = getSampleStyleSheet()
+    elements = []
+
+    # Title
+    title = Paragraph(f"Report for {user.username}", styles['Title'])
+    elements.append(title)
+    elements.append(Spacer(1, 12))
+
+    # Personal Information
+    elements.append(Paragraph("Personal Information", styles['Heading2']))
+    for key, value in personal_info.items():
+        elements.append(Paragraph(f"<b>{key}:</b> {value}", styles['Normal']))
+    elements.append(Spacer(1, 12))
+
+    # Research Data
+    elements.append(Paragraph("Research Information", styles['Heading2']))
+    for section, items in research_data.items():
+        elements.append(Paragraph(f"{section}", styles['Heading3']))
+        if items.exists():
+            data = [[f"{field.name}" for field in items.model._meta.fields]]  # Add table headers
+            for item in items:
+                data.append([getattr(item, field.name, '') for field in items.model._meta.fields])
+            table = Table(data, repeatRows=1)
+            table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.black)
+            ]))
+            elements.append(table)
+        else:
+            elements.append(Paragraph("No data available.", styles['Normal']))
+        elements.append(Spacer(1, 12))
+
+    # Build PDF
+    doc.build(elements)
+
+    # Serve the file
     return FileResponse(open(pdf_file_path, 'rb'), content_type='application/pdf', as_attachment=True, filename="report.pdf")
+
 
 # Dean RSPC Profile
 @csrf_exempt
@@ -1379,19 +1475,23 @@ def fvisit_insert(request):
         eis.place = request.POST.get('place')
         eis.purpose = request.POST.get('purpose')
         
-        x = request.POST.get('start_date')
-        x = x.split()
-        x = x[1:4]
-        x = ' '.join(x)
+        # x = request.POST.get('start_date')
+        # x = x.split()
+        # x = x[1:4]
+        # x = ' '.join(x)
 
-        eis.start_date = datetime.datetime.strptime(x, "%b %d %Y")
+        # eis.start_date = datetime.datetime.strptime(x, "%b %d %Y")
 
-        x = request.POST.get('end_date')
-        x = x.split()
-        x = x[1:4]
-        x = ' '.join(x)
+        eis.start_date = request.POST.get('start_date')
 
-        eis.end_date = datetime.datetime.strptime(x, "%b %d %Y")
+        # x = request.POST.get('end_date')
+        # x = x.split()
+        # x = x[1:4]
+        # x = ' '.join(x)
+
+        # eis.end_date = datetime.datetime.strptime(x, "%b %d %Y")
+
+        eis.end_date = request.POST.get('end_date')
 
         eis.save()
         return JsonResponse({'message' : 'Your data is saved '})
@@ -1421,19 +1521,23 @@ def ivisit_insert(request):
     eis.place = request.POST.get('place')
     eis.purpose = request.POST.get('purpose')
     
-    x = request.POST.get('start_date')
-    x = x.split()
-    x = x[1:4]
-    x = ' '.join(x)
+    # x = request.POST.get('start_date')
+    # x = x.split()
+    # x = x[1:4]
+    # x = ' '.join(x)
 
-    eis.start_date = datetime.datetime.strptime(x, "%b %d %Y")
+    # eis.start_date = datetime.datetime.strptime(x, "%b %d %Y")
 
-    x = request.POST.get('end_date')
-    x = x.split()
-    x = x[1:4]
-    x = ' '.join(x)
+    eis.start_date = request.POST.get('start_date')
 
-    eis.end_date = datetime.datetime.strptime(x, "%b %d %Y")
+    # x = request.POST.get('end_date')
+    # x = x.split()
+    # x = x[1:4]
+    # x = ' '.join(x)
+
+    # eis.end_date = datetime.datetime.strptime(x, "%b %d %Y")
+
+    eis.end_date = request.POST.get('end_date')
 
     eis.save()
     return JsonResponse({'message' : 'Your data is saved '})
@@ -1957,19 +2061,23 @@ def consym_insert(request):
         eis.role1 = "Any Other"
         eis.role2 = "Any Other"
 
-    x = request.POST.get('conference_start_date')
-    x = x.split()
-    x = x[1:4]
-    x = ' '.join(x)
+    # x = request.POST.get('conference_start_date')
+    # x = x.split()
+    # x = x[1:4]
+    # x = ' '.join(x)
 
-    eis.start_date = datetime.datetime.strptime(x, "%b %d %Y")
+    # eis.start_date = datetime.datetime.strptime(x, "%b %d %Y")
 
-    x = request.POST.get('conference_end_date')
-    x = x.split()
-    x = x[1:4]
-    x = ' '.join(x)
+    eis.start_date = request.POST.get('conference_start_date')
 
-    eis.end_date = datetime.datetime.strptime(x, "%b %d %Y")
+    # x = request.POST.get('conference_end_date')
+    # x = x.split()
+    # x = x[1:4]
+    # x = ' '.join(x)
+
+    # eis.end_date = datetime.datetime.strptime(x, "%b %d %Y")
+
+    eis.end_date = request.POST.get('conference_end_date')
 
     eis.save()
     return JsonResponse({ "success": True})
@@ -2001,19 +2109,23 @@ def editconsym(request):
         eis.role1 = "Any Other"
         eis.role2 = "Any Other"
     
-    x = request.POST.get('conference_start_date')
-    x = x.split()
-    x = x[1:4]
-    x = ' '.join(x)
+    # x = request.POST.get('conference_start_date')
+    # x = x.split()
+    # x = x[1:4]
+    # x = ' '.join(x)
 
-    eis.start_date = datetime.datetime.strptime(x, "%b %d %Y")
+    # eis.start_date = datetime.datetime.strptime(x, "%b %d %Y")
 
-    x = request.POST.get('conference_end_date')
-    x = x.split()
-    x = x[1:4]
-    x = ' '.join(x)
+    eis.start_date = request.POST.get('conference_start_date')
 
-    eis.end_date = datetime.datetime.strptime(x, "%b %d %Y")
+    # x = request.POST.get('conference_end_date')
+    # x = x.split()
+    # x = x[1:4]
+    # x = ' '.join(x)
+
+    # eis.end_date = datetime.datetime.strptime(x, "%b %d %Y")
+
+    eis.end_date = request.POST.get('conference_end_date')
 
     eis.save()
     return JsonResponse({'success': True})
@@ -2045,19 +2157,23 @@ def event_insert(request):
     eis.venue = request.POST.get('event_venue')
     eis.role = request.POST.get('event_role')
 
-    x = request.POST.get('event_start_date')
-    x = x.split()
-    x = x[1:4]
-    x = ' '.join(x)
+    # x = request.POST.get('event_start_date')
+    # x = x.split()
+    # x = x[1:4]
+    # x = ' '.join(x)
 
-    eis.start_date = datetime.datetime.strptime(x, "%b %d %Y")
+    # eis.start_date = datetime.datetime.strptime(x, "%b %d %Y")
 
-    x = request.POST.get('event_end_date')
-    x = x.split()
-    x = x[1:4]
-    x = ' '.join(x)
+    eis.start_date = request.POST.get('event_start_date')
 
-    eis.end_date = datetime.datetime.strptime(x, "%b %d %Y")
+    # x = request.POST.get('event_end_date')
+    # x = x.split()
+    # x = x[1:4]
+    # x = ' '.join(x)
+
+    # eis.end_date = datetime.datetime.strptime(x, "%b %d %Y")
+
+    eis.end_date = request.POST.get('event_end_date')
 
     eis.save()
     return JsonResponse({'message' : 'Your data is saved '})
@@ -2085,19 +2201,25 @@ def editevent(request):
     eis.name = request.POST.get('event_name')
     eis.venue = request.POST.get('event_venue')
     eis.role = request.POST.get('event_role')
-    x = request.POST.get('event_start_date')
-    x = x.split()
-    x = x[1:4]
-    x = ' '.join(x)
 
-    eis.start_date = datetime.datetime.strptime(x, "%b %d %Y")
+    # x = request.POST.get('event_start_date')
+    # x = x.split()
+    # x = x[1:4]
+    # x = ' '.join(x)
 
-    x = request.POST.get('event_end_date')
-    x = x.split()
-    x = x[1:4]
-    x = ' '.join(x)
+    # eis.start_date = datetime.datetime.strptime(x, "%b %d %Y")
 
-    eis.end_date = datetime.datetime.strptime(x, "%b %d %Y")
+    eis.start_date = request.POST.get('event_start_date')
+
+    # x = request.POST.get('event_end_date')
+    # x = x.split()
+    # x = x[1:4]
+    # x = ' '.join(x)
+
+    # eis.end_date = datetime.datetime.strptime(x, "%b %d %Y")
+
+    eis.end_date = request.POST.get('event_end_date')
+
     eis.save()
     return JsonResponse({'success': True})
 
@@ -2176,12 +2298,15 @@ def talk_insert(request):
     eis.l_type = request.POST.get('type')
     eis.place = request.POST.get('place')
     eis.title = request.POST.get('title')
-    x = request.POST.get('l_date')
-    x = x.split()
-    x = x[1:4]
-    x = ' '.join(x)
 
-    eis.l_date = datetime.datetime.strptime(x, "%b %d %Y")
+    # x = request.POST.get('l_date')
+    # x = x.split()
+    # x = x[1:4]
+    # x = ' '.join(x)
+
+    # eis.l_date = datetime.datetime.strptime(x, "%b %d %Y")
+
+    eis.l_date = request.POST.get('l_date')
 
     eis.save()
     return JsonResponse({'message' : 'Your data is saved '})
@@ -2300,26 +2425,33 @@ def project_insert(request):
     eis.financial_outlay = request.POST.get('financial_outlay')
     eis.funding_agency = request.POST.get('funding_agency')
     eis.status = request.POST.get('status')
-    x = request.POST.get('start')
-    x = x.split()
-    x = x[1:4]
-    x = ' '.join(x)
 
-    eis.start_date = datetime.datetime.strptime(x, "%b %d %Y")
+    # x = request.POST.get('start')
+    # x = x.split()
+    # x = x[1:4]
+    # x = ' '.join(x)
 
-    x = request.POST.get('end')
-    x = x.split()
-    x = x[1:4]
-    x = ' '.join(x)
+    # eis.start_date = datetime.datetime.strptime(x, "%b %d %Y")
 
-    eis.finish_date = datetime.datetime.strptime(x, "%b %d %Y")
+    eis.start_date = request.POST.get('start')
 
-    x = request.POST.get('sub')
-    x = x.split()
-    x = x[1:4]
-    x = ' '.join(x)
+    # x = request.POST.get('end')
+    # x = x.split()
+    # x = x[1:4]
+    # x = ' '.join(x)
 
-    eis.date_submission = datetime.datetime.strptime(x, "%b %d %Y")
+    # eis.finish_date = datetime.datetime.strptime(x, "%b %d %Y")
+
+    eis.finish_date = request.POST.get('end')
+
+    # x = request.POST.get('sub')
+    # x = x.split()
+    # x = x[1:4]
+    # x = ' '.join(x)
+
+    # eis.date_submission = datetime.datetime.strptime(x, "%b %d %Y")
+
+    eis.date_submission = request.POST.get('sub')
 
     eis.save()
     return JsonResponse({'success': True})
@@ -2359,18 +2491,25 @@ def consult_insert(request):
     eis.client = request.POST.get('client')
     eis.title = request.POST.get('title')
     eis.financial_outlay = request.POST.get('financial_outlay')
-    x = request.POST.get('start')
-    x = x.split()
-    x = x[1:4]
-    x = ' '.join(x)
 
-    eis.start_date = datetime.datetime.strptime(x, "%b %d %Y")
-    x = request.POST.get('end')
-    x = x.split()
-    x = x[1:4]
-    x = ' '.join(x)
+    # x = request.POST.get('start')
+    # x = x.split()
+    # x = x[1:4]
+    # x = ' '.join(x)
 
-    eis.end_date = datetime.datetime.strptime(x, "%b %d %Y")
+    # eis.start_date = datetime.datetime.strptime(x, "%b %d %Y")
+
+    eis.start_date = request.POST.get('start')
+
+    # x = request.POST.get('end')
+    # x = x.split()
+    # x = x[1:4]
+    # x = ' '.join(x)
+
+    # eis.end_date = datetime.datetime.strptime(x, "%b %d %Y")
+
+    eis.end_date = request.POST.get('end')
+
     eis.save()
     return JsonResponse({'message' : 'Your data is saved '})
 
@@ -2442,6 +2581,12 @@ def transfer_insert(request):
     eis.save()
     return JsonResponse({'message' : 'Your data is saved '})
 
+# def get_personal_info(request):
+#     # Fetch all entries where pf_no is '5318'
+#     projects = faculty_about.objects.filter(user_id='5318').values()
+
+#     return JsonResponse(list(projects), safe=False)
+
 def get_personal_info(request):
     # Fetch all entries where pf_no is '5318'
     projects = faculty_about.objects.filter(user_id=request.GET.get("pfNo")).values()
@@ -2503,21 +2648,24 @@ def get_consym(request):
 
     return JsonResponse(list(projects), safe=False)
 
+# def get_books(request):
+#     # Fetch all entries where pf_no is '5318'
+#     books = emp_published_books.objects.filter(pf_no="5318").order_by('-pyear').values()
+
+#     return JsonResponse(list(books), safe=False)
+
 def get_books(request):
     # Fetch all entries where pf_no is '5318'
     books = emp_published_books.objects.filter(pf_no=request.GET.get("pfNo")).order_by('-pyear').values()
-    
     return JsonResponse(list(books), safe=False)
 
-def get_journals(request):
-    journals = emp_research_papers.objects.filter(pf_no=request.GET.get("pfNo")).values()
 
+def get_journals(request):
+    journals = emp_research_papers.objects.filter(pf_no=request.GET.get("pfNo"), rtype='Journal').order_by('-date_entry').values()
     return JsonResponse(list(journals), safe=False)
 
 def get_conference(request):
-    # Fetch all entries where pf_no is '5318'
     conference = emp_research_papers.objects.filter(pf_no=request.GET.get("pfNo")).order_by('-year').values()
-
     return JsonResponse(list(conference), safe=False)
 
 def get_achievements(request):
