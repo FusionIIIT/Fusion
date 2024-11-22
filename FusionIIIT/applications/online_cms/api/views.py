@@ -5,24 +5,19 @@ from rest_framework.decorators import permission_classes, authentication_classes
 from rest_framework.permissions import AllowAny
 from django.shortcuts import render
 from django.utils import timezone
-<<<<<<< HEAD
-from django.core.serializers import serialize
-from django.http import JsonResponse
-from decimal import Decimal
-from applications.academic_information.models import (Student,Student_attendance,Calendar, Timetable)
-from applications.programme_curriculum.models import Course as Courses
-from applications.programme_curriculum.models import CourseInstructor
-from applications.academic_procedures.models import course_registration
-from applications.globals.models import ExtraInfo
-from applications.online_cms.models import Modules  # Import the Modules model
-=======
->>>>>>> e3ac747c93b3082f2cb5da2057ce7e578b0f1bd5
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
+from applications.academic_information.models import Student
+from applications.programme_curriculum.models import Course as Courses, CourseInstructor
+from applications.academic_procedures.models import course_registration
+from applications.globals.models import ExtraInfo
+from rest_framework.permissions import IsAuthenticated
+from applications.online_cms.models import  Student_grades
+from .serializers import StudentGradesSerializer
+import datetime
 from .serializers import *
-<<<<<<< HEAD
 
 @api_view(['POST'])
 def add_module(request):
@@ -90,16 +85,6 @@ def delete_slide(request, slide_id):
         return Response(status=status.HTTP_204_NO_CONTENT)  # No content after deletion
     except CourseDocuments.DoesNotExist:
         return Response({"error": "Slide not found"}, status=status.HTTP_404_NOT_FOUND)
-=======
-from applications.academic_information.models import Student
-from applications.programme_curriculum.models import Course as Courses, CourseInstructor
-from applications.academic_procedures.models import course_registration
-from applications.globals.models import ExtraInfo
-from rest_framework.permissions import IsAuthenticated
-from applications.online_cms.models import  Student_grades
-from .serializers import StudentGradesSerializer
-import datetime
->>>>>>> e3ac747c93b3082f2cb5da2057ce7e578b0f1bd5
 
 @api_view(['GET'])
 def courseview(request):
