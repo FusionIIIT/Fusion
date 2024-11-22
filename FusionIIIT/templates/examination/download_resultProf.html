@@ -2,7 +2,7 @@
 
 {% block sidetabmenu %}
 <div class="ui medium fluid vertical pointing menu" style="max-width: 320px;">
-  <a class="active item" href="{% url 'examination:submitGradesProf' %}">Submit
+  <a class="item" href="{% url 'examination:submitGradesProf' %}">Submit
     <i class="right floated chevron right icon"></i>
   </a>
   <a class="active item" href="{% url 'examination:downloadGrades' %}"><B>Download Grades</B>
@@ -23,7 +23,7 @@
 </div>
 {% endblock %}
 {% block content %}
-<h1>Submit Results</h1>
+<h1>Download Result</h1>
 <br />
 
 <div style="display: flex; flex-direction: column; gap: 30px;">
@@ -53,7 +53,7 @@
     
 
     <div style="margin-left: 10px; display: flex; gap: 20px;">
-        <button class="ui primary button" style="cursor: pointer; padding: 10px 20px;" onclick="dwn_grade()">Download Template</button>
+        <button class="ui primary button" style="cursor: pointer; padding: 10px 20px;" onclick="dwn_grade()">Download Grades</button>
     </div>
 </div>
 

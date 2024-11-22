@@ -1370,19 +1370,17 @@ def downloadGrades(request):
 
 # def get_courses(request):
 def generate_pdf(request):
-    course_id=request.POST.get('course_id')
+    course_id = request.POST.get('course_id')
     academic_year = request.POST.get('academic_year')
-    course_info= get_object_or_404(Courses, id=course_id)
-    grades = Student_grades.objects.filter(course_id_id=course_id,year=academic_year).order_by("roll_no")
-    print(course_id,'sddefh',course_info,'abcdefh',academic_year)
+    course_info = get_object_or_404(Courses, id=course_id)
+    grades = Student_grades.objects.filter(course_id_id=course_id, year=academic_year).order_by("roll_no")
 
     # Calculate grade counts
-    grade_counts = {grade: grades.filter(grade=grade).count() for grade in ["A+", "O", "A", "B+", "B", "C+", "D+", "D", "F"]}
+    all_grades = ["O", "A+", "A", "B+", "B", "C+", "C", "D+", "D", "F", "I", "S", "X"]
+    grade_counts = {grade: grades.filter(grade=grade).count() for grade in all_grades}
 
     response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = (
-        f'attachment; filename="{course_info.code}_grades.pdf"'
-    )
+    response["Content-Disposition"] = f'attachment; filename="{course_info.code}_grades.pdf"'
 
     doc = SimpleDocTemplate(response, pagesize=letter)
     elements = []
@@ -1390,55 +1388,65 @@ def generate_pdf(request):
 
     # Custom Header Style
     header_style = ParagraphStyle(
-        "HeaderStyle",
-        parent=styles["Heading1"],
-        fontName="Helvetica-Bold",
-        fontSize=16,
-        textColor=HexColor("#003366"),
-        spaceAfter=20,
+    "HeaderStyle",
+    parent=styles["Heading1"],
+    fontName="Helvetica-Bold",
+    fontSize=16,
+    textColor=HexColor("#333333"),
+    spaceAfter=20,
+    alignment=1,  # Center alignment
     )
     subheader_style = ParagraphStyle(
         "SubheaderStyle",
         parent=styles["Normal"],
         fontSize=12,
-        textColor=HexColor("#333333"),
+        textColor=HexColor("#666666"),
         spaceAfter=10,
     )
-    instructor=request.user.first_name+" "+request.user.last_name
+    instructor = request.user.first_name + " " + request.user.last_name
+
     # Add Header
     elements.append(Paragraph(f"Grade Sheet", header_style))
-    elements.append(Paragraph(f"Session: {academic_year}", subheader_style))
-    elements.append(Paragraph(f"Semester: {grades.first().semester}", subheader_style))
-    elements.append(Paragraph(f"Course Code: {course_info.code}", subheader_style))
-    elements.append(Paragraph(f"Course Name: {course_info.name}", subheader_style))
-    elements.append(Paragraph(f"Instructor: {instructor}", subheader_style))
+    field_label_style = ParagraphStyle(
+    "FieldLabelStyle",
+    parent=styles["Normal"],
+    fontSize=12,
+    textColor=colors.black,  # Black text color for labels
+    spaceAfter=5,
+)
+    field_value_style = ParagraphStyle(
+    "FieldValueStyle",
+    parent=styles["Normal"],
+    fontSize=12,
+    textColor=HexColor("#666666"),  # Gray text color for values
+    spaceAfter=10,
+)
 
-    # Add Spacer
-    
+# Add fields with labels in black and values in gray
+    elements.append(Paragraph(f"<b>Session:</b> {academic_year}", field_label_style))
+    elements.append(Paragraph(f"<b>Semester:</b> {grades.first().semester}", field_label_style))
+    elements.append(Paragraph(f"<b>Course Code:</b> {course_info.code}", field_label_style))
+    elements.append(Paragraph(f"<b>Course Name:</b> {course_info.name}", field_label_style))
+    elements.append(Paragraph(f"<b>Instructor:</b> {instructor}", field_label_style))
 
     # Table Data with Wider Column Widths
     data = [["S.No.", "Roll Number", "Grade"]]
     for i, grade in enumerate(grades, 1):
         data.append([i, grade.roll_no, grade.grade])
-    table = Table(data, colWidths=[80, 300, 100])  # Adjusted column widths
+    table = Table(data, colWidths=[80, 300, 100])
 
     # Improved Table Style
     table.setStyle(
         TableStyle(
             [
-                ("BACKGROUND", (0, 0), (-1, 0), HexColor("#003366")),
-                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("BACKGROUND", (0, 0), (-1, 0), HexColor("#E0E0E0")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
                 ("ALIGN", (0, 0), (-1, 0), "CENTER"),
                 ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
                 ("FONTSIZE", (0, 0), (-1, 0), 14),
                 ("BOTTOMPADDING", (0, 0), (-1, 0), 10),
                 ("BACKGROUND", (0, 1), (-1, -1), HexColor("#F9F9F9")),
-                (
-                    "ROWBACKGROUNDS",
-                    (0, 1),
-                    (-1, -1),
-                    [HexColor("#F9F9F9"), colors.white],
-                ),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [HexColor("#F9F9F9"), colors.white]),
                 ("TEXTCOLOR", (0, 1), (-1, -1), colors.black),
                 ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
                 ("FONTSIZE", (0, 1), (-1, -1), 12),
@@ -1448,23 +1456,21 @@ def generate_pdf(request):
             ]
         )
     )
-
     elements.append(table)
-    
     elements.append(Spacer(1, 20))
 
-    # Add Grade Counts
+    # Add Grade Distribution with Row Splitting
     elements.append(Paragraph(f"Grade Distribution:", header_style))
-    grade_data = [["Grade", "Count"]]
-    for grade, count in grade_counts.items():
-        grade_data.append([grade, count])
 
-    grade_table = Table(grade_data, colWidths=[100, 100])
-    grade_table.setStyle(
+    # First Grade Table
+    grade_data1 = [["O", "A+", "A", "B+", "B", "C+", "C", "D+"]]
+    grade_data1.append([grade_counts[grade] for grade in grade_data1[0]])
+    grade_table1 = Table(grade_data1, colWidths=[60] * 8)
+    grade_table1.setStyle(
         TableStyle(
             [
-                ("BACKGROUND", (0, 0), (-1, 0), HexColor("#003366")),
-                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("BACKGROUND", (0, 0), (-1, 0), HexColor("#E0E0E0")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
                 ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                 ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
                 ("FONTSIZE", (0, 0), (-1, 0), 12),
@@ -1475,28 +1481,43 @@ def generate_pdf(request):
             ]
         )
     )
-    elements.append(grade_table)
+    elements.append(grade_table1)
+    elements.append(Spacer(1, 10))
+
+    # Second Grade Table
+    grade_data2 = [["D", "F", "I", "S", "X"]]
+    grade_data2.append([grade_counts[grade] for grade in grade_data2[0]])
+    grade_table2 = Table(grade_data2, colWidths=[60] * 5)
+    grade_table2.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), HexColor("#E0E0E0")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
+                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, 0), 12),
+                ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+                ("BACKGROUND", (0, 1), (-1, -1), colors.white),
+                ("TEXTCOLOR", (0, 1), (-1, -1), colors.black),
+            ]
+        )
+    )
+    elements.append(grade_table2)
     elements.append(Spacer(1, 20))
+
     # Footer Signatures
     def draw_signatures(canvas, doc):
         canvas.saveState()
         width, height = letter
-
-        # Director's Signature (left-aligned)
-        canvas.drawString(inch, 0.75 * inch, "______________________________")
-        canvas.drawString(inch, 0.5 * inch, "Director's Signature")
-
-        # Course Instructor's Signature (right-aligned)
-        canvas.drawString(width - 4 * inch, 0.75 * inch, "______________________________")
+        canvas.drawString(inch, 0.75 * inch, "")
+        canvas.drawString(inch, 0.5 * inch, "Date")
+        canvas.drawString(width - 4 * inch, 0.75 * inch, "")
         canvas.drawString(width - 4 * inch, 0.5 * inch, "Course Instructor's Signature")
-
         canvas.restoreState()
 
-    # Attach Footer Function
     doc.build(elements, onLaterPages=draw_signatures, onFirstPage=draw_signatures)
     return response
-
-
 
 
 

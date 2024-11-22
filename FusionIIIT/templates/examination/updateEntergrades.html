@@ -82,23 +82,23 @@
         <tbody>
           {% for registration in registrations %}
           <tr>
-               <td>{{ registration.roll_no }}</td>
-                <td>{{ registration.batch }}</td>
-                <td>{{ registration.course_id }}</td>
-                <td>{{ registration.semester }}</td>
-                <td>{{ registration.remarks }}</td>
-                
-
-
+            <td>{{ registration.roll_no }}</td>
+            <td>{{ registration.batch }}</td>
+            <td>{{ registration.course_id }}</td>
+            <td>{{ registration.semester }}</td>
             <td>
-              <input type="hidden" name="student_ids[]" value="{{ registration.roll_no}}">
+              <input type="hidden" name="student_ids[]" value="{{ registration.roll_no }}">
               <input type="hidden" name="semester_ids[]" value="{{ registration.semester }}">
               <input type="hidden" name="course_ids[]" value="{{ registration.course_id.id }}">
+              <input type="text" name="remarks[]" value="{{ registration.remarks }}">
+            </td>
+            <td>
               <input type="text" name="grades[]" value="{{ registration.grade }}" readonly>
             </td>
           </tr>
           {% endfor %}
         </tbody>
+        
       </table>
     </div>
     {% comment %} <button class="ui primary button" type="submit">FINALISE Grades</button> {% endcomment %}
