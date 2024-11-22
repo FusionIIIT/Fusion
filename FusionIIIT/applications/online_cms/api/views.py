@@ -4,6 +4,11 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import permission_classes, authentication_classes
 from rest_framework.permissions import AllowAny
 from django.shortcuts import render
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.decorators import permission_classes, authentication_classes
+from rest_framework.permissions import AllowAny
+from django.shortcuts import render
 from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -17,6 +22,7 @@ from rest_framework.permissions import IsAuthenticated
 from applications.online_cms.models import  Student_grades
 from .serializers import StudentGradesSerializer
 import datetime
+from rest_framework import status
 from .serializers import *
 
 @api_view(['POST'])
@@ -85,6 +91,14 @@ def delete_slide(request, slide_id):
         return Response(status=status.HTTP_204_NO_CONTENT)  # No content after deletion
     except CourseDocuments.DoesNotExist:
         return Response({"error": "Slide not found"}, status=status.HTTP_404_NOT_FOUND)
+from applications.academic_information.models import Student
+from applications.programme_curriculum.models import Course as Courses, CourseInstructor
+from applications.academic_procedures.models import course_registration
+from applications.globals.models import ExtraInfo
+from rest_framework.permissions import IsAuthenticated
+from applications.online_cms.models import  Student_grades
+from .serializers import StudentGradesSerializer
+import datetime
 
 @api_view(['GET'])
 def courseview(request):
