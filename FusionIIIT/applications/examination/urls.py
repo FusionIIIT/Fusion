@@ -30,7 +30,7 @@ urlpatterns = [
     path('download_excel/', DownloadExcelView.as_view(), name='download_excel'),#old
 
     #new
-    url(r'submitGrades/', views.submitGrades, name='submitGrades'),#new
+    url(r'submitGrades/', views.submitGrades.as_view(), name='submitGrades'),#new
     url(r'submitEntergrades/', views.submitEntergrades, name='submitEntergrades'),#new
     path('submitEntergradesStoring/', views.submitEntergradesStoring.as_view(),#new
          name='submitEntergradesStoring'),
@@ -52,6 +52,18 @@ urlpatterns = [
          name='generate_transcript_form'),#new
     # Announcement
     url(r'announcement/', views.announcement, name='announcement'),#new
-    
+    path('upload_grades/',views.upload_grades,name='upload_grades'),
+    path('message/',views.show_message,name='message'),
+    path('submitGradesProf/',views.submitGradesProf,name='submitGradesProf'),
+    path('download_template/',views.download_template,name='download_template'),
+    path('verifyGradesDean/',views.verifyGradesDean,name='verifyGradesDean'),
+    path('updateEntergradesDean/',views.updateEntergradesDean,name='updateEnterGradesDean'),
+    path('upload_grades_prof/',views.upload_grades_prof,name='upload_grades_prof'),
+    path('validateDean/',views.validateDean,name='validateDean'),
+    path('validateDeanSubmit/',views.validateDeanSubmit,name='validateDeanSubmit'),
+    path('downloadGrades/',views.downloadGrades,name='downloadGrades'),
+    path('generate_pdf/',views.generate_pdf,name='generate_pdf'),
+    path('generate-result/',views.generate_result,name='generate_pdf'),
+#     path('get_courses/',views.get_courses,name='get_courses'), 
 
 ]

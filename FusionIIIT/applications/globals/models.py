@@ -225,7 +225,8 @@ class Faculty(models.Model):
         
 
     def __str__(self):
-        return str(self.id)
+        # return str(self.id)
+        return f"{self.id} - {self.id.user.first_name} {self.id.user.last_name}"
 
 
 """ Feedback and bug report models start"""
