@@ -16,12 +16,13 @@ from django.template.loader import get_template
 from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
-from applications.academic_procedures.models import MinimumCredits, Register, InitialRegistration, course_registration, AssistantshipClaim,Assistantship_status,FinalRegistration
+from applications.academic_procedures.models import MinimumCredits, Register, InitialRegistration, course_registration, AssistantshipClaim,Assistantship_status,FinalRegistration, StudentRegistrationChecks
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation, DepartmentInfo)
 
-from .forms import AcademicTimetableForm, ExamTimetableForm, MinuteForm
+from .forms import AcademicTimetableForm, ExamTimetableForm, MinuteForm, PreRegistrationSearchForm
 from .models import (Calendar, Course, Exam_timetable, Grades, Curriculum_Instructor,Constants,
                      Meeting, Student, Student_attendance, Timetable,Curriculum)
 from applications.programme_curriculum.models import (CourseSlot, Course as Courses, Batch, Semester, Programme, Discipline)                     
@@ -129,6 +130,7 @@ def get_context(request):
         assistant_flag =""
         hod_flag = ""
         account_flag = ""
+        PreRegistrationsrchform = PreRegistrationSearchForm()
 
         for obj in assis_stat:
             assistant_flag = obj.student_status
@@ -178,6 +180,7 @@ def get_context(request):
         'hod_flag' : hod_flag,
         'account_flag' : account_flag,
         'notifications': notifs,
+        'preregistrationsrchform': PreRegistrationsrchform,
     }
 
     return context
@@ -216,6 +219,8 @@ def homepage(request):
     if user_check(request):
         return HttpResponseRedirect('/academic-procedures/')
     
+    context = get_context(request)
+    
     if request.method == "POST":
         if 'check_allocation' in request.POST : 
             return  check_for_registration_complete(request)
@@ -223,7 +228,40 @@ def homepage(request):
             return allocate(request)
         if 'view_allocation' in request.POST :
             return view_alloted_course(request)
-    context = get_context(request)
+        if 'search_preregistration' in request.POST or 'delete_preregistration' in request.POST:
+            form = PreRegistrationSearchForm(request.POST)
+            if form.is_valid():
+                roll_no = form.cleaned_data['roll_no'].upper()
+                semester_no = form.cleaned_data['semester_no']
+                print(roll_no, semester_no)
+
+                # Fetch student object by roll number
+                # student = get_object_or_404(Student, id=roll_no)
+
+                # Fetch semester by semester number
+                # semester = get_object_or_404(Semester, semester_no=semester_no)
+                # print(f"Student -> {student}")
+
+                # Search for all initial registrations and student registration check
+                initial_registrations = InitialRegistration.objects.filter(
+                    student_id_id=roll_no, semester_id__semester_no=semester_no
+                )
+                student_registration_check = StudentRegistrationChecks.objects.filter(
+                    student_id_id=roll_no, semester_id__semester_no=semester_no
+                ).first()
+                if ('delete_preregistration' in request.POST):
+                    print(initial_registrations, student_registration_check)
+                    try:
+                        initial_registrations.delete()
+                        student_registration_check.delete()
+                        messages.success(request, "Student's pre registration data successfully deleted.")
+                    except:
+                        messages.error(request, "An error occured while deleting.")
+                    context['delete_preregistration'] = True
+                else :
+                    context['initial_registrations'] = initial_registrations
+                    context['student_registration_check'] = student_registration_check
+                    context['delete_preregistration'] = True
 
     return render(request, "ais/ais.html", context)
 
