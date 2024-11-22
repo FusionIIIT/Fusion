@@ -1291,6 +1291,12 @@ def emp_session_chairDelete(request):
     return JsonResponse({'success': True})
 
 @csrf_exempt
+def emp_journal_delete(request):
+    instance = emp_research_papers.objects.get(pk=request.POST['pk'])
+    instance.delete()
+    return JsonResponse({'success': True})
+
+@csrf_exempt
 def emp_techtransferDelete(request):
     """
     Delete an emp_techtransfer entry from the database.
@@ -2651,22 +2657,15 @@ def get_consym(request):
 def get_books(request):
     # Fetch all entries where pf_no is '5318'
     books = emp_published_books.objects.filter(pf_no=request.GET.get("pfNo")).order_by('-pyear').values()
-    print(request)
-    
     return JsonResponse(list(books), safe=False)
 
 
 def get_journals(request):
-    # Fetch all entries where pf_no is '5318'
     journals = emp_research_papers.objects.filter(pf_no=request.GET.get("pfNo"), rtype='Journal').order_by('-date_entry').values()
-
     return JsonResponse(list(journals), safe=False)
 
-
 def get_conference(request):
-    # Fetch all entries where pf_no is '5318'
-    conference = emp_research_papers.objects.filter(pf_no=request.GET.get("pfNo"), rtype='Conference').order_by('-year').values()
-
+    conference = emp_research_papers.objects.filter(pf_no=request.GET.get("pfNo")).order_by('-year').values()
     return JsonResponse(list(conference), safe=False)
 
 def get_achievements(request):

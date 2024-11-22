@@ -6,7 +6,7 @@ from django.db.models.fields import IntegerField, PositiveIntegerField
 from django.db.models import CheckConstraint, Q, F
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
-from applications.globals.models import ExtraInfo
+from applications.globals.models import ExtraInfo,Faculty
 from django.core.validators import MinValueValidator, MaxValueValidator, DecimalValidator
 from applications.globals.models import (DepartmentInfo, Designation,
                                          ExtraInfo, Faculty, HoldsDesignation)
@@ -35,6 +35,7 @@ COURSESLOT_TYPE_CHOICES = [
     ('Swayam', 'Swayam'),
     ('Project', 'Project'),
     ('Optional', 'Optional'),
+    ('Backlog', 'Backlog'),
     ('Others', 'Others')
 ]
 
@@ -261,7 +262,7 @@ class Course(models.Model):
     working_course = models.BooleanField(default=True)
     disciplines = models.ManyToManyField(Discipline, blank=True)
     latest_version = models.BooleanField(default=True)
-
+    max_seats = models.IntegerField(default=90)
     class Meta:
         unique_together = ('code', 'version')
 
@@ -349,12 +350,16 @@ class CourseSlot(models.Model):
 
 class CourseInstructor(models.Model):
     course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
-    instructor_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
-    batch_id = models.ForeignKey(Batch, on_delete=models.CASCADE, default=1)
-    # change extra info to faculty(globals)
+    # instructor_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
+    instructor_id = models.ForeignKey(Faculty, on_delete=models.CASCADE)
+    year = models.IntegerField(default=datetime.date.today().year, null=False)  # Default to the current year
+    semester_no = models.IntegerField(
+        default=1,  # Set default semester as 1
+        validators=[MinValueValidator(1), MaxValueValidator(8)]  # Constraint for semesters
+    )
 
     class Meta:
-        unique_together = ('course_id', 'instructor_id', 'batch_id')
+        unique_together = ('course_id', 'instructor_id', 'year')
 
 #new
 class NewProposalFile(models.Model):

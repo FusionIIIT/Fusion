@@ -592,6 +592,7 @@ class InitialRegistration(models.Model):
             course_slot_id(programme_curriculum.CourseSlot) - details about under which course slot the course is offered(Optional/Core other details)
             timestamp - the time this entry was generated
             priority - priority of the selected course from the list of courses for the corresponding course_slot_it
+            registration_type - Type of registration for the course
 
 
         
@@ -602,11 +603,21 @@ class InitialRegistration(models.Model):
     course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True,on_delete=models.SET_NULL)
     timestamp = models.DateTimeField(default=timezone.now)
     priority = models.IntegerField(blank=True,null=True)
+    REGISTRATION_TYPE_CHOICES = [
+        ('Audit', 'Audit'),
+        ('Improvement', 'Improvement'),
+        ('Backlog', 'Backlog'),
+        ('Regular', 'Regular'),
+    ]
+    registration_type = models.CharField(
+        max_length=20,
+        choices=REGISTRATION_TYPE_CHOICES,
+        default='Regular',
+    )
     
     class Meta:
         db_table = 'InitialRegistration'
-
-
+    
 class FinalRegistration(models.Model):
     '''
             Current Purpose : stores information regarding the process of final(complete) registration of a student for a course 
@@ -627,6 +638,17 @@ class FinalRegistration(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     verified = models.BooleanField(default=False)
     course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True,on_delete=models.SET_NULL)
+    REGISTRATION_TYPE_CHOICES = [
+        ('Audit', 'Audit'),
+        ('Improvement', 'Improvement'),
+        ('Backlog', 'Backlog'),
+        ('Regular', 'Regular'),
+    ]
+    registration_type = models.CharField(
+        max_length=20,
+        choices=REGISTRATION_TYPE_CHOICES,
+        default='Regular',
+    )
 
     class Meta:
         db_table = 'FinalRegistration'
@@ -689,7 +711,6 @@ class course_registration(models.Model):
         return str(self.semester_id.semester_no)
     class Meta:
         db_table = 'course_registration'
-
 
 class backlog_course(models.Model):
     '''
