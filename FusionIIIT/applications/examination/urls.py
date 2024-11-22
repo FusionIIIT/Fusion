@@ -30,7 +30,7 @@ urlpatterns = [
     path('download_excel/', DownloadExcelView.as_view(), name='download_excel'),#old
 
     #new
-    url(r'submitGrades/', views.submitGrades, name='submitGrades'),#new
+    url(r'submitGrades/', views.submitGrades.as_view(), name='submitGrades'),#new
     url(r'submitEntergrades/', views.submitEntergrades, name='submitEntergrades'),#new
     path('submitEntergradesStoring/', views.submitEntergradesStoring.as_view(),#new
          name='submitEntergradesStoring'),
@@ -61,6 +61,9 @@ urlpatterns = [
     path('upload_grades_prof/',views.upload_grades_prof,name='upload_grades_prof'),
     path('validateDean/',views.validateDean,name='validateDean'),
     path('validateDeanSubmit/',views.validateDeanSubmit,name='validateDeanSubmit'),
-
+    path('downloadGrades/',views.downloadGrades,name='downloadGrades'),
+    path('generate_pdf/',views.generate_pdf,name='generate_pdf'),
+    path('generate-result/',views.generate_result,name='generate_pdf'),
+#     path('get_courses/',views.get_courses,name='get_courses'), 
 
 ]

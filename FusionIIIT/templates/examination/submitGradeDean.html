@@ -45,26 +45,7 @@
                 </div>
             </div>
         </div>
-        <div style="display: flex; flex-direction: row; gap: 10px;">
-            <div style="margin-top: 8px;">
-                <label>Semester</label>
-            </div>
-            <div class="ui selection dropdown" id="semester-dropdown">
-                <input type="hidden" name="gender">
-                <i class="dropdown icon"></i>
-                <div class="default text">Select Item</div>
-                <div class="menu">
-                    <div class="item" data-value="1">1</div>
-                    <div class="item" data-value="2">2</div>
-                    <div class="item" data-value="3">3</div>
-                    <div class="item" data-value="4">4</div>
-                    <div class="item" data-value="5">5</div>
-                    <div class="item" data-value="6">6</div>
-                    <div class="item" data-value="7">7</div>
-                    <div class="item" data-value="8">8</div>
-                </div>
-            </div>
-        </div>
+        
         <div style="display: flex; flex-direction: row; gap: 10px;">
             <div style="margin-top: 8px;">
                 <label>Batch</label>
@@ -95,13 +76,12 @@
     function search() {
       // Get selected course and semester values
       var selectedCourse = $('#course-dropdown .menu .item.active').attr('data-value');
-      var selectedSemester = $('#semester-dropdown .menu .item.active').attr('data-value');
       var selectedBatch = $('#batch-dropdown .menu .item.active').attr('data-value');
   
       // Check if both course and semester are selected
-      if (selectedCourse && selectedSemester&&selectedBatch) {
+      if (selectedCourse && selectedBatch) {
         // Redirect to the new page with parameters
-        window.location.href = `/examination/updateEntergradesDean?course=${selectedCourse}&semester=${selectedSemester}&batch=${selectedBatch}`;
+        window.location.href = `/examination/updateEntergradesDean?course=${selectedCourse}&batch=${selectedBatch}`;
       } else {
         alert('Please select both course and semester.');
       }
