@@ -159,15 +159,69 @@ def academic_procedures_faculty(request):
         approved_assistantship_request_list = ta_approved_assistantship_request_list | thesis_approved_assistantship_request_list
         mtechseminar_request_list = MTechGraduateSeminarReport.objects.all().filter(Overall_grade = '')
         phdprogress_request_list = PhDProgressExamination.objects.all().filter(Overall_grade = '')
-        courses_list = list(CourseInstructor.objects.select_related('course_id', 'batch_id', 'batch_id__discipline').filter(instructor_id__id=fac_id.id).only('course_id__code', 'course_id__name', 'batch_id'))
 
-        assigned_courses = CourseInstructor.objects.select_related('course_id', 'batch_id', 'batch_id__discipline').filter(
-                            instructor_id__id=fac_id.id,  # Filter by faculty ID
-                            batch_id__running_batch=True,  # Filter by currently running batches
-                            course_id__working_course=True  # Filter by currently active courses
-                            ).only('course_id__code', 'course_id__name', 'batch_id')
-        assigned_courses = list(assigned_courses)
+        # courses_list = list(CourseInstructor.objects.select_related('course_id', 'batch_id', 'batch_id__discipline').filter(instructor_id__id=fac_id.id).only('course_id__code', 'course_id__name', 'batch_id'))
+        # print(fac_id.id)
+        courses_list = list(
+            CourseInstructor.objects.filter(instructor_id=fac_id.id)
+            .values('course_id_id','course_id__code','course_id__version','course_id__name', 'year', 'semester_no')
+        )
+        for course in courses_list:
+            # Calculate the batch as an integer
+            course['batch'] = int(course['year'] - (course['semester_no'] // 2))
+
+        # print(courses_list)
+        # # courses_list = list(
+        #     CourseInstructor.objects.select_related('course_id', 'instructor_id')
+        #     .filter(instructor_id=fac_id)
+        #     # .only('course_id__code', 'course_id__name', 'course_id')
+        # )
+
+
+        # assigned_courses = CourseInstructor.objects.select_related('course_id', 'batch_id', 'batch_id__discipline').filter(
+        #                     instructor_id__id=fac_id.id,  # Filter by faculty ID
+        #                     batch_id__running_batch=True,  # Filter by currently running batches
+        #                     course_id__working_course=True  # Filter by currently active courses
+        #                     ).only('course_id__code', 'course_id__name', 'batch_id')
         
+
+        course_years = (
+            CourseInstructor.objects
+            .select_related('course_id', 'instructor_id')
+            .filter(
+                instructor_id=fac_id.id,
+                course_id__working_course=True
+            )
+        )
+
+        assigned_courses = []
+        excluded_years = set() 
+
+        for course_instructor in course_years:
+        # Calculate target year based on course year and semester
+            target_year = course_instructor.year - course_instructor.semester_no // 2
+            
+            # Check if all batches for this target year are inactive
+            batches_for_year = Batch.objects.filter(year=target_year)
+            if batches_for_year.exists() and not batches_for_year.filter(running_batch=True).exists():
+                excluded_years.add(course_instructor.year)
+
+        # Second pass: filter courses based on excluded years
+        filtered_courses = (
+            CourseInstructor.objects
+            .select_related('course_id', 'instructor_id')
+            .filter(
+                instructor_id=fac_id.id,
+                course_id__working_course=True
+            )
+            .exclude(year__in=excluded_years)
+        )
+        # Ensure unique results in the final list
+        assigned_courses = list(filtered_courses)
+        
+        # assigned_courses = list(assigned_courses)
+        # assigned_courses = []
+        # courses_list = []
         # print('------------------------------------------------------------------------------------------------------------------' , list(assigned_courses))
         r = range(4)
         return render(
@@ -393,7 +447,7 @@ def academic_procedures_student(request):
             final_registered_courses = FinalRegistration.objects.all().filter(student_id = user_details.id,semester_id = next_sem_id)
             final_registered_course_show=[]
             for final_registered_course in final_registered_courses:
-                final_registered_course_show.append({"course_code":final_registered_course.course_id.code,"course_name":final_registered_course.course_id.name,"course_credit":final_registered_course.course_id.credit})
+                final_registered_course_show.append({"course_code":final_registered_course.course_id.code,"course_name":final_registered_course.course_id.name,"course_credit":final_registered_course.course_id.credit, "registration_type": final_registered_course.registration_type})
             add_courses_options = get_add_course_options(current_sem_branch_course, currently_registered_course, batch.year)
             drop_courses_options = get_drop_course_options(currently_registered_course)
             replace_courses_options = get_replace_course_options(currently_registered_course, batch.year)
@@ -1454,6 +1508,7 @@ def auto_pre_registration(request):
             existing_entries = set()
             for course_slot in course_slots :
                 course_priorities = request.POST.getlist("course_priority-"+course_slot)
+                registration_type = request.POST.get('registration_type-'+course_slot, 'Regular')
                 if(course_priorities[0] == 'NULL'):
                     continue
                 course_slot_id_for_model = CourseSlot.objects.get(id = int(course_slot))
@@ -1472,16 +1527,17 @@ def auto_pre_registration(request):
                             semester_id = sem_id,
                             student_id = current_user,
                             course_slot_id = course_slot_id_for_model,
-                            priority = priority_of_current_course
+                            priority = priority_of_current_course,
+                            registration_type = registration_type
                         )
-                        f =FinalRegistration(student_id=current_user ,course_slot_id=course_slot_id_for_model , course_id=course_id_for_model ,semester_id=sem_id)
-                        final_reg_curr.append(f)
+                        # f =FinalRegistration(student_id=current_user ,course_slot_id=course_slot_id_for_model , course_id=course_id_for_model ,semester_id=sem_id)
+                        # final_reg_curr.append(f)
                         reg_curr.append(p)
                         existing_entries.add(current_combination)
             try:
 
                 InitialRegistration.objects.bulk_create(reg_curr)
-                FinalRegistration.objects.bulk_create(final_reg_curr)
+                # FinalRegistration.objects.bulk_create(final_reg_curr)
                 registration_check = StudentRegistrationChecks(
                             student_id = current_user,
                             pre_registration_flag = True,

@@ -1,0 +1,33 @@
+{% extends 'programme_curriculum/acad_admin/common.html' %}
+{% block content %}
+<div class="ui segment" >
+    <div class="header"><h1>Course Instructor Form</h1></div>
+    <div class="ui divider"></div>
+    <!-- Check if there are form errors and trigger an alert -->
+    {% if form.errors %}
+        <script type="text/javascript">
+            var errorMessages = "";
+
+            {% if form.non_field_errors %}
+                errorMessages += "A Course Instructor with this Course, Instructor, and year combination already exists. Please choose different values.\n";
+            {% endif %}
+
+            {% for field in form %}
+                {% if field.errors %}
+                    errorMessages += "A Course Instructor with this Course, Instructor, and year combination already exists. Please choose different values.\n";
+                {% endif %}
+            {% endfor %}
+
+            if (errorMessages !== "") {
+                alert(errorMessages);
+            }
+        </script>
+    {% endif %}
+    <form class="ui large form" method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input class="ui primary button" type="Submit" name="Submit">
+    </form>
+</div>
+
+{% endblock %}
