@@ -35,7 +35,7 @@
         <div style="display: flex; flex-direction: column; gap: 10px; min-width: 300px;">
             <label for="year-select" style="font-weight: bold;">Academic Year</label>
             <select id="year-select" name="year" onchange="fetchCoursesByYear(this.value)" style="padding: 12px; font-size: 1rem; min-height: 50px; width: 100%; background: white;  appearance: none; outline:none; cursor: pointer;">
-              
+                <option value="" selected>Select Year</option>
                 {% for working_year in working_years %}
                 <option value="{{ working_year.working_year }}">{{ working_year.working_year }}</option>
                 {% empty %}
