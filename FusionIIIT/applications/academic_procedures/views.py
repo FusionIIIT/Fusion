@@ -1087,7 +1087,7 @@ def verify_course(request):
         # TO DO Bdes
         date = {'year': yearr, 'semflag': semflag}
         course_list = Courses.objects.all()
-        semester_list = Semester.objects.all()
+        semester_list = Semester.objects.filter(curriculum=curr_id)
         semester_no_list=[]
         for i in semester_list:
             semester_no_list.append(int(i.semester_no))
