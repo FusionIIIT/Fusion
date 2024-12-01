@@ -74,6 +74,9 @@
                         Semester
                     </th>
                     <th>
+                        Registration Type
+                    </th>
+                    <th>
                         Drop Course
                     </th>
                 </tr>
@@ -101,6 +104,9 @@
                         {{ items.sem }}
                     </td>
                     <td>
+                        {{ items.registration_type }}
+                    </td>
+                    <td>
                         <A class="ui blue label"
                             href="/academic-procedures/acad_person/verifyCourse/drop/?id={{ items.reg_id|urlencode }}" onclick="courseDropCalled(event)" >
                             DROP </A>
@@ -123,7 +129,7 @@
         {% endif %}
 
         <div class="ui divider"></div>
-        {% comment %} <button class="ui fluid positive button addCourseButton">Add Course</button> {% endcomment %}
+        <button class="ui fluid positive button addCourseButton">Add Course</button>
         
         <div class="ui modal addCourseForm">
             <p>Fill details for the Course you want to add</p>
@@ -145,6 +151,15 @@
                         {% for sem in semester_list %}
                             <option value="{{sem.id}}">{{sem.curriculum.name}}, sem - {{sem.semester_no}}</option>
                         {% endfor%}
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Registration Type</label>
+                    <select class="ui fluid dropdown" name = "registration_type">
+                        <option value="Regular">Regular</option>
+                        <option value="Improvement">Improvement</option>
+                        <option value="Backlog">Backlog</option>
+                        <option value="Audit">Audit</option>
                     </select>
                 </div>
 

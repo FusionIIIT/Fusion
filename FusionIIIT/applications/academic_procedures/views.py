@@ -408,6 +408,7 @@ def academic_procedures_student(request):
         next_sem_registration_courses = get_sem_courses(next_sem_id, batch)
         final_registration_choice, unavailable_courses_nextsem = get_final_registration_choices(next_sem_registration_courses,batch.year)
         currently_registered_course = get_currently_registered_course(obj,obj.curr_semester_no)
+        current_courseregistrations = get_currently_registered_course(obj,obj.curr_semester_no, True)
 
         current_credits = get_current_credits(currently_registered_course)
  
@@ -562,6 +563,7 @@ def academic_procedures_student(request):
                           {'details': details,
                         #    'calendar': calendar,
                             'currently_registered': currently_registered_course,
+                            'current_courseregistrations': current_courseregistrations,
                             'pre_registered_course' : pre_registered_courses,
                             'pre_registered_course_show' : pre_registered_course_show,
                             'final_registered_course' : final_registered_courses,
@@ -1048,14 +1050,15 @@ def verify_course(request):
         details = []
 
         current_sem_courses = get_currently_registered_course(
-            roll_no, curr_sem_id)
+            roll_no, curr_sem_id, True)
 
         idd = obj2
         for z in current_sem_courses:
-            z = z[1]
+            # print(z)
+            # z = z[1]
             print(z)
-            course_code = z.code
-            course_name = z.name
+            course_code = z.course_id.code
+            course_name = z.course_id.name
             # course_code, course_name = str(z).split(" - ")
             k = {}
             # reg_ig has course registration id appended with the the roll number
@@ -1068,8 +1071,9 @@ def verify_course(request):
             for p in courseobj2:
                 k['course_id'] = course_code
                 k['course_name'] = course_name
-                k['sem'] = curr_sem_id.semester_no
+                k['sem'] = z.semester_id.semester_no
                 k['credits'] = p.credit
+                k['registration_type'] = z.registration_type
             details.append(k)
 
         year = demo_date.year
@@ -1111,8 +1115,9 @@ def acad_add_course(request):
             'id', 'id__user', 'id__department').filter(id=roll_no).first()
         sem_id = request.POST['semester_id']
         semester = Semester.objects.get(id=sem_id)
+        registration_type = request.POST["registration_type"]
         cr = course_registration(
-            course_id=course, student_id=student, semester_id=semester , working_year = datetime.datetime.now().year,)
+            course_id=course, student_id=student, semester_id=semester , working_year = datetime.datetime.now().year, registration_type=registration_type)
         cr.save()
 
     return HttpResponseRedirect('/academic-procedures/')
@@ -2104,12 +2109,17 @@ def get_currently_registered_courses(id, user_sem):
         ans.append(course)
     return ans
 
-def get_currently_registered_course(id, sem_id):
-    #  obj = course_registration.objects.all().filter(student_id = id, semester_id=sem_id)
-    obj = course_registration.objects.all().filter(student_id = id)
+def get_currently_registered_course(id, sem_id, courseregobj=False):
+    if (type(sem_id) == int):
+        obj = course_registration.objects.all().filter(student_id = id, semester_id__semester_no=sem_id)
+    else:
+        obj = course_registration.objects.all().filter(student_id = id)
     courses = []
     for i in obj:
-        courses.append((i.course_slot_id,i.course_id))
+        if (courseregobj):
+            courses.append(i)
+        else:
+            courses.append((i.course_slot_id,i.course_id))
     return courses
 
 
