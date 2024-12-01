@@ -487,7 +487,7 @@ class DownloadExcelView(View):
 
         return response
 
-
+@login_required(login_url="/accounts/login")
 def generate_transcript(request):
 
     student_id = request.GET.get('student')
@@ -553,7 +553,7 @@ def generate_transcript(request):
 
 # new
 
-
+@login_required(login_url="/accounts/login")
 def generate_transcript_form(request):
     if request.method == 'POST':
         programme = request.POST.get('programme')
@@ -614,7 +614,7 @@ def updateGrades(request):
 
     return render(request, "../templates/examination/submitGrade.html", context)
 
-
+@login_required(login_url="/accounts/login")
 def updateEntergrades(request):
     course_id = request.GET.get("course")
     
@@ -714,7 +714,7 @@ class submitGrades(APIView):
         
         return render(request, "../templates/examination/gradeSubmission.html", context)
 
-
+@login_required(login_url="/accounts/login")
 def submitEntergrades(request):
 
     course_id = request.GET.get("course")
@@ -859,7 +859,7 @@ class submitEntergradesStoring(APIView):
         return response
         return render(request, "../templates/examination/grades_updated.html", {})
 
-
+@login_required(login_url="/accounts/login")
 def upload_grades(request):
     if request.method == "POST" and request.FILES.get("csv_file"):
         csv_file = request.FILES["csv_file"]
@@ -924,9 +924,9 @@ def upload_grades(request):
                 roll_no = row["roll_no"]
                 grade = row["grade"]
                 remarks = row["remarks"]
-                batch_prefix = roll_no[:2]
-                batch = int(f"20{batch_prefix}")
-                semester=Student.objects.get(id_id=roll_no).curr_semester_no
+                stud=Student.objects.get(id_id=roll_no)
+                semester=stud.curr_semester_no
+                batch=stud.batch
                 
                 Student_grades.objects.create(
                     roll_no=roll_no,
@@ -966,7 +966,7 @@ def upload_grades(request):
         {"error": "Invalid request. Please upload a CSV file."}, status=400
     )
 
-
+@login_required(login_url="/accounts/login")
 def show_message(request):
     message = request.GET.get("message", "Default message if none provided.")
     des = request.session.get("currentDesignationSelected")
@@ -1009,7 +1009,7 @@ def submitGradesProf(request):
 
     return render(request, "../templates/examination/submitGradesProf.html", context)
 
-
+@login_required(login_url="/accounts/login")
 def download_template(request):
     course = request.GET.get('course')
     year = request.GET.get('year')
@@ -1043,7 +1043,7 @@ def download_template(request):
 
 
 
-
+@login_required(login_url="/accounts/login")
 def verifyGradesDean(request):
     unique_course_ids = Student_grades.objects.filter(verified=True).values("course_id").distinct()
 
@@ -1059,22 +1059,21 @@ def verifyGradesDean(request):
         id__in=unique_course_ids.values_list("course_id_int", flat=True)
     )
 
-    unique_batch_ids = Student_grades.objects.values("batch").distinct()
+    unique_year_ids = Student_grades.objects.values("year").distinct()
 
     context = {
         "courses_info": courses_info,
-        "unique_batch_ids": unique_batch_ids,
+        "unique_year_ids": unique_year_ids,
     }
 
     return render(request, "../templates/examination/submitGradeDean.html", context)
 
-
+@login_required(login_url="/accounts/login")
 def updateEntergradesDean(request):
     course_id = request.GET.get("course")
-   
-    batch = request.GET.get("batch")
+    year = request.GET.get("year")
     course_present = Student_grades.objects.filter(
-        course_id=course_id, batch=batch
+        course_id=course_id, year=year
     )
 
     if not course_present:
@@ -1086,7 +1085,7 @@ def updateEntergradesDean(request):
     return render(request, "../templates/examination/updateEntergradesDean.html", context)
 
 
-
+@login_required(login_url="/accounts/login")
 def upload_grades_prof(request):
     if request.method == "POST" and request.FILES.get("csv_file"):
         csv_file = request.FILES["csv_file"]
@@ -1154,9 +1153,9 @@ def upload_grades_prof(request):
                 roll_no = row["roll_no"]
                 grade = row["grade"]
                 remarks = row["remarks"]
-                batch_prefix = roll_no[:2]
-                batch = int(f"20{batch_prefix}")
-                semester=Student.objects.get(id_id=roll_no).curr_semester_no
+                stud=Student.objects.get(id_id=roll_no)
+                semester=stud.curr_semester_no
+                batch=stud.batch
                 reSubmit=False
                 Student_grades.objects.update_or_create(
                  roll_no=roll_no,
@@ -1200,6 +1199,8 @@ def upload_grades_prof(request):
         {"error": "Invalid request. Please upload a CSV file."}, status=400
     )
 
+
+@login_required(login_url="/accounts/login")
 def validateDean(request):
     unique_course_ids = Student_grades.objects.filter(verified=True).values("course_id").distinct()
 
@@ -1222,7 +1223,7 @@ def validateDean(request):
 
     return render(request, "../templates/examination/validation.html", context)
 
-
+@login_required(login_url="/accounts/login")
 def validateDeanSubmit(request):
     if request.method == "POST" and request.FILES.get("csv_file"):
         csv_file = request.FILES["csv_file"]
@@ -1282,9 +1283,9 @@ def validateDeanSubmit(request):
                 roll_no = row["roll_no"]
                 grade = row["grade"]
                 remarks = row["remarks"]
-                batch_prefix = roll_no[:2]
-                batch = int(f"20{batch_prefix}")
-                semester=Student.objects.get(id_id=roll_no).curr_semester_no
+                stud=Student.objects.get(id_id=roll_no)
+                semester=stud.curr_semester_no
+                batch=stud.batch
                 Student_grades.objects.filter(
                  roll_no=roll_no,
                  course_id_id=course_id,
@@ -1326,7 +1327,7 @@ def validateDeanSubmit(request):
             }
             return render(request, "../templates/examination/messageDean.html", context)
 
-
+@login_required(login_url="/accounts/login")
 def downloadGrades(request):
   academic_year = request.GET.get('academic_year')
         
@@ -1346,10 +1347,8 @@ def downloadGrades(request):
     unique_course_ids = unique_course_ids.annotate(
         course_id_int=Cast("course_id", IntegerField())
     )
-
     # Retrieve course names and course codes based on unique course IDs
 
-    # print(unique_course_ids)
     courses_info = Student_grades.objects.filter(
         year=academic_year,
         course_id_id__in=unique_course_ids.values_list("course_id_int", flat=True)
@@ -1368,7 +1367,7 @@ def downloadGrades(request):
   return render(request, "../templates/examination/download_resultProf.html", context)
 
 
-# def get_courses(request):
+@login_required(login_url="/accounts/login")
 def generate_pdf(request):
     course_id = request.POST.get('course_id')
     academic_year = request.POST.get('academic_year')
@@ -1520,7 +1519,7 @@ def generate_pdf(request):
     return response
 
 
-
+@login_required(login_url="/accounts/login")
 def generate_result(request):
     if request.method == 'POST':
         try:

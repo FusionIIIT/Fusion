@@ -48,17 +48,17 @@
         
         <div style="display: flex; flex-direction: row; gap: 10px;">
             <div style="margin-top: 8px;">
-                <label>Batch</label>
+                <label>Academic year</label>
             </div>
-            <div class="ui selection dropdown" id="batch-dropdown">
+            <div class="ui selection dropdown" id="year-dropdown">
                 <input type="hidden" name="gender">
                 <i class="dropdown icon"></i>
                 <div class="default text">Select Item</div>
                 <div class="menu">
-                  {% for unique_batch_id in unique_batch_ids %}
-                  <div class="item" data-value="{{ unique_batch_id.batch }}">{{unique_batch_id.batch }}</div>
+                  {% for unique_year_id in unique_year_ids %}
+                  <div class="item" data-value="{{ unique_year_id.year }}">{{unique_year_id.year }}</div>
               {% empty %}
-                  <div class="item">No Batch</div>
+                  <div class="item">No year</div>
               {% endfor %}  
                 </div>
             </div>
@@ -76,14 +76,14 @@
     function search() {
       // Get selected course and semester values
       var selectedCourse = $('#course-dropdown .menu .item.active').attr('data-value');
-      var selectedBatch = $('#batch-dropdown .menu .item.active').attr('data-value');
+      var selectedYear = $('#year-dropdown .menu .item.active').attr('data-value');
   
       // Check if both course and semester are selected
-      if (selectedCourse && selectedBatch) {
+      if (selectedCourse && selectedYear) {
         // Redirect to the new page with parameters
-        window.location.href = `/examination/updateEntergradesDean?course=${selectedCourse}&batch=${selectedBatch}`;
+        window.location.href = `/examination/updateEntergradesDean?course=${selectedCourse}&year=${selectedYear}`;
       } else {
-        alert('Please select both course and semester.');
+        alert('Please select both course and year.');
       }
     }
   </script>
