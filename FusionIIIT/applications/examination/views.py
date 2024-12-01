@@ -1059,11 +1059,11 @@ def verifyGradesDean(request):
         id__in=unique_course_ids.values_list("course_id_int", flat=True)
     )
 
-    unique_batch_ids = Student_grades.objects.values("batch").distinct()
+    unique_year_ids = Student_grades.objects.values("year").distinct()
 
     context = {
         "courses_info": courses_info,
-        "unique_batch_ids": unique_batch_ids,
+        "unique_year_ids": unique_year_ids,
     }
 
     return render(request, "../templates/examination/submitGradeDean.html", context)
@@ -1071,10 +1071,9 @@ def verifyGradesDean(request):
 @login_required(login_url="/accounts/login")
 def updateEntergradesDean(request):
     course_id = request.GET.get("course")
-   
-    batch = request.GET.get("batch")
+    year = request.GET.get("year")
     course_present = Student_grades.objects.filter(
-        course_id=course_id, batch=batch
+        course_id=course_id, year=year
     )
 
     if not course_present:
