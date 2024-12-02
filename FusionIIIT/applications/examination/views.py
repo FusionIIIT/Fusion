@@ -1269,9 +1269,9 @@ def validateDeanSubmit(request):
             decoded_file = csv_file.read().decode("utf-8").splitlines()
             reader = csv.DictReader(decoded_file)
 
-            required_columns = ["roll_no", "name", "grade", "remarks"]
+            required_columns = ["roll_no", "grade", "remarks"]
             if not all(column in reader.fieldnames for column in required_columns):
-                message = "CSV file must contain the following columns: roll_no, name, grade, remarks."
+                message = "CSV file must contain the following columns: roll_no, grade, remarks."
                 context = {
                  "message":message,
                 }
@@ -1503,7 +1503,17 @@ def generate_pdf(request):
         )
     )
     elements.append(grade_table2)
-    elements.append(Spacer(1, 20))
+    elements.append(Spacer(1, 40))
+
+    verified_style = ParagraphStyle(
+    "VerifiedStyle",
+    parent=styles["Normal"],
+    fontSize=13,
+    textColor=HexColor("#333333"),
+    alignment=0,  # Center alignment
+    spaceAfter=20,
+      )
+    elements.append(Paragraph("I have carefully checked and verified the submitted grade. The grade distribution and submitted grades are correct. [Please mention any exception below.]", verified_style))
 
     # Footer Signatures
     def draw_signatures(canvas, doc):
