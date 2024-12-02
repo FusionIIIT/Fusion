@@ -62,17 +62,7 @@
             <input type="file" id="csv-file" name="csv_file" accept=".csv" required>
             <button type="submit" class="ui primary button">Validate</button>
         </div>
-
-        <div style="display: flex; flex-direction: row; gap: 50px; margin-left: 10px;">
-            <button type="button" class="ui primary button" onclick="dwn_temp()">Download Template</button>
-        </div>
     </div>
 </form>
-
-<script>
-    function dwn_temp(){
-        window.location.href = '/examination/download_template';
-    }
-</script>
 
 {% endblock %}
