@@ -3,14 +3,14 @@
 <script>
     $(document).ready(function() {
         $('.ui.dropdown').dropdown();
+        let addCourseButton = document.querySelector(".addCourseButton");
+        addCourseButton.addEventListener("click",()=>
+            { 
+                $('.ui.addCourseForm.modal')
+                .modal('show')
+                ;
+            });  
     });
-    let addCourseButton = document.querySelector(".addCourseButton");
-    addCourseButton.addEventListener("click",()=>
-        { 
-            $('.ui.addCourseForm.modal')
-            .modal('show')
-            ;
-        });  
         function courseDropCalled(event) {
         // Prevent the default action of the link
         event.preventDefault();
