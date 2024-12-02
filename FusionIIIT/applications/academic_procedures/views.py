@@ -1090,6 +1090,7 @@ def verify_course(request):
         date = {'year': yearr, 'semflag': semflag}
         course_list = Courses.objects.all()
         semester_list = Semester.objects.filter(curriculum=curr_id)
+        courseslot_list = CourseSlot.objects.filter(semester__in=semester_list)
         semester_no_list=[]
         for i in semester_list:
             semester_no_list.append(int(i.semester_no))
@@ -1097,6 +1098,7 @@ def verify_course(request):
                                 {'details': details,
                                  'dict2': dict2,
                                  'course_list': course_list,
+                                 'courseslot_list': courseslot_list,
                                  'semester_list': semester_list,
                                  'date': date}, request)
 
@@ -1111,7 +1113,9 @@ def verify_course(request):
 def acad_add_course(request):
     if(request.method == "POST"):
         course_id = request.POST["course_id"]
+        courseslot_id = request.POST["courseslot_id"]
         course = Courses.objects.get(id=course_id)
+        courseslot = CourseSlot.objects.get(id=courseslot_id)
         roll_no = request.POST['roll_no']
         student = Student.objects.all().select_related(
             'id', 'id__user', 'id__department').filter(id=roll_no).first()
@@ -1119,7 +1123,7 @@ def acad_add_course(request):
         semester = Semester.objects.get(id=sem_id)
         registration_type = request.POST["registration_type"]
         cr = course_registration(
-            course_id=course, student_id=student, semester_id=semester , working_year = datetime.datetime.now().year, registration_type=registration_type)
+            course_slot_id=courseslot, course_id=course, student_id=student, semester_id=semester , working_year = datetime.datetime.now().year, registration_type=registration_type)
         cr.save()
 
     return HttpResponseRedirect('/academic-procedures/')

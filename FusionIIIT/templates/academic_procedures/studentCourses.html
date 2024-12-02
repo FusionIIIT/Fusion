@@ -139,6 +139,19 @@
             <form class="ui form" action = "/academic-procedures/acad_person/addCourse/" method = "post">
                 {% csrf_token %}
                 <div class="field">
+                    <label>Course Slot </label>
+                    <div class="ui fluid search selection dropdown">
+                        <input type="hidden" name="courseslot_id">
+                        <i class="dropdown icon"></i>
+                        <div class="default text">Select</div>
+                        <div class="menu">
+                            {% for courseslot in courseslot_list %}
+                            <div class="item" data-value="{{ courseslot.id }}">{{ courseslot.name }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
                     <label>Course </label>
                     <div class="ui fluid search selection dropdown">
                         <input type="hidden" name="course_id">
