@@ -948,15 +948,16 @@ def dropcourseadmin(request):
                 response_data - data to be responded.
     '''
     data = request.GET.get('id')
-    data = data.split(" - ")
-    student_id = data[0]
-    course_code = data[1]
-    course = Courses.objects.get(code=course_code , version = 1.0)
+    # data = data.split(" - ")
+    reg_id = int(data)
+    # student_id = data[0]
+    # course_code = data[1]
+    # course = Courses.objects.get(code=course_code , version = 1.0)
     # need to add batch and programme
     # curriculum_object = Curriculum.objects.all().filter(course_code = course_code)
     try:
         # Register.objects.filter(curr_id = curriculum_object.first(),student_id=int(data[0])).delete()
-        course_registration.objects.filter(student_id = student_id , course_id = course.id).delete()
+        course_registration.objects.filter(id=reg_id).delete()
     except Exception as e:
         print(str(e))
         pass
@@ -1063,7 +1064,7 @@ def verify_course(request):
             k = {}
             # reg_ig has course registration id appended with the the roll number
             # so that when we have removed the registration we can be redirected to this view
-            k['reg_id'] = roll_no+" - "+course_code
+            k['reg_id'] = z.id
             k['rid'] = roll_no+" - "+course_code
             # Name ID Confusion here , be carefull
             courseobj2 = Courses.objects.all().filter(code=course_code)
@@ -1071,6 +1072,7 @@ def verify_course(request):
             for p in courseobj2:
                 k['course_id'] = course_code
                 k['course_name'] = course_name
+                k['course_version'] = z.course_id.version
                 k['sem'] = z.semester_id.semester_no
                 k['credits'] = p.credit
                 k['registration_type'] = z.registration_type
