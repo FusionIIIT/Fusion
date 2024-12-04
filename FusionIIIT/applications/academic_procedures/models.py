@@ -722,6 +722,7 @@ class course_registration(models.Model):
         return str(self.semester_id.semester_no)
     class Meta:
         db_table = 'course_registration'
+        unique_together = ('course_id', 'student_id', 'semester_id', 'registration_type')
 
 class backlog_course(models.Model):
     '''
