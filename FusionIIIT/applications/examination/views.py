@@ -489,7 +489,13 @@ class DownloadExcelView(View):
 
 @login_required(login_url="/accounts/login")
 def generate_transcript(request):
+    des = request.session.get("currentDesignationSelected")
+    if des == "acadadmin" :
+        pass
+    else:
+        return HttpResponseRedirect('/dashboard/')
 
+     
     student_id = request.GET.get('student')
     semester = request.GET.get('semester')
     courses_registered = Student_grades.objects.filter(
@@ -555,6 +561,11 @@ def generate_transcript(request):
 
 @login_required(login_url="/accounts/login")
 def generate_transcript_form(request):
+    des = request.session.get("currentDesignationSelected")
+    if des == "acadadmin" :
+        pass
+    else:
+        return HttpResponseRedirect('/dashboard/')
     if request.method == 'POST':
         programme = request.POST.get('programme')
         batch = request.POST.get('batch')
@@ -591,7 +602,15 @@ def generate_transcript_form(request):
 
 @login_required(login_url="/accounts/login")
 def updateGrades(request):
-    unique_course_ids = Student_grades.objects.values("course_id").distinct()
+    des = request.session.get("currentDesignationSelected")
+    if des == "acadadmin":
+        pass
+    else:
+        if request.is_ajax():
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+        else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
+    unique_course_ids = Student_grades.objects.filter(verified=False).values("course_id").distinct()
 
     # Cast the course IDs to integers
     unique_course_ids = unique_course_ids.annotate(
@@ -616,6 +635,14 @@ def updateGrades(request):
 
 @login_required(login_url="/accounts/login")
 def updateEntergrades(request):
+    des = request.session.get("currentDesignationSelected")
+    if des == "acadadmin":
+        pass
+    else:
+        if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+        else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
     course_id = request.GET.get("course")
     
     year = request.GET.get("year")
@@ -642,6 +669,14 @@ class moderate_student_grades(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        des = request.session.get("currentDesignationSelected")
+        if des == "acadadmin" or des=="Dean Academic":
+         pass
+        else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
         student_ids = request.POST.getlist('student_ids[]')
         semester_ids = request.POST.getlist('semester_ids[]')
         course_ids = request.POST.getlist('course_ids[]')
@@ -684,6 +719,14 @@ class submitGrades(APIView):
     login_url = "/accounts/login"
     
     def get(self, request):
+        des = request.session.get("currentDesignationSelected")
+        if des == "acadadmin":
+         pass
+        else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
         academic_year = request.GET.get('academic_year')
         
         if academic_year:
@@ -701,8 +744,8 @@ class submitGrades(APIView):
             
             # Retrieve course information based on the unique course IDs
             courses_info = Courses.objects.filter(
-                id__in=unique_course_ids.values_list("course_id_int", flat=True)
-            )
+              id__in=unique_course_ids.values_list("course_id_int", flat=True)
+            ).order_by('code')
             
             # Return the course information as JSON response
             return JsonResponse({"courses": list(courses_info.values())})
@@ -862,6 +905,14 @@ class submitEntergradesStoring(APIView):
 @login_required(login_url="/accounts/login")
 def upload_grades(request):
     if request.method == "POST" and request.FILES.get("csv_file"):
+        des = request.session.get("currentDesignationSelected")
+        if des == "acadadmin":
+         pass
+        else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
         csv_file = request.FILES["csv_file"]
 
         if not csv_file.name.endswith(".csv"):
@@ -968,6 +1019,14 @@ def upload_grades(request):
 
 @login_required(login_url="/accounts/login")
 def show_message(request):
+    des = request.session.get("currentDesignationSelected")
+    if des == "acadadmin" or str(des) == "Associate Professor" or str(des) == "Professor" or str(des) == "Assistant Professor" :
+         pass
+    else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
     message = request.GET.get("message", "Default message if none provided.")
     des = request.session.get("currentDesignationSelected")
     if (
@@ -981,6 +1040,14 @@ def show_message(request):
 
 @login_required(login_url="/accounts/login")
 def submitGradesProf(request):
+    des = request.session.get("currentDesignationSelected")
+    if  str(des) == "Associate Professor" or str(des) == "Professor" or str(des) == "Assistant Professor" :
+         pass
+    else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
     # print(request.user,1)
     unique_course_ids = (
         CourseInstructor.objects.filter(instructor_id_id=request.user.username)
@@ -1011,40 +1078,65 @@ def submitGradesProf(request):
 
 @login_required(login_url="/accounts/login")
 def download_template(request):
+    des = request.session.get("currentDesignationSelected")
+    if des == "acadadmin" or str(des) == "Associate Professor" or str(des) == "Professor" or str(des) == "Assistant Professor" or des=="Dean Academic" :
+         pass
+    else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
     course = request.GET.get('course')
     year = request.GET.get('year')
 
     if not course or not year:
         return JsonResponse({'error': 'Course and year are required'}, status=400)
-
+    
     try:
 
-        course_info = course_registration.objects.filter(course_id_id=course, working_year=year)
-
-      
+        course_info = course_registration.objects.filter(
+            course_id_id=course, 
+            working_year=year
+        )
+        
+  
         if not course_info.exists():
             return JsonResponse({'error': 'No registration data found for the provided course and year'}, status=404)
 
-  
+        course_obj = course_info.first().course_id
         response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = f'attachment; filename="template.csv"'
+        filename = f"{course_obj.code}_template_{year}.csv"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        # Create CSV writer
         writer = csv.writer(response)
-
+        
+        # Write header
         writer.writerow(["roll_no", "grade", "remarks"])
-
+        
+        # Write student roll numbers
         for entry in course_info:
-            student = entry.student_id  
-            writer.writerow([student.id_id, "", ""])
-
+            student_entry = entry.student_id
+            writer.writerow([student_entry.id_id, "", ""])
+        
         return response
-
+    
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
-
+        # Log the error (consider using Python's logging module)
+        print(f"Error in download_template: {str(e)}")
+        return JsonResponse({'error': 'An unexpected error occurred'}, status=500)
 
 
 @login_required(login_url="/accounts/login")
 def verifyGradesDean(request):
+    des = request.session.get("currentDesignationSelected")
+    if des=="Dean Academic" :
+         pass
+    else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
     unique_course_ids = Student_grades.objects.filter(verified=True).values("course_id").distinct()
 
     # Cast the course IDs to integers
@@ -1070,6 +1162,14 @@ def verifyGradesDean(request):
 
 @login_required(login_url="/accounts/login")
 def updateEntergradesDean(request):
+    des = request.session.get("currentDesignationSelected")
+    if des=="Dean Academic" :
+         pass
+    else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
     course_id = request.GET.get("course")
     year = request.GET.get("year")
     course_present = Student_grades.objects.filter(
@@ -1087,6 +1187,14 @@ def updateEntergradesDean(request):
 
 @login_required(login_url="/accounts/login")
 def upload_grades_prof(request):
+    des = request.session.get("currentDesignationSelected")
+    if str(des) == "Associate Professor" or str(des) == "Professor" or str(des) == "Assistant Professor" :
+         pass
+    else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
     if request.method == "POST" and request.FILES.get("csv_file"):
         csv_file = request.FILES["csv_file"]
 
@@ -1202,6 +1310,14 @@ def upload_grades_prof(request):
 
 @login_required(login_url="/accounts/login")
 def validateDean(request):
+    des = request.session.get("currentDesignationSelected")
+    if des=="Dean Academic" :
+         pass
+    else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
     unique_course_ids = Student_grades.objects.filter(verified=True).values("course_id").distinct()
 
     # Cast the course IDs to integers
@@ -1225,6 +1341,14 @@ def validateDean(request):
 
 @login_required(login_url="/accounts/login")
 def validateDeanSubmit(request):
+    des = request.session.get("currentDesignationSelected")
+    if des=="Dean Academic" :
+         pass
+    else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
     if request.method == "POST" and request.FILES.get("csv_file"):
         csv_file = request.FILES["csv_file"]
 
@@ -1329,6 +1453,14 @@ def validateDeanSubmit(request):
 
 @login_required(login_url="/accounts/login")
 def downloadGrades(request):
+  des = request.session.get("currentDesignationSelected")
+  if str(des) == "Associate Professor" or str(des) == "Professor" or str(des) == "Assistant Professor" :
+         pass
+  else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
   academic_year = request.GET.get('academic_year')
         
   if academic_year:
@@ -1369,6 +1501,14 @@ def downloadGrades(request):
 
 @login_required(login_url="/accounts/login")
 def generate_pdf(request):
+    des = request.session.get("currentDesignationSelected")
+    if str(des) == "Associate Professor" or str(des) == "Professor" or str(des) == "Assistant Professor" :
+         pass
+    else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
     course_id = request.POST.get('course_id')
     academic_year = request.POST.get('academic_year')
     course_info = get_object_or_404(Courses, id=course_id)
@@ -1532,6 +1672,14 @@ def generate_pdf(request):
 @login_required(login_url="/accounts/login")
 def generate_result(request):
     if request.method == 'POST':
+        des = request.session.get("currentDesignationSelected")
+        if des == "acadadmin":
+         pass
+        else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
         try:
             data = json.loads(request.body)
             semester = data.get('semester')

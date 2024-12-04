@@ -25,16 +25,18 @@
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 50px; align-items: center;">
         <div style="display: flex; flex-direction: column; gap: 10px; min-width: 500px;">
             <label for="course-select" style="font-weight: bold;">Course</label>
-            <div style="position: relative; display: inline-block; width: 100%; cursor: pointer;">
-                <select id="course-select" name="course" style="padding: 12px; font-size: 1rem; min-height: 50px; width: 100%; background: white; outline: none; transition: all 0.3s ease-in-out; cursor: pointer;">
-                    <option value="">Select Course</option>
-                    <option value="">No Courses Available</option> <!-- Populated dynamically -->
-                </select>
+            <div class="ui fluid search selection dropdown" id="course-dropdown">
+                <input type="hidden" name="course" id="course-select">
+                <i class="dropdown icon"></i>
+                <div class="default text">Select Course</div>
+                <div class="menu" id="course-menu">
+                    <!-- Courses will be dynamically populated here -->
+                </div>
             </div>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 10px; min-width: 300px;">
+        <div style="display: flex; flex-direction: column; gap: 10px; min-width: 200px;">
             <label for="year-select" style="font-weight: bold;">Academic Year</label>
-            <select id="year-select" name="year" onchange="fetchCoursesByYear(this.value)" style="padding: 12px; font-size: 1rem; min-height: 50px; width: 100%; background: white;  appearance: none; outline:none; cursor: pointer;">
+            <select id="year-select" name="year" onchange="fetchCoursesByYear(this.value)" class="ui dropdown">
                 <option value="" selected>Select Year</option>
                 {% for working_year in working_years %}
                 <option value="{{ working_year.working_year }}">{{ working_year.working_year }}</option>
@@ -56,6 +58,29 @@
 </div>
 
 <script>
+    // Global variable to store all courses
+    let allCourses = [];
+
+    // Initialize Semantic UI dropdown
+    $(document).ready(function() {
+        $('.ui.dropdown').dropdown();
+        
+        // Initialize search dropdown with custom behavior
+        $('#course-dropdown').dropdown({
+            fullTextSearch: true,
+            onChange: function(value, text, $selectedItem) {
+                if ($selectedItem) {
+                    // Find the full course details
+                    const selectedCourse = allCourses.find(course => course.id == value);
+                    if (selectedCourse) {
+                        // Set the text to show course code and name
+                        $('#course-dropdown .text').text(`${selectedCourse.code} - ${selectedCourse.name}`);
+                    }
+                }
+            }
+        });
+    });
+
     // Function to fetch courses based on the selected year
     function fetchCoursesByYear(selectedYear) {
         if (!selectedYear) {
@@ -63,26 +88,39 @@
         }
 
         $.ajax({
-            url: '/examination/submitGrades/',  // Replace with your API endpoint
+            url: '/examination/submitGrades/',
             type: 'GET',
-            data: { academic_year: selectedYear },  // Send the selected year as a parameter
+            data: { academic_year: selectedYear },
             success: function(response) {
-                let courseSelect = document.getElementById('course-select');
-                courseSelect.innerHTML = ''; // Clear the current courses dropdown
+                let courseMenu = document.getElementById('course-menu');
+                courseMenu.innerHTML = ''; // Clear the current courses
+                
+                // Store all courses globally
+                allCourses = response.courses || [];
                 
                 // Check if there are any courses in the response
-                if (response.courses && response.courses.length > 0) {
-                    response.courses.forEach(function(course) {
-                        let option = document.createElement('option');
-                        option.value = course.id;
-                        option.text = `${course.code} - ${course.name}`;
-                        courseSelect.appendChild(option);
+                if (allCourses.length > 0) {
+                    allCourses.forEach(function(course) {
+                        let courseItem = document.createElement('div');
+                        courseItem.className = 'item';
+                        courseItem.setAttribute('data-value', course.id);
+                        courseItem.innerHTML = `
+                            <div class="content">
+                                <div class="title">${course.code} - ${course.name}</div>
+                                <div class="description">${course.name}</div>
+                            </div>
+                        `;
+                        courseMenu.appendChild(courseItem);
                     });
+
+                    // Reinitialize dropdown after populating
+                    $('#course-dropdown').dropdown('refresh');
                 } else {
                     // If no courses are available, show a placeholder
-                    let noCoursesOption = document.createElement('option');
-                    noCoursesOption.text = 'No Courses Available';
-                    courseSelect.appendChild(noCoursesOption);
+                    let noCoursesItem = document.createElement('div');
+                    noCoursesItem.className = 'item disabled';
+                    noCoursesItem.textContent = 'No Courses Available';
+                    courseMenu.appendChild(noCoursesItem);
                 }
             },
             error: function(xhr, status, error) {
@@ -92,7 +130,7 @@
     }
 
     function upload() {
-        let selectedCourse = document.getElementById('course-select').value;
+        let selectedCourse = $('#course-select').val();
         let selectedYear = document.getElementById('year-select').value;
         
         let fileInput = document.getElementById('csv-file');
@@ -135,14 +173,18 @@
     }
 
     function dwn_temp() {
-        let selectedCourse = document.getElementById('course-select').value;
+        let selectedCourse = $('#course-select').val();
         let selectedYear = document.getElementById('year-select').value;
     
         if (!selectedCourse || !selectedYear) {
             alert("Please select both course and year.");
             return;
         }
-
+    
+        // Find the selected course details to show in the filename
+        const selectedCourseObj = allCourses.find(course => course.id == selectedCourse);
+        const courseCode = selectedCourseObj ? selectedCourseObj.code : 'course';
+    
         $.ajax({
             url: `/examination/download_template/`,
             type: 'GET',
@@ -151,15 +193,15 @@
                 year: selectedYear 
             },
             xhrFields: {
-                responseType: 'blob' // Set response type to 'blob' for file download
+                responseType: 'blob'
             },
             success: function (data, status, xhr) {
-                // Extract the filename from the response headers
+                // Use course code in the filename if available
+                const defaultFilename = `${courseCode}_template_${selectedYear}.csv`;
                 const disposition = xhr.getResponseHeader('Content-Disposition');
                 const matches = /filename="([^"]+)"/.exec(disposition);
-                const filename = (matches != null && matches[1]) ? matches[1] : 'template.csv';
+                const filename = (matches != null && matches[1]) ? matches[1] : defaultFilename;
         
-                // Create a link element to trigger download
                 const link = document.createElement('a');
                 const url = window.URL.createObjectURL(data);
                 link.href = url;
@@ -167,25 +209,19 @@
                 document.body.appendChild(link);
                 link.click();
         
-                // Clean up
                 window.URL.revokeObjectURL(url);
                 document.body.removeChild(link);
             },
             error: function (xhr, status, error) {
-                // Handle errors more gracefully
                 try {
-                    // Check if response is JSON
                     const errorResponse = xhr.responseJSON || { error: 'Unknown error occurred' };
                     alert(`Error: ${errorResponse.error}`);
                 } catch (e) {
-                    // If not JSON, show generic error message
                     alert('An error occurred while downloading the file.');
                 }
             }
         });
-        
     }
-    
 </script>
 
 {% endblock %}
