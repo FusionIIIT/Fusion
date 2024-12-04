@@ -1522,10 +1522,10 @@ def generate_pdf(request):
     academic_year = request.POST.get('academic_year')
     course_info = get_object_or_404(Courses, id=course_id)
     grades = Student_grades.objects.filter(course_id_id=course_id, year=academic_year).order_by("roll_no")
-    course=CourseInstructor.objects.get(course_id_id=course_id,year=academic_year)
+    course=CourseInstructor.objects.filter(course_id_id=course_id,year=academic_year,instructor_id_id=request.user.username)
     if not course:
          return JsonResponse({"success": False, "error": "course not found."}, status=404)
-    semester=course.semester_no
+    semester=course.first().semester_no
     
     all_grades = ["O", "A+", "A", "B+", "B", "C+", "C", "D+", "D", "F", "I", "S", "X"]
     grade_counts = {grade: grades.filter(grade=grade).count() for grade in all_grades}
@@ -1713,7 +1713,7 @@ def generate_result(request):
             ).first()
             if not semester_info:
                 return JsonResponse({'error': 'Semester not found'}, status=404)
-
+            # print(batch, branch)
             course_slots = CourseSlot.objects.filter(semester_id=semester_info)
             course_ids = course_slots.values_list('courses', flat=True)
             courses = Courses.objects.filter(id__in=course_ids)
