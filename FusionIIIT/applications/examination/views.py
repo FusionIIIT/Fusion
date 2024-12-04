@@ -1158,7 +1158,7 @@ def verifyGradesDean(request):
     # print(unique_course_ids)
     courses_info = Courses.objects.filter(
         id__in=unique_course_ids.values_list("course_id_int", flat=True)
-    )
+    ).order_by("code")
 
     unique_year_ids = Student_grades.objects.values("year").distinct()
 
