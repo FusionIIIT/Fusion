@@ -169,6 +169,7 @@
                 if(data.student_list.length == 0){
                     $('#student-list-registration').append("<tr><td>No Students Found</td></tr>")
                 }
+                data.student_list.sort((a, b) => a.student.localeCompare(b.student));
                 for(ele in data.student_list){
                     $('#student-list-registration').append("<tr><td>"+data.student_list[ele].student+"</td></tr>")
                 }
