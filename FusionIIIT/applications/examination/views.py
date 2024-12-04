@@ -100,7 +100,6 @@ def exam(request):
 
 @login_required(login_url='/accounts/login')
 def submit(request):
-
     unique_course_ids = course_registration.objects.values(
         'course_id').distinct()
 
@@ -303,6 +302,11 @@ def authenticategrades(request):  # new
 
 @login_required(login_url='/accounts/login')
 def announcement(request):
+    des = request.session.get("currentDesignationSelected")
+    if des == "acadadmin" :
+        pass
+    else:
+        return HttpResponseRedirect('/dashboard/')
     """
     This function is contains data for Requests and Announcement Related methods.
     Data is added to Announcement Table using this function.
