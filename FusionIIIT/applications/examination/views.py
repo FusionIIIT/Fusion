@@ -100,6 +100,11 @@ def exam(request):
 
 @login_required(login_url='/accounts/login')
 def submit(request):
+    des = request.session.get("currentDesignationSelected")
+    if des == "acadadmin" or des=="Dean Academic" :
+        pass
+    else:
+        return HttpResponseRedirect('/dashboard/')
     unique_course_ids = course_registration.objects.values(
         'course_id').distinct()
 
