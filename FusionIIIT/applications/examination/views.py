@@ -1522,8 +1522,11 @@ def generate_pdf(request):
     academic_year = request.POST.get('academic_year')
     course_info = get_object_or_404(Courses, id=course_id)
     grades = Student_grades.objects.filter(course_id_id=course_id, year=academic_year).order_by("roll_no")
-
-    # Calculate grade counts
+    course=CourseInstructor.objects.get(course_id_id=course_id,year=academic_year)
+    if not course:
+         return JsonResponse({"success": False, "error": "course not found."}, status=404)
+    semester=course.semester_no
+    
     all_grades = ["O", "A+", "A", "B+", "B", "C+", "C", "D+", "D", "F", "I", "S", "X"]
     grade_counts = {grade: grades.filter(grade=grade).count() for grade in all_grades}
 
@@ -1572,7 +1575,7 @@ def generate_pdf(request):
 
 # Add fields with labels in black and values in gray
     elements.append(Paragraph(f"<b>Session:</b> {academic_year}", field_label_style))
-    elements.append(Paragraph(f"<b>Semester:</b> {grades.first().semester}", field_label_style))
+    elements.append(Paragraph(f"<b>Semester:</b> {semester}", field_label_style))
     elements.append(Paragraph(f"<b>Course Code:</b> {course_info.code}", field_label_style))
     elements.append(Paragraph(f"<b>Course Name:</b> {course_info.name}", field_label_style))
     elements.append(Paragraph(f"<b>Instructor:</b> {instructor}", field_label_style))
