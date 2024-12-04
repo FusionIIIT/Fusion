@@ -13,7 +13,7 @@ urlpatterns = [
     
     
     url(r'submit/', views.submit, name='submit'),#old
-    url(r'verify/', views.verify, name='verify'),#old
+    # url(r'verify/', views.verify, name='verify'),#old
 #     url(r'publish/', views.publish, name='publish'),#old
 #     url(r'notReady_publish/', views.notReady_publish, name='notReady_publish'),#old
 #     url(r'timetable/', views.timetable, name='timetable'),#old
@@ -21,7 +21,7 @@ urlpatterns = [
 #     path('entergrades/', views.entergrades, name='entergrades'),#old
 #     path('update_hidden_grades_multiple/', views.Updatehidden_gradesMultipleView.as_view(),
      #     name='update_hidden_grades_multiple'),#old
-    path('verifygrades/', views.verifygrades, name='verifygrades'),#old
+    # path('verifygrades/', views.verifygrades, name='verifygrades'),#old
 #     path('update_hidden_grades_multiple/', views.Updatehidden_gradesMultipleView.as_view(),
 #          name='update_hidden_grades_multiple'),#old
 #     path('submit_hidden_grades_multiple/', views.Submithidden_gradesMultipleView.as_view(),
