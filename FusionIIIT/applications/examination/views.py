@@ -3,6 +3,8 @@ from django.views import View
 from django.views.generic import View
 import traceback
 from django.http import HttpResponse
+from django.conf import settings
+from django.contrib.auth import get_user_model
 import csv
 import json
 from openpyxl import Workbook
@@ -1088,13 +1090,12 @@ def submitGradesProf(request):
 @login_required(login_url="/accounts/login")
 def download_template(request):
     des = request.session.get("currentDesignationSelected")
-    if des == "acadadmin" or str(des) == "Associate Professor" or str(des) == "Professor" or str(des) == "Assistant Professor" or des=="Dean Academic" :
-         pass
-    else:
-         if request.is_ajax():  # For AJAX or JSON requests
+    if des not in ["acadadmin", "Associate Professor", "Professor", "Assistant Professor", "Dean Academic"]:
+        if request.is_ajax():
             return JsonResponse({"success": False, "error": "Access denied."}, status=403)
-         else:  # For non-AJAX requests
+        else:
             return HttpResponseRedirect('/dashboard/')
+    
     course = request.GET.get('course')
     year = request.GET.get('year')
 
@@ -1102,13 +1103,14 @@ def download_template(request):
         return JsonResponse({'error': 'Course and year are required'}, status=400)
     
     try:
-
+        # Fetching the custom user model
+        User = get_user_model()
+        
         course_info = course_registration.objects.filter(
             course_id_id=course, 
             working_year=year
         )
         
-  
         if not course_info.exists():
             return JsonResponse({'error': 'No registration data found for the provided course and year'}, status=404)
 
@@ -1121,17 +1123,18 @@ def download_template(request):
         writer = csv.writer(response)
         
         # Write header
-        writer.writerow(["roll_no", "grade", "remarks"])
+        writer.writerow(["roll_no", "name", "grade", "remarks"])
         
-        # Write student roll numbers
+        # Write student roll numbers and names
         for entry in course_info:
             student_entry = entry.student_id
-            writer.writerow([student_entry.id_id, "", ""])
+            # Fetching the user instance dynamically
+            student_user = User.objects.get(username=student_entry.id_id)
+            writer.writerow([student_entry.id_id, student_user.first_name+" "+student_user.last_name, "", ""])
         
         return response
     
     except Exception as e:
-        # Log the error (consider using Python's logging module)
         print(f"Error in download_template: {str(e)}")
         return JsonResponse({'error': 'An unexpected error occurred'}, status=500)
 
