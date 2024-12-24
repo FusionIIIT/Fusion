@@ -96,7 +96,8 @@ def exam(request):
         return HttpResponseRedirect("/examination/updateGrades/")
     elif request.session.get("currentDesignationSelected") == "Dean Academic":
         return HttpResponseRedirect("/examination/verifyGradesDean/")
-
+    # elif request.session.get("currentDesignationSelected") == "student":
+    #     return HttpResponseRedirect("/examination/checkresult/")
     return HttpResponseRedirect("/dashboard/")
 
 
@@ -1718,13 +1719,18 @@ def generate_result(request):
                 return JsonResponse({'error': 'Semester not found'}, status=404)
             # print(batch, branch)
             course_slots = CourseSlot.objects.filter(semester_id=semester_info)
-            course_ids = course_slots.values_list('courses', flat=True)
+            course_ids_from_slots = course_slots.values_list('courses', flat=True)
+            course_ids_from_grades = Student_grades.objects.filter(
+            batch=batch,
+            semester=semester
+             ).values_list('course_id_id', flat=True)
+            course_ids = set(course_ids_from_slots).union(set(course_ids_from_grades))
             courses = Courses.objects.filter(id__in=course_ids)
             courses_map={}
             for course in courses:
                 courses_map[course.id]=(course.credit)
             students = Student.objects.filter(batch=batch, specialization=branch).order_by('id')
-            print(students.first().id_id,"studejt id")
+            # print(students.first().id_id,"studejt id")
       
             wb = Workbook()
             ws = wb.active
@@ -1786,7 +1792,7 @@ def generate_result(request):
                 ws.cell(row=row_idx, column=1).alignment = Alignment(horizontal="center", vertical="center")
                 ws.cell(row=row_idx, column=2).alignment = Alignment(horizontal="center", vertical="center")
                 student_grades = Student_grades.objects.filter(
-                    roll_no=student.id_id, course_id_id__in=course_ids
+                    roll_no=student.id_id, course_id_id__in=course_ids, semester=semester
                 )
                
                 grades_map = {}
@@ -1855,3 +1861,82 @@ def generate_result(request):
             
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+def checkresult(request):
+    des = request.session.get("currentDesignationSelected")
+    if des == "student":
+        pass
+    else:
+        if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+        else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
+    return render(request, "../templates/examination/check_result.html")
+
+
+def grades_report(request):
+    if request.method == 'POST':
+        des = request.session.get("currentDesignationSelected")
+        if des == "student":
+         pass
+        else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
+        roll_number=request.user.username
+        semester=request.POST.get('semester')
+        grades_info=Student_grades.objects.filter(roll_no=roll_number,semester=semester).select_related('course_id')
+        gained_credit=0
+        total_credit=0
+        all_credits=0
+        for grades in grades_info:
+            credits=grades.course_id.credit
+            grade=grades.grade
+            if grade=="O" or grade=="A+":
+                        gained_credit+=1*credits
+                        total_credit+=credits
+            elif grade=="A":
+                        gained_credit+=0.9*credits
+                        total_credit+=credits
+            elif grade=="B+":
+                        gained_credit+=0.8*credits
+                        total_credit+=credits
+            elif grade=="B":
+                        gained_credit+=0.7*credits
+                        total_credit+=credits
+            elif grade=="C+":
+                        gained_credit+=0.6*credits
+                        total_credit+=credits
+            elif grade=="C":
+                        gained_credit+=0.5*credits
+                        total_credit+=credits
+            elif grade=="D+":
+                        gained_credit+=0.4*credits
+                        total_credit+=credits
+            elif grade=="D":
+                        gained_credit+=0.3*credits
+                        total_credit+=credits
+            elif grade=="F":
+                        gained_credit+=0.2*credits
+                        total_credit+=credits 
+            all_credits+=credits
+        spi = 10*(gained_credit/total_credit) if total_credit > 0 else 0
+        all_grades = Student_grades.objects.filter(roll_no=roll_number)
+        total_units = sum(grade.course_id.credit for grade in all_grades)
+        student_user = request.user.first_name+' '+request.user.last_name 
+        student = Student.objects.filter(id=roll_number).first()
+        # count=Student.objects.filter(id=roll.id).count()
+        # student=students.count()
+        
+        context = {
+                'student': student,
+                'student_user': student_user,
+                'grades': grades_info,
+                'spi': round(spi, 2),
+                'semester_units': all_credits,
+                'total_units': total_units,
+            }
+        return render(request, '../templates/examination/grades_report.html', context)
+
+
