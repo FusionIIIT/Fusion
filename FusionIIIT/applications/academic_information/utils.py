@@ -97,57 +97,72 @@ def random_algo(batch,sem,year,course_slot) :
     return 1
 
 @transaction.atomic
-def allocate(request) :
+def allocate(request):
     batch = request.POST.get('batch')
     sem = request.POST.get('sem')
     year = request.POST.get('year')
-    unique_course_slot = InitialRegistration.objects.filter(Q(semester_id__semester_no = sem) & Q(student_id__batch = batch)).values('course_slot_id', 'registration_type').distinct()
+    unique_course_slot = InitialRegistration.objects.filter(Q(semester_id_semester_no=sem) & Q(
+        student_id_batch=batch)).values('course_slot_id').distinct()
     unique_course_name = []
-    try: 
-        with transaction.atomic() :
-                for entry in unique_course_slot :
-                    course_slot_object = CourseSlot.objects.get(id=entry['course_slot_id'])
-                    print(course_slot_object)
-                    if course_slot_object.type != "Open Elective":
-                        # Fetch students registered in this course slot
-                        students = InitialRegistration.objects.filter(
-                            Q(semester_id__semester_no=sem) &
-                            Q(course_slot_id=course_slot_object) &
-                            Q(student_id__batch=batch)
-                        ).values_list('student_id', flat=True)
 
-                        # Allocate each student directly to FinalRegistration
-                        for student_id in students:
-                            student = Student.objects.get(id=student_id)
-                            semester = Semester.objects.get(semester_no=sem, curriculum=student.batch_id.curriculum)
-                            print(semester.id)
-                            # course = Course.objects.get(id=course_slot_object.courses.id)
-                            course_id = course_slot_object.courses.values_list('id', flat=True).first()
-                            # Retrieve the Course instance
-                            course = Course.objects.get(id=course_id)
+    try:
+        with transaction.atomic():
+            for entry in unique_course_slot:
+                course_slot_object = CourseSlot.objects.get(
+                    id=entry['course_slot_id'])
+                if course_slot_object.type != "Open Elective":
+                    # Fetch students registered in this course slot
+                    students = InitialRegistration.objects.filter(
+                        Q(semester_id__semester_no=sem) &
+                        Q(course_slot_id=course_slot_object) &
+                        Q(student_id__batch=batch)
+                    ).values_list('student_id', flat=True)
 
-                            # Insert directly into FinalRegistration
-                            FinalRegistration.objects.create(
-                                student_id=student,
-                                verified=False,
-                                semester_id=semester,
-                                course_id=course,
-                                course_slot_id=course_slot_object,
-                                registration_type=entry['registration_type']
-                            )
+                    # Allocate each student directly to FinalRegistration
+                    for student_id in students:
+                        student = Student.objects.get(id=student_id)
+                        semester = Semester.objects.get(
+                            semester_no=sem, curriculum=student.batch_id.curriculum)
+                        regis = InitialRegistration.objects.filter(
+                            course_slot_id_id=course_slot_object,
+                            student_id_id=student_id
+                        ).values_list('registration_type', flat=True).first()
+                        # course = Course.objects.get(id=course_slot_object.courses.id)
+                        # course_id = course_slot_object.courses.values_list('id', flat=True).first()
+                        course_id = InitialRegistration.objects.filter(
+                            course_slot_id_id=course_slot_object,
+                            student_id_id=student_id
+                        ).values_list('course_id', flat=True).first()
 
+                        # Retrieve the Course instance
+                        course = Course.objects.get(id=course_id)
+
+                        # Insert directly into FinalRegistration
+                        # if course_slot_object.name in unique_course_name:
+                        #     print("skip")
+                        #     continue
+
+                        FinalRegistration.objects.create(
+                            student_id=student,
+                            verified=False,
+                            semester_id=semester,
+                            course_id=course,
+                            course_slot_id=course_slot_object,
+                            registration_type=regis
+                        )
+
+                    unique_course_name.append(course_slot_object.name)
+                elif course_slot_object.type == "Open Elective":  # Runs only for open elective course slots
+                    if course_slot_object.name not in unique_course_name:
+                        stat = random_algo(batch, sem, year, course_slot_object.name)
                         unique_course_name.append(course_slot_object.name)
-                    elif course_slot_object.type == "Open Elective": # Runs only for open elective course slots
-                        if course_slot_object.name not in unique_course_name:
-                            stat = random_algo(batch,sem,year,course_slot_object.name)
-                            unique_course_name.append(course_slot_object.name)
-                            if(stat == -1) :
-                                print(course_slot_object.name)
-                                raise Exception("seats not enough for course_slot"+str(course_slot_object.name))
+                        if (stat == -1):
+                            print("Seats not enough for course_slot", str(course_slot_object.name), "terminating process...")
+                            raise Exception("seats not enough for course_slot "+str(course_slot_object.name))
 
-        return JsonResponse({'status': 1 , 'message' : "course allocation successful"})
+        return JsonResponse({'status': 1, 'message': "course allocation successful"})
     except:
-        return JsonResponse({'status': -1 , 'message' : "seats not enough for some course_slot"})
+        return JsonResponse({'status': -1, 'message': "seats not enough for some course_slot"})
     
 def view_alloted_course(request) : 
     batch = request.POST.get('batch')
