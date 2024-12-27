@@ -24,54 +24,64 @@
 
 {% block content %}
 <h1>Update Result</h1>
-<br />
+<div style="margin: 34px; margin-left: 0;">
 
-<div style="display: flex; flex-direction: column; gap: 30px;">
-    <div style="display: flex; flex-direction: row; gap: 50px;">
-        <div style="display: flex; flex-direction: row; gap: 10px;">
-            <div style="margin-top: 8px;">
-                <label>Course</label>
-            </div>
-            <div class="ui selection dropdown" id="course-dropdown">
-                <input type="hidden" name="gender">
-                <i class="dropdown icon"></i>
-                <div class="default text">Select Item</div>
-                <div class="menu">
+  <!-- Container for Dropdowns -->
+  <div style="display: flex; gap: 50px; margin-top: 20px; align-items: flex-start;">
+      
+      <!-- Course Dropdown -->
+      <div style="flex: 1; min-width: 500px;">
+          <label style="font-weight: bold; margin-bottom: 10px; display: inline-block;">Course</label>
+          <div class="ui fluid search selection dropdown" id="course-dropdown">
+              <input type="hidden" name="course">
+              <i class="dropdown icon"></i>
+              <div class="default text">Select Course</div>
+              <div class="menu">
                   {% for course in courses_info %}
-                  <div class="item" data-value="{{ course.id }}"> {{ course.code }}- {{ course.name }} -{{ course.version    }}</div>
-              {% empty %}
-                  <div class="item">No Courses Available</div>
-              {% endfor %}
-                </div>
-            </div>
-        </div>
-        <div style="display: flex; flex-direction: row; gap: 10px;">
-            <div style="margin-top: 8px;">
-                <label>Academic Year</label>
-            </div>
-            <div class="ui selection dropdown" id="year-dropdown">
-                <input type="hidden" name="gender">
-                <i class="dropdown icon"></i>
-                <div class="default text">Select Item</div>
-                <div class="menu">
+                  <div class="item" data-value="{{ course.id }}">{{ course.code }} - {{ course.name }} - {{ course.version }}</div>
+                  {% empty %}
+                  <div class="item disabled">No Courses Available</div>
+                  {% endfor %}
+              </div>
+          </div>
+      </div>
+
+      <!-- Academic Year Dropdown -->
+      <div style="flex: 1; min-width: 200px;">
+          <label style="font-weight: bold; margin-bottom: 10px; display: inline-block;">Academic Year</label>
+          <div class="ui fluid selection dropdown" id="year-dropdown">
+              <input type="hidden" name="academic_year">
+              <i class="dropdown icon"></i>
+              <div class="default text">Select Year</div>
+              <div class="menu">
                   {% for unique_year_id in unique_year_ids %}
-                  <div class="item" data-value="{{ unique_year_id.year }}">{{unique_year_id.year }}</div>
-              {% empty %}
-              <div class="item">Unique Batch IDs: {{ unique_batch_ids }}</div>
-              {% endfor %}  
-                </div>
-            </div>
-        </div>
-    </div>
+                  <div class="item" data-value="{{ unique_year_id.year }}">{{ unique_year_id.year }}</div>
+                  {% empty %}
+                  <div class="item disabled">No Batch</div>
+                  {% endfor %}
+              </div>
+          </div>
+      </div>
+  </div>
 
-    <div style="display: flex; flex-direction: row; gap: 50px; margin-left: 10px; ">
-
+  <!-- Search Button -->
+  <div style="margin-top: 30px;">
       <button class="ui primary button" onclick="search()">Search</button>
-  
   </div>
+</div>
 
-  </div>
   <script>
+    $(document).ready(function () {
+      // Initialize the dropdown with search functionality
+      $('#course-dropdown').dropdown({
+        placeholder: 'Search by Course',
+        fullTextSearch: true, // Enable partial and full-text search
+      });
+  
+      $('#year-dropdown').dropdown({
+        placeholder: 'Select Year',
+      });
+    });
     function search() {
       // Get selected course and semester values
       var selectedCourse = $('#course-dropdown .menu .item.active').attr('data-value');

@@ -408,6 +408,7 @@ def academic_procedures_student(request):
         next_sem_registration_courses = get_sem_courses(next_sem_id, batch)
         final_registration_choice, unavailable_courses_nextsem = get_final_registration_choices(next_sem_registration_courses,batch.year)
         currently_registered_course = get_currently_registered_course(obj,obj.curr_semester_no)
+        current_courseregistrations = get_currently_registered_course(obj,obj.curr_semester_no, True)
 
         current_credits = get_current_credits(currently_registered_course)
  
@@ -562,6 +563,7 @@ def academic_procedures_student(request):
                           {'details': details,
                         #    'calendar': calendar,
                             'currently_registered': currently_registered_course,
+                            'current_courseregistrations': current_courseregistrations,
                             'pre_registered_course' : pre_registered_courses,
                             'pre_registered_course_show' : pre_registered_course_show,
                             'final_registered_course' : final_registered_courses,
@@ -946,15 +948,16 @@ def dropcourseadmin(request):
                 response_data - data to be responded.
     '''
     data = request.GET.get('id')
-    data = data.split(" - ")
-    student_id = data[0]
-    course_code = data[1]
-    course = Courses.objects.get(code=course_code , version = 1.0)
+    # data = data.split(" - ")
+    reg_id = int(data)
+    # student_id = data[0]
+    # course_code = data[1]
+    # course = Courses.objects.get(code=course_code , version = 1.0)
     # need to add batch and programme
     # curriculum_object = Curriculum.objects.all().filter(course_code = course_code)
     try:
         # Register.objects.filter(curr_id = curriculum_object.first(),student_id=int(data[0])).delete()
-        course_registration.objects.filter(student_id = student_id , course_id = course.id).delete()
+        course_registration.objects.filter(id=reg_id).delete()
     except Exception as e:
         print(str(e))
         pass
@@ -1048,19 +1051,20 @@ def verify_course(request):
         details = []
 
         current_sem_courses = get_currently_registered_course(
-            roll_no, curr_sem_id)
+            roll_no, curr_sem_id, True)
 
         idd = obj2
         for z in current_sem_courses:
-            z = z[1]
+            # print(z)
+            # z = z[1]
             print(z)
-            course_code = z.code
-            course_name = z.name
+            course_code = z.course_id.code
+            course_name = z.course_id.name
             # course_code, course_name = str(z).split(" - ")
             k = {}
             # reg_ig has course registration id appended with the the roll number
             # so that when we have removed the registration we can be redirected to this view
-            k['reg_id'] = roll_no+" - "+course_code
+            k['reg_id'] = z.id
             k['rid'] = roll_no+" - "+course_code
             # Name ID Confusion here , be carefull
             courseobj2 = Courses.objects.all().filter(code=course_code)
@@ -1068,8 +1072,10 @@ def verify_course(request):
             for p in courseobj2:
                 k['course_id'] = course_code
                 k['course_name'] = course_name
-                k['sem'] = curr_sem_id.semester_no
+                k['course_version'] = z.course_id.version
+                k['sem'] = z.semester_id.semester_no
                 k['credits'] = p.credit
+                k['registration_type'] = z.registration_type
             details.append(k)
 
         year = demo_date.year
@@ -1083,7 +1089,8 @@ def verify_course(request):
         # TO DO Bdes
         date = {'year': yearr, 'semflag': semflag}
         course_list = Courses.objects.all()
-        semester_list = Semester.objects.all()
+        semester_list = Semester.objects.filter(curriculum=curr_id)
+        courseslot_list = CourseSlot.objects.filter(semester__in=semester_list)
         semester_no_list=[]
         for i in semester_list:
             semester_no_list.append(int(i.semester_no))
@@ -1091,6 +1098,7 @@ def verify_course(request):
                                 {'details': details,
                                  'dict2': dict2,
                                  'course_list': course_list,
+                                 'courseslot_list': courseslot_list,
                                  'semester_list': semester_list,
                                  'date': date}, request)
 
@@ -1105,14 +1113,17 @@ def verify_course(request):
 def acad_add_course(request):
     if(request.method == "POST"):
         course_id = request.POST["course_id"]
+        courseslot_id = request.POST["courseslot_id"]
         course = Courses.objects.get(id=course_id)
+        courseslot = CourseSlot.objects.get(id=courseslot_id)
         roll_no = request.POST['roll_no']
         student = Student.objects.all().select_related(
             'id', 'id__user', 'id__department').filter(id=roll_no).first()
         sem_id = request.POST['semester_id']
         semester = Semester.objects.get(id=sem_id)
+        registration_type = request.POST["registration_type"]
         cr = course_registration(
-            course_id=course, student_id=student, semester_id=semester , working_year = datetime.datetime.now().year,)
+            course_slot_id=courseslot, course_id=course, student_id=student, semester_id=semester , working_year = datetime.datetime.now().year, registration_type=registration_type)
         cr.save()
 
     return HttpResponseRedirect('/academic-procedures/')
@@ -2104,12 +2115,17 @@ def get_currently_registered_courses(id, user_sem):
         ans.append(course)
     return ans
 
-def get_currently_registered_course(id, sem_id):
-    #  obj = course_registration.objects.all().filter(student_id = id, semester_id=sem_id)
-    obj = course_registration.objects.all().filter(student_id = id)
+def get_currently_registered_course(id, sem_id, courseregobj=False):
+    if (type(sem_id) == int):
+        obj = course_registration.objects.all().filter(student_id = id, semester_id__semester_no=sem_id)
+    else:
+        obj = course_registration.objects.all().filter(student_id = id)
     courses = []
     for i in obj:
-        courses.append((i.course_slot_id,i.course_id))
+        if (courseregobj):
+            courses.append(i)
+        else:
+            courses.append((i.course_slot_id,i.course_id))
     return courses
 
 
