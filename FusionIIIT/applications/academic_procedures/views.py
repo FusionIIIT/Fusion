@@ -366,7 +366,7 @@ def academic_procedures_student(request):
         curr_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = obj.curr_semester_no)
 
         try:
-            semester_no = obj.curr_semester_no+1
+            semester_no = obj.curr_semester_no
             next_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = semester_no)
             user_sem = semester_no
             
@@ -416,7 +416,7 @@ def academic_procedures_student(request):
         details = {
                 'current_user': current_user,
                 'year': acad_year,
-                'user_sem': user_sem - 1,
+                'user_sem': user_sem,
                 'user_branch' : str(user_branch),
                 'cpi' : cpi,
                 }
