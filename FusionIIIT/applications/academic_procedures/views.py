@@ -52,6 +52,7 @@ demo_date = timezone.now()
 # demo_date = demo_date + datetime.timedelta(days = 180)
 # demo_date = demo_date + datetime.timedelta(days = 3)
 # demo_date = demo_date - datetime.timedelta(days = 5)
+user_sem=0
 student_status = None
 hod_status = None
 account_status = None
@@ -367,7 +368,8 @@ def academic_procedures_student(request):
 
         try:
             semester_no = obj.curr_semester_no
-            next_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = semester_no)
+            sem_no=semester_no+1
+            next_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = sem_no)
             user_sem = semester_no
             
         except Exception as e:
@@ -1617,6 +1619,7 @@ def final_registration(request):
     else:
         return HttpResponseRedirect('/academic-procedures/main')
 
+
 def allot_courses(request):
     if user_check(request):
         return HttpResponseRedirect('/academic-procedures/main')
@@ -1627,6 +1630,7 @@ def allot_courses(request):
             profiles=request.FILES['allotedCourses']
             batch_id=request.POST['batch']
             sem_no=int(request.POST['semester'])
+            working_year =int(request.POST['working_year'])
             
             batch=Batch.objects.get(id=batch_id)
             sem_id=Semester.objects.get(curriculum=batch.curriculum,semester_no=sem_no)
@@ -1652,8 +1656,14 @@ def allot_courses(request):
                     user_info = ExtraInfo.objects.get(user=user)
                     student = Student.objects.get(id=user_info)
                     course_slot=CourseSlot.objects.get(name=course_slot_name.strip(),semester=sem_id)
-                    print(course_code.strip() , course_name.strip())
-                    course = Courses.objects.get(code=course_code.strip(),name=course_name.strip())
+                    slot_courses = course_slot.courses.filter() 
+                    # for i in slot_courses:
+                    #     print("slot course ", i)
+                    # print(course_slot)
+                    print(course_code.strip() , course_name.strip(),student)
+                    course = slot_courses.get(code=course_code.strip())
+                    # print(course_code.strip() , course_name.strip(),student)
+                    # course = Courses.objects.get(code=course_code.strip(),name=course_name.strip())
                     if(roll_no not in currroll):
                         student_check=StudentRegistrationChecks(student_id = student, semester_id = sem_id, pre_registration_flag = True,final_registration_flag = True)
                         student_checks.append(student_check)
@@ -1668,7 +1678,7 @@ def allot_courses(request):
                                                     course_id=course,semester_id=sem_id, verified=True )
                 final_registrations.append(final_registration)
     
-                courseregistration=course_registration(working_year=datetime.datetime.now().year,course_id=course,semester_id=sem_id,student_id=student,course_slot_id=course_slot)
+                courseregistration=course_registration(working_year=working_year,course_id=course,semester_id=sem_id,student_id=student,course_slot_id=course_slot)
                 course_registrations.append(courseregistration)
                 
 
@@ -1690,8 +1700,6 @@ def allot_courses(request):
         return HttpResponseRedirect('/academic-procedures/main')
         # return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
         # return HttpResponse("Fail")
-
-
 
 
 
@@ -2249,7 +2257,7 @@ def acad_person(request):
 def acad_proced_global_context():
     year = demo_date.year
     month = demo_date.month
-    yearr = str(year) + "-" + str(year+1)
+    yearr = get_acad_year(user_sem,year)
     semflag = 0
     queryflag = 0
     query_option1 = get_batch_query_detail(month, year)
