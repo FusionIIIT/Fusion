@@ -50,7 +50,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 
 # email of sender
 
-EMAIL_HOST_USER = 'fusionmailservice@iiitdmj.ac.in'
+EMAIL_HOST_USER = 'fusion@iiitdmj.ac.in'
 
 EMAIL_PORT = 587
 ACCOUNT_EMAIL_REQUIRED = True
@@ -68,7 +68,7 @@ ACCOUNT_EMAIL_VERIFICATION = 'optional'
 
 ACCOUNT_EMAIL_SUBJECT_PREFIX = 'Fusion: '
 
-DEFAULT_FROM_EMAIL = 'Fusion IIIT <fusionmailservice@iiitdmj.ac.in>'
+DEFAULT_FROM_EMAIL = 'Fusion IIIT <fusion@iiitdmj.ac.in>'
 
 SERVER_EMAIL = 'fusionmailservice@iiitdmj.ac.in'
 
@@ -284,3 +284,8 @@ YOUTUBE_DATA_API_KEY = 'api_key'
 
 CORS_ORIGIN_ALLOW_ALL = True
 ALLOW_PASS_RESET = True
+
+# session settings
+SESSION_COOKIE_AGE = 15 * 60
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_SAVE_EVERY_REQUEST = True

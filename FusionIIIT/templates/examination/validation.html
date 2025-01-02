@@ -8,7 +8,7 @@
   {% comment %} <a class="item" href="{% url 'examination:authenticate' %}">Authenticate Course
     <i class="right floated chevron right icon"></i>
   </a> {% endcomment %}
-  <a class="item" href="{% url 'examination:validateDean' %}"><B> Validate</B>
+  <a class="active item" href="{% url 'examination:validateDean' %}"><B> Validate</B>
     <i class="right floated chevron right icon"></i>
   </a>
 </div>
@@ -62,17 +62,7 @@
             <input type="file" id="csv-file" name="csv_file" accept=".csv" required>
             <button type="submit" class="ui primary button">Validate</button>
         </div>
-
-        <div style="display: flex; flex-direction: row; gap: 50px; margin-left: 10px;">
-            <button type="button" class="ui primary button" onclick="dwn_temp()">Download Template</button>
-        </div>
     </div>
 </form>
-
-<script>
-    function dwn_temp(){
-        window.location.href = '/examination/download_template';
-    }
-</script>
 
 {% endblock %}

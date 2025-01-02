@@ -106,14 +106,9 @@
                         <td>{{ course_detail.name }}</td>
                         <td>{{ course_detail.code }}</td>
                         <td>{{ course_detail.credit }}</td>
-                        <td>
-                            {% if data.all_authenticators_true %}
-                                {{ data.grade.grade }}
-                            {% else %}
-                                Course must be authenticated to generate grade
-                            {% endif %}
+                        <td>    
+                                {{ data.grade.grade }}         
                         </td>
-                        <td>{{data.all_authenticators_true}}</td>
                     </tr>
                 {% endfor %}
             </tbody>

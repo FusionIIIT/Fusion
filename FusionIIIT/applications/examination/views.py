@@ -1,9 +1,16 @@
 from notifications.signals import notify
 from django.views import View
 from django.views.generic import View
+import traceback
 from django.http import HttpResponse
+from django.conf import settings
+from django.contrib.auth import get_user_model
 import csv
 import json
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Font
+from openpyxl.utils import get_column_letter
+from io import BytesIO,StringIO
 from django.db.models import IntegerField
 from django.db.models.functions import Cast
 from django.db.models.query_utils import Q
@@ -29,7 +36,7 @@ from applications.globals.models import (
 )
 from applications.eis.models import faculty_about, emp_research_projects
 from applications.academic_information.models import Course
-from applications.academic_procedures.models import course_registration, Register
+from applications.academic_procedures.models import course_registration, Register,Semester
 from applications.programme_curriculum.filters import CourseFilter
 from notification.views import examination_notif
 from applications.department.models import SpecialRequest, Announcements
@@ -56,10 +63,15 @@ from rest_framework.permissions import AllowAny
 from applications.online_cms.models import Student_grades
 from django.http import JsonResponse
 import csv
-from applications.programme_curriculum.models import Course as Courses, CourseInstructor
+from applications.programme_curriculum.models import Course as Courses, CourseInstructor,Discipline,Batch, CourseSlot
 from django.urls import reverse
-
-
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib import colors
+from reportlab.lib.colors import HexColor
+from reportlab.lib.units import inch 
 @login_required(login_url="/accounts/login")
 def exam(request):
     """
@@ -84,13 +96,18 @@ def exam(request):
         return HttpResponseRedirect("/examination/updateGrades/")
     elif request.session.get("currentDesignationSelected") == "Dean Academic":
         return HttpResponseRedirect("/examination/verifyGradesDean/")
-
+    # elif request.session.get("currentDesignationSelected") == "student":
+    #     return HttpResponseRedirect("/examination/checkresult/")
     return HttpResponseRedirect("/dashboard/")
 
 
 @login_required(login_url='/accounts/login')
 def submit(request):
-
+    des = request.session.get("currentDesignationSelected")
+    if des == "acadadmin" or des=="Dean Academic" :
+        pass
+    else:
+        return HttpResponseRedirect('/dashboard/')
     unique_course_ids = course_registration.objects.values(
         'course_id').distinct()
 
@@ -293,6 +310,11 @@ def authenticategrades(request):  # new
 
 @login_required(login_url='/accounts/login')
 def announcement(request):
+    des = request.session.get("currentDesignationSelected")
+    if des == "acadadmin" :
+        pass
+    else:
+        return HttpResponseRedirect('/dashboard/')
     """
     This function is contains data for Requests and Announcement Related methods.
     Data is added to Announcement Table using this function.
@@ -477,9 +499,15 @@ class DownloadExcelView(View):
 
         return response
 
-
+@login_required(login_url="/accounts/login")
 def generate_transcript(request):
+    des = request.session.get("currentDesignationSelected")
+    if des == "acadadmin" :
+        pass
+    else:
+        return HttpResponseRedirect('/dashboard/')
 
+     
     student_id = request.GET.get('student')
     semester = request.GET.get('semester')
     courses_registered = Student_grades.objects.filter(
@@ -505,29 +533,29 @@ def generate_transcript(request):
             # course_detail = Curriculum.objects.get(
             #     course_id=course.course_id, batch=grade.batch)
             course_instance = Courses.objects.get(id=course.course_id_id)
-            check_authentication_object = authentication.objects.filter(
-                course_id=course_instance, course_year=grade.year)
-            all_authenticators_true = True
+            # check_authentication_object = authentication.objects.filter(
+            #     course_id=course_instance, course_year=grade.year)
+            # all_authenticators_true = True
 
-            if check_authentication_object:
-                # Iterate over each authentication object
-                for auth_obj in check_authentication_object:
-                    # Check if all authenticators are true
-                    if not (auth_obj.authenticator_1 and auth_obj.authenticator_2 and auth_obj.authenticator_3):
-                        all_authenticators_true = False
-                        break  # No need to check further if any authenticator is False
-            else:
+            # if check_authentication_object:
+            #     # Iterate over each authentication object
+            #     for auth_obj in check_authentication_object:
+            #         # Check if all authenticators are true
+            #         if not (auth_obj.authenticator_1 and auth_obj.authenticator_2 and auth_obj.authenticator_3):
+            #             all_authenticators_true = False
+            #             break  # No need to check further if any authenticator is False
+            # else:
                 # Create authentication object if it doesn't exist
-                authentication_object = authentication.objects.create(
-                    course_id=course_instance, course_year=grade.year)
+                # authentication_object = authentication.objects.create(
+                #     course_id=course_instance, course_year=grade.year)
                 # Get all registrations for the course and year
-                registrations = authentication.objects.filter(
-                    course_id=course_instance, course_year=grade.year)
-                all_authenticators_true = False
+                # registrations = authentication.objects.filter(
+                #     course_id=course_instance, course_year=grade.year)
+                # all_authenticators_true = False
 
             course_grades[course_instance] = {
                 'grade': grade,
-                'all_authenticators_true': all_authenticators_true
+                # 'all_authenticators_true': all_authenticators_true
             }  # Store the grade
         except Student_grades.DoesNotExist:
             # Grade not available
@@ -543,8 +571,13 @@ def generate_transcript(request):
 
 # new
 
-
+@login_required(login_url="/accounts/login")
 def generate_transcript_form(request):
+    des = request.session.get("currentDesignationSelected")
+    if des == "acadadmin" :
+        pass
+    else:
+        return HttpResponseRedirect('/dashboard/')
     if request.method == 'POST':
         programme = request.POST.get('programme')
         batch = request.POST.get('batch')
@@ -581,7 +614,15 @@ def generate_transcript_form(request):
 
 @login_required(login_url="/accounts/login")
 def updateGrades(request):
-    unique_course_ids = Student_grades.objects.values("course_id").distinct()
+    des = request.session.get("currentDesignationSelected")
+    if des == "acadadmin":
+        pass
+    else:
+        if request.is_ajax():
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+        else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
+    unique_course_ids = Student_grades.objects.filter(verified=False).values("course_id").distinct()
 
     # Cast the course IDs to integers
     unique_course_ids = unique_course_ids.annotate(
@@ -595,22 +636,31 @@ def updateGrades(request):
         id__in=unique_course_ids.values_list("course_id_int", flat=True)
     )
 
-    unique_batch_ids = Student_grades.objects.values("batch").distinct()
-
+    unique_year_ids = Student_grades.objects.values('year').distinct()
+    # print(unique_year_ids)
     context = {
         "courses_info": courses_info,
-        "unique_batch_ids": unique_batch_ids,
+        "unique_year_ids": unique_year_ids,
     }
 
     return render(request, "../templates/examination/submitGrade.html", context)
 
-
+@login_required(login_url="/accounts/login")
 def updateEntergrades(request):
+    des = request.session.get("currentDesignationSelected")
+    if des == "acadadmin":
+        pass
+    else:
+        if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+        else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
     course_id = request.GET.get("course")
-    semester_id = request.GET.get("semester")
-    batch = request.GET.get("batch")
+    
+    year = request.GET.get("year")
+    # print(course_id,semester_id ,year)
     course_present = Student_grades.objects.filter(
-        course_id=course_id, semester=semester_id, batch=batch
+        course_id=course_id, year=year
     )
 
     if not course_present:
@@ -631,6 +681,14 @@ class moderate_student_grades(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        des = request.session.get("currentDesignationSelected")
+        if des == "acadadmin" or des=="Dean Academic":
+         pass
+        else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
         student_ids = request.POST.getlist('student_ids[]')
         semester_ids = request.POST.getlist('semester_ids[]')
         course_ids = request.POST.getlist('course_ids[]')
@@ -669,31 +727,49 @@ class moderate_student_grades(APIView):
         return render(request, '../templates/examination/grades_updated.html', {})
 
 
+class submitGrades(APIView):
+    login_url = "/accounts/login"
+    
+    def get(self, request):
+        des = request.session.get("currentDesignationSelected")
+        if des == "acadadmin":
+         pass
+        else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
+        academic_year = request.GET.get('academic_year')
+        
+        if academic_year:
+            if academic_year is None or not academic_year.isdigit():
+                return JsonResponse({})
+            # Filter course registration based on the academic year and get unique course IDs
+            unique_course_ids = course_registration.objects.filter(
+                working_year=academic_year
+            ).values("course_id").distinct()
+            
+            # Cast the course IDs to integers
+            unique_course_ids = unique_course_ids.annotate(
+                course_id_int=Cast("course_id", IntegerField())
+            )
+            
+            # Retrieve course information based on the unique course IDs
+            courses_info = Courses.objects.filter(
+              id__in=unique_course_ids.values_list("course_id_int", flat=True)
+            ).order_by('code')
+            
+            # Return the course information as JSON response
+            return JsonResponse({"courses": list(courses_info.values())})
+        
+        # If no academic year is provided, return the working years for the dropdown
+        working_years = course_registration.objects.values("working_year").distinct()
+        
+        context = {"working_years": working_years}
+        
+        return render(request, "../templates/examination/gradeSubmission.html", context)
+
 @login_required(login_url="/accounts/login")
-def submitGrades(request):
-
-    unique_course_ids = course_registration.objects.values("course_id").distinct()
-    working_years = course_registration.objects.values("working_year").distinct()
-
-    # Cast the course IDs to integers
-    unique_course_ids = unique_course_ids.annotate(
-        course_id_int=Cast("course_id", IntegerField())
-    )
-
-    # Retrieve course names and course codes based on unique course IDs
-
-    # print(unique_course_ids)
-    courses_info = Courses.objects.filter(
-        id__in=unique_course_ids.values_list("course_id_int", flat=True)
-    )
-
-    context = {"courses_info": courses_info, "working_years": working_years}
-
-    # print(working_years)
-
-    return render(request, "../templates/examination/gradeSubmission.html", context)
-
-
 def submitEntergrades(request):
 
     course_id = request.GET.get("course")
@@ -838,9 +914,17 @@ class submitEntergradesStoring(APIView):
         return response
         return render(request, "../templates/examination/grades_updated.html", {})
 
-
+@login_required(login_url="/accounts/login")
 def upload_grades(request):
     if request.method == "POST" and request.FILES.get("csv_file"):
+        des = request.session.get("currentDesignationSelected")
+        if des == "acadadmin":
+         pass
+        else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
         csv_file = request.FILES["csv_file"]
 
         if not csv_file.name.endswith(".csv"):
@@ -884,19 +968,17 @@ def upload_grades(request):
             return JsonResponse(
                 {"error": message, "redirect_url": redirect_url}, status=400
             )
-
-        semester = students.first().semester_id_id
-
+        
         try:
             # Parse the CSV file
             decoded_file = csv_file.read().decode("utf-8").splitlines()
             reader = csv.DictReader(decoded_file)
 
-            required_columns = ["roll_no", "name", "grade", "remarks"]
+            required_columns = ["roll_no", "grade", "remarks"]
             if not all(column in reader.fieldnames for column in required_columns):
                 return JsonResponse(
                     {
-                        "error": "CSV file must contain the following columns: roll_no, name, grade, remarks."
+                        "error": "CSV file must contain the following columns: roll_no, grade, remarks."
                     },
                     status=400,
                 )
@@ -905,9 +987,11 @@ def upload_grades(request):
                 roll_no = row["roll_no"]
                 grade = row["grade"]
                 remarks = row["remarks"]
-                batch_prefix = roll_no[:2]
-                batch = int(f"20{batch_prefix}")
-
+                semester = row["semester"] if "semester" in row and row["semester"] else None
+                stud = Student.objects.get(id_id=roll_no)
+                semester = semester or stud.curr_semester_no
+                batch=stud.batch
+                
                 Student_grades.objects.create(
                     roll_no=roll_no,
                     grade=grade,
@@ -946,8 +1030,16 @@ def upload_grades(request):
         {"error": "Invalid request. Please upload a CSV file."}, status=400
     )
 
-
+@login_required(login_url="/accounts/login")
 def show_message(request):
+    des = request.session.get("currentDesignationSelected")
+    if des == "acadadmin" or str(des) == "Associate Professor" or str(des) == "Professor" or str(des) == "Assistant Professor" :
+         pass
+    else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
     message = request.GET.get("message", "Default message if none provided.")
     des = request.session.get("currentDesignationSelected")
     if (
@@ -961,6 +1053,14 @@ def show_message(request):
 
 @login_required(login_url="/accounts/login")
 def submitGradesProf(request):
+    des = request.session.get("currentDesignationSelected")
+    if  str(des) == "Associate Professor" or str(des) == "Professor" or str(des) == "Assistant Professor" :
+         pass
+    else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
     # print(request.user,1)
     unique_course_ids = (
         CourseInstructor.objects.filter(instructor_id_id=request.user.username)
@@ -978,7 +1078,7 @@ def submitGradesProf(request):
 
     # Retrieve course names and course codes based on unique course IDs
 
-    print(unique_course_ids)
+    # print(unique_course_ids)
     courses_info = Courses.objects.filter(
         id__in=unique_course_ids.values_list("course_id_int", flat=True)
     )
@@ -989,18 +1089,68 @@ def submitGradesProf(request):
 
     return render(request, "../templates/examination/submitGradesProf.html", context)
 
-
+@login_required(login_url="/accounts/login")
 def download_template(request):
-    response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = f'attachment; filename="template.csv"'
-    writer = csv.writer(response)
-    writer.writerow(["roll_no", "name", "grade", "remarks"])
+    des = request.session.get("currentDesignationSelected")
+    if des not in ["acadadmin", "Associate Professor", "Professor", "Assistant Professor", "Dean Academic"]:
+        if request.is_ajax():
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+        else:
+            return HttpResponseRedirect('/dashboard/')
+    
+    course = request.GET.get('course')
+    year = request.GET.get('year')
 
-    return response
+    if not course or not year:
+        return JsonResponse({'error': 'Course and year are required'}, status=400)
+    
+    try:
+        # Fetching the custom user model
+        User = get_user_model()
+        
+        course_info = course_registration.objects.filter(
+            course_id_id=course, 
+            working_year=year
+        )
+        
+        if not course_info.exists():
+            return JsonResponse({'error': 'No registration data found for the provided course and year'}, status=404)
+
+        course_obj = course_info.first().course_id
+        response = HttpResponse(content_type="text/csv")
+        filename = f"{course_obj.code}_template_{year}.csv"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        # Create CSV writer
+        writer = csv.writer(response)
+        
+        # Write header
+        writer.writerow(["roll_no", "name", "grade", "remarks"])
+        
+        # Write student roll numbers and names
+        for entry in course_info:
+            student_entry = entry.student_id
+            # Fetching the user instance dynamically
+            student_user = User.objects.get(username=student_entry.id_id)
+            writer.writerow([student_entry.id_id, student_user.first_name+" "+student_user.last_name, "", ""])
+        
+        return response
+    
+    except Exception as e:
+        print(f"Error in download_template: {str(e)}")
+        return JsonResponse({'error': 'An unexpected error occurred'}, status=500)
 
 
-
+@login_required(login_url="/accounts/login")
 def verifyGradesDean(request):
+    des = request.session.get("currentDesignationSelected")
+    if des=="Dean Academic" :
+         pass
+    else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
     unique_course_ids = Student_grades.objects.filter(verified=True).values("course_id").distinct()
 
     # Cast the course IDs to integers
@@ -1013,24 +1163,31 @@ def verifyGradesDean(request):
     # print(unique_course_ids)
     courses_info = Courses.objects.filter(
         id__in=unique_course_ids.values_list("course_id_int", flat=True)
-    )
+    ).order_by("code")
 
-    unique_batch_ids = Student_grades.objects.values("batch").distinct()
+    unique_year_ids = Student_grades.objects.values("year").distinct()
 
     context = {
         "courses_info": courses_info,
-        "unique_batch_ids": unique_batch_ids,
+        "unique_year_ids": unique_year_ids,
     }
 
     return render(request, "../templates/examination/submitGradeDean.html", context)
 
-
+@login_required(login_url="/accounts/login")
 def updateEntergradesDean(request):
+    des = request.session.get("currentDesignationSelected")
+    if des=="Dean Academic" :
+         pass
+    else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
     course_id = request.GET.get("course")
-    semester_id = request.GET.get("semester")
-    batch = request.GET.get("batch")
+    year = request.GET.get("year")
     course_present = Student_grades.objects.filter(
-        course_id=course_id, semester=semester_id, batch=batch
+        course_id=course_id, year=year
     )
 
     if not course_present:
@@ -1042,8 +1199,16 @@ def updateEntergradesDean(request):
     return render(request, "../templates/examination/updateEntergradesDean.html", context)
 
 
-
+@login_required(login_url="/accounts/login")
 def upload_grades_prof(request):
+    des = request.session.get("currentDesignationSelected")
+    if str(des) == "Associate Professor" or str(des) == "Professor" or str(des) == "Assistant Professor" :
+         pass
+    else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
     if request.method == "POST" and request.FILES.get("csv_file"):
         csv_file = request.FILES["csv_file"]
 
@@ -1081,7 +1246,7 @@ def upload_grades_prof(request):
             return JsonResponse(
                 {"error": message, "redirect_url": redirect_url}, status=400
             )
-        print(courses.first().reSubmit)
+        
         if courses and not courses.first().reSubmit:
             
             message = "THIS Course was Already Submitted"
@@ -1090,18 +1255,18 @@ def upload_grades_prof(request):
                 {"error": message, "redirect_url": redirect_url}, status=400
             )
 
-        semester = students.first().semester_id_id
+        
 
         try:
             # Parse the CSV file
             decoded_file = csv_file.read().decode("utf-8").splitlines()
             reader = csv.DictReader(decoded_file)
 
-            required_columns = ["roll_no", "name", "grade", "remarks"]
+            required_columns = ["roll_no", "grade", "remarks"]
             if not all(column in reader.fieldnames for column in required_columns):
                 return JsonResponse(
                     {
-                        "error": "CSV file must contain the following columns: roll_no, name, grade, remarks."
+                        "error": "CSV file must contain the following columns: roll_no, grade, remarks."
                     },
                     status=400,
                 )
@@ -1110,14 +1275,18 @@ def upload_grades_prof(request):
                 roll_no = row["roll_no"]
                 grade = row["grade"]
                 remarks = row["remarks"]
-                batch_prefix = roll_no[:2]
-                batch = int(f"20{batch_prefix}")
+                semester = row["semester"] if "semester" in row and row["semester"] else None
+                stud = Student.objects.get(id_id=roll_no)
+                semester = semester or stud.curr_semester_no
+                batch=stud.batch
                 reSubmit=False
+
                 Student_grades.objects.update_or_create(
                  roll_no=roll_no,
                  course_id_id=course_id,
                  year=academic_year,
                  semester=semester,
+                 batch=batch,
         # Fields that will be updated if a match is found
                  defaults={
                     'grade': grade,
@@ -1154,7 +1323,17 @@ def upload_grades_prof(request):
         {"error": "Invalid request. Please upload a CSV file."}, status=400
     )
 
+
+@login_required(login_url="/accounts/login")
 def validateDean(request):
+    des = request.session.get("currentDesignationSelected")
+    if des=="Dean Academic" :
+         pass
+    else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
     unique_course_ids = Student_grades.objects.filter(verified=True).values("course_id").distinct()
 
     # Cast the course IDs to integers
@@ -1176,8 +1355,16 @@ def validateDean(request):
 
     return render(request, "../templates/examination/validation.html", context)
 
-
+@login_required(login_url="/accounts/login")
 def validateDeanSubmit(request):
+    des = request.session.get("currentDesignationSelected")
+    if des=="Dean Academic" :
+         pass
+    else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
     if request.method == "POST" and request.FILES.get("csv_file"):
         csv_file = request.FILES["csv_file"]
 
@@ -1222,22 +1409,23 @@ def validateDeanSubmit(request):
             decoded_file = csv_file.read().decode("utf-8").splitlines()
             reader = csv.DictReader(decoded_file)
 
-            required_columns = ["roll_no", "name", "grade", "remarks"]
+            required_columns = ["roll_no", "grade", "remarks"]
             if not all(column in reader.fieldnames for column in required_columns):
-                message = "CSV file must contain the following columns: roll_no, name, grade, remarks."
+                message = "CSV file must contain the following columns: roll_no, grade, remarks."
                 context = {
                  "message":message,
                 }
                 return render(request, "../templates/examination/messageDean.html", context)
                    
-            semester = students.first().semester_id_id
+            
             mismatch=[]
             for row in reader:
                 roll_no = row["roll_no"]
                 grade = row["grade"]
                 remarks = row["remarks"]
-                batch_prefix = roll_no[:2]
-                batch = int(f"20{batch_prefix}")
+                stud=Student.objects.get(id_id=roll_no)
+                semester=stud.curr_semester_no
+                batch=stud.batch
                 Student_grades.objects.filter(
                  roll_no=roll_no,
                  course_id_id=course_id,
@@ -1278,3 +1466,480 @@ def validateDeanSubmit(request):
                 "message": error_message,
             }
             return render(request, "../templates/examination/messageDean.html", context)
+
+@login_required(login_url="/accounts/login")
+def downloadGrades(request):
+  des = request.session.get("currentDesignationSelected")
+  if str(des) == "Associate Professor" or str(des) == "Professor" or str(des) == "Assistant Professor" :
+         pass
+  else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
+  academic_year = request.GET.get('academic_year')
+        
+  if academic_year:
+    if academic_year is None or not academic_year.isdigit():
+     return JsonResponse({})
+    # print(request.user,1)
+    unique_course_ids = (
+        CourseInstructor.objects.filter(instructor_id_id=request.user.username)
+        .values("course_id_id")
+        .distinct()
+    )
+    # unique_course_ids = course_registration.objects.values(
+    #     'course_id').distinct()
+    
+    # Cast the course IDs to integers
+    unique_course_ids = unique_course_ids.annotate(
+        course_id_int=Cast("course_id", IntegerField())
+    )
+    # Retrieve course names and course codes based on unique course IDs
+
+    courses_info = Student_grades.objects.filter(
+        year=academic_year,
+        course_id_id__in=unique_course_ids.values_list("course_id_int", flat=True)
+    )
+    courses_details=Courses.objects.filter(
+        id__in=courses_info.values_list("course_id_id", flat=True)
+    )
+    # print(courses_info.values(),'abcd')
+    return JsonResponse({"courses": list(courses_details.values())})
+    
+    
+  working_years = course_registration.objects.values("working_year").distinct()
+        
+  context = {"working_years": working_years}
+        
+  return render(request, "../templates/examination/download_resultProf.html", context)
+
+
+@login_required(login_url="/accounts/login")
+def generate_pdf(request):
+    des = request.session.get("currentDesignationSelected")
+    if str(des) == "Associate Professor" or str(des) == "Professor" or str(des) == "Assistant Professor" :
+         pass
+    else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
+    course_id = request.POST.get('course_id')
+    academic_year = request.POST.get('academic_year')
+    course_info = get_object_or_404(Courses, id=course_id)
+    grades = Student_grades.objects.filter(course_id_id=course_id, year=academic_year).order_by("roll_no")
+    course=CourseInstructor.objects.filter(course_id_id=course_id,year=academic_year,instructor_id_id=request.user.username)
+    if not course:
+         return JsonResponse({"success": False, "error": "course not found."}, status=404)
+    semester=course.first().semester_no
+    
+    all_grades = ["O", "A+", "A", "B+", "B", "C+", "C", "D+", "D", "F", "I", "S", "X"]
+    grade_counts = {grade: grades.filter(grade=grade).count() for grade in all_grades}
+
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="{course_info.code}_grades.pdf"'
+
+    doc = SimpleDocTemplate(response, pagesize=letter)
+    elements = []
+    styles = getSampleStyleSheet()
+
+    # Custom Header Style
+    header_style = ParagraphStyle(
+    "HeaderStyle",
+    parent=styles["Heading1"],
+    fontName="Helvetica-Bold",
+    fontSize=16,
+    textColor=HexColor("#333333"),
+    spaceAfter=20,
+    alignment=1,  # Center alignment
+    )
+    subheader_style = ParagraphStyle(
+        "SubheaderStyle",
+        parent=styles["Normal"],
+        fontSize=12,
+        textColor=HexColor("#666666"),
+        spaceAfter=10,
+    )
+    instructor = request.user.first_name + " " + request.user.last_name
+
+    # Add Header
+    elements.append(Paragraph(f"Grade Sheet", header_style))
+    field_label_style = ParagraphStyle(
+    "FieldLabelStyle",
+    parent=styles["Normal"],
+    fontSize=12,
+    textColor=colors.black,  # Black text color for labels
+    spaceAfter=5,
+)
+    field_value_style = ParagraphStyle(
+    "FieldValueStyle",
+    parent=styles["Normal"],
+    fontSize=12,
+    textColor=HexColor("#666666"),  # Gray text color for values
+    spaceAfter=10,
+)
+
+# Add fields with labels in black and values in gray
+    elements.append(Paragraph(f"<b>Session:</b> {academic_year}", field_label_style))
+    elements.append(Paragraph(f"<b>Semester:</b> {semester}", field_label_style))
+    elements.append(Paragraph(f"<b>Course Code:</b> {course_info.code}", field_label_style))
+    elements.append(Paragraph(f"<b>Course Name:</b> {course_info.name}", field_label_style))
+    elements.append(Paragraph(f"<b>Instructor:</b> {instructor}", field_label_style))
+
+    # Table Data with Wider Column Widths
+    data = [["S.No.", "Roll Number", "Grade"]]
+    for i, grade in enumerate(grades, 1):
+        data.append([i, grade.roll_no, grade.grade])
+    table = Table(data, colWidths=[80, 300, 100])
+
+    # Improved Table Style
+    table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), HexColor("#E0E0E0")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
+                ("ALIGN", (0, 0), (-1, 0), "CENTER"),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, 0), 14),
+                ("BOTTOMPADDING", (0, 0), (-1, 0), 10),
+                ("BACKGROUND", (0, 1), (-1, -1), HexColor("#F9F9F9")),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [HexColor("#F9F9F9"), colors.white]),
+                ("TEXTCOLOR", (0, 1), (-1, -1), colors.black),
+                ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
+                ("FONTSIZE", (0, 1), (-1, -1), 12),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ]
+        )
+    )
+    elements.append(table)
+    elements.append(Spacer(1, 20))
+
+    # Add Grade Distribution with Row Splitting
+    elements.append(Paragraph(f"Grade Distribution:", header_style))
+
+    # First Grade Table
+    grade_data1 = [["O", "A+", "A", "B+", "B", "C+", "C", "D+"]]
+    grade_data1.append([grade_counts[grade] for grade in grade_data1[0]])
+    grade_table1 = Table(grade_data1, colWidths=[60] * 8)
+    grade_table1.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), HexColor("#E0E0E0")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
+                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, 0), 12),
+                ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+                ("BACKGROUND", (0, 1), (-1, -1), colors.white),
+                ("TEXTCOLOR", (0, 1), (-1, -1), colors.black),
+            ]
+        )
+    )
+    elements.append(grade_table1)
+    elements.append(Spacer(1, 10))
+
+    # Second Grade Table
+    grade_data2 = [["D", "F", "I", "S", "X"]]
+    grade_data2.append([grade_counts[grade] for grade in grade_data2[0]])
+    grade_table2 = Table(grade_data2, colWidths=[60] * 5)
+    grade_table2.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), HexColor("#E0E0E0")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
+                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, 0), 12),
+                ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+                ("BACKGROUND", (0, 1), (-1, -1), colors.white),
+                ("TEXTCOLOR", (0, 1), (-1, -1), colors.black),
+            ]
+        )
+    )
+    elements.append(grade_table2)
+    elements.append(Spacer(1, 40))
+
+    verified_style = ParagraphStyle(
+    "VerifiedStyle",
+    parent=styles["Normal"],
+    fontSize=13,
+    textColor=HexColor("#333333"),
+    alignment=0,  # Center alignment
+    spaceAfter=20,
+      )
+    elements.append(Paragraph("I have carefully checked and verified the submitted grade. The grade distribution and submitted grades are correct. [Please mention any exception below.]", verified_style))
+
+    # Footer Signatures
+    def draw_signatures(canvas, doc):
+        canvas.saveState()
+        width, height = letter
+        canvas.drawString(inch, 0.75 * inch, "")
+        canvas.drawString(inch, 0.5 * inch, "Date")
+        canvas.drawString(width - 4 * inch, 0.75 * inch, "")
+        canvas.drawString(width - 4 * inch, 0.5 * inch, "Course Instructor's Signature")
+        canvas.restoreState()
+
+    doc.build(elements, onLaterPages=draw_signatures, onFirstPage=draw_signatures)
+    return response
+
+
+@login_required(login_url="/accounts/login")
+def generate_result(request):
+    if request.method == 'POST':
+        des = request.session.get("currentDesignationSelected")
+        if des == "acadadmin":
+         pass
+        else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
+        try:
+            data = json.loads(request.body)
+            semester = data.get('semester')
+            branch = data.get('specialization')
+            batch = data.get('batch')
+
+            branch_info = Discipline.objects.filter(acronym=branch).first()
+            if not branch_info:
+                return JsonResponse({'error': 'Branch not found'}, status=404)
+
+            curriculum_id = Batch.objects.filter(
+                year=batch, discipline_id=branch_info.id
+            ).values_list('curriculum_id', flat=True).first()
+            if not curriculum_id:
+                return JsonResponse({'error': 'Curriculum not found'}, status=404)
+
+            semester_info = Semester.objects.filter(
+                curriculum_id=curriculum_id, semester_no=semester
+            ).first()
+            if not semester_info:
+                return JsonResponse({'error': 'Semester not found'}, status=404)
+            # print(batch, branch)
+            course_slots = CourseSlot.objects.filter(semester_id=semester_info)
+            course_ids_from_slots = course_slots.values_list('courses', flat=True)
+            course_ids_from_grades = Student_grades.objects.filter(
+            batch=batch,
+            semester=semester
+             ).values_list('course_id_id', flat=True)
+            course_ids = set(course_ids_from_slots).union(set(course_ids_from_grades))
+            courses = Courses.objects.filter(id__in=course_ids)
+            courses_map={}
+            for course in courses:
+                courses_map[course.id]=(course.credit)
+            students = Student.objects.filter(batch=batch, specialization=branch).order_by('id')
+            # print(students.first().id_id,"studejt id")
+      
+            wb = Workbook()
+            ws = wb.active
+            ws.title = "Student Grades"
+
+        
+            # ws.merge_cells(start_row=1, start_column=1, end_row=4, end_column=1) 
+            # ws.merge_cells(start_row=1, start_column=2, end_row=4, end_column=2) 
+            ws["A1"] = "S. No"
+            ws["B1"] = "Roll No"
+            for cell in ("A1", "B1"):
+                ws[cell].alignment = Alignment(horizontal="center", vertical="center")
+                ws[cell].font = Font(bold=True)
+
+      
+            ws.column_dimensions[get_column_letter(1)].width = 12  
+            ws.column_dimensions[get_column_letter(2)].width = 18 
+            col_idx = 3
+            for course in courses:
+           
+                ws.merge_cells(start_row=1, start_column=col_idx, end_row=1, end_column=col_idx + 1)
+                ws.merge_cells(start_row=2, start_column=col_idx, end_row=2, end_column=col_idx + 1)
+                ws.merge_cells(start_row=3, start_column=col_idx, end_row=3, end_column=col_idx + 1)
+
+                ws.cell(row=1, column=col_idx).value = course.code
+                ws.cell(row=1, column=col_idx).alignment = Alignment(horizontal="center", vertical="center")
+                ws.cell(row=1, column=col_idx).font = Font(bold=True)
+                ws.cell(row=2, column=col_idx).value = course.name
+                ws.cell(row=2, column=col_idx).alignment = Alignment(horizontal="center", vertical="center")
+                ws.cell(row=2, column=col_idx).font = Font(bold=True)
+                
+                ws.cell(row=3, column=col_idx).value=course.credit
+                ws.cell(row=3, column=col_idx).alignment = Alignment(horizontal="center", vertical="center")
+                ws.cell(row=3, column=col_idx).font = Font(bold=True)
+                ws.cell(row=4, column=col_idx).value = "Grade"
+                ws.cell(row=4, column=col_idx + 1).value = "Remarks"
+                ws.cell(row=4, column=col_idx).alignment = Alignment(horizontal="center", vertical="center")
+                ws.cell(row=4, column=col_idx+1).alignment = Alignment(horizontal="center", vertical="center")
+                ws.column_dimensions[get_column_letter(col_idx)].width = 25
+                ws.column_dimensions[get_column_letter(col_idx+1)].width = 25 
+                col_idx += 2
+
+            # ws.merge_cells(start_row=1, start_column=col_idx, end_row=4, end_column=col_idx)  # SPI
+            ws.cell(row=1, column=col_idx).value = "SPI"
+            ws.cell(row=1, column=col_idx).alignment = Alignment(horizontal="center", vertical="center")
+            ws.cell(row=1, column=col_idx).font = Font(bold=True)
+
+            # ws.merge_cells(start_row=1, start_column=col_idx + 1, end_row=4, end_column=col_idx + 1)  # CPI
+            ws.cell(row=1, column=col_idx + 1).value = "CPI"
+            ws.cell(row=1, column=col_idx + 1).alignment = Alignment(horizontal="center", vertical="center")
+            ws.cell(row=1, column=col_idx + 1).font = Font(bold=True)
+
+         
+            row_idx = 5
+            for idx, student in enumerate(students, start=1):
+                ws.cell(row=row_idx, column=1).value = idx
+                ws.cell(row=row_idx, column=2).value = student.id_id
+
+                ws.cell(row=row_idx, column=1).alignment = Alignment(horizontal="center", vertical="center")
+                ws.cell(row=row_idx, column=2).alignment = Alignment(horizontal="center", vertical="center")
+                student_grades = Student_grades.objects.filter(
+                    roll_no=student.id_id, course_id_id__in=course_ids, semester=semester
+                )
+               
+                grades_map = {}
+                for grade in student_grades:
+                    grades_map[grade.course_id_id] = (grade.grade, grade.remarks,courses_map.get(grade.course_id_id) )
+
+                col_idx = 3
+                gained_credit=0
+                total_credit=0
+                for course in courses:
+                    grade, remark, credits = grades_map.get(course.id, ("N/A", "N/A",0))
+                    ws.cell(row=row_idx, column=col_idx).value = grade
+                    ws.cell(row=row_idx, column=col_idx + 1).value = remark
+                    ws.cell(row=row_idx, column=col_idx).alignment = Alignment(horizontal="center", vertical="center")
+                    ws.cell(row=row_idx, column=col_idx+1).alignment = Alignment(horizontal="center", vertical="center")
+                    if grade=="O" or grade=="A+":
+                        gained_credit+=1*credits
+                        total_credit+=credits
+                    elif grade=="A":
+                        gained_credit+=0.9*credits
+                        total_credit+=credits
+                    elif grade=="B+":
+                        gained_credit+=0.8*credits
+                        total_credit+=credits
+                    elif grade=="B":
+                        gained_credit+=0.7*credits
+                        total_credit+=credits
+                    elif grade=="C+":
+                        gained_credit+=0.6*credits
+                        total_credit+=credits
+                    elif grade=="C":
+                        gained_credit+=0.5*credits
+                        total_credit+=credits
+                    elif grade=="D+":
+                        gained_credit+=0.4*credits
+                        total_credit+=credits
+                    elif grade=="D":
+                        gained_credit+=0.3*credits
+                        total_credit+=credits
+                    elif grade=="F":
+                        gained_credit+=0.2*credits
+                        total_credit+=credits
+                    
+                    
+                    col_idx += 2
+                if total_credit==0 :
+                    ws.cell(row=row_idx, column=col_idx).value =0
+                else:
+                 ws.cell(row=row_idx, column=col_idx).value = 10*(gained_credit/total_credit)
+                ws.cell(row=row_idx, column=col_idx + 1).value = 0
+                ws.cell(row=row_idx, column=col_idx).alignment = Alignment(horizontal="center", vertical="center")
+                ws.cell(row=row_idx, column=col_idx+1).alignment = Alignment(horizontal="center", vertical="center")
+
+                row_idx += 1
+
+            response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = 'attachment; filename="student_grades.xlsx"'
+            wb.save(response)
+            return response
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+        except Exception as e:
+            traceback.print_exc()
+            return JsonResponse({'error': str(e)}, status=500)
+            
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+def checkresult(request):
+    des = request.session.get("currentDesignationSelected")
+    if des == "student":
+        pass
+    else:
+        if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+        else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
+    return render(request, "../templates/examination/check_result.html")
+
+
+def grades_report(request):
+    if request.method == 'POST':
+        des = request.session.get("currentDesignationSelected")
+        if des == "student":
+         pass
+        else:
+         if request.is_ajax():  # For AJAX or JSON requests
+            return JsonResponse({"success": False, "error": "Access denied."}, status=403)
+         else:  # For non-AJAX requests
+            return HttpResponseRedirect('/dashboard/')
+        roll_number=request.user.username
+        semester=request.POST.get('semester')
+        grades_info=Student_grades.objects.filter(roll_no=roll_number,semester=semester).select_related('course_id')
+        gained_credit=0
+        total_credit=0
+        all_credits=0
+        for grades in grades_info:
+            credits=grades.course_id.credit
+            grade=grades.grade
+            if grade=="O" or grade=="A+":
+                        gained_credit+=1*credits
+                        total_credit+=credits
+            elif grade=="A":
+                        gained_credit+=0.9*credits
+                        total_credit+=credits
+            elif grade=="B+":
+                        gained_credit+=0.8*credits
+                        total_credit+=credits
+            elif grade=="B":
+                        gained_credit+=0.7*credits
+                        total_credit+=credits
+            elif grade=="C+":
+                        gained_credit+=0.6*credits
+                        total_credit+=credits
+            elif grade=="C":
+                        gained_credit+=0.5*credits
+                        total_credit+=credits
+            elif grade=="D+":
+                        gained_credit+=0.4*credits
+                        total_credit+=credits
+            elif grade=="D":
+                        gained_credit+=0.3*credits
+                        total_credit+=credits
+            elif grade=="F":
+                        gained_credit+=0.2*credits
+                        total_credit+=credits 
+            all_credits+=credits
+        spi = 10*(gained_credit/total_credit) if total_credit > 0 else 0
+        all_grades = Student_grades.objects.filter(roll_no=roll_number)
+        total_units = sum(grade.course_id.credit for grade in all_grades)
+        student_user = request.user.first_name+' '+request.user.last_name 
+        student = Student.objects.filter(id=roll_number).first()
+        # count=Student.objects.filter(id=roll.id).count()
+        # student=students.count()
+        
+        context = {
+                'student': student,
+                'student_user': student_user,
+                'grades': grades_info,
+                'spi': round(spi, 2),
+                'semester_units': all_credits,
+                'total_units': total_units,
+            }
+        return render(request, '../templates/examination/grades_report.html', context)
+
+
