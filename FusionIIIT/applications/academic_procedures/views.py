@@ -997,6 +997,7 @@ def gen_course_list(request):
                     "name": registration.student_id.id.user.first_name + " " + registration.student_id.id.user.last_name,
                     "department": registration.student_id.id.department.name
                 })
+        verified_students = sorted(verified_students, key=lambda x: x['rollno'])
         html = render_to_string('academic_procedures/gen_course_list.html',
                                 {'students': verified_students, 'batch':batch, 'course':course_id}, request)
         maindict = {'html': html}
