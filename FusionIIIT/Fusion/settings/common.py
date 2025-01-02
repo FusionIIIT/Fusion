@@ -50,7 +50,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 
 # email of sender
 
-EMAIL_HOST_USER = 'fusionmailservice@iiitdmj.ac.in'
+EMAIL_HOST_USER = 'fusion@iiitdmj.ac.in'
 
 EMAIL_PORT = 587
 ACCOUNT_EMAIL_REQUIRED = True
@@ -68,7 +68,7 @@ ACCOUNT_EMAIL_VERIFICATION = 'optional'
 
 ACCOUNT_EMAIL_SUBJECT_PREFIX = 'Fusion: '
 
-DEFAULT_FROM_EMAIL = 'Fusion IIIT <fusionmailservice@iiitdmj.ac.in>'
+DEFAULT_FROM_EMAIL = 'Fusion IIIT <fusion@iiitdmj.ac.in>'
 
 SERVER_EMAIL = 'fusionmailservice@iiitdmj.ac.in'
 

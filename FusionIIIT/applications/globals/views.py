@@ -31,6 +31,45 @@ from notifications.models import Notification
 from .models import *
 from applications.hostel_management.models import (HallCaretaker,HallWarden)
 
+
+from django.contrib.auth.views import PasswordResetView
+from django.shortcuts import render
+from django.utils.timezone import now
+from datetime import timedelta
+from .models import PasswordResetTracker
+
+class RateLimitedPasswordResetView(PasswordResetView):
+    template_name = 'registration/password_reset_form.html'  # Customize as needed
+
+    def post(self, request, *args, **kwargs):
+        email = request.POST.get('email')
+        if not email:
+            return self.form_invalid(self.get_form())  # Default behavior for invalid forms
+
+        # Check if the email exists in the tracker table
+        tracker, created = PasswordResetTracker.objects.get_or_create(email=email)
+
+        # Enforce rate limiting: Check if the reset was within the last 24 hours
+        if tracker.last_reset and now() - tracker.last_reset < timedelta(days=1):
+            # Pass error message to the template
+            return render(
+                request,
+                self.template_name,
+                {
+                    'form': self.get_form(),  # Include the form for re-rendering
+                    'error_message': "Password can only be reset once every 24 hours.",
+                },
+            )
+
+        # Update the tracker with the current timestamp
+        tracker.last_reset = now()
+        tracker.save()
+
+        # Proceed with the standard password reset process
+        return super().post(request, *args, **kwargs)
+
+
+
 def index(request):
     context = {}
     if(str(request.user)!="AnonymousUser"):
