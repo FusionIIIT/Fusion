@@ -366,7 +366,7 @@ def academic_procedures_student(request):
         curr_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = obj.curr_semester_no)
 
         try:
-            semester_no = obj.curr_semester_no+1
+            semester_no = obj.curr_semester_no
             next_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = semester_no)
             user_sem = semester_no
             
@@ -416,7 +416,7 @@ def academic_procedures_student(request):
         details = {
                 'current_user': current_user,
                 'year': acad_year,
-                'user_sem': user_sem - 1,
+                'user_sem': user_sem,
                 'user_branch' : str(user_branch),
                 'cpi' : cpi,
                 }
@@ -1655,7 +1655,7 @@ def allot_courses(request):
                     print(course_code.strip() , course_name.strip())
                     course = Courses.objects.get(code=course_code.strip(),name=course_name.strip())
                     if(roll_no not in currroll):
-                        student_check=StudentRegistrationChecks(student_id = student, semester_id = sem_id, pre_registration_flag = True,final_registration_flag = False)
+                        student_check=StudentRegistrationChecks(student_id = student, semester_id = sem_id, pre_registration_flag = True,final_registration_flag = True)
                         student_checks.append(student_check)
                         currroll.add(roll_no)
                     # print(">>>>>",roll_no,course_slot_name,course_code,course_name)
@@ -1665,7 +1665,7 @@ def allot_courses(request):
                                                     course_id=course,semester_id=sem_id,priority=1)
                 pre_registrations.append(pre_registration)
                 final_registration=FinalRegistration(student_id=student,course_slot_id=course_slot,
-                                                    course_id=course,semester_id=sem_id)
+                                                    course_id=course,semester_id=sem_id, verified=True )
                 final_registrations.append(final_registration)
     
                 courseregistration=course_registration(working_year=datetime.datetime.now().year,course_id=course,semester_id=sem_id,student_id=student,course_slot_id=course_slot)
@@ -2619,8 +2619,9 @@ def course_list(request):
         student_id = request_body['student_id']
         semester_id = request_body['semester_id']
  
-        final_registration_table = FinalRegistration.objects.all().filter(semester_id = semester_id, verified = False)
-        final = final_registration_table.filter(student_id = student_id, semester_id = semester_id)
+        # final_registration_table = FinalRegistration.objects.all().filter(semester_id = semester_id, verified = False)
+        # final = final_registration_table.filter(student_id = student_id, semester_id = semester_id)
+        final = FinalRegistration.objects.all().filter(semester_id__semester_no = semester_id, student_id__id=student_id, verified = False)
         html = render_to_string('academic_procedures/student_course_list.html',{"course_list":final}, request)
  
         return HttpResponse(json.dumps({'html': html}),content_type="application/json")
@@ -2717,6 +2718,14 @@ def auto_verify_registration(request):
         with transaction.atomic():
             for obj in final_register_list:
                 o = FinalRegistration.objects.filter(id= obj.id).update(verified = True)
+                course_registration.objects.create(
+                    student_id=obj.student_id,
+                    course_id=obj.course_id,
+                    semester_id=obj.semester_id,
+                    course_slot_id=obj.course_slot_id,
+                    registration_type=obj.registration_type,
+                    working_year=demo_date.year  # Set the current year
+                )
             academics_module_notif(request.user, student.id.user, 'registration_approved')
             
             Student.objects.filter(id = student_id).update(curr_semester_no = sem_no)

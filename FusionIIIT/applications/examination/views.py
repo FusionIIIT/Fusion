@@ -987,8 +987,9 @@ def upload_grades(request):
                 roll_no = row["roll_no"]
                 grade = row["grade"]
                 remarks = row["remarks"]
-                stud=Student.objects.get(id_id=roll_no)
-                semester=stud.curr_semester_no
+                semester = row["semester"] if "semester" in row and row["semester"] else None
+                stud = Student.objects.get(id_id=roll_no)
+                semester = semester or stud.curr_semester_no
                 batch=stud.batch
                 
                 Student_grades.objects.create(
@@ -1274,10 +1275,12 @@ def upload_grades_prof(request):
                 roll_no = row["roll_no"]
                 grade = row["grade"]
                 remarks = row["remarks"]
-                stud=Student.objects.get(id_id=roll_no)
-                semester=stud.curr_semester_no
+                semester = row["semester"] if "semester" in row and row["semester"] else None
+                stud = Student.objects.get(id_id=roll_no)
+                semester = semester or stud.curr_semester_no
                 batch=stud.batch
                 reSubmit=False
+
                 Student_grades.objects.update_or_create(
                  roll_no=roll_no,
                  course_id_id=course_id,

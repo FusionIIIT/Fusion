@@ -10,6 +10,7 @@ from applications.globals.models import (DepartmentInfo, Designation,ExtraInfo, 
 from applications.filetracking.sdk.methods import *
 from django.db.models import Q
 from datetime import datetime
+from django.db.models import Max
 
 class ProgrammeForm(ModelForm):
     class Meta:
@@ -387,7 +388,9 @@ class CourseProposalTrackingFile(ModelForm):
         return self.cleaned_data
 
 class CourseInstructorForm(forms.ModelForm):
-    next_year = datetime.now().year +1
+    # next_year = datetime.now().year +1
+    max_year = Batch.objects.aggregate(max_year=Max('year'))['max_year']
+    next_year = max_year + 1 if max_year else datetime.now().year + 1
     course_id = forms.ModelChoiceField(
         queryset=Course.objects.all(),
         label="Select Course",
