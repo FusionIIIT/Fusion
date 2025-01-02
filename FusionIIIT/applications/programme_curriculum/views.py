@@ -9,8 +9,9 @@ from django.contrib.auth.models import User
 from .models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot,NewProposalFile,Proposal_Tracking,CourseInstructor
 from .forms import ProgrammeForm, DisciplineForm, CurriculumForm, SemesterForm, CourseForm, BatchForm, CourseSlotForm, ReplicateCurriculumForm,NewCourseProposalFile,CourseProposalTrackingFile, CourseInstructorForm
 from .filters import CourseFilter, BatchFilter, CurriculumFilter,CourseInstructorFilter
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.utils import timezone
+import xlrd
 
 from notification.views import prog_and_curr_notif
 # from applications.academic_information.models import Student
@@ -1654,12 +1655,50 @@ def file_unarchive(request,FileId):
 def add_course_instructor(request):
     if request.session['currentDesignationSelected'] == "acadadmin":
         if request.method == 'POST':
-            form = CourseInstructorForm(request.POST)
-            if form.is_valid():
-                form.save()  # Save the form data to the database
-                return redirect('/programme_curriculum/admin_instructor/')  # Redirect to a success page after saving
-        else:
-            form = CourseInstructorForm()
+            if 'form_submit' in request.POST:
+                form = CourseInstructorForm(request.POST)
+                if form.is_valid():
+                    form.save()  # Save the form data to the database
+                    return redirect('/programme_curriculum/admin_instructor/')  # Redirect to a success page after saving
+                else:                 
+                    messages.error(request, f"An error occured while adding instructor.")
+            elif 'excel_submit' in request.POST:
+                manual_instructor_xsl = request.FILES['manual_instructor_xsl']
+                try:
+                    excel = xlrd.open_workbook(file_contents=manual_instructor_xsl.read())
+                    sheet = excel.sheet_by_index(0)
+
+                    # Start reading rows (assuming first row contains headers)
+                    with transaction.atomic():
+                        all_success = True
+                        for i in range(1, sheet.nrows):  # Skip the header row
+                            try:
+                                course_code = str(sheet.cell(i, 0).value).strip()
+                                course_version = float(sheet.cell(i, 1).value)
+                                instructor_id = str(sheet.cell(i, 2).value).strip()
+                                year = int(sheet.cell(i, 3).value)
+                                semester_no = int(sheet.cell(i, 4).value)
+                                course = Course.objects.filter(
+                                    Q(code__iexact=course_code),
+                                    version=course_version
+                                ).first()
+                                instructor = Faculty.objects.get(id=instructor_id)
+                                course_instructor = CourseInstructor(
+                                    course_id=course,
+                                    instructor_id=instructor,
+                                    year=year,
+                                    semester_no=semester_no
+                                )
+                                course_instructor.save()
+                            except Exception as e:
+                                all_success = False
+                                messages.error(request, f"Error processing Excel file in row {i}: {e}")
+                        if all_success:
+                            messages.success(request, "Instructors added successfully from Excel!")
+                            return redirect('/programme_curriculum/admin_instructor/')
+                except Exception as e:
+                    messages.error(request, f"Error processing Excel file: {e}")
+        form = CourseInstructorForm()
         
         return render(request, 'programme_curriculum/acad_admin/add_course_instructor.html', {'form': form})
     return HttpResponseRedirect('/programme_curriculum/')
