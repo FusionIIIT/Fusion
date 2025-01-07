@@ -114,6 +114,7 @@ def created_requests(request):
                 'requestCreatedBy': request_object.requestCreatedBy,
                 'file_id': file_obj.id,
                 'directorApproval': request_object.directorApproval,
+                'processed_by_dean': request_object.deanProcessed,
             }
             obj.append(element)
 
@@ -191,7 +192,7 @@ def handle_dean_process_request(request):
     request_id = File.objects.get(id=fileid).src_object_id
     
     remarks = data.get('remarks')
-    attachment = request.FILES.get('attachment')
+    attachment = request.FILES.get('file')
     receiver_desg, receiver_user = data.get('designation').split('|')
 
     forward_file(
@@ -554,6 +555,7 @@ def requests_status(request):
                 'requestCreatedBy': request_object.requestCreatedBy,
                 'file_id': file_obj.id,
                 'processed_by_director': request_object.directorApproval,
+                'processed_by_dean': request_object.deanProcessed,
                 'status': request_object.status,
             }
             obj.append(element)
