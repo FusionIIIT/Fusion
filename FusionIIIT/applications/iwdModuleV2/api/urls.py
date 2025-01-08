@@ -11,6 +11,7 @@ urlpatterns = [
     path('view-file/', views.view_file, name='view_file'),
     path('dean-processed-requests/', views.dean_processed_requests, name='dean_processed_requests'),
     path('handle-director-approval/', views.handle_director_approval, name='handle_director_approval'),
+    path('handle-engineer-process/', views.handle_engineer_process_requests, name='handle_engineer_process_requests'),
     path('handle-dean-process-request/', views.handle_dean_process_request, name='handleDeanProcessRequests'),
     path('rejected-requests-view/', views.rejected_requests, name='rejectedRequests'),
     path('handle-update-requests/', views.handle_update_requests, name='handleUpdateRequests'),
@@ -30,7 +31,6 @@ urlpatterns = [
     path('handle-process-bills/', views.handle_process_bills, name='handleProcessedBills'),
 
     path('engineer-processed-requests/', views.engineer_processed_requests, name='engineerProcessedRequests'),
-    path('handle-engineer-process-requests/', views.handleEngineerProcessRequests, name='handleEngineerProcessRequests'),
     path('generate-final-bill/', views.generateFinalBill, name='generateFinalBill'),
     path('handle-bill-generated-requests/', views.handleBillGeneratedRequests, name='handleBillGeneratedRequests'),
     path('generated-bills-view/', views.generatedBillsView, name='generatedBillsView'),

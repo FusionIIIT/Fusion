@@ -205,8 +205,38 @@ def handle_dean_process_request(request):
     )
     
     Requests.objects.filter(id=request_id).update(deanProcessed=1, status="Approved by the dean", directorApproval=0)
-    
+    receiver_user_obj = get_object_or_404(User, username=receiver_user)
+    iwd_notif(request.user, receiver_user_obj, "file_forward")
     return Response({'message': 'File Forwarded'}, status=200)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def handle_engineer_process_requests(request):
+    data = request.data
+    fileid = data.get('fileid')
+    request_id = File.objects.get(id=fileid).src_object_id
+    
+    remarks = data.get('remarks')
+    attachment = request.FILES.get('file')
+    receiver_desg, receiver_user = data.get('designation').split('|')
+
+    forward_file(
+        file_id=fileid,
+        receiver=receiver_user,
+        receiver_designation=receiver_desg,
+        file_extra_JSON={"message": "Request forwarded."},
+        remarks=remarks,
+        file_attachment=attachment,
+    )
+
+    Requests.objects.filter(id=request_id).update(engineerProcessed=1)
+    receiver_user_obj = get_object_or_404(User, username=receiver_user)
+    iwd_notif(request.user, receiver_user_obj, "file_forward")
+
+    return Response({
+        "message": "File forwarded successfully",
+    }, status=status.HTTP_200_OK)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -235,7 +265,8 @@ def handle_director_approval(request):
         remarks=remarks,
         file_attachment=attachment,
     )
-
+    receiver_user_obj = get_object_or_404(User, username=receiver_user)
+    iwd_notif(request.user, receiver_user_obj, "file_forward")
     message = ""
     print(data)
     if data.get('action') == 'approve':
@@ -950,56 +981,6 @@ designations_list = ["Junior Engineer", "Executive Engineer (Civil)", "Electrica
 
 
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def handleEngineerProcessRequests(request):
-    file_id = request.data.get('fileid')
-    remarks = request.data.get('remarks')
-    attachment = request.FILES.get('attachment')
-
-    file_instance = get_object_or_404(File, id=file_id)
-    request_id = file_instance.src_object_id
-
-    receiver_user, receiver_desg = request.data.get('designation').split('|')
-
-    forward_file(
-        file_id=file_id,
-        receiver=receiver_user,
-        receiver_designation=receiver_desg,
-        file_extra_JSON={"message": "Request forwarded."},
-        remarks=remarks,
-        file_attachment=attachment,
-    )
-
-    Requests.objects.filter(id=request_id).update(engineerProcessed=1, status="Approved by the Engineer")
-
-    desg = request.session.get('currentDesignationSelected')
-    inbox_files = view_inbox(username=request.user, designation=desg, src_module="IWD")
-
-    obj = []
-    for result in inbox_files:
-        src_object_id = result['src_object_id']
-        request_object = Requests.objects.filter(id=src_object_id).first()
-        if request_object:
-            file_obj = File.objects.get(src_object_id=request_object.id, src_module="IWD")
-            element = {
-                'id': request_object.id,
-                'name': request_object.name,
-                'area': request_object.area,
-                'description': request_object.description,
-                'requestCreatedBy': request_object.requestCreatedBy,
-                'file_id': file_obj.id
-            }
-            obj.append(element)
-
-    receiver_user_obj = get_object_or_404(User, username=receiver_user)
-    iwd_notif(request.user, receiver_user_obj, "file_forward")
-
-
-    return Response({
-        "message": "File forwarded successfully",
-        "requests": obj
-    }, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
