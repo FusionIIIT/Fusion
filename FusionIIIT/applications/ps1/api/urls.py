@@ -1,6 +1,5 @@
 from django.conf.urls import url
 from django.urls import path
-from django.urls import re_path
 from . import views
 
 urlpatterns = [
@@ -12,7 +11,7 @@ urlpatterns = [
     # path('create_indent/<int:id>/', views.createIndent, name='create-indent'),
     path('forward_indent/<int:id>/', views.forwardIndent, name='create-indent'),
     # PENDING : TO CREATE A INDENT FILE DRAFT
-
+    path('user-suggestions', views.user_suggestions, name='user-suggestions'),
     # GET DESIGNATIONS USING USER TOKEN 
     url(r'^getDesignations/', views.getDesignations, name='get-designations'),
 
@@ -28,7 +27,7 @@ urlpatterns = [
     url(r'^inwardIndents/(?P<id>\d+)$', views.inwardIndents, name='inward-indents'),
 
 
-    path('outboxview2/<str:username>/', views.outboxview2, name='outboxview2'),
+    # url(r'^outboxview2/(?P<id>\d+)/$', views.outboxview2, name='outboxview2'),
 
 
     # to see the details of a specifc indent file
@@ -42,7 +41,7 @@ urlpatterns = [
     url(r'^entry/(?P<id>\d+)$', views.entry, name='entry'),
 
     # To add stock corresponding to a Indent File
-    path('stockEntry/<str:username>/', views.stockEntry, name='stock-entry'),
+    # url(r'^stockEntry/(?P<id>\d+)$', views.stockEntry, name='stock-entry'),
 
     # To view all the stock entry details
     url(r'^stock_entry_view/(?P<id>\d+)$', views.stockEntryView, name='stock-entry-view'),
@@ -61,7 +60,11 @@ urlpatterns = [
 
     
     url(r'^perform_transfer/(?P<id>\d+)$', views.performTransfer, name='perform-transfer'),
-    path('archieveview/<str:username>/', views.archieveview, name='archievedview'),
+    # url(r'^archieveview/(?P<id>\d+)$', views.archieveview, name='archievedview'),
 
     url(r'^archieve_indent/(?P<id>\d+)/$', views.archieve_file, name='archieve-file'),
+
+    path('archieveview/<str:username>/', views.archieveview, name='archievedview'),
+    path('outboxview2/<str:username>/', views.outboxview2, name='outboxview2'),
+    path('stockEntry/<str:username>/', views.stockEntry, name='stock-entry'),
 ]

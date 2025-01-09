@@ -4,11 +4,12 @@ from rest_framework.response import Response #type:ignore
 from rest_framework import status #type:ignore
 from rest_framework.decorators import api_view, permission_classes #type:ignore
 from applications.ps1.models import IndentFile, File,StockTransfer,StockEntry,StockItem
-from applications.globals.models import HoldsDesignation, Designation,ExtraInfo,DepartmentInfo
+from applications.globals.models import HoldsDesignation, Designation,ExtraInfo,DepartmentInfo,Faculty
 from applications.filetracking.models import Tracking
 from .serializers import IndentFileSerializer ,FileSerializer,ExtraInfoSerializer,HoldsDesignationSerializer,TrackingSerializer,StockEntrySerializer,StockItemSerializer,StockTransferSerializer
 from django.utils import timezone
 from notification.views import office_module_notif
+from django.contrib import messages
 from django.contrib.auth.models import User
 from applications.filetracking.sdk.methods import *
 from datetime import datetime
@@ -18,9 +19,6 @@ from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 import ast
 from datetime import datetime
-from django.shortcuts import redirect
-from notification.views import office_module_notif
-from django.contrib import messages
 
 dept_admin_to_dept = {
     "deptadmin_cse": "CSE",
@@ -89,78 +87,75 @@ def delete_indent(request):
         return Response({"error": "Indent not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def forwardIndent(request, id):
-    try:
-        indent=IndentFile.objects.select_related('file_info').get(file_info=id)
-        file=indent.file_info
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def forwardIndent(request, id):
+#     try:
+#         indent=IndentFile.objects.select_related('file_info').get(file_info=id)
+#         file=indent.file_info
 
-        upload_file = request.FILES.get('file')
-        receiverName = request.data.get('receiverName')
-        receiver_id = User.objects.get(username=receiverName)
-        receive_design = request.data.get('receiverDesignation')
-        remarks = request.data.get('remarks')
-        sender_designation_name = request.data.get('role')
-        # vkjain -> director
-        print(receiver_id) #bhartenduks 
-        # print(receive_design) #Director
-        # print(remarks) #None
-        # print(upload_file) #filename
-        # print(file) #file object
-        print(receiverName) #bhartenduks
-        print("uploader role"+sender_designation_name) #HOD (CSE)
-        print("receive designation" + receive_design) #Director
-        # print("sender designation name" + sender_designation_name)
+#         upload_file = request.FILES.get('file')
+#         receiverName = request.data.get('receiverName')
+#         receiver_id = User.objects.get(username=receiverName)
+#         receive_design = request.data.get('receiverDesignation')
+#         remarks = request.data.get('remarks')
+#         sender_designation_name = request.data.get('role')
+#         # vkjain -> director
+#         print(receiver_id) #bhartenduks 
+#         # print(receive_design) #Director
+#         # print(remarks) #None
+#         # print(upload_file) #filename
+#         # print(file) #file object
+#         print(receiverName) #bhartenduks
+#         print("uploader role"+sender_designation_name) #HOD (CSE)
+#         print("receive designation" + receive_design) #Director
+#         # print("sender designation name" + sender_designation_name)
 
-        # if not receiverName:
-        #     return Response({"error": "Receiver name is required."}, status=status.HTTP_400_BAD_REQUEST)
+#         # if not receiverName:
+#         #     return Response({"error": "Receiver name is required."}, status=status.HTTP_400_BAD_REQUEST)
         
-        # if not receive_design:
-        #     return Response({"error": "Receiver designation is required."}, status=status.HTTP_400_BAD_REQUEST)
+#         # if not receive_design:
+#         #     return Response({"error": "Receiver designation is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # # Retrieve the receiver user instance
-        # try:
-        #     receiver_id = User.objects.get(username=receiverName)
-        # except ObjectDoesNotExist:
-        #     return Response({"error": "Receiver user not found."}, status=status.HTTP_404_NOT_FOUND)
+#         # # Retrieve the receiver user instance
+#         # try:
+#         #     receiver_id = User.objects.get(username=receiverName)
+#         # except ObjectDoesNotExist:
+#         #     return Response({"error": "Receiver user not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        forwarded_file_id = forward_file(
-                    file_id=file.id,
-                    receiver=receiver_id,
-                    receiver_designation=receive_design,
-                    file_extra_JSON={"key": 2},
-                    remarks=remarks,
-                    file_attachment=upload_file
-                )
-        # print("request user ", request.user)
-        # print("receiver_id " , receiver_id)
-        # print("type " ,type(receiver_id))
-        office_module_notif(request.user, receiver_id)
-        if((sender_designation_name in ["HOD (CSE)", "HOD (ECE)", "HOD (ME)", "HOD (SM)", "HOD (Design)", "HOD (Liberal Arts)", "HOD (Natural Science)"]) and (str(receive_design) in ["Director","Registrar"])):
-            indent.head_approval=True
-        elif ((sender_designation_name in ["Director","Registrar"]) and (str(receive_design) in ["Professor"]) and indent.purchased==True):
-            indent.director_approval=True
-            indent.financial_approval=True
-        elif ((sender_designation_name in ["Director","Registrar"]) and (str(receive_design) in ["Professor"]) ):
-            indent.director_approval=True
-        elif ((sender_designation_name in ["Professor"]) and (str(receive_design) in ["ps_admin"] )):
-            indent.purchased=True
-        elif ((sender_designation_name in ["ps_admin"]) and str(receive_design) in ["Director","Registrar"]):
-            indent.head_approval=True
-            indent.director_approval=True
-        elif ((sender_designation_name == "Accounts Admin") and ((str(receive_design) in dept_admin_design) or str(receive_design) == "ps_admin")):
-            indent.financial_approval=True
+#         forwarded_file_id = forward_file(
+#                     file_id=file.id,
+#                     receiver=receiver_id,
+#                     receiver_designation=receive_design,
+#                     file_extra_JSON={"key": 2},
+#                     remarks=remarks,
+#                     file_attachment=upload_file
+#                 )
+#         office_module_notif(request.user, receiver_id)
+#         if((sender_designation_name in ["HOD (CSE)", "HOD (ECE)", "HOD (ME)", "HOD (SM)", "HOD (Design)", "HOD (Liberal Arts)", "HOD (Natural Science)"]) and (str(receive_design) in ["Director","Registrar"])):
+#             indent.head_approval=True
+#         elif ((sender_designation_name in ["Director","Registrar"]) and (str(receive_design) in ["Professor"]) and indent.purchased==True):
+#             indent.director_approval=True
+#             indent.financial_approval=True
+#         elif ((sender_designation_name in ["Director","Registrar"]) and (str(receive_design) in ["Professor"]) ):
+#             indent.director_approval=True
+#         elif ((sender_designation_name in ["Professor"]) and (str(receive_design) in ["ps_admin"] )):
+#             indent.purchased=True
+#         elif ((sender_designation_name in ["ps_admin"]) and str(receive_design) in ["Director","Registrar"]):
+#             indent.head_approval=True
+#             indent.director_approval=True
+#         elif ((sender_designation_name == "Accounts Admin") and ((str(receive_design) in dept_admin_design) or str(receive_design) == "ps_admin")):
+#             indent.financial_approval=True
 
-        indent.save()
+#         indent.save()
 
-        # office_module_notif(receiverName, receiver_id)
-        # messages.success(request, 'Indent File Forwarded successfully')
-        return Response({"message": "File forwarded successfully.", "forwarded_file_id": forwarded_file_id}, status=status.HTTP_200_OK)
-    except IndentFile.DoesNotExist:
-        return Response({"error": "Indent not found."}, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+#         # office_module_notif(receiverName, receiver_id)
+#         # messages.success(request, 'Indent File Forwarded successfully')
+#         return Response({"message": "File forwarded successfully.", "forwarded_file_id": forwarded_file_id}, status=status.HTTP_200_OK)
+#     except IndentFile.DoesNotExist:
+#         return Response({"error": "Indent not found."}, status=status.HTTP_404_NOT_FOUND)
+#     except Exception as e:
+#         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -271,131 +266,128 @@ def createDraft(request):
     
 
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def createProposal(request):
-    try:
-        if request.method == 'POST':
-            uploader = request.user.extrainfo
-            subject = request.data.get('title')
-            description = request.data.get('description')
-            # design = request.data.get('designation')
-            username = request.data.get('receiverName')
-            print(username)
-            # uname = "atul"
-            designation = request.GET.get('role')
-            # print(uname)
-            # user = User.objects.get(username=uname)
-            # user_id = user.id
-            # print(user_id)
-            # # Ensure the design exists or raise a 404 error
-            # holds_designation = get_object_or_404(HoldsDesignation, user_id=user_id)
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def createProposal(request):
+#     try:
+#         if request.method == 'POST':
+#             uploader = request.user.extrainfo
+#             subject = request.data.get('title')
+#             description = request.data.get('description')
+#             # design = request.data.get('designation')
+#             username = request.data.get('receiverName')
+#             print(username)
+#             # uname = "atul"
+#             designation = request.GET.get('role')
+#             # print(uname)
+#             # user = User.objects.get(username=uname)
+#             # user_id = user.id
+#             # print(user_id)
+#             # # Ensure the design exists or raise a 404 error
+#             # holds_designation = get_object_or_404(HoldsDesignation, user_id=user_id)
             
-            # print(holds_designation)
-            # idd = 1
-            designation = get_object_or_404(Designation, name=designation)
-            print(designation)
-            # receiver_id = User.objects.get(username=username)
-            # print(receiver_id)
-        #     receiverName = request.data.get('receiverName')
-        # receiver_id = User.objects.get(username=receiverName)
-            upload_file = request.FILES.get('file')
-            item_name = request.data.get('item_name')
-            quantity = request.data.get('quantity')
-            present_stock = request.data.get('present_stock')
-            estimated_cost = request.data.get('estimated_cost')
-            purpose = request.data.get('purpose')
-            specification = request.data.get('specification')
-            item_type = request.data.get('item_type')
-            item_subtype = request.data.get('itemSubtype')
-            # nature = request.data.get('nature')
-            # equipment = request.data.get('indigenous')
-            # replaced = request.data.get('replaced')
-            budgetary_head = request.data.get('budgetary_head')
-            expected_delivery = request.data.get('expected_delivery')
-            sources_of_supply = request.data.get('sources_of_supply')
-            receiver_designation = request.data.get('receiverDesignation')
-            sender_designation_name=request.data.get('role')
-            head_approval=False
-            director_approval=False
-            financial_approval=False
-            purchased =False
-            # Create File object
+#             # print(holds_designation)
+#             # idd = 1
+#             designation = get_object_or_404(Designation, name=designation)
+#             print(designation)
+#             # receiver_id = User.objects.get(username=username)
+#             # print(receiver_id)
+#         #     receiverName = request.data.get('receiverName')
+#         # receiver_id = User.objects.get(username=receiverName)
+#             upload_file = request.FILES.get('file')
+#             item_name = request.data.get('item_name')
+#             quantity = request.data.get('quantity')
+#             present_stock = request.data.get('present_stock')
+#             estimated_cost = request.data.get('estimated_cost')
+#             purpose = request.data.get('purpose')
+#             specification = request.data.get('specification')
+#             item_type = request.data.get('item_type')
+#             item_subtype = request.data.get('itemSubtype')
+#             # nature = request.data.get('nature')
+#             # equipment = request.data.get('indigenous')
+#             # replaced = request.data.get('replaced')
+#             budgetary_head = request.data.get('budgetary_head')
+#             expected_delivery = request.data.get('expected_delivery')
+#             sources_of_supply = request.data.get('sources_of_supply')
+#             receiver_designation = request.data.get('receiverDesignation')
+#             sender_designation_name=request.data.get('role')
+#             head_approval=False
+#             director_approval=False
+#             financial_approval=False
+#             purchased =False
+#             # Create File object
 
-            uploader = request.user.username
-            print("uploader : ",uploader)
-            file_id = create_file(
-                uploader=uploader,
-                uploader_designation=designation,
-                receiver= username,
-                receiver_designation=receiver_designation,
-                src_module="ps1",
-                src_object_id="",
-                file_extra_JSON={"value": 2},
-                attached_file=upload_file
-            )
+#             uploader = request.user.username
+#             print("uploader : ",uploader)
+#             file_id = create_file(
+#                 uploader=uploader,
+#                 uploader_designation=designation,
+#                 receiver= username,
+#                 receiver_designation=receiver_designation,
+#                 src_module="ps1",
+#                 src_object_id="",
+#                 file_extra_JSON={"value": 2},
+#                 attached_file=upload_file
+#             )
             
-            indent_file = IndentFile.objects.create(
-                file_info=get_object_or_404(File, pk=file_id),
-                item_name=item_name,
-                quantity=quantity,
-                present_stock=present_stock,
-                estimated_cost=estimated_cost,
-                purpose=purpose,
-                specification=specification,
-                item_type=item_type,
-                item_subtype=item_subtype,
-                # nature=nature,
-                # equipment=equipment,
-                # replaced=replaced,
-                budgetary_head=budgetary_head,
-                expected_delivery=expected_delivery,
-                sources_of_supply=sources_of_supply,
-                head_approval=head_approval,
-                director_approval=director_approval,
-                financial_approval=financial_approval,
-                purchased=purchased,
-            )
-            receiver_id = User.objects.get(username=username)
-            print(type(receiver_id))
-            office_module_notif(request.user, receiver_id)
-            # messages.success(request,'Indent Filed Successfully!')
+#             indent_file = IndentFile.objects.create(
+#                 file_info=get_object_or_404(File, pk=file_id),
+#                 item_name=item_name,
+#                 quantity=quantity,
+#                 present_stock=present_stock,
+#                 estimated_cost=estimated_cost,
+#                 purpose=purpose,
+#                 specification=specification,
+#                 item_type=item_type,
+#                 item_subtype=item_subtype,
+#                 # nature=nature,
+#                 # equipment=equipment,
+#                 # replaced=replaced,
+#                 budgetary_head=budgetary_head,
+#                 expected_delivery=expected_delivery,
+#                 sources_of_supply=sources_of_supply,
+#                 head_approval=head_approval,
+#                 director_approval=director_approval,
+#                 financial_approval=financial_approval,
+#                 purchased=purchased,
+#             )
+#             if sender_designation_name == "Professor" and str(receiver_designation) == "ps_admin":
+#                 indent_file.purchased = True
 
-            if sender_designation_name == "Professor" and str(receiver_designation) == "ps_admin":
-                indent_file.purchased = True
+#             indent_file.save()
+#             receiver_id = User.objects.get(username=username)
+#             print(type(receiver_id))
+#             office_module_notif(request.user, receiver_id)
+#             # Serialize response data
+#             # file_serializer = FileSerializer(file)
+#             print("username "+username)
+#             user = User.objects.get(username=username)
+#             print("user  +",user)
+#             # user_id = user.id
+#             # print("user_id"+user_id)
+#             # hold_designation = HoldsDesignation.objects.filter(user_id=user_id)
+#             # id = hold_designation[0].id
+#             # print("username="+username)
+#             # print("id"+id)
+#             indent_file_serializer = IndentFileSerializer(indent_file)
+#             # office_module_notif(username, receiver_id)
+#             # messages.success(request,'Indent Filed Successfully!')
+#             # Return response
+#             return Response({
+#                 # 'file': file_serializer.data,
+#                 'indent_file': indent_file_serializer.data,
+#                 'message': 'Indent Filed Successfully!',
+#             }, status=status.HTTP_201_CREATED)
 
-            indent_file.save()
-
-            # Serialize response data
-            # file_serializer = FileSerializer(file)
-            print("username "+username)
-            user = User.objects.get(username=username)
-            print("user  +",user)
-            # user_id = user.id
-            # print("user_id"+user_id)
-            # hold_designation = HoldsDesignation.objects.filter(user_id=user_id)
-            # id = hold_designation[0].id
-            # print("username="+username)
-            # print("id"+id)
-            indent_file_serializer = IndentFileSerializer(indent_file)
-            # office_module_notif(username, receiver_id)
-            # messages.success(request,'Indent Filed Successfully!')
-            # Return response
-            return Response({
-                # 'file': file_serializer.data,
-                'indent_file': indent_file_serializer.data,
-                'message': 'Indent Filed Successfully!',
-            }, status=status.HTTP_201_CREATED)
-
-    # except HoldsDesignation.DoesNotExist:
-    #     return Response({
-    #         'error': 'The specified designation does not exist.'
-    #     }, status=status.HTTP_404_NOT_FOUND)
+#     # except HoldsDesignation.DoesNotExist:
+#     #     return Response({
+#     #         'error': 'The specified designation does not exist.'
+#     #     }, status=status.HTTP_404_NOT_FOUND)
     
-    except Exception as e:
-        return Response({
-            'error': str(e)
-        }, status=status.HTTP_400_BAD_REQUEST)
+#     except Exception as e:
+#         return Response({
+#             'error': str(e)
+#         }, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
@@ -482,6 +474,7 @@ def indentView2(request, username):
             item['receiver_design_id'] = tracking_entry.receive_design.id if tracking_entry.receive_design else None
             item['receiver_designation_name'] = tracking_entry.receive_design.name if tracking_entry.receive_design else None
     
+    outboxd = view_outbox(request.user.username, designations, "ps1")
 
     # Sort the inbox data by upload_date
     data = sorted(data, key=lambda x: datetime.fromisoformat(x['upload_date']), reverse=True)
@@ -550,6 +543,7 @@ def inwardIndents(request, id):
         abcd = HoldsDesignation.objects.get(pk=id)
         
         data = view_inbox(request.user.username, designation, "ps1")
+        # outboxd = view_outbox(request.user.username, designations, "ps1")
         
         data = sorted(data, key=lambda x: datetime.fromisoformat(x['upload_date']), reverse=True)
         for item in data:
@@ -604,12 +598,94 @@ def indentFile(request, id):
         return Response({"message": "Method not allowed"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
     
 
+
+# Forwarding Indent 
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def ForwardIndentFile(request, id):
+
+#     if request.method == 'POST':
+#         try:
+#             indent = IndentFile.objects.select_related('file_info').get(file_info=id)
+#             file = indent.file_info
+#             track = Tracking.objects.select_related(
+#                 'file_id__uploader__user', 'file_id__uploader__department',
+#                 'file_id__designation', 'current_id__user', 
+#                 'current_id__department', 'current_design__user', 
+#                 'current_design__working', 'current_design__designation', 
+#                 'receiver_id', 'receive_design'
+#             ).filter(file_id=file)
+#         except IndentFile.DoesNotExist:
+#             return Response({"message": "Indent file does not exist"}, status=status.HTTP_404_NOT_FOUND)
+        
+#         # Extracting data from request.POST
+#         remarks = request.data.get('remarks')
+#         sender_design_id = request.data.get('sender')
+#         receiverHdid = request.data.get('receive')
+#         upload_file = request.FILES.get('myfile')
+
+#         # Retrieving sender and receiver designations
+#         sender_designationobj = HoldsDesignation.objects.get(id=sender_design_id).designation
+#         sender_designation_name = sender_designationobj.name
+#         receiverHdobj = HoldsDesignation.objects.get(id=receiverHdid)
+#         receiver = receiverHdobj.user.username
+#         receive_design = receiverHdobj.designation.name
+
+#         try:
+#             receiver_id = User.objects.get(username=receiver)
+#         except User.DoesNotExist:
+#             return Response({"message": "Enter a valid destination"}, status=status.HTTP_400_BAD_REQUEST)
+
+#         try:
+#             receive_design = Designation.objects.get(name=receive_design)
+#         except Designation.DoesNotExist:
+#             return Response({"message": "Enter a valid designation"}, status=status.HTTP_400_BAD_REQUEST)
+
+#         # Forwarding the file
+#         forwarded_file_id = forward_file(
+#             file_id=file.id,
+#             receiver=receiver_id,
+#             receiver_designation=receive_design,
+#             file_extra_JSON={"key": 2},
+#             remarks=remarks,
+#             file_attachment=upload_file
+#         )
+
+#         # Updating indent approval logic
+#         if str(receive_design) in dept_admin_design:
+#             # Department head approval
+#             indent.head_approval = True
+#         elif sender_designation_name in dept_admin_design or sender_designation_name == "ps_admin":
+#             if str(receive_design) == "Director":
+#                 # Forwarded to Director, mark head approval
+#                 indent.head_approval = True
+#             elif str(receive_design) == indent.file_info.uploader.user.username:
+#                 # If Director forwards it to the indenter, consider the indent approved
+#                 indent.director_approval = True
+
+#         indent.save()
+
+#         # Serializing the data
+#         indent_serializer = IndentFileSerializer(indent)
+#         track_serializer = TrackingSerializer(track, many=True)
+
+#         # Constructing response data
+#         response_data = {
+#             'indent_file': indent_serializer.data,
+#             'track': track_serializer.data,
+#             'message': 'Indent File Forwarded successfully'
+#         }
+
+#         return Response(response_data, status=status.HTTP_200_OK)
+#     else:
+#         return Response({"message": "Method not allowed"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def ForwardIndentFile(request, id):
     
     if request.method == 'POST':
-        # print('hdfjaldfalk' , request.data);
+        print('hdfjaldfalk' , request.data)
         try:
             indent = IndentFile.objects.select_related('file_info').get(file_info=id)
             file = indent.file_info
@@ -649,10 +725,6 @@ def ForwardIndentFile(request, id):
             remarks=remarks,
             file_attachment=upload_file
         )
-        # receiver_id = User.objects.get(username=username)
-        print("request user ", request.user)
-        print("receiver_id " , receiver_id)
-        print("type " ,type(receiver_id))
         office_module_notif(request.user, receiver_id)
         # Updating indent approvals if necessary
         if (str(receive_design) in dept_admin_design):
@@ -687,95 +759,92 @@ def ForwardIndentFile(request, id):
 
 
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def outboxview2(request, username):
-    # retrieves user id from user object which is retrieved using username from User class
-    user = User.objects.get(username=username)
-    user_id = user.id
-    currentDesignation = request.GET.get('role')  # Capture role from headers
-    if currentDesignation=="student":
-        return Response({'error': 'Student are not allowd to access this view'}, status=403)
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def outboxview2(request, id):
+#     currentDesignation = request.GET.get('role')  # Capture role from headers
+#     if currentDesignation=="student":
+#         return Response({'error': 'Student are not allowd to access this view'}, status=403)
+#     # if request.session.get('currentDesignationSelected') == "student":
+#     #     return Response({'error': 'Students are not allowed to access this view'}, status=403)
  
-    designation = HoldsDesignation.objects.filter(user=request.user, designation__name=currentDesignation).first()
+#     designation = HoldsDesignation.objects.filter(user=request.user, designation__name=currentDesignation).first()
 
-    if not designation:
-        return Response({'error': 'Designation not found'}, status=404)
+#     if not designation:
+#         return Response({'error': 'Designation not found'}, status=404)
 
-    abcd = HoldsDesignation.objects.filter(user_id=user_id, designation__name=currentDesignation).first()
-    if not abcd:
-        return Response({'error': 'User does not hold the specified designation.'}, status=404)
+#     # if str(id) != str(designation.id):
+#     #     return redirect(f'/purchase-and-store/indentview2/{designation.id}')
 
-    designations = abcd.designation.name
-
-    # Fetch inbox and outbox data
-    data = view_outbox(request.user.username, designations, "ps1")
-
-    # Sort the inbox data by upload_date
-    data = sorted(data, key=lambda x: datetime.fromisoformat(x['upload_date']), reverse=True)
-
-    # Format the upload_date to datetime object
-    for item in data:
-        item['upload_date'] = datetime.fromisoformat(item['upload_date'])
-
-    notifs = request.user.notifications.all().values()  # Assuming notifications are a related field
-
-    context = {
-        'receive_design': HoldsDesignationSerializer(abcd).data,
-        'in_file': data,
-        'department': request.user.extrainfo.department.name,
-        'notifications': list(notifs),
-    }
-
-    return Response(context)
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def archieveview(request,username):
-    # retrieves user id from username
-    user = User.objects.get(username=username)
-    user_id = user.id
-    currentDesignation = request.GET.get('role')  # Capture role from headers
-    if currentDesignation=="student":
-        return Response({'error': 'Student are not allowd to access this view'}, status=403)
+#     abcd = get_object_or_404(HoldsDesignation, pk=id)
+#     s = str(abcd).split(" - ")
+#     designations = s[1]
     
-    designation = HoldsDesignation.objects.filter(user=request.user, designation__name=currentDesignation).first()
-    if not designation:
-        return Response({'error': 'Designation not found or mismatch'}, status=404)
-    print("id : ",id);
-    print("request.user : ",request.user);
-    
-    abcd = HoldsDesignation.objects.filter(user_id=user_id, designation__name=currentDesignation).first()
-    designations = abcd.designation.name
-    if not abcd:
-        return Response({'error': 'User does not hold the specified designation.'}, status=404)
-    print("designations : ",designations)
-    
-    archived_files = view_archived(
-    username=request.user,
-    designation=designations,
-    src_module="ps1"
-    )
+#     # Fetch inbox and outbox data
+#     data = view_outbox(request.user.username, designations, "ps1")
 
-    print("archived_files : ",archived_files);
-    for files in archived_files:
-        files['upload_date']=datetime.fromisoformat(files['upload_date'])
-        files['upload_date']=files['upload_date'].strftime("%B %d, %Y, %I:%M %p") 
+#     # Sort the inbox data by upload_date
+#     data = sorted(data, key=lambda x: datetime.fromisoformat(x['upload_date']), reverse=True)
+
+#     # Format the upload_date to datetime object
+#     for item in data:
+#         item['upload_date'] = datetime.fromisoformat(item['upload_date'])
+
+#     notifs = request.user.notifications.all().values()  # Assuming notifications are a related field
+
+#     context = {
+#         'receive_design': HoldsDesignationSerializer(abcd).data,
+#         'in_file': data,
+#         'department': request.user.extrainfo.department.name,
+#         'notifications': list(notifs),
+#     }
+
+#     return Response(context)
+
+
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def archieveview(request,id):
+#     currentDesignation = request.GET.get('role')  # Capture role from headers
+#     if currentDesignation=="student":
+#         return Response({'error': 'Student are not allowd to access this view'}, status=403)
     
-    notifs = request.user.notifications.all().values()
-    context = {
-        'archieves' : archived_files,
-        'designations': designations,
-        'notifications':list(notifs)
-    }
-    return Response(context)
+#     designation = HoldsDesignation.objects.filter(user=request.user, designation__name=currentDesignation).first()
+    
+#     if str(id) != str(designation.id):
+#         return redirect(f'/purchase-and-store/archieveview/{designation.id}')
+#     print("id : ",id);
+#     print("request.user : ",request.user);
+    
+#     abcd = HoldsDesignation.objects.get(pk=id)
+#     s = str(abcd).split(" - ")
+#     designations = s[1]
+#     print("designations : ",designations);
+
+#     archived_files = view_archived(
+#     username=request.user,
+#     designation=designations,
+#     src_module="ps1"
+#     )
+
+#     print("archived_files : ",archived_files);
+#     for files in archived_files:
+#         files['upload_date']=datetime.fromisoformat(files['upload_date'])
+#         files['upload_date']=files['upload_date'].strftime("%B %d, %Y, %I:%M %p") 
+    
+#     notifs = request.user.notifications.all().values()
+#     context = {
+#         'archieves' : archived_files,
+#         'designations': designations,
+#         'notifications':list(notifs)
+#     }
+#     return Response(context)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def archieve_file(request,id):
     file_id=request.GET.get('file_id')
-    print(file_id) 
+    print(file_id)
     res = archive_file(file_id)
     if res:
         return Response({"message": "File has been archived successfully"})
@@ -880,55 +949,55 @@ def entry(request,id):
 
 #         serializer = StockEntrySerializer(stock_entry)
 #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def stockEntry(request,username):
-    # retrieves id from username
-    user = User.objects.get(username=username)
-    user_id = user.id
-    # print(request.data);
-    currentDesignation = request.FILES.get('role')
-    designation = HoldsDesignation.objects.filter(user=request.user, designation__name=currentDesignation).first()
-    # if str(designation) not in dept_admin_design + ["ps_admin"]:
-    #         return Response({"message": "Not authorized"}, status=status.HTTP_403_FORBIDDEN)
     
-    if request.method == 'POST':
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def stockEntry(request,id):
+#     # print(request.data);
+    
+#     designation = str(Designation.objects.get(id=HoldsDesignation.objects.select_related('user', 'working', 'designation').get(id=id).designation_id))
+#     # if str(designation) not in dept_admin_design + ["ps_admin"]:
+#     #         return Response({"message": "Not authorized"}, status=status.HTTP_403_FORBIDDEN)
 
-        id = request.POST.get('id')
-        vendor = request.POST.get('vendor')
-        current_stock = request.POST.get('current_stock')
-        # received_date = request.POST.get('received_date')
-        bill = request.FILES.get('bill')
-        recieved_date = request.data.get('recieved_date')
-        location = request.POST.get('location')
+#     if request.method == 'POST':
+#         print(designation)
 
-        try:
-            temp1 = File.objects.get(id=id)
-            temp = IndentFile.objects.get(file_info=temp1)
-        except (File.DoesNotExist, IndentFile.DoesNotExist):
-            return Response({"message": "File with given ID does not exist"}, status=status.HTTP_404_NOT_FOUND)
+#         idd = request.POST.get('id')
+#         vendor = request.POST.get('vendor')
+#         current_stock = request.POST.get('current_stock')
+#         try:
+#             recieved_date = request.data.get('recieved_date')  # Match the typo for now
+#         except Exception as e:
+#             return Response({"error": str(e)}, status=500)
+#         bill = request.FILES.get('bill')
+#         location = request.POST.get('location')
 
-        item_id = temp
-        dealing_assistant_id = request.user.extrainfo
+#         try:
+#             temp1 = File.objects.get(id=idd)
+#             temp = IndentFile.objects.get(file_info=temp1)
+#         except (File.DoesNotExist, IndentFile.DoesNotExist):
+#             return Response({"message": "File with given ID does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
+#         item_id = temp
+#         dealing_assistant_id = request.user.extrainfo
 
-        stock_entry = StockEntry.objects.create(
-                item_id=item_id,
-                vendor=vendor,
-                current_stock=current_stock,
-                dealing_assistant_id=dealing_assistant_id,
-                bill=bill,
-                recieved_date=recieved_date,
-                location=location
-            )
+#         print(request.data)
+#         print("HI Stockentry")
+#         stock_entry = StockEntry.objects.create(
+#                 item_id=item_id,
+#                 vendor=vendor,
+#                 current_stock=current_stock,
+#                 dealing_assistant_id=dealing_assistant_id,
+#                 bill=bill,
+#                 recieved_date=recieved_date,
+#                 location=location
+#             )
 
-        # Marking the indent file as done
-        temp.purchased = True
-        temp.save()
+#         temp.purchased = True
+#         temp.save()
 
-        serializer = StockEntrySerializer(stock_entry)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         serializer = StockEntrySerializer(stock_entry)
+#         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 @api_view(['GET'])
@@ -1143,3 +1212,508 @@ def performTransfer(request,id):
     
     serializer = StockTransferSerializer(stock_transfers,many=True)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def archieveview(request,username):
+    # retrieves user id from username
+    user = User.objects.get(username=username)
+    user_id = user.id
+    currentDesignation = request.GET.get('role')  # Capture role from headers
+    if currentDesignation=="student":
+        return Response({'error': 'Student are not allowd to access this view'}, status=403)
+    
+    designation = HoldsDesignation.objects.filter(user=request.user, designation__name=currentDesignation).first()
+    if not designation:
+        return Response({'error': 'Designation not found or mismatch'}, status=404)
+    print("id : ",id);
+    print("request.user : ",request.user);
+    
+    abcd = HoldsDesignation.objects.filter(user_id=user_id, designation__name=currentDesignation).first()
+    designations = abcd.designation.name
+    if not abcd:
+        return Response({'error': 'User does not hold the specified designation.'}, status=404)
+    print("designations : ",designations)
+    
+    archived_files = view_archived(
+    username=request.user,
+    designation=designations,
+    src_module="ps1"
+    )
+
+    print("archived_files : ",archived_files);
+    for files in archived_files:
+        files['upload_date']=datetime.fromisoformat(files['upload_date'])
+        files['upload_date']=files['upload_date'].strftime("%B %d, %Y, %I:%M %p") 
+    
+    notifs = request.user.notifications.all().values()
+    context = {
+        'archieves' : archived_files,
+        'designations': designations,
+        'notifications':list(notifs)
+    }
+    return Response(context)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def outboxview2(request, username):
+    # retrieves user id from user object which is retrieved using username from User class
+    user = User.objects.get(username=username)
+    user_id = user.id
+    currentDesignation = request.GET.get('role')  # Capture role from headers
+    if currentDesignation=="student":
+        return Response({'error': 'Student are not allowd to access this view'}, status=403)
+ 
+    designation = HoldsDesignation.objects.filter(user=request.user, designation__name=currentDesignation).first()
+
+    if not designation:
+        return Response({'error': 'Designation not found'}, status=404)
+
+    abcd = HoldsDesignation.objects.filter(user_id=user_id, designation__name=currentDesignation).first()
+    if not abcd:
+        return Response({'error': 'User does not hold the specified designation.'}, status=404)
+
+
+    designations = abcd.designation.name
+
+    # Fetch inbox and outbox data
+    data = view_outbox(request.user.username, designations, "ps1")
+
+    # Sort the inbox data by upload_date
+    data = sorted(data, key=lambda x: datetime.fromisoformat(x['upload_date']), reverse=True)
+
+    # Format the upload_date to datetime object
+    for item in data:
+        file_id = item['id']  # Assumes id is the primary key in the serialized file data
+        tracking = Tracking.objects.filter(file_id=file_id).select_related('receiver_id').last()
+
+        if tracking and tracking.receiver_id:
+            receiver_user = tracking.receiver_id  # Assuming receiver_id points to ExtraInfo
+            item['receiver_username'] = receiver_user.username
+        else:
+            item['receiver_username'] = None
+
+    for item in data:
+        item['upload_date'] = datetime.fromisoformat(item['upload_date'])
+
+    notifs = request.user.notifications.all().values()  # Assuming notifications are a related field
+
+    context = {
+        'receive_design': HoldsDesignationSerializer(abcd).data,
+        'in_file': data,
+        'department': request.user.extrainfo.department.name,
+        'notifications': list(notifs),
+    }
+
+    return Response(context)
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def outboxview2(request, username):
+#     # retrieves user id from user object which is retrieved using username from User class
+#     user = User.objects.get(username=username)
+#     user_id = user.id
+#     currentDesignation = request.GET.get('role')  # Capture role from headers
+#     if currentDesignation=="student":
+#         return Response({'error': 'Student are not allowd to access this view'}, status=403)
+ 
+#     designation = HoldsDesignation.objects.filter(user=request.user, designation__name=currentDesignation).first()
+
+#     if not designation:
+#         return Response({'error': 'Designation not found'}, status=404)
+
+#     abcd = HoldsDesignation.objects.filter(user_id=user_id, designation__name=currentDesignation).first()
+#     if not abcd:
+#         return Response({'error': 'User does not hold the specified designation.'}, status=404)
+
+#     designations = abcd.designation.name
+
+#     # Fetch inbox and outbox data
+#     data = view_outbox(request.user.username, designations, "ps1")
+
+#     # Sort the inbox data by upload_date
+#     data = sorted(data, key=lambda x: datetime.fromisoformat(x['upload_date']), reverse=True)
+
+#     # Format the upload_date to datetime object
+#     for item in data:
+#         item['upload_date'] = datetime.fromisoformat(item['upload_date'])
+
+#     notifs = request.user.notifications.all().values()  # Assuming notifications are a related field
+
+#     context = {
+#         'receive_design': HoldsDesignationSerializer(abcd).data,
+#         'in_file': data,
+#         'department': request.user.extrainfo.department.name,
+#         'notifications': list(notifs),
+#     }
+
+#     return Response(context)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def stockEntry(request,username):
+    # retrieves id from username
+    user = User.objects.get(username=username)
+    user_id = user.id
+    # print(request.data);
+    currentDesignation = request.FILES.get('role')
+    designation = HoldsDesignation.objects.filter(user=request.user, designation__name=currentDesignation).first()
+    # if str(designation) not in dept_admin_design + ["ps_admin"]:
+    #         return Response({"message": "Not authorized"}, status=status.HTTP_403_FORBIDDEN)
+    
+    if request.method == 'POST':
+
+        id = request.POST.get('id')
+        print(type(id))
+        print(id)
+        vendor = request.POST.get('vendor')
+        current_stock = request.POST.get('current_stock')
+        # received_date = request.POST.get('received_date')
+        bill = request.FILES.get('bill')
+        recieved_date = request.data.get('received_date')
+        location = request.POST.get('location')
+        print("location-",location)
+        try:
+            temp1 = File.objects.get(id=id)
+            temp = IndentFile.objects.get(file_info=temp1)
+        except (File.DoesNotExist, IndentFile.DoesNotExist):
+            return Response({"message": "File with given ID does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+        item_id = temp
+        print(type(item_id))
+        print(item_id)
+        dealing_assistant_id = request.user.extrainfo
+
+
+        stock_entry = StockEntry.objects.create(
+                item_id=item_id,
+                vendor=vendor,
+                current_stock=current_stock,
+                dealing_assistant_id=dealing_assistant_id,
+                bill=bill,
+                recieved_date=recieved_date,
+                location=location
+            )
+
+        # Marking the indent file as done
+        temp.purchased = True
+        temp.save()
+
+        serializer = StockEntrySerializer(stock_entry)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+@api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+def forwardIndent(request, id):
+    try:
+        indent=IndentFile.objects.select_related('file_info').get(file_info=id)
+        file=indent.file_info
+
+        upload_file = request.FILES.get('file')
+        receiverName = request.data.get('forwardTo')
+        receiver_id = User.objects.get(username=receiverName)
+        receive_design = request.data.get('receiverDesignation')
+        remarks = request.data.get('remarks')
+        sender_designation_name = request.data.get('role')
+        # vkjain -> director
+        print(receiver_id) #bhartenduks 
+        # print(receive_design) #Director
+        # print(remarks) #None
+        # print(upload_file) #filename
+        # print(file) #file object
+        print(receiverName) #bhartenduks
+        print("uploader role"+sender_designation_name) #HOD (CSE)
+        print("receive designation" + receive_design) #Director
+        # print("sender designation name" + sender_designation_name)
+
+        # if not receiverName:
+        #     return Response({"error": "Receiver name is required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # if not receive_design:
+        #     return Response({"error": "Receiver designation is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # # Retrieve the receiver user instance
+        # try:
+        #     receiver_id = User.objects.get(username=receiverName)
+        # except ObjectDoesNotExist:
+        #     return Response({"error": "Receiver user not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        forwarded_file_id = forward_file(
+                    file_id=file.id,
+                    receiver=receiver_id,
+                    receiver_designation=receive_design,
+                    file_extra_JSON={"key": 2},
+                    remarks=remarks,
+                    file_attachment=upload_file
+                )
+        # print("request user ", request.user)
+        # print("receiver_id " , receiver_id)
+        # print("type " ,type(receiver_id))
+        office_module_notif(request.user, receiver_id)
+        if((sender_designation_name in ["HOD (CSE)", "HOD (ECE)", "HOD (ME)", "HOD (SM)", "HOD (Design)", "HOD (Liberal Arts)", "HOD (Natural Science)"]) and (str(receive_design) in ["Director","Registrar"])):
+            indent.head_approval=True
+        elif ((sender_designation_name in ["Director","Registrar"]) and (str(receive_design) in ["Professor","Accounts Admin"]) and indent.purchased==True):
+            indent.director_approval=True
+            indent.financial_approval=True
+        elif ((sender_designation_name in ["Director","Registrar"]) and (str(receive_design) in ["Professor"]) ):
+            indent.director_approval=True
+        elif ((sender_designation_name in ["Professor"]) and (str(receive_design) in ["ps_admin"] )):
+            indent.purchased=True
+        elif ((sender_designation_name in ["ps_admin"]) and str(receive_design) in ["Director","Registrar"]):
+            indent.head_approval=True
+            indent.director_approval=True
+        elif ((sender_designation_name == "Accounts Admin") and ((str(receive_design) in dept_admin_design) or str(receive_design) == "ps_admin")):
+            indent.financial_approval=True
+
+        indent.save()
+
+        # office_module_notif(receiverName, receiver_id)
+        # messages.success(request, 'Indent File Forwarded successfully')
+        return Response({"message": "File forwarded successfully.", "forwarded_file_id": forwarded_file_id}, status=status.HTTP_200_OK)
+    except IndentFile.DoesNotExist:
+        return Response({"error": "Indent not found."}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def createProposal(request):
+    try:
+        if request.method == 'POST':
+            print("got here")
+            uploader = request.user.extrainfo
+            subject = request.data.get('title')
+            description = request.data.get('description')
+            # design = request.data.get('designation')
+            username = request.data.get('forwardTo')
+            print("username- ",username)
+            # uname = "atul"
+            designation = request.GET.get('role')
+            # print(uname)
+            # user = User.objects.get(username=uname)
+            # user_id = user.id
+            # print(user_id)
+            # # Ensure the design exists or raise a 404 error
+            # holds_designation = get_object_or_404(HoldsDesignation, user_id=user_id)
+            
+            # print(holds_designation)
+            # idd = 1
+            designation = get_object_or_404(Designation, name=designation)
+            print(designation)
+            # receiver_id = User.objects.get(username=username)
+            # print(receiver_id)
+        #     receiverName = request.data.get('receiverName')
+        # receiver_id = User.objects.get(username=receiverName)
+            upload_file = request.FILES.get('file')
+            item_name = request.data.get('item_name')
+            quantity = request.data.get('quantity')
+            present_stock = request.data.get('present_stock')
+            estimated_cost = request.data.get('estimated_cost')
+            purpose = request.data.get('purpose')
+            specification = request.data.get('specification')
+            item_type = request.data.get('item_type')
+            item_subtype = request.data.get('itemSubtype')
+            # nature = request.data.get('nature')
+            # equipment = request.data.get('indigenous')
+            # replaced = request.data.get('replaced')
+            budgetary_head = request.data.get('budgetary_head')
+            print("budget-",budgetary_head)
+            print("budget-",budgetary_head)
+            expected_delivery = request.data.get('expected_delivery')
+            print("budget-",expected_delivery)
+            sources_of_supply = request.data.get('sources_of_supply')
+            print("budget-",sources_of_supply)
+            receiver_designation = request.data.get('receiverDesignation')
+            sender_designation_name=request.data.get('role')
+            head_approval=False
+            director_approval=False
+            financial_approval=False
+            purchased =False
+            # Create File object
+
+            uploader = request.user.username
+            print("uploader : ",uploader)
+            file_id = create_file(
+                uploader=uploader,
+                uploader_designation=designation,
+                receiver= username,
+                receiver_designation=receiver_designation,
+                src_module="ps1",
+                src_object_id="",
+                file_extra_JSON={"value": 2},
+                attached_file=upload_file
+            )
+            
+            indent_file = IndentFile.objects.create(
+                file_info=get_object_or_404(File, pk=file_id),
+                item_name=item_name,
+                quantity=quantity,
+                present_stock=present_stock,
+                estimated_cost=estimated_cost,
+                purpose=purpose,
+                specification=specification,
+                item_type=item_type,
+                item_subtype=item_subtype,
+                # nature=nature,
+                # equipment=equipment,
+                # replaced=replaced,
+                budgetary_head=budgetary_head,
+                expected_delivery=expected_delivery,
+                sources_of_supply=sources_of_supply,
+                head_approval=head_approval,
+                director_approval=director_approval,
+                financial_approval=financial_approval,
+                purchased=purchased,
+            )
+            receiver_id = User.objects.get(username=username)
+            print(type(receiver_id))
+            office_module_notif(request.user, receiver_id)
+            # messages.success(request,'Indent Filed Successfully!')
+
+            print(str(receiver_designation))
+            
+            if str(receiver_designation) == "ps_admin":
+                indent_file.purchased = True
+
+            indent_file.save()
+
+            # Serialize response data
+            # file_serializer = FileSerializer(file)
+            print("username "+username)
+            user = User.objects.get(username=username)
+            print("user  +",user)
+            # user_id = user.id
+            # print("user_id"+user_id)
+            # hold_designation = HoldsDesignation.objects.filter(user_id=user_id)
+            # id = hold_designation[0].id
+            # print("username="+username)
+            # print("id"+id)
+            indent_file_serializer = IndentFileSerializer(indent_file)
+            # office_module_notif(username, receiver_id)
+            # messages.success(request,'Indent Filed Successfully!')
+            # Return response
+            return Response({
+                # 'file': file_serializer.data,
+                'indent_file': indent_file_serializer.data,
+                'message': 'Indent Filed Successfully!',
+            }, status=status.HTTP_201_CREATED)
+
+    # except HoldsDesignation.DoesNotExist:
+    #     return Response({
+    #         'error': 'The specified designation does not exist.'
+    #     }, status=status.HTTP_404_NOT_FOUND)
+    
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
+def user_suggestions(request):
+    # query = request.GET.get('q', '')  # Get the query parameter
+    users = User.objects.all().values('username')
+    # user = Faculty.objects.all().values('id')
+    # print(users)
+    # print(user)
+    return JsonResponse({'users': list(users)})
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def createProposal(request):
+#     try:
+#         if request.method == 'POST':
+#             uploader = request.user.extrainfo
+#             subject = request.data.get('title')
+#             description = request.data.get('description')
+#             username = request.data.get('receiverName')
+#             designation_name = request.data.get('role')
+#             # Fetch the designation from the database
+#             designation = get_object_or_404(Designation, name=designation_name)
+            
+#             # Get the receiver's designation and file upload
+#             receiver_designation = request.data.get('receiverDesignation')
+#             upload_file = request.FILES.get('file')
+#             print(uploader)
+#             print(subject)
+#             print(description)
+#             print(username)
+#             print(designation_name)
+#             print(designation)
+#             # Initialize approval flags
+#             head_approval = False
+#             director_approval = False
+#             financial_approval = False
+#             purchased = False
+            
+#             # Loop through each item in the "items" list
+#             items = request.indentData.get('items', [])
+#             for item in items:
+#                 item_name = item.get('item_name')
+#                 quantity = item.get('quantity')
+#                 present_stock = item.get('present_stock')
+#                 estimated_cost = item.get('estimated_cost')
+#                 purpose = item.get('purpose')
+#                 specification = item.get('specification')
+#                 item_type = item.get('item_type')
+#                 item_subtype = item.get('itemSubtype')
+#                 budgetary_head = item.get('budgetary_head')
+#                 expected_delivery = item.get('expected_delivery')
+#                 sources_of_supply = item.get('sources_of_supply')
+                
+#                 # Create the file object
+#                 uploader = request.user.username
+#                 file_id = create_file(
+#                     uploader=uploader,
+#                     uploader_designation=designation,
+#                     receiver=username,
+#                     receiver_designation=receiver_designation,
+#                     src_module="ps1",
+#                     src_object_id="",
+#                     file_extra_JSON={"value": 2},
+#                     attached_file=upload_file
+#                 )
+                
+#                 # Create IndentFile object for each item
+#                 indent_file = IndentFile.objects.create(
+#                     file_info=get_object_or_404(File, pk=file_id),
+#                     item_name=item_name,
+#                     quantity=quantity,
+#                     present_stock=present_stock,
+#                     estimated_cost=estimated_cost,
+#                     purpose=purpose,
+#                     specification=specification,
+#                     item_type=item_type,
+#                     item_subtype=item_subtype,
+#                     budgetary_head=budgetary_head,
+#                     expected_delivery=expected_delivery,
+#                     sources_of_supply=sources_of_supply,
+#                     head_approval=head_approval,
+#                     director_approval=director_approval,
+#                     financial_approval=financial_approval,
+#                     purchased=purchased,
+#                 )
+                
+#                 # Get receiver user object
+#                 receiver_id = User.objects.get(username=username)
+                
+#                 # Notify the receiver
+#                 office_module_notif(request.user, receiver_id)
+
+#                 # Handle special case for approval based on designations
+#                 if designation_name == "Professor" and receiver_designation == "ps_admin":
+#                     indent_file.purchased = True
+
+#                 # Save the IndentFile object
+#                 indent_file.save()
+
+#                 # Serialize the response for the created IndentFile
+#                 indent_file_serializer = IndentFileSerializer(indent_file)
+
+#             # Return response with the created indent file data and success message
+#             return Response({
+#                 'indent_file': indent_file_serializer.data,
+#                 'message': 'Indent Filed Successfully!',
+#             }, status=status.HTTP_201_CREATED)
+
+#     except Exception as e:
+#         return Response({
+#             'error': str(e)
+#         }, status=status.HTTP_400_BAD_REQUEST)
