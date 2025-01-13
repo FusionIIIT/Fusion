@@ -11,7 +11,7 @@ urlpatterns = [
 
     re_path(r'^rspc_profile/$', views.rspc_profile, name='rspc_profile'),
 
-    # #delete
+    # delete
     re_path(r'^achv/$', views.achievementDelete, name='achievement_delete'),
     re_path(r'^emp_confrence_organisedDelete/$', views.emp_confrence_organisedDelete, name='emp_confrence_organisedDelete'),
     re_path(r'^emp_consultancy_projectsDelete/$', views.emp_consultancy_projectsDelete, name='emp_consultancy_projectsDelete'),
@@ -32,7 +32,7 @@ urlpatterns = [
     re_path(r'^emp_consymDelete/$', views.emp_consymDelete, name='emp_consymDelete'),
 
 
-    # # edit personal information
+    # edit personal information
     re_path(r'^extra/$', views.view_all_extra_infos, name='extra'),
     re_path(r'^persinfo/$', views.persinfo, name='persinfo'),
     re_path(r'^journal/edit$', views.editjournal, name='editjournal'),
@@ -45,7 +45,7 @@ urlpatterns = [
 
     re_path(r'^update_personal_info/$', views.update_personal_info, name='update_personal_info'),
 
-    # # insert
+    # insert
     re_path(r'^pg/$', views.pg_insert, name='pg_insert'),
     re_path(r'^phd/$', views.phd_insert, name='phd_insert'),
     re_path(r'^fvisit/$', views.fvisit_insert, name='fvisit_insert'),
@@ -68,7 +68,7 @@ urlpatterns = [
     url(r'^report/$', views.generate_report, name='generate_report'),
 
 
-    # # Fetch Details from Database
+    # Fetch Details from Database
     re_path(r'^get_personal_info/$', views.get_personal_info, name='get_personal_info'),
     re_path(r'^projects/pf_no/$', views.get_research_projects, name='projects_by_pf_no'),
     re_path(r'^consultancy_projects/pf_no/$', views.get_consultancy_projects, name='consultancy_projects_by_pf_no'),
@@ -84,4 +84,17 @@ urlpatterns = [
     re_path(r'^fetch_conference/$', views.get_conference, name="get_conference_of_prof"),
     re_path(r'^award/pf_no/$', views.get_achievements, name="get_achievements_of_prof"),
     re_path(r'^talk/pf_no/$', views.get_talks, name="get_talks_of_prof"),
+
+    # Filter and Fetch
+    re_path(r'^projects/filter/$', views.filter_research_projects, name='projects_by_filter'),
+    re_path(r'^consultancy_projects/filter/$', views.filter_consultancy_projects, name='consultancy_projects_by_filter'),
+    re_path(r'^patents/filter/$', views.filter_patents, name='patents_by_filter'),
+    re_path(r'^pg_phd_thesis/filter/$', views.filter_mtechphd_thesis, name='pg_thesis_by_filter'),
+    re_path(r'^event/filter/$', views.filter_events, name='event_by_filter'),
+    re_path(r'^visits/filter/$', views.filter_visits, name='visits_by_filter'),
+    re_path(r'^consym/filter/$', views.filter_consym, name='consym_by_filter'),
+    re_path(r'^fetch_book/filter/$', views.filter_books, name="get_books_of_prof_filter"),
+    re_path(r'^fetch_journal_or_conference/filter/$', views.filter_journal_or_conference, name="get_journals_or_conference_of_prof_filter"),
+    re_path(r'^award/filter/$', views.filter_achievements, name="get_achievements_of_prof_filter"),
+    re_path(r'^talk/filter/$', views.filter_talks, name="get_talks_of_prof_filter"),
 ]

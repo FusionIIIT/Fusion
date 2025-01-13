@@ -124,7 +124,8 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
 import os
 import tempfile
-from django.http import FileResponse, JsonResponse
+from django.db.models import Q
+from datetime import datetime
 
 
 countries = {
@@ -2655,7 +2656,6 @@ def get_consym(request):
 #     return JsonResponse(list(books), safe=False)
 
 def get_books(request):
-    # Fetch all entries where pf_no is '5318'
     books = emp_published_books.objects.filter(pf_no=request.GET.get("pfNo")).order_by('-pyear').values()
     return JsonResponse(list(books), safe=False)
 
@@ -2711,3 +2711,890 @@ def edit_research_project(request, pk):
             return JsonResponse({'errors': form.errors}, status=400)
     
     return JsonResponse({'error': 'Invalid request method.'}, status=400)
+
+# Filter and Fetch
+def filter_research_projects(request):
+    filters = {}
+    interval_filters = {}
+    sorting = request.POST.get("sort_by", None)
+    fields_of_interest = request.POST.getlist("fields", None)
+
+    # Extracting filter fields
+    pf_no = request.POST.get("pf_no")
+    if pf_no:
+        filters['pf_no__icontains'] = pf_no
+
+    ptype = request.POST.get("ptype")
+    if ptype:
+        filters['ptype__icontains'] = ptype
+
+    pi = request.POST.get("pi")
+    if pi:
+        filters['pi__icontains'] = pi
+
+    co_pi = request.POST.get("co_pi")
+    if co_pi:
+        filters['co_pi__icontains'] = co_pi
+
+    funding_agency = request.POST.get("funding_agency")
+    if funding_agency:
+        filters['funding_agency__icontains'] = funding_agency
+
+    status = request.POST.get("status")
+    if status:
+        filters['status'] = status
+
+    # Interval filtering for date fields
+    start_date = request.POST.get("start_date")
+    end_date = request.POST.get("end_date")
+    if start_date and end_date:
+        try:
+            interval_filters['start_date__gte'] = datetime.strptime(start_date, '%Y-%m-%d')
+            interval_filters['finish_date__lte'] = datetime.strptime(end_date, '%Y-%m-%d')
+        except ValueError:
+            return JsonResponse({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
+
+    # Apply filters
+    projects = emp_research_projects.objects.filter(
+        Q(**filters) & Q(**interval_filters)
+    )
+
+    # Apply sorting
+    if sorting:
+        projects = projects.order_by(sorting)
+
+    # Select specific fields
+    if fields_of_interest:
+        projects = projects.values(*fields_of_interest)
+    else:
+        projects = projects.values()
+
+    return JsonResponse(list(projects), safe=False)
+
+# Sample Filter Input JSON:
+# {
+#     "pf_no": "12345",
+#     "ptype": "Research",
+#     "pi": "Dr. Smith",
+#     "start_date": "2023-01-01",
+#     "end_date": "2024-01-01",
+#     "sort_by": "-start_date",
+#     "fields": ["pf_no", "pi", "title", "status"]
+# }
+
+def filter_consultancy_projects(request):
+    filters = {}
+    interval_filters = {}
+    sorting = request.POST.get("sort_by", None)
+    fields_of_interest = request.POST.getlist("fields", None)
+
+    # Extracting filter fields
+    pf_no = request.POST.get("pf_no")
+    if pf_no:
+        filters['pf_no__icontains'] = pf_no
+
+    consultants = request.POST.get("consultants")
+    if consultants:
+        filters['consultants__icontains'] = consultants
+
+    title = request.POST.get("title")
+    if title:
+        filters['title__icontains'] = title
+
+    client = request.POST.get("client")
+    if client:
+        filters['client__icontains'] = client
+
+    status = request.POST.get("status")
+    if status:
+        filters['status'] = status
+
+    remarks = request.POST.get("remarks")
+    if remarks:
+        filters['remarks__icontains'] = remarks
+
+    # Interval filtering for date fields
+    start_date = request.POST.get("start_date")
+    end_date = request.POST.get("end_date")
+    if start_date and end_date:
+        try:
+            interval_filters['start_date__gte'] = datetime.strptime(start_date, '%Y-%m-%d')
+            interval_filters['end_date__lte'] = datetime.strptime(end_date, '%Y-%m-%d')
+        except ValueError:
+            return JsonResponse({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
+
+    # Financial outlay filtering (range-based)
+    min_financial_outlay = request.POST.get("min_financial_outlay")
+    max_financial_outlay = request.POST.get("max_financial_outlay")
+    if min_financial_outlay and max_financial_outlay:
+        try:
+            interval_filters['financial_outlay__gte'] = int(min_financial_outlay)
+            interval_filters['financial_outlay__lte'] = int(max_financial_outlay)
+        except ValueError:
+            return JsonResponse({"error": "Invalid financial outlay range."}, status=400)
+
+    # Apply filters
+    projects = emp_consultancy_projects.objects.filter(
+        Q(**filters) & Q(**interval_filters)
+    )
+
+    # Apply sorting
+    if sorting:
+        projects = projects.order_by(sorting)
+
+    # Select specific fields
+    if fields_of_interest:
+        projects = projects.values(*fields_of_interest)
+    else:
+        projects = projects.values()
+
+    return JsonResponse(list(projects), safe=False)
+
+# Sample Filter Input JSON:
+# {
+#     "pf_no": "12345",
+#     "consultants": "Dr. John Doe",
+#     "title": "AI Consultancy",
+#     "client": "TechCorp",
+#     "status": "Ongoing",
+#     "start_date": "2023-01-01",
+#     "end_date": "2024-01-01",
+#     "min_financial_outlay": "100000",
+#     "max_financial_outlay": "500000",
+#     "sort_by": "-financial_outlay",
+#     "fields": ["pf_no", "consultants", "title", "financial_outlay", "status"]
+# }
+
+def filter_patents(request):
+    filters = {}
+    interval_filters = {}
+    sorting = request.POST.get("sort_by", None)
+    fields_of_interest = request.POST.getlist("fields", None)
+
+    # Extracting filter fields
+    pf_no = request.POST.get("pf_no")
+    if pf_no:
+        filters['pf_no__icontains'] = pf_no
+
+    p_no = request.POST.get("p_no")
+    if p_no:
+        filters['p_no__icontains'] = p_no
+
+    title = request.POST.get("title")
+    if title:
+        filters['title__icontains'] = title
+
+    status = request.POST.get("status")
+    if status:
+        filters['status'] = status
+
+    p_year = request.POST.get("p_year")
+    if p_year:
+        try:
+            filters['p_year'] = int(p_year)
+        except ValueError:
+            return JsonResponse({"error": "Invalid year format."}, status=400)
+
+    a_month = request.POST.get("a_month")
+    if a_month:
+        try:
+            filters['a_month'] = int(a_month)
+        except ValueError:
+            return JsonResponse({"error": "Invalid month format."}, status=400)
+
+    # Interval filtering for date fields
+    start_date = request.POST.get("start_date")
+    end_date = request.POST.get("end_date")
+    if start_date and end_date:
+        try:
+            interval_filters['start_date__gte'] = datetime.strptime(start_date, '%Y-%m-%d')
+            interval_filters['end_date__lte'] = datetime.strptime(end_date, '%Y-%m-%d')
+        except ValueError:
+            return JsonResponse({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
+
+    # Earnings filtering (range-based)
+    min_earnings = request.POST.get("min_earnings")
+    max_earnings = request.POST.get("max_earnings")
+    if min_earnings and max_earnings:
+        try:
+            interval_filters['earnings__gte'] = int(min_earnings)
+            interval_filters['earnings__lte'] = int(max_earnings)
+        except ValueError:
+            return JsonResponse({"error": "Invalid earnings range."}, status=400)
+
+    # Apply filters
+    patents = emp_patents.objects.filter(
+        Q(**filters) & Q(**interval_filters)
+    )
+
+    # Apply sorting
+    if sorting:
+        patents = patents.order_by(sorting)
+
+    # Select specific fields
+    if fields_of_interest:
+        patents = patents.values(*fields_of_interest)
+    else:
+        patents = patents.values()
+
+    return JsonResponse(list(patents), safe=False)
+
+# Sample Filter Input JSON:
+# {
+#     "pf_no": "12345",
+#     "p_no": "P-56789",
+#     "title": "AI Patent",
+#     "status": "Granted",
+#     "p_year": "2023",
+#     "a_month": "5",
+#     "start_date": "2022-01-01",
+#     "end_date": "2023-12-31",
+#     "min_earnings": "10000",
+#     "max_earnings": "50000",
+#     "sort_by": "-earnings",
+#     "fields": ["pf_no", "p_no", "title", "status", "earnings"]
+# }
+
+def filter_mtechphd_thesis(request):
+    filters = {}
+    interval_filters = {}
+    sorting = request.POST.get("sort_by", None)
+    fields_of_interest = request.POST.getlist("fields", None)
+
+    # Extracting filter fields
+    pf_no = request.POST.get("pf_no")
+    if pf_no:
+        filters['pf_no__icontains'] = pf_no
+
+    degree_type = request.POST.get("degree_type")
+    if degree_type:
+        try:
+            filters['degree_type'] = int(degree_type)
+        except ValueError:
+            return JsonResponse({"error": "Invalid degree type."}, status=400)
+
+    title = request.POST.get("title")
+    if title:
+        filters['title__icontains'] = title
+
+    supervisors = request.POST.get("supervisors")
+    if supervisors:
+        filters['supervisors__icontains'] = supervisors
+
+    co_supervisors = request.POST.get("co_supervisors")
+    if co_supervisors:
+        filters['co_supervisors__icontains'] = co_supervisors
+
+    rollno = request.POST.get("rollno")
+    if rollno:
+        filters['rollno__icontains'] = rollno
+
+    s_name = request.POST.get("s_name")
+    if s_name:
+        filters['s_name__icontains'] = s_name
+
+    status = request.POST.get("status")
+    if status:
+        filters['status'] = status
+
+    s_year = request.POST.get("s_year")
+    if s_year:
+        try:
+            filters['s_year'] = int(s_year)
+        except ValueError:
+            return JsonResponse({"error": "Invalid year format."}, status=400)
+
+    a_month = request.POST.get("a_month")
+    if a_month:
+        try:
+            filters['a_month'] = int(a_month)
+        except ValueError:
+            return JsonResponse({"error": "Invalid month format."}, status=400)
+
+    semester = request.POST.get("semester")
+    if semester:
+        try:
+            filters['semester'] = int(semester)
+        except ValueError:
+            return JsonResponse({"error": "Invalid semester format."}, status=400)
+
+    # Interval filtering for date fields
+    start_date = request.POST.get("start_date")
+    end_date = request.POST.get("end_date")
+    if start_date and end_date:
+        try:
+            interval_filters['start_date__gte'] = datetime.strptime(start_date, '%Y-%m-%d')
+            interval_filters['end_date__lte'] = datetime.strptime(end_date, '%Y-%m-%d')
+        except ValueError:
+            return JsonResponse({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
+
+    # Apply filters
+    thesis = emp_mtechphd_thesis.objects.filter(
+        Q(**filters) & Q(**interval_filters)
+    )
+
+    # Apply sorting
+    if sorting:
+        thesis = thesis.order_by(sorting)
+
+    # Select specific fields
+    if fields_of_interest:
+        thesis = thesis.values(*fields_of_interest)
+    else:
+        thesis = thesis.values()
+
+    return JsonResponse(list(thesis), safe=False)
+
+# Sample Filter Input JSON:
+# {
+#     "pf_no": "12345",
+#     "degree_type": "1", 1 for M.Tech and 2 for Ph.D
+#     "title": "Deep Learning Thesis",
+#     "supervisors": "Dr. John",
+#     "co_supervisors": "Dr. Jane",
+#     "rollno": "MT2023001",
+#     "s_name": "Alice",
+#     "status": "Ongoing",
+#     "s_year": "2023",
+#     "a_month": "7",
+#     "semester": "2",
+#     "start_date": "2023-01-01",
+#     "end_date": "2023-12-31",
+#     "sort_by": "start_date",
+#     "fields": ["pf_no", "degree_type", "title", "supervisors", "s_name"]
+# }
+
+def filter_events(request):
+    filters = {}
+    interval_filters = {}
+    sorting = request.POST.get("sort_by", None)
+    fields_of_interest = request.POST.getlist("fields", None)
+
+    # Extracting filter fields
+    pf_no = request.POST.get("pf_no")
+    if pf_no:
+        filters['pf_no__icontains'] = pf_no
+
+    type = request.POST.get("type")
+    if type:
+        filters['type'] = type
+
+    name = request.POST.get("name")
+    if name:
+        filters['name__icontains'] = name
+
+    sponsoring_agency = request.POST.get("sponsoring_agency")
+    if sponsoring_agency:
+        filters['sponsoring_agency__icontains'] = sponsoring_agency
+
+    venue = request.POST.get("venue")
+    if venue:
+        filters['venue__icontains'] = venue
+
+    role = request.POST.get("role")
+    if role:
+        filters['role'] = role
+
+    # Interval filtering for date fields
+    start_date = request.POST.get("start_date")
+    end_date = request.POST.get("end_date")
+    if start_date and end_date:
+        try:
+            interval_filters['start_date__gte'] = datetime.strptime(start_date, '%Y-%m-%d')
+            interval_filters['end_date__lte'] = datetime.strptime(end_date, '%Y-%m-%d')
+        except ValueError:
+            return JsonResponse({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
+
+    # Apply filters
+    events = emp_event_organized.objects.filter(
+        Q(**filters) & Q(**interval_filters)
+    )
+
+    # Apply sorting
+    if sorting:
+        events = events.order_by(sorting)
+
+    # Select specific fields
+    if fields_of_interest:
+        events = events.values(*fields_of_interest)
+    else:
+        events = events.values()
+
+    return JsonResponse(list(events), safe=False)
+
+# Sample Filter Input JSON:
+# {
+#     "pf_no": "12345",
+#     "type": "Workshop",
+#     "name": "AI Workshop",
+#     "sponsoring_agency": "DST",
+#     "venue": "IIIT Campus",
+#     "role": "Coordinator",
+#     "start_date": "2023-01-01",
+#     "end_date": "2023-12-31",
+#     "sort_by": "start_date",
+#     "fields": ["pf_no", "type", "name", "sponsoring_agency", "venue", "start_date"]
+# }
+
+def filter_visits(request):
+    filters = {}
+    interval_filters = {}
+    sorting = request.POST.get("sort_by", None)
+    fields_of_interest = request.POST.getlist("fields", None)
+
+    # Extracting filter fields
+    pf_no = request.POST.get("pf_no")
+    if pf_no:
+        filters['pf_no__icontains'] = pf_no
+
+    v_type = request.POST.get("v_type")
+    if v_type:
+        try:
+            filters['v_type'] = int(v_type)
+        except ValueError:
+            return JsonResponse({"error": "v_type must be an integer."}, status=400)
+
+    country = request.POST.get("country")
+    if country:
+        filters['country__icontains'] = country
+
+    place = request.POST.get("place")
+    if place:
+        filters['place__icontains'] = place
+
+    purpose = request.POST.get("purpose")
+    if purpose:
+        filters['purpose__icontains'] = purpose
+
+    # Interval filtering for date fields
+    v_date = request.POST.get("v_date")
+    if v_date:
+        try:
+            interval_filters['v_date'] = datetime.strptime(v_date, '%Y-%m-%d')
+        except ValueError:
+            return JsonResponse({"error": "Invalid v_date format. Use YYYY-MM-DD."}, status=400)
+
+    start_date = request.POST.get("start_date")
+    end_date = request.POST.get("end_date")
+    if start_date and end_date:
+        try:
+            interval_filters['start_date__gte'] = datetime.strptime(start_date, '%Y-%m-%d')
+            interval_filters['end_date__lte'] = datetime.strptime(end_date, '%Y-%m-%d')
+        except ValueError:
+            return JsonResponse({"error": "Invalid date format for start_date or end_date. Use YYYY-MM-DD."}, status=400)
+
+    # Apply filters
+    visits = emp_visits.objects.filter(
+        Q(**filters) & Q(**interval_filters)
+    )
+
+    # Apply sorting
+    if sorting:
+        visits = visits.order_by(sorting)
+
+    # Select specific fields
+    if fields_of_interest:
+        visits = visits.values(*fields_of_interest)
+    else:
+        visits = visits.values()
+
+    return JsonResponse(list(visits), safe=False)
+
+# Sample Filter Input JSON:
+# {
+#     "pf_no": "12345",
+#     "v_type": "2",
+#     "country": "India",
+#     "place": "Delhi",
+#     "purpose": "Conference",
+#     "v_date": "2023-05-01",
+#     "start_date": "2023-04-01",
+#     "end_date": "2023-04-30",
+#     "sort_by": "-start_date",
+#     "fields": ["pf_no", "country", "place", "purpose", "v_date", "start_date", "end_date"]
+# }
+
+def filter_consym(request):
+    filters = {}
+    interval_filters = {}
+    sorting = request.POST.get("sort_by", None)
+    fields_of_interest = request.POST.getlist("fields", None)
+
+    # Extracting filter fields
+    pf_no = request.POST.get("pf_no")
+    if pf_no:
+        filters['pf_no__icontains'] = pf_no
+
+    name = request.POST.get("name")
+    if name:
+        filters['name__icontains'] = name
+
+    venue = request.POST.get("venue")
+    if venue:
+        filters['venue__icontains'] = venue
+
+    k_year = request.POST.get("k_year")
+    if k_year:
+        try:
+            filters['k_year'] = int(k_year)
+        except ValueError:
+            return JsonResponse({"error": "k_year must be an integer."}, status=400)
+
+    a_month = request.POST.get("a_month")
+    if a_month:
+        try:
+            filters['a_month'] = int(a_month)
+        except ValueError:
+            return JsonResponse({"error": "a_month must be an integer."}, status=400)
+
+    role1 = request.POST.get("role1")
+    if role1:
+        filters['role1__iexact'] = role1
+
+    role2 = request.POST.get("role2")
+    if role2:
+        filters['role2__icontains'] = role2
+
+    # Interval filtering for date fields
+    start_date = request.POST.get("start_date")
+    end_date = request.POST.get("end_date")
+    if start_date and end_date:
+        try:
+            interval_filters['start_date__gte'] = datetime.strptime(start_date, '%Y-%m-%d')
+            interval_filters['end_date__lte'] = datetime.strptime(end_date, '%Y-%m-%d')
+        except ValueError:
+            return JsonResponse({"error": "Invalid date format for start_date or end_date. Use YYYY-MM-DD."}, status=400)
+
+    # Apply filters
+    conferences = emp_confrence_organised.objects.filter(
+        Q(**filters) & Q(**interval_filters)
+    )
+
+    # Apply sorting
+    if sorting:
+        conferences = conferences.order_by(sorting)
+
+    # Select specific fields
+    if fields_of_interest:
+        conferences = conferences.values(*fields_of_interest)
+    else:
+        conferences = conferences.values()
+
+    return JsonResponse(list(conferences), safe=False)
+
+# Sample Filter Input JSON:
+# {
+#     "pf_no": "12345",
+#     "name": "AI Conference",
+#     "venue": "New Delhi",
+#     "k_year": "2023",
+#     "a_month": "5",
+#     "role1": "Organised",
+#     "role2": "Keynote Speaker",
+#     "start_date": "2023-04-01",
+#     "end_date": "2023-04-30",
+#     "sort_by": "-start_date",
+#     "fields": ["pf_no", "name", "venue", "k_year", "a_month", "start_date", "end_date", "role1", "role2"]
+# }
+
+def filter_books(request):
+    filters = {}
+    sorting = request.POST.get("sort_by", None)
+    fields_of_interest = request.POST.getlist("fields", None)
+
+    # Extracting filter fields
+    pf_no = request.POST.get("pf_no")
+    if pf_no:
+        filters['pf_no__icontains'] = pf_no
+
+    p_type = request.POST.get("p_type")
+    if p_type:
+        filters['p_type__iexact'] = p_type
+
+    title = request.POST.get("title")
+    if title:
+        filters['title__icontains'] = title
+
+    publisher = request.POST.get("publisher")
+    if publisher:
+        filters['publisher__icontains'] = publisher
+
+    authors = request.POST.get("authors")
+    if authors:
+        filters['authors__icontains'] = authors
+
+    pyear = request.POST.get("pyear")
+    if pyear:
+        try:
+            filters['pyear'] = int(pyear)
+        except ValueError:
+            return JsonResponse({"error": "pyear must be an integer."}, status=400)
+
+    # Interval filtering for date fields
+    start_date = request.POST.get("start_date")
+    end_date = request.POST.get("end_date")
+    if start_date and end_date:
+        try:
+            filters['publication_date__range'] = (
+                datetime.strptime(start_date, '%Y-%m-%d'),
+                datetime.strptime(end_date, '%Y-%m-%d'),
+            )
+        except ValueError:
+            return JsonResponse({"error": "Invalid date format for start_date or end_date. Use YYYY-MM-DD."}, status=400)
+
+    # Apply filters
+    books = emp_published_books.objects.filter(Q(**filters))
+
+    # Apply sorting
+    if sorting:
+        books = books.order_by(sorting)
+
+    # Select specific fields
+    if fields_of_interest:
+        books = books.values(*fields_of_interest)
+    else:
+        books = books.values()
+
+    return JsonResponse(list(books), safe=False)
+
+# Sample Filter Input JSON:
+# {
+#     "pf_no": "12345",
+#     "p_type": "Book",
+#     "title": "Artificial Intelligence",
+#     "publisher": "Tech Publishers",
+#     "authors": "John Doe",
+#     "pyear": "2023",
+#     "start_date": "2023-01-01",
+#     "end_date": "2023-12-31",
+#     "sort_by": "-publication_date",
+#     "fields": ["pf_no", "p_type", "title", "publisher", "authors", "pyear", "publication_date"]
+# }
+
+def filter_journal_or_conference(request):
+    filters = {}
+    sorting = request.POST.get("sort_by", None)
+    fields_of_interest = request.POST.getlist("fields", None)
+
+    # Extracting filter fields
+    pf_no = request.POST.get("pf_no")
+    if pf_no:
+        filters['pf_no__icontains'] = pf_no
+
+    rtype = request.POST.get("rtype")
+    if rtype:
+        filters['rtype__iexact'] = rtype
+
+    authors = request.POST.get("authors")
+    if authors:
+        filters['authors__icontains'] = authors
+
+    co_authors = request.POST.get("co_authors")
+    if co_authors:
+        filters['co_authors__icontains'] = co_authors
+
+    title_paper = request.POST.get("title_paper")
+    if title_paper:
+        filters['title_paper__icontains'] = title_paper
+
+    venue = request.POST.get("venue")
+    if venue:
+        filters['venue__icontains'] = venue
+
+    is_sci = request.POST.get("is_sci")
+    if is_sci:
+        filters['is_sci__iexact'] = is_sci
+
+    status = request.POST.get("status")
+    if status:
+        filters['status__iexact'] = status
+
+    year = request.POST.get("year")
+    if year:
+        filters['year__iexact'] = year
+
+    # Interval filtering for date fields
+    start_date = request.POST.get("start_date")
+    end_date = request.POST.get("end_date")
+    if start_date and end_date:
+        try:
+            filters['date_publication__range'] = (
+                datetime.strptime(start_date, '%Y-%m-%d'),
+                datetime.strptime(end_date, '%Y-%m-%d'),
+            )
+        except ValueError:
+            return JsonResponse({"error": "Invalid date format for start_date or end_date. Use YYYY-MM-DD."}, status=400)
+
+    # Apply filters
+    papers = emp_research_papers.objects.filter(Q(**filters))
+
+    # Apply sorting
+    if sorting:
+        papers = papers.order_by(sorting)
+
+    # Select specific fields
+    if fields_of_interest:
+        papers = papers.values(*fields_of_interest)
+    else:
+        papers = papers.values()
+
+    return JsonResponse(list(papers), safe=False)
+
+# Sample Filter Input JSON:
+# {
+#     "pf_no": "12345",
+#     "rtype": "Journal",
+#     "authors": "John Doe",
+#     "co_authors": "Jane Smith",
+#     "title_paper": "AI Research",
+#     "venue": "Tech Conference",
+#     "is_sci": "SCI",
+#     "status": "Published",
+#     "year": "2023",
+#     "start_date": "2023-01-01",
+#     "end_date": "2023-12-31",
+#     "sort_by": "-date_publication",
+#     "fields": ["pf_no", "rtype", "authors", "title_paper", "venue", "date_publication"]
+# }
+
+def filter_achievements(request):
+    filters = {}
+    sorting = request.POST.get("sort_by", None)
+    fields_of_interest = request.POST.getlist("fields", None)
+
+    # Extracting filter fields
+    pf_no = request.POST.get("pf_no")
+    if pf_no:
+        filters['pf_no__icontains'] = pf_no
+
+    a_type = request.POST.get("a_type")
+    if a_type:
+        filters['a_type__iexact'] = a_type
+
+    details = request.POST.get("details")
+    if details:
+        filters['details__icontains'] = details
+
+    a_day = request.POST.get("a_day")
+    if a_day:
+        filters['a_day'] = int(a_day)
+
+    a_month = request.POST.get("a_month")
+    if a_month:
+        filters['a_month'] = int(a_month)
+
+    a_year = request.POST.get("a_year")
+    if a_year:
+        filters['a_year'] = int(a_year)
+
+    # Interval filtering for achievement_date
+    start_date = request.POST.get("start_date")
+    end_date = request.POST.get("end_date")
+    if start_date and end_date:
+        try:
+            filters['achievment_date__range'] = (
+                datetime.strptime(start_date, '%Y-%m-%d'),
+                datetime.strptime(end_date, '%Y-%m-%d'),
+            )
+        except ValueError:
+            return JsonResponse({"error": "Invalid date format for start_date or end_date. Use YYYY-MM-DD."}, status=400)
+
+    # Apply filters
+    achievements = emp_achievement.objects.filter(Q(**filters))
+
+    # Apply sorting
+    if sorting:
+        achievements = achievements.order_by(sorting)
+
+    # Select specific fields
+    if fields_of_interest:
+        achievements = achievements.values(*fields_of_interest)
+    else:
+        achievements = achievements.values()
+
+    return JsonResponse(list(achievements), safe=False)
+
+# Sample Filter Input JSON:
+{
+    "pf_no": "12345",
+    "a_type": "Award",
+    "details": "Best Researcher",
+    "a_day": "15",
+    "a_month": "8",
+    "a_year": "2023",
+    "start_date": "2023-01-01",
+    "end_date": "2023-12-31",
+    "sort_by": "-achievment_date",
+    "fields": ["pf_no", "a_type", "details", "achievment_date"]
+}
+
+def filter_talks(request):
+    filters = {}
+    sorting = request.POST.get("sort_by", None)
+    fields_of_interest = request.POST.getlist("fields", None)
+
+    # Extracting filter fields
+    pf_no = request.POST.get("pf_no")
+    if pf_no:
+        filters['pf_no__icontains'] = pf_no
+
+    l_type = request.POST.get("l_type")
+    if l_type:
+        filters['l_type__iexact'] = l_type
+
+    title = request.POST.get("title")
+    if title:
+        filters['title__icontains'] = title
+
+    place = request.POST.get("place")
+    if place:
+        filters['place__icontains'] = place
+
+    l_year = request.POST.get("l_year")
+    if l_year:
+        filters['l_year'] = int(l_year)
+
+    a_month = request.POST.get("a_month")
+    if a_month:
+        filters['a_month'] = int(a_month)
+
+    # Interval filtering for lecture date
+    start_date = request.POST.get("start_date")
+    end_date = request.POST.get("end_date")
+    if start_date and end_date:
+        try:
+            filters['l_date__range'] = (
+                datetime.strptime(start_date, '%Y-%m-%d'),
+                datetime.strptime(end_date, '%Y-%m-%d'),
+            )
+        except ValueError:
+            return JsonResponse({"error": "Invalid date format for start_date or end_date. Use YYYY-MM-DD."}, status=400)
+
+    # Apply filters
+    expert_lectures = emp_expert_lectures.objects.filter(Q(**filters))
+
+    # Apply sorting
+    if sorting:
+        expert_lectures = expert_lectures.order_by(sorting)
+
+    # Select specific fields
+    if fields_of_interest:
+        expert_lectures = expert_lectures.values(*fields_of_interest)
+    else:
+        expert_lectures = expert_lectures.values()
+
+    return JsonResponse(list(expert_lectures), safe=False)
+
+# Sample Filter Input JSON:
+# {
+#     "pf_no": "56789",
+#     "l_type": "Invited Talk",
+#     "title": "Machine Learning",
+#     "place": "New York",
+#     "l_year": "2023",
+#     "a_month": "12",
+#     "start_date": "2023-01-01",
+#     "end_date": "2023-12-31",
+#     "sort_by": "-l_date",
+#     "fields": ["pf_no", "l_type", "title", "place", "l_date"]
+# }
