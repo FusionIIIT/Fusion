@@ -362,7 +362,7 @@ def academic_procedures_student(request):
             'next_sem_registration_courses': next_sem_courses,
             'next_sem_branch_registration_courses' : next_sem_branch_registration_courses_data,
             'final_registration_choices' : final_registration_choices_data,
-            'backlogCourseList': auto_backlog_courses_list,
+            # 'backlogCourseList': auto_backlog_courses_list,
                     
             'student_flag' : student_flag,
             'ug_flag' : ug_flag,
@@ -732,25 +732,25 @@ def student_final_registration(request):
 
 
 # with this api student can get his backlog courses list
-@api_view(['GET'])
-def student_backlog_courses(request):
-    try : 
-        stu_id = Student.objects.select_related('id','id__user','id__department').get(id=request.user.username)
-        backlogCourseList = []
-        backlogCourses = backlog_course.objects.select_related('course_id' , 'student_id' , 'semester_id' ).filter(student_id=stu_id)
-        for i in backlogCourses:
-            obj = {
-                "course_id" : i.course_id.id,
-                "course_name" : i.course_id.course_name,
-                "faculty" : i.course_id.course_details,
-                "semester" : i.semester_id.semester_no,
-                "is_summer_course" : i.is_summer_course
-            }
-            backlogCourseList.append(obj)
+# @api_view(['GET'])
+# def student_backlog_courses(request):
+#     try : 
+#         stu_id = Student.objects.select_related('id','id__user','id__department').get(id=request.user.username)
+#         backlogCourseList = []
+#         backlogCourses = backlog_course.objects.select_related('course_id' , 'student_id' , 'semester_id' ).filter(student_id=stu_id)
+#         for i in backlogCourses:
+#             obj = {
+#                 "course_id" : i.course_id.id,
+#                 "course_name" : i.course_id.course_name,
+#                 "faculty" : i.course_id.course_details,
+#                 "semester" : i.semester_id.semester_no,
+#                 "is_summer_course" : i.is_summer_course
+#             }
+#             backlogCourseList.append(obj)
 
-        return Response(backlogCourseList, status=status.HTTP_200_OK)
-    except Exception as e:
-            return Response(data = str(e) , status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+#         return Response(backlogCourseList, status=status.HTTP_200_OK)
+#     except Exception as e:
+#             return Response(data = str(e) , status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 
