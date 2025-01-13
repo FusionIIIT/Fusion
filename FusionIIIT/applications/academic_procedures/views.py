@@ -390,6 +390,8 @@ def academic_procedures_student(request):
         pre_registration_date_flag, prd_start_date= get_pre_registration_eligibility(current_date, user_sem, year)
         final_registration_date_flag = get_final_registration_eligibility(current_date)
         add_or_drop_course_date_flag = get_add_or_drop_course_date_eligibility(current_date)
+        swayam_registration_flag = get_swayam_registration_eligibility(current_date, user_sem, year)
+        print("Swayam Registration: ", user_sem, swayam_registration_flag)
         pre_registration_flag = False
         final_registration_flag = False
 
@@ -575,6 +577,7 @@ def academic_procedures_student(request):
                             'courses_list': next_sem_branch_course,
                             'fee_payment_mode_list' : fee_payment_mode_list,
                             'next_sem_registration_courses': next_sem_registration_courses,
+                            'current_sem_registration_courses': current_sem_branch_course,
                             'final_registration_choice' : final_registration_choice,
                             'unavailable_courses_nextsem' : unavailable_courses_nextsem,
                             'performance_list' : performance_list,
@@ -607,6 +610,7 @@ def academic_procedures_student(request):
                             'adc_date_flag': add_or_drop_course_date_flag,
                             'pre_registration_flag' : pre_registration_flag,
                             'final_registration_flag': final_registration_flag,
+                            'swayam_registration_flag': swayam_registration_flag,
                             'swayam_courses_count':swayam_courses_count,
                            # 'final_r': final_register_1,
                             
@@ -623,8 +627,8 @@ def academic_procedures_student(request):
                            'hos_d':hos_d,
                             'tot_d':tot_d,
                            'attendence':attendence,
-                           'backlogCourseList' : backlogCourseList,
-                           'auto_backlog_courses_list' : auto_backlog_courses_list,
+                        #    'backlogCourseList' : backlogCourseList,
+                        #    'auto_backlog_courses_list' : auto_backlog_courses_list,
                            'BranchChangeForm': BranchChangeForm(),
                            'BranchFlag':branchchange_flag,
                            'assistantship_flag' : student_status,
@@ -1414,6 +1418,19 @@ def get_course_verification_date_eligibilty(current_date):
         verif_start_date = course_verification_date.from_date
         verif_end_date = course_verification_date.to_date
         if current_date>=verif_start_date and current_date<=verif_end_date:
+            return True
+        else :
+            return False
+    except Exception as e:
+        return False
+    
+def get_swayam_registration_eligibility(current_date, user_sem, year):
+    try:
+        swayam_registration_date = Calendar.objects.all().filter(description=f"Swayam Registration {user_sem} {year}").first()
+        print(swayam_registration_date, user_sem, year)
+        swayam_start_date = swayam_registration_date.from_date
+        swayam_end_date = swayam_registration_date.to_date
+        if current_date>=swayam_start_date and current_date<=swayam_end_date:
             return True
         else :
             return False
