@@ -12,7 +12,7 @@ DATABASES = {
         'NAME': 'fusionlab',
         'HOST': os.environ.get("DB_HOST", default='localhost'),
         'USER': 'fusion_admin',
-        'PASSWORD': 'os.environ.get("DB_PASS", default='hello123'),
+        'PASSWORD': os.environ.get("DB_PASS", default='hello123'),
     }
 }
 
