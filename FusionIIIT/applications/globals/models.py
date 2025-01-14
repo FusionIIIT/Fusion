@@ -339,3 +339,11 @@ class ModuleAccess(models.Model):
 
     def __str__(self):
         return self.designation
+       
+
+class PasswordResetTracker(models.Model):
+    email = models.EmailField(unique=True)
+    last_reset = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return self.email

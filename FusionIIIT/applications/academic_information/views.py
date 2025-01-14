@@ -2136,6 +2136,10 @@ def view_all_student_data(request):
     """ views all the students """
 
 
+    if request.session.get('currentDesignationSelected') in ["studentacadadmin"]:
+        return HttpResponseRedirect('/aims/')
+    
+
     data = []
     #students = Student.objects.select_related('batch_id', 'id__user', 'batch_id__discipline', 'id') .filter(batch=2019).order_by('id').all().only('batch', 'id__id', 'id__user', 'programme', 'batch_id__discipline__acronym', 'specialization', 'id__sex', 'category', 'id__phone_no', 'id__date_of_birth', 'id__user__first_name', 'id__user__last_name', 'id__user__email', 'father_name', 'mother_name', 'id__address')[0:20]
     

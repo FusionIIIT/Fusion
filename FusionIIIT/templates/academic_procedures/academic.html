@@ -136,9 +136,9 @@
                             <i class="right floated chevron right icon"></i>
                         </a>
                     {% endif %}
-                    <a class="item" data-tab="Miscellaneous">Miscellaneous
+                    <!-- <a class="item" data-tab="Miscellaneous">Miscellaneous
                         <i class="right floated chevron right icon"></i>
-                    </a>
+                    </a> -->
                     <a class="item" data-tab="eight" style="display: none;">
                         Apply for Leave
                         <i class="right floated chevron right icon"></i>
@@ -168,14 +168,17 @@
             </div>
             <div class="ui  tab segment" data-tab="miscellaneous_1">
                 <div class="ui pointing secondary menu">
-                    <a class=" active item" data-tab="next_courses" style="width: 33%;">
+                    <a class=" active item" data-tab="next_courses" style="width: 20%;">
                         Courses
                     </a>
-                    <a class="item" data-tab="pre_registration" style="width: 33%;">
+                    <a class="item" data-tab="pre_registration" style="width: 20%;">
                         Pre-Registration
                     </a>
-                    <a class=" item" data-tab="final_registration" style="width: 33%;">
+                    <a class=" item" data-tab="final_registration" style="width: 20%;">
                         Final-Registration
+                    </a>
+                    <a class=" item" data-tab="swayam_registration" style="width: 20%;">
+                        Swayam-Registration
                     </a>
                 </div>
             
@@ -188,9 +191,12 @@
                 <div class="ui tab segment" data-tab="final_registration">
                     {%  include 'academic_procedures/finalregister.html' %}
                 </div>
+                <div class="ui tab segment" data-tab="swayam_registration">
+                    {%  include 'academic_procedures/swayamregister.html' %}
+                </div>
             </div>
             
-            <div class="ui tab segment" data-tab="Miscellaneous" style="width: 110%"  >
+            <!-- <div class="ui tab segment" data-tab="Miscellaneous" style="width: 110%"  >
                 <div class="ui pointing secondary menu">
                     <a class=" active item" data-tab="miscellaneous_2" >
                         Check Dues
@@ -282,7 +288,7 @@
                     {%  include 'academic_procedures/replace.html' %}
                 </div>  
                 
-            </div>
+            </div> -->
             
             
             <div class="ui tab segment" data-tab="four">

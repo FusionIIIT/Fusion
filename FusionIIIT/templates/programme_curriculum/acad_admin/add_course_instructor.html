@@ -1,33 +1,44 @@
 {% extends 'programme_curriculum/acad_admin/common.html' %}
+{% load static %}
 {% block content %}
 <div class="ui segment" >
     <div class="header"><h1>Course Instructor Form</h1></div>
     <div class="ui divider"></div>
-    <!-- Check if there are form errors and trigger an alert -->
-    {% if form.errors %}
-        <script type="text/javascript">
-            var errorMessages = "";
+    <!-- Tab Menu -->
+    <div class="ui top attached tabular menu">
+        <a class="item active" data-tab="manual">Manual Form</a>
+        <a class="item" data-tab="excel">Upload via Excel</a>
+    </div>
 
-            {% if form.non_field_errors %}
-                errorMessages += "A Course Instructor with this Course, Instructor, and year combination already exists. Please choose different values.\n";
-            {% endif %}
+    <!-- Manual Form Tab -->
+    <div class="ui bottom attached tab segment active" data-tab="manual">
+        <!-- Check if there are form errors and trigger an alert -->
+        <form class="ui large form" method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input class="ui primary button" name="form_submit" type="Submit" value="Submit">
+        </form>
+    </div>
 
-            {% for field in form %}
-                {% if field.errors %}
-                    errorMessages += "A Course Instructor with this Course, Instructor, and year combination already exists. Please choose different values.\n";
-                {% endif %}
-            {% endfor %}
-
-            if (errorMessages !== "") {
-                alert(errorMessages);
-            }
-        </script>
-    {% endif %}
-    <form class="ui large form" method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <input class="ui primary button" type="Submit" name="Submit">
-    </form>
+    <!-- Excel Upload Form Tab -->
+    <div class="ui bottom attached tab segment" data-tab="excel">
+        <form class="ui large form" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <h3>Upload Course Instructors via Excel</h3>
+            <input type="file" name="manual_instructor_xsl" accept=".xls" required>
+            <input type="Submit" name="excel_submit" class="ui primary button" value="Upload Excel">
+        </form>
+        <div class="ui message">
+            <p>You can download a sample Excel file for reference:</p>
+            <a href="{% static 'samples/sample_course_instructor.xls' %}" class="ui secondary button">
+                Download Sample Excel
+            </a>
+        </div>
+    </div>
 </div>
 
+<script>
+    // Activate tabs using Semantic UI's tab module
+    $('.menu .item').tab();
+</script>
 {% endblock %}
