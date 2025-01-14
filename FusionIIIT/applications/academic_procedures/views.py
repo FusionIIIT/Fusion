@@ -962,6 +962,8 @@ def dropcourseadmin(request):
                 rid - Registration ID of Registers table
                 response_data - data to be responded.
     '''
+    if user_check(request):
+        return HttpResponseRedirect('/academic-procedures/main')
     data = request.GET.get('id')
     # data = data.split(" - ")
     reg_id = int(data)
@@ -1128,6 +1130,8 @@ def verify_course(request):
 # view to add Course for a student
 def acad_add_course(request):
     if(request.method == "POST"):
+        if user_check(request):
+            return HttpResponseRedirect('/academic-procedures/main')
         course_id = request.POST["course_id"]
         courseslot_id = request.POST["courseslot_id"]
         course = Courses.objects.get(id=course_id)
