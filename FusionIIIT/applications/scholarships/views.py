@@ -100,10 +100,10 @@ def convener_view(request):
             # It updates the student Notification table on the spacs head sending the mcm invitation
             if batch == 'all':
                 active_batches = range(datetime.datetime.now().year - 4 , datetime.datetime.now().year + 1)
-                query = reduce(or_, (Q(id__id__startswith=int(batch)-2000) for batch in active_batches))
+                query = reduce(or_, (Q(id_id_startswith=int(batch)-2000) for batch in active_batches))
                 recipient = Student.objects.filter(programme=programme).filter(query)
             else:
-                recipient = Student.objects.filter(programme=programme, id__id__startswith=int(batch)-2000)
+                recipient = Student.objects.filter(programme=programme, id_id_startswith=int(batch)-2000)
             
             # Notification starts
             convenor = request.user
@@ -569,7 +569,7 @@ def submitMCM(request):
         ).filter(award="Merit-cum-Means Scholarship")
         for release in releases:
             if Mcm.objects.select_related('award_id','student').filter(
-                Q(date__gte=release.startdate, date__lte=release.enddate)
+                Q(date_gte=release.startdate, date_lte=release.enddate)
             ).filter(student=request.user.extrainfo.student):
                 # if len(Mcm.objects.filter(student = request.user.extrainfo.student)) > 0:
                 Mcm.objects.select_related('award_id','student').filter(
@@ -710,7 +710,7 @@ def submitGold(request):
         releases = Release.objects.filter(Q(startdate__lte=datetime.datetime.today().strftime(
             '%Y-%m-%d'), enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award="Convocation Medals")
         for release in releases:
-            existingRelease = Director_gold.objects.select_related('student','award_id').filter(Q(date__gte=release.startdate, date__lte=release.enddate)).filter(student=request.user.extrainfo.student)
+            existingRelease = Director_gold.objects.select_related('student','award_id').filter(Q(date_gte=release.startdate, date_lte=release.enddate)).filter(student=request.user.extrainfo.student)
             if existingRelease:
                 existingRelease.update(
                     student=student_id,
@@ -805,7 +805,7 @@ def submitSilver(request):
         releases = Release.objects.filter(Q(startdate__lte=datetime.datetime.today().strftime(
             '%Y-%m-%d'), enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award="Convocation Medals")
         for release in releases:
-            existingRelease = Director_silver.objects.select_related('student','award_id').filter(Q(date__gte=release.startdate, date__lte=release.enddate)).filter(student=request.user.extrainfo.student)
+            existingRelease = Director_silver.objects.select_related('student','award_id').filter(Q(date_gte=release.startdate, date_lte=release.enddate)).filter(student=request.user.extrainfo.student)
             if existingRelease:
                 existingRelease.update(
                     student=student_id,
@@ -922,7 +922,7 @@ def submitDM(request):
         releases = Release.objects.filter(Q(startdate__lte=datetime.datetime.today().strftime(
             '%Y-%m-%d'), enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award="Convocation Medals")
         for release in releases:
-            existingRelease = Proficiency_dm.objects.select_related('student','award_id').filter(Q(date__gte=release.startdate, date__lte=release.enddate)).filter(student=request.user.extrainfo.student)
+            existingRelease = Proficiency_dm.objects.select_related('student','award_id').filter(Q(date_gte=release.startdate, date_lte=release.enddate)).filter(student=request.user.extrainfo.student)
             if existingRelease:
                 existingRelease.update(
                     title_name=title_name,

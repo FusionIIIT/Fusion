@@ -5,6 +5,7 @@ from rest_framework import status
 from applications.scholarships.models import Previous_winner, Award_and_scholarship,Mcm,Director_gold,Notional_prize,Director_silver,Proficiency_dm,Release
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from .serializers import DirectorSilverDecisionSerializer  # Add this import
 from rest_framework import status
 from applications.academic_information.models import Spi, Student
 from applications.globals.models import (Designation, ExtraInfo,
@@ -109,7 +110,7 @@ class McmUpdateView(APIView):
 
 class McmRetrieveView(APIView):
     def post(self, request):
-        roll_number = request.data.get('roll_number')
+        roll_number = request.user.username
         
         if not roll_number:
             return Response({"detail": "Roll number is required."}, status=status.HTTP_400_BAD_REQUEST)
@@ -126,7 +127,7 @@ class McmRetrieveView(APIView):
 
 class DirectorSilverRetrieveView(APIView):
     def post(self, request):
-        roll_number = request.data.get('roll_number')
+        roll_number = request.user.username
         
         if not roll_number:
             return Response({"detail": "Roll number is required."}, status=status.HTTP_400_BAD_REQUEST)
@@ -151,7 +152,7 @@ class DirectorSilverUpdateView(APIView):
     
 class DirectorGoldRetrieveView(APIView):
     def post(self, request):
-        roll_number = request.data.get('roll_number')
+        roll_number = request.user.username
         
         if not roll_number:
             return Response({"detail": "Roll number is required."}, status=status.HTTP_400_BAD_REQUEST)
@@ -186,7 +187,7 @@ class ProficiencyDmUpdateView(APIView):
 
 class ProficiencyDmRetrieveView(APIView):
     def post(self, request):
-        roll_number = request.data.get('roll_number')
+        roll_number = request.user.username
         
         if not roll_number:
             return Response({"detail": "Roll number is required."}, status=status.HTTP_400_BAD_REQUEST)

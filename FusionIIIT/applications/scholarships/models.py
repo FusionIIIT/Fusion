@@ -12,6 +12,8 @@ class Constants:
         ('Accept', 'ACCEPT'),
         ('ACCEPT', 'Accept'),
         ('REJECT', 'Reject'),
+        ('ACCEPTED', 'Accepted'),
+        ('REJECTED', 'Rejected'),
         ('UNDER_REVIEW', 'Under Review')
 
     )
@@ -110,13 +112,13 @@ class Mcm(models.Model):
     loan_amount = models.IntegerField(blank=True, null=True)
     college_fee = models.IntegerField(blank=True, null=True)
     college_name = models.CharField(max_length=30, null=True)
-    income_certificate = models.FileField(null=False, blank=False)
-    Marksheet = models.FileField(null=False, blank=False)
-    Bank_details = models.FileField(null=False, blank=False)
-    Affidavit = models.FileField(null=False, blank=False)
-    Aadhar_card = models.FileField(null=False, blank=False)
-    Fee_Receipt = models.FileField(null=False, blank=False)
-    forms = models.FileField(null=True, blank=True)
+    income_certificate = models.BinaryField(null=False, blank=False)
+    Marksheet = models.BinaryField(null=False, blank=False)
+    Bank_details = models.BinaryField(null=False, blank=False)
+    Affidavit = models.BinaryField(null=False, blank=False)
+    Aadhar_card = models.BinaryField(null=False, blank=False)
+    Fee_Receipt = models.BinaryField(null=False, blank=False)
+    forms = models.CharField(max_length=100, null=True, blank=True)
     status = models.CharField(max_length=20, choices=Constants.STATUS_CHOICES, default='INCOMPLETE')
     student = models.ForeignKey(Student,
                                 on_delete=models.CASCADE, related_name='mcm_info')
@@ -200,7 +202,7 @@ class Director_silver(models.Model):
     award_id = models.ForeignKey(Award_and_scholarship, on_delete=models.CASCADE)
     award_type = models.CharField(max_length=50, null=True)
     status = models.CharField(max_length=20, choices=Constants.STATUS_CHOICES,default='INCOMPLETE')
-    Marksheet = models.FileField(null=False, blank=False)
+    Marksheet = models.BinaryField(null=False, blank=False)
     date = models.DateField(default=datetime.date.today)
     financial_assistance = models.TextField(max_length=1000 ,null=True)
     grand_total = models.IntegerField(null=True)

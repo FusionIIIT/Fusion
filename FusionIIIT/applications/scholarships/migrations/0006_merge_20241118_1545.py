@@ -6,8 +6,9 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('scholarships', '0003_auto_20241116_0306'),
-        ('scholarships', '0003_auto_20241117_2324'),
+        ('online_cms', '0005_merge_20241116_0303'),
+        ('online_cms', '0005_merge_20241116_0233'),
+        ('online_cms', '0005_merge_20241116_0248'),
     ]
 
     operations = [

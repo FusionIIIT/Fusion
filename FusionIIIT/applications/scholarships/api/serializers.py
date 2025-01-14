@@ -9,6 +9,12 @@ class McmStatusUpdateSerializer(serializers.ModelSerializer):
         model = Mcm
         fields = ['status']
 
+    def validate_status(self, value):
+        valid_statuses = ['ACCEPTED', 'REJECTED', 'UNDER_REVIEW']
+        if value not in valid_statuses:
+            raise serializers.ValidationError(f"Status must be one of {valid_statuses}.")
+        return value
+
 
 
 
