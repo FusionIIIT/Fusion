@@ -12,11 +12,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # migrations.AddField(
-        #     model_name='attendance',
-        #     name='no_of_attendance',
-        #     field=models.IntegerField(default=1),
-        # ),
         migrations.AlterField(
             model_name='attendance',
             name='present',
@@ -26,15 +21,5 @@ class Migration(migrations.Migration):
             model_name='gradingscheme',
             name='type_of_evaluation',
             field=models.CharField(max_length=100),
-        ),
-        migrations.CreateModel(
-            name='StudentEvaluation',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('marks', models.DecimalField(decimal_places=2, max_digits=10, null=True)),
-                ('total_marks', models.DecimalField(decimal_places=2, default=0, max_digits=10)),
-                ('evaluation_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='online_cms.gradingscheme')),
-                ('student_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='academic_information.student')),
-            ],
         ),
     ]
