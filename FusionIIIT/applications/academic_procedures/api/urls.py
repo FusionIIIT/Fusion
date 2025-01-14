@@ -11,7 +11,8 @@ urlpatterns = [
     url(r'^stu/view_offered_courses' , views.view_offered_courses , name = 'student_view_offered_courses'),
     # url(r'^stu/backlog_courses', views.student_backlog_courses , name = 'student_backlog_courses'),
     url(r'^stu/add_course' , views.add_course , name ='add_course') ,
-    url(r'^stu/drop_course' , views.drop_course , name = 'drop_course'),
+    url(r'^stu/drop_course/$' , views.drop_course , name = 'drop_course'),
+    url(r'^stu/swayam_add_course/', views.student_swayam_add_course, name = 'student_swayam_add_course'),
     # url(r'^stu/replaceCourse' , views.replaceCourse , name = 'replaceCourse')
 
 

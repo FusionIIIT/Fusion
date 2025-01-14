@@ -475,25 +475,61 @@ def add_course(request):
         return Response(data = str(e) , status= status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     
-@api_view(['POST'])
+@api_view(['GET'])
 def drop_course(request):
+    if not request.user.is_authenticated:
+        return Response({'message': 'Login required '}, status=status.HTTP_400_BAD_REQUEST)
+    data = request.GET.get('id')
+    reg_id = int(data)
     current_user = request.user
     current_user = ExtraInfo.objects.all().filter(user=current_user).first()
     current_user = Student.objects.all().filter(id = current_user.id).first()
-    
-    courses = request.data['courses']
-
-    for course in courses:
-        try:
-            course_id = Courses.objects.all().filter(id=course).first()
-            course_registration.objects.filter(course_id = course_id, student_id = current_user).delete()
-        except Exception as e:
-            resp = {"message" : "Course drop failed", "error" : str(e)}
-            return Response(data = resp, status = status.HTTP_400_BAD_REQUEST)
+    try:
+        course_registration.objects.filter(id = reg_id, student_id = current_user).delete()
+    except Exception as e:
+        resp = {"message" : "Course drop failed", "error" : str(e)}
+        return Response(data = resp, status = status.HTTP_400_BAD_REQUEST)
     
     resp = {"message" : "Course successfully dropped"}
     return Response(data = resp , status = status.HTTP_200_OK)
 
+
+@api_view(['POST'])
+def student_swayam_add_course(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'message': 'Login required '}, status=401)
+    try:
+        current_user = request.user
+        current_user = ExtraInfo.objects.all().filter(user=current_user).first()
+        current_user = Student.objects.all().filter(id = current_user.id).first()
+        course_id = request.POST["course_id"]
+        courseslot_id = request.POST["courseslot_id"]
+        registration_type = request.POST["registration_type"]
+        if (not course_id) or (not courseslot_id) or (not registration_type):
+            return JsonResponse({'message': 'Enter Complete Form Details '}, status=400)
+        course = Courses.objects.get(id=course_id)
+        courseslot = CourseSlot.objects.get(id=courseslot_id)
+        semester_no = current_user.curr_semester_no
+        curr_id = current_user.batch_id.curriculum
+        semester = Semester.objects.get(curriculum = curr_id, semester_no = semester_no)
+        try:
+            course_registration.objects.get(course_slot_id = courseslot, student_id = current_user)
+            return JsonResponse({'message': 'already registered a course in course slot'}, status=400)
+        except:
+            pass
+        try:
+            course_registration.objects.get(course_id = course, student_id = current_user)
+            return JsonResponse({'message': 'already registered a particular course'}, status=400)
+        except:
+            pass
+        cr = course_registration(
+            course_slot_id=courseslot, course_id=course, student_id=current_user, semester_id=semester , working_year = datetime.datetime.now().year, registration_type=registration_type)
+        cr.save()
+        return JsonResponse({'message': 'Successfully added swayam course' }, status=200)
+    except Exception as e:
+        print(str(e))
+        return JsonResponse({'message': 'Error adding course '}, status=500)
+        
 
 # simple api for getting to know the details of user who have logined in the system
 @api_view(['GET'])

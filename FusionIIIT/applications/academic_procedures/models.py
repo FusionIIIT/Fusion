@@ -710,6 +710,8 @@ class course_registration(models.Model):
         ('Improvement', 'Improvement'),
         ('Backlog', 'Backlog'),
         ('Regular', 'Regular'),
+        ('Extra Credits', 'Extra Credits'),
+        ('Replacement', 'Replacement'),
     ]
     registration_type = models.CharField(
         max_length=20,

@@ -391,7 +391,7 @@ def academic_procedures_student(request):
         final_registration_date_flag = get_final_registration_eligibility(current_date)
         add_or_drop_course_date_flag = get_add_or_drop_course_date_eligibility(current_date)
         swayam_registration_flag = get_swayam_registration_eligibility(current_date, user_sem, year)
-        print("Swayam Registration: ", user_sem, swayam_registration_flag)
+        drop_date_flag = get_drop_course_date_eligibility(current_date, year)
         pre_registration_flag = False
         final_registration_flag = False
 
@@ -552,6 +552,12 @@ def academic_procedures_student(request):
         
         # Mess_bill = Monthly_bill.objects.filter(student_id = obj)
         # Mess_pay = Payments.objects.filter(student_id = obj)
+        swayam_course_slots = get_current_semester_swayam_course_slots(curr_sem_id=curr_sem_id)
+        swayam_courses = []
+        try:
+            swayam_courses = swayam_course_slots[0].courses.all()
+        except:
+            pass    
         Mess_bill = []
         Mess_pay = []
         # Branch Change Form save
@@ -608,10 +614,12 @@ def academic_procedures_student(request):
                             'prd_start_date': prd_start_date,
                             'frd': final_registration_date_flag,
                             'adc_date_flag': add_or_drop_course_date_flag,
+                            'drop_date_flag' : drop_date_flag,
                             'pre_registration_flag' : pre_registration_flag,
                             'final_registration_flag': final_registration_flag,
                             'swayam_registration_flag': swayam_registration_flag,
                             'swayam_courses_count':swayam_courses_count,
+                            'swayam_courseslots':swayam_course_slots,
                            # 'final_r': final_register_1,
                             
                             'teaching_credit_registration_course' : teaching_credit_registration_course,
@@ -633,6 +641,7 @@ def academic_procedures_student(request):
                            'BranchFlag':branchchange_flag,
                            'assistantship_flag' : student_status,
                            'notifications': notifs,
+                           'swayam_courses' : swayam_courses,
                            }
                 )
 
@@ -1427,10 +1436,21 @@ def get_course_verification_date_eligibilty(current_date):
 def get_swayam_registration_eligibility(current_date, user_sem, year):
     try:
         swayam_registration_date = Calendar.objects.all().filter(description=f"Swayam Registration {user_sem} {year}").first()
-        print(swayam_registration_date, user_sem, year)
         swayam_start_date = swayam_registration_date.from_date
         swayam_end_date = swayam_registration_date.to_date
         if current_date>=swayam_start_date and current_date<=swayam_end_date:
+            return True
+        else :
+            return False
+    except Exception as e:
+        return False
+    
+def get_drop_course_date_eligibility(current_date, year):
+    try:
+        drop_course_date = Calendar.objects.all().filter(description=f"drop course date {year}").first()
+        drop_start_date = drop_course_date.from_date
+        drop_end_date = drop_course_date.to_date
+        if current_date>=drop_start_date and current_date<=drop_end_date:
             return True
         else :
             return False
@@ -2046,7 +2066,7 @@ def get_add_course_options(branch_courses, current_register, batch):
         if courseslot not in slots:
             lis = []
             for course in courseslot.courses.all():
-                print(course)
+                # print(course)
                 if course_registration.objects.filter(student_id__batch_id__year = batch, course_id = course).count() < max_limit:
                     lis.append(course)
             course_option.append((courseslot, lis))
@@ -4239,3 +4259,9 @@ def register_backlog_course(request):
         except Exception as e:
             print(str(e))
             return JsonResponse({'message': 'Adding Backlog Failed '  +str(e)}, status=500)
+
+   
+def get_current_semester_swayam_course_slots(curr_sem_id):
+    courseslot_list = CourseSlot.objects.filter(semester = curr_sem_id, name__startswith='SW')
+    return courseslot_list
+        
