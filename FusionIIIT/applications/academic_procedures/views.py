@@ -91,7 +91,7 @@ def academic_procedures(request):
         return HttpResponseRedirect('/academic-procedures/fac/')
         # return HttpResponseRedirect('/logout/')
 
-    elif request.session.get('currentDesignationSelected') == "acadadmin" :
+    elif request.session.get('currentDesignationSelected') in ["acadadmin", "studentacadadmin"]:
         return HttpResponseRedirect('/aims/')
 
     elif str(request.user) == "rizwan":
@@ -639,7 +639,7 @@ def academic_procedures_student(request):
     elif request.session.get('currentDesignationSelected') == "Associate Professor" :
         return HttpResponseRedirect('/academic-procedures/main/')
 
-    elif request.session.get('currentDesignationSelected') == "acadadmin" :
+    elif request.session.get('currentDesignationSelected') in ["acadadmin", "studentacadadmin"]:
         return HttpResponseRedirect('/academic-procedures/main/')
 
     else:
@@ -1032,13 +1032,12 @@ def verify_course(request):
         current_user = get_object_or_404(User, username=request.user.username)
         user_details = ExtraInfo.objects.all().select_related(
             'user', 'department').filter(user=current_user).first()
-        desig_id = Designation.objects.all().filter(name='acadadmin').first()
-        temp = HoldsDesignation.objects.all().select_related().filter(
-            designation=desig_id).first()
+        desig_id = Designation.objects.all().filter(Q(name='acadadmin') | Q(name='studentacadadmin')).first()
+        temp = HoldsDesignation.objects.all().select_related().filter(designation=desig_id).first()
         acadadmin = temp.working
         k = str(user_details).split()
         final_user = k[2]
-        if ('acadadmin' != request.session.get('currentDesignationSelected')):
+        if (request.session.get('currentDesignationSelected') not in ['acadadmin', 'studentacadadmin']) :
             return HttpResponseRedirect('/academic-procedures/')
         roll_no = request.POST["rollNo"]
         obj = ExtraInfo.objects.all().select_related(
@@ -1168,7 +1167,7 @@ def acad_branch_change(request):
     k = str(user_details).split()
     final_user = k[2]
 
-    if ('acadadmin' != request.session.get('currentDesignationSelected')):
+    if ( request.session.get('currentDesignationSelected') not in ['acadadmin', 'studentacadadmin']):
         return HttpResponseRedirect('/academic-procedures/')
 
     # year = datetime.datetime.now().year
@@ -1741,7 +1740,7 @@ def user_check(request):
     try:
         current_user = get_object_or_404(User, username=request.user.username)
         user_details = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
-        desig_id = Designation.objects.all().filter(name='acadadmin')
+        desig_id = Designation.objects.all().filter(Q(name='acadadmin') | Q(name='studentacadadmin'))
         temp = HoldsDesignation.objects.all().select_related().filter(designation = desig_id).first()
         acadadmin = temp.working
         k = str(user_details).split()
@@ -1751,7 +1750,7 @@ def user_check(request):
         final_user=""
         pass
 
-    if ('acadadmin' != request.session.get('currentDesignationSelected')):
+    if (request.session.get('currentDesignationSelected') not in ['acadadmin', 'studentacadadmin']):
         return True
     else:
         return False
@@ -2199,7 +2198,7 @@ def acad_person(request):
     elif request.session.get('currentDesignationSelected') == "Associate Professor" :
         return HttpResponseRedirect('/academic-procedures/main/')
 
-    elif request.session.get('currentDesignationSelected')== "acadadmin" :
+    elif request.session.get('currentDesignationSelected') in ['acadadmin', 'studentacadadmin']:
 
 
         # year = datetime.datetime.now().year
@@ -4032,14 +4031,14 @@ def replaceSwayam(request):
         current_user = get_object_or_404(User, username=request.user.username)
         user_details = ExtraInfo.objects.all().select_related(
             'user', 'department').filter(user=current_user).first()
-        desig_id = Designation.objects.all().filter(name='acadadmin').first()
+        desig_id = Designation.objects.all().filter(Q(name='acadadmin') | Q(name='studentacadadmin')).first()
         temp = HoldsDesignation.objects.all().select_related().filter(
             designation=desig_id).first()
         acadadmin = temp.working
         k = str(user_details).split()
         final_user = k[2]
 
-        if ('acadadmin' != request.session.get('currentDesignationSelected')):
+        if (request.session.get('currentDesignationSelected') not in ['acadadmin', 'studentacadadmin']):
             return HttpResponseRedirect('/academic-procedures/')
         roll_no = request.POST["rollNo"]
         obj = ExtraInfo.objects.all().select_related(

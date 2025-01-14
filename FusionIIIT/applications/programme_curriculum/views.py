@@ -1653,7 +1653,7 @@ def file_unarchive(request,FileId):
 
 @login_required(login_url='/accounts/login')
 def add_course_instructor(request):
-    if request.session['currentDesignationSelected'] == "acadadmin":
+    if request.session['currentDesignationSelected'] in ["acadadmin", "studentacadadmin"]:
         if request.method == 'POST':
             if 'form_submit' in request.POST:
                 form = CourseInstructorForm(request.POST)
