@@ -18,7 +18,7 @@ ENV PYTHONUNBUFFERED 1
 COPY requirements.txt $FUSION_HOME
 
 # install dependencies  
-RUN pip install --upgrade pip && pip install -r requirements.txt
+RUN pip install --upgrade pip==23.2.1 && pip install -r requirements.txt
 
 # copy api directory to docker's work directory. 
 COPY . $FUSION_HOME
