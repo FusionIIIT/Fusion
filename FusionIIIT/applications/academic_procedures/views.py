@@ -391,7 +391,7 @@ def academic_procedures_student(request):
         final_registration_date_flag = get_final_registration_eligibility(current_date)
         add_or_drop_course_date_flag = get_add_or_drop_course_date_eligibility(current_date)
         swayam_registration_flag = get_swayam_registration_eligibility(current_date, user_sem, year)
-        drop_date_flag = get_drop_course_date_eligibility(current_date, year)
+        drop_date_flag = get_drop_course_date_eligibility(current_date, user_sem, year)
         pre_registration_flag = False
         final_registration_flag = False
 
@@ -1448,9 +1448,9 @@ def get_swayam_registration_eligibility(current_date, user_sem, year):
     except Exception as e:
         return False
     
-def get_drop_course_date_eligibility(current_date, year):
+def get_drop_course_date_eligibility(current_date, user_sem, year):
     try:
-        drop_course_date = Calendar.objects.all().filter(description=f"drop course date {year}").first()
+        drop_course_date = Calendar.objects.all().filter(description=f"Drop course {user_sem} {year}").first()
         drop_start_date = drop_course_date.from_date
         drop_end_date = drop_course_date.to_date
         if current_date>=drop_start_date and current_date<=drop_end_date:

@@ -12,7 +12,6 @@
 <center><b>Swayam Registration</b></center>
 
 <div class="ui vertical segment">
-    <!-- {% if curr_sem.semester_no != 8 %} -->
     {% if swayam_registration_flag == True %}
     <form id="swayam_reg_form" class="ui form" action = "/academic-procedures/api/stu/swayam_add_course/" method = "post">
                 {% csrf_token %}
@@ -61,11 +60,6 @@
         <p style="color: red"> Swayam Registration Date is yet to come </p>
     </CENTER>
     {% endif %}
-    <!-- {% else %}
-    <CENTER>
-        <p style="color: red"> You are not Eligible for Registration !! </p>
-    </CENTER>
-    {% endif %} -->
 </div>
 {% endblock %}
 
