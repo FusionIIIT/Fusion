@@ -173,7 +173,7 @@ $(function() {
                     </td>
                     <td>
                         <A class="trigger-link ui blue label"
-                                    href="/academic-procedures/api/stu/drop_course/?id={{ items.id|urlencode }}">
+                                    href="/academic-procedures/api/stu/drop_course/?id={{ items.id|urlencode }}" course_name = "{{items.course_id.name}}">
                                     DROP </A>
                     </td>
                     </tr>
@@ -198,8 +198,9 @@ $(function() {
             event.preventDefault(); // Prevent the default behavior of the link
             url = event.target.href
             rowToDelete = $(this).closest('tr');
+            course_name = $(this).attr('course_name')
+            $('.course_details').html('Are you sure you want to drop '+course_name +'?');
             $('#confirmation-modal').modal('show'); // Show the modal
-            console.log(url)
         });
 
         // Handle Cancel button
@@ -228,10 +229,14 @@ $(function() {
     });
 </script>
 
-<div class="ui modal" id="confirmation-modal">
+<div class="ui warning modal" id="confirmation-modal">
     <div class="header">Confirmation Required</div>
-    <div class="content">
-        <p>Are you sure you want to proceed with this action? This action cannot be undone.</p>
+    <div class="ui warning content">
+        <ul>
+            <li class="course_details"></li>
+            <li>This action will remove the selected course from your registered courses.</li>
+            <li><strong>Note:</strong> Once you drop the course, this action cannot be undone.</li>
+        </ul>
     </div>
     <div class="actions">
         <button class="ui red button" id="cancel-button">Cancel</button>
