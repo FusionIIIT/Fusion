@@ -10,28 +10,42 @@
                 .modal('show')
                 ;
             });  
-    });
-        function courseDropCalled(event) {
-        // Prevent the default action of the link
-        event.preventDefault();
-        
-        // Get the URL from the link's href attribute
-        let url = event.target.href;
-
-        // Perform AJAX request
-        $.ajax({
-            url: url,
-            type: 'GET',
-            success: function(data) {
-                // Reload the page after successful deletion
-                location.reload();
-            },
-            error: function(xhr, status, error) {
-                // Handle errors if needed
-                console.error(error);
-            }
+        let url = "";
+        let rowToDelete;
+        $('.trigger-link-acad').on('click', function (event) {
+            event.preventDefault(); // Prevent the default behavior of the link
+            url = event.target.href
+            rowToDelete = $(this).closest('tr');
+            course_name = $(this).attr('course_name_stu')
+            course_code = $(this).attr('course_code_stu')
+            $('.course_details_stu').html('Are you sure you want to drop '+course_code+'-'+course_name +'?');
+            $('#confirmation-modal-acad').modal('show'); // Show the modal
         });
-    }
+
+        // Handle Cancel button
+        $('#cancel-button-acad-course').on('click', function () {
+            $('#confirmation-modal-acad').modal('hide'); // Hide the modal
+        });
+
+        // Handle OK button
+        $('#confirm-button-acad').on('click', function () {
+            $('#confirmation-modal-acad').modal('hide'); // Hide the modal
+            
+            // Perform AJAX API call
+            $.ajax({
+                url: url,
+                type: 'GET',
+                success: function(data) {
+                    rowToDelete.remove();
+                    alert('course dropped successfully')
+                },
+                error: function(xhr, status, error) {
+                    // Handle errors if needed
+                    console.error(error);
+                }
+            });
+        });
+    });
 </script>
 
 
@@ -110,8 +124,8 @@
                         {{ items.registration_type }}
                     </td>
                     <td>
-                        <A class="ui blue label"
-                            href="/academic-procedures/acad_person/verifyCourse/drop/?id={{ items.reg_id|urlencode }}" onclick="courseDropCalled(event)" >
+                        <A class="trigger-link-acad ui blue label"
+                            href="/academic-procedures/acad_person/verifyCourse/drop/?id={{ items.reg_id|urlencode }}" course_code_stu="{{items.course_id}}" course_name_stu = "{{items.course_name}}" >
                             DROP </A>
                     </td>
 
@@ -190,5 +204,18 @@
           </div>
 
         
+    </div>
+</div>
+
+<div class="ui warning modal" id="confirmation-modal-acad">
+    <div class="header">Confirmation Required</div>
+    <div class="ui warning content">
+        <ul>
+            <li class="course_details_stu"></li>
+        </ul>
+    </div>
+    <div class="actions">
+        <button class="ui red button" id="cancel-button-acad-course">Cancel</button>
+        <button class="ui green button" id="confirm-button-acad">OK</button>
     </div>
 </div>
