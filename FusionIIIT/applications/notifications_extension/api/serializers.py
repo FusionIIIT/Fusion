@@ -15,7 +15,7 @@ class AnnouncementListSerializer(serializers.ModelSerializer):
 
 class AnnouncementSerializer(serializers.ModelSerializer):
     specific_users = serializers.ListField(
-        child=serializers.IntegerField(), write_only=True, required=False
+        child=serializers.CharField(), write_only=True, required=False
     )  # List of specific user IDs for specific_users target group
 
     class Meta:
@@ -40,6 +40,7 @@ class AnnouncementSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         specific_users = validated_data.pop('specific_users', [])
+        print(specific_users, validated_data)
         announcement = Announcements.objects.create(**validated_data)
 
         # Handle specific_users for AnnouncementRecipients
