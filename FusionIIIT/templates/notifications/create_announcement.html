@@ -1,0 +1,128 @@
+{% load static %}
+{% block make_announcements %}
+{% if form.errors %}
+    <div class="ui error message">
+        <ul>
+            {% for field in form %}
+                {% if field.errors %}
+                    <li>{{ field.label }}: 
+                        {% for error in field.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
+    <div class="ui vertical segment">
+        <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST" enctype="multipart/form-data" action="">
+            {% csrf_token %}
+            <div class="ui header">
+                Make a new Announcement:
+            </div>
+            <br>
+
+            {{ form.non_field_errors }}
+
+            <div class="field">
+                {{ form.message.label_tag }}
+                {{ form.message }}
+            </div>
+
+            <div class="field">
+                {{ form.target_group.label_tag }}
+                {{ form.target_group }}
+            </div>
+
+            <div class="field">
+                {{ form.department.label_tag }}
+                {{ form.department }}
+            </div>
+
+            <div class="field">
+                {{ form.batch.label_tag }}
+                {{ form.batch }}
+            </div>
+
+
+            <div class="field">
+                {{ form.specific_users.label_tag }}
+                <select id="specific-users" class="ui fluid multiple search selection dropdown" name="specific_users" multiple>
+                    <!-- Options will be populated via AJAX -->
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="file">Attach Files (PDF, JPEG, PNG, JPG)</label>
+                <input type="file" id="file" name="upload_announcement" accept=".pdf, .jpg, .jpeg, .png">
+            </div>
+
+            <br>
+
+            <button type="submit" class="ui large primary button right floated">
+                Publish
+            </button>
+
+            <br>
+            <br>
+
+        </form>
+
+        <br>
+        <div class="ui divider"></div>
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <script type="text/javascript" src="{% static 'department/js/function.js' %}"></script>
+
+    <script>
+    $(document).ready(function() {
+        // Detect when the user types into the input field inside the dropdown
+// Detect when the user types into the input field inside the dropdown
+$('input.search').on('input', function() {
+    var query = $(this).val();  // Get the current query (input value)
+    console.log(query);
+
+    // Only proceed if there is a query
+    if (query.length > 0) {
+        // Perform AJAX request
+        $.ajax({
+            url: '/api/search-users/',  // Your API endpoint
+            method: 'GET',
+            data: { q: query },  // Send the search query
+            success: function(response) {
+                // Clear current dropdown options
+                // $('#specific-users').dropdown('clear');
+                $('#specific-users option:not(:selected)').remove();
+
+                // Manually update the dropdown with the new search results
+                // var menu = $('#specific-users').dropdown('get menu');
+                // menu.empty();  // Clear any existing items
+
+                // Add new items from the response
+                response.results.forEach(function(user) {
+                    // var option = $('<option class="item" data-value="' + user.id + '">' + user.text + '</option>');
+                    // menu.append(option);  // Append the new options to the menu
+                    $('#specific-users').append($('<option>').val(user.id).text(user.text));
+                });
+
+                // Refresh the dropdown with new data
+                // $('#specific-users').dropdown('refresh');
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);  // Handle errors
+            }
+        });
+    }
+});
+});
+    </script>
+{% endblock %}

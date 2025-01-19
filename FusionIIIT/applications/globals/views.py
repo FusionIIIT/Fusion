@@ -30,6 +30,7 @@ from Fusion.settings.common import LOGIN_URL
 from notifications.models import Notification
 from .models import *
 from applications.hostel_management.models import (HallCaretaker,HallWarden)
+from notification.views import announcement_list
 
 
 from django.contrib.auth.views import PasswordResetView
@@ -793,11 +794,13 @@ def dashboard(request):
         'designation' : designation,
         'hall_caretaker': hall_caretaker_user,
         'hall_warden': hall_warden_user,
+        'announcements': announcement_list(request)['announcements']
         
     }
     # a=HoldsDesignation.objects.select_related('user','working','designation').filter(designation = user)
     print(context)
     print(type(user.extrainfo.user_type))
+    print(announcement_list(request))
     if(request.user.get_username() == 'director'):
         return render(request, "dashboard/director_dashboard2.html", {})
     elif( "dean_rspc" in designation):
