@@ -1,13 +1,16 @@
 {% load static %}
 
 <script>
-    let addCourseButton = document.querySelector(".addCourseButton");
-    addCourseButton.addEventListener("click",()=>
-        { 
-            $('.ui.addCourseForm.modal')
-            .modal('show')
-            ;
-        });  
+    $(document).ready(function() {
+        $('.ui.dropdown').dropdown();
+        let addCourseButton = document.querySelector(".addCourseButton");
+        addCourseButton.addEventListener("click",()=>
+            { 
+                $('.ui.addCourseForm.modal')
+                .modal('show')
+                ;
+            });  
+    });
         function courseDropCalled(event) {
         // Prevent the default action of the link
         event.preventDefault();
@@ -74,6 +77,9 @@
                         Semester
                     </th>
                     <th>
+                        Registration Type
+                    </th>
+                    <th>
                         Drop Course
                     </th>
                 </tr>
@@ -101,6 +107,9 @@
                         {{ items.sem }}
                     </td>
                     <td>
+                        {{ items.registration_type }}
+                    </td>
+                    <td>
                         <A class="ui blue label"
                             href="/academic-procedures/acad_person/verifyCourse/drop/?id={{ items.reg_id|urlencode }}" onclick="courseDropCalled(event)" >
                             DROP </A>
@@ -123,20 +132,37 @@
         {% endif %}
 
         <div class="ui divider"></div>
-        {% comment %} <button class="ui fluid positive button addCourseButton">Add Course</button> {% endcomment %}
+        <button class="ui fluid positive button addCourseButton">Add Course</button>
         
         <div class="ui modal addCourseForm">
             <p>Fill details for the Course you want to add</p>
             <form class="ui form" action = "/academic-procedures/acad_person/addCourse/" method = "post">
                 {% csrf_token %}
                 <div class="field">
+                    <label>Course Slot </label>
+                    <div class="ui fluid search selection dropdown">
+                        <input type="hidden" name="courseslot_id">
+                        <i class="dropdown icon"></i>
+                        <div class="default text">Select</div>
+                        <div class="menu">
+                            {% for courseslot in courseslot_list %}
+                            <div class="item" data-value="{{ courseslot.id }}">{{ courseslot.name }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
                     <label>Course </label>
-                    <select class="ui fluid dropdown" name = "course_id">
-                        <option value="">Select</option>
-                        {% for course in course_list %}
-                            <option value="{{course.id}}">{{course.code}} - {{course.name}}</option>
-                        {% endfor%}
-                    </select>
+                    <div class="ui fluid search selection dropdown">
+                        <input type="hidden" name="course_id">
+                        <i class="dropdown icon"></i>
+                        <div class="default text">Select</div>
+                        <div class="menu">
+                            {% for course in course_list %}
+                            <div class="item" data-value="{{ course.id }}">{{ course.code }} - {{ course.name }} - {{ course.version }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
                 <div class="field">
                     <label>Semester Id</label>
@@ -145,6 +171,15 @@
                         {% for sem in semester_list %}
                             <option value="{{sem.id}}">{{sem.curriculum.name}}, sem - {{sem.semester_no}}</option>
                         {% endfor%}
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Registration Type</label>
+                    <select class="ui fluid dropdown" name = "registration_type">
+                        <option value="Regular">Regular</option>
+                        <option value="Improvement">Improvement</option>
+                        <option value="Backlog">Backlog</option>
+                        <option value="Audit">Audit</option>
                     </select>
                 </div>
 

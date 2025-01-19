@@ -225,7 +225,8 @@ class Faculty(models.Model):
         
 
     def __str__(self):
-        return str(self.id)
+        # return str(self.id)
+        return f"{self.id} - {self.id.user.first_name} {self.id.user.last_name}"
 
 
 """ Feedback and bug report models start"""
@@ -338,3 +339,11 @@ class ModuleAccess(models.Model):
 
     def __str__(self):
         return self.designation
+       
+
+class PasswordResetTracker(models.Model):
+    email = models.EmailField(unique=True)
+    last_reset = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return self.email

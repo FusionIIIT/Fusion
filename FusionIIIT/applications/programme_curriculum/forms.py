@@ -3,12 +3,14 @@ from django.db.models import fields
 from django.forms import ModelForm, widgets
 from django.forms import Form, ValidationError
 from django.forms.models import ModelChoiceField
-from .models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot, PROGRAMME_CATEGORY_CHOICES,NewProposalFile,Proposal_Tracking
+from .models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot, PROGRAMME_CATEGORY_CHOICES,NewProposalFile,Proposal_Tracking, CourseInstructor
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
 from applications.globals.models import (DepartmentInfo, Designation,ExtraInfo, Faculty, HoldsDesignation)
 from applications.filetracking.sdk.methods import *
-
+from django.db.models import Q
+from datetime import datetime
+from django.db.models import Max
 
 class ProgrammeForm(ModelForm):
     class Meta:
@@ -38,6 +40,20 @@ class DisciplineForm(ModelForm):
             'programmes': 'Link Programmes to this Disciplines',
             'acronym' : 'Enter Acronym'
         }
+    def __init__(self, *args, **kwargs):
+        super(DisciplineForm, self).__init__(*args, **kwargs)
+
+        # Get the current discipline instance
+        discipline = kwargs.get('instance', None)
+
+        if discipline:
+            # Show programmes that are either unlinked or linked to the current discipline
+            self.fields['programmes'].queryset = Programme.objects.filter(
+                Q(discipline__isnull=True) | Q(discipline=discipline)
+            )
+        else:
+            # Show only programmes that are unlinked (no discipline assigned)
+            self.fields['programmes'].queryset = Programme.objects.filter(discipline__isnull=True)
 
 
 class CurriculumForm(ModelForm):
@@ -160,6 +176,7 @@ class CourseForm(ModelForm):
             'percent_project' : forms.NumberInput(attrs={'placeholder': '%'}, ),
             'percent_lab_evaluation' : forms.NumberInput(attrs={'placeholder': '%'}, ),
             'percent_course_attendance' : forms.NumberInput(attrs={'placeholder': '%'}, ),
+            'max_seats' : forms.NumberInput(attrs={'placeholder': 'max_seats',}, ), 
         }
         labels = {
             'code' : 'Course Code',
@@ -183,7 +200,8 @@ class CourseForm(ModelForm):
             'percent_lab_evaluation' : 'percent_lab_evaluation',
             'percent_course_attendance' : 'percent_course_attendance',
             'working_course' : 'working_course',
-            'disciplines' : 'disciplines'
+            'disciplines' : 'disciplines',
+            'max_seats' : 'max_seats'
         }
         
 
@@ -203,6 +221,18 @@ class BatchForm(ModelForm):
             'year' : 'Batch Year',
             'curriculum' : 'Select Curriculum For Batch Students',
         }
+    def __init__(self, *args, **kwargs):
+        super(BatchForm, self).__init__(*args, **kwargs)
+        
+        # Get the list of curriculum ids that are already assigned to batches (excluding NULL values)
+        assigned_curriculum_ids = Batch.objects.filter(curriculum__isnull=False).values_list('curriculum', flat=True)
+
+        # Exclude curriculums already in use
+        available_curriculums = Curriculum.objects.exclude(id__in=assigned_curriculum_ids)
+
+        # Add an empty option (blank choice) at the start of the curriculum choices
+        self.fields['curriculum'].queryset = available_curriculums
+        self.fields['curriculum'].empty_label = "Select Curriculum"  # This adds a blank option with a label
 
 class CourseSlotForm(ModelForm):
 
@@ -356,7 +386,46 @@ class CourseProposalTrackingFile(ModelForm):
         
         
         return self.cleaned_data
-        
+
+class CourseInstructorForm(forms.ModelForm):
+    # next_year = datetime.now().year +1
+    max_year = Batch.objects.aggregate(max_year=Max('year'))['max_year']
+    next_year = max_year + 1 if max_year else datetime.now().year + 1
+    course_id = forms.ModelChoiceField(
+        queryset=Course.objects.all(),
+        label="Select Course",
+        empty_label="Choose a course",
+        widget=forms.Select(attrs={'class': 'ui fluid search selection dropdown'})
+    )
+    instructor_id = forms.ModelChoiceField(
+        # queryset=ExtraInfo.objects.filter(user_type='faculty'),
+        queryset = Faculty.objects.all(),
+        label="Select Instructor",
+        empty_label="Choose an instructor",
+        widget=forms.Select(attrs={'class': 'ui fluid search selection dropdown'})
+    )
+
+    year = forms.ChoiceField(
+        choices=[('', 'Choose a year')] + [(year, year) for year in Batch.objects.values_list('year', flat=True).distinct()]+[(next_year, next_year)],
+        label="Select Year",
+        widget=forms.Select(attrs={'class': 'ui fluid search selection dropdown'})
+    )
+    semester_no = forms.ChoiceField(
+        choices=[('', 'Choose a semester')] + [(i, str(i)) for i in range(1, 9)],  # Choices from 1 to 8
+        label="Select Semester Number",
+        # empty_label="Choose a semester",
+        widget=forms.Select(attrs={'class': 'ui fluid search selection dropdown'})
+    )
+    class Meta:
+        model = CourseInstructor
+        fields = ['course_id', 'instructor_id', 'year', 'semester_no']
+
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     # Query all unique years from the Batch table
+    #     unique_years = Batch.objects.values_list('year', flat=True).distinct()
+    #     # Set the choices for the 'year' field dynamically
+    #     self.fields['year'].choices = [(year, year) for year in unique_years] 
         
     # def sed(self):
     #     r_id = self.cleaned_data.get('receive_id')

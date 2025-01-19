@@ -21,6 +21,9 @@ from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
+from django.urls import path
+
+from applications.globals.views import RateLimitedPasswordResetView
 
 
 urlpatterns = [
@@ -62,4 +65,33 @@ urlpatterns = [
     url(r'^recruitment/', include('applications.recruitment.urls')),
     url(r'^examination/', include('applications.examination.urls')),
     url(r'^otheracademic/', include('applications.otheracademic.urls')),
+
+    path(
+        'password-reset/',
+        RateLimitedPasswordResetView.as_view(
+            template_name='registration/password_reset_form.html',
+        ),
+        name='reset_password',
+    ),
+    path(
+        'password-reset/done/',
+        auth_views.PasswordResetDoneView.as_view(
+            template_name='registration/password_reset_done.html'
+        ),
+        name='password_reset_done',
+    ),
+    path(
+        'reset/<uidb64>/<token>/',
+        auth_views.PasswordResetConfirmView.as_view(
+            template_name='registration/password_reset_confirm.html',
+        ),
+        name='password_reset_confirm',
+    ),
+    path(
+        'reset/done/',
+        auth_views.PasswordResetCompleteView.as_view(
+            template_name='registration/password_reset_complete.html'
+        ),
+        name='password_reset_complete',
+    ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

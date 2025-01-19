@@ -74,35 +74,39 @@
           <th style="width: 13%"><center>Course ID</center></th>
           <th style="width: 50%"><center>Course Name</center></th>
           <th style="width: 10%"><center>Credits</center></th>
+          <th style="width: 10%"><center>Registration Type</center></th>
           <th style="width: 10%"><center>Semester</center></th>
         </tr>
       </thead>
 
       <tbody>
-        {% for items in currently_registered %}
+        {% for items in current_courseregistrations %}
           <tr>
             <td><center>{{ forloop.counter }} .</center></td>
             <td><center>
-              <a href="{% url 'programme_curriculum:view_a_course' items.1.id %}">{{ items.1.code }}</a>
+              <a href="{% url 'programme_curriculum:view_a_course' items.course_id.id %}">{{ items.course_id.code }}</a>
             </td>
             <td>
-                {{ items.1.name}}
+                {{ items.course_id.name}}
             </td>
             <td>
-                <center>{{ items.1.credit }}</center>
+                <center>{{ items.course_id.credit }}</center>
+            </td>
+            <td>
+                <center>{{ items.registration_type }}</center>
             </td>
             <td>
                 <center>{{curr_sem.semester_no}}</center>
             </td>
-            <td class="collapsing"><a class="tiny ui positive animated button"  style="background:#2590e2;" tabindex="0"
-              href="{% url 'online_cms:course' items.1.code items.1.version %}"
+            <!-- <td class="collapsing"><a class="tiny ui positive animated button"  style="background:#2590e2;" tabindex="0"
+              href="{% url 'online_cms:course' items.course_id.code items.course_id.version %}"
               type="Submit" name="Submit">
                   <div class="visible content">MANAGE</div>
                   <div class="hidden content">
                   <i class="folder open icon"></i>
                   </div>
               </a>
-          </td>
+          </td> -->
           </tr>
         {% endfor %}
       </tbody>
