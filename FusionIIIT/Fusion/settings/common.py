@@ -50,12 +50,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 
 # email of sender
 
-<<<<<<< HEAD
 EMAIL_HOST_USER = 'fusion@iiitdmj.ac.in'
-=======
-EMAIL_HOST_USER = 'fusionmailservice@iiitdmj.ac.in'
-# EMAIL_HOST_PASSWORD  = 'password'
->>>>>>> c22db726 (Setup Email Notifications and architected new announcement system)
 
 EMAIL_PORT = 587
 ACCOUNT_EMAIL_REQUIRED = True
