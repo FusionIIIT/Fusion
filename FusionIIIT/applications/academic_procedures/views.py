@@ -2168,7 +2168,7 @@ def get_currently_registered_course(id, sem_id, courseregobj=False):
     if (type(sem_id) == int):
         obj = course_registration.objects.all().filter(student_id = id, semester_id__semester_no=sem_id)
     else:
-        obj = course_registration.objects.all().filter(student_id = id)
+        obj = course_registration.objects.all().filter(student_id = id).order_by('-semester_id_id')
     courses = []
     for i in obj:
         if (courseregobj):
