@@ -8,6 +8,7 @@ urlpatterns = [
     url(r'fac-view/$', views.FacAPIView.as_view(), name='facapi'),
     url(r'staff-view/$',views.StaffAPIView.as_view(),name='staffapi'),
     url(r'all-students/(?P<bid>\w+)/$', views.AllStudentsAPIView.as_view(), name='all_students'),
+    url(r'faculty-data/(?P<bid>\w+)/$', views.FacultyDataAPIView.as_view(), name='faculty_data'),
     
     # url(r'all-students/(?P<bid>[0-9]+)/$', views.AllStudentsAPIView.as_view() ,name='all_students'),
     url(r'information/$', views.InformationAPIView.as_view(), name='information'),  # New endpoint

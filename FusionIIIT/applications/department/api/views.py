@@ -33,7 +33,6 @@ from datetime import datetime
 current_year = datetime.now().year
 current_month = datetime.now().month
 yearset = current_year if current_month > 8 else current_year - 1
-# print(year)
 class ListCreateAnnouncementView(generics.ListCreateAPIView):
     def post(self, request):
         # Get the current user from the request
@@ -140,6 +139,26 @@ class StaffAPIView(APIView):
 
         return Response(data)
     
+class FacultyDataAPIView(APIView):
+    def get(self, request, bid):
+        filter_branch = decode_branch(bid)
+        if not filter_branch:
+            return Response({'detail': 'Invalid bid value'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        fac=ExtraInfo.objects.filter(department__name=filter_branch,user_type='faculty')
+        response_data = ExtraInfoSerializer(fac, many=True).data
+        return Response(response_data, status=status.HTTP_200_OK)
+    
+def decode_branch(bid):
+    try:
+        branch = bid.replace('_', ' ')
+        match = re.match(r"^([a-zA-Z]+)", branch)
+        if match:
+            return branch  # Return the branch name
+
+    except (IndexError, KeyError):
+        return None  # Handle malformed bid values
+    
 class AllStudentsAPIView(APIView):
     def get(self, request, bid):
         # Decode bid to filter criteria
@@ -162,7 +181,6 @@ class AllStudentsAPIView(APIView):
             year = student.batch  # E.g., '2022'
             department = student.specialization  # E.g., 'CSE'
             serializer = StudentSerializer(student)
-            print(year, programme, department)
             response_data[programme][year][department].append(serializer.data)
 
         # Convert defaultdict to a regular dict for JSON response
@@ -174,7 +192,6 @@ def decode_bid(bid):
     """Decode bid into filter criteria."""
     try:
         match = re.match(r"([a-zA-Z]+)(\d+)([a-zA-Z]+)", bid)
-        print(match)
         if match:
             level = match.group(1)  # e.g., 'btech'
             year = match.group(2)   # e.g., '1'
@@ -189,7 +206,6 @@ def decode_bid(bid):
             }.get(level.lower(), None)
 
             if programme:
-                print(year, programme, specialization)
                 return {
                     'programme': programme,
                     'batch': int(yearset) - int(year) + 1,  # Example: calculate batch based on year
@@ -241,46 +257,46 @@ def browse_announcements():
 
     return context
 
-def faculty():
-    """
-    This function is used to Return data of Faculties Department-Wise.
+# def faculty():
+#     """
+#     This function is used to Return data of Faculties Department-Wise.
 
-    @variables:
-        cse_f - Stores data of faculties from CSE Department
-        ece_f - Stores data of faculties from ECE Department
-        me_f - Stores data of faculties from ME Department
-        sm_f - Stores data of faculties from ME Department
-        context_f - Stores all above variables in Dictionary
+#     @variables:
+#         cse_f - Stores data of faculties from CSE Department
+#         ece_f - Stores data of faculties from ECE Department
+#         me_f - Stores data of faculties from ME Department
+#         sm_f - Stores data of faculties from ME Department
+#         context_f - Stores all above variables in Dictionary
 
-    """
-    cse_f=ExtraInfo.objects.filter(department__name='CSE',user_type='faculty')
-    ece_f=ExtraInfo.objects.filter(department__name='ECE',user_type='faculty')
-    me_f=ExtraInfo.objects.filter(department__name='ME',user_type='faculty')
-    sm_f=ExtraInfo.objects.filter(department__name='SM',user_type='faculty')
-    ds_f=ExtraInfo.objects.filter(department__name='Design', user_type='faculty')
-    ns_f=ExtraInfo.objects.filter(department__name='Natural Science', user_type='faculty')
-    staff=ExtraInfo.objects.filter(user_type='staff')
+#     """
+#     cse_f=ExtraInfo.objects.filter(department__name='CSE',user_type='faculty')
+#     ece_f=ExtraInfo.objects.filter(department__name='ECE',user_type='faculty')
+#     me_f=ExtraInfo.objects.filter(department__name='ME',user_type='faculty')
+#     sm_f=ExtraInfo.objects.filter(department__name='SM',user_type='faculty')
+#     ds_f=ExtraInfo.objects.filter(department__name='Design', user_type='faculty')
+#     ns_f=ExtraInfo.objects.filter(department__name='Natural Science', user_type='faculty')
+#     staff=ExtraInfo.objects.filter(user_type='staff')
 
-    # serailizing the data
-    cse_f = ExtraInfoSerializer(cse_f, many=True)
-    ece_f = ExtraInfoSerializer(ece_f, many=True)
-    me_f = ExtraInfoSerializer(me_f, many=True)
-    sm_f = ExtraInfoSerializer(sm_f, many=True)
-    ds_f = ExtraInfoSerializer(ds_f, many=True)
-    ns_f = ExtraInfoSerializer(ns_f, many=True)
-    staff = ExtraInfoSerializer(staff, many=True)
+#     # serailizing the data
+#     cse_f = ExtraInfoSerializer(cse_f, many=True)
+#     ece_f = ExtraInfoSerializer(ece_f, many=True)
+#     me_f = ExtraInfoSerializer(me_f, many=True)
+#     sm_f = ExtraInfoSerializer(sm_f, many=True)
+#     ds_f = ExtraInfoSerializer(ds_f, many=True)
+#     ns_f = ExtraInfoSerializer(ns_f, many=True)
+#     staff = ExtraInfoSerializer(staff, many=True)
     
 
-    context_f = {
-        "cse_f" : cse_f.data,
-        "ece_f" : ece_f.data,
-        "me_f" : me_f.data,
-        "sm_f" : sm_f.data,
-        "ds_f" : ds_f.data,
-        "ns_f" : ns_f.data,
-        "staff" : staff.data,
-    }
-    return context_f
+#     context_f = {
+#         "cse_f" : cse_f.data,
+#         "ece_f" : ece_f.data,
+#         "me_f" : me_f.data,
+#         "sm_f" : sm_f.data,
+#         "ds_f" : ds_f.data,
+#         "ns_f" : ns_f.data,
+#         "staff" : staff.data,
+#     }
+#     return context_f
 
 class InformationAPIView(generics.ListAPIView):
     queryset = Information.objects.all()
