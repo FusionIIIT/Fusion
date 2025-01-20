@@ -80,7 +80,7 @@ class DepMainAPIView(APIView):
         staff = user.holds_designations.filter(designation__name='staff').exists()
 
         context = browse_announcements()
-        context_f = faculty()
+        # context_f = faculty()
         user_designation = ""
 
         if fac_view:
@@ -98,7 +98,7 @@ class DepMainAPIView(APIView):
             "user_designation": user_designation,
             "department": department_name,
             "announcements": context,
-            "fac_list": context_f
+            # "fac_list": context_f
         }
         
 
