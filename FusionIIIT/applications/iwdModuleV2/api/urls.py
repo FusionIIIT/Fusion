@@ -7,6 +7,7 @@ urlpatterns = [
     path('fetch-designations/', views.fetch_designations, name='fetch_designations'),
     path('fetch-designations/', views.fetch_designations, name='fetch_designations'),
     path('create-request/', views.create_request, name='create_request'),
+    path('create-proposal/', views.create_proposal, name='create_proposal'),
     path('created-requests/', views.created_requests, name='created_requests'),
     path('view-file/', views.view_file, name='view_file'),
     path('dean-processed-requests/', views.dean_processed_requests, name='dean_processed_requests'),
