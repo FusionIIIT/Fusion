@@ -144,7 +144,7 @@ class ItemSerializer(serializers.ModelSerializer):
         model = Item
         fields = '__all__'
 class ProposalSerializer(serializers.ModelSerializer):
-    items = ItemSerializer(many=True)
+    # items = ItemSerializer(many=True)
     class Meta:
         model = Proposal
         fields = '__all__'
@@ -158,7 +158,7 @@ class ProposalSerializer(serializers.ModelSerializer):
             total_budget += item.total_price
         proposal.proposal_budget = total_budget
         proposal.save()
-        return proposal
+        return proposal 
 
     def update(self, instance, validated_data):
         items_data = validated_data.pop('items')
