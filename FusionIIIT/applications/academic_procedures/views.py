@@ -3316,26 +3316,29 @@ def generate_grade_sheet_pdf(request):
 
 @login_required(login_url='/accounts/login')
 def generate_course_registration_receipt(request):
+    try:
+        current_user = request.user
+        current_user = ExtraInfo.objects.all().filter(user=current_user).first()
+        current_user = Student.objects.all().filter(id = current_user.id).first()
 
-    current_user = request.user
-    current_user = ExtraInfo.objects.all().filter(user=current_user).first()
-    current_user = Student.objects.all().filter(id = current_user.id).first()
-
-    batch = current_user.batch_id
-    curr_id = batch.curriculum
-    curr_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = current_user.curr_semester_no)
-    courses = course_registration.objects.filter(student_id = current_user, semester_id = curr_sem_id)
-    context = {
-        'current_courseregistrations': courses,
-        'semester_no': current_user.curr_semester_no,
-        'name': request.user.first_name + request.user.last_name,
-        'roll_no' : current_user.id_id,
-        'batch': batch.name+' '+str(batch.year),
-        'branch': curr_id.name.split(' ')[0]
-    }
-    return render(request, '../templates/academic_procedures/course_registration_receipt.html',
-            context
-        )
+        batch = current_user.batch_id
+        curr_id = batch.curriculum
+        curr_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = current_user.curr_semester_no)
+        courses = course_registration.objects.filter(student_id = current_user, semester_id = curr_sem_id)
+        context = {
+            'current_courseregistrations': courses,
+            'semester_no': current_user.curr_semester_no,
+            'name': request.user.first_name + request.user.last_name,
+            'roll_no' : current_user.id_id,
+            'batch': batch.name+' '+str(batch.year),
+            'branch': curr_id.name.split(' ')[0]
+        }
+        return render(request, '../templates/academic_procedures/course_registration_receipt.html',
+                context
+            )
+    
+    except:
+        return HttpResponseRedirect('/academic-procedures/')
 
 def get_spi(course_list,grade_list):
     spi = 0.0
