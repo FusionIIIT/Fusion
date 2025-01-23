@@ -1743,6 +1743,54 @@ def allot_courses(request):
         # return HttpResponse("Fail")
 
 
+@login_required(login_url='/accounts/login')
+def allot_courses_after_add_and_drop(request):
+    if user_check(request):
+        return HttpResponseRedirect('/academic-procedures/main')
+
+
+    try:
+        if request.method == 'POST' and request.FILES:
+            profiles=request.FILES['allotedCourses']
+            sem_no=int(request.POST['semester'])
+            working_year =int(request.POST['working_year'])
+            excel = xlrd.open_workbook(file_contents=profiles.read())
+            sheet=excel.sheet_by_index(0)
+            course_registrations=[]
+            for i in range(1,sheet.nrows):
+                roll_no = str(sheet.cell(i,0).value).split(".")[0]
+                course_slot_name = sheet.cell_value(i,1)
+                course_code = sheet.cell_value(i,2)
+                try:
+
+                    user=User.objects.get(username=roll_no)
+                    user_info = ExtraInfo.objects.get(user=user)
+                    student = Student.objects.get(id=user_info)
+                    batch=student.batch_id
+                    sem_id=Semester.objects.get(curriculum=batch.curriculum,semester_no=sem_no)
+                    course_slot=CourseSlot.objects.get(name=course_slot_name.strip(),semester=sem_id)
+                    course = course_slot.courses.get(code=course_code.strip())
+                except Exception as e:
+                    print('----------------------' , e)
+    
+                courseregistration=course_registration(working_year=working_year,course_id=course,semester_id=sem_id,student_id=student,course_slot_id=course_slot)
+                course_registrations.append(courseregistration)
+                
+
+            try:
+                course_registration.objects.bulk_create(course_registrations)
+                messages.success(request, 'Successfully uploaded!')
+                return HttpResponseRedirect('/academic-procedures/main')
+                # return HttpResponse("Success")
+            except Exception as e:
+                messages.error(request, 'Error: '+str(e))
+                return HttpResponseRedirect('/academic-procedures/main')
+                # return HttpResponse("Success")
+    except Exception as e:
+        messages.error(request, 'Error: Query does not match. Please check if all the data input is in the correct format.')
+        return HttpResponseRedirect('/academic-procedures/main')
+
+
 
 @login_required
 def user_check(request):
@@ -3266,6 +3314,31 @@ def generate_grade_sheet_pdf(request):
         return response
     return HttpResponse("PDF could not be generated")
 
+@login_required(login_url='/accounts/login')
+def generate_course_registration_receipt(request):
+    try:
+        current_user = request.user
+        current_user = ExtraInfo.objects.all().filter(user=current_user).first()
+        current_user = Student.objects.all().filter(id = current_user.id).first()
+
+        batch = current_user.batch_id
+        curr_id = batch.curriculum
+        curr_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = current_user.curr_semester_no)
+        courses = course_registration.objects.filter(student_id = current_user, semester_id = curr_sem_id)
+        context = {
+            'current_courseregistrations': courses,
+            'semester_no': current_user.curr_semester_no,
+            'name': request.user.first_name + request.user.last_name,
+            'roll_no' : current_user.id_id,
+            'batch': batch.name+' '+str(batch.year),
+            'branch': curr_id.name.split(' ')[0]
+        }
+        return render(request, '../templates/academic_procedures/course_registration_receipt.html',
+                context
+            )
+    
+    except:
+        return HttpResponseRedirect('/academic-procedures/')
 
 def get_spi(course_list,grade_list):
     spi = 0.0
