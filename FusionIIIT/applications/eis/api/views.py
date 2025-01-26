@@ -124,9 +124,9 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
 import os
 import tempfile
+from django.http import FileResponse, JsonResponse
 from django.db.models import Q
-from datetime import datetime
-
+import datetime
 
 countries = {
         'AF': 'Afghanistan',
@@ -699,8 +699,6 @@ def generate_report(request, username=None):
     if request.method != 'POST':
         return JsonResponse({'error': 'Only POST method is allowed.'}, status=405)
     
-    print(request.POST.get('username'), "hehe")
-
     user = get_object_or_404(User, username=request.POST.get('username'))
     extra_info = get_object_or_404(ExtraInfo, user=user)
     pf = extra_info.user_id
@@ -2590,6 +2588,7 @@ def transfer_insert(request):
 
 def get_personal_info(request):
     # Fetch all entries where pf_no is '5318'
+    
     projects = faculty_about.objects.filter(user_id=request.GET.get("pfNo")).values()
 
     return JsonResponse(list(projects), safe=False)
@@ -2610,7 +2609,7 @@ def get_consultancy_projects(request):
 def get_patents(request):
     # Fetch all entries where pf_no is '5318'
     projects = emp_patents.objects.filter(pf_no=request.GET.get("pfNo")).values()
-
+    
     return JsonResponse(list(projects), safe=False)
 
 def get_pg_thesis(request):
@@ -2627,6 +2626,7 @@ def get_phd_thesis(request):
 
 def get_event(request):
     # Fetch all entries where pf_no is '5318'
+    
     projects = emp_event_organized.objects.filter(pf_no=request.GET.get("pfNo")).values()
 
     return JsonResponse(list(projects), safe=False)
@@ -2656,6 +2656,7 @@ def get_consym(request):
 #     return JsonResponse(list(books), safe=False)
 
 def get_books(request):
+    # Fetch all entries where pf_no is '5318'
     books = emp_published_books.objects.filter(pf_no=request.GET.get("pfNo")).order_by('-pyear').values()
     return JsonResponse(list(books), safe=False)
 
@@ -2711,13 +2712,13 @@ def edit_research_project(request, pk):
             return JsonResponse({'errors': form.errors}, status=400)
     
     return JsonResponse({'error': 'Invalid request method.'}, status=400)
-
 # Filter and Fetch
+@csrf_exempt
 def filter_research_projects(request):
     filters = {}
     interval_filters = {}
     sorting = request.POST.get("sort_by", None)
-    fields_of_interest = request.POST.getlist("fields", None)
+    fields_of_interest = request.POST.get("fields", None)
 
     # Extracting filter fields
     pf_no = request.POST.get("pf_no")
@@ -2765,6 +2766,7 @@ def filter_research_projects(request):
 
     # Select specific fields
     if fields_of_interest:
+        fields_of_interest = fields_of_interest.split(', ')
         projects = projects.values(*fields_of_interest)
     else:
         projects = projects.values()
@@ -2781,12 +2783,12 @@ def filter_research_projects(request):
 #     "sort_by": "-start_date",
 #     "fields": ["pf_no", "pi", "title", "status"]
 # }
-
+@csrf_exempt
 def filter_consultancy_projects(request):
     filters = {}
     interval_filters = {}
     sorting = request.POST.get("sort_by", None)
-    fields_of_interest = request.POST.getlist("fields", None)
+    fields_of_interest = request.POST.get("fields", None)
 
     # Extracting filter fields
     pf_no = request.POST.get("pf_no")
@@ -2844,6 +2846,7 @@ def filter_consultancy_projects(request):
 
     # Select specific fields
     if fields_of_interest:
+        fields_of_interest = fields_of_interest.split(', ')
         projects = projects.values(*fields_of_interest)
     else:
         projects = projects.values()
@@ -2864,12 +2867,12 @@ def filter_consultancy_projects(request):
 #     "sort_by": "-financial_outlay",
 #     "fields": ["pf_no", "consultants", "title", "financial_outlay", "status"]
 # }
-
+@csrf_exempt
 def filter_patents(request):
     filters = {}
     interval_filters = {}
     sorting = request.POST.get("sort_by", None)
-    fields_of_interest = request.POST.getlist("fields", None)
+    fields_of_interest = request.POST.get("fields", None)
 
     # Extracting filter fields
     pf_no = request.POST.get("pf_no")
@@ -2926,6 +2929,7 @@ def filter_patents(request):
     patents = emp_patents.objects.filter(
         Q(**filters) & Q(**interval_filters)
     )
+    all_patents = emp_patents.objects.all()
 
     # Apply sorting
     if sorting:
@@ -2933,10 +2937,11 @@ def filter_patents(request):
 
     # Select specific fields
     if fields_of_interest:
+        fields_of_interest = fields_of_interest.split(', ')
         patents = patents.values(*fields_of_interest)
     else:
         patents = patents.values()
-
+   
     return JsonResponse(list(patents), safe=False)
 
 # Sample Filter Input JSON:
@@ -2954,12 +2959,12 @@ def filter_patents(request):
 #     "sort_by": "-earnings",
 #     "fields": ["pf_no", "p_no", "title", "status", "earnings"]
 # }
-
+@csrf_exempt
 def filter_mtechphd_thesis(request):
     filters = {}
     interval_filters = {}
     sorting = request.POST.get("sort_by", None)
-    fields_of_interest = request.POST.getlist("fields", None)
+    fields_of_interest = request.POST.get("fields", None)
 
     # Extracting filter fields
     pf_no = request.POST.get("pf_no")
@@ -3039,6 +3044,7 @@ def filter_mtechphd_thesis(request):
 
     # Select specific fields
     if fields_of_interest:
+        fields_of_interest = fields_of_interest.split(', ')
         thesis = thesis.values(*fields_of_interest)
     else:
         thesis = thesis.values()
@@ -3063,12 +3069,12 @@ def filter_mtechphd_thesis(request):
 #     "sort_by": "start_date",
 #     "fields": ["pf_no", "degree_type", "title", "supervisors", "s_name"]
 # }
-
+@csrf_exempt
 def filter_events(request):
     filters = {}
     interval_filters = {}
     sorting = request.POST.get("sort_by", None)
-    fields_of_interest = request.POST.getlist("fields", None)
+    fields_of_interest = request.POST.get("fields", None)
 
     # Extracting filter fields
     pf_no = request.POST.get("pf_no")
@@ -3116,6 +3122,7 @@ def filter_events(request):
 
     # Select specific fields
     if fields_of_interest:
+        fields_of_interest = fields_of_interest.split(', ')
         events = events.values(*fields_of_interest)
     else:
         events = events.values()
@@ -3135,12 +3142,12 @@ def filter_events(request):
 #     "sort_by": "start_date",
 #     "fields": ["pf_no", "type", "name", "sponsoring_agency", "venue", "start_date"]
 # }
-
+@csrf_exempt
 def filter_visits(request):
     filters = {}
     interval_filters = {}
     sorting = request.POST.get("sort_by", None)
-    fields_of_interest = request.POST.getlist("fields", None)
+    fields_of_interest = request.POST.get("fields", None)
 
     # Extracting filter fields
     pf_no = request.POST.get("pf_no")
@@ -3194,6 +3201,7 @@ def filter_visits(request):
 
     # Select specific fields
     if fields_of_interest:
+        fields_of_interest = fields_of_interest.split(', ')
         visits = visits.values(*fields_of_interest)
     else:
         visits = visits.values()
@@ -3213,12 +3221,12 @@ def filter_visits(request):
 #     "sort_by": "-start_date",
 #     "fields": ["pf_no", "country", "place", "purpose", "v_date", "start_date", "end_date"]
 # }
-
+@csrf_exempt
 def filter_consym(request):
     filters = {}
     interval_filters = {}
     sorting = request.POST.get("sort_by", None)
-    fields_of_interest = request.POST.getlist("fields", None)
+    fields_of_interest = request.POST.get("fields", None)
 
     # Extracting filter fields
     pf_no = request.POST.get("pf_no")
@@ -3276,6 +3284,7 @@ def filter_consym(request):
 
     # Select specific fields
     if fields_of_interest:
+        fields_of_interest = fields_of_interest.split(', ')
         conferences = conferences.values(*fields_of_interest)
     else:
         conferences = conferences.values()
@@ -3296,11 +3305,11 @@ def filter_consym(request):
 #     "sort_by": "-start_date",
 #     "fields": ["pf_no", "name", "venue", "k_year", "a_month", "start_date", "end_date", "role1", "role2"]
 # }
-
+@csrf_exempt
 def filter_books(request):
     filters = {}
     sorting = request.POST.get("sort_by", None)
-    fields_of_interest = request.POST.getlist("fields", None)
+    fields_of_interest = request.POST.get("fields", None)
 
     # Extracting filter fields
     pf_no = request.POST.get("pf_no")
@@ -3351,6 +3360,7 @@ def filter_books(request):
 
     # Select specific fields
     if fields_of_interest:
+        fields_of_interest = fields_of_interest.split(', ')
         books = books.values(*fields_of_interest)
     else:
         books = books.values()
@@ -3370,11 +3380,11 @@ def filter_books(request):
 #     "sort_by": "-publication_date",
 #     "fields": ["pf_no", "p_type", "title", "publisher", "authors", "pyear", "publication_date"]
 # }
-
+@csrf_exempt
 def filter_journal_or_conference(request):
     filters = {}
     sorting = request.POST.get("sort_by", None)
-    fields_of_interest = request.POST.getlist("fields", None)
+    fields_of_interest = request.POST.get("fields", None)
 
     # Extracting filter fields
     pf_no = request.POST.get("pf_no")
@@ -3434,6 +3444,7 @@ def filter_journal_or_conference(request):
 
     # Select specific fields
     if fields_of_interest:
+        fields_of_interest = fields_of_interest.split(', ')
         papers = papers.values(*fields_of_interest)
     else:
         papers = papers.values()
@@ -3456,11 +3467,11 @@ def filter_journal_or_conference(request):
 #     "sort_by": "-date_publication",
 #     "fields": ["pf_no", "rtype", "authors", "title_paper", "venue", "date_publication"]
 # }
-
+@csrf_exempt
 def filter_achievements(request):
     filters = {}
     sorting = request.POST.get("sort_by", None)
-    fields_of_interest = request.POST.getlist("fields", None)
+    fields_of_interest = request.POST.get("fields", None)
 
     # Extracting filter fields
     pf_no = request.POST.get("pf_no")
@@ -3508,6 +3519,7 @@ def filter_achievements(request):
 
     # Select specific fields
     if fields_of_interest:
+        fields_of_interest = fields_of_interest.split(', ')
         achievements = achievements.values(*fields_of_interest)
     else:
         achievements = achievements.values()
@@ -3527,11 +3539,11 @@ def filter_achievements(request):
     "sort_by": "-achievment_date",
     "fields": ["pf_no", "a_type", "details", "achievment_date"]
 }
-
+@csrf_exempt
 def filter_talks(request):
     filters = {}
     sorting = request.POST.get("sort_by", None)
-    fields_of_interest = request.POST.getlist("fields", None)
+    fields_of_interest = request.POST.get("fields", None)
 
     # Extracting filter fields
     pf_no = request.POST.get("pf_no")
@@ -3579,6 +3591,7 @@ def filter_talks(request):
 
     # Select specific fields
     if fields_of_interest:
+        fields_of_interest = fields_of_interest.split(', ')
         expert_lectures = expert_lectures.values(*fields_of_interest)
     else:
         expert_lectures = expert_lectures.values()
