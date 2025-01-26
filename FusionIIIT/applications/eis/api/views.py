@@ -437,7 +437,7 @@ def view_all_extra_infos(request):
     return JsonResponse(extra_info_list, safe=False)
 
 # Main profile landing view
-@csrf_exempt
+#@csrf_exempt
 def profile(request, username=None):
 
     """
@@ -559,7 +559,7 @@ def profile(request, username=None):
     # Return data as JSON response
     return JsonResponse(data, safe=False)
 
-# @csrf_exempt
+# #@csrf_exempt
 # def generate_report(request, username=None):
 
 #     """Generate a PDF report for a given faculty member based on their research data and personal information.
@@ -685,7 +685,7 @@ def profile(request, username=None):
 
 
 
-@csrf_exempt
+#@csrf_exempt
 def generate_report(request, username=None):
     """Generate a PDF report for a given faculty member based on their research data and personal information.
 
@@ -769,7 +769,7 @@ def generate_report(request, username=None):
 
 
 # Dean RSPC Profile
-@csrf_exempt
+#@csrf_exempt
 def rspc_profile(request):
     """
     Return a JSON response with the research data and personal information of the
@@ -920,7 +920,7 @@ def rspc_profile(request):
         return JsonResponse({"x" : "You are not authorized to hit this URL", "status" : 400})
 
 # View for editing persnal Information
-@csrf_exempt
+#@csrf_exempt
 def persinfo(request):
     """
     Update the personal information of a faculty member.
@@ -955,7 +955,7 @@ def persinfo(request):
             return JsonResponse({'x' : 'You are not authorized to update '})
 
 
-@csrf_exempt
+#@csrf_exempt
 def update_personal_info(request):
     if request.method == "POST":
         try:
@@ -985,7 +985,7 @@ def update_personal_info(request):
 
 
 # Views for deleting the EIS fields
-@csrf_exempt
+#@csrf_exempt
 def achievementDelete(request):
     """
     Delete an achievement entry from the database.
@@ -1013,7 +1013,7 @@ def achievementDelete(request):
     else:
         return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=400)
 
-@csrf_exempt
+#@csrf_exempt
 def emp_confrence_organisedDelete(request):
     """
     Delete an emp_confrence_organised entry from the database.
@@ -1036,7 +1036,7 @@ def emp_confrence_organisedDelete(request):
     instance.delete()
     return JsonResponse({'success': True})
 
-@csrf_exempt
+#@csrf_exempt
 def emp_consymDelete(request):
     """
     Delete an emp_consym entry from the database.
@@ -1059,7 +1059,7 @@ def emp_consymDelete(request):
     instance.delete()
     return JsonResponse({'success': True})
 
-@csrf_exempt
+#@csrf_exempt
 def emp_consultancy_projectsDelete(request):
     """
     Delete an emp_consultancy_projects entry from the database.
@@ -1082,7 +1082,7 @@ def emp_consultancy_projectsDelete(request):
     instance.delete()
     return JsonResponse({'success': True})
 
-@csrf_exempt
+#@csrf_exempt
 def emp_event_organizedDelete(request):
     """
     Delete an emp_event_organized entry from the database.
@@ -1105,7 +1105,7 @@ def emp_event_organizedDelete(request):
     instance.delete()
     return JsonResponse({'success': True})
 
-@csrf_exempt
+#@csrf_exempt
 def emp_expert_lecturesDelete(request):
     """
     Delete an emp_expert_lectures entry from the database.
@@ -1128,7 +1128,7 @@ def emp_expert_lecturesDelete(request):
     instance.delete()
     return JsonResponse({'success': True})
 
-@csrf_exempt
+#@csrf_exempt
 def emp_keynote_addressDelete(request):
     """
     Delete an emp_keynote_address entry from the database.
@@ -1151,7 +1151,7 @@ def emp_keynote_addressDelete(request):
     instance.delete()
     return JsonResponse({'success': True})
 
-@csrf_exempt
+#@csrf_exempt
 def emp_mtechphd_thesisDelete(request):
     """
     Delete an emp_mtechphd_thesis entry from the database.
@@ -1174,7 +1174,7 @@ def emp_mtechphd_thesisDelete(request):
     instance.delete()
     return JsonResponse({'success': True})
 
-@csrf_exempt
+#@csrf_exempt
 def emp_patentsDelete(request):
     """
     Delete an emp_patents entry from the database.
@@ -1197,7 +1197,7 @@ def emp_patentsDelete(request):
     instance.delete()
     return JsonResponse({'success': True})
 
-@csrf_exempt
+#@csrf_exempt
 def emp_published_booksDelete(request):
     """
     Delete an emp_published_books entry from the database.
@@ -1220,7 +1220,7 @@ def emp_published_booksDelete(request):
     instance.delete()
     return JsonResponse({'success': True})
 
-@csrf_exempt
+#@csrf_exempt
 def emp_research_papersDelete(request):
     """
     Delete an emp_research_papers entry from the database.
@@ -1243,7 +1243,7 @@ def emp_research_papersDelete(request):
     instance.delete()
     return JsonResponse({'success': True})
 
-@csrf_exempt
+#@csrf_exempt
 def emp_research_projectsDelete(request):
     """
     Delete an emp_research_projects entry from the database.
@@ -1266,7 +1266,7 @@ def emp_research_projectsDelete(request):
     instance.delete()
     return JsonResponse({'success': True})
 
-@csrf_exempt
+#@csrf_exempt
 def emp_session_chairDelete(request):
     """
     Delete an emp_session_chair entry from the database.
@@ -1289,13 +1289,13 @@ def emp_session_chairDelete(request):
     instance.delete()
     return JsonResponse({'success': True})
 
-@csrf_exempt
+#@csrf_exempt
 def emp_journal_delete(request):
     instance = emp_research_papers.objects.get(pk=request.POST['pk'])
     instance.delete()
     return JsonResponse({'success': True})
 
-@csrf_exempt
+#@csrf_exempt
 def emp_techtransferDelete(request):
     """
     Delete an emp_techtransfer entry from the database.
@@ -1318,7 +1318,7 @@ def emp_techtransferDelete(request):
     instance.delete()
     return JsonResponse({'success': True})
 
-@csrf_exempt
+#@csrf_exempt
 def emp_visitsDelete(request):
     """
     Delete an emp_visits entry from the database.
@@ -1343,7 +1343,7 @@ def emp_visitsDelete(request):
 
 
 # Views for inserting fields in EIS
-@csrf_exempt
+#@csrf_exempt
 def pg_insert(request):
     """
     Insert a new or update an existing Post Graduate student entry in the emp_mtechphd_thesis table.
@@ -1387,7 +1387,7 @@ def pg_insert(request):
     eis.save()
     return JsonResponse({'success': True})
 
-@csrf_exempt
+#@csrf_exempt
 def phd_insert(request):
     """
     Insert a new or update an existing PhD student entry in the emp_mtechphd_thesis table.
@@ -1433,7 +1433,7 @@ def phd_insert(request):
     eis.save()
     return JsonResponse({'success': True})
 
-@csrf_exempt
+#@csrf_exempt
 def fvisit_insert(request):
     """
     Insert a new or update an existing foreign visit entry in the emp_visits table.
@@ -1495,7 +1495,7 @@ def fvisit_insert(request):
         eis.save()
         return JsonResponse({'message' : 'Your data is saved '})
 
-@csrf_exempt
+#@csrf_exempt
 def ivisit_insert(request):
     """
     API endpoint to insert or update a research data entry of type 'International Visit' in the database.
@@ -1543,7 +1543,7 @@ def ivisit_insert(request):
 
 
 #Function to save journal of employee
-@csrf_exempt
+#@csrf_exempt
 def journal_insert(request):
     """
     This function is used to create a journal for an employee.
@@ -1619,7 +1619,7 @@ def journal_insert(request):
         eis.save()
         return JsonResponse({'message' : 'Your data is saved '})
     
-@csrf_exempt
+#@csrf_exempt
 def editjournal(request):
     """
     Update the details of an existing journal entry in the database with the provided data.
@@ -1713,7 +1713,7 @@ def editjournal(request):
     eis.save()
     return JsonResponse({'message' : 'Your data is updated '})
     
-@csrf_exempt
+#@csrf_exempt
 def editforeignvisit(request):
     """
     Edit a foreign visit entry in the emp_visits table.
@@ -1759,7 +1759,7 @@ def editforeignvisit(request):
     eis.save()
     return JsonResponse({'message' : 'Your data is updated '})
 
-@csrf_exempt
+#@csrf_exempt
 def editindianvisit(request):
     """
     Edit an Indian visit entry in the emp_visits table.
@@ -1806,7 +1806,7 @@ def editindianvisit(request):
     return JsonResponse({'success': True})
 
 
-@csrf_exempt
+#@csrf_exempt
 def conference_insert(request):
     """
     Insert a conference paper entry in the emp_research_papers table.
@@ -1887,7 +1887,7 @@ def conference_insert(request):
         eis.save()
         return JsonResponse({'message' : 'Your data is saved '})
 
-@csrf_exempt
+#@csrf_exempt
 def editconference(request):
     """
     This function is used to update a conference for an employee.
@@ -1969,7 +1969,7 @@ def editconference(request):
     return JsonResponse({'success': True})
 
 
-@csrf_exempt
+#@csrf_exempt
 def book_insert(request):
     """
     Insert a book entry in the emp_published_books table.
@@ -1997,7 +1997,7 @@ def book_insert(request):
     return JsonResponse({'message' : 'Your data is saved '})
 
 
-@csrf_exempt
+#@csrf_exempt
 def editbooks(request):
     """
     Edit a book entry in the emp_published_books table.
@@ -2021,7 +2021,7 @@ def editbooks(request):
     eis.save()
     return JsonResponse({'message' : 'Your data is updated '})
 
-@csrf_exempt
+#@csrf_exempt
 def consym_insert(request):
     """
     Insert a new conference entry in the emp_confrence_organised table.
@@ -2081,7 +2081,7 @@ def consym_insert(request):
     eis.save()
     return JsonResponse({ "success": True})
 
-@csrf_exempt
+#@csrf_exempt
 def editconsym(request):
     """
     Edit a conference organised entry for a faculty member.
@@ -2129,7 +2129,7 @@ def editconsym(request):
     eis.save()
     return JsonResponse({'success': True})
 
-@csrf_exempt
+#@csrf_exempt
 def event_insert(request):
     """
     Insert a new event organized entry for a faculty member.
@@ -2177,7 +2177,7 @@ def event_insert(request):
     eis.save()
     return JsonResponse({'message' : 'Your data is saved '})
 
-@csrf_exempt
+#@csrf_exempt
 def editevent(request):
     """
     Edit an event organized entry for a faculty member.
@@ -2222,7 +2222,7 @@ def editevent(request):
     eis.save()
     return JsonResponse({'success': True})
 
-@csrf_exempt
+#@csrf_exempt
 def award_insert(request):
     """
     Insert or update an award entry in the emp_achievement table.
@@ -2265,7 +2265,7 @@ def award_insert(request):
     eis.save()
     return JsonResponse({'message' : 'Your data is saved '})
 
-@csrf_exempt
+#@csrf_exempt
 def talk_insert(request):
     """
     This view handles POST requests to insert a new or update an existing
@@ -2310,7 +2310,7 @@ def talk_insert(request):
     eis.save()
     return JsonResponse({'message' : 'Your data is saved '})
 
-@csrf_exempt
+#@csrf_exempt
 def chaired_insert(request):
     """
     Insert a session chair entry in the emp_session_chair table.
@@ -2347,7 +2347,7 @@ def chaired_insert(request):
     eis.save()
     return JsonResponse({'message' : 'Your data is saved '})
 
-@csrf_exempt
+#@csrf_exempt
 def keynote_insert(request):
     """
     Insert a keynote address entry in the emp_keynote_address table.
@@ -2385,7 +2385,7 @@ def keynote_insert(request):
     eis.save()
     return JsonResponse({'message' : 'Your data is saved '})
 
-@csrf_exempt
+#@csrf_exempt
 def project_insert(request):
     """
     Insert a research project entry in the emp_research_projects table.
@@ -2455,7 +2455,7 @@ def project_insert(request):
     eis.save()
     return JsonResponse({'success': True})
 
-@csrf_exempt
+#@csrf_exempt
 def consult_insert(request):
     """
     Insert a new consultancy project entry in the emp_consultancy_projects table.
@@ -2512,7 +2512,7 @@ def consult_insert(request):
     eis.save()
     return JsonResponse({'message' : 'Your data is saved '})
 
-@csrf_exempt
+#@csrf_exempt
 def patent_insert(request):
     """
     Insert or update a patent entry in the emp_patents table.
@@ -2553,7 +2553,7 @@ def patent_insert(request):
     eis.save()
     return JsonResponse({'message' : 'Your data is saved '})
 
-@csrf_exempt
+#@csrf_exempt
 def transfer_insert(request):
     """
     Insert a new technology transfer entry in the emp_techtransfer table.
@@ -2713,7 +2713,7 @@ def edit_research_project(request, pk):
     
     return JsonResponse({'error': 'Invalid request method.'}, status=400)
 # Filter and Fetch
-@csrf_exempt
+#@csrf_exempt
 def filter_research_projects(request):
     filters = {}
     interval_filters = {}
@@ -2783,7 +2783,7 @@ def filter_research_projects(request):
 #     "sort_by": "-start_date",
 #     "fields": ["pf_no", "pi", "title", "status"]
 # }
-@csrf_exempt
+#@csrf_exempt
 def filter_consultancy_projects(request):
     filters = {}
     interval_filters = {}
@@ -2867,7 +2867,7 @@ def filter_consultancy_projects(request):
 #     "sort_by": "-financial_outlay",
 #     "fields": ["pf_no", "consultants", "title", "financial_outlay", "status"]
 # }
-@csrf_exempt
+#@csrf_exempt
 def filter_patents(request):
     filters = {}
     interval_filters = {}
@@ -2959,7 +2959,7 @@ def filter_patents(request):
 #     "sort_by": "-earnings",
 #     "fields": ["pf_no", "p_no", "title", "status", "earnings"]
 # }
-@csrf_exempt
+#@csrf_exempt
 def filter_mtechphd_thesis(request):
     filters = {}
     interval_filters = {}
@@ -3069,7 +3069,7 @@ def filter_mtechphd_thesis(request):
 #     "sort_by": "start_date",
 #     "fields": ["pf_no", "degree_type", "title", "supervisors", "s_name"]
 # }
-@csrf_exempt
+#@csrf_exempt
 def filter_events(request):
     filters = {}
     interval_filters = {}
@@ -3142,7 +3142,7 @@ def filter_events(request):
 #     "sort_by": "start_date",
 #     "fields": ["pf_no", "type", "name", "sponsoring_agency", "venue", "start_date"]
 # }
-@csrf_exempt
+#@csrf_exempt
 def filter_visits(request):
     filters = {}
     interval_filters = {}
@@ -3221,7 +3221,7 @@ def filter_visits(request):
 #     "sort_by": "-start_date",
 #     "fields": ["pf_no", "country", "place", "purpose", "v_date", "start_date", "end_date"]
 # }
-@csrf_exempt
+#@csrf_exempt
 def filter_consym(request):
     filters = {}
     interval_filters = {}
@@ -3305,7 +3305,7 @@ def filter_consym(request):
 #     "sort_by": "-start_date",
 #     "fields": ["pf_no", "name", "venue", "k_year", "a_month", "start_date", "end_date", "role1", "role2"]
 # }
-@csrf_exempt
+#@csrf_exempt
 def filter_books(request):
     filters = {}
     sorting = request.POST.get("sort_by", None)
@@ -3380,7 +3380,7 @@ def filter_books(request):
 #     "sort_by": "-publication_date",
 #     "fields": ["pf_no", "p_type", "title", "publisher", "authors", "pyear", "publication_date"]
 # }
-@csrf_exempt
+#@csrf_exempt
 def filter_journal_or_conference(request):
     filters = {}
     sorting = request.POST.get("sort_by", None)
@@ -3467,7 +3467,7 @@ def filter_journal_or_conference(request):
 #     "sort_by": "-date_publication",
 #     "fields": ["pf_no", "rtype", "authors", "title_paper", "venue", "date_publication"]
 # }
-@csrf_exempt
+#@csrf_exempt
 def filter_achievements(request):
     filters = {}
     sorting = request.POST.get("sort_by", None)
@@ -3539,7 +3539,7 @@ def filter_achievements(request):
     "sort_by": "-achievment_date",
     "fields": ["pf_no", "a_type", "details", "achievment_date"]
 }
-@csrf_exempt
+#@csrf_exempt
 def filter_talks(request):
     filters = {}
     sorting = request.POST.get("sort_by", None)
