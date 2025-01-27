@@ -1,540 +1,298 @@
-from __future__ import unicode_literals
-from django.views.decorators.csrf import csrf_protect
-from django.core import serializers
-import collections
-import json
-import os
-import random
-import subprocess
-import datetime
-import requests
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
-from django.core.files.storage import FileSystemStorage
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
-from django.shortcuts import redirect, render
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.decorators import permission_classes, authentication_classes
+from rest_framework.permissions import AllowAny
+from django.shortcuts import render
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.decorators import permission_classes, authentication_classes
+from rest_framework.permissions import AllowAny
+from django.shortcuts import render
 from django.utils import timezone
-from django.core.serializers import serialize
-from django.http import JsonResponse
-from decimal import Decimal
-from applications.academic_information.models import (Student,Student_attendance,Calendar, Timetable)
-from applications.programme_curriculum.models import Course as Courses
-from applications.programme_curriculum.models import CourseInstructor
-from applications.academic_procedures.models import course_registration
-from applications.globals.models import ExtraInfo
-# from applications.globals.models import *
-
-# from .forms import *
-# from .helpers import create_thumbnail, semester
-# from .models import *
-# from .helpers import create_thumbnail, semester
-# from notification.views import course_management_notif
-# def viewcourses_serialized(request):
-#     user = request.user
-#     extrainfo = ExtraInfo.objects.select_related().get(user=user)
-    
-#     # If the user is a student
-#     if extrainfo.user_type == 'student':
-#         student = Student.objects.select_related('id').get(id=extrainfo)
-#         register = course_registration.objects.select_related().filter(student_id=student)
-
-#         # Serialize registered courses
-#         registered_courses_data = serializers.serialize('json', register)
-
-#         return JsonResponse({
-#             'user_type': 'student',
-#             'registered_courses': registered_courses_data,
-#         })
-
-#     # If the user is faculty
-#     elif extrainfo.user_type == 'faculty':
-#         instructor = CourseInstructor.objects.select_related('curriculum_id').filter(instructor_id=extrainfo)
-#         curriculum_list = [Courses.objects.select_related().get(pk=x.course_id) for x in instructor]
-
-#         # Serialize curriculum list
-#         curriculum_data = serializers.serialize('json', curriculum_list)
-
-#         return JsonResponse({
-#             'user_type': 'faculty',
-#             'curriculum_list': curriculum_data,
-#         })
-
-#     # If the user is an admin
-#     elif extrainfo.id == 'id_admin':
-#         # if request.session.get('currentDesignationSelected') != 'acadadmin':
-#         #     return HttpResponseRedirect('/dashboard/')
-        
-#         calendar = Calendar.objects.all()
-#         timetable = Timetable.objects.all()
-
-#         # Serialize calendar and timetable data
-#         calendar_data = serializers.serialize('json', calendar)
-#         timetable_data = serializers.serialize('json', timetable)
-
-#         return JsonResponse({
-#             'user_type': 'admin',
-#             'academic_calendar': calendar_data,
-#             'timetable': timetable_data,
-#         })
-
-#     return JsonResponse({
-#         'error': 'Unknown user type'
-#     })
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from rest_framework import status  # Import for custom status codes
+from rest_framework import status
+from applications.academic_information.models import Student
+from applications.programme_curriculum.models import Course as Courses, CourseInstructor
+from applications.academic_procedures.models import course_registration
+from applications.globals.models import ExtraInfo
+from rest_framework.permissions import IsAuthenticated
+from applications.online_cms.models import  Student_grades
+from .serializers import StudentGradesSerializer
+import datetime
+from rest_framework import status
 from .serializers import *
-# class CourseListView(APIView):
-#     def get(self, request):
-#         user = request.user
 
-#         try:
-#             extrainfo = ExtraInfo.objects.select_related().get(user=user)
-#         except ExtraInfo.DoesNotExist:
-#             return Response({'message': 'ExtraInfo object not found for this user'}, status=status.HTTP_404_NOT_FOUND)
+@api_view(['POST'])
+def add_module(request):
+    # Extract data from the request
+    course_id = request.data.get('course_id')
+    module_name = request.data.get('module_name')
 
-#         if extrainfo.user_type == 'student':
-#             try:
-#                 student = Student.objects.select_related('id').get(id=extrainfo)
-#                 register = course_registration.objects.select_related().filter(student_id=student)
-#             except (Student.DoesNotExist, course_registration.DoesNotExist):
-#                 return Response({'message': 'No courses found for this student'}, status=status.HTTP_404_NOT_FOUND)
+    # Ensure the course exists
+    try:
+        course = Courses.objects.get(id=course_id)
+    except Courses.DoesNotExist:
+        return Response({"error": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
 
-#             courses = collections.OrderedDict()
-#             for reg in register:
-#                 # instructor = CourseInstructor.objects.select_related().get(course_id=reg.course_id).first()
-#                 instructors = CourseInstructor.objects.select_related().filter(course_id=reg.course_id)
-#                 instructor = instructors.first()  # Get the first instructor
+    # Create the module
+    module = Modules.objects.create(module_name=module_name, course=course)
 
-#                 courses[reg] = instructor
+    # Serialize the module data and return
+    serializer = ModuleSerializer(module)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-#             courses_serializer = CoursesSerializer(courses, many=True)  # Assuming CourseRegistrationSerializer exists
-#             return Response(courses_serializer.data)
-#         elif extrainfo.user_type == 'faculty':
-#             # ... similar logic for faculty courses ...
+@api_view(['DELETE'])
+def delete_module(request, module_id):
+    try:
+        # Get the module by primary key
+        module = Modules.objects.get(pk=module_id)
+        module.delete()  # Delete the module
+        return Response(status=status.HTTP_204_NO_CONTENT)  # No content after deletion
+    except Modules.DoesNotExist:
+        return Response({"error": "Module not found"}, status=status.HTTP_404_NOT_FOUND)
 
-#             return Response(faculty_courses_serializer.data)  # Assuming faculty_courses_serializer exists
-#         elif extrainfo.user_type == 'id_admin':
-#             # ... similar logic for admin courses ...
+# Add a slide
+@api_view(['POST'])
+def add_slide(request, module_id):
+    try:
+        # Get the module using module_id from the URL
+        module = Modules.objects.get(id=module_id)
+    except Modules.DoesNotExist:
+        return Response({"error": "Module not found"}, status=status.HTTP_404_NOT_FOUND)
 
-#             return Response(admin_courses_serializer.data)  # Assuming admin_courses_serializer exists
-#         else:
-#             return Response({'message': 'Invalid user type'}, status=status.HTTP_400_BAD_REQUEST)
+    # Extract data from the request body
+    document_name = request.data.get('document_name')
+    document_url = request.data.get('document_url')
+    description = request.data.get('description', '')  # Default to an empty string if no description is provided
+
+    # Create a new CourseDocument for the slide
+    course_document = CourseDocuments.objects.create(
+        course_id=module.course,
+        module_id=module,
+        document_name=document_name,
+        document_url=document_url,
+        description=description
+    )
+
+    # Serialize the document data and return the response
+    serializer = CourseDocumentsSerializer(course_document)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+# Delete a slide
+@api_view(['DELETE'])
+def delete_slide(request, slide_id):
+    try:
+        # Get the slide by primary key
+        slide = CourseDocuments.objects.get(pk=slide_id)
+        slide.delete()  # Delete the slide
+        return Response(status=status.HTTP_204_NO_CONTENT)  # No content after deletion
+    except CourseDocuments.DoesNotExist:
+        return Response({"error": "Slide not found"}, status=status.HTTP_404_NOT_FOUND)
+from applications.academic_information.models import Student
+from applications.programme_curriculum.models import Course as Courses, CourseInstructor
+from applications.academic_procedures.models import course_registration
+from applications.globals.models import ExtraInfo
+from rest_framework.permissions import IsAuthenticated
+from applications.online_cms.models import  Student_grades
+from .serializers import StudentGradesSerializer
+import datetime
 
 @api_view(['GET'])
 def courseview(request):
     user = request.user
     extrainfo = ExtraInfo.objects.select_related().get(user=user)
+    
     if extrainfo.user_type == 'student':
         student = Student.objects.select_related('id').get(id=extrainfo)
-        # register = course_registration.objects.select_related().filter(student_id=student)
-        # courses_info = Courses.objects.select_related().filter(id=register)
-        
-        # course_serializer = CourseRegistrationSerializer(course_infos, many=True)
         register = course_registration.objects.select_related().filter(student_id=student)
-
-        courses_info = []
-        for reg in register:
-            course = Courses.objects.select_related().get(pk=reg.course_id.id)  # Optimized retrieval using primary key
-            courses_info.append(course)
-
+        
+        courses_info = [Courses.objects.select_related().get(pk=reg.course_id.id) for reg in register]
         course_serializer = CourseRegistrationSerializer(courses_info, many=True)
-        print(course_serializer)
-        data ={
-            "courses":course_serializer.data
-        }
-        return Response(data,status=status.HTTP_200_OK)
+        
+        data = {"courses": course_serializer.data}
+        return Response(data, status=status.HTTP_200_OK)
         
     elif extrainfo.user_type == 'faculty':
         instructor = CourseInstructor.objects.select_related('course_id').filter(instructor_id=extrainfo)
-        courses_info=[]
-        for ins in instructor:
-            course = Courses.objects.select_related().get(pk=ins.course_id.id)
-            courses_info.append(course)
+        courses_info = [Courses.objects.select_related().get(pk=ins.course_id.id) for ins in instructor]
         
         course_serializer = CourseRegistrationSerializer(courses_info, many=True)
-        data = {
-            "courses":course_serializer.data
-        }
+        data = {"courses": course_serializer.data}
         return Response(data, status=status.HTTP_200_OK)
+    
     else:
-        return Response({"error":"error occured"})
+        return Response({"error": "error occurred"})
+
 
 @api_view(['GET'])
-def course(request, course_code, version):
-    '''
-    desc: Home page for each courses for Student/Faculty
-    '''
+@permission_classes([AllowAny])
+def course(request):
     user = request.user
+    course_code = request.GET.get('course_code')
+    version = request.GET.get('version')
     extrainfo = ExtraInfo.objects.select_related().get(user=user)
-    notifs = request.user.notifications.all()
-    if extrainfo.user_type == 'student':   #if the user is student .. funtionality used by him/her
-        # if request.session.get('currentDesignationSelected') != 'student':
-        #     return HttpResponseRedirect('/dashboard/')
+    
+    if extrainfo.user_type == 'student':
         student = Student.objects.select_related('id').get(id=extrainfo)
-        #info about courses he is registered in
-        course = Courses.objects.select_related().get(code=course_code, version = version)
-        #instructor of the course
-        instructor = CourseInstructor.objects.select_related().get(course_id = course, batch_id = student.batch_id)
-        
-        # Serialize course and instructor
+        course = Courses.objects.select_related().get(code=course_code, version=version)
+        instructor = CourseInstructor.objects.select_related().get(course_id=course, batch_id=student.batch_id)
+
         course_serializer = CoursesSerializer(course)
         instructor_serializer = CourseInstructorSerializer(instructor)
-        #course material uploaded by the instructor
-        # videos = CourseVideo.objects.filter(course_id=course)
-        videos = []
-        if request.method == 'POST':
-            search_url = "https://www.googleapis.com/youtube/v3/search"
-            video_url = "https://www.googleapis.com/youtube/v3/videos"
-            search_params = {
-                'part': 'snippet',
-                'q': request.POST['search'],
-                'key': settings.YOUTUBE_DATA_API_KEY,
-                'type': 'video',
-                'channelId': 'channel_id'
-            }
-            videos_ids = []
-            r = requests.get(search_url, params=search_params)
-            # print(r)
-            results = r.json()['items']
-            for result in results:
-                videos_ids.append(result['id']['videoId'])
-
-            video_params = {
-                'key': settings.YOUTUBE_DATA_API_KEY,
-                'part': 'snippet,contentDetails',
-                'id': ','.join(videos_ids),
-                'maxResults': 9
-            }
-
-            p = requests.get(video_url, params=video_params)
-            results1 = p.json()['items']
-
-            for result in results1:
-                video_data = {
-                    'id': result['id'],
-                    # 'url': f'https://www.youtube.com/watch?v={result["id"]}',
-                    'title': result['snippet']['title'],
-                    # 'duration': int(parse_duration(result['contentDetails']['duration']).total_seconds() // 60),
-                    # 'thumbnails': result['snippet']['thumbnails']['high']['url']
-                }
-
-                videos.append(video_data)
-        else:
-            x = 0
-            # channel_url = "https://www.googleapis.com/youtube/v3/channels"
-            # playlist_url = "https://www.googleapis.com/youtube/v3/playlistItems"
-            # videos_url = "https://www.googleapis.com/youtube/v3/videos"
-
-            # videos_list = []
-            # channel_params = {
-            #     'part': 'contentDetails',
-            #     'id': 'channel_id',
-            #     'key': settings.YOUTUBE_DATA_API_KEY,
-            # }
-            # r = requests.get(channel_url, params=channel_params)
-            # results = r.json()['items'][0]['contentDetails']['relatedPlaylists']['uploads']
-
-            # playlist_params = {
-            #     'key': settings.YOUTUBE_DATA_API_KEY,
-            #     'part': 'snippet',
-            #     'playlistId': results,
-            #     'maxResults': 5,
-            # }
-            # p = requests.get(playlist_url, params=playlist_params)
-            # results1 = p.json()['items']
-
-            # for result in results1:
-            #     # print(results)
-            #     videos_list.append(result['snippet']['resourceId']['videoId'])
-
-            # videos_params = {
-            #     'key': settings.YOUTUBE_DATA_API_KEY,
-            #     'part': 'snippet',
-            #     'id': ','.join(videos_list)
-            # }
-
-            # v = requests.get(videos_url, params=videos_params)
-            # results2 = v.json()['items']
-            # videos = []
-            # for res in results2:
-            #     video_data = {
-            #         'id': res['id'],
-            #         'title': res['snippet']['title'],
-            #     }
-
-            #     videos.append(video_data)
-            # print(videos)
 
         modules = Modules.objects.select_related().filter(course_id=course)
         slides = CourseDocuments.objects.select_related().filter(course_id=course)
-
-        modules_with_slides = collections.OrderedDict()
-        for m in modules:
-            sl = []
-            for slide in slides:
-                if slide.module_id.id == m.id:
-                    sl.append(slide)
-            if len(sl) == 0:
-                modules_with_slides[m] = 0
-            else:
-                modules_with_slides[m] = sl
-        # Serialize modules
-        modules_serializer = ModulesSerializer(modules, many=True)
-        slides_serializer =  CourseDocumentsSerializer(slides, many=True)
-
-        quiz = Quiz.objects.select_related().filter(course_id=course)
-        assignment = Assignment.objects.select_related().filter(course_id=course)
-        submitable_assignments = []
-        for assi in assignment:
-            if assi.submit_date.date() >= datetime.date.today():
-                submitable_assignments.append(assi)
-                
-        student_assignment = []
-        for assi in assignment:
-            sa = StudentAssignment.objects.select_related().filter(assignment_id=assi, student_id=student)
-            student_assignment.append(sa)
-            
-        assignment_serializer = AssignmentSerializer(assignment, many=True)
-            
-        '''
-        marks to store the marks of quizes of student
-        marks_pk to store the quizs taken by student
-        quizs=>quizs that are not over
-        '''
-        # marks = []
-        # quizs = []
-        # marks_pk = []
-        # #quizzes details
-        # for q in quiz:
-        #     qs = QuizResult.objects.select_related().filter(quiz_id=q, student_id=student)
-        #     qs_pk = qs.values_list('quiz_id', flat=True)
-        #     if q.end_time > timezone.now():
-        #         quizs.append(q)
-        #     if qs:
-        #         marks.append(qs[0])
-        #         marks_pk.append(qs_pk[0])
         
-        present_attendance = {}
-        total_attendance=None
-        a = Attendance.objects.select_related().filter(student_id=student , instructor_id = instructor)
-        total_attendance = len(a)
-        count = 0
-        for row in a:
-                if(row.present):
-                    count+=1
-                    present_attendance[row.date] = 1
-                else:
-                    present_attendance[row.date] = 0
-        attendance_percent = 0
-        if(total_attendance):
-            attendance_percent = count/total_attendance*100
-            attendance_percent = round(attendance_percent,2)
-
-        attendance_file = {}
-        try:
-            attendance_file = AttendanceFiles.objects.select_related().filter(course_id=course)
-        except AttendanceFiles.DoesNotExist:
-            attendance_file = {}
-
-        attendance_serializer = AttendanceSerializer(a, many=True)
+        modules_with_slides = {
+            m: [slide for slide in slides if slide.module_id.id == m.id] or 0 
+            for m in modules
+        }
         
-        lec = 0
+        attendance_records = Attendance.objects.select_related().filter(student_id=student, instructor_id=instructor)
+        total_attendance = len(attendance_records)
+        count = sum(1 for record in attendance_records if record.present)
+        present_attendance = {record.date: int(record.present) for record in attendance_records}
+        attendance_percent = round((count / total_attendance) * 100, 2) if total_attendance else 0
+        
+        attendance_file = AttendanceFiles.objects.select_related().filter(course_id=course)
+        
         comments = Forum.objects.select_related().filter(course_id=course).order_by('comment_time')
-        answers = collections.OrderedDict()
-        for comment in comments:
-            fr = ForumReply.objects.select_related().filter(forum_reply=comment)
-            fr1 = ForumReply.objects.select_related().filter(forum_ques=comment)
-            if not fr:
-                answers[comment] = fr1
-        # serialise forum and reply
-        forum_serializer = ForumSerializer(comments,many=True)
-        # forum_reply_serializer = ForumReplySerializer(fr,many=True)
+        answers = {
+            comment: ForumReply.objects.select_related().filter(forum_ques=comment)
+            for comment in comments
+        }
         
         data = {
             'course': course_serializer.data,
             'instructor': instructor_serializer.data,
-            'modules': modules_serializer.data,
-            'slides': slides_serializer.data,
-            'assignments': assignment_serializer.data,
-            'student_assignment': student_assignment,  # Include if needed
-            'attendance': attendance_serializer.data, #try sending "total attendance"
+            'modules': ModulesSerializer(modules, many=True).data,
+            'slides': CourseDocumentsSerializer(slides, many=True).data,
+            'attendance': AttendanceSerializer(attendance_records, many=True).data,
             'present_attendance': present_attendance,
             'attendance_percent': attendance_percent,
-            'attendance_file': attendance_file,
-            # 'comments': nested_comments,  # Use nested comments for better structure
-            # 'forum_reply': forum_reply_serializer.data,  # Include if not nested  # Include if needed
-            # 'notifications': notifs.values('id', 'title', 'message', 'is_seen'),
+            'attendance_file': AttendanceFilesSerializer(attendance_file, many=True).data,
         }
-        print(course_serializer.data)
-        return Response(data,status=status.HTTP_200_OK)
-
+        
+        return Response(data, status=status.HTTP_200_OK)
+    
     else:
-        # if request.session.get('currentDesignationSelected') != "faculty" and request.session.get('currentDesignationSelected') != "Associate Professor" and request.session.get('currentDesignationSelected') != "Professor" and request.session.get('currentDesignationSelected') != "Assistant Professor":
-        #     return HttpResponseRedirect('/dashboard/')
         instructor = CourseInstructor.objects.select_related('course_id').filter(instructor_id=extrainfo)
+        
         for ins in instructor:
             if ins.course_id.code == course_code and ins.course_id.version == Decimal(version):
-                registered_students = course_registration.objects.select_related('student_id').filter(course_id = ins.course_id)
-                students = {}
-                test_marks = {}
-                for x in registered_students:
-                     students[x.student_id.id.id] = (x.student_id.id.user.first_name + " " + x.student_id.id.user.last_name)
-                #     stored_marks = StoreMarks.objects.filter(mid = x.r_id)
-                #     for x in stored_marks:
-                #         test_marks[x.id] = (x.mid.r_id,x.exam_type,x.marks)
-                    #marks_id.append(x.curr_id)
-                    #print(stored_marks)
-                    #for x in stored_marks:
-                    #    print(x)
-                students_info = []
-                for stu in registered_students:
-                    s = Student.objects.select_related().get(pk=stu.student_id.id)
-                    students_info.append(s)
-                    
-                    
-                # registered student serializer 
-                registered_students_serialiser = StudentSerializer(students_info,many=True)
-                course = ins.course_id
-                result_topics = Topics.objects.select_related().filter(course_id = course)
+                registered_students = course_registration.objects.select_related('student_id').filter(course_id=ins.course_id)
+                students_info = [Student.objects.select_related().get(pk=stu.student_id.id) for stu in registered_students]
                 
-                if (len(list(result_topics))!=0):
-                    topics = result_topics
-                else:
-                    topics = None
-                # serializer 
-                topics_serialiser = TopicsSerializer(topics,many=True)
-                present_attendance = {}
-                total_attendance=None
-                for x in registered_students:
-                    a = Attendance.objects.select_related().filter(student_id=x.student_id , instructor_id = ins)
-                    total_attendance = len(a)
-                    count =0
-                    for row in a:
-                        if(row.present):
-                            count += 1
-                    
-                    attendance_percent = 0
-                    if(total_attendance):
-                        attendance_percent = count/total_attendance*100
-                        attendance_percent = round(attendance_percent,2)
-                    present_attendance[x.student_id.id.id] = {
-                        'count': count,
-                        'attendance_percent': attendance_percent
+                topics = Topics.objects.select_related().filter(course_id=ins.course_id)
+                attendance_records = {
+                    x.student_id.id.id: {
+                        'count': sum(1 for a in Attendance.objects.select_related().filter(student_id=x.student_id, instructor_id=ins) if a.present),
+                        'attendance_percent': round(
+                            (sum(1 for a in Attendance.objects.select_related().filter(student_id=x.student_id, instructor_id=ins) if a.present)
+                             / len(Attendance.objects.select_related().filter(student_id=x.student_id, instructor_id=ins))) * 100,
+                            2
+                        ) if len(Attendance.objects.select_related().filter(student_id=x.student_id, instructor_id=ins)) else 0
                     }
+                    for x in registered_students
+                }
 
-        lec = 1
-        videos = []
-        
-        # videos = CourseVideo.objects.filter(course_id=course)
-        # channel_url = "https://www.googleapis.com/youtube/v3/channels"
-        # playlist_url = "https://www.googleapis.com/youtube/v3/playlistItems"
-        # videos_url = "https://www.googleapis.com/youtube/v3/videos"
+                modules = Modules.objects.select_related().filter(course_id=ins.course_id)
+                slides = CourseDocuments.objects.select_related().filter(course_id=ins.course_id)
 
-        # videos_list = []
-        # channel_params = {
-        #     'part': 'contentDetails',
-        #     # 'forUsername': 'TechGuyWeb',
-        #     'id': 'UCdGQeihs84hyCssI2KuAPmA',
-        #     'key': settings.YOUTUBE_DATA_API_KEY,
-        # }
-        # r = requests.get(channel_url, params=channel_params)
-        # results = r.json()['items'][0]['contentDetails']['relatedPlaylists']['uploads']
+                gradingscheme = GradingScheme.objects.select_related().filter(course_id=ins.course_id)
+                topics_serializer = TopicsSerializer(topics, many=True)
+                
+                data = {
+                    "students": StudentSerializer(students_info, many=True).data,
+                    "topics": topics_serializer.data,
+                    "present_att": attendance_records,
+                    "modules": ModulesSerializer(modules, many=True).data,
+                    "slides": CourseDocumentsSerializer(slides, many=True).data,
+                    "grading_scheme": GradingSchemeSerializer(gradingscheme, many=True).data,
+                }
+                
+                return Response(data, status=status.HTTP_200_OK)
 
-        # playlist_params = {
-        #     'key': settings.YOUTUBE_DATA_API_KEY,
-        #     'part': 'snippet',
-        #     'playlistId': results,
-        #     'maxResults': 5,
-        # }
-        # p = requests.get(playlist_url, params=playlist_params)
-        # results1 = p.json()['items']
 
-        # for result in results1:
-        #     videos_list.append(result['snippet']['resourceId']['videoId'])
+@api_view(['GET'])
+def view_attendance(request, course_code, version):
+    user = request.user
 
-        # videos_params = {
-        #     'key': settings.YOUTUBE_DATA_API_KEY,
-        #     'part': 'snippet',
-        #     'id': ','.join(videos_list)
-        # }
+    if not course_code or not version:
+        return Response({"error": "course_code and version are required parameters"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # v = requests.get(videos_url, params=videos_params)
-        # results2 = v.json()['items']
-        # videos = []
-        # for res in results2:
-        #     video_data = {
-        #         'id': res['id'],
-        #         'title': res['snippet']['title'],
-        #     }
+    try:
+        extrainfo = ExtraInfo.objects.select_related().get(user=user)
+    except ExtraInfo.DoesNotExist:
+        return Response({"error": "User information not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        #     videos.append(video_data)
-        modules = Modules.objects.select_related().filter(course_id=course)
-        slides = CourseDocuments.objects.select_related().filter(course_id=course)
-        modules_with_slides = collections.OrderedDict()
-        for m in modules:
-            sl = []
-            for slide in slides:
-                if slide.module_id.id == m.id:
-                    sl.append(slide)
-            if len(sl) == 0:
-                modules_with_slides[m] = 0
-            else:
-                modules_with_slides[m] = sl
-        # quiz = Quiz.objects.select_related().filter(course_id=course)
-        # marks = []
-        # quizs = []
-        modules_serializer = ModulesSerializer(modules, many=True)
-        slides_serializer =  CourseDocumentsSerializer(slides, many=True)
-        
-        assignment = Assignment.objects.select_related().filter(course_id=course)
-        student_assignment = []
-        for assi in assignment:
-            sa = StudentAssignment.objects.select_related().filter(assignment_id=assi)
-            student_assignment.append(sa)
-        # for q in quiz:
-        #     qs = QuizResult.objects.select_related().filter(quiz_id=q)
-        #     if q.end_time > timezone.now():
-        #         quizs.append(q)
-        #     if len(qs) != 0:
-        #         marks.append(qs)
-        
-        assignment_serializer = AssignmentSerializer(assignment, many=True)
-        
-        comments = Forum.objects.select_related().filter(course_id=course).order_by('comment_time')
-        answers = collections.OrderedDict()
-        for comment in comments:
-            fr = ForumReply.objects.select_related().filter(forum_reply=comment)
-            fr1 = ForumReply.objects.select_related().filter(forum_ques=comment)
-            if not fr:
-                answers[comment] = fr1
-        # qb = QuestionBank.objects.select_related().filter(instructor_id=extrainfo, course_id=course)
-        forum_serializer = ForumSerializer(comments,many=True)
-        
-        gradingscheme = GradingScheme.objects.select_related().filter(course_id=course)
+    if extrainfo.user_type == 'student':
         try:
-            gradingscheme_grades = GradingScheme_grades.objects.select_related().get(course_id=course)
-        except GradingScheme_grades.DoesNotExist:
-            gradingscheme_grades = {}
+            student = Student.objects.select_related('id').get(id=extrainfo)
+            course = Courses.objects.select_related().get(code=course_code, version=version)
+            instructor = CourseInstructor.objects.select_related().get(course_id=course, batch_id=student.batch_id)
+            print(instructor)
+            print(student)
+            print(course)
+        except (Student.DoesNotExist, Courses.DoesNotExist, CourseInstructor.DoesNotExist):
+            return Response({"error": "Course or instructor not found"}, status=status.HTTP_404_NOT_FOUND)
 
+        attendance_records = Attendance.objects.select_related().filter(student_id=student, instructor_id=instructor)
+        attendance_serializer = AttendanceSerializer(attendance_records, many=True)
+
+        return Response(attendance_serializer.data, status=status.HTTP_200_OK)
+
+    elif extrainfo.user_type == 'instructor':
         try:
-            student_grades = Student_grades.objects.select_related().filter(course_id=course)
-        except Student_grades.DoesNotExist:
-            student_grades = {}
+            instructor = CourseInstructor.objects.select_related('course_id').get(instructor_id=extrainfo, course_id__code=course_code, course_id__version=version)
+        except CourseInstructor.DoesNotExist:
+            return Response({"error": "Instructor or course not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        registered_students = course_registration.objects.select_related('student_id').filter(course_id=instructor.course_id)
+        attendance_records = Attendance.objects.select_related().filter(instructor_id=instructor, student_id__in=[stu.student_id for stu in registered_students])
+        attendance_serializer = AttendanceSerializer(attendance_records, many=True)
+
+        return Response(attendance_serializer.data, status=status.HTTP_200_OK)
+
+    return Response({"error": "Invalid user type"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def submit_marks(request, course_code, version):
+    user = request.user
+    extrainfo = ExtraInfo.objects.select_related().get(user=user)
+    course_id = Courses.objects.select_related().get(code=course_code, version=version)
+    
+    if extrainfo.user_type == 'faculty':
+        form_data = request.data.copy()
+        year = datetime.datetime.now().year
+        
+        for i in range(int(len(form_data.getlist('stu_marks'))/3)):
+            student = Student.objects.select_related().get(id=str(form_data.getlist('stu_marks')[(i*3)]))
+            batch = str(student.batch)
+            already_existing_data = Student_grades.objects.filter(roll_no=str(form_data.getlist('stu_marks')[(i*3)]))
             
-        gradingscheme_serialiser = GradingSchemeSerializer(gradingscheme,many=True)
-        data = {
-            "students":registered_students_serialiser.data,
-            "topics":topics_serialiser.data,
-            "present_att":present_attendance,
-            "total_att":total_attendance,
-            "modules":modules_serializer.data,
-            "slides":slides_serializer.data,
-            "assignment":assignment_serializer.data,
-            "forum":forum_serializer.data,
-            "grading_scheme":gradingscheme_serialiser.data,
-        }
-        return Response(data,status=status.HTTP_200_OK)
-       
+            data = {
+                'semester': student.curr_semester_no,
+                'year': year,
+                'roll_no': str(form_data.getlist('stu_marks')[(i*3)]),
+                'total_marks': form_data.getlist('stu_marks')[(i*3+1)],
+                'grade': str(form_data.getlist('stu_marks')[(i*3+2)]),
+                'batch': batch,
+                'course_id': course_id.id,
+            }
+            
+            if already_existing_data.exists():
+                already_existing_data.update(**data)
+            else:
+                serializer = StudentGradesSerializer(data=data)
+                if serializer.is_valid():
+                    serializer.save()
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response({"message": "Upload successful."}, status=status.HTTP_200_OK)
+    return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)

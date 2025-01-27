@@ -605,8 +605,7 @@ class InitialRegistration(models.Model):
     
     class Meta:
         db_table = 'InitialRegistration'
-
-
+    
 class FinalRegistration(models.Model):
     '''
             Current Purpose : stores information regarding the process of final(complete) registration of a student for a course 
@@ -689,7 +688,6 @@ class course_registration(models.Model):
         return str(self.semester_id.semester_no)
     class Meta:
         db_table = 'course_registration'
-
 
 class backlog_course(models.Model):
     '''
