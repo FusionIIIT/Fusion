@@ -31,7 +31,8 @@ from notification.views import (leave_module_notif,
     office_module_DeanRSPC_notif,
     research_procedures_notif,
     hostel_notifications,
-    announcement_list)
+    announcement_list,
+    RSPC_notif)
 
 
 
@@ -405,3 +406,16 @@ class AnnouncementListView(APIView):
 
         # Return the serialized data as JSON response
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class RSPCNotificationAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+
+        sender = request.user
+        recipient_id = request.data.get('recipient')
+        type = request.data.get('type')
+        User = get_user_model()
+        recipient = User.objects.get(pk=recipient_id)
+
+        RSPC_notif(sender,recipient, type)
+
+        return Response({'message' : 'Notification sent successfully'}, status=status.HTTP_201_CREATED)    

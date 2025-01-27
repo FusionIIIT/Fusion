@@ -552,6 +552,26 @@ def office_module_DeanRSPC_notif(sender, recipient, type):
     notify.send(sender=sender, recipient=recipient,
                 url=url, module=module, verb=verb)
 
+def RSPC_notif(sender, recipient, type):
+    url = 'rspc'
+    module = 'RSPC'
+    sender = sender
+    recipient = recipient
+    verb = ""
+
+    if type == "Approved":
+        verb = "Your request has been approved."
+    elif type == "Rejected":
+        verb = "Your request has been rejected."
+    elif type == "Processing":
+        verb = "You have a new request to process."
+    elif type == "Created":
+        verb = "Your project has been added to RSPC."
+    elif type == "Forwording":
+        verb = f"Your request has been forworded to {sender.username}. Kindly wait for decision"
+
+    notify.send(sender=sender, recipient=recipient,
+                     url=url, module=module, verb=verb)
 
 def research_procedures_notif(sender, recipient, type):
     url = 'research_procedures:patent_registration'
