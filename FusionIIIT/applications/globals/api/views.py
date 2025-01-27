@@ -14,6 +14,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes,authentication_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from django.http import JsonResponse
 
 
 from . import serializers
@@ -377,3 +378,30 @@ def delete_notification(request):
             'details': str(e)
         }
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
+    
+
+def search_users(request):
+    query = request.GET.get('q', '')
+    if query:
+        users = ExtraInfo.objects.filter(user__username__icontains=query).values('id', 'user__username')
+    else:
+        users = ExtraInfo.objects.none()
+
+    results = [
+        {'id': user['id'], 'text': user['user__username']} for user in users
+    ]
+    return JsonResponse({'results': results})
+
+@api_view(['GET'])  # Declare that this view handles GET requests
+@permission_classes([])  # No permissions required
+@authentication_classes([])  # No authentication required
+def department_info(request):
+    """
+    Retrieve department information and return as JSON.
+    """
+    try:
+        departments = DepartmentInfo.objects.all()  # Fetch all department objects
+        serializer = serializers.DepartmentInfoSerializer(departments, many=True)  # Serialize the data
+        return Response(serializer.data, status=status.HTTP_200_OK)  # Return serialized data as JSON
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
