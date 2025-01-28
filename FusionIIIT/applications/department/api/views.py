@@ -79,7 +79,7 @@ class DepMainAPIView(APIView):
         student = user.holds_designations.filter(designation__name='student').exists()
         staff = user.holds_designations.filter(designation__name='staff').exists()
 
-        context = browse_announcements()
+        # context = browse_announcements()
         # context_f = faculty()
         user_designation = ""
 
@@ -97,7 +97,7 @@ class DepMainAPIView(APIView):
         response_data = {
             "user_designation": user_designation,
             "department": department_name,
-            "announcements": context,
+            # "announcements": context,
             # "fac_list": context_f
         }
         
@@ -111,13 +111,13 @@ class FacAPIView(APIView):
         user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
 
 
-        context = browse_announcements()
+        # context = browse_announcements()
         
         
         # Serialize the data into JSON formats
         data = {
             "user_designation": user_info.user_type,
-            "announcements": list(context.values()),  # Assuming 'context' is a dictionary
+            # "announcements": list(context.values()),  # Assuming 'context' is a dictionary
         }
 
         return Response(data)
@@ -128,16 +128,26 @@ class StaffAPIView(APIView):
         user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
 
 
-        context = browse_announcements()
+        # context = browse_announcements()
         
         
         # Serialize the data into JSON formats
         data = {
             "user_designation": user_info.user_type,
-            "announcements": list(context.values()),  # Assuming 'context' is a dictionary
+            # "announcements": list(context.values()),  # Assuming 'context' is a dictionary
         }
 
         return Response(data)
+    
+class AnnouncementsDataAPIView(APIView):
+    def get(self,request,bid):
+        filter_branch = decode_branch(bid)
+        if not filter_branch:
+            return Response({'detail': 'Invalid bid value'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        ann = Announcements.objects.filter(department=filter_branch)
+        ann_serialized = AnnouncementSerializer(ann, many=True).data
+        return Response(ann_serialized, status=status.HTTP_200_OK)
     
 class FacultyDataAPIView(APIView):
     def get(self, request, bid):
@@ -214,48 +224,48 @@ def decode_bid(bid):
     except (IndexError, KeyError):
         return None  # Handle malformed bid values
     
-def browse_announcements():
-    """
-    This function is used to browse Announcements Department-Wise
-    made by different faculties and admin.
+# def browse_announcements():
+#     """
+#     This function is used to browse Announcements Department-Wise
+#     made by different faculties and admin.
 
-    @variables:
-        cse_ann - Stores CSE Department Announcements
-        ece_ann - Stores ECE Department Announcements
-        me_ann - Stores ME Department Announcements
-        sm_ann - Stores SM Department Announcements
-        all_ann - Stores Announcements intended for all Departments
-        context - Dictionary for storing all above data
+#     @variables:
+#         cse_ann - Stores CSE Department Announcements
+#         ece_ann - Stores ECE Department Announcements
+#         me_ann - Stores ME Department Announcements
+#         sm_ann - Stores SM Department Announcements
+#         all_ann - Stores Announcements intended for all Departments
+#         context - Dictionary for storing all above data
 
-    """
-    cse_ann = Announcements.objects.filter(department="CSE")
-    ece_ann = Announcements.objects.filter(department="ECE")
-    me_ann = Announcements.objects.filter(department="ME")
-    sm_ann = Announcements.objects.filter(department="SM")
-    ns_ann = Announcements.objects.filter(department="Natural Science")
-    ds_ann = Announcements.objects.filter(department="Design")
-    all_ann = Announcements.objects.filter(department="ALL")
+#     """
+#     cse_ann = Announcements.objects.filter(department="CSE")
+#     ece_ann = Announcements.objects.filter(department="ECE")
+#     me_ann = Announcements.objects.filter(department="ME")
+#     sm_ann = Announcements.objects.filter(department="SM")
+#     ns_ann = Announcements.objects.filter(department="Natural Science")
+#     ds_ann = Announcements.objects.filter(department="Design")
+#     all_ann = Announcements.objects.filter(department="ALL")
     
-    # serailizing the data
-    cse_ann_serialized = AnnouncementSerializer(cse_ann, many=True)
-    ece_ann_serialized = AnnouncementSerializer(ece_ann, many=True)
-    me_ann_serialized = AnnouncementSerializer(me_ann, many=True)
-    sm_ann_serialized = AnnouncementSerializer(sm_ann, many=True)
-    ns_ann_serialized = AnnouncementSerializer(ns_ann, many=True)
-    ds_ann_serialized = AnnouncementSerializer(ds_ann, many=True)
-    all_ann_serialized = AnnouncementSerializer(all_ann, many=True)
+#     # serailizing the data
+#     cse_ann_serialized = AnnouncementSerializer(cse_ann, many=True)
+#     ece_ann_serialized = AnnouncementSerializer(ece_ann, many=True)
+#     me_ann_serialized = AnnouncementSerializer(me_ann, many=True)
+#     sm_ann_serialized = AnnouncementSerializer(sm_ann, many=True)
+#     ns_ann_serialized = AnnouncementSerializer(ns_ann, many=True)
+#     ds_ann_serialized = AnnouncementSerializer(ds_ann, many=True)
+#     all_ann_serialized = AnnouncementSerializer(all_ann, many=True)
 
-    context = {
-        "cse" : cse_ann_serialized.data,
-        "ece" : ece_ann_serialized.data,
-        "me" : me_ann_serialized.data,
-        "sm" : sm_ann_serialized.data,
-        "ds" : ds_ann_serialized.data,
-        "ns" : ns_ann_serialized.data,
-        "all" : all_ann_serialized.data
-    }
+#     context = {
+#         "cse" : cse_ann_serialized.data,
+#         "ece" : ece_ann_serialized.data,
+#         "me" : me_ann_serialized.data,
+#         "sm" : sm_ann_serialized.data,
+#         "ds" : ds_ann_serialized.data,
+#         "ns" : ns_ann_serialized.data,
+#         "all" : all_ann_serialized.data
+#     }
 
-    return context
+#     return context
 
 # def faculty():
 #     """
