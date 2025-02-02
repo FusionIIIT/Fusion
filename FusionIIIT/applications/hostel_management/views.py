@@ -144,7 +144,7 @@ def hostel_view(request, context={}):
             "max_accomodation": hall.max_accomodation,
             "number_students": hall.number_students,
             "vacant_seat": vacant_seat,
-            "assigned_batch": hall.assigned_batch,
+            "assigned_batch": hall.assigned_batch.split(",") if hall.assigned_batch else [],
             "assigned_caretaker": caretaker.staff.id.user.username
             if caretaker
             else None,
@@ -1497,7 +1497,7 @@ class AdminHostelListView(View):
                 "hall_name": hall.hall_name,
                 "max_accomodation": hall.max_accomodation,
                 "number_students": hall.number_students,
-                "assigned_batch": hall.assigned_batch,
+                "assigned_batch": hall.assigned_batch.split(",") if hall.assigned_batch else [],
                 "assigned_caretaker": caretaker.staff.id.user.username
                 if caretaker
                 else None,
