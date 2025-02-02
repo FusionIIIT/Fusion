@@ -2350,26 +2350,26 @@ def student_fine_details(request):
     if not Student.objects.filter(id_id=user_id).exists():
         return Response({"error": "Unauthorized access"}, status=403)
 
-    # Check if user has fines
-    if not HostelFine.objects.filter(student__id_id=user_id).exists():
-        return Response({"error": "No fines recorded"}, status=404)
-
     # Retrieve fines
     student_fines = HostelFine.objects.filter(student__id_id=user_id)
+    # Check if user has fines
+    if student_fines.exists() == False:
+        return Response({"student_fines": []}, status=200)  # Return empty list instead of message
+
     fines_data = [
         {
             "fine_id": fine.fine_id,
             "student_name": fine.student_name,
-            "hall": fine.hall.hall_id,  # Assuming Hall has a 'name' field
-            "amount": str(fine.amount),  # Convert Decimal to string for JSON serialization
+            "hall": fine.hall.hall_id,
+            "amount": str(fine.amount),
             "status": fine.status,
             "reason": fine.reason,
         }
         for fine in student_fines
     ]
-    return Response({"student_fines": fines_data}, status=200)
+    return Response({"student_fines": fines_data}, status=200) 
 
-    # return JsonResponse({'message': 'Nice'}, status=status.HTTP_200_OK)
+ 
 
 ##
 class HostelFineListView(APIView):
