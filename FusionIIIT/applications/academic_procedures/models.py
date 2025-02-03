@@ -617,6 +617,7 @@ class InitialRegistration(models.Model):
     
     class Meta:
         db_table = 'InitialRegistration'
+        unique_together = ('course_id', 'student_id', 'semester_id', 'registration_type')
     
 class FinalRegistration(models.Model):
     '''
@@ -652,6 +653,7 @@ class FinalRegistration(models.Model):
 
     class Meta:
         db_table = 'FinalRegistration'
+        unique_together = ('course_id', 'student_id', 'semester_id', 'registration_type')
 
 
 class CourseRequested(models.Model):

@@ -1725,10 +1725,11 @@ def allot_courses(request):
 
 
             try:
-                InitialRegistration.objects.bulk_create(pre_registrations)
-                StudentRegistrationChecks.objects.bulk_create(student_checks)
-                FinalRegistration.objects.bulk_create(final_registrations)
-                course_registration.objects.bulk_create(course_registrations)
+                with transaction.atomic():
+                    InitialRegistration.objects.bulk_create(pre_registrations)
+                    StudentRegistrationChecks.objects.bulk_create(student_checks)
+                    FinalRegistration.objects.bulk_create(final_registrations)
+                    course_registration.objects.bulk_create(course_registrations)
                 messages.success(request, 'Successfully uploaded!')
                 return HttpResponseRedirect('/academic-procedures/main')
                 # return HttpResponse("Success")
@@ -1737,6 +1738,7 @@ def allot_courses(request):
                 return HttpResponseRedirect('/academic-procedures/main')
                 # return HttpResponse("Success")
     except Exception as e:
+        print(e)
         messages.error(request, 'Error: Query does not match. Please check if all the data input is in the correct format.')
         return HttpResponseRedirect('/academic-procedures/main')
         # return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
