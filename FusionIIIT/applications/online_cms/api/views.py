@@ -91,6 +91,7 @@ def delete_slide(request, slide_id):
         return Response(status=status.HTTP_204_NO_CONTENT)  # No content after deletion
     except CourseDocuments.DoesNotExist:
         return Response({"error": "Slide not found"}, status=status.HTTP_404_NOT_FOUND)
+        
 from applications.academic_information.models import Student
 from applications.programme_curriculum.models import Course as Courses, CourseInstructor
 from applications.academic_procedures.models import course_registration
