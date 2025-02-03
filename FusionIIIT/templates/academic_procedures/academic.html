@@ -22,6 +22,39 @@
     }
 
 </style>
+
+<style>
+    .dashboard-container {
+        margin: 0 3rem;
+        display: grid;
+        gap: 3rem;
+        grid-template-columns: 1fr;
+    }
+
+    .card-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    @media (min-width:800px) {
+        .dashboard-container {
+            grid-template-columns: 3fr 7fr;
+        }
+        .module-container {
+            grid-column: 1/-1;
+        }
+    }
+
+    @media (min-width:1200px) {
+        .dashboard-container {
+            grid-template-columns: 3fr 7fr 3fr;
+        }
+        .module-container {
+            grid-column:auto;
+        }
+    }
+</style>
 {% endblock css %}
 
 
@@ -30,13 +63,12 @@
         {% include 'dashboard/navbar.html' %}
     {% endblock %}
 
-    <div class="ui stackable doubling grid">
+    <div class="dashboard-container">
 
-        {% comment %}The left-margin segment!{% endcomment %}
-        <div class="column"></div>
+        
 
         {% comment %}The left-rail segment starts here!{% endcomment %}
-        <div class="three wide column">
+        <div class="card-container">
             {% comment %}The user image card starts here!{% endcomment %}
             {% block usercard %}
                 {% include 'globals/usercard.html' %}
@@ -46,8 +78,8 @@
             <div class="ui divider"></div>
 
             {% comment %}The Tab-Menu starts here!{% endcomment %}
-            <div class="ui huge fluid vertical pointing menu" id="vtab" 
-                 style="max-width: 320px;">
+            <div class="ui huge fluid vertical pointing menu" style="max-width: 25rem;">
+
                 {% if student_flag %}
                     <a class="active item" data-tab="one">
                         <B>Current Semester</B>
@@ -151,7 +183,7 @@
                     {%  include 'academic_procedures/registeredCourse.html' %}
                 </div>
                 <div class="ui tab segment" data-tab="pre_registration">
-                    {%  include 'academic_procedures/register.html' %}
+                    {%  include 'academic_procedures/auto_pre_registration.html' %}
                 </div>
                 <div class="ui tab segment" data-tab="final_registration">
                     {%  include 'academic_procedures/finalregister.html' %}
@@ -172,7 +204,12 @@
                     <a class="item" data-tab="miscellaneous_5" >
                         Add/drop courses
                     </a>
-                    
+                    <a class="item" data-tab="miscellaneous_6" >
+                        Backlogs
+                    </a>
+                    <a class="item" data-tab="miscellaneous_7" >
+                        Replace
+                    </a>
                 </div>
                 <div class="ui active tab segment " data-tab="miscellaneous_2" >
                     <div class="ui pointing secondary menu">
@@ -238,7 +275,12 @@
                         {%  include 'academic_procedures/dropCourse.html' %}
                     </div>                
                 </div>
-                
+                <div class="ui tab segment" data-tab="miscellaneous_6" >
+                    {%  include 'academic_procedures/backlog.html' %}
+                </div>  
+                <div class="ui tab segment" data-tab="miscellaneous_7" >
+                    {%  include 'academic_procedures/replace.html' %}
+                </div>  
                 
             </div>
             
@@ -293,6 +335,9 @@
                 {% comment %}
                     TODO: the right rail!
                 {% endcomment %}
+                {% block sidepanel%} 
+                {% include 'notifications/academic_procedures_sidepanel.html' %} 
+                {% endblock %}
             </div>
         </div>
         {% comment %}The right-rail segment ends here!{% endcomment %}

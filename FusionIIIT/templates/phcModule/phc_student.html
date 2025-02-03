@@ -37,24 +37,47 @@
             <div class="row">
                 {% comment %}The Tab-Menu starts here!{% endcomment %}
                 <div class="ui large fluid vertical pointing menu">
-                    <a class="active item" data-tab="first">
+                     {% comment %} <a class="active item" data-tab="first">
                         Appointments/Requests
                         <i class="right floated chevron right icon"></i>
-                    </a>
+                    </a>  {% endcomment %}
 
-                    <a class="item" data-tab="second">
+                    <a class="item" data-tab="first">
                         History
                         <i class="right floated chevron right icon"></i>
                     </a>
 
-                    <a class="item" data-tab="third">
+                    <a class="item" data-tab="second">
                         Feedback
                         <i class="right floated chevron right icon"></i>
                     </a>
-                    <a class="item" data-tab="fourth">
-                        Doctor Schedule
+                    <a class="item" data-tab="third">
+                        Schedule
                         <i class="right floated chevron right icon"></i>
                     </a>
+
+                    {% if 'student' != request.user.extrainfo.user_type %}
+                        <a class="item" data-tab="fourth">
+                            Medical Relief
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                    {% endif %}
+                    <a class="item" data-tab="fifth">
+                        Announcements
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    {% comment %} <a class="item" data-tab="sixth">
+                        Medical Profile
+                        <i class="right floated chevron right icon"></i>
+                    </a> {% endcomment %}
+
+                    {% comment %} {% if usertype == "fx" %}
+                        <a class="item" data-tab="fifth">
+                            Medical Relief
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                    {% endif %} {% endcomment %}
 
                 </div>
                 {% comment %}The Tab-Menu ends here!{% endcomment %}
@@ -68,15 +91,15 @@
         {% comment %}The central-rail segment starts here!{% endcomment %}
         <div class="eight wide column">
             {% comment %}The Appointments Form starts here!{% endcomment %}
-            <div class="ui active tab segment" data-tab="first">
+            {% comment %} <div class="ui active tab segment" data-tab="first">
                 {% block appointment %}
                     {% include 'phcModule/appointment.html' with users=users doctors=doctors%}
                 {% endblock %}
-            </div>
+            </div>  {% endcomment %}
             {% comment %}The appointment Form ends here!{% endcomment %}
 
             {% comment %}The patient history starts here!{% endcomment %}
-            <div class="ui tab segment" data-tab="second">
+            <div class="ui active tab segment" data-tab="first">
                 {% block history %}
                     {% include 'phcModule/history.html' with complaints=complaints appointments=appointments hospitals=hospitals prescription=prescription medicines=medicines ambulances=ambulances%}
                 {% endblock %}
@@ -85,22 +108,54 @@
 
 
             {% comment %}The complaint/feedback starts here!{% endcomment %}
-            <div class="ui tab segment" data-tab="third">
+            <div class="ui tab segment" data-tab="second">
                 {% block feedback %}
                     {% include 'phcModule/feedback_student.html'%}
                 {% endblock %}
             </div>
-            <div class="ui tab segment" style='height:700px;width:1000px;' data-tab="fourth" >
+            <div class="ui tab segment" style='height:700px;width:1000px;' data-tab="third" >
                 {% block schedule_student %}
                     {% include 'phcModule/schedule_student.html'%}
                 {% endblock %}
             </div>
+                {% if global_var != 'Accounts Admin' %}
+                <div class="ui tab segment" style='height:700px;width:1000px;' data-tab="fourth" >
+                    {% block medical_relief %}
+                        {% include 'phcModule/medical_relief.html'%}
+                    {% endblock %}
+                </div> 
+                {% endif %}
+
+                {% if global_var == 'Accounts Admin' %}
+                <div class="ui tab segment" style='height:700px;width:1000px;' data-tab="fourth" >
+                    {% block account_admin_medical_relief %}
+                        {% include 'phcModule/account_admin_medical_relief.html' with acc_admin_inbox=acc_admin_inbox medicalRelief=medicalRelief %}
+                    {% endblock %}
+                </div> 
+                {% endif %}
+
+                <div class="ui tab segment" data-tab="fifth">
+                {% block announcements %}
+                    {% include 'phcModule/announce_stud.html' with complaints=complaints prescription=prescription medicines=medicines announcement=announcements %}
+                {% endblock %}
+            </div>
+
+            {% comment %} <div class="ui tab segment" data-tab="sixth">
+                {% block medical_profile %}
+                    {% include 'phcModule/medical_profile.html' with medical_profile=medical_profile %}
+                {% endblock %}
+            </div> {% endcomment %}
+           
             {% comment %}The complaint/feedback ends here!{% endcomment %}
         </div>
         {% comment %}The central-rail segment ends here!{% endcomment %}
 
         {% comment %}The right-rail segment starts here!{% endcomment %}
-        <div class="three wide column">
+        {% comment %} <div class="three wide column">
+             <div class="row">
+                {% block sidepanel %} {% include 'notifications/sidepanel.html' with notifications=notifications %}
+                {% endblock %}
+            </div>  {% endcomment %}
         </div>
         {% comment %}The right-rail segment ends here!{% endcomment %}
 

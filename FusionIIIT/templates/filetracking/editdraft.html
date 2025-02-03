@@ -1,0 +1,156 @@
+{% extends 'filetracking/filetracking.html' %}
+{% load static %}
+
+{% block filetracking_tab %}
+
+    <div class="ui pointing secondary menu">
+        <h3>
+            <a class="active item" data-tab="editdraft">
+                Edit Draft 
+            </a>
+        </h3>
+    </div>
+
+    <div class="ui active tab" data-tab="editdraft">
+        <div class="ui two item menu">
+            <a class="item"><b>Created By :-</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.user}}-{{file.designation}}</b></a>
+            <a class="item"><b>File ID :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.department.name}}-{{file.upload_date.year}}-{{file.upload_date.month}}-#{{file.id}}</b></a>
+        </div>
+
+        <form class="ui large form" method="POST" enctype="multipart/form-data" id="form1">
+            {% csrf_token %}
+
+            <div class="ui fluid card">
+                <div class="content">
+                    <center>
+                        <span class="ui header">Subject: </span>
+                        <br> 
+                        <b>
+                            <input type="text" name="subject" style="margin-top:10px" value="{{ file.subject }}">
+                        </b>
+                    </center>
+                    <div class="ui divider"></div>
+
+                    <div class="content" style=" padding-left: 18px; padding-top: 0.1px; height: auto; overflow-y: auto;">
+                        <div class="item">
+                            <div class="field">
+                                <label>
+                                    Description:
+                                </label>
+                                <textarea class="overflow-visible" rows=3 style="white-space:initial; font-family: 'Arial';" name="description">{{ file.description }}</textarea>
+                                <div class="ui divider"></div>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label>Remarks:<textarea rows="2" name="remarks">{{remarks}}</textarea></label>
+                        </div>
+
+                        <div class="field" style="margin-top: 25px">                                
+                            <label> Send as: {{ designation_name }}</label>
+                            <input type="hidden" name="sender" value="{{ designation_id }}">
+                        </div>
+
+                        <div class="field">
+                            <label>Forward To:
+                                <input type ="search" id="input_search" list="input_list" name="receiver">
+                                <datalist id="input_list"></datalist>
+                            </label>
+                        </div>
+
+                        <div class="field">
+                            <label>Receiver Designation:
+                                <select id="receiver_dropdown" name="receive"></select>
+                            </label>
+                        </div>
+
+                        <div class="field" style="margin-top: 20px">
+                             {% if file.upload_file %}
+                                <label for="file_link">Chosen Files: </label>
+
+                                <a id="file_link" href="{{file.upload_file.url}}" target="_blank">{{file.upload_file.name}}</a>
+
+                                <label for="file" style="margin-top:10px">Replace Files: </label>
+                                <input type="file" id="file" name="myfile" style="margin-top:5px" accept=".pdf, .jpg, .jpeg, .png, .zip" value="
+                                {{file.upload_file.url}}">
+
+                            {% else %} 
+                                <label for="file">Attach Files: (Maximum File Size 10 MB)</label>
+                                <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png, .zip">
+                            {% endif %} 
+                        </div>                        
+                    </div>
+
+                    <button type="submit" name="send" class="ui large right floated primary button" style="margin-top:20px; float: right;">
+                        Send<i class="ui send icon right floated"></i>
+                    </button>
+
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('#input_search').on('blur', function() {
+                var inputValue = $(this).val();
+                fetchDropdownValues(inputValue);
+            });
+
+            function fetchDropdownValues(inputValue) {
+                $.ajax({
+                    url: `/filetracking/getdesignations/${inputValue}/`,
+                    method: 'GET',
+                    success: function(data) {
+                        populateDropdown(data);
+                    },
+                    error: function() {
+                        console.error('Error fetching dropdown values');
+                    }
+                });
+            }
+
+            function populateDropdown(values) {
+                console.log(values)
+                var dropdown = $('#receiver_dropdown');
+                dropdown.empty();
+                $.each(values, function(index, value) {
+                    dropdown.append($('<option>').text(value).val(value));
+                });
+            }
+        });
+
+        $('#input_search').keyup(function(){
+
+            console.log('asdasd');
+            value = $('#input_search').val();
+
+            $.ajax({
+                type: 'POST',
+                url: '/filetracking/ajax_dropdown/',
+                data: {
+                    'value': value,
+                    'csrfmiddlewaretoken': '{{csrf_token}}'
+                },
+                dataType: 'json',
+                success: function(response){
+                    console.log('coming-----------------------');
+
+                    all_users = JSON.parse(response.users);
+                    console.log(all_users[0].fields.username);
+                    app = []
+                    $('#input_list').html('');
+                    for(var i=0;i<all_users.length;i++){
+                        $('#input_list').append('<option value="'+all_users[i].fields.username+'">'+all_users[i].fields.username+'</option>');
+                    }
+                },
+                error: function(rs, e){
+                    console.log('error-------');
+                },
+            });
+            console.log("dsfagdfdshadf");
+        });
+    </script>
+
+{% endblock %}
+

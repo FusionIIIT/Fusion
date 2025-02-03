@@ -1,5 +1,5 @@
-from django.conf.urls import url
-
+from django.conf.urls import url, include
+from django.urls import path
 from . import views
 
 app_name = 'iwdModuleV2'
@@ -36,5 +36,38 @@ urlpatterns = [
     url(r'milestoneView/$', views.milestoneView, name='Milestones'),
     url(r'addendumView/$', views.addendumView, name='Addendum View'),
     url('agreementView/$', views.agreementView, name='Agreement VIew'),
-    url(r'corrigendumView/$', views.corrigendumView, name='Corrigendum View')
+    url(r'corrigendumView/$', views.corrigendumView, name='Corrigendum View'),
+    url(r'^requestsView/',views.requestsView, name='Requests view'),
+    url(r'^createdRequestsView/',views.createdRequests, name='Created Requests view'),
+    url(r'^handleEngineerProcessRequests/', views.handleEngineerProcessRequests, name='Engineer-Process-Requests'),
+    url(r'^engineerProcessedRequestsView/',views.engineerProcessedRequests, name='Engineer-Processed-Requests view'),
+    url(r'^handleDeanProcessRequests/', views.handleDeanProcessRequests, name='Dean-Process-Requests'),
+    url(r'^deanProcessedRequestsView/',views.deanProcessedRequests, name='Dean-Processed-Requests view'),
+    url(r'^handleDirectorApprovalRequests/', views.handleDirectorApprovalRequests, name='Director-Approval-Requests'),
+    url(r'^updateRejectedRequests/', views.updateRejectedRequests, name='Update-Rejected-Requests'),
+    url(r'^handleUpdateRequests/', views.handleUpdateRequests, name='Handle-Update-Requests'),
+    # url('rejectedRequests/', views.rejectedRequests, name='Rejected-Requests'),
+    url(r'^rejectedRequestsView/',views.rejectedRequests, name='Rejected Requests view'),
+    url(r'^requestsStatus/', views.requestsStatus, name='Requests-Status'),
+    url(r'^fetchDesignations/', views.fetchDesignations, name='Fetch-Designations'),
+    url(r'^fetchRequest/', views.fetchRequest, name='Fetch-Request'),
+    url(r'^issueWorkOrder/', views.issueWorkOrder, name='Issue Work Order'),
+    url(r'^workOrder/', views.workOrder, name='Work Order'),
+    url(r'^requestsInProgess/', views.requestsInProgess, name='Requests In Progress'),
+    url(r'^workCompleted/', views.workCompleted, name='Work Completed'),
+    url(r'^generateFinalBill/', views.generateFinalBill, name='Generate-Final-Bill'),
+    url(r'^handleBillGeneratedRequests/', views.handleBillGeneratedRequests, name='Handle-Bill-Generated-Requests'),
+    url(r'^generatedBillsView/', views.generatedBillsView, name='Generated-Bills-View'),
+    url(r'^handleProcessedBills/', views.handleProcessedBills, name='Handle-Processed-Bills'),
+    url(r'^auditDocumentView/', views.auditDocumentView, name='Audit-Document-View'),
+    url(r'^auditDocument/', views.auditDocument, name='Audit-Document'),
+    url(r'^settleBillsView/', views.settleBillsView, name='Settle-Bills-View'),
+    url(r'^handleSettleBillRequests/', views.handleSettleBillRequests, name='Handle-Settle-Bill-Requests'),
+    url(r'^viewBudget/', views.viewBudget, name='View-Budget'),
+    url(r'^budget/', views.budget, name='Budget'),
+    url(r'^addBudget/', views.addBudget, name='Add-Budget'),
+    url(r'^editBudgetView/', views.editBudgetView, name='Edit-Budget-View'),
+    url(r'^editBudget/', views.editBudget, name='Edit-Budget'),
+    path('view_file/<id>/<url>',views.view_file,name="view_file"),
+
 ]

@@ -37,70 +37,46 @@ Dashboard
         {% comment %}The user image card ends here!{% endcomment %}
 
         <div class="ui divider"></div>
+        {% if 'staff' != request.user.extrainfo.user_type %}
 
         {% comment %}The Tab-Menu starts here!{% endcomment %}
         <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
 
-            <a class="item disabled" href="{% url 'globals:profile' %}">
-                View Professional Profile
+            <a class="item" href="{% url 'globals:profile' %}"  style="display: flex; justify-content: space-between; align-items: center;">
+                View Professional Profile 
                 <i class="right floated chevron right icon"></i>
             </a>
-            {% if "dean_rspc" in designation %}
-            <a class="item" href = "../office/officeOfDeanRSPC">
-               Project Requests
-               <i class="right floated chevron right icon"></i>
-           </a>
-            {% endif %}
-       {% if "dean_rspc" in designation %}
-            <a class="item" href = "../eis/rspc_profile">
-               RSPC Profile
-               <i class="right floated chevron right icon"></i>
-           </a>
-       {% endif %}
 
         </div>
         {% comment %}The Tab-Menu ends here!{% endcomment %}
-
+        {% endif %}
 
         {% if 'student' != request.user.extrainfo.user_type %}
 
         {% comment %}The Tab-Menu starts here!{% endcomment %}
         <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
-            <a class="item disabled" href="/hr2/administrativeProfile">
+            <a class="item
+            " href="/hr2/administrativeProfile" style="display: flex; justify-content: space-between; align-items: center;">
                 View Administrative Profile
                 <i class="right floated chevron right icon"></i>
             </a>
         </div>
         {% comment %}The Tab-Menu ends here!{% endcomment %}
 
+        <!-- {% if "dean_rspc" in designation %}
+        <a class="item" href = "../office/officeOfDeanRSPC">
+           Project Requests
+           <i class="right floated chevron right icon"></i>
+        </a>
         {% endif %}
-
-        {% comment %}The Tab-Menu starts here!{% endcomment %}
-
-
-        {% if request.user.extrainfo.user_type == 'faculty' %}
-        {%for desig in designat%}
-        {% if 'hradmin' == desig.designation.name %}
-
-        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
-
-            <a class="item" href="{% url 'hr2:hradmin' %}">
-                Hr-Admin
+        {% if "dean_rspc" in designation %}
+                <a class="item" href = "../eis/rspc_profile">
+                RSPC Profile
                 <i class="right floated chevron right icon"></i>
             </a>
+        {% endif %} -->
 
-        </div>
         {% endif %}
-        {%endfor %}
-        {% endif %}
-        {% comment %}The Tab-Menu ends here!{% endcomment %}
-
-
-
-
-
-
-
 
     </div>
     {% comment %}
@@ -116,7 +92,6 @@ Dashboard
     <div class="eight wide column">
         <div class="ui top attached tabular large menu">
             <a class="active item" data-tab="first">Notifications</a>
-            <a class="item" data-tab="second">News</a>
             <a class="item" data-tab="third">Announcements</a>
         </div>
         <div class="ui bottom attached active tab segment" data-tab="first">
@@ -136,9 +111,6 @@ Dashboard
                 </div>
             </div>
 
-        </div>
-        <div class="ui bottom attached tab segment" data-tab="second">
-            Work in Progress, coming soon!
         </div>
         <div class="ui bottom attached tab segment" data-tab="third">
                 <div id="textSegmentDiv">

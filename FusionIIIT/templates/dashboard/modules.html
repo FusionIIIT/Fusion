@@ -7,160 +7,204 @@
         <div class="ui fluid card" style="padding-top: 12px; padding-bottom: 24px; max-width: 18vw;">
             <a class="ui top attached black label">
                 <span class="ui inverted header">Modules</span>
-                <i class="setting icon right floated"></i>
                 <i class="chevron up icon right floated" id="toggleIcon" onclick="toggleContent()"></i>
             </a>
 
             <div class="content modulesContent">
-                <div class="ui two column stackable doubling grid">
-                    {% comment %}A single modules row starts here!{% endcomment %}
+                <div style="display: flex; flex-wrap: wrap;">
 
-                    {% comment %}A single modules row ends here!{% endcomment %}
 
-                    {% comment %}A single modules row starts here!{% endcomment %}
-                    <div class="row">
-                        <div class="column">
-                            <a class="ui large label" href="/academic-procedures">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui university icon big"></i>
-                                    </div>
+                    {% if request.session.moduleAccessRights.course_registration %}
 
-                                    <div class="row">
-                                        <span class="ui sub header centered">Academics Module</span>
-                                    </div>
+                    <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                        <a class="ui large label" style="height: 120px; width:100%" style="height: 120px; width:100%"
+                            href="/academic-procedures">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui university icon big"></i>
                                 </div>
-                            </a>
-                        </div>
 
-                        <div class="column">
-                            <a class="ui large label" href="/programme_curriculum">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui book icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Programme And Curriculum Module</span>
-                                    </div>
+                                <div class="row">
+                                    <span class="ui sub header centered">Academics</span>
                                 </div>
-                            </a>
-                        </div>
+                            </div>
+                        </a>
                     </div>
-                    {% comment %}A single modules row ends here!{% endcomment %}
+                    {% endif %}
 
-                    {% comment %}A single modules row starts here!{% endcomment %}
-                    <div class="row">
-                        <div class="column">
-                            <a class="ui large label disabled" href="/mess">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui food icon big"></i>
-                                    </div>
 
-                                    <div class="row">
-                                        <span class="ui sub header centered">Central Mess</span>
-                                    </div>
+                    {% if request.session.moduleAccessRights.program_and_curriculum %}
+
+                    <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                        <a class="ui large label" style="height: 120px; width:100%" href="/programme_curriculum">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui book icon big"></i>
                                 </div>
-                            </a>
-                        </div>
 
-                        <div class="column">
-                            <a class="ui large label disabled" href="/visitorhostel">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui hotel icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Visitor's Hostel</span>
-                                    </div>
+                                <div class="row">
+                                    <span class="ui sub header centered">Programme And Curriculum </span>
                                 </div>
-                            </a>
-                        </div>
+                            </div>
+                        </a>
                     </div>
-                    {% comment %}A single modules row ends here!{% endcomment %}
+                    {% endif %}
 
-                    {% comment %}A single modules row starts here!{% endcomment %}
-                    <div class="row">
-                        <div class="column">
-                            <a class="ui large label disabled" href="/healthcenter">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui first aid icon big"></i>
-                                    </div>
 
-                                    <div class="row">
-                                        <span class="ui sub header centered">Healthcare Center</span>
-                                    </div>
+                    {% if request.session.moduleAccessRights.mess_management %}
+
+                    <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                        <a class="ui large label" style="height: 120px; width:100%" href="/mess">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui food icon big"></i>
                                 </div>
-                            </a>
-                        </div>
 
-                        <div class="column">
-                            <a class="ui large label disabled" href="/filetracking">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui wpforms icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">File Tracking</span>
-                                    </div>
+                                <div class="row">
+                                    <span class="ui sub header centered">Mess Management</span>
                                 </div>
-                            </a>
-                        </div>
+                            </div>
+                        </a>
                     </div>
-                    {% comment %}A single modules row ends here!{% endcomment %}
+                    {% endif %}
 
-                    {% comment %}A single modules row starts here!{% endcomment %}
-                    <div class="row">
-                        <div class="column">
-                            <a class="ui large label disabled" href="/spacs">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui student icon big"></i>
-                                    </div>
+                    {% if request.session.moduleAccessRights.visitor_hostel %}
 
-                                    <div class="row">
-                                        <span class="ui sub header centered">Scholarship Portal</span>
-                                    </div>
+
+
+                    <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                        <a class="ui large label" style="height: 120px; width:100%" href="/visitorhostel">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui hotel icon big"></i>
                                 </div>
-                            </a>
-                        </div>
 
-                        <div class="column">
-                            <a class="ui large label disabled" href="/complaint">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui line chart icon big"></i>
-                                    </div>
-
-                                    <div class="row">
-                                        <span class="ui sub header centered">Complaint System</span>
-                                    </div>
+                                <div class="row">
+                                    <span class="ui sub header centered">Visitor's Hostel</span>
                                 </div>
-                            </a>
-                        </div>
+                            </div>
+                        </a>
                     </div>
-                    {% comment %}A single modules row ends here!{% endcomment %}
-                    <div class="row">
-                        <div class="column">
-                            <a class="ui large label disabled" href="/placement">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui bitcoin icon big"></i>
-                                    </div>
+                    {% endif %}
 
-                                    <div class="row">
-                                        <span class="ui sub header centered">Placement Cell</span>
-                                    </div>
+                    {% if request.session.moduleAccessRights.phc %}
+
+
+                    <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                        <a class="ui large label" style="height: 120px; width:100%" href="/healthcenter">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui first aid icon big"></i>
                                 </div>
-                            </a>
-                        </div>
 
-                        <div class="column">
-                            <a class="ui large label disabled" href="{% url 'estate_module_home' %}">
+                                <div class="row">
+                                    <span class="ui sub header centered">Healthcare Center</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+
+
+
+                    {% if request.session.moduleAccessRights.fts %}
+
+                    <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                        <a class="ui large label" style="height: 120px; width:100%" href="/filetracking">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui wpforms icon big"></i>
+                                </div>
+
+                                <div class="row">
+                                    <span class="ui sub header centered">File Tracking</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+
+
+
+                    {% if request.session.moduleAccessRights.spacs %}
+
+                    <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                        <a class="ui large label" style="height: 120px; width:100%" href="/spacs">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui student icon big"></i>
+                                </div>
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Scholarship Portal</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% if request.session.moduleAccessRights.complaint_management %}
+
+
+                    <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                        <a class="ui large label" style="height: 120px; width:100%" href="/complaint">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui line chart icon big"></i>
+                                </div>
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Complaint System</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+
+                    {% endif %}
+
+
+
+
+                    {% if request.session.moduleAccessRights.placement_cell %}
+
+                    <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                        <a class="ui large label" style="height: 120px; width:100%" href="/placement">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui bitcoin icon big"></i>
+                                </div>
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Placement Cell</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+
+
+                    <!-- <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                            <a class="ui large label  "  style="height: 120px; width:100%" href="{% url 'estate_module_home' %}">
                                 <div class="ui centered grid">
                                     <div class="row">
                                         <i class="ui line industry icon big"></i>
@@ -171,43 +215,55 @@
                                     </div>
                                 </div>
                             </a>
-                        </div>
-                    </div>
-                    {% comment %}A single modules row ends here!{% endcomment %}
+                        </div> -->
 
-                    <div class="row">
-                        <div class="column">
-                            <a class="ui large label disabled" href="/dep">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui student icon big"></i>
-                                    </div>
 
-                                    <div class="row">
-                                        <span class="ui sub header centered">Department Portal</span>
-                                    </div>
+                    {% if request.session.moduleAccessRights.department %}
+
+                    <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                        <a class="ui large label" style="height: 120px; width:100%" href="/dep">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui student icon big"></i>
                                 </div>
-                            </a>
-                        </div>
-                        <div class="column">
-                            <a class="ui large label disabled" href="/research_procedures">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui university icon big"></i>
-                                    </div>
 
-                                    <div class="row">
-                                        <span class="ui sub header centered">Research Module</span>
-                                    </div>
+                                <div class="row">
+                                    <span class="ui sub header centered">Department Portal</span>
                                 </div>
-                            </a>
-                        </div>
+                            </div>
+                        </a>
                     </div>
-                    {% comment %}A single modules row ends here!{% endcomment %}
+                    {% endif %}
 
-                    <div class="row">
-                        <div class="column">
-                            <a class="ui large label disabled" href="/counselling">
+
+
+
+                    {% if request.session.moduleAccessRights.rspc %}
+
+                    <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                        <a class="ui large label " style="height: 120px; width:100%" href="/research_procedures">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui university icon big"></i>
+                                </div>
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Research Module</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+
+
+                    <!-- <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                            <a class="ui large label"  style="height: 120px; width:100%" href="/counselling">
                                 <div class="ui centered grid">
                                     <div class="row">
                                         <i class="ui edit outline icon big"></i>
@@ -218,29 +274,204 @@
                                     </div>
                                 </div>
                             </a>
-                        </div>
-                        <div class="column">
-                            <a class="ui large label disabled" href="/leave">
-                                <div class="ui centered grid">
-                                    <div class="row">
-                                        <i class="ui file icon big"></i>
-                                    </div>
+                        </div> -->
 
-                                    <div class="row">
-                                        <span class="ui sub header centered">Leave Module</span>
-                                    </div>
+
+                    <!-- <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                        <a class="ui large label " style="height: 120px; width:100%" href="/leave">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="plane icon big"></i>
                                 </div>
-                            </a>
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Leave Module</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div> -->
+
+
+
+
+                    {% if request.session.moduleAccessRights.purchase_and_store %}
+
+                    <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                        <a class="ui large label" style="height: 120px; width:100%" href="/purchase-and-store">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui edit outline icon big"></i>
+                                </div>
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Purchase and Store</span>
+                                </div>
+                            </div>
+                        </a>
                     </div>
+                    {% endif %}
+
+
+                    {% if request.session.moduleAccessRights.hr %}
+
+                    <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                        <a class="ui large label" style="height: 120px; width:100%" href="/hr2/dashboard">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui file icon big"></i>
+                                </div>
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Human Resource</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+
+
+
+
+
+                    {% if request.session.moduleAccessRights.examinations %}
+
+                    <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                        <a class="ui large label" style="height: 120px; width:100%" href="/examination">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui edit outline icon big"></i>
+                                </div>
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Examination </span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+
+
+
+
+
+
+
+
+
+                    {% if request.session.moduleAccessRights.gymkhana %}
+
+                    <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                        <a class="ui large label" style="height: 120px; width:100%" href="/gymkhana">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui edit outline icon big"></i>
+                                </div>
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Gymkhana </span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+
+
+
+                    {% if request.session.moduleAccessRights.iwd %}
+
+                    <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                        <a class="ui large label" style="height: 120px; width:100%" href="/iwdModuleV2">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="building icon big"></i>
+                                </div>
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Institute Work Departments</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+
+
+
+
+                    {% if request.session.moduleAccessRights.hostel_management %}
+
+                    <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                        <a class="ui large label" style="height: 120px; width:100%" href="/hostelmanagement">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui hotel icon big"></i>
+                                </div>
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Hostel Management </span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% if request.session.moduleAccessRights.other_academics %}
+
+                    <div style="width: calc(50% - 10px);
+                        margin: 5px;
+                        box-sizing: border-box;">
+                        <a class="ui large label" style="height: 120px; width:100%" href="/otheracademic">
+                            <div class="ui centered grid">
+                                <div class="row">
+                                    <i class="ui university icon big"></i>
+                                </div>
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Other Academic Procedure</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endif %}
+
+
                 </div>
+                {% comment %}
+                <a class="ui bottom attached blue label">
+                    <i class="right arrow icon right floated"></i>
+                </a>
+                {% endcomment %}
             </div>
-            {% comment %}
-            <a class="ui bottom attached blue label">
-                <i class="right arrow icon right floated"></i>
-            </a>
-            {% endcomment %}
         </div>
     </div>
 </div>
 {% comment %}The Modules End here!{% endcomment %}
-{% endblock %}
+
+<script>
+    function toggleContent() {
+        $('.modulesContent').toggle();
+
+        if ($('.modulesContent').is(':visible')) {
+            $('#toggleIcon').removeClass("chevron down");
+            $('#toggleIcon').addClass("chevron up");
+        }
+        else if (!$('.modulesContent').is(':visible')) {
+            $('#toggleIcon').removeClass("chevron up");
+            $('#toggleIcon').addClass("chevron down");
+        }
+    }
+
+</script>
+{% endblock %} 

@@ -39,28 +39,37 @@
                 <div class="ui large fluid vertical pointing menu">
 
                     <a class=" active item" data-tab="fourth">
-                        Appointment
+                        Patient Logs
                         <i class="right floated chevron right icon"></i>
                     </a>
-                    <a class="item" data-tab="fifth">
-                        Prescribe
+                    {% comment %} <a class="item" data-tab="fifth">
+                        Generate Report
                         <i class="right floated chevron right icon"></i>
-                    </a>
+                    </a> {% endcomment %}
                     <a class="item" data-tab="seventh">
                         Manage Stock
                         <i class="right floated chevron right icon"></i>
                     </a>
                     <a class="item" data-tab="eigth">
-                        Doctor Schedule
+                        Schedule
                         <i class="right floated chevron right icon"></i>
                     </a>
                     <a class="item" data-tab="ninth">
-                        Doctors
+                        Doctors/Pathologists
                         <i class="right floated chevron right icon"></i>
                     </a>
 
-                    <a class=" item" data-tab="third">
+                    <a class="item" data-tab="third">
                         Feedback/Response
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    
+                    <a class="item" data-tab="tenth">
+                        Make Announcements
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="item" data-tab="elventh">
+                        Medical Relief
                         <i class="right floated chevron right icon"></i>
                     </a>
                 </div>
@@ -73,7 +82,7 @@
         {% comment %}The left-rail segment ends here!{% endcomment %}
 
         {% comment %}The central-rail segment starts here!{% endcomment %}
-        <div class="eight wide column">
+        <div class="eight wide column" style="z-index: 10;">
             {% comment %}The complaint/feedback starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="third" style='height:650px;width:820px;overflow-x:scroll'>
                 {% block feedback %}
@@ -84,25 +93,25 @@
 
             {% comment %}The ap `pointment approval tab starts here!{% endcomment %}
             <div class="ui active tab segment" data-tab="fourth" style='height:650px;width:820px;overflow-x:scroll'>
-                {% block comapproval %}
-                    {% include 'phcModule/comapproval.html' with all_hospitals=all_hospitals all_ambulances=all_ambulances appointments_today=appointments_today appointments_approve=appointments_approve %}
+                {% block patientlog %}
+                    {% include 'phcModule/patientlog.html' with live_meds=live_meds %}
                 {% endblock %}
             </div>
             {% comment %}The appointment approval tab ends here!{% endcomment %}
 
             {% comment %}The compounder prescription tab starts here!{% endcomment %}
-            <div class="ui tab segment" data-tab="fifth">
+            {% comment %} <div class="ui tab segment" data-tab="fifth">
                 {% block comp_prescription %}
                     {% include 'phcModule/comp_prescription.html' with appointments_today=appointments_today stocks=stocks doctors=doctors users=users %}
                 {% endblock %}
-            </div>
+            </div> {% endcomment %}
             {% comment %}The appointment approval tab ends here!{% endcomment %}
 
 
             {% comment %}The Manage Stocks Form starts here!{% endcomment %}
-            <div class="ui tab segment" data-tab="seventh">
+            <div class="ui tab segment" data-tab="seventh" style="height:650px;width:820px;overflow-x: scroll;">
                 {% block stock %}
-                    {% include 'phcModule/manage_stock.html' with stocks=stocks inventories=inventories %}
+                    {% include 'phcModule/manage_stock.html' with medicine=medicine stocks=stocks inventories=inventories %}
                 {% endblock %}
             </div>
             {% comment %}The Manage Stocks Form ends here!{% endcomment %}
@@ -110,22 +119,38 @@
             {% comment %}The Schedule Form starts here!{% endcomment %}
             <div class="ui tab segment" style='height:700px;width:1000px;' data-tab="eigth">
                 {% block schedule %}
-                    {% include 'phcModule/schedule.html' with days=days count=count doctors=doctors%}
+                    {% include 'phcModule/schedule.html' with days=days count=count doctors=doctors pathologists=pathologists%}
                 {% endblock %}
             </div>
             {% comment %}The Schedule Form ends here!{% endcomment %}
-            {% comment %}The Doctors starts here!{% endcomment %}
+            {% comment %}The Doctors and Pathologists starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="ninth">
                 {% block doctors %}
-                    {% include 'phcModule/doctors.html' with doctors=doctors%}
+                    {% include 'phcModule/doctors.html' with doctors=doctors pathologists=pathologists %}
                 {% endblock %}
             </div>
-            {% comment %}The Doctors Form ends here!{% endcomment %}
+
+              <div class="ui tab segment" data-tab="tenth" style='height:650px;width:820px;overflow-x:scroll'>
+                {% block make_announce_comp %}
+                    {% include 'phcModule/make_announce_comp.html' with announcement=announcements all_complaints=all_complaints %}
+                {% endblock %}
+            </div>  
+            <div class="ui tab segment" data-tab="elventh" style='height:650px;width:820px;overflow-x:scroll'>
+                {% block CompounderMedicalReliefView %}
+                    {% include 'phcModule/compounder_medical_relief.html' with inbox_files=inbox_files medicalRelief=medicalRelief %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The Doctors and Pathologists Form ends here!{% endcomment %}
         </div>
         {% comment %}The central-rail segment ends here!{% endcomment %}
 
         {% comment %}The right-rail segment starts here!{% endcomment %}
         <div class="three wide column">
+            {% comment %} <div class="row">
+                {% block sidepanel %} {% include 'notifications/sidepanel.html' with notifications=notifications %}
+                {% endblock %}
+            </div> {% endcomment %}
         </div>
         {% comment %}The right-rail segment ends here!{% endcomment %}
 

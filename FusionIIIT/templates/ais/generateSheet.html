@@ -21,7 +21,7 @@
             success: function(jsondata)
             {
               $("#loading").hide();
-              console.log(jsondata);
+              // console.log(jsondata);
               $('#course_list').html(jsondata.html);
             },
             error: function(data)
@@ -33,29 +33,29 @@
 </script>
 
 <div class="ui pointing secondary menu">
-    <a class="active item" data-tab="this">
-        This Semester
+    <a class="active item" data-tab="this-sem">
+        Roll List
     </a>
     <a class="item" data-tab="prereg">
         Pre Registration Report
     </a>
 </div> 
 
-<div class="ui active tab segment" data-tab="this">
+<div class="ui active tab segment" data-tab="this-sem">
     <form class="ui form" action="/academic-procedures/acad_person/gen_course_list" method="post" id="gen_form">
         {% csrf_token %}
         <div class="field">
-            <label>Batch</label>
-            <div class="ui fluid search selection dropdown">
-              <input type="hidden" id="batch" name="batch" required="true">
-              <i class="dropdown icon"></i>
+            <label>Running Year</label>
+            <!-- <div class="ui fluid search selection dropdown"> -->
+              <input type="number" id="batch" name="batch" required="true">
+              <!-- <i class="dropdown icon"></i>
               <div class="default text">Select Batch from list</div>
               <div class="menu">
               {% for i in batch_grade_data.batch_grade_data %}
                 <div class="item" data-value="{{i.batch_list_year}}">{{i.batch_list_year}}</div>
               {% endfor %}
-            </div>
-          </div>
+            </div> -->
+          <!-- </div> -->
         </div>
 
         <div class="field">

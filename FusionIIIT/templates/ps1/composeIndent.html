@@ -1,3 +1,4 @@
+
 {% extends 'ps1/ps1.html' %}
 {% load static %}
 
@@ -51,7 +52,7 @@
                 </div>
 
                 <div class="field">
-                    <label>Estimated Cost*</label>
+                    <label>Estimated Cost Per Piece*</label>
                     <input type="number"  name="estimated_cost" required></input>
                 </div>
 
@@ -61,21 +62,27 @@
                     <textarea rows="3" name="purpose" required></textarea>
                 </div>
 
-
+                <!-- this is for mentioning very specific specifications  -->
                 <div class="field">
                     <label>Specification</label>
                     <textarea rows="3" name="specification"></textarea>
                 </div>
 
+                
 
                 <div class="field">
                     <label>Item Type*</label>
-                    <select name="indent_type">  
+                    <select name="item_type">  
                         <option value = "Equipment">Equipment</option>  
                         <option value = "Machinery">Machinery</option>  
                         <option value = "Furniture">Furniture</option>  
                         <option value = "Fixture"> Fixture</option>  
                     </select>  
+                </div>
+
+                <div class="field">
+                    <label>Item Subtype*</label>
+                    <input type="text" name="item_subtype">
                 </div>
 
 
@@ -87,7 +94,7 @@
 
                 <div class="field">
                     <label>Expected Delivery*</label>
-                    <input type="date" id="start" name="expected_delivery">
+                    <input type="date" id="start" name="expected_delivery" min="{{ today }}">
                 </div>
 
 
@@ -129,7 +136,7 @@
                    </label>
                 </div>
 
-                <div class="field">
+                <!-- <div class="field">
                     <label>Create as:
                         <select required class="ui fluid search selection dropdown" name="design">
                            <option selected hidden>Select</option>
@@ -140,12 +147,16 @@
 
                         </select>
                     </label>
-                </div>
+                </div> -->
 
                 <br>
 
                 <div class = "left floated item">
-                      <label for="file">Attach Files ( PDF, JPEG, PNG, JPG )</label>
+                    <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+                        <label for="file" style="flex: 1;">Attach Files (PDF, JPEG, PNG, JPG)</label>
+                        <label for="file-warning" style="color: red; font-size: smaller;">*Select only one file</label>
+                      </div>
+                      
                       <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" >
                 </div>
 
@@ -166,28 +177,52 @@
                             <label>Remarks:<textarea rows="2" name="remarks"></textarea></label>
                 </div>
 
-                <div class="field">
+                {% comment %} <div class="field">
                             <label>Forward To:
 
-                                    <input type ="search" id="input_search" list = "input_list" name = "receiver">
-                                    <datalist  id="input_list">
-
-                                    </datalist>
-                               
+                                    <select name="receiver" id="forward_to">
+                                        {% for option in forwardto %}
+                                        <option value="{{ option.username }}">{{ option.username }}</option>
+                                        {% endfor %}
+                                    </select>
                             </label>
-                </div>
+                </div> {% endcomment %}
+
+                {% comment %} <div class="field">
+                    <label>Receiver Designation:
+                        <select name="receive" id="receiver_design">
+                            <option value="{{ receiver }}">{{ receiver }}</option>
+                        </select>
+
+
+                       
+                    </label>
+                </div> {% endcomment %}
+
 
                 <div class="field">
-                    <label>Receiver Designation:
-                        <input type ="search" id="input_search1" list = "input_list1" name = "recieve">
-                            <datalist  id="input_list1">
+                    <label>Forward To:
+
+                            <input type ="search" id="input_search" list = "input_list" name = "receiver">
+                            <datalist  id="input_list">
 
                             </datalist>
-
-
-                       
+                       
                     </label>
-                </div>
+        </div>
+
+        <div class="field">
+            <label>Receiver Designation:
+                <!-- <input type ="search" id="input_search1" list = "input_list1" name = "recieve"> -->
+                    <select  id="input_search1" name="recieve">
+
+                    </select>
+
+
+               
+            </label>
+        </div>
+
 
 
                 <div>
@@ -213,42 +248,7 @@
     {% comment %}the compounder prescription tab ends here {% endcomment %}
 
 
-<script type="text/javascript">
 
-
-        $('#input_search1').keyup(function(){
-
-            console.log('asdasd');
-            value = $('#input_search1').val();
-
-              $.ajax({
-                type: 'POST',
-                url: '/filetracking/ajax/',
-                data: {
-                    'value': value,
-                    'csrfmiddlewaretoken': '{{csrf_token}}'
-                },
-                dataType: 'json',
-                success: function(response){
-                    console.log('coming-----------------------');
-
-                    console.log(response.holds[0]);
-
-                    all_designations = JSON.parse(response.holds);
-                    console.log(all_designations[0].fields.name);
-                    app = []
-                    $('#input_list1').html('');
-                    for(var i=0;i<all_designations.length;i++){
-                       $('#input_list1').append('<option value="'+all_designations[i].fields.name+'">'+all_designations[i].fields.name+'</option>');
-                    }
-                },
-                error: function(rs, e){
-                    console.log('error-------');
-                },
-            });
-            console.log("dsfagdfdshadf");
-        });
-    </script>
 
     <script type="text/javascript">
         $('#input_search').keyup(function(){
@@ -284,6 +284,39 @@
             console.log("dsfagdfdshadf");
         });
 </script>
+<script>
+    $(document).ready(function() {
+        $('#input_search').on('blur', function() {
+            var inputValue = $(this).val();
+            fetchDropdownValues(inputValue);
+            console.log(inputValue,"inputValue")
+        });
+        
+        function fetchDropdownValues(inputValue) {
+            $.ajax({
+                url: `/filetracking/getdesignations/${inputValue}/`,
+                method: 'GET',
+                success: function(data) {
+                    console.log(data,"data")
+                    populateDropdown(data);
+                },
+                error: function() {
+                    console.error('Error fetching dropdown values');
+                }
+            });
+        }
+        
+        function populateDropdown(values) {
+            console.log(values)
+            var dropdown = $('#input_search1');
+            dropdown.empty();
+            $.each(values, function(index, value) {
+                dropdown.append($('<option>').text(value).val(value));
+            });
+            console.log(dropdown)
+        }
+    });
+</script>
 
 {% endblock %}
 
@@ -294,5 +327,4 @@
         leaveAddress.style.display = chkAddress.checked ? "block" : "none";
     }
 </script>
-
 

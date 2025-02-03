@@ -1,0 +1,270 @@
+
+{% extends 'ps1/ps2.html' %}
+{% load static %}
+
+{% block filetracking_tab %} 
+<style>
+    /* Style for the container */
+    .row-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border: 1px solid #ccc; /* Add a border around each row */
+        border-radius: 5px; /* Add some border radius */
+        padding: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Add a border shadow */
+        margin-bottom: 10px; /* Add space between rows */
+    }
+
+    /* Style for the label */
+    label {
+        margin: 0;
+    }
+
+    /* Style for the left and right elements */
+    .left-element, .right-element {
+        flex: 1;
+        padding: 0 10px; /* Add some space around the elements */
+    }
+
+    /* Style for the line between elements */
+    .line {
+        height: 100%;
+        border-left: 1px solid #ccc; /* Add a border to the left of the line */
+        margin: 0 10px; /* Add some space between the line and the elements */
+    }
+
+    /* Style for Grade, Semicolon, and API Value */
+    .label,
+    .semicolon,
+    .api-value {
+        padding: 0 5px; /* Add padding */
+    }
+
+    /* Additional styling for the semicolon */
+    .semicolon {
+        color: #666; /* Change color */
+    }
+</style>
+
+    <div class="ui pointing secondary menu">
+        <h3>
+            <a class="active item" data-tab="composefile">
+            Stocks present in database
+            </a>
+        </h3>
+    </div>
+    <div class="ui divider"></div> 
+
+    <div class="ui active tab" data-tab="composefile">
+        <div class="ui vertical stripe team segment" style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+    <div class="ui pointing secondary menu" >
+        <h3>
+            <a class="active item" data-tab="inward">
+           Procuremented  stock entry view
+            </a>
+        </h3>
+    
+    </div> 
+
+    
+    <div class="ui divider"></div>
+    {% if stocks %}
+    <div class="table-container"  style="overflow-x: scroll;max-height: 500px;  overflow-y: scroll;">
+        <!-- <div class="row-container">
+            <div class="left-element">
+                <div class="field">
+                    <label>File ID: {{first_stock.StockEntryId.item_id.file_info.id}}</label>
+                </div>
+            </div>
+            <div class="line"></div>
+            <div class="right-element">
+                <div class="field">
+                    <label>Item Type: {{first_stock.StockEntryId.item_id.item_type}}</label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row-container">
+            <div class="left-element">
+                <div class="field">
+                    <label>Item Name: {{first_stock.StockEntryId.item_id.item_name}}</label>
+                </div>
+            </div>
+            <div class="line"></div>
+            <div class="right-element">
+                <div class="field">
+                    <label>Dealing Assistant: {{first_stock.StockEntryId.dealing_assistant_id}}</label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row-container">
+            <div class="left-element">
+                <div class="field">
+                    <div style="display: flex;">
+                        <div style="flex: 1.5;"><b>Grade</b></div>
+                        <div style="flex: 0.1;"><b>:</b></div>
+                        <div style="flex: 2;">{{first_stock.StockEntryId.item_id.grade}}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="line"></div>
+            <div class="right-element">
+                <div class="field">
+                    <label>Vendor Name: {{first_stock.StockEntryId.vendor}}</label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row-container">
+            <div class="left-element">
+                <div class="field">
+                    <label>Bill: {{first_stock.StockEntryId.bill}}</label>
+                </div>
+            </div>
+            <div class="line"></div>
+            <div class="right-element">
+                <div class="field">
+                    <label>Received Date: {{first_stock.StockEntryId.received_date}}</label>
+                </div>
+            </div>
+        </div> -->
+        <div class="row-container">
+            <div class="left-element">
+                <div class="field">
+                    <div style="display: flex;">
+                        <div style="flex: 1.5;"><b>Stock Name</b></div>
+                        <div style="flex: 0.1;"><b>:</b></div>
+                        <div style="flex: 2;">{{first_stock.StockEntryId.item_id.item_name}}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="line"></div>
+            <div class="right-element">
+                <div class="field">
+                    <div style="display: flex;">
+                        <div style="flex: 1.5;"><b>Item Type</b></div>
+                        <div style="flex: 0.1;"><b>:</b></div>
+                        <div style="flex: 2;">{{first_stock.StockEntryId.item_id.item_type}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row-container">
+            <div class="left-element">
+                <div class="field">
+                    <div style="display: flex;">
+                        <div style="flex: 1.5;"><b>Item Name</b></div>
+                        <div style="flex: 0.1;"><b>:</b></div>
+                        <div style="flex: 2;">{{first_stock.StockEntryId.item_id.item_name}}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="line"></div>
+            <div class="right-element">
+                <div class="field">
+                    <div style="display: flex;">
+                        <div style="flex: 1.5;"><b>Dealing Assistant</b></div>
+                        <div style="flex: 0.1;"><b>:</b></div>
+                        <div style="flex: 2;">{{first_stock.StockEntryId.dealing_assistant_id}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row-container">
+            <div class="line"></div>
+            <div class="left-element">
+                <div class="field">
+                    <div style="display: flex;">
+                        <div style="flex: 1.5;"><b>Vendor Name</b></div>
+                        <div style="flex: 0.1;"><b>:</b></div>
+                        <div style="flex: 2;">{{first_stock.StockEntryId.vendor}}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="right-element">
+                <div class="field">
+                    <div style="display: flex;">
+                        <div style="flex: 1.5;"><b>Transferred to :</b></div>
+                        <div style="flex: 0.1;"><b>:</b></div>
+                        <div style="flex: 2;">{{first_stock.StockEntryId.item_id.file_info.uploader.department.name}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row-container">
+            <div class="left-element">
+                <div class="field">
+                    <div style="display: flex;">
+                        <div style="flex: 1.5;"><b>Bill</b></div>
+                        <div style="flex: 0.1;"><b>:</b></div>
+                        <div style="flex: 2;">
+                            <!-- {{s.bill}} -->
+                                {% if first_stock.StockEntryId.bill %}
+                                <a href="{{ first_stock.StockEntryId.bill.url }}" download>{{ first_stock.StockEntryId.bill }}</a>
+                            {% else %}
+                                No bill available
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="line"></div>
+            <div class="right-element">
+                <div class="field">
+                    <div style="display: flex;">
+                        <div style="flex: 1.5;"><b>Received Date</b></div>
+                        <div style="flex: 0.1;"><b>:</b></div>
+                        <div style="flex: 2;">{{first_stock.StockEntryId.recieved_date}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    <table class="ui very basic celled sortable table">
+        <thead>
+        <tr>
+                <th>Nomenclature</th>
+                <th>Current Department</th>
+                <th >Current Location</th>
+                <th >Transferred</th>
+            
+        </tr>
+        </thead>
+        <!-- -->
+        <tbody>
+            {% for s in stocks %}
+                {% if s.StockEntryId.item_id.purchased %}
+            <tr>
+                <td> {{s.nomenclature}} </td>
+                <td>{{s.department.name}}</td>
+                <td>{{s.location}}</td>
+                <td>{{s.isTransferred}}</td>
+            
+              </tr>
+              {% endif %}
+
+                {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+
+    <br>
+    {% else %}
+        <h4 >No Records present in database</h4>
+     {% endif %}
+
+
+       
+   
+
+    </div>  
+
+    {% endblock %}

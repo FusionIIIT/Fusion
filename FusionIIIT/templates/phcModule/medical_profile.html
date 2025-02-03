@@ -1,0 +1,219 @@
+{% load static %}
+{% block medical_profile %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+            <a class="active item" data-tab="med_profile">
+                Medical Profile
+            </a>
+
+            <a class="item" data-tab="edit_med_profile">
+                Edit Medical Profile
+            </a>
+
+    </div>
+
+    <div class="ui tab" data-tab="edit_med_profile">
+        
+        <div class="ui vertical segment">
+            <!-- fill the form details -->
+            <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST" enctype="multipart/form-data" 
+                  action="../views/medical_profile/">
+                {% csrf_token %}
+
+               {% csrf_token %}
+
+        <div class="form-group">
+            <label for="id_date_of_birth">Date of Birth:</label>
+            <input type="date" name="date_of_birth" id="id_date_of_birth" value="{{ medical_profile.date_of_birth }}">
+        </div>
+
+        <br>
+        
+        <div class="form-group">
+            <label for="id_gender">Gender:</label>
+            <select name="gender" id="id_gender">
+                <option value="M" {% if medical_profile.gender == 'M' %} selected {% endif %}>Male</option>
+                <option value="F" {% if medical_profile.gender == 'F' %} selected {% endif %}>Female</option>
+                <option value="O" {% if medical_profile.gender == 'O' %} selected {% endif %}>Other</option>
+            </select>
+        </div>
+        
+        <br>
+
+        <div class="form-group">
+            <label for="id_blood_type">Blood Type:</label>
+            <select name="blood_type" id="id_blood_type">
+                <option value="A+" {% if medical_profile.blood_type == 'A+' %} selected {% endif %}>A+</option>
+                <option value="A-" {% if medical_profile.blood_type == 'A-' %} selected {% endif %}>A-</option>
+                <option value="B+" {% if medical_profile.blood_type == 'B+' %} selected {% endif %}>B+</option>
+                <option value="B-" {% if medical_profile.blood_type == 'B-' %} selected {% endif %}>B-</option>
+                <option value="AB+" {% if medical_profile.blood_type == 'AB+' %} selected {% endif %}>AB+</option>
+                <option value="AB-" {% if medical_profile.blood_type == 'AB-' %} selected {% endif %}>AB-</option>
+                <option value="O+" {% if medical_profile.blood_type == 'O+' %} selected {% endif %}>O+</option>
+                <option value="O-" {% if medical_profile.blood_type == 'O-' %} selected {% endif %}>O-</option>
+            </select>
+        </div>
+        
+        <br>
+
+        <div class="form-group">
+            <label for="id_height">Height (in cm):</label>
+            <input type="text" name="height" id="id_height" value="{{ medical_profile.height }}">
+        </div>
+        
+        <br>
+
+        <div class="form-group">
+            <label for="id_weight">Weight (in kg):</label>
+            <input type="text" name="weight" id="id_weight" value="{{ medical_profile.weight }}">
+        </div>
+        
+        <br>
+
+        <input class="ui large primary button right floated" type="submit" name="Submit" value="Submit" />
+        
+        <br>
+            </form>
+
+            <br>
+            <div class="ui divider"></div>
+        </div>
+    </div>
+
+
+    <div class="ui active tab" data-tab="med_profile">
+        <div id="med_profile" class="ui vertical segment" >
+
+            <table  border=1 class="ui very basic collapsing celled large sortable table"
+                  style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;" >
+                <thead>
+                <tr>
+                    <td style="font-weight:bold;color:black; ">
+                        Sex
+                    </td>
+
+                    <td style="font-weight:bold;color:black;" >
+                        DOB
+                    </td>
+                    
+                    <td style="font-weight:bold;color:black;" >
+                        Blood Group
+                    </td>
+
+                    <td style="font-weight:bold;color:black;" >
+                        Height (in cm)
+                    </td>
+
+                    <td style="font-weight:bold;color:black;" >
+                        Weight (in kg)
+                    </td>
+                    {% comment %} <td style="font-weight:bold;color:black;">
+                        Details
+                    </td>
+                    <td style="font-weight:bold;color:black;">
+                        Test
+                    </td>
+                    <td style="font-weight:bold;color:black;">
+                        Report
+                    </td>
+
+
+                    <td style="font-weight:bold;color:black;">
+
+                      <table>
+
+                        <tr><td style="font-weight:bold;color:black;">Medicine</td><td>D</td><td>T</td></tr>
+
+                      </table>
+                    </td> {% endcomment %}
+
+                </tr>
+                </thead>
+                  
+                <tbody>
+                {% for prof in medical_profile %}
+                <tr>
+                    {% comment %} <h1>1</h1> {% endcomment %}
+                    <td style="font-weight:bold;color:black;">
+                        <h4 class="ui image header">
+                             <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                        </h4>
+                              {% if prof.gender == 'M' %}
+                                <p>Male
+                                </p>
+                              {% endif %}
+                              {% if prof.gender == 'F' %}
+                                <p>Female
+                                </p>
+                              {% endif %}
+                              {% if prof.gender == 'O' %}
+                                <p>Other
+                                </p>
+                              {% endif %}
+                    </td>
+
+                    <td>
+                        {{prof.date_of_birth}}
+                    </td>
+
+                    <td>
+                        {{prof.blood_type}}
+                    </td>
+                    
+                    <td>
+                        {{prof.height}}
+                    </td>
+
+                    <td>
+                        {{prof.weight}}
+                    </td>
+
+                    
+                </tr>
+
+                {% endfor %}
+                </tbody>
+            </table>
+
+          </div>
+        </div>
+
+<script>
+            function rem(id){
+           
+			var dis = this;
+            var d = window.confirm('Are you sure, you want to delete the Request?');
+            if(d == false){
+                return;
+            }
+            $('#'+id).parent().parent().remove();
+                                             alert("Ambulance request cancelled");
+
+					$.ajax({
+                            type:'POST',
+                            url:'/healthcenter/student/',
+                            data: {'cancel_amb':id},
+
+                            beforeSend: function(xhr) {
+               xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+            },
+                            success: function(data){
+
+                                                    }
+                          });
+
+            
+      }
+      </script>
+
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <script type="text/javascript" src="{% static 'department/js/function.js' %}"></script>
+{% endblock %}
+

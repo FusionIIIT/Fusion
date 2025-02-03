@@ -26,9 +26,10 @@
             Announcements
         </a>
 
-        <a class="item" data-tab="Request">
-            Requests
+        <a class="item" data-tab="alumni">
+            Alumni
         </a>
+
 
     </div>
 
@@ -64,110 +65,26 @@
             <div class="content">
                 <div class="description">
                     <span>
+                        <p>Phone Number: {{ department_info.me_info.phone_number }}</p>
+                        <p>Email: {{ department_info.me_info.email }}</p>
                         <h3>
-                            Central Library :
+                            Facilities :
                         </h3>
                         <p>
-                            Institute library has e-resources through INDEST, Science Direct, IEEE, ACM, Springger Link, Nature and ASME. The Institute also has access to various online research journals & articles like following resources SIAm, AMS, ACS, Kluwer, APS, Palgrave, INFORMS, Rev.of Scientific Instruments, Appl.Physics Letters and the search engine Scopus. Total number of books in the Institute library by the year 2009-10 are approximately 6742.
-                        </p>
-                        <p>
-                            High Performance Computing Labortory : Specification of Parallel Cluster (for Central Computing Facility)- JS22 Blade No.3, 16GB(2*8GB) DDR2 533 Mhz DiMMs, IBM 146GB SAS 10K SFF HDD, IBM blade center JS22 4-core 4.0 Ghz Processor and WiFi Campus etc.
-                        </p>
+                            {{ department_info.me_info.facilites|linebreaks}}
+                         </p>
                         <h3>
                             Lab Infrastructure :
                         </h3>
-                        <ol>
-                            <li>
-                                <p>
-                                    <b>Health Monitoring, Measurement and Instrumentation Lab:</b> 
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Kinematics and Dynamics Lab :</b> 
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>PG Research Lab :</b>
-                                 </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Fluid Mechaniccs Lab :</b> 
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Automobile Lab :</b> 
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>IT Workshop/Computational Lab:</b> 
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Material Characterization Lab :</b> 
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Machine Dynamics and Vibrations Lab :</b> 
-                               </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Mechatronics Lab:</b> 
-                              </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Robotics Lab:</b> 
-                                 </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Biomedical Engineering and Technology Lab:</b> 
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>CFD Lab :</b> 
-                                 </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Dieless Manufacturing Center:</b> 
-                               </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Manufacturing Innovation Center:</b> 
-                                </p>
-                            </li>
-                        </ol>
+                        <p>
+                           {{ department_info.me_info.labs|linebreaks }}
+                        </p>
                     </span>
                     <div class="ui divider"></div>
                 </div>
             </div>
         </div>
     </div>
-
     {% comment %} tabs content faculty {% endcomment %}
     {% comment %}The tab menu starts here!{% endcomment %}
         <div class="ui tab" data-tab="faculty">
@@ -179,15 +96,14 @@
                         <div class="ui vertical segment" >
 
                             {% comment %} {% if ann_list %} {% endcomment %}
-                            <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
-                                <thead>
-                                    <td> id </td>
-                                    <td> faculty name </td>
+                            <table class="ui collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+                                <thead align="center" style="font-weight: bold;">
+                                    <td> ID </td>
+                                    <td> Faculty Name </td>
                                     <!-- <td> title </td> -->
-                                    <td> sex </td>
-                                    <td> date_of_birth </td>
-                                    <td> address </td>
-                                    <td> phone_no </td>
+                                    <td> Gender </td>
+                                    <td> DoB </td>
+                                    <td> Phone Number </td>
                                     {% comment %} <td> user_type </td>
                                     <td> department </td>
                                     <td> github </td> {% endcomment %}
@@ -202,7 +118,6 @@
                                     <!-- <td>{{ fcu.title }}</td> -->
                                     <td>{{ fcu.sex }}</td>
                                     <td>{{ fcu.date_of_birth }}</td>
-                                    <td>{{ fcu.address }}</td>
                                     <td>{{ fcu.phone_no }}</td>
                                     {% comment %} <td>{{ fcu.user_type }}</td>
                                     <td>{{ fcu.department.name }}</td>
@@ -373,57 +288,64 @@
         </div>
     </div>
 
-     <div class="ui tab" data-tab="Request">
+    <div class="ui tab" data-tab="alumni">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
                     <span>
-                        <div class="ui pointing secondary menu">
-                            <a class="active item" data-tab="file-request">
-                                File Requests
-                            </a>
-                            
-                            <a class="item" data-tab="request-history">
-                                Request History
-                            </a>
-
-
-                        </div>
-
-                        <div class="ui active tab" data-tab="file-request">
-                            <div class="ui vertical segment">
-                                <div class="content">
-                                    <div class="description">
-                                        <span>
-                                            {% with fac_list.staffNme as faculty %}
-                                                {% block file-requests %}
-                                                    {% include "department/file_request.html" %}
-                                                {% endblock %}
-                                            {% endwith %}
-                                        </span>
-                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
-                                    </div>
-                                </div>
+                        {% comment %}Get student Data{% endcomment %}
+                        <div class="ui styled accordion">
+                            <div class="title">
+                                <i class="dropdown icon"></i>
+                                PhD Students
+                            </div>
+                            <div class="content">
+                                <a class="item" href="./alumni/">
+                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                    <button style="border: solid; float: left; display: block;">
+                                        PhD Students
+                                    </button>
+                                </a>
+                                <br>  
                             </div>
                         </div>
 
-                        <div class="ui tab" data-tab="request-history">
-                            <div class="ui vertical segment">
-                                <div class="content">
-                                    <div class="description">
-                                        <span>
-                                            {% block request_history %}
-                                                {% include "department/request_history.html" %}
-                                            {% endblock %}
-                                        </span>
-                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
-                                    </div>
-                                </div>
+                        <div class="ui styled accordion">
+                            <div class="title">
+                                <i class="dropdown icon"></i>
+                                MTech Students
+                            </div>
+                            <div class="content">
+                                <a class="item" href="./alumni/">
+                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                    <button style="border: solid; float: left; display: block;">
+                                        MTech Students
+                                    </button>
+                                </a>
+                                <br>  
+                            </div>
+                        </div>
+                            
+                        
+
+                        <div class="ui styled accordion">
+                            <div class="title">
+                                <i class="dropdown icon"></i>
+                                BTech Students
+                            </div>
+                            <div class="content">
+                                <a class="item" href="./alumni/">
+                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                    <button style="border: solid; float: left; display: block;">
+                                        BTech Students
+                                    </button>
+                                </a>
+                                <br>  
                             </div>
                         </div>
 
                     </span>
-                    {% comment %} <div class="ui divider"></div> {% endcomment %}
+                    <div class="ui divider"></div>
                 </div>
             </div>
         </div>
