@@ -142,19 +142,19 @@ class Migration(migrations.Migration):
                 ('student_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='academic_information.student')),
             ],
         ),
-        migrations.CreateModel(
-            name='Payments',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('sem', models.IntegerField()),
-                ('year', models.IntegerField(default=applications.central_mess.models.current_year)),
-                ('amount_paid', models.IntegerField(default=0)),
-                ('student_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='academic_information.student')),
-            ],
-            options={
-                'unique_together': {('student_id', 'sem', 'year')},
-            },
-        ),
+        # migrations.CreateModel(
+        #     name='Payments',
+        #     fields=[
+        #         ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+        #         ('sem', models.IntegerField()),
+        #         ('year', models.IntegerField(default=applications.central_mess.models.current_year)),
+        #         ('amount_paid', models.IntegerField(default=0)),
+        #         ('student_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='academic_information.student')),
+        #     ],
+        #     options={
+        #         'unique_together': {('student_id', 'sem', 'year')},
+        #     },
+        # ),
         migrations.CreateModel(
             name='Monthly_bill',
             fields=[
