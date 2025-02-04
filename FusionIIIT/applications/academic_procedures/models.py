@@ -728,6 +728,13 @@ class course_registration(models.Model):
         db_table = 'course_registration'
         unique_together = ('course_id', 'student_id', 'semester_id', 'registration_type')
 
+class course_replacement(models.Model):
+    old_course_registration=models.ForeignKey(course_registration, on_delete=models.CASCADE,related_name="replaced")
+    new_course_registration=models.ForeignKey(course_registration, on_delete=models.CASCADE, related_name="replaces")
+    class Meta:
+        db_table = 'course_replacement'
+        unique_together = ('old_course_registration', 'new_course_registration')
+
 class backlog_course(models.Model):
     '''
             Current Purpose : stores information regarding the backlog courses of a student (purpose is unclear and is open to interpretations)
