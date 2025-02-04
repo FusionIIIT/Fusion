@@ -962,13 +962,16 @@ def upload_grades(request):
                 {"error": message, "redirect_url": redirect_url}, status=400
             )
 
-        if courses:
+        if courses and not courses.first().reSubmit:
+            
             message = "THIS Course was Already Submitted"
             redirect_url = reverse("examination:message") + f"?message={message}"
             return JsonResponse(
                 {"error": message, "redirect_url": redirect_url}, status=400
             )
+
         
+
         try:
             # Parse the CSV file
             decoded_file = csv_file.read().decode("utf-8").splitlines()
@@ -991,15 +994,20 @@ def upload_grades(request):
                 stud = Student.objects.get(id_id=roll_no)
                 semester = semester or stud.curr_semester_no
                 batch=stud.batch
-                
-                Student_grades.objects.create(
-                    roll_no=roll_no,
-                    grade=grade,
-                    remarks=remarks,
-                    course_id_id=course_id,
-                    year=academic_year,
-                    semester=semester,
-                    batch=batch,
+                reSubmit=False
+
+                Student_grades.objects.update_or_create(
+                 roll_no=roll_no,
+                 course_id_id=course_id,
+                 year=academic_year,
+                 semester=semester,
+                 batch=batch,
+        # Fields that will be updated if a match is found
+                 defaults={
+                    'grade': grade,
+                    'remarks': remarks,
+                    'reSubmit': reSubmit,
+                }
                 )
             des = request.session.get("currentDesignationSelected")
             if (
@@ -1309,7 +1317,7 @@ def upload_grades_prof(request):
             return JsonResponse(
                 {
                     "message": "Grades uploaded successfully.",
-                    "redirect_url": "/examination/submitGrades",
+                    "redirect_url": "/examination/submitGradesProf",
                 }
             )
 
