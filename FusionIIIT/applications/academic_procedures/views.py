@@ -35,7 +35,7 @@ from .models import (BranchChange, CoursesMtech, InitialRegistration, StudentReg
                      Register, Thesis, FinalRegistration, ThesisTopicProcess,
                      Constants, FeePayments, TeachingCreditRegistration, SemesterMarks, 
                      MarkSubmissionCheck, Dues,AssistantshipClaim, MTechGraduateSeminarReport,
-                     PhDProgressExamination,CourseRequested, course_registration, MessDue, Assistantship_status , backlog_course)
+                     PhDProgressExamination,CourseRequested, course_registration, course_replacement, MessDue, Assistantship_status , backlog_course)
 from notification.views import academics_module_notif
 from .forms import BranchChangeForm
 from django.db.models.functions import Concat,ExtractYear,ExtractMonth,ExtractDay,Cast
@@ -1077,6 +1077,7 @@ def verify_course(request):
             print(z)
             course_code = z.course_id.code
             course_name = z.course_id.name
+            replaced_by = course_replacement.objects.all().filter(old_course_registration=z).first()
             # course_code, course_name = str(z).split(" - ")
             k = {}
             # reg_ig has course registration id appended with the the roll number
@@ -1093,6 +1094,7 @@ def verify_course(request):
                 k['sem'] = z.semester_id.semester_no
                 k['credits'] = p.credit
                 k['registration_type'] = z.registration_type
+                k['replaced_by'] = replaced_by
             details.append(k)
 
         year = demo_date.year
@@ -1141,9 +1143,20 @@ def acad_add_course(request):
         sem_id = request.POST['semester_id']
         semester = Semester.objects.get(id=sem_id)
         registration_type = request.POST["registration_type"]
-        cr = course_registration(
-            course_slot_id=courseslot, course_id=course, student_id=student, semester_id=semester , working_year = datetime.datetime.now().year, registration_type=registration_type)
-        cr.save()
+        working_year = request.POST.get("working_year", datetime.datetime.now().year)
+        old_course_id = request.POST.get("old_course")
+        with transaction.atomic():
+            cr = course_registration(
+                course_slot_id=courseslot, course_id=course, student_id=student, semester_id=semester , working_year = working_year, registration_type=registration_type)
+            cr.save()
+            if old_course_id:
+                old_course_obj = course_registration.objects.filter(id=old_course_id).first()
+                if old_course_obj:
+                    course_replacement.objects.create(
+                        old_course_registration=old_course_obj, 
+                        new_course_registration=cr
+                    )
+
 
     return HttpResponseRedirect('/academic-procedures/')
    
