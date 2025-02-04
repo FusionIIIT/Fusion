@@ -1,0 +1,79 @@
+{% extends 'programme_curriculum/faculty/common.html' %}
+{% block content %}
+<div class="ui top attached tabular large menu">
+    <a class="item active" data-tab="afirst">{{ course_slot.name }}</a>
+</div>
+
+<div class="ui bottom attached tab segment active" data-tab="afirst">
+    <div class="content">
+        <div class="description" style="overflow: auto; max-height: 480px">
+            <table class="ui celled medium table"
+            style="text-align: center;
+                margin: auto;
+                background-color: whitesmoke;">
+                <tbody>
+                    <tr>
+                        <td colspan="4"><h2>Course Slot: {{ course_slot.name }}</h2></td>
+                    </tr>
+                    <tr>
+                        <td colspan="4"><h3>Semester: {{ course_slot.semester }}</h3></td>
+                    </tr>
+                    <tr>
+                        <td colspan="4"><h4>Type : {{ course_slot.type }}</h4></td>
+                    </tr>
+                    <tr style="background-color: white;">
+                        <td>Info</td>
+                        <td colspan="3">{{ course_slot.course_slot_info|linebreaks }}</td>
+                    </tr>
+                    <tr style="background-color: white;">
+                        <td>Duration</td>
+                        <td colspan="3">{{ course_slot.duration }} Semesters</td>
+                    </tr>
+                    <tr style="background-color: white;">
+                        <td>Min Registration Limit</td>
+                        <td>{{ course_slot.min_registration_limit }}</td>
+                        <td>Max Registration Limit</td>
+                        <td>{{ course_slot.max_registration_limit }}</td>
+                    </tr>
+                </tbody>
+            </table>
+                {% if course_slot.courses.all %}
+                <br>
+                    <table class="ui celled medium table"
+                        style="text-align: center;
+                            margin: auto;">
+                        <thead>
+                            <tr style="font-size: medium;
+                                background-color: whitesmoke;">
+                                <td><h4>Course Code</h4></td>
+                                <td><h4>Course Name</h4></td>
+                                <td><h4>Credits</h4></td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                                {% for course in course_slot.courses.all %}
+                                <tr>
+                                    <td><a href="{% url 'programme_curriculum:view_a_course' course.id %}">{{ course.code }}</a></td>
+                                    <td>{{ course.name }}</td>
+                                    <td>{{ course.credit }}</td>
+                                </tr>
+                                {% empty %}
+                                    <tr><td colspan="3">{{ course_slot.course_slot_info }}</td><tr>
+                                {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                <br>
+                    <table class="ui celled medium table"
+                        style="text-align: center;
+                            margin: auto;">
+                        <tr>
+                            <td colspan="4">No Courses Instigated</td>
+                        </tr>
+                    </table>
+                {% endif %}
+                    
+        </div>
+    </div>
+</div>
+{% endblock %}

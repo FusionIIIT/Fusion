@@ -1,0 +1,114 @@
+{% extends 'programme_curriculum/faculty/common.html' %}
+{% block content %}
+
+
+<div class="ui top attached tabular large menu">
+    <a class="item active" data-tab="afirst">UG: Under Graduate</a>
+    <a class="item" data-tab="asecond">PG: Post Graduate</a>
+    <a class="item" data-tab="athrid">PHD: Doctor of Philosophy</a>
+</div>
+
+
+<div class="ui bottom attached tab segment active" data-tab="afirst">
+    <div class="content">
+            <div class="description" style="overflow: auto; max-height: 480px">
+                <table class="ui celled medium table"
+            style="text-align: center;
+                margin: auto;">
+                    <thead>
+                        <tr style="font-size: medium;
+                            background-color: whitesmoke;">
+                            <td colspan="2"><h4>Programmes</h4></td>
+                            <td colspan="2"><h4>Discipline</h4></td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for programme in ug %}
+                        <tr>
+                            <td colspan="2"><a href="{% url 'programme_curriculum:view_curriculums_of_a_programme' programme.id %}">{{ programme.name }}</a></td>
+                            <td colspan="2">
+                            {% for discipline in programme.get_discipline_objects %}
+                                <p>{{ discipline.name }}</p>
+                            {% endfor %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                            <tr><td colspan="5">No Programmes Avaliable</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+    </div>
+</div>
+
+
+
+<div class="ui bottom attached tab segment" data-tab="asecond">
+    <div class="content">
+            <div class="description" style="overflow: auto; max-height: 480px">
+                <table class="ui celled medium table"
+                        style="text-align: center;
+                            margin: auto;">
+                    <thead>
+                        <tr style="font-size: medium;
+                            background-color: whitesmoke;">
+                            <td colspan="2"><h4>Programmes</h4></td>
+                            <td colspan="2"><h4>Discipline</h4></td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for programme in pg %}
+                        <tr>
+                            <td colspan="2"><a href="{% url 'programme_curriculum:view_curriculums_of_a_programme' programme.id %}">{{ programme.name }}</a></td>
+                            <td colspan="2">
+                            {% for discipline in programme.get_discipline_objects %}
+                                <p>{{ discipline.name }}</p>
+                            {% endfor %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                            <tr><td colspan="5">No Programmes Avaliable</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+    </div>
+</div>
+
+
+
+
+<div class="ui bottom attached tab segment" data-tab="athrid">
+    <div class="content">
+            <div class="description" style="overflow: auto; max-height: 480px">
+                <table class="ui celled medium table"
+                        style="text-align: center;
+                            margin: auto;">
+                    <thead>
+                        <tr style="font-size: medium;
+                            background-color: whitesmoke;">
+                            <td colspan="2"><h4>Programmes</h4></td>
+                            <td colspan="2"><h4>Discipline</h4></td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for programme in phd %}
+                        <tr>
+                            <td colspan="2"><a href="{% url 'programme_curriculum:view_curriculums_of_a_programme' programme.id %}">{{ programme.name }}</a></td>
+                            <td colspan="2">
+                            {% for discipline in programme.get_discipline_objects %}
+                                <p>{{ discipline.name }}</p>
+                            {% endfor %}
+                            </td>
+                            
+                        </tr>
+                        {% empty %}
+                            <tr><td colspan="5">No Programmes Avaliable</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+    </div>
+</div>
+
+{% endblock %}

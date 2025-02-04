@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block sidenav %}
-    <div class="ui sidebar inverted vertical menu" style="overflow-y:scroll;">
+    <div class="ui sidebar inverted vertical menu" style="overflow-y:scroll; width: 300px;">
         <div class="ui doubling stackable grid container">
 
             <div class="ui inverted centered raised item"></div>
@@ -18,7 +18,7 @@
                         TODO: User Details!
                     {% endcomment %}
 		    <h2 class="ui inverted header">{{request.user.first_name}} {{request.user.last_name}}</h2>
-		    <span class="ui inverted meta">{{request.user.extrainfo.user_type}}</span>
+		    <span class="ui inverted meta">{{global_var|capfirst}}</span>
                 </div>
 
             </div>
@@ -35,92 +35,121 @@
                             Modules
                         </span>
                     </a>
-                    <div class="active content">
-                        <div class="link items">
-			    {% if request.user.extrainfo.user_type == 'faculty' %}
-			    <a class = "item" href="/ocms">
-			        <h4> Course Management </h4>
-			    </a>
-			    {% else %}
-
+                    <div class="active content" style="margin-top: 22px;">
+                        <div class="link items" style="display: flex;flex-direction: column;gap: 10px;">
+               
+                {% if request.session.moduleAccessRights.course_registration %}
 			    <a class = "item" href="/academic-procedures">
-			        <h4> Academics Module </h4>
+			        <h4> Academics </h4>
 			    </a>
 			    {% endif %}
+
+                {% if request.session.moduleAccessRights.program_and_curriculum %}
                 <a class="item" href="/programme_curriculum">
-                    <h4> Programme & Curriculum Module </h4>
+                    <h4> Programme And Curriculum </h4>
                 </a>
-                <a class = "item disabled" href="/gymkhana">
-                    <h4> Gymkhana Module </h4>
+                {% endif %}
+
+                {% if request.session.moduleAccessRights.mess_management %}
+                <a class="item" href="{% url 'mess:mess' %}">
+                    <h4>Mess Management</h4>
                 </a>
-				<a class="item disabled" href="/iwdModuleV2">
-                                <h4>IWD Module</h4>
-                            </a>
-                {% if request.user.extrainfo.user_type == 'faculty' or request.user.extrainfo.user_type == 'staff' %}
-                <a class = "item disabled" href="{% url 'establishment:establishment' %}">
+                {% endif %}
+               
+               
+                {% if request.session.moduleAccessRights.visitor_hostel %}
+                <a class="item" href="{% url 'visitorhostel:visitorhostel' %}">
+                    <h4>Visitor's Hostel</h4>
+                </a>
+                {% endif %}
+
+                {% if request.session.moduleAccessRights.phc %}
+                <a class="item" href="{% url 'healthcenter:healthcenter' %}">
+                    <h4>Healthcare Center</h4>
+                </a>
+                {% endif %}
+
+                {% if request.session.moduleAccessRights.fts %}
+                    <a class="item" href="{% url 'filetracking:filetracking' %}">
+                        <h4> File Tracking </h4>
+                    </a>
+                {% endif %}
+                {% if request.session.moduleAccessRights.spacs %}
+                    <a class="item" href="{% url 'spacs:spacs' %}">
+                        <h4>Scholarship Portal</h4>
+                    </a>
+                {% endif %}
+
+                {% if request.session.moduleAccessRights.complaint_management %}
+                <a class="item" href="{% url 'complaint:complaint' %}">
+                    <h4>Complaint System</h4>
+                </a>
+                {% endif %}
+                {% if request.session.moduleAccessRights.placement_cell %}
+                    <a class="item" href="{% url 'placement:placement' %}">
+                        <h4>Placement Cell</h4>
+                    </a>
+                {% endif %}
+                <!-- <a class = "item" href="{% url 'estate_module_home' %}">
                     <h4> Establishment Module </h4>
+                </a> -->
+                {% if request.session.moduleAccessRights.department %}
+                    <a class="item" href="{% url 'dep:dep' %}">
+                            <h4> Department Portal </h4>
+                    </a>
+                    {% endif %}
+                
+                {% if request.session.moduleAccessRights.rspc %}
+                <a class="item " href="/research_procedures">
+                    <h4> Research Module </h4>
                 </a>
                 {% endif %}
-                {% if request.user.extrainfo.user_type == 'faculty' %}
-                {%for desig in designat%}
-                {% if 'hradmin' == desig.designation.name %}
-                <a class = "item disabled" href="/hr2/hradmin/">
-                    <h4> HR2 Module </h4>
-                </a>
+
+                <!-- <a class="item " href="/counselling">
+                    <h4>Counselling Cell</h4>
+                </a> -->
+                
+                {% comment %} <a class="item" href="{% url 'leave:leave' %}">
+                    <h4>Leave Module</h4>
+                </a> {% endcomment %}
+                
+                {% if request.session.moduleAccessRights.purchase_and_store %}
+		            <a class="item" href="/purchase-and-store">
+                        <h4> Purchase and Store </h4>
+                     </a>	
                 {% endif %}
-                {%endfor %}
+                {% if request.session.moduleAccessRights.hr %}
+                    <a class = "item" href="/hr2/dashboard/">
+                        <h4> Human Resource </h4>
+                    </a>
                 {% endif %}
-                <a class = "item disabled" href="/library/library">
-                    <h4> Library Module </h4>
-                </a>
-    			    <a class="item disabled" href="{% url 'spacs:spacs' %}">
-                                <h4>Awards & Scholarship</h4>
-                            </a>
+                {% if request.session.moduleAccessRights.examinations %}
+                    <a class="item" href="/examination">
+                        <h4> Examination </h4>
+                    </a>
+                {% endif %}
+                
+                {% if request.session.moduleAccessRights.gymkhana %}
+                    <a class = "item" href="/gymkhana">
+                        <h4> Gymkhana </h4>
+                    </a>
+                {% endif %}
 
-                            <a class="item disabled" href="{% url 'complaint:complaint' %}">
-                                <h4>Complaint Module</h4>
-                            </a>
-                              {% if user.extrainfo.user_type != 'faculty' %}
-                            <a class="item disabled" href="{% url 'mess:mess' %}">
-                                <h4>Central Mess Module</h4>
-                            </a>
-                            {% endif %}
-
-                            <a class="item disabled" href="{% url 'feeds:feeds' %}">
-                                <h4>Feeds Module</h4>
-                            </a>
-                            
-
-                            <a class="item disabled" href="{% url 'healthcenter:healthcenter' %}">
-                                <h4>Health Center Module</h4>
-                            </a>
-
-                            <a class="item disabled" href="{% url 'leave:leave' %}">
-                                <h4>Leave Module</h4>
-                            </a>
-
-                             <a class="item disabled" href="/counselling">
-                                <h4>Counselling cell Module</h4>
-                            </a>
-
-                            <a class="item disabled" href="{% url 'placement:placement' %}">
-                                <h4>Placement Module</h4>
-                            </a>
-			    
-		            <a class="item disabled" href="/purchase-and-store">
-                                <h4> Purchase and Store </h4>
-                            </a>	
-
-                            <a class="item disabled" href="{% url 'visitorhostel:visitorhostel' %}">
-                                <h4>Visitor Hostel Module</h4>
-                            </a>
-
-                            <a class="item disabled" href="{% url 'hostelmanagement:hostel_view' %}">
-                                <h4>Hostel Module</h4>
-                            </a>
-			    <a class="item disabled" href="{% url 'filetracking:filetracking' %}">
-				<h4> File Tracking </h4>
-		            </a>
+                {% if request.session.moduleAccessRights.iwd %}
+				    <a class="item" href="/iwdModuleV2">
+                        <h4>Institute Work Departments</h4>
+                    </a>
+                {% endif %}
+                {% if request.session.moduleAccessRights.hostel_management %}
+                    <a class="item" href="/hostelmanagement">
+                        <h4>Hostel Management</h4>
+                    </a>
+                {% endif %}
+                {% if request.session.moduleAccessRights.other_academics %}
+                    <a class="item" href="/otheracademic">
+                        <h4>Other Academic Procedure</h4>
+                    </a> 
+                {% endif %}                            
                         </div>
                     </div>
                 </div>
@@ -128,77 +157,77 @@
             {% comment %}The Modules Accordian ends here!{% endcomment %}
 
             {% comment %}The Profile Item starts here!{% endcomment %}
-            <a class="centered raised item" href="/dashboard">
+            {% comment %} <a class="centered raised item" href="/dashboard">
                 <span class="inverted header">Profile</span>
                 <i class="large inverted user icon right floated"></i>
-            </a>
+            </a> {% endcomment %}
             {% comment %}The Profile Item starts here!{% endcomment %}
-<a class="centered raised item disabled" href="{% url 'office_module:officeOfDeanStudents'%}">
+{% comment %} <a class="centered raised item " href="{% url 'office_module:officeOfDeanStudents'%}">
     <span class="inverted header">Office Of Dean Students</span>
     <i class="large inverted briefcase icon right floated"></i>
-</a>
+</a> {% endcomment %}
 {% comment %}The email Item ends here!{% endcomment %}
-{% if "Dean (RSPC)" in desig %}
+{% comment %} {% if "Dean (RSPC)" in desig %} {% endcomment %}
 {% comment %}The Profile Item starts here!{% endcomment %}
-<a class="centered raised item disabled" href="{% url 'office_module:officeOfDeanRSPC'%}">
+{% comment %} <a class="centered raised item " href="{% url 'office_module:officeOfDeanRSPC'%}">
     <span class="inverted header">Office Of Dean RSPC</span>
     <i class="large inverted briefcase icon right floated"></i>
-</a>
+</a> {% endcomment %}
 
-{% endif %}
-<a class="centered raised item disabled" href="{% url 'office_module:officeOfDeanAcademics'%}">
+{% comment %} {% endif %} {% endcomment %}
+{% comment %} <a class="centered raised item " href="{% url 'office_module:officeOfDeanAcademics'%}">
     <span class="inverted header">Office Of Dean Academics</span>
     <i class="large inverted briefcase icon right floated"></i>
-</a>
+</a> {% endcomment %}
 {% comment %}The email Item ends here!{% endcomment %}
 
 {% comment %}The Profile Item starts here!{% endcomment %}
-<a class="centered raised item disabled" href="{% url 'office_module:directorOffice'%}">
+{% comment %} <a class="centered raised item " href="{% url 'office_module:directorOffice'%}">
     <span class="inverted header">Director Office</span>
     <i class="large inverted briefcase icon right floated"></i>
-</a>
+</a> {% endcomment %}
 {% comment %}The email Item ends here!{% endcomment %}
 
 {% comment %}The Profile Item starts here!{% endcomment %}
-<a class="centered raised item disabled" href="{% url 'office_module:officeOfPurchaseOfficer'%}">
+{% comment %} <a class="centered raised item " href="{% url 'office_module:officeOfPurchaseOfficer'%}">
     <span class="inverted header">Office Of Purchase Officer</span>
     <i class="large inverted briefcase icon right floated"></i>
-</a>
+</a> {% endcomment %}
 {% comment %}The email Item ends here!{% endcomment %}
 
 {% comment %}The Profile Item starts here!{% endcomment %}
-<a class="centered raised item disabled" href="{% url 'office_module:officeOfRegistrar'%}">
+{% comment %} <a class="centered raised item " href="{% url 'office_module:officeOfRegistrar'%}">
     <span class="inverted header">Office Of Registrar</span>
     <i class="large inverted briefcase icon right floated"></i>
-</a>
+</a> {% endcomment %}
 {% comment %}The email Item ends here!{% endcomment %}
 
 {% comment %}The Profile Item starts here!{% endcomment %}
-<a class="centered raised item disabled" href="{% url 'office_module:officeOfDeanPnD'%}">
+{% comment %} <a class="centered raised item " href="{% url 'office_module:officeOfDeanPnD'%}">
     <span class="inverted header">Office Of P & D</span>
     <i class="large inverted briefcase icon right floated"></i>
-</a>
+</a> {% endcomment %}
 {% comment %}The email Item ends here!{% endcomment %}
 
 
 {% comment %}The Profile Item starts here!{% endcomment %}
-<a class="centered raised item disabled" href="{% url 'office_module:officeOfHOD'%}">
+{% comment %} <a class="centered raised item " href="{% url 'office_module:officeOfHOD'%}">
     <span class="inverted header">Office Of HOD {Branch}</span>
     <i class="large inverted briefcase icon right floated"></i>
 </a>
-<a class="centered raised item disabled" href="/finance/finance">
+<a class="centered raised item " href="/finance/finance">
     <span class="inverted header">Finance and Accounts</span>
     <i class="large inverted briefcase icon right floated"></i>
-</a>
+</a> {% endcomment %}
             {% comment %}The email Item ends here!{% endcomment %}
 
 
 
             {% comment %}The Activity Log Item starts here!{% endcomment %}
-            <a class="centered raised item disabled" href='/about'%}>
+            {% comment %} <a class="centered raised item " href='/about'%}>
                 <span class="inverted header">Meet our team!</span>
                   <i class="briefcase icon right floated"></i>
-            </a>
+            </a> {% endcomment %}
             {% comment %}The Activity Log Item ends here!{% endcomment %}
 
             {% comment %}The Logout Item starts here!{% endcomment %}

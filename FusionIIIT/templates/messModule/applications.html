@@ -5,26 +5,24 @@
 
         {% comment %}The tab menu starts here!{% endcomment %}
         <div class="ui pointing secondary menu">
-            {% if programme == 1 %}
-            <a class="ui active item" data-tab="" id="la">
-                Leave Requests
+            <a class="ui item" data-tab="" id="la">
+                Rebate Requests
             </a>
-            {% endif %}
 
-            <a class="ui {% if programme == 0 %}active{% endif%} item" data-tab="" id="va">
+            <!-- <a class="ui {% if programme == 0 %}active{% endif%} item" data-tab="" id="va">
                 Vacation Food Requests
-            </a>
-            <a class="ui item" data-tab="" id="sa">
+            </a> -->
+            <a class="ui active item" data-tab="" id="sa">
                 Special Food Requests
             </a>
         </div>
-<div class="ui {% if programme == 1 %}active{% endif%} tab" data-tab="" id="latab">
+<div class="ui tab" data-tab="" id="latab">
     <div class="ui two item menu">
         <a class="ui item" data-tab="" id="la_1">
-            Apply for leave
+            Apply for Rebate
         </a>
         <a class="ui item" data-tab="" id="la_2">
-            Leave Status
+            Rebate Status
         </a>
     </div>
         <div class="ui active tab" data-tab="" id="leave">
@@ -37,7 +35,7 @@
                     <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
 
                         <div class="ui header">
-                            Leave Application:
+                            Rebate Application:
                         </div>
                         <div class="two fields">
                             <div class="field">
@@ -46,12 +44,12 @@
                             </div>
 
                             <div class="two fields">
-                                <div class="twelve wide field">
+                                <!-- <div class="twelve wide field">
                                     <label>Leave Type*</label>
-                                    <select name="leave_type" class="ui fluid dropdown" required="true" id="leave_type">
+                                    <select name="leave_type" class="ui fluid dropdown" id="leave_type" default="Vacation Leave">
                                         <option value="vacation">Vacation Leave</option>
                                     </select>
-                                </div>
+                                </div> -->
 
                                 <div class="field">
                                     <label><br></label>
@@ -64,7 +62,7 @@
 
                         <div class="two fields">
                             <div class="field">
-                                <label>Leave From*</label>
+                                <label>Rebate From*</label>
                                 <div class="ui calendar" id="rangestart">
                                     <div>
                                         <input name="start_date" type="date" placeholder="From" required="true"
@@ -74,7 +72,7 @@
                             </div>
 
                             <div class="field">
-                                <label>Leave To*</label>
+                                <label>Rebate To*</label>
                                 <div class="ui calendar" id="rangeend">
                                     <div class="ui input left icon">
                                         <input name="end_date" type="date" placeholder="To" required="true"
@@ -138,6 +136,9 @@
                                     To
                                 </th>
                                 <th>
+                                    Remark
+                                </th>
+                                <th>
                                     Status
                                 </th>
                             </tr>
@@ -160,6 +161,9 @@
 
                                     <td>
                                         {{ item.end_date }}
+                                    </td>
+                                    <td>
+                                        {{item.rebate_remark}}
                                     </td>
                                     <td>
                                         {% if item.status == '2' %}
@@ -195,7 +199,7 @@
         </div>
 </div>
 
-<div class="ui {% if programme == 0 %}active{% endif%} tab" data-tab="" id="vatab">
+<!-- <div class="ui {% if programme == 0 %}active{% endif%} tab" data-tab="" id="vatab">
         <div class="ui two item menu">
         <a class="ui active item" data-tab="" id="va_1">
             Apply for Food During Vacation
@@ -358,9 +362,9 @@
             <div class="ui divider"></div>
         </div>
 
-</div>
+</div> -->
 
-<div class="ui tab" data-tab="" id="satab">
+<div class="ui active tab" data-tab="" id="satab">
     <div class="ui two item menu">
         <a class="ui active item" data-tab="" id="sa_1">
             Apply For Special Food
@@ -390,15 +394,27 @@
                 </div>
 
 
+                <!-- adding a special food dropdown -->
+
+                
+
                 <div class="two fields">
                     <div class="field">
-                        <label>Food Item(a)*</label>
-                        <input placeholder="Food Item" name="food1" class="ui large input" required="true" id="food1">
+                        <label>Select Food*</label>
+                        <select name="food1" class="ui fluid dropdown" required="true" id="food1">
+                                <option value="dal_chawal">Dal Chawal</option>
+                                <option value="khicdi">khicdi</option>
+                                <option value="tomato_soup">tomato_soup</option>
+                        </select>
                     </div>
 
                     <div class="field">
-                        <label>Food Item(b)*</label>
-                        <input placeholder="Food Item" name="food2" class="ui large input" id="food2">
+                        <label>Select Food Timing*</label>
+                        <select name="food2" class="ui fluid dropdown" required="true" id="food2">
+                            <option value="breakfast">Breakfast</option>
+                            <option value="lunch">Lunch</option>
+                            <option value="dinner">Dinner</option>
+                    </select>
                     </div>
                 </div>
 
@@ -665,7 +681,7 @@
         function lsrequest() {
 
             event.preventDefault();
-
+            // document.getElementById("#leave_type").style.display="none";
             var calendarOpts = {
                 type: 'date',
                 formatter: {
@@ -702,7 +718,7 @@
                     dataType: 'json',
                     data: {
                         'csrfmiddlewaretoken': '{{ csrf_token }}',
-                        'leave_type': $("#leave_type").val(),
+                        'leave_type': "vacation",
                         'start_date': $("#start_date").val(),
                         'end_date': $("#end_date").val(),
                         'purpose': $("#purpose").val()

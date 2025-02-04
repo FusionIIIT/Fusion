@@ -6,28 +6,29 @@
 </head>
 <body>
     <div class="ui vertical segment">
+        <center><h1 style='font:24px'>PDPM Indian Institute of Information Technology Design and Manufacturing, Jabalpur</h1></center>
             <table class="ui definition padded table" style="margin: auto;">
                 <thead>
                 <tr>
-                    <th>Roll Number</th>
-                    <th>Month</th>
-                    <th>Year</th>
-                    <th>Rebate Count</th>
-                    <th>Rebate Amount</th>
-                    <th>Non-veg Amount</th>
-                    <th>Base Amount</th>
-                    <th>Total</th>
+                    <th style="margin-right: 80px;">Roll Number</th>
+                    <th style="margin-right: 80px;">Month</th>
+                    <th style="margin-right: 80px;">Year</th>
+                    <th style="margin-right: 80px;">Rebate Count</th>
+                    <th style="margin-right: 80px;">Rebate Amount</th>
+                    {% comment %} <th>Non-veg Amount</th> {% endcomment %}
+                    <th style="margin-right: 80px;">Monthly Base Amount</th>
+                    <th style="margin-right: 80px;">Your Monthly Bill</th>
                 </tr>
                 </thead>
                 <tbody>
-                {% for item in bill %}
+                {% for item in student_bill %}
                 <tr>
                     <td>{{ item.student_id }}</td>
                     <td>{{ item.month }}</td>
                     <td>{{ item.year }}</td>
                     <td>{{ item.rebate_count }}</td>
                     <td>{{ item.rebate_amount }}</td>
-                    <td>{{ item.nonveg_total_bill }}</td>
+                    {% comment %} <td>{{ item.nonveg_total_bill }}</td> {% endcomment %}
                     <td>{{ item.amount }}</td>
                     <td>{{ item.total_bill }}</td>
                 </tr>

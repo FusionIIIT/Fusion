@@ -1,0 +1,354 @@
+{% load static %}
+{% block body %}
+{% block reg_list %}
+
+<div>
+  <div style="display: flex;justify-content: space-evenly;margin-bottom: 4px;">
+    <select class="ui dropdown" id="status">
+      <option value="Registered">Registered</option>
+      <option value="Deregistered">Deregistered</option>
+      <option value="all">All</option>
+    </select>
+    <select class="ui dropdown" id="program">
+      <option value="B.Tech">Btech</option>
+      <option value="M.Tech">Mtech</option>
+      <option value="all">All</option>
+    </select>
+    <select class="ui dropdown" id="mess_dropdown_option">
+      <option value="mess1">Mess 1</option>
+      <option value="mess2">Mess 2</option>
+      <option value="all">All</option>
+    </select>
+    <button class="ui button primary" onclick="get_filter_students()">Filter</button>
+  </div>
+
+
+  <div>
+    <div class="ui form" style="display: flex;margin-top: 10px; margin-bottom: 10px;">       
+      <input
+        type="text"
+        id="roll_no_search"
+        name="roll_number"
+        placeholder="Student Roll Number Here"
+        style="max-width: 60%;"
+      />
+      <button
+        class="ui primary button"
+        style="max-width: 8rem; max-height: 3rem; margin-left: 10px;"
+        type="submit"
+        id="searchStudent"
+        onclick="search_student()"
+      >
+        Search
+      </button>
+    </div>
+  </div>
+
+
+  <div style="max-height: 60vh; overflow:scroll"  id="mess_students_table">
+    <table class="ui celled table">
+      <thead>
+        <th>Name</th>
+        <th>Roll No</th>
+        <th>Program</th>
+        <th>Your Balance</th>
+        <th>Mess</th>
+        <th>View Reg Records</th>
+      </tr></thead>
+      <tbody>
+          {% for entry in reg_main %}
+        <tr id="uniq-{{entry.pk}}">
+          <td data-label="Name">{{entry.student_id.id.user.first_name}}</td>
+          <td data-label="Roll No" id="roll">{{entry.student_id.id.id}}</td>
+          <td data-label="Program">{{entry.student_id.programme}}</td>
+          <td data-label="Balance">{{entry.balance}}</td>
+          <td data-label="Mess"> {{entry.mess_option}}</td>
+          <td>
+          <button class="ui button" onclick="get_reg_details({{entry.pk}})">View Details</button>
+          </td>
+        </tr>
+          {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="ui modal" id="student-reg-modal" style="height: 70vh; max-height: 70vh; overflow-x: scroll;padding: 10px;">
+</div>
+
+
+
+
+{% endblock %}
+{% endblock %}
+
+{% block javascript %}
+
+<script>
+  function get_filter_students(){
+
+    var data={}
+
+    const status=document.getElementById('status').value;
+    const program=document.getElementById('program').value;
+    const mess_option=document.getElementById('mess_dropdown_option').value;
+    const mess_students=document.getElementById('mess_students_table');
+    $.ajax({
+                   type: 'POST',
+                   url: 'api/get_mess_students',
+                   dataType: 'json',
+                   data: {
+                      'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                      'type':'filter',
+                      'status':status,
+                      'program':program,
+                      'mess_option':mess_option
+                   },
+                   success: function(data) {
+
+                           console.log(data.payload)
+                          //  alert('data updated successfully')
+                           var students_data=`
+                           <table class="ui celled table">
+                                <thead>
+                                  <th>Name</th>
+                                  <th>Roll No</th>
+                                  <th>Program</th>
+                                  <th>Your Balance</th>
+                                  <th>Mess</th>
+                                  <th>View Reg Records</th>
+                                </tr></thead>
+                                <tbody>`;
+
+                                  data.payload.forEach(element => {
+
+                                    students_data=students_data+`
+                                    <tr id="uniq-${element.id}">
+                                    <td data-label="Name">${element.first_name+' '+element.last_name}</td>
+                                    <td data-label="Roll No" id="roll">${element.student_id}</td>
+                                    <td data-label="Program">${element.program}</td>
+                                    <td data-label="Balance">${element.balance}</td>
+                                    <td data-label="Mess"> ${element.mess_option}</td>
+                                    <td>
+                                    <button class="ui button" onclick="get_reg_details(${element.id})">View Details</button>
+                                    </td>
+                                  </tr>
+                                    `
+                                    
+                                  });
+
+                                  students_data=students_data+`
+                                              </tbody>
+                                            </table>
+                                        `
+
+                                mess_students.innerHTML=students_data;        
+   
+   
+                   },
+                   error: function(data, err) {
+                       alert(err.message);
+                   }
+               });
+   
+            }
+
+
+
+  function get_reg_details(id){
+    const student = document.getElementById('uniq-'+id).querySelector('#roll').textContent
+    const mess_students=document.getElementById('student-reg-modal');
+    $.ajax({
+                   type: 'POST',
+                   url: 'api/get_student_all_details',
+                   dataType: 'json',
+                   data: {
+                      'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                      'student_id':student,
+                   },
+                   success: function(data) {
+                           data=data.payload
+                           console.log(data)
+                           var students_data=`
+                           <div>
+                          <h2 class="ui header">Student Details</h2>
+                           <table class="ui celled table">
+                           <thead>
+                             <th>Name</th>
+                             <th>Roll No</th>
+                             <th>Program</th>
+                             <th>Your Balance</th>
+                             <th>Mess</th>
+                           </tr></thead>
+                           <tbody>`
+                            element=data.student_details
+
+                               students_data=students_data+`
+                               <tr id="uniq-${element.id}">
+                               <td data-label="Name">${element.first_name+' '+element.last_name}</td>
+                               <td data-label="Roll No" id="roll">${element.student_id}</td>
+                               <td data-label="Program">${element.program}</td>
+                               <td data-label="Balance">${element.balance}</td>
+                               <td data-label="Mess"> ${element.mess_option}</td>
+                               </tr>
+                               `
+
+                            students_data=students_data+`
+                            </tbody>
+                            </table>
+                            <hr>
+                              `
+                           students_data= students_data+`
+                           <h2 class="ui header">Student Registration Records</h2>
+                           <table class="ui celled table">
+                                <thead>
+                                  <th>Reg Start date</th>
+                                  <th>Reg End date</th>
+                                </tr></thead>
+                                <tbody>`;
+
+                                  data.reg_records.forEach(element => {
+
+                                    students_data=students_data+`
+                                    <tr>
+                                    <td data-label="reg start date">${element.start_date}</td>
+                                    <td data-label="reg end date">${element.end_date}</td>
+                                    </tr>
+                                    `
+                                    
+                                  });
+
+                                  students_data=students_data+`
+                                              </tbody>
+                                            </table>
+                                            <hr>
+                                        `
+                                students_data=students_data+`
+                                <h2 style="margin-top:30px;margin-bottom:10px" class="ui header">Payment Details</h2>
+                                `;
+
+                                students_data=students_data+`
+                                <table class="ui celled table" id="payments-table-student">
+                                <thead>
+                                  <th>Month</th>
+                                  <th>Year</th>
+                                  <th>Amount Paid</th>
+                                </tr></thead>
+                                <tbody>`;
+
+                                  data.payment.forEach(element => {
+
+                                    students_data=students_data+`
+                                    <tr>
+                                    <td data-label="Month">${element.payment_month}</td>
+                                    <td data-label="Year">${element.payment_year}</td>
+                                    <td data-label="Initial Amount">${element.amount_paid}</td>
+                                    </tr>
+                                    `
+                                    
+                                  });
+
+                                  students_data=students_data+`
+                                              </tbody>
+                                            </table>
+                                            <hr>
+                                        `
+
+                              students_data=students_data+`
+                                <h2 style="margin-top:30px;margin-bottom:10px class="ui header">Monthly Bill</h2>
+                                <table class="ui celled table">
+                                <thead>
+                                  <th>Month</th>
+                                  <th>Year</th>
+                                  <th>Monthly Base Amount</th>
+                                  <th>Rebate Count</th>
+                                  <th>Rebate Amount</th>
+                                  <th>Your Monthly Amount</th>
+                                </tr></thead>
+                                <tbody>`;
+
+                                  data.bill.forEach(element => {
+
+                                    students_data=students_data+`
+                                    <tr>
+                                    <td data-label="Month">${element.month}</td>
+                                    <td data-label="Year">${element.year}</td>
+                                    <td data-label="Initial Amount">${element.amount}</td>
+                                    <td data-label="rebate count">${element.rebate_count}</td>
+                                    <td data-label="rebate amount">${element.rebate_amount}</td>
+                                    <td data-label="Total amount">${element.total_bill}</td>
+                                    </tr>
+                                    `
+                                    
+                                  });
+
+                                  students_data=students_data+`
+                                              </tbody>
+                                            </table>
+                                            </div>
+                                            <hr>
+                                        `      
+
+
+                                mess_students.innerHTML=students_data;
+                                $('#student-reg-modal').modal('show');        
+                   },
+                   error: function(data, err) {
+                       alert(err.message);
+                   }
+               });
+  }
+
+  function search_student(){
+    const student = document.getElementById('roll_no_search').value
+    const mess_students=document.getElementById('mess_students_table');
+    $.ajax({
+      type: 'POST',
+      url: 'api/get_mess_students',
+      dataType: 'json',
+      data: {
+        'csrfmiddlewaretoken' : '{{ csrf_token }}',
+        'type': 'search',
+        'student_id':student
+      },
+      success: function(data) {
+        var students_data=`
+        <table class="ui celled table">
+            <thead>
+              <th>Name</th>
+              <th>Roll No</th>
+              <th>Program</th>
+              <th>Your Balance</th>
+              <th>Mess</th>
+              <th>View Reg Records</th>
+            </tr></thead>
+            <tbody>`;
+
+                element=data.payload
+                students_data=students_data+`
+                <tr id="uniq-${element.id}">
+                <td data-label="Name">${element.first_name+' '+element.last_name}</td>
+                <td data-label="Roll No" id="roll">${element.student_id}</td>
+                <td data-label="Program">${element.program}</td>
+                <td data-label="Balance">${element.balance}</td>
+                <td data-label="Mess"> ${element.mess_option}</td>
+                <td>
+                <button class="ui button" onclick="get_reg_details(${element.id})">View Details</button>
+                </td>
+                </tr>
+                </tbody>
+                </table>`
+
+            mess_students.innerHTML=students_data;
+          },
+           error: function(data, err) {
+                      alert(data.responseJSON.error);
+                      // alert(err.message);
+                  }
+              });
+   
+  }
+</script>
+
+
+
+{% endblock %}

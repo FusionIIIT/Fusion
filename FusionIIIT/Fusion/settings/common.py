@@ -104,13 +104,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'django.contrib.humanize',
-    
+    'django_crontab',
     'corsheaders',
 
     'applications.eis',
     'notification',
     'notifications',
     'applications.academic_procedures',
+    'applications.examination',
     'applications.academic_information',
     'applications.leave',
     'applications.library',
@@ -127,6 +128,7 @@ INSTALLED_APPS = [
     'applications.ps1',
     'applications.programme_curriculum',
     'applications.placement_cell',
+    'applications.otheracademic',
     'applications.recruitment',
     'applications.scholarships',
     'applications.visitor_hostel',
@@ -163,6 +165,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'Fusion.middleware.custom_middleware.user_logged_in_middleware',
 ]
 
 ROOT_URLCONF = 'Fusion.urls'
@@ -170,7 +173,7 @@ ROOT_URLCONF = 'Fusion.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, '..', 'templates/'),],
+        'DIRS': [os.path.join(BASE_DIR, '..', 'templates'),],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -178,6 +181,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'Fusion.context_processors.global_vars',
             ],
         },
     },
@@ -254,9 +258,9 @@ SITE_ID = 1
 
 # os.path.join(BASE_DIR, 'static/')
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, '..', 'static/')
+STATIC_ROOT = os.path.join(BASE_DIR, '..', 'static')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-MEDIA_ROOT = os.path.join(BASE_DIR, '..', 'media/')
+MEDIA_ROOT = os.path.join(BASE_DIR, '..', 'media')
 MEDIA_URL = '/media/'
 
 ACCOUNT_USERNAME_REQUIRED = False
@@ -275,6 +279,7 @@ CRISPY_TEMPLATE_PACK = 'semantic-ui'
 CRISPY_ALLOWED_TEMPLATE_PACKS = ('semantic-ui')
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
 YOUTUBE_DATA_API_KEY = 'api_key'
+
 
 
 CORS_ORIGIN_ALLOW_ALL = True

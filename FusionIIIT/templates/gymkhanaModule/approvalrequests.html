@@ -1,234 +1,390 @@
-{% load static %}
-{% block approvalrequests %}
+{% load static %} {% block approvalrequests %} {% comment %}The tab menu starts
+here!{% endcomment %}
+<div class="ui pointing secondary menu">
+  {% if "Dean_s" not in global_var and "Counsellor" in global_var %}
+  <a class="item" data-tab="clubbudget">Club Budget</a>
+  {%endif%} {%if "Dean_s" in global_var and "Counsellor" not in global_var %}
+  <a class="active item" data-tab="newclub">New Club Formation</a>
+  {%endif%}
+</div>
+<div class="ui tab" data-tab="clubbudget">
+  <div class="ui vertical segment">
+    <form method="post" action="" id="budget_action_form">
+      {% csrf_token %}
+      <table
+        class="ui very basic collapsing celled sortable table"
+        style="
+          padding-left: 2.5%;
+          padding-right: 2.5%;
+          padding-top: 1%;
+          padding-bottom: 1.5%;
+          margin: auto;
+        "
+      >
+        <thead>
+          <tr>
+            <th></th>
+            <th class="three wide column">Co-ordinator</th>
+            <th class="two wide column">Club</th>
+            <th class="one wide column">For</th>
+            <th class="one wide column">Amount</th>
+            <th class="two wide column">Update</th>
+            <th class="one wide column">PFA</th>
+            <th class="three wide column">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for i in Club_budget %} {% if i.status == "open" %}
+          <tr>
+            <td class="collapsing">
+              <div class="ui fitted checkbox">
+                <input
+                  type="checkbox"
+                  id="{{ i.club }} {{ i.budget_for }}"
+                  value="{{ i.club }} {{ i.budget_for }}"
+                  name="check"
+                />
+                <label></label>
+              </div>
+            </td>
+            <td>
+              <h4 class="ui image header">
+                <img
+                  src="{% static 'globals/img/zlatan.jpg' %}"
+                  class="ui mini circular image"
+                />
+                <div class="content">
+                  {{ i.club.co_ordinator.id }}
+                  <div class="sub header">
+                    {{ i.club.co_ordinator.id.user.email }}
+                  </div>
+                </div>
+              </h4>
+            </td>
+            <td>{{ i.club.club_name }} Club</td>
+            <td>{{ i.budget_for }}</td>
+            <td>{{ i.budget_amt }}</td>
+            <td>
+              <input
+                type="text"
+                class="new-budget-input"
+                placeholder="New budget amount"
+                style="width: 80%; margin-bottom: 10px"
+              />
+              <button
+                class="ui blue button update-budget-button"
+                data-budget-id="{{ i.id }}"
+              >
+                Update
+              </button>
+            </td>
+            <td>
+              <a
+                class="ui inverted circular icon button"
+                style="margin: auto"
+                target="_blank"
+                href="{{ i.budget_file.url }}"
+              >
+                <i class="large attach black icon"></i>
+              </a>
+            </td>
+            <td>{{ i.description }}</td>
+          </tr>
+          {% endif %} {% endfor %}
+        </tbody>
+      </table>
+      <br />
+      <div class="field">
+        <button
+          id="budget_approve"
+          class="ui primary right floated button"
+          type="submit"
+        >
+          Approve
+        </button>
+      </div>
+      <div class="field">
+        <button
+          id="budget_reject"
+          class="ui red right floated button"
+          type="submit"
+        >
+          Reject
+        </button>
+      </div>
+      <br />
+      <br />
+      <div class="ui divider"></div>
+    </form>
+  </div>
+</div>
 
-    {% comment %}The tab menu starts here!{% endcomment %}
-    <div class="ui pointing secondary menu">
-        <!-- <a class="item" data-tab="clubbudget">
-            Club Budget
-        </a> -->
+<div class="ui active tab" data-tab="newclub">
+  <div class="ui vertical segment">
+    <form method="post" action="" id="club_action_form">
+      {% csrf_token %}
+      <table
+        class="ui very basic collapsing celled sortable table"
+        style="padding-top: 1%; padding-bottom: 1.5%; margin: auto; width: 80%"
+      >
+        <thead>
+          <tr>
+            <th>Select</th>
+            <th class="four wide column">Club</th>
+            <th class="four wide column">New Name</th>
+            <th class="four wide column">Coordinator</th>
+            <th class="four wide column">Co-Coordinator</th>
+            <th class="four wide column">Faculty Incharge</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for i in Club_name %} {% if i.status == "open" %}
+          <tr>
+            <td class="collapsing">
+              <div class="ui fitted checkbox">
+                <input
+                  type="checkbox"
+                  id="{{ i.club_name }}"
+                  value="{{ i.club_name }}"
+                  name="check"
+                />
+                <label></label>
+              </div>
+            </td>
+            <td>
+              <h4 class="ui header">
+                <div class="content">
+                  {{ i.club_name }}
+                  <div class="sub header">{{ i.category }}</div>
+                </div>
+              </h4>
+            </td>
+            <td>
+              <h4 class="ui header">
+                <div class="content">
+                  {{ club.club_name }}
+                  <div class="sub header">{{ club.category }}</div>
+                </div>
+              </h4>
+              <div class="ui input">
+                <input
+                  type="text"
+                  class="new-name-input"
+                  placeholder="New name"
+                  style="width: 80%; margin-bottom: 10px"
+                />
+              </div>
+              <button
+                class="ui blue button update-button"
+                data-club-id="{{ i.club_name }}"
+              >
+                Update
+              </button>
+            </td>
+            <td>
+              <h4 class="ui image header">
+                <div class="content">
+                  {{ i.co_ordinator.id.id }}
+                  <div class="sub header">
+                    {{ i.co_ordinator.id.user.email }}
+                  </div>
+                </div>
+              </h4>
+            </td>
+            <td>
+              <h4 class="ui image header">
+                <div class="content">
+                  {{ i.co_coordinator.id.id }}
+                  <div class="sub header">
+                    {{ i.co_coordinator.id.user.email }}
+                  </div>
+                </div>
+              </h4>
+            </td>
+            <td>
+              <h4 class="ui image header">
+                <div class="content">
+                  {{ i.faculty_incharge.id.id }}
+                  <div class="sub header" style="font-size: 10px">
+                    {{ i.faculty_incharge.id.user.email }}
+                  </div>
+                </div>
+              </h4>
+            </td>
+          </tr>
+          {% endif %} {% endfor %}
+        </tbody>
+      </table>
+      <br />
+      <div class="field">
+        <button
+          id="approve_button"
+          class="ui primary button right floated"
+          type="submit"
+        >
+          Approve
+        </button>
+      </div>
+      <div class="field">
+        <button
+          id="reject_button"
+          class="ui red button right floated"
+          type="submit"
+        >
+          Reject
+        </button>
+      </div>
+      <br />
+      <br />
+      <div class="ui divider"></div>
+    </form>
+  </div>
+</div>
 
-        <a class="active item" data-tab="newclub">
-            New Club Formation
-        </a>
-    </div>
+<script>
+  // Function to handle button clicks for budget actions
+  function handleBudgetButtonClick(action) {
+    document.getElementById('budget_action_form').action = action;
+    document.getElementById('budget_action_form').submit();
+  }
 
-    <div class="ui tab" data-tab="clubbudget">
-        <div class="ui vertical segment">
-            <table class="ui very basic collapsing celled sortable table"
-                   style="padding-left: 2.5%;
-                                                          padding-right: 2.5%;
-                                                          padding-top: 1%;
-                                                          padding-bottom: 1.5%;
-                                                          margin: auto;">
-                <thead>
-                <tr>
-                    <th>
-                    </th>
+  // Add event listeners to budget action buttons
+  document
+    .getElementById('budget_approve')
+    .addEventListener('click', function () {
+      handleBudgetButtonClick('/gymkhana/budget_approve/');
+    });
 
-                    <th class="four wide column">
-                        Co-ordinator
-                    </th>
+  document
+    .getElementById('budget_reject')
+    .addEventListener('click', function () {
+      handleBudgetButtonClick('/gymkhana/budget_reject/');
+    });
 
-                    <th class="two wide column">
-                        Club
-                    </th>
+  // Function to handle button clicks for club actions
+  function handleClubButtonClick(action) {
+    document.getElementById('club_action_form').action = action;
+    document.getElementById('club_action_form').submit();
+  }
 
-                    <th class="two wide column">
-                        Budget For
-                    </th>
+  // Add event listeners to club action buttons
+  document
+    .getElementById('approve_button')
+    .addEventListener('click', function () {
+      handleClubButtonClick('/gymkhana/club_approve/');
+    });
 
-                    <th class="one wide column">
-                        PFA
-                    </th>
+  document
+    .getElementById('reject_button')
+    .addEventListener('click', function () {
+      handleClubButtonClick('/gymkhana/club_reject/');
+    });
 
-                    <th class="four wide column">
-                        Description
-                    </th>
-                </tr>
-                </thead>
+  // funciton to update club name
+  document.addEventListener('DOMContentLoaded', function () {
+    var updateButtons = document.querySelectorAll('.update-button');
 
-                <tbody>
-                {% for i in Club_budget %}
-                    {% if i.status == "open" %}
-                        <tr>
-                            <td class="collapsing">
-                                <div class="ui fitted checkbox">
-                                    <input type="checkbox"  id="{{ i.club }} {{ i.budget_for }}" name="{{ i.club }} {{ i.budget_for }}" > <label></label>
-                                </div>
-                            </td>
-                            <td>
-                                <h4 class="ui image header">
-                                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                                    <div class="content">
-                                        {{ i.club.co_ordinator.id }}
-                                        <div class="sub header">
-                                            {{ i.club.co_ordinator.id.user.email }}
-                                        </div>
-                                    </div>
-                                </h4>
-                            </td>
-                            <td>
-                                {{ i.club.club_name }} Club
-                            </td>
-                            <td>
-                                {{ i.budget_for }}
-                            </td>
-                            <td>
-                                {% comment %}
-                                    TODO: Add the attachment here!
-                                {% endcomment %}
-                                <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="{{ i.budget_file.url }}">
-                                    <i class="large attach black icon"></i>
-                                </a>
-                            </td>
-                            <td>
-                                {{ i.description }}
-                            </td>
-                        </tr>
-                    {% endif %}
-                {% endfor %}
-                </tbody>
-            </table>
+    updateButtons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        var clubId = this.getAttribute('data-club-id');
+        console.log('Club ID:', clubId); // Log club ID to console
 
+        var newName = this.parentElement.querySelector('.new-name-input').value;
 
-            <br>
+        // Send AJAX request to server to update club name
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/gymkhana/update-club-name/', true);
+        xhr.setRequestHeader(
+          'Content-Type',
+          'application/x-www-form-urlencoded'
+        );
+        xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken')); // Django CSRF token
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === XMLHttpRequest.DONE) {
+            if (xhr.status === 200) {
+              // Request was successful, handle response
+              console.log(xhr.responseText);
+              // Optionally update UI or show a message
+            } else {
+              // Request failed, handle error
+              console.error('Request failed:', xhr.status);
+            }
+          }
+        };
+        xhr.send(
+          'club_id=' +
+            encodeURIComponent(clubId) +
+            '&new_name=' +
+            encodeURIComponent(newName)
+        );
+      });
+    });
 
-            <div class="ui primary right floated button">Approve Selected</div>
-            <div class="ui red right floated button">Reject Selected</div>
+    // Function to get CSRF token from cookies
+    function getCookie(name) {
+      var cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+          var cookie = cookies[i].trim();
+          // Does this cookie string begin with the name we want?
+          if (cookie.substring(0, name.length + 1) === name + '=') {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+  });
 
-            <br>
-            <br>
+  // function to updatge budget
+  window.onload = function () {
+    // ...
 
-            <div class="ui divider"></div>
+    // function to update budget amount
+    var updateBudgetButtons = document.querySelectorAll(
+      '.update-budget-button'
+    );
 
-        </div>
-    </div>
+    updateBudgetButtons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        var budgetId = this.getAttribute('data-budget-id');
+        console.log('Budget ID:', budgetId); // Log budget ID to console
 
-    <div class="ui active tab" data-tab="newclub">
-        <div class="ui vertical segment">
-        <form method="post" action="" id="clubrequest">
-        {% csrf_token %}
-            <table class="ui very basic collapsing celled sortable table"
-                   style="padding-top: 1%;
-                                                          padding-bottom: 1.5%;
-                                                          margin: auto;">
-                <thead>
-                <tr>
-                    <th>
-                        Select
-                    </th>
+        var newBudget =
+          this.parentElement.querySelector('.new-budget-input').value;
+        var req_id = "spent";
+        // Send AJAX request to server to update budget amount
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/gymkhana/update-budget-amount/', true);
+        xhr.setRequestHeader(
+          'Content-Type',
+          'application/x-www-form-urlencoded'
+        );
+        xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken')); // Django CSRF token
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === XMLHttpRequest.DONE) {
+            if (xhr.status === 200) {
+              // Request was successful, handle response
+              console.log(xhr.responseText);
+              // Optionally update UI or show a message
+            } else {
+              // Request failed, handle error
+              console.error('Request failed:', xhr.status);
+            }
+          }
+        };
+        xhr.send(
+          'budget_id=' +
+            encodeURIComponent(budgetId) +
+            '&new_budget=' +
+            encodeURIComponent(newBudget)
+        );
+      });
+    });
 
-                    <th class="four wide column">
-                        Club
-                    </th>
-
-                    <th class="four wide column">
-                        Coordinator
-                    </th>
-
-                    <th class="four wide column">
-                        Co-Coordinator
-                    </th>
-                    <th class="four wide column">
-                        Faculty Incharge
-                    </th>
-{#                    <th class="one wide column">#}
-{#                        PFA#}
-{#                    </th>#}
-                </tr>
-                </thead>
-
-                <tbody>
-                {% for i in Club_name %}
-                    {% if i.status == "open" %} 
-                        <tr>
-                            <td class="collapsing">
-                                <div class="ui fitted checkbox">
-                                    <input type="checkbox" id="{{ i.club_name }}" value="{{ i.club_name }}" name="check"><label></label>
-                                </div>
-                            </td>
-
-                            <td>
-                                <h4 class="ui header">
-                                    <div class="content">
-                                        {{ i.club_name }}
-                                        <div class="sub header">
-                                            {{ i.category }}
-                                        </div>
-                                    </div>
-                                </h4>
-                            </td>
-
-                            <td>
-                                <h4 class="ui image header">
-{#                                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">#}
-                                    <div class="content">
-                                        {{ i.co_ordinator.id.id }}
-                                        <div class="sub header">
-                                            {{ i.co_ordinator.id.user.email }}
-                                        </div>
-                                    </div>
-                                </h4>
-                            </td>
-
-                            <td>
-                                <h4 class="ui image header">
-{#                                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">#}
-                                    <div class="content">
-                                        {{ i.co_coordinator.id.id }}
-                                        <div class="sub header">
-                                            {{ i.co_coordinator.id.user.email }}
-                                        </div>
-                                    </div>
-                                </h4>
-                            </td>
-
-                            <td>
-                                <h4 class="ui image header">
-{#                                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">#}
-                                    <div class="content">
-                                        {{ i.faculty_incharge.id.id }}
-                                        <div class="sub header">
-                                            {{ i.faculty_incharge.id.user.email }}
-                                        </div>
-                                    </div>
-                                </h4>
-                            </td>
-
-{#                            <td>#}
-                                {% comment %}
-                                    TODO: Add the attachment here!
-                                {% endcomment %}
-{#                                {% if i.club_file %}#}
-{#                                <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="{{ i.club_file.url }}">#}
-{#                                    <i class="large attach black icon"></i>#}
-{#                                </a>#}
-{#                                {% endif %}#}
-{#                            </td>#}
-                        </tr>
-                    {% endif %}
-                {% endfor %}
-                </tbody>
-            </table>
-
-            <br>
-
-            <div class="field">
-                <button class="ui primary button right floated" type="submit" formaction="/gymkhana/club_approve/">
-                    Approve Selected
-                </button>
-            </div>
-            <div class="field">
-                <button class="ui red button right floated" type="submit" formaction="/gymkhana/club_reject/">
-                    Reject Selected
-                </button>
-            </div>
-
-            <br>
-            <br>
-
-            <div class="ui divider"></div>
-        </form>
-        </div>
-    </div>
+    // ...
+  };
+</script>
 {% endblock %}

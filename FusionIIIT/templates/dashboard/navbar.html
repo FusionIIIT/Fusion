@@ -1,4 +1,5 @@
 {% load static %}
+
 {% block navBar %}
     {% include 'dashboard/sidenavbar.html' %}
 
@@ -8,7 +9,6 @@
                 <i class="sidebar icon"></i>
             </a>
 
-
             <a class="item" href="{% url 'globals:dashboard' %}">
                 {% load notifications_tags %}
                 {% register_notify_callbacks badge_class='badge' callbacks='fill_notification_badge' %}
@@ -16,49 +16,56 @@
                 Dashboard
                 <div class="ui red circular label">{% live_notify_badge badge_class='badge' %}</div>
             </a>
-            <div class="item">
-                <a class="icon mail" href = '/feedback'>
-                <i class="comment icon"></i>Feedback</a>
-            </div>
-            <div class="item">
-                <form method="GET" action="{% url 'globals:search' %}">
-                    <div class="ui search">
-                        <div class="ui action input">
-                          <input type="text" name="q" placeholder="Search...">
-                          <button type="submit" class="ui button"><i class="search icon"></i></button>
-                        </div>
-                        <div class="results"></div>
-                    </div>
-                    
-                </form>
-            </div>
+            <button onclick="previous()" id="previous" style="background: transparent; border: none;"> 
+                <i class="ui active inverted large angle left icon"></i>
+            </button>
+            <button onclick="next()" id="forward" style="background: transparent; border: none;"> 
+                <i class="ui active inverted large angle right icon"></i>
+            </button>
+
             <div class="right inverted menu">
+                <form method="POST" action="/update_global_variable/" id="designationForm">
+                    {% csrf_token %}
+                    <div class="item">
+                        <div class="custom-dropdown" id="designationDropdown">
+                            <div class="custom-dropdown-text" id="dropdownTextContainer">
+                                <span id="dropdownText">
+                                    {% if global_var %}
+                                        {{ global_var|capfirst }}
+                                    {% else %}
+                                        Select your designation
+                                    {% endif %}
+                                </span>
+                                <i class="dropdown icon"></i>
+                            </div>
+                            <div class="custom-dropdown-menu">
+                                {% for d in global_var2 %}
+                                    <div class="custom-dropdown-item" data-value="{{ d }}">
+                                        {{ d|capfirst }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <input type="hidden" name="dropdown" id="dropdownValue">
+                    </div>
+                </form>
+                {% if 'staff' != request.user.extrainfo.user_type %}
                 <a class="item" href="{% url 'globals:profile' %}">
-                    {% comment %}
-                        TODO: User details! depending on type of user say: STUDENT/FACULTY/STAFF!
-                    {% endcomment %}
                     <img class="ui avatar image" src="{% static 'globals/img/zlatan.jpg' %}">
                     {{request.user.first_name}} {{request.user.last_name}}
                 </a>
-                {% comment %}
-                <a class="item ui pointed dropdown link" href="{% url 'globals:dashboard' %}" id="new-notification">
-                    <div class="text">Notifications</div>
-                    <i class="dropdown"></i>
-                    <div class="ui red circular label">22</div>
-                        TODO: Make dropdown menu
-                    <div class="menu">
-                        <div class="item">Notification1</div>
-                        <div class="item">Notification1</div>
-                    </div>
-                    {% endcomment %}
+                {% endif %}
+                {% if 'staff' == request.user.extrainfo.user_type %}
+                <a class="item" href="/hr2/administrativeProfile/">
+                    <img class="ui avatar image" src="{% static 'globals/img/zlatan.jpg' %}">
+                    {{request.user.first_name}} {{request.user.last_name}}
                 </a>
-                    
+                {% endif %}
                 <div class="ui fluid popup bottom left transition">
                     <div class="ui four column relaxed equal height stackable doubling grid">
                         <div class="row">
                             <h3 class="ui dividing header" style="margin: auto; margin-top: 8px;">Notifications</h3>
                         </div>
-
                         <div class="row">
                             <div class="column">
                                 <div class="ui secondary vertical pointing compact menu">
@@ -67,19 +74,16 @@
                                             Leave
                                         </span>
                                     </a>
-
                                     <a class="item" data-tab="complaintModule">
                                         <span style="color: #000;">
                                             Complaint
                                         </span>
                                     </a>
-
                                     <a class="item" data-tab="messModule">
                                         <span style="color: #000;">
                                             Mess
                                         </span>
                                     </a>
-
                                     <a class="item" data-tab="placementModule">
                                         <span style="color: #000;">
                                             Placement
@@ -87,51 +91,131 @@
                                     </a>
                                 </div>
                             </div>
-
                             <div class="three wide column">
                                 <div class="ui active tab" data-tab="leaveModule">
                                     <div class="ui animated fluid list"
-                                         id="new-message-list" style="min-width: 20vw; max-height: 28.5vh; overflow-y: auto;">
+                                        id="new-message-list" style="min-width: 20vw; max-height: 28.5vh; overflow-y: auto;">
                                     </div>
                                 </div>
-
-                                <div class="ui tab"  data-tab="complaintModule">
+                                <div class="ui tab" data-tab="complaintModule">
                                 </div>
-
-                                <div class="ui tab"  data-tab="messModule">
+                                <div class="ui tab" data-tab="messModule">
                                 </div>
-
-                                <div class="ui tab"  data-tab="placementModule">
+                                <div class="ui tab" data-tab="placementModule">
                                 </div>
                             </div>
                         </div>
                     </div>
-
                 </div>
-
                 <a class="right item" href="/accounts/logout">
-                    {% comment %}
-                        TODO: LOGOUT!
-                    {% endcomment %}
                     <i class="ui inverted sign out icon"></i>
                     Logout
                 </a>
-
             </div>
         </div>
 
         <div class="ui divider"></div>
 
-
-
-
-        {% block data%}
-
+        {% block data %}
         {% endblock %}
-
-
-
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdown = document.getElementById('designationDropdown');
+            const dropdownTextContainer = document.getElementById('dropdownTextContainer');
+            const dropdownText = document.getElementById('dropdownText');
+            const dropdownMenu = dropdown.querySelector('.custom-dropdown-menu');
+            const dropdownItems = dropdown.querySelectorAll('.custom-dropdown-item');
+            const hiddenInput = document.getElementById('dropdownValue');
+            let oldValue = dropdownText.textContent.trim();
 
+            dropdownTextContainer.addEventListener('click', function() {
+                dropdownMenu.classList.toggle('show');
+            });
+
+            dropdownItems.forEach(function(item) {
+                item.addEventListener('click', function() {
+                    const selectedValue = this.getAttribute('data-value');
+                    if (selectedValue.toLowerCase() === oldValue.toLowerCase()) {
+                        dropdownMenu.classList.remove('show');
+                        return;
+                    }
+                    if (confirm("Do you really want to switch profile ? Any unsaved changes will be lost.")) {
+                        dropdownText.textContent = this.textContent;
+                        hiddenInput.value = selectedValue;
+                        document.getElementById('designationForm').submit();
+                    } else {
+                        dropdownText.textContent = oldValue;
+                    }
+                    dropdownMenu.classList.remove('show');
+                });
+            });
+
+            document.addEventListener('click', function(event) {
+                if (!dropdown.contains(event.target)) {
+                    dropdownMenu.classList.remove('show');
+                }
+            });
+        });
+
+        function next() {
+            window.history.go(1);
+        }
+
+        function previous() {
+            let url = window.location.href;
+            const endPoint = url.split('/');
+            let len = endPoint.length;
+
+            if (endPoint[len - 2] !== 'dashboard') {
+                window.history.go(-1);
+            }
+        }
+    </script>
+
+    <style>
+        .custom-dropdown {
+            position: relative;
+            display: inline-block;
+            width: 200px;
+            cursor: pointer;
+        }
+        .custom-dropdown-text {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            color: #333;
+        }
+        .dropdown.icon {
+            margin-left: 10px;
+        }
+        .custom-dropdown-menu {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+            width: 100%;
+        }
+        .custom-dropdown-menu.show {
+            display: block;
+        }
+        .custom-dropdown-item {
+            padding: 10px;
+            font-size: 16px;
+            color: #333;
+            cursor: pointer;
+        }
+        .custom-dropdown-item:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
 {% endblock %}

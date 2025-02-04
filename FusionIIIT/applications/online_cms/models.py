@@ -1,12 +1,21 @@
 from django.db import models
 #import models used from academic procedure and academic information  modules and globals
-from applications.academic_information.models import Course, Student, Curriculum
-from applications.academic_procedures.models import Register
+from applications.academic_information.models import Student, Curriculum
+from applications.programme_curriculum.models import Course as Courses, CourseInstructor
 from applications.globals.models import ExtraInfo
+
+#the modules for containing course content
+class Modules(models.Model):
+    module_name = models.CharField(max_length=50)
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.module_name
 
 #the documents in the course (slides , ppt) added by the faculty  and can be downloaded by the students
 class CourseDocuments(models.Model):
-    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    module_id = models.ForeignKey(Modules, on_delete=models.CASCADE, default = 1)
     upload_time = models.DateTimeField(auto_now=True)
     description = models.CharField(max_length=100)
     document_name = models.CharField(max_length=40)
@@ -14,10 +23,20 @@ class CourseDocuments(models.Model):
 
     def __str__(self):
         return '{} - {}'.format(self.course_id, self.document_name)
+    
+#the attendance files added by the faculty and can be downloaded by the students
+class AttendanceFiles(models.Model):
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    upload_time = models.DateTimeField(auto_now=True)
+    file_name = models.CharField(max_length=40)
+    file_url = models.CharField(max_length=100, null=True)
+
+    def __str__(self):
+        return '{} - {}'.format(self.course_id, self.file_name)
 
 #videos added by the faculty and can be downloaded by students
 class CourseVideo(models.Model):
-    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
     upload_time = models.DateTimeField(auto_now=True)
     description = models.CharField(max_length=100)
     video_name = models.CharField(max_length=40)
@@ -28,7 +47,7 @@ class CourseVideo(models.Model):
 
 #For storing the questions topic wise
 class Topics(models.Model):
-    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
     topic_name = models.TextField(max_length=200)
 
     def __str__(self):
@@ -37,7 +56,7 @@ class Topics(models.Model):
 #details of a question bank of which course it is 
 class QuestionBank(models.Model):
     instructor_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
-    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)  #name of question bank
 
     def __str__(self):
@@ -65,7 +84,7 @@ class Question(models.Model):
 
  #details of quiz are stored
 class Quiz(models.Model):
-    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
     quiz_name = models.CharField(max_length=20)
     end_time = models.DateTimeField()
     start_time = models.DateTimeField()
@@ -95,7 +114,7 @@ class QuizQuestion(models.Model):
 
 #the details of practice quiz (objective assignment)---- under development
 class Practice(models.Model):
-    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
     prac_quiz_name = models.CharField(max_length=20)
     negative_marks = models.FloatField(default=0)
     number_of_question = models.IntegerField(default=0)
@@ -140,7 +159,7 @@ class StudentAnswer(models.Model):
 
 #details of the assignment uploaded by the faculty
 class Assignment(models.Model):
-    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
     upload_time = models.DateTimeField(auto_now=True)
     submit_date = models.DateTimeField()
     assignment_name = models.CharField(max_length=100)
@@ -180,7 +199,7 @@ class QuizResult(models.Model):
 
 #to store the comment of student and lecturer
 class Forum(models.Model):
-    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
     commenter_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     comment_time = models.DateTimeField(auto_now=True)
     comment = models.TextField(max_length=2000)
@@ -202,4 +221,79 @@ class ForumReply(models.Model):
 
     def __str__(self):
         return '{} - {} - {}'.format(self.pk, self.forum_ques, self.forum_reply)
+    
+class GradingScheme(models.Model):
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    # quiz = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    # assignment = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    # midsem = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    # endsem = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    # projects = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    type_of_evaluation = models.CharField(max_length=100)
+    weightage = models.DecimalField(max_digits=10, decimal_places=2,default=0)
 
+    def __str__(self):
+        return '{} - {}'.format(
+                self.pk, self.course_id)
+    
+class GradingScheme_grades(models.Model):
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    O_Lower = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    O_Upper = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    A_plus_Lower = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    A_plus_Upper = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    A_Lower = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    A_Upper = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    B_plus_Lower = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    B_plus_Upper = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    B_Lower = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    B_Upper = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    C_plus_Lower = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    C_plus_Upper = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    C_Lower = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    C_Upper = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    D_plus_Lower = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    D_plus_Upper = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    D_Lower = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    D_Upper = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    F_Lower = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    F_Upper = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    def __str__(self):
+        return '{} - {}'.format(self.pk, self.course_id)
+
+class Student_grades(models.Model):
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    semester = models.IntegerField(default=1)
+    year = models.IntegerField(default=2016)
+    roll_no = models.TextField(max_length=2000)
+    total_marks = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    grade = models.TextField(max_length=2000)
+    batch = models.IntegerField(default=2021)
+ 
+    def __str__(self):
+        return '{} - {}'.format(self.pk, self.course_id)
+
+class Attendance(models.Model):
+    student_id = models.ForeignKey(Student,on_delete=models.CASCADE)
+#    course_id = models.ForeignKey(Course)
+#    attend = models.CharField(max_length=6, choices=Constants.ATTEND_CHOICES)
+    instructor_id = models.ForeignKey(CourseInstructor, on_delete=models.CASCADE)
+#    curriculum_id = models.ForeignKey(Curriculum, on_delete=models.CASCADE)
+    date = models.DateField()
+    present = models.IntegerField(default=0)
+    no_of_attendance = models.IntegerField(default=1)
+ 
+    def __str__(self):
+        return self.course_id
+    
+class StudentEvaluation(models.Model):
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    evaluation_id = models.ForeignKey(GradingScheme, on_delete=models.CASCADE)
+    marks = models.DecimalField(max_digits=10, decimal_places=2,null=True)
+    total_marks = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    def __str__(self):
+        return '{} - {} - {} - {}'.format(
+                self.pk, self.student_id,
+                self.evaluation_id, self.marks)

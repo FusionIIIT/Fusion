@@ -70,11 +70,12 @@
             <div class="ui active tab segment" data-tab="first"> 
 
     {% else %}
+<div style="height: 100vh;width: 100vw;display: flex;justify-content: center;align-items: center;background-image: url('{% static 'globals/img/LHTC.jpg' %}');background-position:center;background-size:cover;">
 
     	<div class="ui raised stackable doubling centered card right floated"
          style="margin: auto;
                 margin-top: 7.5%;
-                min-width: 360px;">
+                min-width: 360px;background-color: unset;backdrop-filter: blur(3px);">
 
     {% endif %}
             	{% block content %}
@@ -83,6 +84,8 @@
     {% if request.user.is_authenticated %}
 
             </div>
+</div>
+
 
         </div>
         {% comment %}The central-rail segment ends here!{% endcomment %}

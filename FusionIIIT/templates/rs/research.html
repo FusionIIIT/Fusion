@@ -12,30 +12,9 @@ IPR
     {% include 'dashboard/navbar.html' %}
     {% endblock %}
 
-    {% if messages %}
-        {% for message in messages %}
-            {% if message.tags == "success" %}
-                <div class="ui positive message">
-                    <i class="close icon"></i>
-                        {{ message.message }}
-                </div>  
-            {% else %}
-                <div class="ui negative message">
-                    <i class="close icon"></i>
-                    {{ message.message }}
-                </div> 
-            {% endif %}
-        {% endfor %}
-    {% endif %}
-
+  
     <script>
-        $('.message .close')
-            .on('click', function() {
-                $(this)
-                    .closest('.message')
-                    .transition('fade')
-                ;
-            });
+       
     </script>
 
 {% comment %}The grid starts here!{% endcomment %}
@@ -76,6 +55,9 @@ IPR
     {% comment %}
     The central-rail segment starts here!
     {% endcomment %}
+
+    
+
     <div class="eight wide column">
 
         <div class="ui tab segment" data-tab="fourth">
@@ -85,8 +67,12 @@ IPR
         </div>
 
         <div class="ui tab segment" data-tab="second">
-            {% block projects %}
-            {% include 'rs/projects.html' %}
+            
+        </div>
+
+        <div class="ui tab segment" data-tab="first">
+            {% block view_projects %}
+            {% include 'rs/view_projects_rspc.html' %}
             {% endblock %}
         </div>
 
@@ -110,6 +96,9 @@ IPR
     {% comment %}The right-rail segment starts here!{% endcomment %}
     <div class="three wide column">
         <div class="row">
+            {% block sidepanel %} 
+               {% include 'notifications/sidepanel.html' %}
+            {% endblock %}
             {% comment %}
             TODO: the right rail!
             {% endcomment %}

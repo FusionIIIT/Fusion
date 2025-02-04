@@ -1,0 +1,73 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+    Bonafide Form
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <div class="ui stackable doubling grid">
+        <div class="column"></div>
+        <div class="three wide column">
+            <div class="row">
+                <!-- User image card -->
+                {% block usercard %}
+                    {% include 'globals/usercard.html' %}
+                {% endblock %}
+            </div>
+            <div class="ui divider"></div>
+            <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+                <a href="/otheracademic/bonafide" class="active item">Bonafide Form
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/otheracademic/bonafideStatus" class="item">Bonafide Status
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                
+            </div>
+        </div>
+        <div class="twelve wide column">
+            <div class="ui segment">
+                <h2 class="ui header">Bonafide Form</h2>
+               
+                <form id="bonafideForm" class="ui form" method="POST" action="{% url 'otheracademic:bonafide_form_submit' %}">
+                    {% csrf_token %}
+                    {% comment %} <div class="field">
+                        <label for="name">Name</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div class="field">
+                        <label for="rollNo">Roll Number</label>
+                        <input type="text" id="rollNo" name="rollNo" required>
+                    </div> {% endcomment %}
+                    <div class="field">
+                        <label for="branch">Branch</label>
+                        <input type="text" id="branch" name="branch" required>
+                    </div>
+                    <div class="field">
+                        <label for="semester">Semester</label>
+                        <input type="text" id="semester" name="semester" required>
+                    </div>
+                    <div class="field">
+                        <label for="purpose">Purpose</label>
+                        <textarea rows="2" id="purpose" name="purpose" required></textarea>
+                    </div>
+                    <div class="field">
+                        <label>Date of Application</label>
+                        <input type="date" name="date_of_application" style="display: inline-block; width: auto;" required>
+                    </div>
+                    <button type="submit" class="ui blue button submit-button">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
+    <!-- You may include JavaScript files here if needed -->
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+    File Tracking
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <div class="ui stackable doubling grid">
+        <div class="column"></div>
+
+        <div class="three wide column">
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            <div class="ui divider"></div>
+            <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+                <a href="/filetracking" class="item">
+                    Current Semester
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/filetracking" class="item">
+                    Registration
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/filetracking" class="item">
+                    Leave
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/filetracking" class="item">
+                    Miscellaneous
+                    <i class="right floated chevron right icon"></i>
+                </a>
+            </div>
+        </div>
+
+
+
+
+      <div class="eight wide column">
+        <div class="ui active tab segment" data-tab="filetracking_form" id="filetracking_form">
+                <h2>Verify No Dues</h2>
+                <form method="post" action="">
+                    {% csrf_token %}
+                    <div class="ui form">
+                        <div class="field">
+                            <label>Name</label>
+                            <input type="text" name="discipline" required>
+                        </div>
+                        <div class="field">
+                            <label>Roll Number</label>
+                            <input type="text" name="roll_number" required>
+                        </div>
+                        <div class="field">
+                            <label>Discipline</label>
+                            <input type="text" name="discipline" required>
+                        </div>
+                        <div class="field">
+                            <label>Dues</label>
+                            <input type="text" name="dues" required>
+                        </div>
+                        <button class="ui primary button" type="submit">Submit</button>
+                        <button class="ui button" type="reset">Clear</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    
+   
+
+       
+
+        <div class="three wide column">
+            <!-- Right rail content -->
+        </div>
+
+        <div class="column"></div>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <script>
+        $(document).ready(function () {
+            $('.datepicker').datepicker();
+        });
+    </script>
+{% endblock %}

@@ -1,7 +1,7 @@
 {% load static %} {% block submitassignments %}
 
 <link rel="stylesheet" type="text/css" href="{% static 'globals/css/demo.css' %}" />
-<link rel="stylesheet" type="text/css" href="{% static 'globals/css/component.css' %}" />
+<!-- <link rel="stylesheet" type="text/css" href="{% static 'globals/css/component.css' %}" /> -->
 <script>
     (function(e, t, n) {
         var r = e.querySelectorAll("html")[0];
@@ -21,7 +21,6 @@
                 Objective
             </a> -->
 </div>
-<h3>Input</h3>
 
 <div class="ui active tab" data-tab="uploadassignment" id="student_assign_refresh">
 
@@ -31,7 +30,7 @@
         <div class="field">
             <label> Topic</label>
             <select class="ui selection dropdown"  id="assign_topic">
-              {% for assign in assignment %}
+              {% for assign in submitable_assignment %}
               <option class="item" name="assign_topic" value="{{assign.pk}}">{{assign.assignment_name}}</option>
               {% endfor %}
             </select>
@@ -65,7 +64,7 @@
                         <a class="ui basic blue left pointing label">Save</a>
                     </div>
                     <div class="load" id="load_submit_assign" style="display:none">
-                      <img src="{% static 'globals/img/loading.gif'%}" alt="#loading">
+                      <!-- <img src="{% static 'globals/img/loading.gif'%}" alt="#loading"> -->
                       <span >Your file is being uploaded!</span>
                     </div>
                 </div>
@@ -74,11 +73,10 @@
         </div>
     </form>
     <br>
-    <div style="overflow:scroll;height:20em;overflow-x:hidden;">
+    <div style="overflow:scroll;height:10em;overflow-x:hidden;">
     <table class="ui fixed single line sortable celled table">
         <thead>
             <tr>
-                <th class="sorted ascending" style="width: 7%;">Sr.</th>
                 <th class="" style="width: 83%;">Name</th>
                 <th class="" style="width:10%">Action</th>
             </tr>
@@ -92,9 +90,8 @@
                   {% for s in sa %}
                     {% if request.user.username == s.student_id.id.user.username %}
                 <tr>
-                  <td></td>
                   <td>{{assi.assignment_name}}</td>
-                  <td> <a href="#"><i class="trash dustbin outline icon" data-pk="{{s.pk}}" id="dustbin_stuassignment_{{forloop.counter}}"style="font-size:1.3vw;color:red;"></i></a> </td>
+                  <td> <a href="#"><i class="trash icon" data-pk="{{s.pk}}" id="dustbin_stuassignment_{{forloop.counter}}"style="font-size:1.3vw;color:red;"></i></a> </td>
                 </tr>
                     {% endif %}
                   {% endfor %}
@@ -164,7 +161,7 @@
                         <a class="ui basic blue left pointing label">Save</a>
                     </div>
                     <div class="load" id="load_add_assignment" style="display:none">
-                      <img src="{% static 'globals/img/loading.gif'%}" alt="#loading">
+                      <!-- <img src="{% static 'globals/img/loading.gif'%}" alt="#loading"> -->
                       <span >Your file is being uploaded!</span>
                     </div>
                 </div>
@@ -193,10 +190,9 @@
                     <td>{{forloop.counter}}</td>
                     <td>{{assi.assignment_name}}</td>
                     <td>{{assi.submit_date}}</td>
-                    <td> <a href="/{{assi.assignment_url}}"> <i class="download icon" style="font-size:1.3vw;color:blue"></i></a><br>
+                    <td> <a href="{{assi.assignment_url}}"> <i class="download icon" style="font-size:1.3vw;color:blue"></i></a><br>
                     </td>
-                    <td> <a href="#"><i class="trash dustbin outline icon" data-pk="{{assi.pk}}" id="dustbin_lecassignment_{{forloop.counter}}"style="font-size:1.3vw;color:red;"></i></a></td>
-
+                    <td> <a href="#"><i class="trash icon" data-pk="{{assi.pk}}" id="dustbin_lecassignment_{{forloop.counter}}"style="font-size:1.3vw;color:red;"></i></a></td>
 
                 </tr>
                 {% endfor %}

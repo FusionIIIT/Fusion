@@ -2,720 +2,801 @@
 {% load static %}
 
 {% block title %}
-    Gymkhana Module
+Gymkhana Module
 {% endblock %}
 
 {% block body %}
-    {% block navBar %}
-        {% include 'dashboard/navbar.html' %}
-    {% endblock %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
 
-    <style>
-        .ui.basic.table tbody tr[hidden] {
-            display: none !important;
+<style>
+    .ui.basic.table tbody tr[hidden] {
+        display: none !important;
+    }
+</style>
+
+<script type="text/javascript">
+
+
+    function form_submit(a, b, event) {
+        $("#dateDetails").html('');
+        a = '/gymkhana/' + a + '/';
+        // alert("club_budget");
+        // alert(a);
+        // alert(b);
+        event.preventDefault();
+        var form = document.getElementById(b); // You need to use standard javascript object here
+        console.log(b);
+        console.log(a);
+        var i;
+        for (i = 0; i < form.length; i++) {
+            console.log(form.elements[i].name);
+            console.log(form.elements[i].value);
         }
-    </style>
-    
-    <script type="text/javascript">
+        var status = 1;
+        if (b == 'delete__requests') {
+            status = 0
+        }
+        if (b == 'form__available') {
+            status = 0
+        }
+        if (b == 'registration__form') {
+            status = 0
+        }
+        if (b == 'activity_calender') {
+            status = 0
+        }
+        if (b == 'change_head_form') {
+            status = 0
+        }
+        if (b == 'new_session_form') {
+            status = validateNewSessionForm(form);
+        }
+        if (b == 'new_event_form') {
+            status = validateNewEventForm(form);
+        }
+        if (b == 'club_membership_form') {
+            status = validateClubMembershipForm(form);
+        }
+        if (b == 'new_club_form') {
+            status = validateNewClubForm(form);
+        }
+        if (b == 'club_budget_form') {
+            status = validateNewClubForm(form);
+        }
+        if (b == 'event_report') {
+            status = validateNewClubForm(form);
+        }
+        if (b == 'registration__form') {
+            status = 0;
+        }
+        console.log("status", status)
+        // console.log("status");
+        // console.log(status);
+        // status = 1 ;
+        // form.reset();
+        if (status == 0) {
+            var formData = new FormData(form);
+            console.log(formData);
+            form.reset();
+            $.ajax({
+                url: a,
+                data: formData,
+                enctype: "multipart/form-data",
+                type: 'POST',
+                contentType: false, // NEEDED, DON'T OMIT THIS (requires jQuery 1.6+)
+                processData: false, // NEEDED, DON'T OMIT THIS
+                // ... Other options like success and etc
+                success: function (response) {
+                    response = JSON.parse(response);
+                    console.log(response);
+                    console.log("here");
+                    // $("#modalHeader").html(response.status);
+                    if (response.status == "success") {
+                        $(".succ").modal("show");
+                    }
+                    else {
+                        $("#errorContent").html('<p><b>' + response.message + '</p></b>');
+                        $(".formErrors").modal('show');
+                    }
+                    form.reset();
+                }
+            });
+        }
+    }
 
+    function validateNewSessionForm(form) {
+        var i, startTime, endTime;
+        var empty = new Array();
+        for (i = 0; i < form.length; i++) {
+            if (form.elements[i].value == "" && form.elements[i].name != "") {
+                empty.push(form.elements[i].name);
+            }
+            else if (form.elements[i].name == "start_time") {
+                startTime = form.elements[i].value;
+            }
+            else if (form.elements[i].name == "end_time") {
+                endTime = form.elements[i].value;
+            }
+        }
+        var ret = 0;
+        //this array contains names of all the input fields included in newsession form
+        if (empty && empty.length && !(empty.length == 1 && empty[0] == "session_poster")) {
+            // code to be executed if some fields are empty except session poster field
+            console.log("empty");
+            if (endTime <= startTime)
+                $("#errorContent").append("<p><b>Start Time should be strictly less than end time.</b></p>");
+            $(".formErrors").modal('show');
+            ret = 1;
+            // form.reset();-
+            // setTimeout(function(){ location.reload(); }, 5000);
+        }
+        else if (endTime <= startTime) {
+            console.log("time problem");
+            $("#errorContent").html("<p><b>Start Time should be strictly less than end time.</b></p>");
+            $(".formErrors").modal('show');
+            ret = 1;
+            // setTimeout(function(){ location.reload(); }, 5000);
+        }
+        return ret;
+    }
 
-        function form_submit(a,b,event){
-            $("#dateDetails").html('');
-            a = '/gymkhana/'+a+'/';
-            // alert("club_budget");
-            // alert(a);
-            // alert(b);
-            event.preventDefault();
-            var form = document.getElementById(b); // You need to use standard javascript object here
-            console.log(b);
-            console.log(a) ;
-            var i ;
-            for(i=0 ; i<form.length ; i++){
-                console.log(form.elements[i].name) ;
-                console.log(form.elements[i].value) ;
+    function validateNewEventForm(form) {
+        var i, startTime, endTime;
+        var empty = new Array();
+        for (i = 0; i < form.length; i++) {
+            if (form.elements[i].value == "" && form.elements[i].name != "") {
+                empty.push(form.elements[i].name);
             }
-            var status = 1 ;
-            if(b == 'delete__requests'){
-                status = 0
+            else if (form.elements[i].name == "start_time") {
+                startTime = form.elements[i].value;
             }
-            if(b == 'form__available'){
-                status = 0
+            else if (form.elements[i].name == "end_time") {
+                endTime = form.elements[i].value;
             }
-            if (b == 'registration__form'){
-                status = 0
-            }
-            if (b == 'activity_calender'){
-                status = 0
-            }
-            if (b == 'change_head_form'){
-                status = 0
-            }
-            if (b == 'new_session_form'){
-                status = validateNewSessionForm(form);
-            }
-            if (b == 'new_event_form'){
-                status = validateNewEventForm(form);
-            }
-            if (b == 'club_membership_form'){
-                status = validateClubMembershipForm(form) ;
-            }
-            if (b == 'new_club_form'){
-                status = validateNewClubForm(form) ;
-            }
-            if (b == 'club_budget_form'){
-                status = validateNewClubForm(form) ;
-            }
-            if (b == 'event_report'){
-                status = validateNewClubForm(form) ;
-            }
-            if(b == 'registration__form')
-            {
-                status=0;
-            }
-            console.log("status",status)
-            // console.log("status");
-            // console.log(status);
-            // status = 1 ;
+        }
+        var ret = 0;
+        //this array contains names of all the input fields included in newevent form
+        if (empty && empty.length && !(empty.length == 1 && empty[0] == "event_poster")) {
+            // code to be executed if some fields are empty except session poster field
+            console.log("empty");
+            if (endTime <= startTime)
+                $("#errorContent").append("<p><b>Start Time should be strictly less than end time.</b></p>");
+            $(".formErrors").modal('show');
+            ret = 1;
             // form.reset();
-            if(status == 0)
-            {
-                var formData = new FormData(form);
-                console.log(formData);
-                form.reset();
-                $.ajax({
-                    url: a,
-                    data: formData,
-                    enctype: "multipart/form-data",
-                    type: 'POST',
-                    contentType: false, // NEEDED, DON'T OMIT THIS (requires jQuery 1.6+)
-                    processData: false, // NEEDED, DON'T OMIT THIS
-                    // ... Other options like success and etc
-                    success: function(response) {
-                        response = JSON.parse(response);
-                        console.log(response);
-                        console.log("here") ;
-                        // $("#modalHeader").html(response.status);
-                        if (response.status == "success"){
-                            $(".succ").modal("show");
-                        }
-                        else
-                        {
-                            $("#errorContent").html('<p><b>'+response.message+'</p></b>');
-                            $(".formErrors").modal('show');
-                        }
-                        form.reset();
-                    }
-                });
+            // setTimeout(function(){ location.reload(); }, 5000);
+        }
+        else if (endTime <= startTime) {
+            console.log("time problem");
+            $("#errorContent").html("<p><b>Start Time should be strictly less than end time.</b></p>");
+            $(".formErrors").modal('show');
+            ret = 1;
+            // setTimeout(function(){ location.reload(); }, 5000);
+        }
+        return ret;
+    }
+
+    function validateNewClubForm(form) {
+        return 0;
+        var i;
+        var message = "";
+        for (i = 0; i < form.length; i++) {
+            if (form.elements[i].name != "" && form.elements[i].name != "file" && form.elements[i].value == "") {
+                message = message + "<p><b>Please fill the " + form.elements[i].name + " field.</b></p>";
             }
         }
-
-        function validateNewSessionForm(form){
-            var i, startTime, endTime ;
-            var empty = new Array() ;
-            for (i=0 ; i<form.length; i++){
-                if(form.elements[i].value == "" && form.elements[i].name != ""){
-                    empty.push(form.elements[i].name);
-                }
-                else if (form.elements[i].name=="start_time"){
-                    startTime = form.elements[i].value ;
-                }
-                else if (form.elements[i].name=="end_time"){
-                    endTime = form.elements[i].value ;
-                }
-            }
-            var ret = 0 ;
-            //this array contains names of all the input fields included in newsession form
-            if(empty && empty.length && !(empty.length == 1 && empty[0] == "session_poster")){
-                // code to be executed if some fields are empty except session poster field
-                console.log("empty") ;
-                if (endTime <= startTime)
-                    $("#errorContent").append("<p><b>Start Time should be strictly less than end time.</b></p>");
-                $(".formErrors").modal('show') ;
-                ret = 1 ;
-                // form.reset();-
-                // setTimeout(function(){ location.reload(); }, 5000);
-            }
-            else if (endTime <= startTime)
-            {
-                console.log("time problem") ;
-                $("#errorContent").html("<p><b>Start Time should be strictly less than end time.</b></p>");
-                $(".formErrors").modal('show') ;
-                ret = 1 ;
-                // setTimeout(function(){ location.reload(); }, 5000);
-            }
-            return ret ;
+        var ret = 0;
+        if (message != "") {
+            ret = 1;
+            $("#errorContent").html(message);
+            $(".formErrors").modal("show");
         }
+        return ret;
+    }
 
-        function validateNewEventForm(form){
-            var i, startTime, endTime ;
-            var empty = new Array() ;
-            for (i=0 ; i<form.length; i++){
-                if(form.elements[i].value == "" && form.elements[i].name != ""){
-                    empty.push(form.elements[i].name);
-                }
-                else if (form.elements[i].name=="start_time"){
-                    startTime = form.elements[i].value ;
-                }
-                else if (form.elements[i].name=="end_time"){
-                    endTime = form.elements[i].value ;
+    function validateClubMembershipForm(form) {
+        var i;
+        var message = "";
+        for (i = 0; i < form.length; i++) {
+            if (form.elements[i].name != "" && form.elements[i].value == "") {
+                message = message + "<p><b>Please fill the " + form.elements[i].name + " field.</b></p>";
+            }
+            if (form.elements[i].name == "email" && form.elements[i].value != "") {
+                var emailAddress = form.elements[i].value;
+                var emailReg = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+                if (!(emailReg.test(emailAddress))) {
+                    message = message + "<p><b>Please add a valid email address</b></p>";
                 }
             }
-            var ret = 0 ;
-            //this array contains names of all the input fields included in newevent form
-            if(empty && empty.length && !(empty.length == 1 && empty[0] == "event_poster")){
-                // code to be executed if some fields are empty except session poster field
-                console.log("empty") ;
-                if (endTime <= startTime)
-                    $("#errorContent").append("<p><b>Start Time should be strictly less than end time.</b></p>");
-                $(".formErrors").modal('show') ;
-                ret = 1 ;
-                // form.reset();
-                // setTimeout(function(){ location.reload(); }, 5000);
-            }
-            else if (endTime <= startTime)
-            {
-                console.log("time problem") ;
-                $("#errorContent").html("<p><b>Start Time should be strictly less than end time.</b></p>");
-                $(".formErrors").modal('show') ;
-                ret = 1 ;
-                // setTimeout(function(){ location.reload(); }, 5000);
-            }
-            return ret ;
         }
-
-        function validateNewClubForm(form){
-            return 0;
-            var i ;
-            var message = "" ;
-            for(i=0 ; i<form.length ; i++){
-                if(form.elements[i].name != "" && form.elements[i].name != "file" && form.elements[i].value=="")
-                {
-                    message = message + "<p><b>Please fill the " + form.elements[i].name + " field.</b></p>" ;
-                }
-            }
-            var ret = 0 ;
-            if (message != ""){
-                ret = 1 ;
-                $("#errorContent").html(message);
-                $(".formErrors").modal("show") ;
-            }
-            return ret ;
+        var ret = 0;
+        if (message != "") {
+            ret = 1;
+            $("#errorContent").html(message);
+            $(".formErrors").modal("show");
         }
+        return ret;
+    }
 
-        function validateClubMembershipForm(form){
-            var i ;
-            var message = "" ;
-            for (i=0 ; i<form.length; i++){
-                if (form.elements[i].name != "" && form.elements[i].value ==""){
-                    message = message + "<p><b>Please fill the " + form.elements[i].name + " field.</b></p>" ;
-                }
-                if (form.elements[i].name == "email" && form.elements[i].value != ""){
-                    var emailAddress = form.elements[i].value ;
-                    var emailReg = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
-                    if (!(emailReg.test(emailAddress))){
-                        message = message + "<p><b>Please add a valid email address</b></p>" ;
-                    }
-                }
-            }
-            var ret = 0 ;
-            if(message != ""){
-                ret = 1 ;
-                $("#errorContent").html(message) ;
-                $(".formErrors").modal("show");
-            }
-            return ret ;
-        }
+</script>
 
-    </script>
+{% comment %}The grid starts here!{% endcomment %}
+<div class="ui stackable doubling grid">
 
-    {% comment %}The grid starts here!{% endcomment %}
-    <div class="ui stackable doubling grid">
+    {% comment %}The left-margin segment!{% endcomment %}
+    <div class="column"></div>
 
-        {% comment %}The left-margin segment!{% endcomment %}
-        <div class="column"></div>
+    {% comment %}
+    The left-rail segment starts here!
+    {% endcomment %}
+    <div class="three wide column">
 
-        {% comment %}
-            The left-rail segment starts here!
-        {% endcomment %}
-        <div class="three wide column">
+        {% comment %}The user image card starts here!{% endcomment %}
+        {% block usercard %}
+        {% include 'globals/usercard.html' %}
+        {% endblock %}
+        {% comment %}The user image card ends here!{% endcomment %}
 
-            {% comment %}The user image card starts here!{% endcomment %}
-            {% block usercard %}
-                {% include 'globals/usercard.html' %}
+        <div class="ui divider"></div>
+
+        {% comment %}The Tab-Menu starts here!{% endcomment %}
+
+        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+            {% comment %} {% if "Convener" not in global_var and "co-ordinator" not in global_var and "Dean_s" not in global_var %}
+            <a class="item" data-tab="voting_polls">
+                Voting Polls
+                <i class="right floated chevron right icon"></i>
+            </a>
+            {% endif %}  {% endcomment %}
+
+            {% if "student" in global_var %}
+
+            <a class="item" data-tab="first">
+                Apply
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+            {% endif %}
+            {% if "co-ordinator" in global_var %}
+
+            <a class="item" data-tab="del">
+                Delete Members
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+            {% endif %}
+
+            {%if "Dean_s" in global_var%}
+            <a class="item" data-tab="delclub">
+                Delete Club
+                <i class="right floated chevron right icon"></i>
+            </a>
+            {%endif%}
+
+           
+
+
+            <a class="active item" data-tab="twelth">
+                View Club Details
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+            {% if "Junior Superintendent" in global_var or request.user.username == "acadadmin" %}
+
+            <a class="item" data-tab="fourth">
+                Fest Budget
+                <i class="right floated chevron right icon"></i>
+            </a>
+            <a class="item" data-tab="eleventh">
+                Submit Event Report
+                <i class="right floated chevron right icon"></i>
+            </a>
+            {% endif %}
+            
+            {% if "Dean_s" not in global_var %}
+            <a class="item" data-tab="third">
+                Member Records
+                <i class="right floated chevron right icon"></i>
+            </a>
+            {% endif %}
+
+            
+            {% if "Counsellor" in global_var or "Dean_s" in global_var%}
+            <a class="item" data-tab="seventh">
+                Approval Requests
+                <i class="right floated chevron right icon"></i>
+            </a>
+            <a class="item" data-tab="tenth">
+                Change Co and Co-Co
+                <i class="right floated chevron right icon"></i>
+            </a>
+              
+            {% endif %}
+
+            {% if "Counsellor" in global_var%}
+<a class="item" data-tab="cnfevent">
+                Approve Event
+                <i class="right floated chevron right icon"></i>
+            </a>
+            {%endif%}
+            {% if "co-ordinator" in global_var or "co co-ordinator" in global_var %}
+            <a class=" item" data-tab="fifth">
+                New Session
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+            <a class=" item" data-tab="fourteenth">
+                New Event
+                <i class="right floated chevron right icon"></i>
+            </a>
+            {% if "co-ordinator" in global_var %}
+            <a class="item" data-tab="sixth">
+                Member Requests
+                <i class="right floated chevron right icon"></i>
+            </a>
+            {%endif%}
+            <a class="item" data-tab="eighth">
+                Update Activity Calender
+                <i class="right floated chevron right icon"></i>
+            </a>
+            {% comment %} <a class="item" data-tab="ninth">
+                Submit Club report
+                <i class="right floated chevron right icon"></i>
+            </a> {% endcomment %}
+            <!-- {% if "Counsellor" in global_var %}
+            <a class="item" data-tab="second">
+                Club Budget
+                <i class="right floated chevron right icon"></i>
+            </a>
+            {% endif %} -->
+
+
+            {% comment %} <a class="item" href="/filetracking">
+                Submit Event report To Convener
+                <i class="right floated chevron right icon"></i>
+            </a> {% endcomment %}
+
+            {% endif %}
+           
+
+            {% if "co-ordinator" not in global_var and "Co-coordinator" not in global_var and "Counsellor" not in global_var and "student" not in global_var and "Convener" not in global_var and "Dean_s" not in global_var %}
+            <a class="item" data-tab="seventh">
+                Submitted requests
+                <i class="right floated chevron right icon"></i>
+            </a>
+            {% endif %}
+
+            {% if "Counsellor" in global_var or "Convener" in global_var or "co-ordinator" in global_var or "Dean_s" in global_var  %}
+            <a class="item" data-tab="second">
+                Club Budget
+                <i class="right floated chevron right icon"></i>
+            </a>
+            {% endif %}
+
+            {% comment %} {% if "Convener" in global_var %}
+
+            <a class="item" href="/filetracking">
+                Submit Event Report To counsellor
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+             <a class="item" href="/filetracking">
+                Event Report To Co/Co-coordinator-(Back)
+                <i class="right floated chevron right icon"></i>
+            </a> 
+
+            {% endif %} {% endcomment %}
+
+            {% comment %} {% if "Counsellor" in global_var %}
+
+            <a class="item" href="/filetracking">
+                Submit Event Report To Dean
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+            <a class="item" href="/filetracking">
+                Event Report To Convener-(Back)
+                <i class="right floated chevron right icon"></i>
+            </a>
+            {% endif %} {% endcomment %}
+
+            {% comment %} {% if "Dean_s" in global_var %}
+
+            <a class="item" href="/filetracking">
+                Event Report To counsellor-(Back)
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+            {% endif %} {% endcomment %}
+            {% comment %} {% if "fic" in global_var %}
+
+            <a class="item" data-tab="first">
+                Generate No-dues
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+            {% endif %}
+
+            
+
+
+            {% if "fic" in global_var %}
+
+            <a class="item" data-tab="first">
+                Send Inventory Report
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+            {% endif %} {% endcomment %}
+            {% comment %} {% if "FIC" in global_var %}
+
+            <a class="item" data-tab="ficfirst">
+                View Inventory
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+            {% endif %}
+            {% if "FIC" in global_var %}
+
+            <a class="item" data-tab="ficsecond">
+                Update Inventory
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+            {% endif %} {% endcomment %}
+
+  
+        </div>
+        {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+    </div>
+
+    <div class="eight wide column">
+
+        {% comment %}The Details start here!{% endcomment %}
+{% comment %} 
+        <div class="ui tab segment" data-tab="voting_polls">
+            {% block voting_polls %}
+            {% include 'gymkhanaModule/voting_polls.html' %}
             {% endblock %}
-            {% comment %}The user image card ends here!{% endcomment %}
+        </div> {% endcomment %}
 
-            <div class="ui divider"></div>
+        {% if "student" in global_var and "FIC" not in global_var%}
 
-            {% comment %}The Tab-Menu starts here!{% endcomment %}
-
-            <div class="ui huge fluid vertical pointing menu"
-                 style="max-width: 320px;">
-                 <a class="item" data-tab="voting_polls">
-                    Voting Polls
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-                {% if "student" in Curr_desig %}
-
-                    <a class="item" data-tab="first">
-                        Apply
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-
-                {% endif %}
-
-                <a class="active item" data-tab="twelth">
-                    View Club Details
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-<!--                 {% if "student" in Curr_desig and status == True %}
-                    {% if form_name == 'senate_registration' %}
-                        <a class="item" data-tab="thirteenth">
-                            Senate Registration
-                            <i class="right floated chevron right icon"></i>
-                        </a>
-                    {% elif form_name == 'mess_registration' %}
-                        <a class="item" data-tab="thirteenth">
-                            Mess Registration
-                            <i class="right floated chevron right icon"></i>
-                        </a>
-                    {% elif form_name == 'hostel_registration' %}
-                        <a class="item" data-tab="thirteenth">
-                            Hostel Registration
-                            <i class="right floated chevron right icon"></i>
-                        </a>
-                    {% endif %}
-                {% endif %} -->
-
-<!--                 {% if "Convenor" in Curr_desig %}
-                    {% if form_name == 'senate_registration' %}
-                        <a class="item" data-tab="twentyth">
-                             Senate Nomination Details
-                            <i class="right floated chevron right icon"></i>
-                        </a>
-                    {% elif form_name == 'mess_registration' %}
-                        <a class="item" data-tab="twentyth">
-                             Mess Nomination Details
-                            <i class="right floated chevron right icon"></i>
-                        </a>
-                    {% elif form_name == 'hostel_registration' %}
-                        <a class="item" data-tab="twentyth">
-                             Hostel Nomination Details
-                            <i class="right floated chevron right icon"></i>
-                        </a>
-                    {% endif %}
-                {% endif %} -->
-
-                {% if "Junior Superintendent" in Curr_desig or request.user.username == "acadadmin" %}
-
-                    <a class="item" data-tab="fourth">
-                        Fest Budget
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-                    <a class="item" data-tab="eleventh">
-                        Submit Event Report
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-                {% endif %}
-
-                    <a class="item" data-tab="third">
-                        Member Records
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-
-                {% if "Dean_s" in Curr_desig %}
-                    <a class="item" data-tab="seventh">
-                        Approval Requests
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-                    <a class="item" data-tab="tenth">
-                        Change Co and Co-Co
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-                {% endif %}
-
-                {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
-                    <a class=" item" data-tab="fifth">
-                        New Session
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-
-                    <a class=" item" data-tab="fourteenth">
-                        New Event
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-
-                    <a class="item" data-tab="sixth">
-                        Member Requests
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-                    <a class="item" data-tab="eighth">
-                        Update Activity Calender
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-                    <!-- <a class="item" data-tab="ninth">
-                        Submit Club report
-                        <i class="right floated chevron right icon"></i>
-                    </a> -->
-                    <!-- <a class="item" data-tab="second">
-                        Club Budget
-                        <i class="right floated chevron right icon"></i>
-                    </a> -->
-
-                    <a class="item" data-tab="last">
-                        Submitted requests
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-
-                    <a class="item" href="/filetracking">
-                        Submit Event report To Convener
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-
-                {% endif %}
-
-                {% if "Convener" in Curr_desig  %}
-
-                    <a class="item" href="/filetracking">
-                        Submit Event Report To counsellor
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-
-                    <a class="item" href="/filetracking">
-                        Event Report To Co/Co-coordinator-(Back)
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-
-                {% endif %}
-
-                {% if "Counsellor" in Curr_desig  %}
-
-                    <a class="item" href="/filetracking">
-                        Submit Event Report To Dean
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-
-                    <a class="item" href="/filetracking">
-                        Event Report To Convener-(Back)
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-                {% endif %}
-
-                {% if "Dean_s" in Curr_desig  %}
-
-                    <a class="item" href="/filetracking">
-                        Event Report To counsellor-(Back)
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-
-                {% endif %}
-
-            </div>
-            {% comment %}The Tab-Menu ends here!{% endcomment %}
-
+        <div class="ui tab segment" data-tab="first">
+            {% block applyform %}
+            {% include 'gymkhanaModule/applyform.html' %}
+            {% endblock %}
         </div>
 
-        <div class="eight wide column">
+        {% endif %}
+ 
 
-            {% comment %}The Details start here!{% endcomment %}
 
-            <div class="ui tab segment" data-tab="voting_polls">
-                {% block voting_polls %}
-                    {% include 'gymkhanaModule/voting_polls.html' %}
-                {% endblock %}
-            </div>
+        <div class="ui active tab segment" data-tab="twelth">
+            {% block view_budget %}
+            {% include 'gymkhanaModule/club_details.html' %}
+            {% endblock %}
+        </div>
 
-        {% if "student" in Curr_desig %}
+        {% if "student" in global_var and status == True %}
 
-            <div class="ui tab segment" data-tab="first">
-                {% block applyform %}
-                    {% include 'gymkhanaModule/applyform.html' %}
-                {% endblock %}
-            </div>
+        <div class="ui tab segment" data-tab="thirteenth">
+            {% block convenor_form %}
+            {% include 'gymkhanaModule/convenor_form.html' %}
+            {% endblock %}
+        </div>
 
         {% endif %}
 
-            <div class="ui active tab segment" data-tab="twelth">
-                {% block view_budget %}
-                    {% include 'gymkhanaModule/club_details.html' %}
-                {% endblock %}
-            </div>
-
-        {% if "student" in Curr_desig and status == True %}
-
-            <div class="ui tab segment" data-tab="thirteenth">
-                {% block convenor_form %}
-                    {% include 'gymkhanaModule/convenor_form.html' %}
-                {% endblock %}
-            </div>
-
-        {% endif %}
-
-        {% if "Convenor" in Curr_desig %}
-
-            <div class="ui tab segment" data-tab="twentyth">
-                {% block nomination_details %}
-                    {% include 'gymkhanaModule/nomination_details.html' %}
-                {% endblock %}
-            </div>
-
-        {% endif %}
-
-        {% if "Junior Superintendent" in Curr_desig or request.user.username == "acadadmin" %}
-
-            <div class="ui tab segment" data-tab="fourth">
-                {% block festbudget %}
-                    {% include 'gymkhanaModule/festbudget.html' %}
-                {% endblock %}
-            </div>
-
-            <div class="ui tab segment" data-tab="eleventh">
-                {% block eventReport %}
-                    {% include 'gymkhanaModule/eventReport.html' %}
-                {% endblock %}
-            </div>
-
-        {% endif %}
-
-            <div class="ui tab segment" data-tab="third">
-                {% block memberrecords %}
-                    {% include 'gymkhanaModule/memberrecords.html' %}
-                {% endblock %}
-            </div>
-
-        {% if "Dean_s" in Curr_desig %}
-
-            <div class="ui tab segment" data-tab="seventh">
-                {% block approvalrequests %}
-                    {% include 'gymkhanaModule/approvalrequests.html' %}
-                {% endblock %}
-            </div>
-
-            <div class="ui tab segment" data-tab="tenth">
-                {% block change_head %}
-                    {% include 'gymkhanaModule/change_head.html' %}
-                {% endblock %}
-            </div>
-
-        {% endif %}
-
-        {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
-
-            <div class="ui tab segment" data-tab="fifth">
-                {% block newsession %}
-                    {% include 'gymkhanaModule/newsession.html' %}
-                {% endblock %}
-            </div>
-
-            <div class="ui tab segment" data-tab="fourteenth">
-                {% block newevent %}
-                    {% include 'gymkhanaModule/newevent.html' %}
-                {% endblock %}
-            </div>
-
-            <div class="ui tab segment" data-tab="sixth">
-                {% block memberrequests %}
-                    {% include 'gymkhanaModule/memberrequests.html' %}
-                {% endblock %}
-            </div>
-
-            <div class="ui tab segment" data-tab="eighth">
-                {% block activityCalender %}
-                    {% include 'gymkhanaModule/activityCalender.html' %}
-                {% endblock %}
-            </div>
-            
-            <div class="ui tab segment" data-tab="ninth">
-                {% block clubReport %}
-                    {% include 'gymkhanaModule/otherReport.html' %}
-                {% endblock %}
-            </div>
-
-            <div class="ui tab segment" data-tab="second">
-                {% block clubbudget %}
-                    {% include 'gymkhanaModule/clubbudget.html' %}
-                {% endblock %}
-            </div>
-
-            <div class="ui tab segment" data-tab="last">
-                {% block pendingrequest %}
-                    {% include 'gymkhanaModule/pending_request.html' %}
-                {% endblock %}
-            </div>
-
-        {% endif %}
-
-            {% comment %}The Details start here!{% endcomment %}
-
+        {% if "Convenor" in global_var %}
+        
+        <div class="ui tab segment" data-tab="twentyth">
+            {% block nomination_details %}
+            {% include 'gymkhanaModule/nomination_details.html' %}
+            {% endblock %}
         </div>
         
-        {% comment %}The central-rail segment ends here!{% endcomment %}
-
-        {% comment %}The right-rail segment starts here!{% endcomment %}
-        <div class="three wide column " id="dateDetails">
-            <div class="row">
-                {% comment %}
-                    TODO: the right rail!
-                {% endcomment %}
-            </div>
+        {% endif %}
+        {% if "co-ordinator" in global_var %}
+        
+        <div class="ui tab segment" data-tab="del">
+            {% block delete %}
+            {% include 'gymkhanaModule/deletemembers.html' %}
+            {% endblock %}
         </div>
-        {% comment %}The right-rail segment ends here!{% endcomment %}
+        
+        {% endif %}
+        
+        {% if "Dean_s" in global_var %}
+        <div class="ui tab segment" data-tab="delclub">
+            {% block deleteclub %}
+            {% include 'gymkhanaModule/delete_club.html' %}
+            {% endblock %}
+        </div>
+        {% endif %}
 
-        {% comment %}The right-margin segment!{% endcomment %}
-        <div class="column"></div>
+
+        {% if "Junior Superintendent" in global_var or request.user.username == "acadadmin" %}
+
+        <div class="ui tab segment" data-tab="fourth">
+            {% block festbudget %}
+            {% include 'gymkhanaModule/festbudget.html' %}
+            {% endblock %}
+        </div>
+
+        <div class="ui tab segment" data-tab="eleventh">
+            {% block eventReport %}
+            {% include 'gymkhanaModule/eventReport.html' %}
+            {% endblock %}
+        </div>
+
+        {% endif %}
+
+        <div class="ui tab segment" data-tab="third">
+            {% block memberrecords %}
+            {% include 'gymkhanaModule/memberrecords.html' %}
+            {% endblock %}
+        </div>
+
+        {% if "Counsellor" in global_var %}
+               <div class="ui tab segment" data-tab="cnfevent">
+            {% block pendingrequest %}
+            {% include 'gymkhanaModule/pending_request.html' %}
+            {% endblock %}
+        </div>
+        {% endif %}
+
+        {% if "Convener" in global_var or "Dean_s" in global_var or "Counsellor" in global_var%}
+
+        <div class="ui tab segment" data-tab="seventh">
+            {% block approvalrequests %}
+            {% include 'gymkhanaModule/approvalrequests.html' %}
+            {% endblock %}
+        </div>
+
+        <div class="ui tab segment" data-tab="tenth">
+            {% block change_head %}
+            {% include 'gymkhanaModule/change_head.html' %}
+            {% endblock %}
+        </div>
+
+        {% endif %}
+
+        {% if "co-ordinator" in global_var or "co co-ordinator" in global_var or "Counsellor" in global_var or "Convener" in global_var or "Dean_s" in global_var or "FIC" in global_var %}
+
+        <div class="ui tab segment" data-tab="fifth">
+            {% block newsession %}
+            {% include 'gymkhanaModule/newsession.html' %}
+            {% endblock %}
+        </div>
+
+        <div class="ui tab segment" data-tab="fourteenth">
+            {% block newevent %}
+            {% include 'gymkhanaModule/newevent.html' %}
+            {% endblock %}
+        </div>
+
+        <div class="ui tab segment" data-tab="sixth">
+            {% block memberrequests %}
+            {% include 'gymkhanaModule/memberrequests.html' %}
+            {% endblock %}
+        </div>
+
+        <div class="ui tab segment" data-tab="eighth">
+            {% block activityCalender %}
+            {% include 'gymkhanaModule/activityCalender.html' %}
+            {% endblock %}
+        </div>
+
+        <div class="ui tab segment" data-tab="ninth">
+            {% block clubReport %}
+            {% include 'gymkhanaModule/otherReport.html' %}
+            {% endblock %}
+        </div>
+
+        <div class="ui tab segment" data-tab="second">
+            {% block clubbudget %}
+            {% include 'gymkhanaModule/clubbudget.html' %}
+            {% endblock %}
+        </div>
+
+       
+        {% comment %} <div class="ui tab segment" data-tab="ficfirst">
+            {% block viewinventory %}
+            {% include 'gymkhanaModule/viewinventory.html' %}
+            {% endblock %}
+        </div>
+        <div class="ui tab segment" data-tab="ficsecond">
+            {% block updateinventory %}
+            {% include 'gymkhanaModule/updateinventory.html' %}
+            {% endblock %}
+        </div> {% endcomment %}
+        
+
+
+        {% endif %}
+
+        {% comment %}The Details start here!{% endcomment %}
 
     </div>
 
-    <div class="ui basic modal err">
-      <div class="ui icon header">
+    {% comment %}The central-rail segment ends here!{% endcomment %}
+
+    {% comment %}The right-rail segment starts here!{% endcomment %}
+    <div class="three wide column " id="dateDetails">
+        <div class="row">
+
+            {% block sidepanel%} 
+            {% include 'notifications/gymkhana_sidepanel.html' %} 
+            {% endblock %}
+
+            {% comment %}
+            TODO: the right rail!
+            {% endcomment %}
+        </div>
+    </div>
+    {% comment %}The right-rail segment ends here!{% endcomment %}
+
+    {% comment %}The right-margin segment!{% endcomment %}
+    <div class="column"></div>
+
+</div>
+
+<div class="ui basic modal err">
+    <div class="ui icon header">
         <i class="bell icon"></i>
         <a class="ui orange label">Time Slot Fault</a>
-      </div>
-      <div class="content">
-        <p><center><b>The selected time slot for the given date and venue conflicts with already booked session.</center></b></p>
-      </div>
-      <div class="actions">
-        <div class="ui red basic cancel inverted button">
-          <i class="remove icon"></i>
-          Try Again
-        </div>
-      </div>
     </div>
+    <div class="content">
+        <p>
+            <center><b>The selected time slot for the given date and venue conflicts with already booked session.
+            </center></b>
+        </p>
+    </div>
+    <div class="actions">
+        <div class="ui red basic cancel inverted button">
+            <i class="remove icon"></i>
+            Try Again
+        </div>
+    </div>
+</div>
 
-    <div class="ui basic modal succ">
-      <div class="ui icon header">
+<div class="ui basic modal succ">
+    <div class="ui icon header">
         <i class="bell icon"></i>
         <a class="ui green label">Success</a>
-      </div>
-      <div class="content" id="modalBody">
-        <p><center><b>Successfully Created</b></center></p>
-      </div>
-      <div class="actions">
-        <div class="ui red basic cancel inverted button">
-          <i class="remove icon"></i>
-          Cancel
-        </div>
-      </div>
     </div>
+    <div class="content" id="modalBody">
+        <p>
+            <center><b>Successfully Created</b></center>
+        </p>
+    </div>
+    <div class="actions">
+        <div class="ui red basic cancel inverted button">
+            <i class="remove icon"></i>
+            Cancel
+        </div>
+    </div>
+</div>
 
-    <div class="ui basic modal formErrors">
-      <div class="ui icon header">
+<div class="ui basic modal formErrors">
+    <div class="ui icon header">
         <i class="bell icon"></i>
         <a class="ui red label">Error</a>
-      </div>
-      <div class="content">
+    </div>
+    <div class="content">
         <center>
             <div id="errorContent">
                 <p><b>All the fields are required except session poster</b></p>
             </div>
         </center>
-      </div>
-      <div class="actions">
-        <div class="ui red basic cancel inverted button">
-          <i class="remove icon"></i>
-          Cancel
-        </div>
-      </div>
     </div>
+    <div class="actions">
+        <div class="ui red basic cancel inverted button">
+            <i class="remove icon"></i>
+            Cancel
+        </div>
+    </div>
+</div>
 
 {% endblock %}
 
 
 {% block javascript %}
-    <script>
+<script>
 
-        $(document).ready(function() {
-            $("div.venueType").find("div.dropdown").find("div.text").html('');
-        });
-        function showSessions(){
-            var date = $("#sessions_date").val() ;
-            $.ajax({
-                url: "/gymkhana/date_sessions/",
-                type: "post",
-                data: {'date':date},
-                success: function(response){
-                    // console.log("hello")
-                    // console.log(response)
-                    response = JSON.parse(response);
-                    $("#dateDetails").html('<h2>Booked Sessions</h2>');
-                    if (jQuery.isEmptyObject(response) == false){
-                        for(var key in response){
-                            $("#dateDetails").append(
-                                '<table class="ui celled table segment"><thead><tr>\
-                                <th>'+response[key].fields.club+'</th>\
-                                <th>'+response[key].fields.start_time+'<br><center>to</center>'+response[key].fields.end_time+'</th>\
-                                <th>'+response[key].fields.venue+'</th>\
+    $(document).ready(function () {
+        $("div.venueType").find("div.dropdown").find("div.text").html('');
+    });
+    function showSessions() {
+        var date = $("#sessions_date").val();
+        $.ajax({
+            url: "/gymkhana/date_sessions/",
+            type: "post",
+            data: { 'date': date },
+            success: function (response) {
+                // console.log("hello")
+                // console.log(response)
+                response = JSON.parse(response);
+                $("#dateDetails").html('<h2>Booked Sessions</h2>');
+                if (jQuery.isEmptyObject(response) == false) {
+                    for (var key in response) {
+                        $("#dateDetails").append(
+                            '<table class="ui celled table segment"><thead><tr>\
+                                <th>'+ response[key].fields.club + '</th>\
+                                <th>'+ response[key].fields.start_time + '<br><center>to</center>' + response[key].fields.end_time + '</th>\
+                                <th>'+ response[key].fields.venue + '</th>\
                                 </tr></thead><tbody>\
-                                <tr><td colspan="3"><b>'+response[key].fields.status+'</b></td></tr>\
-                                </tbody></table>') ;
-                        }
-                    }
-                    else
-                    {
-                        $("#dateDetails").append('<h5>No booked sessions for the selected date</h5>');
+                                <tr><td colspan="3"><b>'+ response[key].fields.status + '</b></td></tr>\
+                                </tbody></table>');
                     }
                 }
-            })
-        }
-        // $("#sessions_date").datepicker({
-        //     onSelect: function(dateText, inst) {
-        //         var date = $(this).val() ;
-        //         console.log(date) ;
-        //     }
-        // });
-    </script>
+                else {
+                    $("#dateDetails").append('<h5>No booked sessions for the selected date</h5>');
+                }
+            }
+        })
+    }
+    // $("#sessions_date").datepicker({
+    //     onSelect: function(dateText, inst) {
+    //         var date = $(this).val() ;
+    //         console.log(date) ;
+    //     }
+    // });
+</script>
 
 
 
-    <script>
+<script>
 
-        function showEvents(){
-            var date = $("#events_date").val() ;
-            console.log("Gymkhana.html;date"+date);
-            $.ajax({
-                url: "/gymkhana/date_events/",
-                type: "post",
-                data: {'date': date},
-                success: function(response){
-                    // console.log("hello")
-                    console.log(response)
-                    response = JSON.parse(response);
-                    console.log(response)
-                    $("#dateDetails").html('<h2>Booked Events</h2>');
-                    if (jQuery.isEmptyObject(response) == false){
-                        for(var key in response){
-                            $("#dateDetails").append(
-                                '<table class="ui celled table segment"><thead><tr>\
-                                <th>'+response[key].fields.club+'</th>\
-                                <th>'+response[key].fields.event_name+'</th>\
-                                <th>'+response[key].fields.incharge+'</th>\
-                                <th>'+response[key].fields.start_time+'<br><center>to</center>'+response[key].fields.end_time+'</th>\
-                                <th>'+response[key].fields.venue+'</th>\
+    function showEvents() {
+        var date = $("#events_date").val();
+        console.log("Gymkhana.html;date" + date);
+        $.ajax({
+            url: "/gymkhana/date_events/",
+            type: "post",
+            data: { 'date': date },
+            success: function (response) {
+                // console.log("hello")
+                console.log(response)
+                response = JSON.parse(response);
+                console.log(response)
+                $("#dateDetails").html('<h2>Booked Events</h2>');
+                if (jQuery.isEmptyObject(response) == false) {
+                    for (var key in response) {
+                        $("#dateDetails").append(
+                            '<table class="ui celled table segment"><thead><tr>\
+                                <th>'+ response[key].fields.club + '</th>\
+                                <th>'+ response[key].fields.event_name + '</th>\
+                                <th>'+ response[key].fields.incharge + '</th>\
+                                <th>'+ response[key].fields.start_time + '<br><center>to</center>' + response[key].fields.end_time + '</th>\
+                                <th>'+ response[key].fields.venue + '</th>\
                                 </tr></thead><tbody>\
-                                <tr><td colspan="3"><b>'+response[key].fields.status+'</b></td></tr>\
-                                </tbody></table>') ;
-                        }
-                    }
-                    else
-                    {
-                        $("#dateDetails").append('<h5>No booked events for the selected date</h5>');
+                                <tr><td colspan="3"><b>'+ response[key].fields.status + '</b></td></tr>\
+                                </tbody></table>');
                     }
                 }
-            })
-        }
+                else {
+                    $("#dateDetails").append('<h5>No booked events for the selected date</h5>');
+                }
+            }
+        })
+    }
 
 
 
-        // $("#events_date").datepicker({
-        //     onSelect: function(dateText, inst) {
-        //         var date = $(this).val() ;
-        //         console.log(date) ;
-        //     }
-        // });
-    </script>
-    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
-    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
-    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    // $("#events_date").datepicker({
+    //     onSelect: function(dateText, inst) {
+    //         var date = $(this).val() ;
+    //         console.log(date) ;
+    //     }
+    // });
+</script>
+<script
+    src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+<script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+<script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
 {% endblock %}

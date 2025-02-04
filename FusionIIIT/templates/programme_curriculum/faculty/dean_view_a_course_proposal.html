@@ -1,0 +1,252 @@
+{% extends 'programme_curriculum/faculty/common.html' %}
+{% block sidetabmenu %}
+    <div class="ui huge fluid vertical pointing menu"
+        style="max-width: 320px;">
+
+        <a class="item" href="{% url 'programme_curriculum:view_all_programmes' %}">Programmes
+            <i class="right floated chevron right icon"></i>
+        </a>
+        <a class="item" href="{% url 'programme_curriculum:view_all_working_curriculums' %}">Curriculums
+            <i class="right floated chevron right icon"></i>
+        </a>
+        <a class="item" href="{% url 'programme_curriculum:view_all_courses' %}">Courses
+            <i class="right floated chevron right icon"></i>
+        </a>
+        <a class="item" href="{% url 'programme_curriculum:view_all_discplines' %}">Disciplines
+            <i class="right floated chevron right icon"></i>
+        </a>
+        <a class="item" href="{% url 'programme_curriculum:view_all_batches' %}">Batches
+            <i class="right floated chevron right icon"></i>
+        </a>
+        <div class="ui dropdown">
+            <div class="item" >Course Proposal Form&nbsp<i class="dropdown icon"></i></div>
+            
+            <div class="menu">
+              <a class="item" href="{% url 'programme_curriculum:view_course_proposal_forms' %}">Course Proposal Form
+                <i class="right floated chevron right icon"></i>
+              </a>
+              <a class="item" href="{% url 'programme_curriculum:outward_files' %}">Course Proposal Tracking
+                <i class="right floated chevron right icon"></i>
+              </a>
+              <a class="item" href="{% url 'programme_curriculum:inward_files' %}">Inward Files
+                <i class="right floated chevron right icon"></i>
+              </a>
+            </div>
+          </div>
+          <script>
+            $('.ui.dropdown').dropdown();
+          </script>
+    </div>
+{% endblock %} 
+
+{% block content %}
+<div class="ui segment" >
+    <div class="header"><h1>Course Form</h1></div>
+    <div class="ui divider"></div>
+    <form class="ui large form error" method="POST">
+        
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+        <div class="ui message">
+            <div class="header">We had some issues</div>
+            {% for error in form.non_field_errors %}
+            <ul class="list">
+                <li>{{ error }}</li>
+            </ul>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="field">
+            {% if form.name.errors or form.code.errors or form.credit.errors %}
+            <div class="ui error message">
+                <p>{{ form.name.errors }}</p>
+                <p>{{ form.code.errors }}</p>
+                <p>{{ form.version.errors }}</p>
+                <p>{{ form.credit.errors }}</p>
+            </div>
+            {% endif %}
+        </div>
+        <div class="field">
+            {% if version_error %}
+            <div class="ui error message">
+                <p>{{version_error}}</p>
+            </div>
+            {% endif %}
+        </div> 
+        <div class="field">
+            <label for="{{ form.name.id_for_label }}">Name:</label>
+            {{ form.name }}
+            
+        </div>
+
+        <div class="fields">
+            <div class="six wide field">
+                <label for="{{ form.code.id_for_label }}">Code:</label>
+            {{ form.code }}
+            </div>
+            <div class="five wide field">
+                <label for="{{ form.credit.id_for_label }}">Credit:</label>
+                {{ form.credit }}
+            </div>
+            <div class="five wide field">
+                <label for="{{ form.version.id_for_label }}">Version:</label>
+                {{ form.version }}
+            </div>
+        </div>
+        <div class="field">
+            {% if form.lecture_hours.errors or form.tutorial_hours.errors or form.pratical_hours.errors or form.discussion_hours.errors or form.project_hours.errors %}
+            <div class="ui error message">
+                <p>{{ form.lecture_hours.errors }}</p>
+                <p>{{ form.tutorial_hours.errors }}</p>
+                <p>{{ form.pratical_hours.errors }}</p>
+                <p>{{ form.discussion_hours.errors }}</p>
+                <p>{{ form.project_hours.errors }}</p>
+
+            </div>
+            {% endif %}
+        </div>
+        <div class="fields">
+            <div class="six wide field">
+                <label for="{{ form.lecture_hours.id_for_label }}">Lecture Hours (L):</label>
+                {{ form.lecture_hours }}
+            </div>
+            <div class="five wide field">
+                <label for="{{ form.tutorial_hours.id_for_label }}">Tutorial Hours (T):</label>
+                {{ form.tutorial_hours }}
+            </div>
+            <div class="five wide field">
+                <label for="{{ form.pratical_hours.id_for_label }}">Pratical Hours (P):</label>
+                {{ form.pratical_hours }}
+            </div>
+            
+            
+        </div>
+        <div class="fields">
+            <div class="eight wide field">
+                <label for="{{ form.discussion_hours.id_for_label }}">Group Discussion Hours (GD):</label>
+                {{ form.discussion_hours }}
+            </div>
+            <div class="eight wide field">
+                <label for="{{ form.project_hours.id_for_label }}">Project Hours (PR):</label>
+                {{ form.project_hours }}
+            </div>
+        </div>
+        <div class="inline field">
+            {% if form.working_course.errors %}
+            <div class="ui error message">
+                {{ form.working_course.errors }}
+            </div>
+            {% endif %}
+            <label for="{{ form.working_course.id_for_label }}">Working Course:</label>
+            {{ form.working_course }}
+        </div>
+        <div class="field">
+            {% if form.disciplines.errors %}
+            <div class="ui error message">
+                {{ form.disciplines.errors }}
+            </div>
+            {% endif %}
+            <label for="{{ form.disciplines.id_for_label }}">From Discipline(s):</label>
+            {{ form.disciplines }}
+        </div>
+        <div class="field">
+            {% if form.pre_requisits.errors %}
+            <div class="ui error message">
+                {{ form.pre_requisits.errors }}
+            </div>
+            {% endif %}
+            <label for="{{ form.pre_requisits.id_for_label }}">Pre-requisits:</label>
+            {{ form.pre_requisits }}
+        </div>
+        <div class="field">
+            {% if form.pre_requisit_courses.errors %}
+            <div class="ui error message">
+                {{ form.pre_requisit_courses.errors }}
+            </div>
+            {% endif %}
+            <label for="{{ form.pre_requisit_courses.id_for_label }}">Pre-requisits Courses:</label>
+            {{ form.pre_requisit_courses }}
+        </div>
+        <div class="field">
+            {% if form.syllabus.errors %}
+            <div class="ui error message">
+                {{ form.syllabus.errors }}
+            </div>
+            {% endif %}
+            <label for="{{ form.syllabus.id_for_label }}">Syllabus:</label>
+            {{ form.syllabus }}
+        </div>
+        <div class="field">
+            {% if form.ref_books.errors %}
+            <div class="ui error message">
+                {{ form.ref_books.errors }}
+            </div>
+            {% endif %}
+            <label for="{{ form.ref_books.id_for_label }}">References & Books:</label>
+            {{ form.ref_books }}
+        </div>
+        <div class="field">
+            {% if form.percent_quiz_1.errors %}
+            <div class="ui error message">
+                <p>{{ form.percent_quiz_1.errors }}</p>
+            </div>
+            {% endif %}
+        </div>
+        <div class="fields">
+            <div class="two wide field">
+                <label for="{{ form.percent_quiz_1.id_for_label }}">Quiz 1 %:</label>
+                {{ form.percent_quiz_1 }}
+            </div>
+            <div class="six wide field">
+                
+                <label for="{{ form.percent_midsem.id_for_label }}">Midsem %:</label>
+                {{ form.percent_midsem }}
+            </div>
+            <div class="two wide field">
+                
+                <label for="{{ form.percent_quiz_2.id_for_label }}">Quiz 2 %:</label>
+                {{ form.percent_quiz_2 }}
+            </div>
+            <div class="six wide field">
+                
+                <label for="{{ form.percent_endsem.id_for_label }}">Endsem %:</label>
+                {{ form.percent_endsem }}
+            </div>
+        </div>
+        <div class="fields">
+            <div class="seven wide field">
+                
+                <label for="{{ form.percent_project.id_for_label }}">Project %:</label>
+                {{ form.percent_project }}
+            </div>
+            <div class="six wide field">
+
+                <label for="{{ form.percent_lab_evaluation.id_for_label }}">Lab Evaluations %:</label>
+                {{ form.percent_lab_evaluation }}
+            </div>
+            <div class="three wide field">
+
+                <label for="{{ form.percent_course_attendance.id_for_label }}">Attendance %:</label>
+                {{ form.percent_course_attendance }}
+            </div>
+        </div>
+
+        <td></td>
+        <td>
+            <div class="ui large right floated buttons">
+                <a class="ui button" href="{% url 'programme_curriculum:reject_form' id%}">Reject</a>
+                <div class="or"></div>
+                <input class="ui primary button" type="Submit" name="Submit" value="Approve">
+            </div>
+        </td>
+    </form>
+</div>
+
+{% endblock %}
+{% block rightcontent %}
+<br>
+<br>
+{% block sidepanel%} 
+    {% include 'notifications/programme_curriculum.html' %} 
+    {% endblock %}
+{% endblock %}

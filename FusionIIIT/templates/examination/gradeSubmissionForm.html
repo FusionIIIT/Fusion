@@ -1,0 +1,226 @@
+{% extends 'examination/base.html' %}
+
+{% block sidetabmenu %}
+<style>
+  /* Your existing CSS styles */
+
+  .sortable-icon {
+      margin-left: 5px;
+      font-size: 1.2em;
+      color: blue;
+  }
+
+  .sortable-icon + .sortable-icon {
+      margin-left: 2px;
+  }
+  /* Your existing CSS styles */
+
+  .sortable-icon {
+      margin-left: 5px;
+      font-size: 1.2em;
+      color: blue;
+      display: inline-block;
+  }
+
+  th {
+      white-space: nowrap; /* Prevent line breaks */
+  }
+
+  th:first-child .sortable-icon {
+      margin-left: 0; /* Remove left margin for the first icon */
+  }
+
+  .sortable-icon + .sortable-icon {
+      margin-left: 2px;
+  }
+  
+</style>
+<div class="ui medium fluid vertical pointing menu" style="max-width: 320px;">
+  <a class="item" href="{% url 'examination:submit' %}">Submit
+    <i class="right floated chevron right icon"></i>
+  </a>
+  <a class="item" href="{% url 'examination:updateGrades' %}">Verify
+    <i class="right floated chevron right icon"></i>
+  </a>
+  <a class="item" href="{% url 'examination:authenticate' %}">Authenticate Course
+    <i class="right floated chevron right icon"></i>
+  </a>
+
+  
+  <a class="item" href="{% url 'examination:announcement' %}">Announcement
+    <i class="right floated chevron right icon"></i>
+  </a>
+  <a class="item" href="{% url 'examination:generate_transcript_form' %}">Generate Transcript
+    <i class="right floated chevron right icon"></i>
+  </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="ui segment">
+  <h1 class="ui header">SUBMIT STUDENT MARKS</h1>
+  {% if registrations %}
+  <form method="post" action="{% url 'examination:submitEntergradesStoring' %}">
+    {% csrf_token %}
+    <div class="ui celled table" id="gradesTable">
+      <table class="ui selectable striped table">
+        <thead>
+          <tr>
+            <th>
+              Student ID
+              <i class="arrow up icon sortable-icon"></i>
+              <i class="arrow down icon sortable-icon"></i>
+          </th>
+            <th>batch</th>
+            <th>Course ID</th>
+            <th>semester </th>
+            <th>Academic Year </th>
+            <th>
+              Total Marks
+              <i class="arrow up icon sortable-icon"></i>
+              <i class="arrow down icon sortable-icon"></i>
+          </th>
+            <th>Grade</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for registration in registrations %}
+          <tr>
+               <td>{{ registration.student_id_id}}</td>
+                <td>{{ registration.student_id.batch }}</td>
+                <td>{{ registration.course_id.name }}</td>
+                <td>{{ registration.semester_id_id }}</td>
+                <td>{{ year}}</td>
+
+            <td>
+              <input type="hidden" name="student_ids[]" value="{{registration.student_id_id }}">
+              <input type="hidden" name="batch_ids[]" value="{{  registration.student_id.batch }}">
+              <input type="hidden" name="course_ids[]" value="{{ registration.course_id_id }}">
+              <input type="hidden" name="semester_ids[]" value="{{ registration.semester_id_id }}">
+              <input type="hidden" name="year_ids[]" value="{{ year }}">
+              <input type="text" name="marks[]" value="75">
+              
+            </td>
+            <td>
+                <input type="text" name="grades[]" value="B">
+        </td>
+            
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% comment %} <button class="ui primary button" type="submit">FINALISE Grades</button> {% endcomment %}
+    <button class="ui primary button" id="finalize-grades" onclick="finalizeGrades()">submit</button>
+
+  </form>
+  <div class="ui segment">
+    <canvas id="gradesChart" width="400" height="400"></canvas>
+  </div>
+  {% else %}
+  <div class="ui message">
+    <div class="header">
+      NO STUDENTS REGISTERED IN THIS COURSE THIS SEMESTER
+    </div>
+    <p>Please check back later or contact support for assistance.</p>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Include Chart.js library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1"></script>
+
+<!-- JavaScript code for generating the pie chart -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        function updateChart() {
+            var gradesData = [];
+            var gradesLabels = [];
+            var totalGrades = 0;
+            var tableRows = document.querySelectorAll('tbody tr');
+
+            tableRows.forEach(function (row) {
+                var grade = row.querySelector('input[name="grades[]"]').value;
+                totalGrades++;
+                if (gradesLabels.includes(grade)) {
+                    var index = gradesLabels.indexOf(grade);
+                    gradesData[index]++;
+                } else {
+                    gradesLabels.push(grade);
+                    gradesData.push(1);
+                }
+            });
+
+            var percentages = gradesData.map(function (count) {
+                return ((count / totalGrades) * 100).toFixed(2) + '%';
+            });
+
+            var ctx = document.getElementById('gradesChart').getContext('2d');
+            if (window.myChart) {
+                window.myChart.destroy(); // Destroy previous chart instance
+            }
+            window.myChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: gradesLabels,
+                    datasets: [{
+                        label: 'Grades Distribution',
+                        data: gradesData,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    var label = context.label || '';
+                                    var value = context.raw || 0;
+                                    var percentage = ((value / totalGrades) * 100).toFixed(2) + '%';
+                                    return label + ': ' + value + ' (' + percentage + ')';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initial chart setup
+        updateChart();
+
+        // Update the chart when form input changes
+        var inputs = document.querySelectorAll('input[name="grades[]"]');
+        inputs.forEach(function (input) {
+            input.addEventListener('input', updateChart);
+        });
+    });
+
+    function finalizeGrades() {
+        // Submit the form
+       
+        document.querySelector('form').submit();
+
+        // Redirect to the URL that handles Excel download
+        window.location.href = "{% url 'examination:updateGrades' %}";
+    }
+</script>
+{% endblock %}
