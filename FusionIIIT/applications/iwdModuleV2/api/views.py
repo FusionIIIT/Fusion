@@ -1175,8 +1175,12 @@ def handle_settle_bill_requests(request):
 @permission_classes([IsAuthenticated])
 def create_proposal(request):
     data = request.data
+    data["created_by"] = str(request.user)
+    data["request"] = data.get('id')
+    print(Requests.objects.get(id=data.get('id')))
+    print(request.user)
     receiver_desg, receiver_user = data.get('designation').split('|')
-    serializer = ProposalSerializer(data=request.data)
+    serializer = ProposalSerializer(data=data)
     if serializer.is_valid():
         file_id = create_file(
             uploader=request.user.username,
@@ -1189,14 +1193,18 @@ def create_proposal(request):
             attached_file=None
         )
         file_instance = File.objects.get(id=file_id)
-        proposal = serializer.save(created_by=request.user, file=file_instance)
+        proposal = serializer.save(
+            file=file_instance
+        )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_proposals(request, request_id):
-    proposals = Proposal.objects.filter(request_id=request_id)
+def get_proposals(request):
+    data=request.data;
+    proposals = Proposal.objects.filter(request_id=data["request_id"])
     serializer = ProposalSerializer(proposals, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
 

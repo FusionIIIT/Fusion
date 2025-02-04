@@ -142,15 +142,15 @@ class LetterOfIntentDetailsSerializer(serializers.ModelSerializer):
 class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
-        fields = '__all__'
+        fields = ['name', 'description', 'unit', 'price_per_unit', 'total_price', 'docs']
 class ProposalSerializer(serializers.ModelSerializer):
-    # items = ItemSerializer(many=True)
+    items = ItemSerializer(many=True)
     class Meta:
         model = Proposal
         fields = '__all__'
 
     def create(self, validated_data):
-        items_data = validated_data.pop('items')
+        items_data = validated_data.pop('items', [])
         proposal = Proposal.objects.create(**validated_data)
         total_budget = 0
         for item_data in items_data:
