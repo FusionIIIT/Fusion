@@ -94,6 +94,9 @@
                         Registration Type
                     </th>
                     <th>
+                        Replaced By
+                    </th>
+                    <th>
                         Drop Course
                     </th>
                 </tr>
@@ -122,6 +125,11 @@
                     </td>
                     <td>
                         {{ items.registration_type }}
+                    </td>
+                    <td>
+                        {% if items.replaced_by %}
+                        {{ items.replaced_by.new_course_registration.course_id.code }} - Sem - {{ items.replaced_by.new_course_registration.semester_id.semester_no }}
+                        {% endif %}
                     </td>
                     <td>
                         <A class="trigger-link-acad ui blue label"
@@ -188,6 +196,12 @@
                     </select>
                 </div>
                 <div class="field">
+                    <label>Working Year</label>
+                    <div class="ui input">
+                        <input type="number" name="working_year" placeholder="Enter Working Year">
+                    </div>
+                </div>
+                <div class="field">
                     <label>Registration Type</label>
                     <select class="ui fluid dropdown" name = "registration_type">
                         <option value="Regular">Regular</option>
@@ -195,6 +209,19 @@
                         <option value="Backlog">Backlog</option>
                         <option value="Audit">Audit</option>
                     </select>
+                </div>
+                <div class="field">
+                    <label>Replace Course </label>
+                    <div class="ui fluid search selection dropdown">
+                        <input type="hidden" name="old_course">
+                        <i class="dropdown icon"></i>
+                        <div class="default text">Select</div>
+                        <div class="menu">
+                            {% for items in details %}
+                            <div class="item" data-value="{{ items.reg_id }}">{{ items.course_id }} - Sem - {{ items.sem }}  - {{ items.registration_type }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
 
                 <input type = "text" value = {{dict2.roll_no}} name="roll_no" hidden/>
