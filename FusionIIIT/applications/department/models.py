@@ -27,7 +27,7 @@ class Announcements(models.Model):
     batch = models.CharField(max_length=40,default="Year-1")
     department = models.CharField(max_length=40,default="ALL")
     programme = models.CharField(max_length=10)
-    upload_announcement = models.FileField(upload_to='department/upload_announcement', null=True, default=" ")
+    upload_announcement = models.FileField(upload_to='department/upload_announcement', null=True, default=None)
     def __str__(self):
         return str(self.maker_id.user.username)
     
@@ -41,3 +41,21 @@ class Information(models.Model):
     email = models.CharField(max_length=200)
     facilites = models.TextField()
     labs = models.TextField()
+
+
+class Lab(models.Model):
+    department = models.CharField(max_length=50)  # Store department as a string field instead of a foreign key
+    location = models.CharField(max_length=200)
+    name = models.CharField(max_length=100)
+    capacity = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.name} ({self.department})"
+
+class Feedback(models.Model):
+    department = models.CharField(max_length=50)  # no need to validate department name
+    rating = models.CharField(max_length=20)
+    remark = models.TextField()
+
+    def __str__(self):
+        return f"{self.department} - {self.rating}"
