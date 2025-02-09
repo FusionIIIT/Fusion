@@ -828,3 +828,65 @@ class UpdatePaymentRequestApi(APIView):
         except Exception as e:
             print({'error': str(e)})
             return Response({'error': str(e)}, status=400)
+
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework import status
+from openpyxl import load_workbook
+
+class UpdateBillExcelAPI(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    def post(self, request):
+        if 'file' not in request.FILES:
+            return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+        file = request.FILES['file']
+        if not file.name.endswith(('.xlsx', '.xls')):
+            return Response({'error': 'Invalid file format. Only .xlsx and .xls are allowed.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            wb = load_workbook(file)
+            sheet = wb.active
+            flag = False
+
+            for row in sheet.iter_rows(min_row=2):
+                student_id = str(row[0].value).upper()
+                try:
+                    student = Student.objects.select_related('id', 'id__user', 'id__department').get(id=student_id)
+                except Student.DoesNotExist:
+                    continue
+
+                month = str(row[1].value)
+                year = row[2].value
+                amt = row[3].value
+                rebate_cnt = row[4].value
+                rebate_amt = row[5].value
+                total_amt = row[6].value
+                try:
+                    bill = Monthly_bill.objects.get(student_id=student_id, month=month, year=year)
+                    reg_main = Reg_main.objects.get(student_id=student_id)
+                    reg_main.balance += bill.total_bill
+                    bill.amount = amt
+                    bill.rebate_count = rebate_cnt
+                    bill.rebate_amount = rebate_amt
+                    bill.total_bill = total_amt
+                    reg_main.balance -= total_amt
+                    
+                    bill.save()
+                    reg_main.save()
+                except Monthly_bill.DoesNotExist:
+                    bill = Monthly_bill(
+                        student_id=student,
+                        month=month,
+                        year=year,
+                        amount=amt,
+                        rebate_count=rebate_cnt,
+                        rebate_amount=rebate_amt,
+                        total_bill=total_amt
+                    )
+                    bill.save()
+
+            return Response({'message': 'File processed successfully'}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({'error': f'An error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
