@@ -13,7 +13,8 @@ from .views import (
     GetDesignationsView,
     CreateArchiveFile,
     ArchiveFileView,
-    UnArchiveFile
+    UnArchiveFile,
+    AjaxDropdownView
 )
 
 urlpatterns = [
@@ -29,4 +30,5 @@ urlpatterns = [
     path('unarchive/', UnArchiveFile.as_view(), name='un_archive'),
     path('archive/', ArchiveFileView.as_view(), name='view_archived'),
     path('designations/<str:username>/', GetDesignationsView.as_view(), name='get_designations'),
+    path('dropdown/', AjaxDropdownView.as_view(), name='get_dropdown'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
