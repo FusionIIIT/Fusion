@@ -1,5 +1,6 @@
 import logging
 from venv import logger
+from django.core import serializers
 from django.forms import ValidationError
 from django.contrib.auth.models import User
 from rest_framework.views import APIView
@@ -10,6 +11,7 @@ from ..models import File, Tracking
 from applications.globals.models import Designation
 from ..sdk.methods import create_draft, create_file, view_drafts, view_file, delete_file, view_inbox, view_outbox, view_history, forward_file, get_designations, archive_file, view_archived, unarchive_file
 
+
 class CreateFileView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
@@ -17,23 +19,42 @@ class CreateFileView(APIView):
     def post(self, request):
         try:
             current_user = request.user
-
             current_designation = request.data.get('designation')
             receiver_username = request.data.get('receiver_username')
             receiver_designation = request.data.get('receiver_designation')
             subject = request.data.get('subject')
             description = request.data.get('description')
             src_module = request.data.get('src_module')
-            uploaded_file = request.FILES.get('file')  # Get the file if provided
+            uploaded_files = request.FILES.getlist('files')  # Retrieve the list of files
+
+            # Check for missing required fields
             if None in [current_designation, receiver_username, receiver_designation, subject, description, src_module]:
                 return Response({'error': 'One or more required fields are missing.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            file_id = create_file(uploader=current_user, uploader_designation=current_designation,
-                                  receiver=receiver_username, receiver_designation=receiver_designation, subject=subject, description=description, attached_file=uploaded_file, src_module=src_module)
-            print("File id: ", file_id)
-            return Response({'file_id': file_id}, status=status.HTTP_201_CREATED)
+            # Process each file in the list
+            file_ids = []
+            for file in uploaded_files:
+                # Debugging log for each file
+                print("Processing file: ", file.name)
+
+                # Call your `create_file` function for each file
+                file_id = create_file(
+                    uploader=current_user,
+                    uploader_designation=current_designation,
+                    receiver=receiver_username,
+                    receiver_designation=receiver_designation,
+                    subject=subject,
+                    description=description,
+                    attached_file=file,  # Pass individual file here
+                    src_module=src_module
+                )
+                file_ids.append(file_id)  # Store the IDs of the created files
+
+            return Response({'file_ids': file_ids}, status=status.HTTP_201_CREATED)
+
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class ViewFileView(APIView):
     authentication_classes = [TokenAuthentication]
@@ -308,3 +329,16 @@ class GetDesignationsView(APIView):
     def get(self, request, username, *args, **kwargs):
         user_designations = get_designations(username)
         return Response({'designations': user_designations})
+
+class AjaxDropdownView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    """
+    Returns usernames of receivers that match the search input.
+    """
+
+    def post(self, request):
+        value = request.data.get('value', '')  # Default to empty string if missing
+        users = User.objects.filter(username__startswith=value)
+        users_json = serializers.serialize('json', users)
+        return Response({"users": users_json})
