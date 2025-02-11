@@ -100,10 +100,13 @@ def created_requests(request):
         designation=params.get('role'),
         src_module="IWD"
     )
+    print(inbox_files)
     for result in inbox_files:
+        print("hello1")
         src_object_id = result['src_object_id']
         request_object = Requests.objects.filter(id=src_object_id).first()
         if request_object:
+            print("hello")
             file_obj = get_object_or_404(File, src_object_id=request_object.id, src_module="IWD")
             element = {
                 'request_id': request_object.id,
@@ -1174,28 +1177,30 @@ def handle_settle_bill_requests(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_proposal(request):
-    data = request.data
+    data = request.data.copy()
     data["created_by"] = str(request.user)
+    print(data)
+    print(data.get('role'))
     data["request"] = data.get('id')
-    print(Requests.objects.get(id=data.get('id')))
-    print(request.user)
+    # print(Requests.objects.get(id=data.get('id')))
+    # print(request.user)
     receiver_desg, receiver_user = data.get('designation').split('|')
     serializer = ProposalSerializer(data=data)
     if serializer.is_valid():
+        proposal = serializer.save()
         file_id = create_file(
             uploader=request.user.username,
             uploader_designation=data.get('role'),
             receiver=receiver_user,
             receiver_designation=receiver_desg,
             src_module="IWD",
-            src_object_id=str(data.get("id")),
+            src_object_id=str(proposal.id),
             file_extra_JSON={"value": 2},
             attached_file=None
         )
         file_instance = File.objects.get(id=file_id)
-        proposal = serializer.save(
-            file=file_instance
-        )
+        proposal.file = file_instance
+        proposal.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
