@@ -226,7 +226,7 @@ class ForwardFileView(APIView):
 
         # Return response
         return Response({'tracking_id': new_tracking_id}, status=status.HTTP_201_CREATED)
-    
+
 class CreateDraftFile(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
@@ -236,17 +236,29 @@ class CreateDraftFile(APIView):
         uploader_designation = request.data.get('designation')
         src_module = request.data.get('src_module')
         src_object_id = request.data.get('src_object_id', '')
-        attached_file = request.data.get('file', None)
+        uploaded_files = request.FILES.getlist('files')  # Retrieve multiple files
+        print(uploader_designation, src_module)
+        # Validate required fields
+        if None in [uploader_designation, src_module] or not uploaded_files:
+            return Response({'error': 'One or more required fields are missing.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        draft_file_ids = []
         try:
-            file_id = create_draft(
-                uploader=uploader,
-                uploader_designation=uploader_designation,
-                src_module=src_module,
-                src_object_id=src_object_id,
-                attached_file=attached_file
-            )
-            return Response({'file_id': file_id}, status=status.HTTP_201_CREATED)
+            for file in uploaded_files:
+                # Debugging log for each file
+                print("Processing draft file:", file.name)
+
+                file_id = create_draft(
+                    uploader=uploader,
+                    uploader_designation=uploader_designation,
+                    src_module=src_module,
+                    src_object_id=src_object_id,
+                    attached_file=file  # Pass individual file
+                )
+                draft_file_ids.append(file_id)  # Collect created draft file IDs
+            print(draft_file_ids)
+            return Response({'file_ids': draft_file_ids}, status=status.HTTP_201_CREATED)
+
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
