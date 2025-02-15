@@ -3,7 +3,7 @@ from django.http import (
     HttpResponseBadRequest, JsonResponse, HttpResponse, HttpResponseRedirect,
 )
 from .models import (
-    HostelLeave, HallCaretaker, HallWarden, StudentDetails, HostelNoticeBoard, Hall, Staff, HostelAllotment, HostelHistory, HostelTransactionHistory,GuestRoom,GuestRoomBooking, HostelComplaint
+    HostelLeave, HallCaretaker, HallWarden, StudentDetails, HostelNoticeBoard, Hall, Staff, HostelAllotment, HostelHistory, HostelTransactionHistory,GuestRoom,GuestRoomBooking, HostelComplaint, HostelStudentAttendence
 )
 from applications.hostel_management.models import HallCaretaker, HallWarden
 from django.db import IntegrityError, transaction
@@ -666,43 +666,83 @@ def edit_student_room(request):
         return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
 
-def edit_attendance(request):
-    """
-    This function is used to edit the attendance of a student.
-    @param:
-      request - HttpRequest object containing metadata about the user request.
+# def edit_attendance(request):
+#     """
+#     This function is used to edit the attendance of a student.
+#     @param:
+#       request - HttpRequest object containing metadata about the user request.
 
-    @variables:
-      student_id = The student whose attendance has to be updated.
-      hall = The hall of the concerned student.
-      date = The date on which attendance has to be marked.
-    """
-    if request.method == "POST":
-        roll_no = request.POST["roll_no"]
+#     @variables:
+#       student_id = The student whose attendance has to be updated.
+#       hall = The hall of the concerned student.
+#       date = The date on which attendance has to be marked.
+#     """
+#     if request.method == "POST":
+#         roll_no = request.POST["roll_no"]
 
-        student = Student.objects.get(id=roll_no)
-        hall = Hall.objects.get(hall_id="hall" + str(student.hall_no))
-        date = datetime.datetime.today().strftime("%Y-%m-%d")
+#         student = Student.objects.get(id=roll_no)
+#         hall = Hall.objects.get(hall_id="hall" + str(student.hall_no))
+#         date = datetime.datetime.today().strftime("%Y-%m-%d")
 
-        if (
-            HostelStudentAttendence.objects.filter(
-                student_id=student, date=date
-            ).exists()
-            == True
-        ):
-            messages.error(
-                request, f"{student.id.id} is already marked present on {date}"
+#         if (
+#             HostelStudentAttendence.objects.filter(
+#                 student_id=student, date=date
+#             ).exists()
+#             == True
+#         ):
+#             messages.error(
+#                 request, f"{student.id.id} is already marked present on {date}"
+#             )
+#             return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+
+#         record = HostelStudentAttendence.objects.create(
+#             student_id=student, hall=hall, date=date, present=True
+#         )
+#         record.save()
+
+#         messages.success(request, f"Attendance of {student.id.id} recorded.")
+
+#         return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
+
+class UploadAttendance(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        try:
+            year = request.POST.get('year')
+            month = request.POST.get('month')
+            hall_id = request.POST.get('selectedHall')
+            batch = request.POST.get('selectedBatch')
+            file = request.FILES.get('file')
+            if not all([year, month, hall_id, batch, file]):
+                return Response({
+                    'error': 'All fields are required'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            hall = Hall.objects.get(hall_id=hall_id)
+
+            # Create or update attendance record
+            HostelStudentAttendence.objects.update_or_create(
+                hall=hall,
+                batch=batch,
+                year=year,
+                month=month,
+                defaults={'file': file}
             )
-            return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
-        record = HostelStudentAttendence.objects.create(
-            student_id=student, hall=hall, date=date, present=True
-        )
-        record.save()
+            return Response({
+                'message': 'Attendance record uploaded successfully'
+            })
 
-        messages.success(request, f"Attendance of {student.id.id} recorded.")
+        except Hall.DoesNotExist:
+            return Response({
+                'error': 'Hall not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({
+                'error': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        return HttpResponseRedirect(reverse("hostelmanagement:hostel_view"))
 
 @login_required
 def generate_worker_report(request):

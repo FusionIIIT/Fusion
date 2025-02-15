@@ -27,9 +27,7 @@ urlpatterns = [
         name="edit_student_rooms_sheet",
     ),
     # Attendance
-    path("edit_attendance/", views.edit_attendance, name="edit_attendance"),
-    # Attendance
-    path("edit_attendance/", views.edit_attendance, name="edit_attendance"),
+    path("upload_attendance/", views.UploadAttendance.as_view(), name="edit_attendance"),
     # Worker Report
     path("worker_report/", views.generate_worker_report, name="workerreport"),
     path("pdf/", views.GeneratePDF.as_view(), name="pdf"),

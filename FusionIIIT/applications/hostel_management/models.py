@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from applications.globals.models import ExtraInfo, Staff, Faculty
 from applications.academic_information.models import Student
 from django.utils import timezone
+from django.core.validators import FileExtensionValidator
 
 
 class HostelManagementConstants:
@@ -194,24 +195,36 @@ class HostelNoticeBoard(models.Model):
         return self.head_line
 
 
+# class HostelStudentAttendence(models.Model):
+#     """
+#     Records attendance of students in various Hall of Residences.
+
+#     'hall' refers to the related Hall of Residence.
+#     'student_id' refers to the related Student.
+#     'date' stores the date for which attendance is being taken.
+#     'present' stores whether the student was present on a particular date.
+#     """
+
+#     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+#     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+#     date = models.DateField()
+#     present = models.BooleanField()
+
+#     def __str__(self):
+#         return str(self.student_id) + "->" + str(self.date) + "-" + str(self.present)
+
 class HostelStudentAttendence(models.Model):
-    """
-    Records attendance of students in various Hall of Residences.
-
-    'hall' refers to the related Hall of Residence.
-    'student_id' refers to the related Student.
-    'date' stores the date for which attendance is being taken.
-    'present' stores whether the student was present on a particular date.
-    """
-
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
-    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-    date = models.DateField()
-    present = models.BooleanField()
+    batch = models.CharField(max_length=50)
+    year = models.IntegerField()
+    month = models.CharField(max_length=20)
+    file = models.FileField(
+        upload_to='attendance_records/',
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx', 'xls', 'xlsx'])]
+    )
 
     def __str__(self):
-        return str(self.student_id) + "->" + str(self.date) + "-" + str(self.present)
-
+        return f"Attendance - {self.hall.hall_name} - {self.batch} - {self.month} {self.year}"
 
 class HallRoom(models.Model):
     """
