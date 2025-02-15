@@ -1,6 +1,6 @@
 from django.core.serializers import serialize
 from django.http import (
-    HttpResponseBadRequest, JsonResponse, HttpResponse, HttpResponseRedirect,
+    HttpResponseBadRequest, JsonResponse, HttpResponse, HttpResponseRedirect,HttpResponseNotFound,FileResponse
 )
 from .models import (
     HostelLeave, HallCaretaker, HallWarden, StudentDetails, HostelNoticeBoard, Hall, Staff, HostelAllotment, HostelHistory, HostelTransactionHistory,GuestRoom,GuestRoomBooking, HostelComplaint, HostelStudentAttendence
@@ -50,10 +50,11 @@ from notification.views import hostel_notifications
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 import json
+import os
 from Fusion.settings.common import LOGIN_URL
 from time import localtime
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
-
+from django.conf import settings
 
 def is_superuser(user):
     return user.is_authenticated and user.is_superuser
@@ -742,7 +743,49 @@ class UploadAttendance(APIView):
             return Response({
                 'error': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+    
+class ViewAttendance(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        try:
+            year = request.GET.get('year')
+            month = request.GET.get('month')
+            
+            # Get student's hall
+            try:
+                student = Student.objects.get(id=request.user.extrainfo.id)
+                hall = Hall.objects.get(hall_id=student.hall_id)
+            except Student.DoesNotExist as e:
+                print(e)
+                return HttpResponseNotFound("Student not found")
+            
+            # Get attendance record (adjust this query based on your actual model)
+            try:
+                print(hall, year, month, student.batch)
+                attendance = HostelStudentAttendence.objects.get(
+                    hall=hall,
+                    year=year,
+                    month=month,
+                    batch=student.batch  # Assuming batch is stored in Student model
+                )
+                print(attendance)
+            except HostelStudentAttendence.DoesNotExist:
+                print("NOT FOUND")
+                return HttpResponseNotFound("Attendance record not found")
+            file_path = os.path.join(settings.MEDIA_ROOT, str(attendance.file))
+            print(file_path)
+            if not os.path.exists(file_path):
+                print("FILE NOT FOUND")
+                return HttpResponseNotFound("File not found")
+            
+            # Determine content type based on file extension
+            ext = os.path.splitext(file_path)[1].lower()
+            content_type = 'application/pdf' if ext == '.pdf' else f'image/{ext[1:]}'
+            
+            return FileResponse(open(file_path, 'rb'), content_type=content_type)
+        except Exception as e:
+            print(e)
 
 @login_required
 def generate_worker_report(request):

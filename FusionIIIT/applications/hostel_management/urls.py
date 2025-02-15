@@ -28,6 +28,8 @@ urlpatterns = [
     ),
     # Attendance
     path("upload_attendance/", views.UploadAttendance.as_view(), name="edit_attendance"),
+    # #Hostel Attandnace
+    path("view_attendance/", views.ViewAttendance.as_view(), name="view_attendance"),
     # Worker Report
     path("worker_report/", views.generate_worker_report, name="workerreport"),
     path("pdf/", views.GeneratePDF.as_view(), name="pdf"),

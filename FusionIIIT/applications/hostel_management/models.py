@@ -226,6 +226,16 @@ class HostelStudentAttendence(models.Model):
     def __str__(self):
         return f"Attendance - {self.hall.hall_name} - {self.batch} - {self.month} {self.year}"
 
+class HostelAttendance(models.Model):
+    Hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    Year = models.IntegerField()
+    Month = models.CharField(max_length=10)
+    File_Location = models.FileField(upload_to='attendance/')
+    batch = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.Hall.hall_id} - {self.Month}/{self.Year}"
+
 class HallRoom(models.Model):
     """
     Records information related to rooms in various Hall of Residences
