@@ -8,15 +8,15 @@ from typing import Any
 
 
 def create_file(
+        uploader: str,
         uploader_designation: str,
         receiver: str,
         receiver_designation: str,
-        src_module: str = "",
-        file_extra_JSON: dict = {},
-        uploader: str = "",
-        subject: str = "",
-        description: str = "",
+        subject: str = "", 
+        description: str = "", 
+        src_module: str = "filetracking",
         src_object_id: str = "",
+        file_extra_JSON: dict = {},
         attached_file: Any = None) -> int:
     '''
     This function is used to create a file object corresponding to any object of a module that needs to be tracked
@@ -29,7 +29,7 @@ def create_file(
     if both complete then return id of file
     else raise error
 
-    also, delete file object if tracking isn't created
+    also, delete file object if tracking isnt created
     '''
     uploader_user_obj = get_user_object_from_username(uploader)
     uploader_extrainfo_obj = get_ExtraInfo_object_from_username(uploader)
@@ -48,6 +48,7 @@ def create_file(
         src_object_id=src_object_id,
         file_extra_JSON=file_extra_JSON,
     )
+    
 
     if attached_file is not None: 
         new_file.upload_file.save(attached_file.name, attached_file, save=True)
@@ -141,12 +142,8 @@ def view_outbox(username: str, designation: str, src_module: str) -> list:
     # remove duplicate file ids (from sending back and forth)
     sent_files_unique = uniqueList(sent_files)
 
-    sent_files_serialized = list(FileHeaderSerializer(
-        sent_files_unique, many=True).data)
-    # for file in sent_files_serialized: 
-    #     file['sent_by_user'] = get_last_file_sender(file['id']).username
-    #     file['sent_by_designation'] = get_last_file_sender_designation(file['id']).name
-    return sent_files_serialized
+    sent_files_serialized = FileHeaderSerializer(sent_files_unique, many=True)
+    return sent_files_serialized.data
 
 
 
@@ -208,7 +205,7 @@ def unarchive_file(file_id: int) -> bool:
 def create_draft(
         uploader: str,
         uploader_designation: str,
-        src_module: str = "",
+        src_module: str = "filetracking",
         src_object_id: str = "",
         file_extra_JSON: dict = {},
         attached_file: Any = None) -> int:
@@ -217,15 +214,10 @@ def create_draft(
     It is similar to create_file but is not sent to anyone
     Later this file can be sent to someone by forward_file by using draft file_id
     '''
-    uploader_user_obj = get_user_object_from_username(uploader)
     uploader_extrainfo_obj = get_ExtraInfo_object_from_username(uploader)
     uploader_designation_obj = Designation.objects.get(
         name=uploader_designation)
-    print(uploader)
-    print(uploader_designation)
-    print(src_module)
-    if file_extra_JSON is None:
-        file_extra_JSON = {}
+
     new_file = File.objects.create(
         uploader=uploader_extrainfo_obj,
         designation=uploader_designation_obj,
