@@ -347,7 +347,6 @@ def rejected_requests(request):
 
     return Response(obj, status=status.HTTP_200_OK)
 
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def handle_update_requests(request):
@@ -360,46 +359,58 @@ def handle_update_requests(request):
     desg = data.get('role')
     receiver_desg, receiver_user = data.get('designation').split('|')
 
-    Requests.objects.filter(id=request_id).update(
-        name=request.data.get('name'),
-        description=request.data.get('description'),
-        area=request.data.get('area'),
-        engineerProcessed=0,
-        directorApproval=0,
-        deanProcessed=0,
-        requestCreatedBy=request.user.username,
-        status="Pending",
-        issuedWorkOrder=0,
-        workCompleted=0,
-        billGenerated=0,
-        billProcessed=0,
-        billSettled=0
-    )
+    # Requests.objects.filter(id=request_id).update(
+    #     name=request.data.get('name'),
+    #     description=request.data.get('description'),
+    #     area=request.data.get('area'),
+    #     engineerProcessed=0,
+    #     directorApproval=0,
+    #     deanProcessed=0,
+    #     requestCreatedBy=request.user.username,
+    #     status="Pending",
+    #     issuedWorkOrder=0,
+    #     workCompleted=0,
+    #     billGenerated=0,
+    #     billProcessed=0,
+    #     billSettled=0
+    # )
 
-    try:
-        file_obj = File.objects.get(src_object_id=request_id, src_module="IWD")
-        if file_obj:
-            delete_file(file_obj.id)
-    except:
-        print("file doesnt exist")
-    if request_id:
-        create_file(
-            uploader=request.user.username,
-            uploader_designation=desg,
-            receiver=receiver_user,
-            receiver_designation=receiver_desg,
-            src_module="IWD",
-            src_object_id=str(request_id),
-            file_extra_JSON={"value": 2},
-            attached_file=None
-        )
+    proposal_data = {
+        "request": request_id,
+        "created_by": request.user.id,
+        "supporting_documents": data.get('supporting_documents'),
+        "status": "Pending",
+        "items": data.get('items', [])
+    }
+    proposal_serializer = ProposalSerializer(data=proposal_data)
+    if proposal_serializer.is_valid():
+        proposal = proposal_serializer.save()
+
+        try:
+            file_obj = File.objects.get(src_object_id=request_id, src_module="IWD")
+            if file_obj:
+                delete_file(file_obj.id)
+        except:
+            print("file doesnt exist")
+        if request_id:
+            create_file(
+                uploader=request.user.username,
+                uploader_designation=desg,
+                receiver=receiver_user,
+                receiver_designation=receiver_desg,
+                src_module="IWD",
+                src_object_id=str(request_id),
+                file_extra_JSON={"value": 2},
+                attached_file=None
+            )
+        else:
+            print("request id is invalid")
+
+        receiver_user_obj = User.objects.get(username=receiver_user)
+        iwd_notif(request.user, receiver_user_obj, "Request updated")
+        return Response({"message": "Request updated successfully"}, status=status.HTTP_201_CREATED)
     else:
-        print("request id is invalid")
-    
-    receiver_user_obj = User.objects.get(username=receiver_user)
-    iwd_notif(request.user, receiver_user_obj, "Request_added")
-
-    return Response({"message": "Request updated successfully"}, status=status.HTTP_200_OK)
+        return Response(proposal_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
@@ -1179,28 +1190,26 @@ def handle_settle_bill_requests(request):
 def create_proposal(request):
     data = request.data.copy()
     data["created_by"] = str(request.user)
-    print(data)
-    print(data.get('role'))
     data["request"] = data.get('id')
-    # print(Requests.objects.get(id=data.get('id')))
-    # print(request.user)
     receiver_desg, receiver_user = data.get('designation').split('|')
     serializer = ProposalSerializer(data=data)
     if serializer.is_valid():
         proposal = serializer.save()
-        file_id = create_file(
-            uploader=request.user.username,
-            uploader_designation=data.get('role'),
-            receiver=receiver_user,
-            receiver_designation=receiver_desg,
-            src_module="IWD",
-            src_object_id=str(proposal.id),
-            file_extra_JSON={"value": 2},
-            attached_file=None
-        )
-        file_instance = File.objects.get(id=file_id)
-        proposal.file = file_instance
+        # file_id = create_file(
+        #     uploader=request.user.username,
+        #     uploader_designation=data.get('role'),
+        #     receiver=receiver_user,
+        #     receiver_designation=receiver_desg,
+        #     src_module="IWD",
+        #     src_object_id=str(proposal.id),
+        #     file_extra_JSON={"value": 2},
+        #     attached_file=None
+        # )
+        # file_instance = File.objects.get(id=file_id)
+        # proposal.file = file_instance
         proposal.save()
+        receiver_user_obj = User.objects.get(username=receiver_user)
+        iwd_notif(request.user, receiver_user_obj, "Proposal_added")
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
