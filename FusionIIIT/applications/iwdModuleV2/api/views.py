@@ -1223,3 +1223,14 @@ def get_proposals(request):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_items(request):
+    try:
+        data = request.data
+        proposal = Proposal.objects.get(id=data['proposal_id'])
+        items = Item.objects.filter(proposal=proposal)
+        serializer = ItemSerializer(items, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Proposal.DoesNotExist:
+        return Response({'error': 'Proposal not found'}, status=status.HTTP_404_NOT_FOUND)
