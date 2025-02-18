@@ -5,13 +5,14 @@ from rest_framework import status
 from applications.scholarships.models import Previous_winner, Award_and_scholarship,Mcm,Director_gold,Notional_prize,Director_silver,Proficiency_dm,Release
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from .serializers import DirectorSilverDecisionSerializer  # Add this import
 from rest_framework import status
 from applications.academic_information.models import Spi, Student
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation)
 from rest_framework import viewsets
-from applications.scholarships.api.serializers import PreviousWinnerSerializer,AwardAndScholarshipSerializer,McmSerializer,NotionalPrizeSerializer,DirectorGoldSerializer,DirectorSilverSerializer,ProficiencyDmSerializer,ReleaseSerializer
+from applications.scholarships.api.serializers import PreviousWinnerSerializer,AwardAndScholarshipSerializer,McmSerializer,NotionalPrizeSerializer,DirectorGoldSerializer,DirectorSilverSerializer,ProficiencyDmSerializer,ReleaseSerializer,McmStatusUpdateSerializer
 from django.shortcuts import get_object_or_404
 
 #This api is for invite application 
@@ -474,3 +475,68 @@ class GetReleaseByAwardView(APIView):
             {'result': 'Failure', 'error': 'No releases found for the specified award'},
             status=status.HTTP_404_NOT_FOUND
         )
+    
+
+class McmDocumentsRetrieveView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        roll_number = request.data.get("roll")  # Roll number from request body
+
+        if not roll_number:
+            return Response({"detail": "Roll number is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        mcm_instance = get_object_or_404(Mcm, student__id=roll_number)
+
+        documents = {
+            "income_certificate": bytes(mcm_instance.income_certificate).decode('utf-8') if mcm_instance.income_certificate else None,
+            "marksheet": bytes(mcm_instance.Marksheet).decode('utf-8') if mcm_instance.Marksheet else None,
+            "bank_details": bytes(mcm_instance.Bank_details).decode('utf-8') if mcm_instance.Bank_details else None,
+            "affidavit": bytes(mcm_instance.Affidavit).decode('utf-8') if mcm_instance.Affidavit else None,
+            "aadhar_card": bytes(mcm_instance.Aadhar_card).decode('utf-8') if mcm_instance.Aadhar_card else None,
+            "fee_receipt": bytes(mcm_instance.Fee_Receipt).decode('utf-8') if mcm_instance.Fee_Receipt else None,
+        }
+
+        return Response(documents, status=status.HTTP_200_OK)
+
+class DirectorSilverMarksheetView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        roll_number = request.data.get('roll')  # Get roll number from POST request body
+        
+        if not roll_number:
+            return Response({"error": "Roll number is required"}, status=400)
+        
+        director_silver_entry = get_object_or_404(Director_silver, student_id=roll_number)
+
+        marksheet_data = director_silver_entry.Marksheet  
+        if marksheet_data:
+            marksheet_str = bytes(marksheet_data).decode('utf-8')  # Convert memoryview to bytes first, then decode
+        else:
+            marksheet_str = None
+
+        return Response({
+            "marksheet": marksheet_str,
+        })
+
+class DirectorGoldMarksheetView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        roll_number = request.data.get("roll")  # Get roll number from POST request body
+
+        if not roll_number:
+            return Response({"error": "Roll number is required"}, status=400)
+
+        record = get_object_or_404(Director_gold, student_id=roll_number)
+
+        marksheet_data = record.Marksheet  
+        if marksheet_data:
+            marksheet_str = bytes(marksheet_data).decode('utf-8')  # Convert memoryview to bytes first, then decode
+        else:
+            marksheet_str = None
+
+        return Response({
+            "marksheet": marksheet_str,
+        }, status=200)
