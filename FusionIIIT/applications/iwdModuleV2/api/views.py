@@ -1213,11 +1213,12 @@ def create_proposal(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def get_proposals(request):
-    data=request.data;
-    proposals = Proposal.objects.filter(request_id=data["request_id"])
+    data=request.data
+    # proposals = Proposal.objects.filter(request_id=data["request_id"])
+    proposals = Proposal.objects.filter(request_id=data.get("request_id"))
     serializer = ProposalSerializer(proposals, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
