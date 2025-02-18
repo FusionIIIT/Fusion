@@ -4,8 +4,8 @@ from rest_framework.routers import DefaultRouter
 
 from . import views
 from applications.scholarships.api.views import GetWinnersView
-from applications.scholarships.api.views import create_award,McmUpdateView, McmRetrieveView, DirectorSilverRetrieveView,DirectorSilverUpdateView,DirectorGoldRetrieveView,DirectorGoldUpdateView,ProficiencyDmRetrieveView,ProficiencyDmUpdateView,AwardAndScholarshipCreateView
-from applications.scholarships.api.views import ScholarshipDetailView,StudentDetailView,DirectorSilverDetailView,DirectorGoldDetailView,DirectorGoldListView,ReleaseCreateView,McmStatusUpdateView,DirectorSilverDecisionView,DirectorGoldAcceptRejectView,DirectorSilverListView,GetReleaseByAwardView
+from applications.scholarships.api.views import create_award,McmUpdateView, McmRetrieveView, DirectorSilverRetrieveView,DirectorSilverUpdateView,DirectorGoldRetrieveView,DirectorGoldUpdateView,ProficiencyDmRetrieveView,ProficiencyDmUpdateView,AwardAndScholarshipCreateView,DirectorSilverMarksheetView,DirectorGoldMarksheetView
+from applications.scholarships.api.views import ScholarshipDetailView,StudentDetailView,DirectorSilverDetailView,DirectorGoldDetailView,DirectorGoldListView,ReleaseCreateView,McmStatusUpdateView,DirectorSilverDecisionView,DirectorGoldAcceptRejectView,DirectorSilverListView,GetReleaseByAwardView,McmDocumentsRetrieveView
 # ,DirectorSilverAcceptRejectView
 
 
@@ -80,7 +80,8 @@ urlpatterns = [
     path('director-gold/accept-reject/', DirectorGoldAcceptRejectView.as_view(), name='director-gold-accept-reject'),   
     path('director-silver/', DirectorSilverListView.as_view(), name='director-silver-list'),
     # path('director-silver/accept-reject/', DirectorSilverAcceptRejectView.as_view(), name='director-silver-accept-reject'),
-
-
+    path('mcm/documents/', McmDocumentsRetrieveView.as_view(), name='mcm-documents'),
+    path('medals/marksheet/', DirectorSilverMarksheetView.as_view(), name='director_silver_marksheet'),
+    path('medals/marksheet/gold/', DirectorGoldMarksheetView.as_view(), name='director_gold_marksheet'),
 
 ]
