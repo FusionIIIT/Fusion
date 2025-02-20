@@ -34,11 +34,19 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name='Supervisor',
+            name='ServiceProvider',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('type', models.CharField(choices=[('Electricity', 'Electricity'), ('carpenter', 'carpenter'), ('plumber', 'plumber'), ('garbage', 'garbage'), ('dustbin', 'dustbin'), ('internet', 'internet'), ('other', 'other')], default='Electricity', max_length=30)),
-                ('sup_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='globals.extrainfo')),
+                ('ser_pro_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='globals.extrainfo')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='ServiceAuthority',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('type', models.CharField(choices=[('Electricity', 'Electricity'), ('carpenter', 'carpenter'), ('plumber', 'plumber'), ('garbage', 'garbage'), ('dustbin', 'dustbin'), ('internet', 'internet'), ('other', 'other')], default='Electricity', max_length=30)),
+                ('ser_auth_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='globals.extrainfo')),
             ],
         ),
         migrations.CreateModel(
