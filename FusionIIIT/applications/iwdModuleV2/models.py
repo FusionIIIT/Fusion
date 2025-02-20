@@ -176,6 +176,7 @@ class Requests(models.Model):
     billGenerated = models.IntegerField(default=0)
     billProcessed = models.IntegerField(default=0)
     billSettled = models.IntegerField(default=0)
+    activeProposal = models.IntegerField(null = True)
 
 class WorkOrder(models.Model):
     request_id = models.ForeignKey(Requests, on_delete=models.CASCADE)
@@ -191,8 +192,6 @@ class WorkOrder(models.Model):
 class Bills(models.Model):
     request_id = models.ForeignKey(Requests, on_delete=models.CASCADE)
     file = models.FileField()
-    # item = models.CharField(max_length=200)
-    # quantity = models.IntegerField(default=1)
 
 
 class Budget(models.Model):
@@ -202,7 +201,6 @@ class Budget(models.Model):
 class Proposal(models.Model):
     request = models.ForeignKey(Requests, on_delete=models.CASCADE, related_name='proposals')
     created_by = models.CharField(max_length=200) #models.ForeignKey(User, on_delete=models.CASCADE)
-    # file = models.ForeignKey(File, on_delete=models.CASCADE, null=True, blank=True)
     proposal_budget = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
     supporting_documents = models.FileField(upload_to='proposals/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -210,9 +208,10 @@ class Proposal(models.Model):
     status = models.CharField(max_length=20, choices=[('Pending', 'Pending'), ('Approved', 'Approved'), ('Rejected', 'Rejected')], default='Pending')
 class Item(models.Model):
     proposal = models.ForeignKey('Proposal', on_delete=models.CASCADE, related_name='items')
-    name = models.CharField(max_length=255)
-    description = models.TextField()
-    unit = models.CharField(max_length=50)
-    price_per_unit = models.DecimalField(max_digits=10, decimal_places=2)
-    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    name = models.CharField(default = " ", max_length=255)
+    description = models.TextField(default = " ")
+    unit = models.CharField(default = " ", max_length=50)
+    price_per_unit = models.DecimalField(default = 0, max_digits=10, decimal_places=2)
+    quantity = models.IntegerField(default = 0)
+    total_price = models.DecimalField(default = 0, max_digits=10, decimal_places=2)
     docs = models.FileField(upload_to='items/', null=True, blank=True)

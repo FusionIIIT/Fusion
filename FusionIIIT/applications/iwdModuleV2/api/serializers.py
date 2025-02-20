@@ -142,7 +142,7 @@ class LetterOfIntentDetailsSerializer(serializers.ModelSerializer):
 class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
-        fields = ['name', 'description', 'unit', 'price_per_unit', 'total_price', 'docs']
+        fields = ['name', 'description', 'unit', 'price_per_unit', 'quantity', 'docs', 'total_price']
 class ProposalSerializer(serializers.ModelSerializer):
     items = ItemSerializer(many=True)
     class Meta:
@@ -154,34 +154,38 @@ class ProposalSerializer(serializers.ModelSerializer):
         proposal = Proposal.objects.create(**validated_data)
         total_budget = 0
         for item_data in items_data:
+            print(item_data)
+            item_data['total_price'] = item_data['quantity'] * item_data['price_per_unit']
+            total_budget += item_data['total_price']
             item = Item.objects.create(proposal=proposal, **item_data)
-            total_budget += item.total_price
+
         proposal.proposal_budget = total_budget
         proposal.save()
         return proposal 
 
-    def update(self, instance, validated_data):
-        items_data = validated_data.pop('items')
-        instance.supporting_documents = validated_data.get('supporting_documents', instance.supporting_documents)
-        instance.status = validated_data.get('status', instance.status)
-        instance.save()
+    # def update(self, instance, validated_data):
+    #     items_data = validated_data.pop('items')
+    #     instance.supporting_documents = validated_data.get('supporting_documents', instance.supporting_documents)
+    #     instance.status = validated_data.get('status', instance.status)
+    #     instance.save()
 
-        total_budget = 0
-        for item_data in items_data:
-            item_id = item_data.get('id')
-            if item_id:
-                item = Item.objects.get(id=item_id, proposal=instance)
-                item.name = item_data.get('name', item.name)
-                item.description = item_data.get('description', item.description)
-                item.unit = item_data.get('unit', item.unit)
-                item.price_per_unit = item_data.get('price_per_unit', item.price_per_unit)
-                item.total_price = item_data.get('total_price', item.total_price)
-                item.docs = item_data.get('docs', item.docs)
-                item.save()
-            else:
-                item = Item.objects.create(proposal=instance, **item_data)
-            total_budget += item.total_price
+    #     total_budget = 0
+    #     for item_data in items_data:
+    #         item_id = item_data.get('id')
+    #         if item_id:
+    #             item = Item.objects.get(id=item_id, proposal=instance)
+    #             item.name = item_data.get('name', item.name)
+    #             item.description = item_data.get('description', item.description)
+    #             item.unit = item_data.get('unit', item.unit)
+    #             item.price_per_unit = item_data.get('price_per_unit', item.price_per_unit)
+    #             item.quantity = item_data.get('quantity', item.quantity)
+    #             item.total_price = item_data.get('total_price', item.total_price)
+    #             item.docs = item_data.get('docs', item.docs)
+    #             item.save()
+    #         else:
+    #             item = Item.objects.create(proposal=instance, **item_data)
+    #         total_budget += item.total_price
 
-        instance.proposal_budget = total_budget
-        instance.save()
-        return instance
+    #     instance.proposal_budget = total_budget
+    #     instance.save()
+    #     return instance
