@@ -1779,6 +1779,7 @@ def allot_courses_after_add_and_drop(request):
             print(sheet.nrows)
             for i in range(1,sheet.nrows):
                 roll_no = str(sheet.cell(i,0).value).split(".")[0]
+                roll_no = roll_no.strip()
                 course_slot_name = sheet.cell_value(i,1)
                 course_code = sheet.cell_value(i,2)
                 try:
@@ -3364,7 +3365,8 @@ def generate_course_registration_receipt(request):
             'name': request.user.first_name + request.user.last_name,
             'roll_no' : current_user.id_id,
             'batch': batch.name+' '+str(batch.year),
-            'branch': curr_id.name.split(' ')[0]
+            'branch': curr_id.name.split(' ')[0],
+            'semester': current_user.curr_semester_no 
         }
         return render(request, '../templates/academic_procedures/course_registration_receipt.html',
                 context

@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <style>
-
-        @media print{
+  <meta charset="UTF-8">
+  <style>
+    @media print{
             @page{
                 margin: 0;
             }
@@ -18,7 +16,7 @@
             margin: 0;
             padding: 0;
             width: 8.5in; /* Standard PDF width */
-            height: 10.4in; /* Standard PDF height */
+            height: 10.0in; /* Standard PDF height */
             box-sizing: border-box;
         }
 
@@ -43,16 +41,22 @@
             border-bottom: none; /* Remove the border for the last section */
         }
 
-        .details {
-            text-align: left;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-
-        .details p {
-            margin: 0;
-            line-height: 1.2;
-        }
+        .details-inline {
+            display: flex;
+            gap: 10px;           /* Space between items */
+            font-size: 0.7em;    /* Smaller font size */
+            align-items: center;
+            flex-wrap: nowrap;
+            margin-bottom: 10px;   /* Force one row */
+          }
+          .details-inline .detail-item {
+            display: inline-flex;
+            align-items: center;
+            margin-right: 10px;
+          }
+          .details-inline .detail-item strong {
+            margin-right: 3px;
+          }
 
         .heading {
             text-align: center;
@@ -94,6 +98,15 @@
             margin-top: 10px;
         }
 
+        th,
+        td {
+        border: 1px solid #000;
+        padding: 3px; /* Reduced padding from 6px to 3px */
+        text-align: center;
+        line-height: 0.9; /* Optionally reduce the line-height */
+        }
+
+
         .signature {
             width: 45%;
             text-align: center;
@@ -101,104 +114,188 @@
             font-size: 12px;
             padding-top: 5px;
         }
-    </style>
+  </style>
 </head>
-
 <body>
-    <div class="page">
-        <!-- First Half: Student Copy -->
-        <div class="half-page">
-            <div class="heading">Student Copy</div>
-            <div class="details">
-                <p><strong>Name:</strong> {{ name }}</p>
-                <p><strong>Roll no.:</strong> {{ roll_no }}</p>
-                <p><strong>Branch:</strong> {{ branch }}</p>
-                <p><strong>Batch:</strong> {{ batch }}</p>
-            </div>
-
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 6%;">#</th>
-                        <th style="width: 13%;">Course ID</th>
-                        <th style="width: 50%;">Course Name</th>
-                        <th style="width: 10%;">Credits</th>
-                        <th style="width: 10%;">Registration Type</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for items in current_courseregistrations %}
-                    <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>{{ items.course_id.code }}</td>
-                        <td>{{ items.course_id.name }}</td>
-                        <td>{{ items.course_id.credit }}</td>
-                        <td>{{ items.registration_type }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-
-            <div class="extra-info">
-                <p>Additional Notes:</p>
-                <p>_____________________________________________________________________________________________________________</p>
-                <p>_____________________________________________________________________________________________________________</p>
-            </div>
-
-            <div class="signatures">
-                <div class="signature">Student's Signature</div>
-                <div class="signature">Admin's Signature</div>
-            </div>
+  <div class="page">
+    <!-- First Half: Student Copy -->
+    <div class="half-page">
+      <div class="heading">Student Copy</div>
+      <div class="details-inline">
+        <div class="detail-item">
+          <strong>Batch:</strong> {{ batch }}
         </div>
-
-        <!-- Divider Line -->
-        <div class="divider"></div>
-
-        <!-- Second Half: Academic Copy -->
-        <div class="half-page">
-            <div class="heading">Academic Copy</div>
-            <div class="details">
-                <p><strong>Name:</strong> {{ name }}</p>
-                <p><strong>Roll no.:</strong> {{ roll_no }}</p>
-                <p><strong>Branch:</strong> {{ branch }}</p>
-                <p><strong>Batch:</strong> {{ batch }}</p>
-            </div>
-
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 6%;">#</th>
-                        <th style="width: 13%;">Course ID</th>
-                        <th style="width: 50%;">Course Name</th>
-                        <th style="width: 10%;">Credits</th>
-                        <th style="width: 10%;">Registration Type</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for items in current_courseregistrations %}
-                    <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>{{ items.course_id.code }}</td>
-                        <td>{{ items.course_id.name }}</td>
-                        <td>{{ items.course_id.credit }}</td>
-                        <td>{{ items.registration_type }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-
-            <div class="extra-info">
-                <p>Additional Notes:</p>
-                <p>_____________________________________________________________________________________________________________</p>
-                <p>_____________________________________________________________________________________________________________</p>
-            </div>
-
-            <div class="signatures">
-                <div class="signature">Student's Signature</div>
-                <div class="signature">Admin's Signature</div>
-            </div>
+        <div class="detail-item">
+          <strong>Name:</strong> {{ name }}
         </div>
+        <div class="detail-item">
+          <strong>Roll no.:</strong> {{ roll_no }}
+        </div>
+        <div class="detail-item">
+          <strong>Branch:</strong> {{ branch }}
+        </div>
+        <div class="detail-item">
+          <strong>Semester:</strong> {{ semester }}
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 5%;">#</th>
+            <th style="width: 10%;">Course ID</th>
+            <th style="width: 40%;">Course Name</th>
+            <th style="width: 5%;">Credits</th>
+            <th style="width: 10%;">Registration type</th>
+            <th style="width: 25%;">Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in current_courseregistrations %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ item.course_id.code }}</td>
+            <td>{{ item.course_id.name }}</td>
+            <td>{{ item.course_id.credit }}</td>
+            <td></td>
+            <td></td>
+          </tr>
+          {% endfor %}
+          <!-- Three extra blank rows -->
+          <tr>
+            <td>{{ current_courseregistrations|length|add:"1" }}</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+          </tr>
+          <tr>
+            <td>{{ current_courseregistrations|length|add:"2" }}</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+          </tr>
+          <tr>
+            <td>{{ current_courseregistrations|length|add:"3" }}</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+          </tr>
+          <!-- Total Credits Row -->
+          <tr>
+            <td colspan="3" style="text-align: right;"><strong>Total Credits</strong></td>
+            <td><strong>{{ total_credits }}</strong></td>
+            <td>&nbsp;</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="extra-info">
+        <p style="font-size: 10px;"><b>1. I have more than 75% attendance in the above mentioned subjects.</b></p>
+        <p style="font-size: 10px;"><b>2. The above courses do not clash with any other courses.</b></p>
+        <p>Additional Notes:</p>
+        <p>_____________________________________________________________________________________________________________</p>
+        <p>_____________________________________________________________________________________________________________</p>
+      </div>
+      <div class="signatures">
+        <div class="signature">Student's Signature</div>
+        <div class="signature">Admin's Signature</div>
+      </div>
     </div>
+    <!-- Divider Line (if needed) -->
+    <div class="divider"></div>
+    <!-- Second Half: Academic Copy -->
+    <div class="half-page">
+      <div class="heading">Academic Copy</div>
+      <div class="details-inline">
+        <div class="detail-item">
+          <strong>Batch:</strong> {{ batch }}
+        </div>
+        <div class="detail-item">
+          <strong>Name:</strong> {{ name }}
+        </div>
+        <div class="detail-item">
+          <strong>Roll no.:</strong> {{ roll_no }}
+        </div>
+        <div class="detail-item">
+          <strong>Branch:</strong> {{ branch }}
+        </div>
+        <div class="detail-item">
+          <strong>Semester:</strong> {{ semester }}
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 5%;">#</th>
+            <th style="width: 10%;">Course ID</th>
+            <th style="width: 40%;">Course Name</th>
+            <th style="width: 5%;">Credits</th>
+            <th style="width: 10%;">Registration type</th>
+            <th style="width: 25%;">Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in current_courseregistrations %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ item.course_id.code }}</td>
+            <td>{{ item.course_id.name }}</td>
+            <td>{{ item.course_id.credit }}</td>
+            <td></td>
+            <td></td>
+          </tr>
+          {% endfor %}
+          <!-- Three extra blank rows -->
+          <tr>
+            <td>{{ current_courseregistrations|length|add:"1" }}</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+          </tr>
+          <tr>
+            <td>{{ current_courseregistrations|length|add:"2" }}</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+          </tr>
+          <tr>
+            <td>{{ current_courseregistrations|length|add:"3" }}</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+          </tr>
+          <!-- Total Credits Row -->
+          <tr>
+            <td colspan="3" style="text-align: right;"><strong>Total Credits</strong></td>
+            <td><strong>{{ total_credits }}</strong></td>
+            <td>&nbsp;</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="extra-info">
+        <p style="font-size: 10px;"><b>1. I have more than 75% attendance in the above mentioned subjects.</b></p>
+        <p style="font-size: 10px;"><b>2. The above courses do not clash with any other courses.</b></p>
+        <p>Additional Notes:</p>
+        <p>_____________________________________________________________________________________________________________</p>
+        <p>_____________________________________________________________________________________________________________</p>
+      </div>
+      <div class="signatures">
+        <div class="signature">Student's Signature</div>
+        <div class="signature">Admin's Signature</div>
+      </div>
+    </div>
+  </div>
 </body>
-
 </html>
