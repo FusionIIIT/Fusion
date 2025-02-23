@@ -204,27 +204,28 @@ class PaymentsApi(APIView):
         serialized_obj = PaymentsSerializer(payments_obj, many=True)
         return Response({'status':200, 'payload':serialized_obj.data})   
 
-    def post(self, request):
-        data = request.data
+    # def post(self, request):
+    #     data = request.data
         
-        # sem = data['sem']
-        # year = data['year']
-        amount_paid = data['amount_paid']
+    #     # sem = data['sem']
+    #     # year = data['year']
+    #     amount_paid = data['amount_paid']
 
 
-        username = get_object_or_404(User,username=request.user.username)
-        idd = ExtraInfo.objects.get(user=username)
-        student = Student.objects.get(id=idd.id)
+    #     username = get_object_or_404(User,username=request.user.username)
+    #     idd = ExtraInfo.objects.get(user=username)
+    #     student = Student.objects.get(id=idd.id)
 
         
-        obj = Payments(
-            student_id = student,
-            # sem = sem,
-            # year = year,
-            amount_paid = amount_paid,
-        )
-        obj.save()
-        return Response({'status':200}) 
+    #     obj = Payments(
+    #         student_id = student,
+    #         # sem = sem,
+    #         # year = year,
+    #         amount_paid = amount_paid,
+    #     )
+    #     obj.save()
+    #     return Response({'status':200}) 
+    
 class MenuApi(APIView):
     def get(self, request):
         menu_obj = Menu.objects.all();
@@ -783,29 +784,29 @@ class DeregistrationRequestApi(APIView):
             print({'error': str(e)})
             return Response({'error': str(e)}, status=400)
 
-class DeregistrationApi(APIView):
-    def post(self, request):
-        try:
-            data = request.data
-            print(data)
-            student_id = data['student_id']
-            end_date = data['end_date']
+# class DeregistrationApi(APIView):
+#     def post(self, request):
+#         try:
+#             data = request.data
+#             print(data)
+#             student_id = data['student_id']
+#             end_date = data['end_date']
 
-            username = get_object_or_404(User, username=student_id)
-            idd = ExtraInfo.objects.get(user=username)
-            student = Student.objects.get(id=idd.id)
+#             username = get_object_or_404(User, username=student_id)
+#             idd = ExtraInfo.objects.get(user=username)
+#             student = Student.objects.get(id=idd.id)
 
-            reg_main = Reg_main.objects.get(student_id=student)
-            reg_main.current_mess_status = "Deregistered"
-            reg_main.save()
+#             reg_main = Reg_main.objects.get(student_id=student)
+#             reg_main.current_mess_status = "Deregistered"
+#             reg_main.save()
 
-            reg_record = Reg_records.objects.filter(student_id=student).latest('start_date')
-            reg_record.end_date = end_date
-            reg_record.save()
-            return Response({'status': 200})
-        except Exception as e:
-            print({'error': str(e)})
-            return Response({'error': str(e)}, status=400)
+#             reg_record = Reg_records.objects.filter(student_id=student).latest('start_date')
+#             reg_record.end_date = end_date
+#             reg_record.save()
+#             return Response({'status': 200})
+#         except Exception as e:
+#             print({'error': str(e)})
+#             return Response({'error': str(e)}, status=400)
 
 class UpdatePaymentRequestApi(APIView):
     def get(self, request):
