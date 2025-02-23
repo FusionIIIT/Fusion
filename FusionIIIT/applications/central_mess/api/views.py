@@ -1,13 +1,17 @@
     #APIs
+from datetime import date, datetime, timedelta
 from django.db.models import F
 from rest_framework.views import APIView
 from rest_framework.response import Response
+# from FusionIIIT.notification.views import central_mess_notif
 from .serializers import *
 from django.shortcuts import get_object_or_404
 from applications.central_mess.models import *
 from django.contrib.auth.models import User
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from django.http import JsonResponse
+
+today_g = datetime.datetime.now()
 
 class FeedbackApi(APIView):
 
@@ -253,6 +257,7 @@ class RebateApi(APIView):
         data = request.data
 
         # student_id = data['mess_option']
+        flag=1
         start_date = data['start_date']
         end_date = data['end_date']
         purpose = data['purpose']
@@ -266,10 +271,30 @@ class RebateApi(APIView):
         app_date = data['app_date']
         leave_type = data['leave_type']
 
+        if (end_date < start_date):
+            flag = 0
+            return Response({'status': 3, 'message': 'Please check the dates'})
+
         username = get_object_or_404(User,username=request.user.username)
         idd = ExtraInfo.objects.get(user=username)
         student = Student.objects.get(id=idd.id)
 
+        date_format = "%Y-%m-%d"
+        b = datetime.datetime.strptime(str(start_date), date_format)
+        d = datetime.datetime.strptime(str(end_date), date_format)
+
+        rebate_check = Rebate.objects.filter(student_id=student, status='2')
+        for r in rebate_check:
+            a = datetime.datetime.strptime(str(r.start_date), date_format)
+            c = datetime.datetime.strptime(str(r.end_date), date_format)
+            if ((b <= a and (d >= a and d <= c)) or (b >= a and (d >= a and d <= c))
+                    or (b <= a and (d >= c)) or ((b >= a and b <= c) and (d >= c))):
+                flag = 0
+                data = {
+                    'status': 3,
+                    'message': "Already applied for these dates",
+                }
+                return Response({'status': 3, 'message': 'Already applied for these dates'})
         
         obj = Rebate(
             student_id = student,
@@ -280,6 +305,10 @@ class RebateApi(APIView):
             end_date= end_date,
             start_date = start_date
         )
+
+        if flag == 1:
+            message = 'Your leave request has been accepted between dates ' + str(b.date()) + ' and ' + str(d.date())
+            # central_mess_notif(request.user, student.id.user, 'leave_request', message)
         obj.save()
         return Response({'status':200})     
 
@@ -439,8 +468,7 @@ class Special_requestApi(APIView):
         
     def post(self, request):
         data = request.data
-        
-      
+
         start_date = data['start_date']
         end_date = data['end_date']
         status = data['status']
@@ -787,7 +815,12 @@ class DeregistrationApi(APIView):
 
 class UpdatePaymentRequestApi(APIView):
     def get(self, request):
-        update_payment_requests = Update_Payment.objects.all()
+        student_id = request.query_params.get('student_id')
+        if student_id:
+            update_payment_requests = Update_Payment.objects.filter(student_id=student_id)
+        else:
+            update_payment_requests = Update_Payment.objects.all()
+
         serializer = UpdatePaymentRequestSerializer(update_payment_requests, many=True)
         return Response({'status': 200, 'payload': serializer.data})
 
@@ -894,3 +927,22 @@ class UpdateBillExcelAPI(APIView):
 
         except Exception as e:
             return Response({'error': f'An error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class Get_Mess_Balance_Status(APIView):
+    def get(self, request):
+        username = get_object_or_404(User,username=request.user.username)
+        idd = ExtraInfo.objects.get(user=username)
+        student_id = Student.objects.get(id=idd.id)
+        try:
+            mess_optn = Reg_main.objects.select_related('student_id','student_id__id','student_id__id__user','student_id__id__department').get(student_id=student_id)
+            # y = Menu.objects.filter(mess_option=mess_optn.mess_option)
+            current_rem_balance = mess_optn.balance
+            current_mess_status = mess_optn.current_mess_status
+        except:
+            mess_optn={}
+            mess_optn={'mess_option':'no-mess'}
+            # y = Menu.objects.filter(mess_option="mess1")
+            current_rem_balance = 0
+            current_mess_status = 'Deregistered'
+
+        return Response({'payload': {'mess_option': mess_optn.mess_option, 'current_rem_balance': current_rem_balance, 'current_mess_status': current_mess_status}})
