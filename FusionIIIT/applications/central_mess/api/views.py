@@ -603,11 +603,15 @@ class Get_Filtered_Students(APIView):
                 return response
 
 class Get_Reg_Records(APIView):
-
+    def get(self,request):
+        student_id = request.GET.get('student_id')
+        reg_record = Reg_records.objects.filter(student_id=student_id)
+        serialized_obj = reg_recordSerialzer(reg_record,many=True)
+        return Response({'payload':serialized_obj.data})
+    
     def post(self,request):
         student = request.data['student_id']
         reg_record = Reg_records.objects.filter(student_id=student)
-
         serialized_obj = reg_recordSerialzer(reg_record,many=True)
         return Response({'payload':serialized_obj.data}) 
 
