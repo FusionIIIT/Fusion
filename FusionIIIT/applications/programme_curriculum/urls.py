@@ -2,7 +2,7 @@ from django.conf.urls import url
 from django.urls import path, include
 from . import views
 from django.contrib import admin
-
+from applications.programme_curriculum.api import views as v2
 app_name = 'programme_curriculum'
 
 urlpatterns = [
@@ -70,6 +70,10 @@ urlpatterns = [
     path('tracking_unarchive/<ProposalId>/',views.tracking_unarchive,name='tracking_unarchive'),
     path('file_archive/<FileId>/',views.file_archive,name='file_archive'),
     path('file_unarchive/<FileId>/',views.file_unarchive,name='file_unarchive'),
+
+    path('admin_instructor/',views.admin_view_all_course_instructor,name='admin_view_all_course_instructor'),
+    path('admin_add_course_instructor/', views.add_course_instructor, name='add_course_instructor'),
+    path('admin_update_course_instructor/<instructor_id>/', views.update_course_instructor_form, name='update_course_instructor_form'),
     
 
     # urls for api view

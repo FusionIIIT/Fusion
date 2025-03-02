@@ -7,7 +7,7 @@ from django.http import HttpResponse, HttpResponseRedirect,JsonResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from ..models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot,NewProposalFile,Proposal_Tracking
+from ..models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot,NewProposalFile,Proposal_Tracking,CourseInstructor
 from ..forms import ProgrammeForm, DisciplineForm, CurriculumForm, SemesterForm, CourseForm, BatchForm, CourseSlotForm, ReplicateCurriculumForm,NewCourseProposalFile,CourseProposalTrackingFile
 from ..filters import CourseFilter, BatchFilter, CurriculumFilter
 from .serializers import CourseSerializer,CurriculumSerializer,BatchSerializer
@@ -19,6 +19,7 @@ import json
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated 
+from django.core.exceptions import PermissionDenied
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
@@ -794,6 +795,7 @@ def admin_view_all_discplines(request):
         data.append({
             'name': discipline.name,
             'acronym':discipline.acronym,
+            'id': discipline.id,
             'programmes': programme_list
         })
 
@@ -883,6 +885,7 @@ def admin_view_all_batches(request):
 #     return render(request, 'programme_curriculum/acad_admin/add_discipline_form.html',{'form':form})
 
 @csrf_exempt  # Disable CSRF for simplicity (use a more secure method in production)
+@api_view(['GET'])
 def add_discipline_form(request):
     if request.method == 'POST':
         try:
@@ -900,30 +903,56 @@ def add_discipline_form(request):
     else:
         return JsonResponse({"error": "Invalid HTTP method. Use POST."}, status=405)
 
-
+@csrf_exempt
 def edit_discipline_form(request, discipline_id):
 
-    user_details = ExtraInfo.objects.get(user = request.user)
-    des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
-    elif str(request.user) == "acadadmin" :
-        pass
-    elif 'hod' in request.session['currentDesignationSelected'].lower():
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
+    # user_details = ExtraInfo.objects.get(user = request.user)
+    # des = HoldsDesignation.objects.all().filter(user = request.user).first()
+    # if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
+    #     return HttpResponseRedirect('/programme_curriculum/programmes/')
+    # elif str(request.user) == "acadadmin" :
+    #     pass
+    # elif 'hod' in request.session['currentDesignationSelected'].lower():
+    #     return HttpResponseRedirect('/programme_curriculum/programmes/')
     
     discipline = get_object_or_404(Discipline, Q(id=discipline_id))
-    form = DisciplineForm(instance=discipline)
-    submitbutton= request.POST.get('Submit')
-    if submitbutton:
-        if request.method == 'POST':
-            form = DisciplineForm(request.POST, instance=discipline)  
+    if request.method == 'GET':
+        # Return initial form data
+        form_data = {
+            'id': discipline.id,
+            'name': discipline.name,
+            'acronym': discipline.acronym,
+            'programmes': [programme.id for programme in discipline.programmes.all()],
+        }
+        return JsonResponse(form_data)
+
+    elif request.method == 'POST':
+        # Handle form submission
+        try:
+            data = json.loads(request.body)
+            form = DisciplineForm(data, instance=discipline)
             if form.is_valid():
                 form.save()
-                messages.success(request, "Updated "+ discipline.name +" successful")
-                return HttpResponseRedirect("/programme_curriculum/admin_disciplines/")  
-    return render(request, 'programme_curriculum/acad_admin/add_discipline_form.html',{'form':form})
-
+                return JsonResponse({
+                    "message": f"Updated {discipline.name} successfully."
+                }, status=201)
+            else:
+                # Return form errors
+                return JsonResponse({
+                    'status': 'error',
+                    'message': form.errors,
+                }, status=400)
+        
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid JSON data.',
+            }, status=400)
+    
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Invalid request method.',
+    }, status=405)
 
 
 # def add_programme_form(request):
@@ -971,29 +1000,58 @@ def add_programme_form(request):
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
 
-
+@csrf_exempt
 def edit_programme_form(request, programme_id):
 
-    user_details = ExtraInfo.objects.get(user = request.user)
-    des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
-    elif str(request.user) == "acadadmin" :
-        pass
-    elif 'hod' in request.session['currentDesignationSelected'].lower():
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
+    # user_details = ExtraInfo.objects.get(user = request.user)
+    # des = HoldsDesignation.objects.all().filter(user = request.user).first()
+    # if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
+    #     return HttpResponseRedirect('/programme_curriculum/programmes/')
+    # elif str(request.user) == "acadadmin" :
+    #     pass
+    # elif 'hod' in request.session['currentDesignationSelected'].lower():
+    #     return HttpResponseRedirect('/programme_curriculum/programmes/')
     
     programme = get_object_or_404(Programme, Q(id=programme_id))
-    form = ProgrammeForm(instance=programme)
-    submitbutton= request.POST.get('Submit')
-    if submitbutton:
-        if request.method == 'POST':
-            form = ProgrammeForm(request.POST, instance=programme)  
+    if request.method == 'GET':
+        # Return initial form data
+        form_data = {
+            'id': programme.id,
+            'name': programme.name,
+            'category': programme.category,
+            'programme_begin_year': programme.begin_year,
+        }
+        return JsonResponse(form_data)
+
+    elif request.method == 'POST':
+        # Handle form submission
+        try:
+            data = json.loads(request.body)
+            form = ProgrammeForm(data, instance=programme)
+            
             if form.is_valid():
                 form.save()
-                messages.success(request, "Updated "+ programme.name +" successful")
-                return HttpResponseRedirect('/programme_curriculum/admin_curriculums/' + str(programme.id) + '/')  
-    return render(request, 'programme_curriculum/acad_admin/add_programme_form.html',{'form':form, 'submitbutton': submitbutton})
+                return JsonResponse({
+                    "message": "Updated successfully."
+                }, status=201)
+            else:
+                # Return form errors
+                return JsonResponse({
+                    'status': 'error',
+                    'message': form.errors,
+                }, status=401)
+        
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid JSON data.',
+            }, status=400)
+    
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Invalid request method.',
+    }, status=405)
+
 
 @permission_classes([IsAuthenticated])
 @api_view(['POST'])
@@ -1110,32 +1168,36 @@ def edit_curriculum_form(request, curriculum_id):
             return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     return JsonResponse({'error': 'Invalid request method.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-
+@csrf_exempt
 def add_course_form(request):
 
-    user_details = ExtraInfo.objects.get(user = request.user)
-    des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
-    elif str(request.user) == "acadadmin" :
-        pass
-    elif 'hod' in request.session['currentDesignationSelected'].lower():
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
+    # user_details = ExtraInfo.objects.get(user = request.user)
+    # des = HoldsDesignation.objects.all().filter(user = request.user).first()
+    # if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
+    #     return HttpResponseRedirect('/programme_curriculum/programmes/')
+    # elif str(request.user) == "acadadmin" :
+    #     pass
+    # elif 'hod' in request.session['currentDesignationSelected'].lower():
+    #     return HttpResponseRedirect('/programme_curriculum/programmes/')
     
-    form = CourseForm()
-    submitbutton= request.POST.get('Submit')
-    if submitbutton:
+    try:
         if request.method == 'POST':
-            form = CourseForm(request.POST)  
+            data = json.loads(request.body.decode('utf-8'))
+            form = CourseForm(data)
             if form.is_valid():
                 new_course = form.save(commit=False)
-                new_course.version=1.0
+                new_course.version = 1.0
                 new_course.save()
                 course = Course.objects.last()
-                messages.success(request, "Added successful")
-                return HttpResponseRedirect("/programme_curriculum/admin_course/" + str(course.id) + "/")
+                return JsonResponse({'success': True, 'message': 'Course added successfully', 'course_id': course.id}, status=201)
+            else:
+                return JsonResponse({'success': False, 'errors': form.errors}, status=400)
 
-    return render(request,'programme_curriculum/acad_admin/course_form.html',{'form':form,'submitbutton': submitbutton})
+        return JsonResponse({'error': 'Invalid request method. Use POST.'}, status=405)
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+    
 
 def update_course_form(request, course_id):
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
@@ -2182,3 +2244,15 @@ def get_unused_curriculam(request):
 
     # Return the serialized data as a JSON response
     return JsonResponse(unused_curricula_data, safe=False)
+
+def admin_view_all_course_instructor(request):
+    # Fetch all records from the CourseInstructor table
+    course_instructors = CourseInstructor.objects.all()
+
+    # Serialize the data to JSON
+    course_instructors_data = list(course_instructors.values())
+
+    # Return the data as a JSON response
+    return JsonResponse({
+        'course_instructors': course_instructors_data,
+    })
