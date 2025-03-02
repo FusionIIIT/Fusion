@@ -1,13 +1,12 @@
 from django.conf.urls import url
 from django.urls import path, include
-from . import views
 from django.contrib import admin
+from . import views 
 
-app_name = 'programme_curriculum'
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', views.programme_curriculum, name='programme_curriculum'),
+    # path('admin/', admin.site.urls),
+    # path('', views.programme_curriculum, name='programme_curriculum'),
 
     path('programmes/', views.view_all_programmes, name='view_all_programmes'),
     path('working_curriculums/', views.view_all_working_curriculums, name='view_all_working_curriculums'),
@@ -22,7 +21,7 @@ urlpatterns = [
     
 
     path('admin_programmes/', views.admin_view_all_programmes, name='admin_view_all_programmes'),
-    path('admin_working_curriculums/', views.admin_view_all_working_curriculums, name='admin_view_all_working_curriculums'),
+    path('admin_working_curriculums/', views.Admin_view_all_working_curriculums, name='admin_view_all_working_curriculums'),
     path('admin_curriculums/<programme_id>/', views.admin_view_curriculums_of_a_programme, name='admin_view_curriculums_of_a_programme'),
     path('admin_curriculum_semesters/<curriculum_id>/', views.admin_view_semesters_of_a_curriculum, name='admin_view_semesters_of_a_curriculum'),
     path('admin_semester/<semester_id>/', views.admin_view_a_semester_of_a_curriculum, name='admin_view_a_semester_of_a_curriculum'),
@@ -70,8 +69,12 @@ urlpatterns = [
     path('tracking_unarchive/<ProposalId>/',views.tracking_unarchive,name='tracking_unarchive'),
     path('file_archive/<FileId>/',views.file_archive,name='file_archive'),
     path('file_unarchive/<FileId>/',views.file_unarchive,name='file_unarchive'),
-    
 
-    # urls for api view
-    path('api/',include('applications.programme_curriculum.api.urls'))
+    path('admin_get_course_slot_type/',views.course_slot_type_choices,name='course_slot_type_choices'),
+    path('admin_get_semesterDetails/',views.semester_details,name='semester_details'),
+    path('admin_get_program/<programme_id>/',views.get_programme,name='get_program'), 
+
+    path('admin_get_batch_name/', views.get_batch_names, name='get_batch_names'),
+    path('admin_get_disciplines/', views.get_all_disciplines, name='get_all_disciplines'),
+    path('admin_get_unlinked_curriculam/', views.get_unused_curriculam, name='get_unused_curricula'),
 ]
