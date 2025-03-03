@@ -377,6 +377,7 @@ class NewProposalFile(models.Model):
     pre_requisits = models.TextField(null=True, blank=True)
     pre_requisit_courses = models.ManyToManyField(Course, blank=True)
     syllabus = models.TextField()
+    max_seats = models.IntegerField(default=90)
     percent_quiz_1 = models.PositiveIntegerField(
         default=10, null=False, blank=False)
     percent_midsem = models.PositiveIntegerField(
