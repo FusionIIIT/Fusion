@@ -15,7 +15,7 @@ from django.db import IntegrityError
 from django.utils import timezone
 from django.forms.models import model_to_dict
 import json
-
+from django.db.models import F
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated 
@@ -445,7 +445,7 @@ def admin_view_all_programmes(request):
     phd = Programme.objects.filter(category='PHD').prefetch_related('discipline_set').values(
         'id', 'name', 'category', 'programme_begin_year', 'discipline__name'
     )
-
+    print(ug)
     # Prepare the JSON response data
     response_data = {
         'ug_programmes': list(ug),
@@ -2247,12 +2247,23 @@ def get_unused_curriculam(request):
 
 def admin_view_all_course_instructor(request):
     # Fetch all records from the CourseInstructor table
-    course_instructors = CourseInstructor.objects.all()
+    course_instructors = CourseInstructor.objects.select_related(
+        'course_id', 'instructor_id__id__user'  # Traversing Faculty → ExtraInfo → User
+    ).annotate(
+        course_name=F('course_id__name'),
+        course_code = F('course_id__code'),
+        course_version=F('course_id__version'),
+        faculty_first_name=F('instructor_id__id__user__first_name'),
+        faculty_last_name=F('instructor_id__id__user__last_name')
+    ).values(
+        'course_id', 'course_name', 'course_code', 'course_version', 
+        'instructor_id', 'faculty_first_name', 'faculty_last_name', 
+        'year', 'semester_no'
+    )
 
-    # Serialize the data to JSON
-    course_instructors_data = list(course_instructors.values())
+    # Convert queryset to a list
+    course_instructors_data = list(course_instructors)
 
-    # Return the data as a JSON response
-    return JsonResponse({
-        'course_instructors': course_instructors_data,
-    })
+    # Convert queryset to a list
+    # course_instructors_data = list(course_instructors)
+    return JsonResponse({'course_instructors': course_instructors_data})
