@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import (Club_budget,Club_info,Club_member,Club_report,Fest_budget,Other_report,Session_info,Event_info,Registration_form,Form_available,Inventory,Budget,Budget_Comments,Event_Comments)
+from .models import (Club_budget,Club_info,Club_member,Club_report,Fest_budget,Fest,Other_report,Session_info,Event_info,Registration_form,Form_available,Inventory,Budget,Budget_Comments,Event_Comments)
 
 
 # Register your models here.
@@ -31,3 +31,4 @@ admin.site.register(Inventory)
 admin.site.register(Budget)
 admin.site.register(Budget_Comments)
 admin.site.register(Event_Comments)
+admin.site.register(Fest)

@@ -358,6 +358,18 @@ class Club_report(models.Model):
     class Meta:
         db_table = "Club_report"
 
+class Fest(models.Model):
+    id=models.AutoField(primary_key=True)
+    name=models.CharField(max_length=50, null=False)
+    category=models.CharField(max_length=50, null=False, choices=Constants.categoryCh)
+    description=models.TextField(max_length=256, null=True)
+    date = models.DateField(default=None, auto_now=False, null=False)
+    link=models.CharField(max_length=256, null=True)
+
+    def _str_(self):
+        return str(self.id)
+    class Meta:
+        db_table="fest"
 
 class Fest_budget(models.Model):
     """
