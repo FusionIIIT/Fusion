@@ -3,47 +3,30 @@
 {% block alerts1 %}
 {% load notifications_tags %}
     <div class="ui one cards" style="padding: 2px">
-        {% for notice in notifications %}
+        {% for notice in announcements %}
             {% comment %}A single notification starts here!{% endcomment %}
-            {% if notice.data.flag %}
-                {% if notice.unread %}
                 <div class="ui blue card" id="notif{{notice.id}}">
-                {% else %}
-                <div class="ui card" id="notif{{notice.id}}">
-                {% endif %}
                 <div class="content">
                     <div class="header">
-                        <a href="{% url 'notifications:mark_as_read_and_redirect' notice.slug %}"> {{ notice.data.module }} </a>
+                        <a href=""> {{ notice.module }} </a>
                         <div class="ui right floated white button notif-status" style="background:white">
-                            <a href="{% url 'notifications:delete' notice.slug %}" style="color:black" > &#10006;</a>
+                            <a href="" style="color:black" > &#10006;</a>
                         </div>
                     </div>
                     <div class="meta">
-                        {{ notice.timesince }} ago
+                        At {{ notice.created_at }}
                     </div>
 
 
                         <div class="description">
-                            {{ notice.verb }}
-                            {% ifnotequal notice.actor notice.recipient %}
-                            -by {{ notice.actor.first_name }} {{ notice.actor.last_name }}
-                            {% endifnotequal %}
+                            {{ notice.message }}
+                            -by {{ notice.created_by.first_name }} {{ notice.created_by.last_name }}
                         </div>
 
-                    {% if notice.unread %}
-                    <div class="ui right floated blue button notif-status" id="notif-status{{notice.id}}" notif-id="{{notice.id}}"  slug="{{notice.slug}}">
-                        <div id="notif-sp{{notice.id}}">Mark as Read</div>
-                    </div>
-                    {% else %}
-                    <div class="ui right floated button notif-status" id="notif-status{{notice.id}}" notif-id="{{notice.id}}" slug="{{notice.slug}}">
-                         <div id="notif-sp{{notice.id}}">Mark as Unread</div>
-                    </div>
-                    {% endif %}
                 </div>
 
             </div>
 
-            {% endif %}
             {% comment %}A single notification ends here!{% endcomment %}
         {% endfor %}
 
