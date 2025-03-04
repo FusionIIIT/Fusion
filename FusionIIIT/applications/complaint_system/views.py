@@ -107,8 +107,41 @@ class UserComplaintView(APIView):
         serializer = StudentComplainSerializer(data=data)
         if serializer.is_valid():
             complaint = serializer.save()
-            # Handle file uploads, notifications, etc.
-            # Omitted for brevity.
+
+            location = data.get("location", "")
+            if location == "hall-1":
+                dsgn = "hall1caretaker"
+            elif location == "hall-3":
+                dsgn = "hall3caretaker"
+            elif location == "hall-4":
+                dsgn = "hall4caretaker"
+            elif location == "CC1":
+                dsgn = "cc1convener"
+            elif location == "CC2":
+                dsgn = "CC2 convener"
+            elif location == "core_lab":
+                dsgn = "corelabcaretaker"
+            elif location == "LHTC":
+                dsgn = "lhtccaretaker"
+            elif location == "NR2":
+                dsgn = "nr2caretaker"
+            elif location == "Maa Saraswati Hostel":
+                dsgn = "mshcaretaker"
+            elif location == "Nagarjun Hostel":
+                dsgn = "nhcaretaker"
+            elif location == "Panini Hostel":
+                dsgn = "phcaretaker"
+            else:
+                dsgn = "rewacaretaker"
+            
+            caretakers = HoldsDesignation.objects.select_related('user', 'working', 'designation').filter(designation__name=dsgn).distinct('user')
+            
+            # Send notification to all relevant caretakers
+            student = 1
+            message = "A New Complaint has been lodged"
+            for caretaker in caretakers:
+                complaint_system_notif(request.user, caretaker.user, 'lodge_comp_alert', complaint.id, student, message)
+            
             return Response(serializer.data, status=201)
         else:
             return Response(serializer.errors, status=400)
@@ -779,7 +812,13 @@ class ForwardCompaintView(APIView):
         complaint.save()
 
         # Forward file to service_provider
-        sup_designations = HoldsDesignation.objects.filter(user=service_provider_details.user_id)
+        sup_designations = HoldsDesignation.objects.filter(user=service_provider_details.user_id).distinct('user_id')
+        
+        #send notification to all the service providers
+        for sup in sup_designations:
+            print(sup.user_id)
+            complaint_system_notif(request.user, User.objects.get(id=sup.user_id), 'comp_assigned_alert', complaint_id, 0, "A new complaint has been assigned to you")
+        
 
         files = File.objects.filter(src_object_id=complaint_id)
 
