@@ -33,6 +33,14 @@
         });
     });
 
+    function printPDF() {
+            const pdfUrl = '/academic-procedures/course_reg_receipt/';
+            const printWindow = window.open(pdfUrl, '_blank'); 
+            printWindow.addEventListener('load', function () {
+                printWindow.print(); 
+            });
+        }
+
 </script>
 
 
@@ -114,11 +122,7 @@
   <br>
   <div class="ui divider"></div>
     <div class="container">
-  <!-- <div class="row">
-      <div><span class="pull-left"><h3>Current CPI - {{ cur_cpi }}</h3></span></div>
-      <div><span class="pull-left"><h3>Current SPI - {{ cur_spi }}</h3></span></div>
-
-  </div> -->
+      <button class="print-button" onclick="printPDF()">Print PDF</button>
     </div>
 </div>
 

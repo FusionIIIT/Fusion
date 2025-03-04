@@ -25,7 +25,7 @@ from applications.globals.models import (Designation, ExtraInfo,
 from .forms import AcademicTimetableForm, ExamTimetableForm, MinuteForm, PreRegistrationSearchForm
 from .models import (Calendar, Course, Exam_timetable, Grades, Curriculum_Instructor,Constants,
                      Meeting, Student, Student_attendance, Timetable,Curriculum)
-from applications.programme_curriculum.models import (CourseSlot, Course as Courses, Batch, Semester, Programme, Discipline)                     
+from applications.programme_curriculum.models import (CourseSlot, Course as Courses, Batch, Semester, Programme, Discipline, CourseInstructor)                     
 
 
 
@@ -888,94 +888,154 @@ def generatexlsheet(request):
     """
     if user_check(request):
         return HttpResponseRedirect('/academic-procedures/')
-    # print(request.POST)
+
     try:
-        batch = request.POST['batch']#batch hai year wala (2020 , 21)
-        if batch == "":
+        batch = request.POST.get('batch', '')
+        if not batch:
             batch = datetime.datetime.now().year
-        course_id = int(request.POST['course']) # id of course in integer
-        course = course = Courses.objects.get(id=course_id)
-        
-        # print(course.name)
-        obj = course_registration.objects.all().filter(course_id = course)
+        course_id = int(request.POST['course'])
+        course = Courses.objects.get(id=course_id)
+        course_instructor = CourseInstructor.objects.get(course_id = course_id, year = batch).instructor_id.id.user
+        course_instructor_name = course_instructor.first_name + ' ' + course_instructor.last_name
+
+        registered_courses = course_registration.objects.filter(
+            Q(working_year=int(batch)) &
+            Q(course_id=course) &
+            Q(student_id__finalregistration__verified=True)
+        )
     except Exception as e:
         print(str(e))
-        batch=""
-        course=""
-        curr_key=""
-        obj=""
+        batch = ""
+        course = None
+        registered_courses = []
 
-    registered_courses = []
-    registered_courses = course_registration.objects.filter(
-        Q(working_year=int(batch)) &
-        Q(course_id=course) &
-        Q(student_id__finalregistration__verified=True)
-    )
-
-    # for i in obj:
-    #     if i.student_id.batch_id.year == int(batch):
-    #         registered_courses.append(i)
     ans = []
     student_ids = set()
-    for i in registered_courses:
-        if i.student_id.id.id not in student_ids:
-            student_ids.add(i.student_id.id.id )
-            k = []
-            k.append(i.student_id.id.id)
-            k.append(i.student_id.id.user.first_name)
-            k.append(i.student_id.id.user.last_name)
-            k.append(i.student_id.id.department)
-            ans.append(k)
-    ans.sort()
+    for reg in registered_courses:
+        sid = reg.student_id.id.id
+        if sid not in student_ids:
+            student_ids.add(sid)
+            first_name = reg.student_id.id.user.first_name
+            last_name = reg.student_id.id.user.last_name
+            department = 'CSE'
+            email = reg.student_id.id.user.email
+
+            ans.append([sid, first_name, last_name, department, email])
+    ans.sort(key=lambda x: x[0])
+
     output = BytesIO()
+    book = Workbook(output, {'in_memory': True})
 
-    book = Workbook(output,{'in_memory':True})
-    title = book.add_format({'bold': True,
-                                'font_size': 22,
-                                'align': 'center',
-                                'valign': 'vcenter'})
-    subtitle = book.add_format({'bold': True,
-                                'font_size': 15,
-                                'align': 'center',
-                                'valign': 'vcenter'})
-    normaltext = book.add_format({'bold': False,
-                                'font_size': 15,
-                                'align': 'center',
-                                'valign': 'vcenter'})
+    big_title_format = book.add_format({
+        'bold': True,
+        'font_size': 9,
+        'font_color': 'black',
+        'align': 'right',
+        'valign': 'vcenter',
+        'bg_color': '#FFFFFF',
+    })
+    subtitle_format = book.add_format({
+        'bold': True,
+        'font_size': 12,
+        'align': 'center',
+        'valign': 'vcenter',
+        'bg_color': '#FFFFFF',
+        'border': 1
+    })
+    header_format = book.add_format({
+        'bold': True,
+        'font_size': 11,
+        'align': 'center',
+        'valign': 'vcenter',
+        'bg_color': '#E5E4E2',
+        'border': 1
+    })
+    normaltext = book.add_format({
+        'bold': False,
+        'font_size': 11,
+        'align': 'center',
+        'valign': 'vcenter',
+        'border': 1
+    })
+    smalltext_format = book.add_format({
+        'bold': False,
+        'font_size': 10,
+        'align': 'left',
+        'valign': 'vcenter'
+    })
+    bold_key_format = book.add_format({
+        'bold': True,
+        'font_size': 10,
+        'align': 'left',
+        'valign': 'vcenter'
+    })
+
     sheet = book.add_worksheet()
+    sheet.set_column('A:A', 12)  
+    sheet.set_column('B:B', 10)
+    sheet.set_column('C:C', 30)
+    sheet.set_column('D:D', 10)
+    sheet.set_column('E:E', 25)
+    sheet.set_column('F:F', 15)
 
-    title_text = ((str(course.name)+" : "+str(str(batch))))
-    sheet.set_default_row(25)
+    sheet.set_row(0, 25)
+    sheet.set_row(1, 20)
+    sheet.set_row(2, 15)
+    sheet.set_row(3, 15)
+    sheet.set_row(4, 15)
+    sheet.set_row(5, 20)
 
-    sheet.merge_range('A2:E2', title_text, title)
-    sheet.write_string('A3',"Sl. No",subtitle)
-    sheet.write_string('B3',"Roll No",subtitle)
-    sheet.write_string('C3',"Name",subtitle)
-    sheet.write_string('D3',"Discipline",subtitle)
-    sheet.write_string('E3','Signature',subtitle)
-    sheet.set_column('A:A',20)
-    sheet.set_column('B:B',20)
-    sheet.set_column('C:C',60)
-    sheet.set_column('D:D',15)
-    sheet.set_column('E:E',30)
-    k = 4
-    num = 1
-    for i in ans:
-        sheet.write_number('A'+str(k),num,normaltext)
-        num+=1
-        z,b,c = str(i[0]),i[1],i[2]
-        name = str(b)+" "+str(c)
-        temp = str(i[3]).split()
-        dep = str(temp[len(temp)-1])
-        sheet.write_string('B'+str(k),z,normaltext)
-        sheet.write_string('C'+str(k),name,normaltext)
-        sheet.write_string('D'+str(k),dep,normaltext)
-        k+=1
+    sheet.merge_range('A1:F1',
+        "PDPM INDIAN INSTITUTE OF INFORMATION TECHNOLOGY, DESIGN AND MANUFACTURING JABALPUR",
+        big_title_format
+    )
+
+    sheet.merge_range('A2:F2', "SEM-2, 2024-25", subtitle_format)
+
+    sheet.write('A3', "Course No:", bold_key_format)
+    sheet.merge_range('B3:F3', f"{course.code}", smalltext_format)
+
+    sheet.write('A4', "Course Title:", bold_key_format)
+    sheet.merge_range('B4:F4', f"{course.name}", smalltext_format)
+
+    sheet.write('A5', "Instructor:", bold_key_format)
+    sheet.merge_range('B5:F5', f"{course_instructor_name}", smalltext_format)
+
+    sheet.write_string('A6', "Sl. No", header_format)
+    sheet.write_string('B6', "Roll No", header_format)
+    sheet.write_string('C6', "Name", header_format)
+    sheet.write_string('D6', "Discipline", header_format)
+    sheet.write_string('E6', "Email", header_format)
+    sheet.write_string('F6', "Signature", header_format)
+
+    row = 6
+    sno = 1
+    for student in ans:
+        sheet.set_row(row, 30)
+        roll_no = str(student[0])
+        full_name = f"{student[1]} {student[2]}"
+        discipline = student[3]
+        email = student[4]
+
+        sheet.write_number(row, 0, sno, normaltext)      
+        sheet.write_string(row, 1, roll_no, normaltext)   
+        sheet.write_string(row, 2, full_name, normaltext) 
+        sheet.write_string(row, 3, discipline, normaltext)
+        sheet.write_string(row, 4, email, normaltext)     
+        sheet.write_string(row, 5, '', normaltext)      
+        sno += 1
+        row += 1
+
+    sheet.set_landscape()     
+    sheet.set_paper(9)       
+    sheet.fit_to_pages(1, 1) 
+
     book.close()
     output.seek(0)
-    response = HttpResponse(output.read(),content_type = 'application/vnd.ms-excel')
-    st = 'attachment; filename = ' + course.code + '.xlsx'
-    response['Content-Disposition'] = st
+
+    response = HttpResponse(output.read(), content_type='application/vnd.ms-excel')
+    filename = f"{course.code}_CourseList.xlsx"
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
 
 
