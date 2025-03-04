@@ -1,8 +1,117 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from requests import Response
 from notifications.signals import notify
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from Fusion.celery import app
+from .forms import AnnouncementForm
+from .models import Announcements, AnnouncementRecipients
+from applications.globals.models import ExtraInfo
+from applications.academic_information.models import Student
+from django.contrib import messages
+from django.db.models import Q
+import ast
 # Create your views here.
 
+
+def create_announcement(request, template_name='notifications/create_announcement.html', module='Module', extra_context=None):
+    if request.method == 'POST':
+        form = AnnouncementForm(request.POST)
+        print(form)
+        if form.is_valid():
+            announcement = form.save(commit=False)
+            announcement.created_by = request.user
+            announcement.module = module
+            announcement.save()
+
+            # If specific users are selected, create entries in AnnouncementRecipients
+            if form.cleaned_data['target_group'] == 'specific_users':
+                specific_users = form.cleaned_data['specific_users']
+                print(specific_users, type(specific_users))
+                                # Split the input into individual user IDs and clean them
+                specific_user_ids = ast.literal_eval(specific_users)
+                print(specific_user_ids)
+
+                # Fetch corresponding ExtraInfo objects for these user IDs
+                extra_info_users = ExtraInfo.objects.filter(id__in=specific_user_ids)
+                print(extra_info_users)
+
+                # Create entries in AnnouncementRecipients for each valid user
+                for extra_info in extra_info_users:
+                    AnnouncementRecipients.objects.create(
+                        announcement=announcement,
+                        user=extra_info  # This links the ExtraInfo object, not User
+                    )
+
+            messages.success(request, 'Announcement created successfully.')
+            return redirect('/')
+        else:
+            # Handle invalid form and return the errors to the template
+            messages.error(request, 'There were errors in the form. Please correct them and try again.')
+            context = {'form': form}  # Pass form with errors back to the template
+            if extra_context:
+                context.update(extra_context)
+            return render(request, template_name, context)
+    else:
+        form = AnnouncementForm()
+        # print(form)
+        context = {'form': form}
+        rendered_form = render_to_string('notifications/create_announcement.html', context, request=request)
+        context = {'rendered_form': rendered_form}
+        if extra_context:
+            context.update(extra_context)
+
+    return render(request, template_name, context)
+
+
+def announcement_list(request):
+    user_extrainfo = ExtraInfo.objects.filter(user=request.user).first()
+    if user_extrainfo.user_type == 'faculty':
+        announcements = Announcements.objects.filter(
+            Q(target_group='all') |
+            (Q(target_group='faculty') & (Q(department=user_extrainfo.department) | Q(department__isnull=True)))
+        ).order_by('-created_at')
+    elif user_extrainfo.user_type == 'student':
+        student = Student.objects.filter(id=user_extrainfo).first()
+        announcements = Announcements.objects.filter(
+            Q(target_group='all') |
+            (Q(target_group='students') & 
+             (Q(department=user_extrainfo.department) | Q(department__isnull=True)) &
+             (Q(batch=student.batch) | Q(batch__isnull=True))
+            )
+        ).order_by('-created_at')
+    else:
+        announcements = Announcements.objects.filter(target_group='all')
+
+    # Include specific user announcements
+    specific_announcements = Announcements.objects.filter(recipients__user=user_extrainfo).order_by('-created_at')
+
+    context = {
+        'announcements': (announcements | specific_announcements).distinct().order_by('-created_at')
+    }
+    return context
+
+@app.task
+def send_notification_email(recipient_username, recipient_email, verb, module):
+    print("Trying to send notif.")
+
+    # Make sure the recipient has an email address
+    if recipient_email:
+        subject = f"New Notification from {module}"
+        html_content = render_to_string('notifications/email_notification.html', {
+        'recipient_username': recipient_username,
+        'module': module,
+        'verb': verb
+        })
+
+        email = EmailMessage(
+            subject,
+            html_content,
+            'akashsah2003@gmail.com',  # Replace with your email
+            [recipient_email]
+        )
+        email.content_subtype = 'html'
+        email.send()
 
 def leave_module_notif(sender, recipient, type, date=None):
     url = 'leave:leave'
@@ -35,6 +144,7 @@ def leave_module_notif(sender, recipient, type, date=None):
 
     notify.send(sender=sender, recipient=recipient,
                 url=url, module=module, verb=verb)
+    # send_notification_email(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 
 def placement_cell_notif(sender, recipient, type):
@@ -46,6 +156,7 @@ def placement_cell_notif(sender, recipient, type):
 
     notify.send(sender=sender, recipient=recipient,
                 url=url, module=module, verb=verb)
+    # send_notification_email(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 
 def academics_module_notif(sender, recipient, type):
@@ -57,6 +168,7 @@ def academics_module_notif(sender, recipient, type):
 
     notify.send(sender=sender, recipient=recipient,
                 url=url, module=module, verb=verb)
+    # send_notification_email(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 
 def office_module_notif(sender, recipient):
@@ -68,6 +180,7 @@ def office_module_notif(sender, recipient):
 
     notify.send(sender=sender, recipient=recipient,
                 url=url, module=module, verb=verb)
+    # send_notification_email(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 
 def central_mess_notif(sender, recipient, type, message=None):
@@ -79,6 +192,7 @@ def central_mess_notif(sender, recipient, type, message=None):
 
     if type == 'feedback_submitted':
         verb = 'Your feedback has been successfully submitted.'
+        send_notification_email(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
     elif type == 'menu_change_accepted':
         verb = 'Menu request has been approved'
     elif type == 'leave_request':
@@ -155,6 +269,7 @@ def healthcare_center_notif(sender, recipient, type, message):
     elif type == 'rel_approved':
         verb = 'Your medical relief request has been approved' 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb, flag=flag)
+    # send_notification_email.delay(recipient.username, recipient.email, verb, module)
 
 def file_tracking_notif(sender, recipient, title):
     url = 'filetracking:inward'
@@ -437,6 +552,26 @@ def office_module_DeanRSPC_notif(sender, recipient, type):
     notify.send(sender=sender, recipient=recipient,
                 url=url, module=module, verb=verb)
 
+def RSPC_notif(sender, recipient, type):
+    url = 'rspc'
+    module = 'RSPC'
+    sender = sender
+    recipient = recipient
+    verb = ""
+
+    if type == "Approved":
+        verb = "Your request has been approved."
+    elif type == "Rejected":
+        verb = "Your request has been rejected."
+    elif type == "Processing":
+        verb = "You have a new request to process."
+    elif type == "Created":
+        verb = "Your project has been added to RSPC."
+    elif type == "Forwording":
+        verb = f"Your request has been forworded to {sender.username}. Kindly wait for decision"
+
+    notify.send(sender=sender, recipient=recipient,
+                     url=url, module=module, verb=verb)
 
 def research_procedures_notif(sender, recipient, type):
     url = 'research_procedures:patent_registration'
