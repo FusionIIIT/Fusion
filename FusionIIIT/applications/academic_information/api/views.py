@@ -104,6 +104,31 @@ def update_calendar(request):
         
         return Response({"message": "Updated successfully!"})
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def add_calendar(request):
+    if request.method == "POST":
+        from_date = request.data.get("from_date")
+        to_date = request.data.get("to_date")
+        description = request.data.get("description")
+        Calendar.objects.create(from_date=from_date, to_date=to_date, description=description)
+        
+        return Response({"message": "Created successfully!"})
+    
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def delete_calendar(request):
+    id = request.data.get("id")  # Get the ID from request body
+
+    try:
+        instance = Calendar.objects.get(pk=id)
+        instance.delete()
+        return Response({"message": "Deleted successfully!"}, status=200)
+    except Calendar.DoesNotExist:
+        return Response({"error": "Calendar entry not found"}, status=404)
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])

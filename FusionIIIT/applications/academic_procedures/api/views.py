@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, redirect
 from django.db import transaction
+from django.db.models import Prefetch
 
 from django.http import JsonResponse
 from rest_framework.permissions import IsAuthenticated
@@ -1578,3 +1579,63 @@ def verify_course(request):
 #             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 #     else:
 #         return Response({'error':'Cannot approve thesis'}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def student_next_sem_courses(request):
+    """
+    REST API endpoint to return the courses_list as JSON.  Uses DRF authentication.
+    """
+
+    user_details = ExtraInfo.objects.select_related('user', 'department').get(user=request.user) # Changed to user=request.user
+    des = HoldsDesignation.objects.all().select_related().filter(user=request.user).first()
+
+    if str(des.designation) != "student":
+        return Response({"error": "User is not a student"}, status=status.HTTP_403_FORBIDDEN)  # 403 Forbidden - DRF style
+
+    obj = Student.objects.select_related('id', 'id__user', 'id__department').get(id=user_details.id)
+    batch = obj.batch_id
+    curr_id = batch.curriculum
+
+    try:
+        semester_no = obj.curr_semester_no
+        sem_no = semester_no + 1
+        next_sem_id = Semester.objects.get(curriculum=curr_id, semester_no=sem_no)
+    except Semester.DoesNotExist:  # Handle the case where next semester doesn't exist.
+        return Response({"error": "Next semester not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+    # Serialize the data (using DRF serializers is highly recommended)
+    course_slot = CourseSlot.objects.all().filter(semester_id = next_sem_id).prefetch_related(Prefetch('courses', queryset=Courses.objects.all()))
+    print(course_slot[0].courses)
+    serializer = serializers.CourseSlotSerializer(course_slot, many=True) # Assuming you have a CourseSerializer
+    courses_list_data = serializer.data
+
+    return Response({"courses_list": courses_list_data}, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def current_courseregistration(request):
+    try:
+        current_user = request.user
+        user_details = current_user.extrainfo
+
+        student = Student.objects.get(id=user_details)
+
+        current_semester = student.curr_semester_no
+
+        current_courses = course_registration.objects.filter(
+            student_id=student, semester_id__semester_no=current_semester
+        )
+        print(current_courses)
+
+        serializer = serializers.CourseRegistrationSerializer(current_courses, many=True)
+        print(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    except Student.DoesNotExist:
+        return Response({"error": "Student profile not found"}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
