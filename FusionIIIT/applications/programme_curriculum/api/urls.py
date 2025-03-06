@@ -79,7 +79,8 @@ urlpatterns = [
     path('admin_get_unlinked_curriculam/', views.get_unused_curriculam, name='get_unused_curricula'),
     
     path('admin_instructor/',views.admin_view_all_course_instructor,name='admin_view_all_course_instructor'),
-    # path('admin_add_course_instructor/', views.add_course_instructor, name='add_course_instructor'),
-    # path('admin_update_course_instructor/<instructor_id>/', views.update_course_instructor_form, name='update_course_instructor_form'),
+    path('admin_faculties/', views.admin_view_all_faculties, name='admin_view_all_faculties'),
+    path('admin_add_course_instructor/', views.add_course_instructor, name='add_course_instructor'),
+    path('admin_update_course_instructor/<instructor_id>/', views.update_course_instructor_form, name='update_course_instructor_form'),
     
 ]

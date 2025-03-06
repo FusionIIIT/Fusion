@@ -8,13 +8,14 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from ..models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot,NewProposalFile,Proposal_Tracking,CourseInstructor
-from ..forms import ProgrammeForm, DisciplineForm, CurriculumForm, SemesterForm, CourseForm, BatchForm, CourseSlotForm, ReplicateCurriculumForm,NewCourseProposalFile,CourseProposalTrackingFile
+from ..forms import ProgrammeForm, DisciplineForm, CurriculumForm, SemesterForm, CourseForm, BatchForm, CourseSlotForm, ReplicateCurriculumForm,NewCourseProposalFile,CourseProposalTrackingFile, CourseInstructor, CourseInstructorForm
 from ..filters import CourseFilter, BatchFilter, CurriculumFilter
+
 from .serializers import CourseSerializer,CurriculumSerializer,BatchSerializer
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.utils import timezone
 from django.forms.models import model_to_dict
-import json
+import json, xlrd
 from django.db.models import F
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
@@ -2258,7 +2259,7 @@ def admin_view_all_course_instructor(request):
     ).values(
         'course_id', 'course_name', 'course_code', 'course_version', 
         'instructor_id', 'faculty_first_name', 'faculty_last_name', 
-        'year', 'semester_no'
+        'year', 'semester_no', 'id'
     )
 
     # Convert queryset to a list
@@ -2267,3 +2268,104 @@ def admin_view_all_course_instructor(request):
     # Convert queryset to a list
     # course_instructors_data = list(course_instructors)
     return JsonResponse({'course_instructors': course_instructors_data})
+
+def admin_view_all_faculties(request):
+    # Fetch all faculties with their user details
+    faculties = Faculty.objects.select_related('id__user').annotate(
+        faculty_first_name=F('id__user__first_name'),
+        faculty_last_name=F('id__user__last_name')
+    ).values(
+        'id',  # Faculty ID from globals_faculty
+        'faculty_first_name',  # First name from auth.user
+        'faculty_last_name'  # Last name from auth.user
+    )
+
+    # Convert queryset to a list
+    faculties_data = list(faculties)
+
+    return JsonResponse({'faculties': faculties_data})
+
+@csrf_exempt
+def add_course_instructor(request):
+    
+    print(request)
+    if request.method == 'POST':
+        data = json.loads(request.body)
+
+        if data.get('form_submit'):
+            form = CourseInstructorForm(data)
+            if form.is_valid():
+                form.save()
+                return JsonResponse({"success": "Instructor added successfully"}, status=201)
+            return JsonResponse({"error": "Invalid form data", "details": form.errors}, status=400)
+
+        elif data.get('excel_submit'):
+            manual_instructor_xsl = request.FILES.get('manual_instructor_xsl')
+            if not manual_instructor_xsl:
+                return JsonResponse({"error": "Excel file is required"}, status=400)
+
+            try:
+                excel = xlrd.open_workbook(file_contents=manual_instructor_xsl.read())
+                sheet = excel.sheet_by_index(0)
+
+                with transaction.atomic():
+                    all_success = True
+                    errors = []
+
+                    for i in range(1, sheet.nrows):  # Skip the header row
+                        try:
+                            course_code = str(sheet.cell(i, 0).value).strip()
+                            course_version = float(sheet.cell(i, 1).value)
+                            instructor_id = str(sheet.cell(i, 2).value).strip()
+                            year = int(sheet.cell(i, 3).value)
+                            semester_no = int(sheet.cell(i, 4).value)
+
+                            course = Course.objects.filter(
+                                code__iexact=course_code, version=course_version
+                            ).first()
+
+                            if not course:
+                                raise ValueError(f"Course {course_code} (v{course_version}) not found")
+
+                            instructor = get_object_or_404(Faculty, id=instructor_id)
+
+                            CourseInstructor.objects.create(
+                                course=course,
+                                instructor=instructor,
+                                year=year,
+                                semester_no=semester_no
+                            )
+                        except Exception as e:
+                            all_success = False
+                            errors.append({"row": i, "error": str(e)})
+
+                    if all_success:
+                        return JsonResponse({"success": "Instructors added successfully from Excel"}, status=201)
+                    return JsonResponse({"error": "Some rows failed", "details": errors}, status=400)
+
+            except Exception as e:
+                return JsonResponse({"error": f"Error processing Excel file: {e}"}, status=500)
+
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+@csrf_exempt
+def update_course_instructor_form(request, instructor_id):
+    # Retrieve the CourseInstructor object or return 404 if not found
+    course_instructor = get_object_or_404(CourseInstructor, id=instructor_id)
+
+    if request.method == 'POST':
+        # Parse the JSON data from the request body
+        try:
+            payload = json.loads(request.body)
+            form = CourseInstructorForm(payload, instance=course_instructor)
+            if form.is_valid():
+                form.save()  # Save the updated data to the database
+                return JsonResponse({'status': 'success', 'message': 'Course Instructor updated successfully!'})
+            else:
+                # Return validation errors if the form is invalid
+                return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid JSON data'}, status=400)
+
+    # Handle unsupported HTTP methods
+    return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
