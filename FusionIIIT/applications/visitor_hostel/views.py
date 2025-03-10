@@ -445,7 +445,7 @@ def get_active_bookings(request):
                 'bookingFrom': booking.booking_from.isoformat() if booking.booking_from else None,
                 'bookingTo': booking.booking_to.isoformat() if booking.booking_to else None,
                 'category': booking.visitor_category,
-                # 'status': booking.status,
+                'status': booking.status,
             }
             for booking in active_bookings
         ]
@@ -505,7 +505,7 @@ def get_inactive_bookings(request):
                 'bookingFrom': booking.booking_from.isoformat() if booking.booking_from else None,
                 'bookingTo': booking.booking_to.isoformat() if booking.booking_to else None,
                 'category': booking.visitor_category,
-                # 'status': booking.status,  # Optional, if you need to include it
+                'status': booking.status,  # Optional, if you need to include it
             }
             for booking in cancelled_bookings
         ]
@@ -547,16 +547,21 @@ def get_completed_bookings(request):
         user_designation = "VhCaretaker"
 
     if request.method == 'GET':
-        print("User Designation: ", user_designation)
-
+        current_date = timezone.now().date()
+                # Fetch completed bookings based on the user's designation
         if user_designation in ["VhIncharge", "VhCaretaker"]:
-            # Fetch all completed bookings for VhCaretaker or VhIncharge
-            completed_bookings = BookingDetail.objects.select_related(
-                'intender', 'caretaker').filter(check_out__lt=datetime.datetime.today(), intender=user).order_by('booking_from').reverse()
+            # For VhIncharge or VhCaretaker, fetch all completed bookings with status "CheckedOut"
+            completed_bookings = BookingDetail.objects.select_related('intender').filter(
+                status='CheckedOut',
+                booking_to__lt=current_date
+            )
         else:
-            # Filter completed bookings for the logged-in user (intender)
-            completed_bookings = BookingDetail.objects.select_related(
-                'intender', 'caretaker').filter(check_out__lt=datetime.datetime.today(), intender=user).order_by('booking_from').reverse()
+            # For Intenders, fetch only their completed bookings with status "CheckedOut"
+            completed_bookings = BookingDetail.objects.select_related('intender').filter(
+                intender=request.user,
+                status='CheckedOut',
+                booking_to__lt=current_date
+            )
 
         # Serialize the queryset to a list of dictionaries
         bookings_list = [
@@ -1045,83 +1050,156 @@ def reject_booking(request):
 # Guest check in view
 
 
-@login_required(login_url='/accounts/login/')
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 def check_in(request):
     if request.method == 'POST':
-        booking_id = request.POST.get('booking-id')
-        visitor_name = request.POST.get('name')
-        visitor_phone = request.POST.get('phone')
-        visitor_email = request.POST.get('email')
-        visitor_address = request.POST.get('address')
+        booking_id = request.data.get('booking_id')
+        visitor_name = request.data.get('name')
+        visitor_phone = request.data.get('phone')
+        visitor_email = request.data.get('email')
+        visitor_address = request.data.get('address')
         check_in_date = datetime.date.today()
+        check_in_time = request.data.get('check_in_time')
 
-        # save visitors details
-        visitor = VisitorDetail.objects.create(
-            visitor_phone=visitor_phone, visitor_name=visitor_name, visitor_email=visitor_email, visitor_address=visitor_address)
         try:
-            bd = BookingDetail.objects.select_related(
-                'intender', 'caretaker').get(id=booking_id)
-            bd.status = "CheckedIn"
-            bd.check_in = check_in_date
-            bd.visitor.add(visitor)
-            bd.save()
+            # Save visitor details
+            visitor = VisitorDetail.objects.create(
+                visitor_phone=visitor_phone,
+                visitor_name=visitor_name,
+                visitor_email=visitor_email,
+                visitor_address=visitor_address
+            )
 
-        except:
-            return HttpResponse('/visitorhostel/')
-        return HttpResponse('/visitorhostel/')
+            # Update booking details
+            booking = BookingDetail.objects.select_related('intender', 'caretaker').get(id=booking_id)
+            booking.status = "CheckedIn"
+            booking.check_in = check_in_date
+            booking.check_in_time = check_in_time
+            booking.visitor.add(visitor)
+            booking.save()
+
+            return Response({'status': 'visitor checked in'})
+        except BookingDetail.DoesNotExist:
+            return Response({'error': 'Booking not found'}, status=404)
+        except Exception as e:
+            return Response({'error': str(e)}, status=400)
     else:
-        return HttpResponse('/visitorhostel/')
+        return Response({'error': 'Invalid request method'}, status=400)
+
+# @login_required(login_url='/accounts/login/')
+# def check_in(request):
+#     if request.method == 'POST':
+#         booking_id = request.POST.get('booking-id')
+#         visitor_name = request.POST.get('name')
+#         visitor_phone = request.POST.get('phone')
+#         visitor_email = request.POST.get('email')
+#         visitor_address = request.POST.get('address')
+#         check_in_date = datetime.date.today()
+
+#         # save visitors details
+#         visitor = VisitorDetail.objects.create(
+#             visitor_phone=visitor_phone, visitor_name=visitor_name, visitor_email=visitor_email, visitor_address=visitor_address)
+#         try:
+#             bd = BookingDetail.objects.select_related(
+#                 'intender', 'caretaker').get(id=booking_id)
+#             bd.status = "CheckedIn"
+#             bd.check_in = check_in_date
+#             bd.visitor.add(visitor)
+#             bd.save()
+
+#         except:
+#             return HttpResponse('/visitorhostel/')
+#         return HttpResponse('/visitorhostel/')
+#     else:
+#         return HttpResponse('/visitorhostel/')
 
 # guest check out view
 
-
-@login_required(login_url='/accounts/login/')
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 def check_out(request):
-    user = get_object_or_404(User, username=request.user.username)
-    c = ExtraInfo.objects.select_related('department').all().filter(user=user)
+    if request.method == 'POST':
+        booking_id = request.data.get('booking_id')
+        meal_bill = request.data.get('meal_bill')
+        room_bill = request.data.get('room_bill')
+        checkout_date = datetime.date.today()
+        checkout_time = request.data.get('check_out_time')
 
-    if user:
-        if request.method == 'POST':
-            id = request.POST.get('id')
-            meal_bill = request.POST.get('mess_bill')
-            room_bill = request.POST.get('room_bill')
-            checkout_date = datetime.date.today()
-            total_bill = int(meal_bill)+int(room_bill)
-            BookingDetail.objects.select_related('intender', 'caretaker').filter(id=id).update(
-                check_out=datetime.datetime.today(), status="Complete")
-            booking = BookingDetail.objects.select_related(
-                'intender', 'caretaker').get(id=id)
-            Bill.objects.create(booking=booking, meal_bill=int(meal_bill), room_bill=int(
-                room_bill), caretaker=user, payment_status=True, bill_date=checkout_date)
+        try:
+            # Update booking details
+            booking = BookingDetail.objects.select_related('intender', 'caretaker').get(id=booking_id)
+            booking.status = "Complete"
+            booking.check_out = checkout_date
+            booking.check_out_time = checkout_time  # Update check-out time
+            booking.save()
 
-            # for visitors in visitor_info:
+            # Create a bill for the booking
+            # Bill.objects.create(
+            #     booking=booking,
+            #     meal_bill=meal_bill,
+            #     room_bill=room_bill,
+            #     caretaker=request.user,
+            #     payment_status=True,
+            #     bill_date=checkout_date
+            # )
 
-            # meal=Meal.objects.all().filter(visitor=v_id).distinct()
-            # print(meal)
-            # for m in meal:
-            # mess_bill1=0
-            # if m.morning_tea==True:
-            #     mess_bill1=mess_bill1+ m.persons*10
-            #     print(mess_bill1)
-            # if m.eve_tea==True:
-            #     mess_bill1=mess_bill1+m.persons*10
-            # if m.breakfast==True:
-            #     mess_bill1=mess_bill1+m.persons*50
-            # if m.lunch==True:
-            #     mess_bill1=mess_bill1+m.persons*100
-            # if m.dinner==True:
-            #     mess_bill1=mess_bill1+m.persons*100
-            #
-            # if mess_bill1==m.persons*270:
-            #     mess_bill=mess_bill+225*m.persons
-            # else:
-            #         mess_bill=mess_bill + mess_bill1
+            return Response({'status': 'visitor checked out', 'check_out_time': checkout_time})
+        except BookingDetail.DoesNotExist:
+            return Response({'error': 'Booking not found'}, status=404)
+        except Exception as e:
+            return Response({'error': str(e)}, status=400)
+    else:
+        return Response({'error': 'Invalid request method'}, status=400)
+# @login_required(login_url='/accounts/login/')
+# def check_out(request):
+#     user = get_object_or_404(User, username=request.user.username)
+#     c = ExtraInfo.objects.select_related('department').all().filter(user=user)
 
-            # RoomStatus.objects.filter(book_room=book_room[0]).update(status="Available",book_room='')
+#     if user:
+#         if request.method == 'POST':
+#             id = request.POST.get('id')
+#             meal_bill = request.POST.get('mess_bill')
+#             room_bill = request.POST.get('room_bill')
+#             checkout_date = datetime.date.today()
+#             total_bill = int(meal_bill)+int(room_bill)
+#             BookingDetail.objects.select_related('intender', 'caretaker').filter(id=id).update(
+#                 check_out=datetime.datetime.today(), status="Complete")
+#             booking = BookingDetail.objects.select_related(
+#                 'intender', 'caretaker').get(id=id)
+#             Bill.objects.create(booking=booking, meal_bill=int(meal_bill), room_bill=int(
+#                 room_bill), caretaker=user, payment_status=True, bill_date=checkout_date)
 
-            return HttpResponseRedirect('/visitorhostel/')
-        else:
-            return HttpResponseRedirect('/visitorhostel/')
+#             # for visitors in visitor_info:
+
+#             # meal=Meal.objects.all().filter(visitor=v_id).distinct()
+#             # print(meal)
+#             # for m in meal:
+#             # mess_bill1=0
+#             # if m.morning_tea==True:
+#             #     mess_bill1=mess_bill1+ m.persons*10
+#             #     print(mess_bill1)
+#             # if m.eve_tea==True:
+#             #     mess_bill1=mess_bill1+m.persons*10
+#             # if m.breakfast==True:
+#             #     mess_bill1=mess_bill1+m.persons*50
+#             # if m.lunch==True:
+#             #     mess_bill1=mess_bill1+m.persons*100
+#             # if m.dinner==True:
+#             #     mess_bill1=mess_bill1+m.persons*100
+#             #
+#             # if mess_bill1==m.persons*270:
+#             #     mess_bill=mess_bill+225*m.persons
+#             # else:
+#             #         mess_bill=mess_bill + mess_bill1
+
+#             # RoomStatus.objects.filter(book_room=book_room[0]).update(status="Available",book_room='')
+
+#             return HttpResponseRedirect('/visitorhostel/')
+#         else:
+#             return HttpResponseRedirect('/visitorhostel/')
 
 
 @login_required(login_url='/accounts/login/')
