@@ -6,7 +6,7 @@ from applications.scholarships.models import Previous_winner, Award_and_scholars
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .serializers import DirectorSilverDecisionSerializer  # Add this import
+from .serializers import DirectorSilverDecisionSerializer, DMProficiencyDecisionSerializer
 from rest_framework import status
 from applications.academic_information.models import Spi, Student
 from applications.globals.models import (Designation, ExtraInfo,
@@ -229,6 +229,15 @@ class DirectorGoldListView(APIView):
         serializer = DirectorGoldSerializer(director_gold_entries, many=True)  
         # Return the serialized data as a response
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class DMProficiencyListView(APIView):
+    def get(self, request):
+        # Fetch all entries
+        proficiency_dm_entries = Proficiency_dm.objects.all()
+        # Serialize all entries
+        serializer = ProficiencyDmSerializer(proficiency_dm_entries, many=True)
+        # Return the serialized data as a response
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
     
 
@@ -372,6 +381,29 @@ class DirectorSilverDecisionView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
+class DMProficiencyDecisionView(APIView):
+    def post(self, request):
+        # Deserialize the request data
+        serializer = DMProficiencyDecisionSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            try:
+                # Retrieve the Proficiency_dm instance using the provided id
+                proficiency_dm = Proficiency_dm.objects.get(id=request.data['id'])
+                
+                # Update the status field
+                proficiency_dm.status = serializer.validated_data['status']
+                proficiency_dm.save()
+
+                return Response({"message": f"Application has been {proficiency_dm.status.lower()}."},
+                                status=status.HTTP_200_OK)
+
+            except Proficiency_dm.DoesNotExist:
+                return Response({"error": "Proficiency_dm entry not found."},
+                                status=status.HTTP_404_NOT_FOUND)
+        
+        # If the data is invalid
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 ##This api for Director gold accepting and rejecting the application by convenor and assistant
 class DirectorGoldAcceptRejectView(APIView):

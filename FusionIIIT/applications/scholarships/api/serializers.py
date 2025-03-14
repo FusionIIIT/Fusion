@@ -28,7 +28,15 @@ class DirectorSilverDecisionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Status must be either 'ACCEPTED' or 'REJECTED'.")
         return value
 
-
+class DMProficiencyDecisionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Proficiency_dm
+        fields = ['id', 'status']
+        
+    def validate_status(self, value):
+        if value not in ['ACCEPTED', 'REJECTED']:
+            raise serializers.ValidationError("Status must be either 'ACCEPTED' or 'REJECTED'.")
+        return value
 
 
 class ReleaseSerializer(serializers.ModelSerializer):
