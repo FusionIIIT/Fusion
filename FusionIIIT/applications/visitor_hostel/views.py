@@ -313,6 +313,17 @@ def visitorhostel(request):
                    'user_designation': user_designation})
 
 #### NEW
+
+from django.utils import timezone
+
+def update_expired_bookings():
+    current_date = timezone.now().date()
+    expired_bookings = BookingDetail.objects.filter(
+        status='Pending',
+        booking_to__lt=current_date
+    )
+    expired_bookings.update(status='Expired')
+    
 @login_required
 @require_GET
 def get_intenders(request):
@@ -339,6 +350,7 @@ def get_user_details(request):
 @authentication_classes([TokenAuthentication])
 def get_booking_requests(request):
     print("works? in the original request")
+    update_expired_bookings()
 
     # intenders
     intenders = User.objects.all()
@@ -445,6 +457,7 @@ def get_active_bookings(request):
                 'bookingFrom': booking.booking_from.isoformat() if booking.booking_from else None,
                 'bookingTo': booking.booking_to.isoformat() if booking.booking_to else None,
                 'category': booking.visitor_category,
+                'modifiedVisitorCategory': booking.modified_visitor_category,
                 'status': booking.status,
             }
             for booking in active_bookings
@@ -650,6 +663,7 @@ def request_booking(request):
                     booking_from=booking_from,
                     booking_to=booking_to,
                     visitor_category=category,
+                    modified_visitor_category=category,
                     person_count=person_count,
                     arrival_time=booking_from_time,
                     departure_time=booking_to_time,
@@ -669,6 +683,26 @@ def request_booking(request):
             return JsonResponse({'error': str(e)}, status=400)
 
     return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def expire_pending_bookings(request):
+    if request.method == 'POST':
+        current_date = timezone.now().date()
+        
+        # Fetch all bookings with status "Pending" and booking_to date less than the current date
+        expired_bookings = BookingDetail.objects.filter(
+            status='Pending',
+            booking_to__lt=current_date
+        )
+        
+        # Update the status of these bookings to "Expired"
+        expired_bookings.update(status='Expired')
+        
+        return JsonResponse({'success': 'Pending bookings updated to Expired'}, status=200)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
 # request booking form action view starts here
 
 # @login_required(login_url='/accounts/login/')
@@ -817,6 +851,7 @@ def get_booking_details(request, booking_id):
             'bookingFrom': booking.booking_from,
             'bookingTo': booking.booking_to,
             'visitorCategory': booking.visitor_category,
+            'modifiedVisitorCategory': booking.modified_visitor_category,
             'personCount': booking.person_count,
             'numberOfRooms': booking.number_of_rooms,
             'purpose': booking.purpose,
@@ -1845,15 +1880,15 @@ def completed_bookings(request):
         if user_designation in ["VhIncharge", "VhCaretaker"]:
             # For VhIncharge or VhCaretaker, fetch all completed bookings with booking_to date older than the current date
             all_bookings = BookingDetail.objects.select_related('intender').filter(
-                status='Confirmed',
-                booking_to__lt=current_date
+                Q(status='Confirmed') | Q(status='Complete'),
+                # booking_to__lt=current_date
             )
         else:
             # For Intenders, fetch only their completed bookings with booking_to date older than the current date
             all_bookings = BookingDetail.objects.select_related('intender').filter(
+                Q(status='Confirmed') | Q(status='Complete'),
                 intender=request.user,
-                status='Confirmed',
-                booking_to__lt=current_date
+                # booking_to__lt=current_date
             )
 
         # Serialize the queryset to a list of dictionaries with required fields

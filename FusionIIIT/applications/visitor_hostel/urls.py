@@ -57,6 +57,7 @@ urlpatterns = [
     url('api/inventory_list/', InventoryListView.as_view(), name='inventory-list'),
     # completed bookings
     url(r'^completed-bookings/', views.completed_bookings, name='completed_bookings'),
+    url(r'^expire-pending-bookings/', views.expire_pending_bookings, name='expire_pending_bookings'),
 
 ]
 
