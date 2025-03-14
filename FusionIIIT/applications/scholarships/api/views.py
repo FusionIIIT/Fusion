@@ -14,6 +14,7 @@ from applications.globals.models import (Designation, ExtraInfo,
 from rest_framework import viewsets
 from applications.scholarships.api.serializers import PreviousWinnerSerializer,AwardAndScholarshipSerializer,McmSerializer,NotionalPrizeSerializer,DirectorGoldSerializer,DirectorSilverSerializer,ProficiencyDmSerializer,ReleaseSerializer,McmStatusUpdateSerializer
 from django.shortcuts import get_object_or_404
+import datetime
 
 #This api is for invite application 
 class ReleaseCreateView(APIView):
@@ -102,6 +103,8 @@ class GetWinnersView(APIView):
 
 class McmUpdateView(APIView):
     def post(self, request):
+        print(request.data)
+        request.data['student']=request.user.username
         serializer = McmSerializer(data=request.data)
         if serializer.is_valid():
             mcm_instance = serializer.save()
@@ -145,6 +148,8 @@ class DirectorSilverRetrieveView(APIView):
 
 class DirectorSilverUpdateView(APIView):
     def post(self, request):
+        request.data['student']=request.user.username
+        request.data['date']= datetime.date.today()
         serializer = DirectorSilverSerializer(data=request.data)
         if serializer.is_valid():
             director_silver_instance = serializer.save()
@@ -170,6 +175,7 @@ class DirectorGoldRetrieveView(APIView):
 
 class DirectorGoldUpdateView(APIView):
     def post(self, request):
+        request.data['student']=request.user.username
         serializer = DirectorGoldSerializer(data=request.data)
         if serializer.is_valid():
             director_gold_instance = serializer.save()
@@ -179,6 +185,8 @@ class DirectorGoldUpdateView(APIView):
 
 class ProficiencyDmUpdateView(APIView):
     def post(self, request):
+        request.data['student']=request.user.username
+        print(request.data)
         serializer = ProficiencyDmSerializer(data=request.data)
         if serializer.is_valid():
             proficiency_dm_instance = serializer.save()

@@ -1,7 +1,9 @@
 from django.conf.urls import url
 
 from . import views
-
+from applications.scholarships.api.views import GetWinnersView
+from applications.scholarships.api.views import create_award,McmUpdateView, McmRetrieveView, DirectorSilverRetrieveView,DirectorSilverUpdateView,DirectorGoldRetrieveView,DirectorGoldUpdateView,ProficiencyDmRetrieveView,ProficiencyDmUpdateView,AwardAndScholarshipCreateView,DirectorSilverMarksheetView,DirectorGoldMarksheetView
+from applications.scholarships.api.views import ScholarshipDetailView,StudentDetailView,DirectorSilverDetailView,DirectorGoldDetailView,DirectorGoldListView,ReleaseCreateView,McmStatusUpdateView,DirectorSilverDecisionView,DirectorGoldAcceptRejectView,DirectorSilverListView,GetReleaseByAwardView,McmDocumentsRetrieveView
 app_name = 'spacs'
 
 urlpatterns = [
@@ -17,6 +19,6 @@ urlpatterns = [
     # url(r'^getConvocationFlag/$', views.getConvocationFlag, name='getConvocationFlag'),
     # url(r'^getContent/$', views.getContent, name='getContent'),
     # url(r'^updateEndDate/$', views.updateEndDate, name='updateEndDate'),
-    path('get-winners/', GetWinnersView.as_view(), name='get-winners')
+    url('get-winners/', GetWinnersView.as_view(), name='get-winners')
     
 ]
