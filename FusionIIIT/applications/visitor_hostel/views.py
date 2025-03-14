@@ -518,6 +518,7 @@ def get_inactive_bookings(request):
                 'bookingFrom': booking.booking_from.isoformat() if booking.booking_from else None,
                 'bookingTo': booking.booking_to.isoformat() if booking.booking_to else None,
                 'category': booking.visitor_category,
+                'modifiedCategory': booking.modified_visitor_category,
                 'status': booking.status,  # Optional, if you need to include it
             }
             for booking in cancelled_bookings
@@ -584,6 +585,7 @@ def get_completed_bookings(request):
                 'email': booking.intender.email,
                 'bookingFrom': booking.booking_from.isoformat() if booking.booking_from else None,
                 'bookingTo': booking.booking_to.isoformat() if booking.booking_to else None,
+                'checkOut': booking.check_out.isoformat() if booking.check_out else None,
                 'category': booking.visitor_category,
             }
             for booking in completed_bookings
@@ -1896,9 +1898,12 @@ def completed_bookings(request):
             {
                 'intender': booking.intender.first_name,
                 'bookingDate': booking.booking_date.isoformat() if booking.booking_date else None,
-                'checkIn': booking.booking_from.isoformat() if booking.booking_from else None,
-                'checkOut': booking.booking_to.isoformat() if booking.booking_to else None,
+                'checkIn': booking.check_in.isoformat() if booking.check_in else None,
+                'checkInTime': booking.check_in_time if booking.check_in_time else None,
+                'checkOutTime': booking.check_out_time if booking.check_out_time else None,
+                'checkOut': booking.check_out.isoformat() if booking.check_out else None,
                 'category': booking.visitor_category,
+                'modifiedVisitorCategory': booking.modified_visitor_category,
             }
             for booking in all_bookings
         ]
