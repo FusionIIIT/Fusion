@@ -566,7 +566,8 @@ def admin_view_semesters_of_a_curriculum(request, curriculum_id):
         'version': curriculum.version,
         'programme_id': curriculum.programme.id,
         'batches':batch_data,
-        'semesters': semester_data
+        'semesters': semester_data,
+        'working_curriculum':curriculum.working_curriculum
     }
 
     return JsonResponse(curriculum_data)
@@ -1527,66 +1528,78 @@ def instigate_semester(request, semester_id):
 
     return render(request,'programme_curriculum/acad_admin/instigate_semester_form.html',{'semester':semester, 'form':form, 'submitbutton':submitbutton, 'curriculum_id':curriculum_id})
 
-
+@csrf_exempt  # Use this decorator if you're not using CSRF tokens in your API calls
+@permission_classes([IsAuthenticated])
 def replicate_curriculum(request, curriculum_id):
     """
     This function is used to replicate the previous curriculum into a new curriculum.
+    It accepts data from a React frontend via a POST request.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Only POST requests are allowed'}, status=405)
+
+    try:
+        # Parse JSON data from the request body
+        data = json.loads(request.body)
         
-    @variables:
-        no_of_semester - For initializing the next version into a new curriculum.
+        # Extract data from the request
+        # curriculum_id = data.get('curriculum_id')
+        curriculum_name = data.get('curriculum_name')
+        programme_id = data.get('programme')
+        working_curriculum = data.get('working_curriculum')
+        version_no = data.get('version_no')
+        num_semesters = data.get('num_semesters')
+        num_credits = data.get('num_credits')
 
-    """    
-    user_details = ExtraInfo.objects.get(user = request.user)
-    des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
-    elif str(request.user) == "acadadmin" :
-        pass
-    elif 'hod' in request.session['currentDesignationSelected'].lower():
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
+        # Fetch the old curriculum
+        old_curriculum = get_object_or_404(Curriculum, Q(id=curriculum_id))
 
-    old_curriculum = get_object_or_404(Curriculum, Q(id=curriculum_id))
-    programme = old_curriculum.programme
-    name = old_curriculum.name
-    version = int(old_curriculum.version) + 1
-    working_curriculum = old_curriculum.working_curriculum
-    no_of_semester = old_curriculum.no_of_semester
+        # Create a new curriculum
+        #  curriculum = Curriculum(
+        #         name=curriculum_name,
+        #         programme=programme,
+        #         working_curriculum=working_curriculum,
+        #         version=version_no,
+        #         no_of_semester=num_semesters,
+        #         min_credit=num_credits,
+        #         latest_version=True
+        #     )
+        try:
+            programme = Programme.objects.get(id=programme_id)
+        except Programme.DoesNotExist:
+            return JsonResponse({'error': 'Invalid programme ID'}, status=400)
+        
 
+        new_curriculum = Curriculum(
+            programme=programme,
+            name=curriculum_name,
+            version=version_no,
+            working_curriculum=working_curriculum,
+            no_of_semester=num_semesters,
+            min_credit=num_credits,
+            latest_version=True
+        )
+        new_curriculum.save()
 
+        # Replicate semesters and course slots
+        old_semesters = old_curriculum.semesters.all()
+        for semester_no in range(1, num_semesters + 1):
+            new_semester = Semester(curriculum=new_curriculum, semester_no=semester_no)
+            new_semester.save()
 
-    form = CurriculumForm(initial={'programme': programme.id,
-                                    'name': name,
-                                    'version': version,
-                                    'working_curriculum': working_curriculum,
-                                    'no_of_semester': no_of_semester,
-                                })
-    submitbutton= request.POST.get('Submit')
-    if submitbutton:
-        if request.method == 'POST':
-            form = CurriculumForm(request.POST)  
-            if form.is_valid():
-                form.save()
-                no_of_semester = int(form.cleaned_data['no_of_semester'])
-                old_semesters = old_curriculum.semesters
-                curriculum = Curriculum.objects.all().last()
-                for semester_no in range(1, no_of_semester+1):
-                    
-                    NewSemester = Semester(curriculum=curriculum,semester_no=semester_no)
-                    NewSemester.save()
-                    for old_sem in old_semesters:
-                        if old_sem.semester_no == semester_no:
-                            for slot in old_sem.courseslots:
-                                courses = slot.courses.all()
-                                slot.pk = None
-                                slot.semester = NewSemester
-                                slot.save(force_insert=True)
-                                slot.courses.set(courses)
-                
-                messages.success(request, "Added successful")
-                return HttpResponseRedirect('/programme_curriculum/admin_curriculum_semesters/' + str(curriculum.id) + '/')
+            for old_sem in old_semesters:
+                if old_sem.semester_no == semester_no:
+                    for slot in old_sem.courseslots.all():
+                        courses = slot.courses.all()
+                        slot.pk = None
+                        slot.semester = new_semester
+                        slot.save(force_insert=True)
+                        slot.courses.set(courses)
 
-    return render(request, 'programme_curriculum/acad_admin/add_curriculum_form.html',{'form':form, 'submitbutton': submitbutton})
+        return JsonResponse({'status': 'success', 'message': 'Curriculum replicated successfully', 'curriculum_id': new_curriculum.id})
 
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 #new
 
 @login_required(login_url='/accounts/login')
