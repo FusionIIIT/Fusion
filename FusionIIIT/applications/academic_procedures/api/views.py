@@ -669,46 +669,48 @@ def student_pre_registration(request):
 
 @api_view(['POST'])
 def final_registration(request):
-    try:    
-        print(request.data)
-        current_user = get_object_or_404(User, username=request.data.get('user'))
-        current_user = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
-        current_user = Student.objects.all().filter(id=current_user.id).first()
+    try:
+        with transaction.atomic():
+            print(request.data)
+            current_user = request.user
+            extra_info = current_user.extrainfo
+            student = Student.objects.filter(id=extra_info).first()
 
-        sem_id = Semester.objects.get(id = request.data.get('semester'))
+            sem_id = Semester.objects.get(id=request.data.get('semester'))
 
-        mode = str(request.data.get('mode'))
-        transaction_id = str(request.data.get('transaction_id'))
-        deposit_date = request.data.get('deposit_date')
-        utr_number = str(request.data.get('utr_number'))
-        fee_paid = request.data.get('fee_paid')
-        actual_fee = request.data.get('actual_fee')
-        reason = str(request.data.get('reason'))
-        if reason=="":
-            reason=None
-        # fee_receipt = request.FILES['fee_receipt']
-
-        obj = FeePayments(
-            student_id = current_user,
-            semester_id = sem_id,
-            mode = mode,
-            transaction_id = transaction_id,
-            # fee_receipt = fee_receipt,
-            deposit_date = deposit_date,
-            utr_number = utr_number,
-            fee_paid = fee_paid,
-            actual_fee = actual_fee,
-            reason = reason
+            mode = str(request.data.get('mode'))
+            transaction_id = str(request.data.get('transaction_id'))
+            deposit_date = request.data.get('deposit_date')
+            utr_number = str(request.data.get('utr_number'))
+            fee_paid = request.data.get('fee_paid')
+            actual_fee = request.data.get('actual_fee')
+            reason = str(request.data.get('reason')) or None  # Handle empty string
+            fee_receipt = request.FILES['fee_receipt']
+            # Save FeePayments object
+            obj = FeePayments(
+                student_id=student,
+                semester_id=sem_id,
+                mode=mode,
+                transaction_id=transaction_id,
+                deposit_date=deposit_date,
+                utr_number=utr_number,
+                fee_paid=fee_paid,
+                actual_fee=actual_fee,
+                reason=reason,
+                fee_receipt=fee_receipt
             )
-        obj.save()
+            obj.save()
+
+            # Update StudentRegistrationChecks
+            StudentRegistrationChecks.objects.filter(
+                student_id=student,
+                semester_id=sem_id
+            ).update(final_registration_flag=True)
+
+            return JsonResponse({'message': 'Final Registration Successful'})
         
-        try:
-            return JsonResponse({'message': 'Final Registration Successfull'})
-        except Exception as e:
-            return JsonResponse({'message': 'Final Registration Failed '}, status=500)
-            
     except Exception as e:
-        return JsonResponse({'message': 'Final Registration Failed '}, status=500)
+        return JsonResponse({'message': f'Final Registration Failed: {str(e)}'}, status=500)
         
         
 # with this student can do his final registration for the upcoming semester
@@ -1580,6 +1582,8 @@ def verify_course(request):
 #     else:
 #         return Response({'error':'Cannot approve thesis'}, status=status.HTTP_400_BAD_REQUEST)
 
+#--------------------------------------- New APIs Made for React ----------------------------------------------------------
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
@@ -1637,5 +1641,38 @@ def current_courseregistration(request):
 
     except Student.DoesNotExist:
         return Response({"error": "Student profile not found"}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def final_registration_page(request):
+    try:
+        current_user = request.user
+        user_details = current_user.extrainfo
+        student = Student.objects.get(id=user_details)
+        curr_id = student.batch_id.curriculum
+        next_sem_id = Semester.objects.get(curriculum=curr_id, semester_no=student.curr_semester_no+1)
+        current_date = date_time.date()
+        final_registration_date_flag = get_final_registration_eligibility(current_date)
+        student_registration_check = get_student_registrtion_check(student, next_sem_id)
+        final_registration_flag = False
+        if student_registration_check:
+            final_registration_flag = student_registration_check.final_registration_flag
+
+        final_registration = FinalRegistration.objects.filter(
+            student_id=user_details.id, semester_id=next_sem_id
+        )
+        if final_registration.exists():
+            final_registration = serializers.FinalRegistrationSerializer(final_registration, many=True).data
+        else:
+            final_registration = None
+        resp = {
+            'frd': final_registration_date_flag,
+            'final_registration_flag': final_registration_flag,
+            'final_registration': final_registration,
+        }
+        return Response(data=resp, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
