@@ -267,7 +267,9 @@ def healthcare_center_notif(sender, recipient, type, message):
     elif type == 'rel_approve':
         verb = "You have a new medical relief approval request"
     elif type == 'rel_approved':
-        verb = 'Your medical relief request has been approved' 
+        verb = 'Your medical relief request has been approved'
+    elif type == 'reject_relief':
+        verb = "Your medical relief request has been rejected"
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb, flag=flag)
     # send_notification_email.delay(recipient.username, recipient.email, verb, module)
 
