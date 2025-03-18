@@ -35,12 +35,6 @@ class InitialRegistrationSerializer(serializers.ModelSerializer):
         model = InitialRegistration
         fields = ('__all__')
 
-class FinalRegistrationSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = FinalRegistration
-        fields = ('__all__')
-
 class StudentRegistrationChecksSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentRegistrationChecks
@@ -85,4 +79,11 @@ class CourseSlotSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CourseSlot
+        fields = ('__all__')
+
+class FinalRegistrationSerializer(serializers.ModelSerializer):
+    course_id = CourseSerializer(read_only=True)
+    semester_id= SemesterSerializer(read_only=True)
+    class Meta:
+        model = FinalRegistration
         fields = ('__all__')
