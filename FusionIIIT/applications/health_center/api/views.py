@@ -30,6 +30,7 @@ from applications.globals.models import ExtraInfo
 from applications.hr2.models import EmpDependents
 import json
 from . import serializers
+import base64
 
 from notifications.models import Notification
 
@@ -542,13 +543,21 @@ def compounder_api_handler(request):
         
         is_dependent=request_body['is_dependent']
         fid=0
-        # uploaded_file = request.FILES.get('file')
+        uploaded_file = request_body['file']
         # if uploaded_file != None :
         #     f=uploaded_file.read()
         #     new_file=files.objects.create(
         #         file_data=f
         #     )
         #     fid=new_file.id
+        uploaded_file = request_body['file']
+        file_binary = base64.b64decode(uploaded_file)
+        print(uploaded_file)
+        if uploaded_file != None :
+            new_file=files.objects.create(
+                file_data=file_binary
+            )
+            fid=new_file.id
         # with open(uploaded_file.name, 'wb+') as destination:   
         #         destination.write(f)  
         if is_dependent == "self":
@@ -597,7 +606,7 @@ def compounder_api_handler(request):
             times = med['Times']
             stock = med['astock']
             med_id = All_Medicine.objects.get(id=id)
-            if(stock == "," or stock == 'N/A at moment,') :
+            if(stock == "," or stock == 'N/A at moment') :
                 All_Prescribed_medicine.objects.create(
                     prescription_id = pres,
                     medicine_id = med_id,
