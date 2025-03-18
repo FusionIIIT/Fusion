@@ -560,6 +560,16 @@ def admin_view_semesters_of_a_curriculum(request, curriculum_id):
             'running_batch': batch.running_batch
         } for batch in all_batches
     ]
+    batches_without_curriculum = Batch.objects.filter(curriculum__isnull=True)
+    unlinked_batch_data=[
+        {
+            'id': batch.id,
+            'name': batch.name,
+            'discipline': batch.discipline.acronym,  # Use acronym or other attributes if available in Discipline
+            'year': batch.year,
+            'running_batch': batch.running_batch
+        } for batch in batches_without_curriculum
+    ]
     curriculum_data = {
         'curriculum_id': curriculum.id,
         'curriculum_name': curriculum.name,
@@ -567,6 +577,7 @@ def admin_view_semesters_of_a_curriculum(request, curriculum_id):
         'programme_id': curriculum.programme.id,
         'batches':batch_data,
         'semesters': semester_data,
+        'unlikedbatches':unlinked_batch_data,
         'working_curriculum':curriculum.working_curriculum
     }
 
@@ -1425,24 +1436,29 @@ def edit_batch_form(request, batch_id):
             'curriculum_id': batch.curriculum_id,
             'running_batch':batch.running_batch,
         }
-        curriculum = get_object_or_404(Curriculum,Q(id=batch.curriculum_id))
 
-        # Serialize the unused curricula
-        curricula_data =[ 
-            {
+        curricula_data = None
+
+        if batch.curriculum_id is not None:
+            # Fetch the curriculum object
+            curriculum = get_object_or_404(Curriculum, Q(id=batch.curriculum_id))
+            
+            # Serialize the curriculum data
+            curricula_data = [{
                 'id': curriculum.id,
                 'name': curriculum.name,
                 'version': curriculum.version,
+                # Uncomment these if you want to include discipline and programme details
                 # 'discipline': curriculum.discipline.name,
                 # 'programme': curriculum.programme.name,
-            }
-        ]
+            }]
         
         print(batch_data)
         print(curricula_data)
-        return JsonResponse({'status': 'success', 'batch': batch_data,'curriculum':curricula_data})
+        return JsonResponse({'status': 'success', 'batch': batch_data,'curriculum':curricula_data if curricula_data is not None else None})
     
     elif request.method == 'PUT':
+        print("put is used")
         try:
             # Fetch the existing batch instance
             try:
