@@ -1,6 +1,6 @@
 from __future__ import absolute_import, unicode_literals
 
-import celery
+from Fusion.celery import app
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
@@ -8,7 +8,7 @@ from django.utils import timezone
 from .models import LeaveMigration
 
 
-@celery.task()
+@app.task()
 @transaction.atomic
 def execute_leave_migrations():
     today = timezone.now().date()
@@ -27,6 +27,6 @@ def execute_leave_migrations():
     migrations.delete()
 
 
-@celery.task()
+@app.task()
 def testing(a, b):
     return a+b
