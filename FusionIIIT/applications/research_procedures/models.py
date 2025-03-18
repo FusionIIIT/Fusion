@@ -77,7 +77,7 @@ class staff_allocations(models.Model):
     year=models.IntegerField()
     stipend=models.IntegerField()
     staff_type=models.CharField(max_length=100,default="research")
-    start_date=models.DateField(default=datetime.date.today()) #default=datetime.date.today()
+    start_date=models.DateField(default=datetime.date.today)
     end_date=models.DateField(null=True, blank=True)
     
     def __str__(self):
@@ -87,6 +87,15 @@ class staff_allocations(models.Model):
 
     class Meta:
         ordering = ['-staff_allocation_id']
+
+class co_pis(models.Model):
+    co_pi= models.ForeignKey(User, on_delete=models.CASCADE)
+    project_id= models.ForeignKey(projects, on_delete=models.CASCADE)
+
+    class Meta:
+        ordering = ['-project_id']
+
+    
 
 class requests(models.Model):
     request_id=models.IntegerField(primary_key=True)
@@ -101,34 +110,15 @@ class requests(models.Model):
     class Meta:
         ordering = ['-request_id']
     
-# class requests(models.Model):
-#     request_id=models.IntegerField(primary_key=True)
-#     project_id= models.ForeignKey(projects, on_delete=models.CASCADE)
-#     request_type=models.CharField(max_length=500)
-#     project_investigator_id=models.ForeignKey(User, related_name='rj_pi'  , on_delete= models.CASCADE)
-#     status= models.IntegerField(default=0) #value 0 means pending
-#     description=models.CharField(max_length=400,default=None, null= True)
-#     amount= models.IntegerField(default=0) #value 0 means pending
+class co_project_investigator(models.Model):
+    co_pi_id= models.ForeignKey(User, on_delete=models.CASCADE)
+    project_id= models.ForeignKey(projects, on_delete=models.CASCADE)
 
-#     class Meta:
-#         ordering = ['-request_id']
+    def __str__(self):
+        return str(self.co_pi_id)
     
-# class rspc_inventory(models.Model):
-#     inventory_id=models.IntegerField(primary_key=True)
-#     project_id= models.ForeignKey(projects, on_delete=models.CASCADE)
-#     project_investigator_id=models.ForeignKey(User, related_name="rin_pi" , on_delete= models.CASCADE)
-#     status= models.IntegerField(default=0) #value 0 means pending
-#     description=models.CharField(max_length=400)
-#     amount= models.IntegerField(default=0) #value 0 means pending
-
-# class project_staff_info(models.Model):
-#     staff_id=models.CharField(primary_key=True,max_length=400)
-#     project_investigator_id= models.ForeignKey(User, on_delete=models.CASCADE)
-#     project_id=models.ForeignKey(projects, related_name='p_pji', on_delete=models.CASCADE)
-#     staff_name=models.CharField(max_length=400)
-#     status=models.IntegerField(default=0)
-#     description=models.CharField(max_length=400)
-
+    class Meta:
+        ordering = ['-co_pi_id']
     
     
     

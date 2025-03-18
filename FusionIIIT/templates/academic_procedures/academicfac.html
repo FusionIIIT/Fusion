@@ -84,7 +84,7 @@
                         <td colspan="2"><h4>Programme</h4></td>
         
                         <td colspan="2"><h4>Branch</h4></td>
-                        <td colspan="2"><h4>Year</h4></td>
+                        <!-- <td colspan="2"><h4>Year</h4></td> -->
 
                         <td colspan="2"><h4>Download Roll List</h4></td>
                             
@@ -99,7 +99,7 @@
                             <td colspan="2"> {{course.course_id.version }}</td>
                             <td colspan="2"> {{course.batch_id.name }}</td>
                             <td colspan="2"> {{course.batch_id.discipline.name }}</td>
-                            <td colspan="2"> {{course.batch_id.year }}</td>
+                            <!-- <td colspan="2"> {{course.batch_id.year }}</td> -->
 
                             <!-- <td colspan="2"><a href="">Roll List</a></td> -->
         
@@ -107,7 +107,7 @@
                                 <form method="post" action="/aims/generateSheet">
                                     {% csrf_token %}
                                     <input type="hidden" name="course" value="{{ course.course_id.id }}">
-                                    <input type="hidden" name="batch" value="{{ course.batch_id.year }}">
+                                    <input type="hidden" name="batch" value="">
                                     <button class="ui button green" type="submit">Roll List</button>
                                 </form>
                             </td>
@@ -146,7 +146,7 @@
                                         </div>
                                     </a>
                                 </td>
-
+                                {%if items.0.type != "Swayam" %}
                                 <td class="collapsing"><a class="tiny ui positive animated button"  style="background:#2590e2;" tabindex="0"
                                     href="{% url 'online_cms:course' obj.course_id.code obj.course_id.version %}"
                                     type="Submit" name="Submit">
@@ -156,7 +156,7 @@
                                         </div>
                                     </a>
                                 </td>
-
+                                {%endif %}
                             </tr>
                             {% endfor %}
                         </tbody>

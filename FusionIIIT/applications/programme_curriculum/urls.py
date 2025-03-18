@@ -66,6 +66,11 @@ urlpatterns = [
     path('forward_course_forms/<ProposalId>/',views.forward_course_forms,name='forward_course_forms'),
     path('view_inward_files/<ProposalId>/',views.view_inward_files,name='view_inward_files'),
     path('outward_files/',views.outward_files,name='outward_files'),
+    path('tracking_archive/<ProposalId>/',views.tracking_archive,name='tracking_archive'),
+    path('tracking_unarchive/<ProposalId>/',views.tracking_unarchive,name='tracking_unarchive'),
+    path('file_archive/<FileId>/',views.file_archive,name='file_archive'),
+    path('file_unarchive/<FileId>/',views.file_unarchive,name='file_unarchive'),
+    
 
     # urls for api view
     path('api/programmes_ug/', v2.view_ug_programmes, name='view_ug_programmes_api'),

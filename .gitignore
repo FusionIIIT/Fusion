@@ -75,4 +75,6 @@ package-lock.json
 
 
 .DS_Store
+**/generated.pdf
 
+.ruff_cache/

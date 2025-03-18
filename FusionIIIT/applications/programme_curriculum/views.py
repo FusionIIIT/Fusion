@@ -67,13 +67,14 @@ def view_all_programmes(request):
         
     elif 'hod' in request.session['currentDesignationSelected'].lower():
         url+='faculty/'
-    
+    notifs = request.user.notifications.all()
+
     ug = Programme.objects.filter(category='UG')
     pg = Programme.objects.filter(category='PG')
     phd = Programme.objects.filter(category='PHD')
     url+='view_all_programmes.html'
 
-    return render(request, url, {'ug': ug, 'pg': pg, 'phd': phd})
+    return render(request, url, {'ug': ug, 'pg': pg, 'phd': phd,'notifications': notifs,})
 
 
 def view_curriculums_of_a_programme(request, programme_id):
@@ -100,7 +101,7 @@ def view_curriculums_of_a_programme(request, programme_id):
         
     elif 'hod' in request.session['currentDesignationSelected'].lower():
         url+='faculty/'
-    
+    notifs = request.user.notifications.all()
     program = get_object_or_404(Programme, Q(id=programme_id))
     curriculums = program.curriculums
 
@@ -111,7 +112,7 @@ def view_curriculums_of_a_programme(request, programme_id):
     working_curriculums = curriculums.filter(working_curriculum=1)
     past_curriculums = curriculums.filter(working_curriculum=0)
     url+='view_curriculums_of_a_programme.html'
-    return render(request,url, {'program': program, 'past_curriculums': past_curriculums, 'working_curriculums': working_curriculums, 'curriculumfilter': curriculumfilter})
+    return render(request,url, {'program': program, 'past_curriculums': past_curriculums, 'working_curriculums': working_curriculums, 'curriculumfilter': curriculumfilter,'notifications': notifs,})
 
 
 def view_all_working_curriculums(request):
@@ -130,11 +131,11 @@ def view_all_working_curriculums(request):
     elif 'hod' in request.session['currentDesignationSelected'].lower():
         url+='faculty/'
     curriculums = Curriculum.objects.filter(working_curriculum=1)
-
+    notifs = request.user.notifications.all()
     curriculumfilter = CurriculumFilter(request.GET, queryset=curriculums)
 
     curriculums = curriculumfilter.qs
-    return render(request,url+'view_all_working_curriculums.html',{'curriculums':curriculums, 'curriculumfilter': curriculumfilter})
+    return render(request,url+'view_all_working_curriculums.html',{'curriculums':curriculums, 'curriculumfilter': curriculumfilter,'notifications': notifs,})
 
 def view_semesters_of_a_curriculum(request, curriculum_id):
     """
@@ -160,6 +161,7 @@ def view_semesters_of_a_curriculum(request, curriculum_id):
     elif 'hod' in request.session['currentDesignationSelected'].lower():
         url+='faculty/'
     curriculum = get_object_or_404(Curriculum, Q(id=curriculum_id))
+    notifs = request.user.notifications.all()
     semesters = curriculum.semesters
     semester_slots = []
     for sem in semesters:
@@ -187,7 +189,7 @@ def view_semesters_of_a_curriculum(request, curriculum_id):
     
     transpose_semester_slots = list(zip(*semester_slots))
 
-    return render(request, url+'view_semesters_of_a_curriculum.html', {'curriculum': curriculum, 'semesters': semesters, 'semester_slots': transpose_semester_slots, 'semester_credits': semester_credits})
+    return render(request, url+'view_semesters_of_a_curriculum.html', {'curriculum': curriculum, 'semesters': semesters, 'semester_slots': transpose_semester_slots, 'semester_credits': semester_credits,'notifications': notifs,})
 
 
 def view_a_semester_of_a_curriculum(request, semester_id):
@@ -205,8 +207,9 @@ def view_a_semester_of_a_curriculum(request, semester_id):
         url+='faculty/'
     semester = get_object_or_404(Semester, Q(id=semester_id))
     course_slots = semester.courseslots
+    notifs = request.user.notifications.all()
 
-    return render(request, url+'view_a_semester_of_a_curriculum.html', {'semester': semester, 'course_slots': course_slots})
+    return render(request, url+'view_a_semester_of_a_curriculum.html', {'semester': semester, 'course_slots': course_slots,'notifications': notifs,})
 
 
 def view_a_courseslot(request, courseslot_id):
@@ -222,7 +225,8 @@ def view_a_courseslot(request, courseslot_id):
     elif 'hod' in request.session['currentDesignationSelected'].lower():
         url+='faculty/'
     course_slot = get_object_or_404(CourseSlot, Q(id=courseslot_id))
-    return render(request, url+'view_a_courseslot.html', {'course_slot': course_slot})
+    notifs = request.user.notifications.all()
+    return render(request, url+'view_a_courseslot.html', {'course_slot': course_slot,'notifications': notifs,})
 
 
 def view_all_courses(request):
@@ -239,11 +243,12 @@ def view_all_courses(request):
     elif 'hod' in request.session['currentDesignationSelected'].lower():
         url+='faculty/'
     courses = Course.objects.all()
+    notifs = request.user.notifications.all()
 
     coursefilter = CourseFilter(request.GET, queryset=courses)
 
     courses = coursefilter.qs
-    return render(request, url+'view_all_courses.html', {'courses': courses, 'coursefilter': coursefilter})
+    return render(request, url+'view_all_courses.html', {'courses': courses, 'coursefilter': coursefilter,'notifications': notifs,})
 
 
 def view_a_course(request, course_id):
@@ -259,7 +264,8 @@ def view_a_course(request, course_id):
     elif 'hod' in request.session['currentDesignationSelected'].lower():
         url+='faculty/'
     course = get_object_or_404(Course, Q(id=course_id))
-    return render(request, url+'view_a_course.html', {'course': course})
+    notifs = request.user.notifications.all()
+    return render(request, url+'view_a_course.html', {'course': course,'notifications': notifs,})
 
 
 def view_all_discplines(request):
@@ -276,7 +282,8 @@ def view_all_discplines(request):
         url+='faculty/'
 
     disciplines = Discipline.objects.all()
-    return render(request, url+'view_all_disciplines.html', {'disciplines': disciplines})
+    notifs = request.user.notifications.all()
+    return render(request, url+'view_all_disciplines.html', {'disciplines': disciplines,'notifications': notifs,})
 
 
 def view_all_batches(request):
@@ -301,8 +308,9 @@ def view_all_batches(request):
     finished_batches = batches.filter(running_batch=False)
 
     batches = batches.filter(running_batch=True)
+    notifs = request.user.notifications.all()
 
-    return render(request, url+'view_all_batches.html', {'batches': batches, 'finished_batches': finished_batches, 'batchfilter': batchfilter})
+    return render(request, url+'view_all_batches.html', {'batches': batches, 'finished_batches': finished_batches, 'batchfilter': batchfilter,'notifications': notifs,})
 
 
 
@@ -783,11 +791,9 @@ def add_course_form(request):
 
     return render(request,'programme_curriculum/acad_admin/course_form.html',{'form':form,'submitbutton': submitbutton})
 
-
 def update_course_form(request, course_id):
-
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if request.session['currentDesignationSelected']== "student":  # or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" 
+    if request.session['currentDesignationSelected']== "student":
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     elif str(request.user) == "acadadmin" :
         pass
@@ -808,16 +814,40 @@ def update_course_form(request, course_id):
                 previous.save()
                 form.latest_version=True
                 new_course = form.save(commit=False)
+                add=True
+                ver=0
                 if(new_course.version>previous.version):
-                    form.save()
-                    course = Course.objects.last()
-                    messages.success(request, "Added successful")
-                    return HttpResponseRedirect("/programme_curriculum/admin_course/" + str(course.id) + "/")
+                    # Check if a course with the same values (except version, latest_version, disciplines, and pre_requisit_courses) already exists
+                    old_course=Course.objects.filter(code=new_course.code, name=new_course.name, credit=new_course.credit, lecture_hours=new_course.lecture_hours, tutorial_hours=new_course.tutorial_hours, pratical_hours=new_course.pratical_hours, discussion_hours=new_course.discussion_hours, project_hours=new_course.project_hours, pre_requisits=new_course.pre_requisits, syllabus=new_course.syllabus, percent_quiz_1=new_course.percent_quiz_1, percent_midsem=new_course.percent_midsem, percent_quiz_2=new_course.percent_quiz_2, percent_endsem=new_course.percent_endsem, percent_project=new_course.percent_project, percent_lab_evaluation=new_course.percent_lab_evaluation, percent_course_attendance=new_course.percent_course_attendance, ref_books=new_course.ref_books)
+                    if old_course:
+                        # Check if disciplines or pre_requisit_courses have been changed
+                        for i in old_course:
+                            if set(form.cleaned_data['disciplines']) != set(i.disciplines.all()) or set(form.cleaned_data['pre_requisit_courses']) != set(i.pre_requisit_courses.all()):
+                                add=True
+                            else:
+                                add=False
+                                ver=i.version
+                                break
+                        if add:
+                            new_course.save()  # Save the new course first before adding many-to-many fields
+                            new_course.disciplines.set(form.cleaned_data['disciplines'])
+                            new_course.pre_requisit_courses.set(form.cleaned_data['pre_requisit_courses'])
+                            course = Course.objects.last()
+                            messages.success(request, "Added successful")
+                            return HttpResponseRedirect("/programme_curriculum/admin_course/" + str(course.id) + "/")
+                        else:
+                            form.add_error(None,  'A Course with the same values already exists at "Version Number '+' ' +str(ver)+'"')
+                    else:
+                        new_course.save()  # Save the new course first before adding many-to-many fields
+                        new_course.disciplines.set(form.cleaned_data['disciplines'])
+                        new_course.pre_requisit_courses.set(form.cleaned_data['pre_requisit_courses'])
+                        course = Course.objects.last()
+                        messages.success(request, "Added successful")
+                        return HttpResponseRedirect("/programme_curriculum/admin_course/" + str(course.id) + "/")
                 else:
                     version_error+=f'The version should be greater than {previous.version}'
                     
     return render(request,'programme_curriculum/acad_admin/course_form.html',{'course':course, 'form':form, 'submitbutton': submitbutton,'version_error':version_error})
-
 
 def add_courseslot_form(request):
     
@@ -1058,14 +1088,17 @@ def view_course_proposal_forms(request):
     
     if request.session['currentDesignationSelected']  == "Associate Professor" or request.session['currentDesignationSelected']  == "Professor" or request.session['currentDesignationSelected']  == "Assistant Professor" :
             pass
-    elif request.session['currentDesignationSelected']  == "acadadmin" or request.session['currentDesignationSelected']  == "student" :
+    elif request.session['currentDesignationSelected']  == "student" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
+    elif request.session['currentDesignationSelected']== "acadadmin":
+        return render(request, 'programme_curriculum/admin_programmes/')
     else:
         data='Files Cannot be sent with current Designation Switch to "Professor or Assistant Professor or Associate Professor"'
+    notifs = request.user.notifications.all()
     courseProposal = NewProposalFile.objects.filter(uploader=des.user,designation=request.session['currentDesignationSelected'],is_update=False)
     updatecourseProposal = NewProposalFile.objects.filter(uploader=des.user,designation=request.session['currentDesignationSelected'],is_update=True)
     
-    return render(request, 'programme_curriculum/faculty/view_course_proposal_forms.html',{'courseProposals': courseProposal,'updateProposals':updatecourseProposal,'data':data})
+    return render(request, 'programme_curriculum/faculty/view_course_proposal_forms.html',{'courseProposals': courseProposal,'updateProposals':updatecourseProposal,'data':data,'notifications': notifs,})
 
 @login_required(login_url='/accounts/login')
 def faculty_view_all_courses(request):
@@ -1083,12 +1116,12 @@ def faculty_view_all_courses(request):
         pass
 
     courses = Course.objects.all()
-
+    notifs = request.user.notifications.all()
     coursefilter = CourseFilter(request.GET, queryset=courses)
 
     courses = coursefilter.qs
 
-    return render(request, 'programme_curriculum/faculty/faculty_view_all_courses.html', {'courses': courses, 'coursefilter': coursefilter})
+    return render(request, 'programme_curriculum/faculty/faculty_view_all_courses.html', {'courses': courses, 'coursefilter': coursefilter,'notifications': notifs,})
 
 
 def faculty_view_a_course(request, course_id):
@@ -1105,7 +1138,8 @@ def faculty_view_a_course(request, course_id):
     elif 'hod' in request.session['currentDesignationSelected'].lower():
         pass
     course = get_object_or_404(Course, Q(id=course_id))
-    return render(request, 'programme_curriculum/faculty/faculty_view_a_course.html', {'course': course})
+    notifs = request.user.notifications.all()
+    return render(request, 'programme_curriculum/faculty/faculty_view_a_course.html', {'course': course,'notifications': notifs,})
 
 
 def view_a_course_proposal_form(request,CourseProposal_id):
@@ -1124,7 +1158,8 @@ def view_a_course_proposal_form(request,CourseProposal_id):
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
     proposalform = get_object_or_404(NewProposalFile, Q(id=CourseProposal_id))
-    return render(request, 'programme_curriculum/faculty/view_a_course_proposal.html', {'proposal': proposalform})
+    notifs = request.user.notifications.all()
+    return render(request, 'programme_curriculum/faculty/view_a_course_proposal.html', {'proposal': proposalform,'notifications': notifs,})
 
 
 def new_course_proposal_file(request):
@@ -1139,7 +1174,6 @@ def new_course_proposal_file(request):
     uploader = request.user.extrainfo
     design=request.session['currentDesignationSelected']
     form=NewCourseProposalFile(initial={'uploader':des.user,'designation':design})
-    
     submitbutton= request.POST.get('Submit')
     
     if submitbutton:
@@ -1179,24 +1213,28 @@ def filetracking(request,proposal_id):
         if request.method == 'POST':
             form = CourseProposalTrackingFile(request.POST)
             if form.is_valid():
-                form.is_read=False
-                form.save()
-                receiver=request.POST.get('receive_id')
-                receiver_id = User.objects.get(id=receiver)
-                receiver_design=request.POST.get('receive_design')
-                receiver_des= Designation.objects.get(id=receiver_design)
-                uploader=request.POST.get('current_id')
-                uploader_design=request.POST.get('current_design')
+                try:
+                    form.is_read=False
+                    form.save()
+                    receiver=request.POST.get('receive_id')
+                    receiver_id = User.objects.get(id=receiver)
+                    receiver_design=request.POST.get('receive_design')
+                    receiver_des= Designation.objects.get(id=receiver_design)
+                    uploader=request.POST.get('current_id')
+                    uploader_design=request.POST.get('current_design')
                     
+                    data='Received as '+ str(receiver_id) +'-'+str(receiver_des) +' Course Proposal Form "'+file_data +'"  By   '+str(uploader)+' - '+str(uploader_design)
+                    # data=file.subject
+                    messages.success(request, "Submitted successful")
+                    prog_and_curr_notif(request.user,receiver_id,data)
+                    return HttpResponseRedirect('/programme_curriculum/outward_files/')
+                except IntegrityError as e:
+                # Handle the IntegrityError here, for example:
+                    form.add_error(None, 'Proposal_ tracking with this File id, Current id, Current design and Disciplines already exists.')
                 
-                data='Received as '+ str(receiver_id) +'-'+str(receiver_des) +' Course Proposal Form "'+file_data +'"  By   '+str(uploader)+' - '+str(uploader_design)
-                # data=file.subject
-                messages.success(request, "Submitted successful")
-                prog_and_curr_notif(request.user,receiver_id,data)
-                return HttpResponseRedirect('/programme_curriculum/outward_files/')
 
 
-    return render(request,'programme_curriculum/faculty/filetracking.html',{'form':form,'submitbutton': submitbutton,'file_info':file_data})
+    return render(request,'programme_curriculum/faculty/filetracking.html',{'form':form,'submitbutton': submitbutton,'file_info':file_data,})
 
 
 
@@ -1206,7 +1244,7 @@ def inward_files(request):
     data=''
     
     if request.session['currentDesignationSelected']  == "Associate Professor" or request.session['currentDesignationSelected']  == "Professor" or request.session['currentDesignationSelected']  == "Assistant Professor" :
-        data='As a "Professor or Assistant Professor or Associate Professor" you cannot receive any proposal requests'
+        data=f'As a "{request.session["currentDesignationSelected"]}" you cannot receive any proposal requests'
         pass
     elif 'hod' in request.session['currentDesignationSelected'].lower():
         pass
@@ -1219,14 +1257,14 @@ def inward_files(request):
     
     id=request.user
     user_designation=HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
-    
+    notifs = request.user.notifications.all()
     designation = Designation.objects.get(name=request.session['currentDesignationSelected'])
     des_id = designation.id
     
     courseProposal = Proposal_Tracking.objects.filter(receive_design = des_id,receive_id= id)
 
     
-    return render(request, 'programme_curriculum/faculty/inward_course_forms.html',{'courseProposals': courseProposal,'design':request.session['currentDesignationSelected'],'data':data})
+    return render(request, 'programme_curriculum/faculty/inward_course_forms.html',{'courseProposals': courseProposal,'design':request.session['currentDesignationSelected'],'data':data,'notifications': notifs,})
 
 
 
@@ -1235,16 +1273,19 @@ def outward_files(request):
     des = HoldsDesignation.objects.all().filter(user = request.user).last()
     data=''
     if request.session['currentDesignationSelected'] == "Dean Academic" :
-        data='As a "Dean Academic" you cannot have any out going files'
+        data=f'As a "{request.session["currentDesignationSelected"]}" you cannot have any out going files'
         pass
     elif request.session['currentDesignationSelected']  == "Associate Professor" or request.session['currentDesignationSelected']  == "Professor" or request.session['currentDesignationSelected']  == "Assistant Professor" :
         pass
     elif 'hod' in request.session['currentDesignationSelected'].lower():
         pass
-    elif request.session['currentDesignationSelected']  == "acadadmin" or request.session['currentDesignationSelected']  == "student" :
+    elif request.session['currentDesignationSelected']  == "student" :
         return HttpResponseRedirect('/programme_curriculum/programmes/')
+    elif request.session['currentDesignationSelected']== "acadadmin":
+        return render(request, 'programme_curriculum/admin_programmes/')
     
     id=request.user
+    notifs = request.user.notifications.all()
     user_designation=HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
     design=request.session['currentDesignationSelected']
     
@@ -1255,16 +1296,16 @@ def outward_files(request):
     courseProposal = Proposal_Tracking.objects.filter(current_design = design,current_id= des.user)
 
     
-    return render(request, 'programme_curriculum/faculty/outward_course_forms.html',{'courseProposals': courseProposal,'design':request.session['currentDesignationSelected'],'data':data})
+    return render(request, 'programme_curriculum/faculty/outward_course_forms.html',{'courseProposals': courseProposal,'design':request.session['currentDesignationSelected'],'data':data,'notifications': notifs,})
 
-def update_course_proposal_file(request,course_id):
+def update_course_proposal_file(request, course_id):
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
     if request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor":
         pass
     elif request.session['currentDesignationSelected'] == "acadadmin" :
         return HttpResponseRedirect('/programme_curriculum/admin_programmes')
     else:
-        return HttpResponseRedirect('/programme_curriculum/programmes')
+        return HttpResponseRedirect('/programme_curriculum/programmes/')
     
     uploader = request.user.extrainfo
     design=request.session['currentDesignationSelected']
@@ -1273,20 +1314,44 @@ def update_course_proposal_file(request,course_id):
     form = NewCourseProposalFile(initial={'uploader':des.user,'designation':design},instance=course)
     submitbutton= request.POST.get('Submit')
     
-
     if submitbutton:
         if request.method == 'POST':
             form = NewCourseProposalFile(request.POST)  
             if form.is_valid():
+                previous = Course.objects.all().filter(code=course.code).order_by('version').last()
+                course.version=previous.version
                 new_course=form.save(commit=False)
                 new_course.is_read=False
                 new_course.is_update=True
-                new_course.save()
-                messages.success(request, "Added successful")
-                return HttpResponseRedirect('/programme_curriculum/view_course_proposal_forms/')
-    
-
-    return render(request,'programme_curriculum/faculty/course_proposal_form.html',{'form':form,'submitbutton': submitbutton,'file_info':file_data})
+                add=True
+                ver=0
+                # Check if a course with the same values (except version, latest_version, disciplines, and pre_requisit_courses) already exists
+                old_course=Course.objects.filter(code=new_course.code, name=new_course.name, credit=new_course.credit, lecture_hours=new_course.lecture_hours, tutorial_hours=new_course.tutorial_hours, pratical_hours=new_course.pratical_hours, discussion_hours=new_course.discussion_hours, project_hours=new_course.project_hours, pre_requisits=new_course.pre_requisits, syllabus=new_course.syllabus, percent_quiz_1=new_course.percent_quiz_1, percent_midsem=new_course.percent_midsem, percent_quiz_2=new_course.percent_quiz_2, percent_endsem=new_course.percent_endsem, percent_project=new_course.percent_project, percent_lab_evaluation=new_course.percent_lab_evaluation, percent_course_attendance=new_course.percent_course_attendance, ref_books=new_course.ref_books)
+                if old_course:
+                    # Check if disciplines or pre_requisit_courses have been changed
+                    for i in old_course:
+                        if set(form.cleaned_data['pre_requisit_courses']) != set(i.pre_requisit_courses.all()):
+                            add=True
+                        else:
+                            add=False
+                            ver=i.version
+                            break
+                    if add:
+                        new_course.save()  # Save the new course first before adding many-to-many fields
+                        new_course.pre_requisit_courses.set(form.cleaned_data['pre_requisit_courses'])
+                        course = Course.objects.last()
+                        messages.success(request, "Added successful")
+                        return HttpResponseRedirect("/programme_curriculum/admin_course/" + str(course.id) + "/")
+                    else:
+                        form.add_error(None,  'A Course with the same values already exists at "Version Number '+' ' +str(ver)+'"')
+                else:
+                    new_course.save()  # Save the new course first before adding many-to-many fields
+                    new_course.pre_requisit_courses.set(form.cleaned_data['pre_requisit_courses'])
+                    course = Course.objects.last()
+                    messages.success(request, "Added successful")
+                    return HttpResponseRedirect("/programme_curriculum/admin_course/" + str(course.id) + "/")
+                    
+    return render(request,'programme_curriculum/faculty/course_proposal_form.html',{'form':form,'submitbutton': submitbutton,'file_info':file_data,})
 
 
 
@@ -1314,7 +1379,7 @@ def forward_course_forms(request,ProposalId):
         if(course):
             previous = Course.objects.all().filter(code=course.code).order_by('version').last()
             course.version=previous.version
-            form = CourseForm(instance=course)
+            form = CourseForm(instance=file2,initial={'disciplines':file.disciplines})
             submitbutton= request.POST.get('Submit')
             if submitbutton:
                 if request.method == 'POST':
@@ -1334,10 +1399,10 @@ def forward_course_forms(request,ProposalId):
                         
                             receiver=file2.uploader
                             receiver_id = User.objects.get(username=receiver)
-                            data='The Course "'+ file2.code+ ' - '+ file2.name + '" Updated Successfully'
+                            data=f'The Course " {file2.code} -{file2.name}" Updated Successfully'
                             # data=file.subject
                             prog_and_curr_notif(request.user,receiver_id,data)
-                            messages.success(request, data)
+                            messages.success(request, "Updated "+ file2.code+'-'+file2.name +" successful")
                             return HttpResponseRedirect("/programme_curriculum/course/" + str(course.id) + "/")
                         else:
                             version_error+=f'The version should be greater than {previous.version}'
@@ -1363,7 +1428,7 @@ def forward_course_forms(request,ProposalId):
                         # data=file.subject
                         prog_and_curr_notif(request.user,receiver_id,data)
                         course =Course.objects.all().filter(code=file2.code).last()
-                        messages.success(request, "Updated "+ file2.name +" successful")
+                        messages.success(request, "Added "+ file2.name +" successful")
                         return HttpResponseRedirect("/programme_curriculum/course/" + str(course.id) + "/")
                             
                            
@@ -1383,25 +1448,28 @@ def forward_course_forms(request,ProposalId):
             if request.method == 'POST':
                 form = CourseProposalTrackingFile(request.POST)
                 if form.is_valid():
-                    file.is_submitted=True
-                    file.save()
-                    form.is_read=False
-                    form.save()
-                    
-                    receiver=request.POST.get('receive_id')
-                    
-                    uploader=request.POST.get('current_id')
-                    uploader_design=request.POST.get('current_design')
-                    
-                    
-                    receiver_design=request.POST.get('receive_design')
-                    receiver_des= Designation.objects.get(id=receiver_design)
-                    receiver_id = User.objects.get(id=receiver)
-                    messages.success(request, "Added successful")
-                    data='Received as '+ str(receiver_id) +'-'+str(receiver_des) +' Course Proposal of Course '+file_data +' By   '+str(uploader)+' - '+str(uploader_design)
+                    try:
+                        file.is_submitted=True
+                        file.save()
+                        form.is_read=False
+                        form.save()
+                        
+                        receiver=request.POST.get('receive_id')
+                        
+                        uploader=request.POST.get('current_id')
+                        uploader_design=request.POST.get('current_design')
+                        
+                        
+                        receiver_design=request.POST.get('receive_design')
+                        receiver_des= Designation.objects.get(id=receiver_design)
+                        receiver_id = User.objects.get(id=receiver)
+                        messages.success(request, "Added successful")
+                        data='Received as '+ str(receiver_id) +'-'+str(receiver_des) +' Course Proposal of Course '+file_data +' By   '+str(uploader)+' - '+str(uploader_design)
 
-                    prog_and_curr_notif(request.user,receiver_id,data)
-                    return HttpResponseRedirect('/programme_curriculum/outward_files/')
+                        prog_and_curr_notif(request.user,receiver_id,data)
+                        return HttpResponseRedirect('/programme_curriculum/outward_files/')
+                    except IntegrityError as e:
+                        form.add_error(None, 'Proposal_ tracking with this File id, Current id, Current design and Disciplines already exists.')
     elif request.session['currentDesignationSelected'] == "acadadmin" :
         return HttpResponseRedirect('/programme_curriculum/admin_programmes')
     else:
@@ -1424,8 +1492,6 @@ def view_inward_files(request,ProposalId):
         return HttpResponseRedirect('/programme_curriculum/programmes/')
     
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    
-    
     uploader = request.user.extrainfo
     design=request.session['currentDesignationSelected']
     file = get_object_or_404(Proposal_Tracking, Q(id=ProposalId))
@@ -1472,4 +1538,84 @@ def reject_form(request,ProposalId):
     else:
         messages.error(request, "course already forwarded or added can't be rejected")
     return HttpResponseRedirect('/programme_curriculum/inward_files/')
+
+
+def tracking_unarchive(request,ProposalId):
+    if request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor" or request.session['currentDesignationSelected'] == "Dean Academic":
+        pass
+    elif 'hod' in request.session['currentDesignationSelected'].lower():
+        pass
+    elif request.session['currentDesignationSelected'] == "acadadmin":
+        return HttpResponseRedirect('/programme_curriculum/admin_programmes/')
+    else:
+        return HttpResponseRedirect('/programme_curriculum/programmes/')
     
+    track=get_object_or_404(Proposal_Tracking, Q(id=ProposalId))
+    file = get_object_or_404(NewProposalFile,Q(id = track.file_id))
+    print(request.user)
+    if str(track.current_design)==str(request.session['currentDesignationSelected']) and str(track.current_id)==str(request.user):
+        track.sender_archive=False
+        track.save()
+        messages.success(request, "File UnArchived")
+        return HttpResponseRedirect('/programme_curriculum/outward_files/')
+    else : 
+        track.receiver_archive=False
+        track.save()
+        messages.success(request, "File UnArchived")
+        return HttpResponseRedirect('/programme_curriculum/inward_files/')
+    
+    
+    
+def tracking_archive(request,ProposalId):
+    
+    if request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor" or request.session['currentDesignationSelected'] == "Dean Academic":
+        pass
+    elif 'hod' in request.session['currentDesignationSelected'].lower():
+        pass
+    elif request.session['currentDesignationSelected'] == "acadadmin":
+        return HttpResponseRedirect('/programme_curriculum/admin_programmes/')
+    else:
+        return HttpResponseRedirect('/programme_curriculum/programmes/')
+    
+    track=get_object_or_404(Proposal_Tracking, Q(id=ProposalId))
+    if str(track.current_design)==str(request.session['currentDesignationSelected']) and str(track.current_id)==str(request.user):
+        track.sender_archive=True
+        track.save()
+        messages.success(request, "File Archived")
+        return HttpResponseRedirect('/programme_curriculum/outward_files/')
+
+    else:
+        track.receiver_archive=True
+        track.save()
+        messages.success(request, "File Archived")
+        return HttpResponseRedirect('/programme_curriculum/inward_files/')
+    
+def file_archive(request,FileId):
+    if request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor" or request.session['currentDesignationSelected'] == "Dean Academic":
+        pass
+    elif 'hod' in request.session['currentDesignationSelected'].lower():
+        pass
+    elif request.session['currentDesignationSelected'] == "acadadmin":
+        return HttpResponseRedirect('/programme_curriculum/admin_programmes/')
+    else:
+        return HttpResponseRedirect('/programme_curriculum/programmes/')
+    
+    file = get_object_or_404(NewProposalFile,Q(id = FileId))
+    file.is_archive=True
+    file.save()
+    return HttpResponseRedirect('/programme_curriculum/view_course_proposal_forms/')
+
+def file_unarchive(request,FileId):
+    if request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor" or request.session['currentDesignationSelected'] == "Dean Academic":
+        pass
+    elif 'hod' in request.session['currentDesignationSelected'].lower():
+        pass
+    elif request.session['currentDesignationSelected'] == "acadadmin":
+        return HttpResponseRedirect('/programme_curriculum/admin_programmes/')
+    else:
+        return HttpResponseRedirect('/programme_curriculum/programmes/')
+    
+    file = get_object_or_404(NewProposalFile,Q(id = FileId))
+    file.is_archive=False
+    file.save()
+    return HttpResponseRedirect('/programme_curriculum/view_course_proposal_forms/')

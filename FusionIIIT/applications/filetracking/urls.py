@@ -11,9 +11,9 @@ urlpatterns = [
     url(r'^draftdesign/$', views.draft_design, name='draft_design'),
     url(r'^drafts/(?P<id>\d+)$', views.drafts_view, name='drafts_view'),
     url(r'^outbox/(?P<id>\d+)$', views.outbox_view, name='outbox_view'),
-    url(r'^inbox/(?P<id>\d+)$', views.inbox_view, name='inbox_view'),
-    url(r'^outward/$', views.outward, name='outward'),
-    url(r'^inward/$', views.inward, name='inward'),
+    url(r'^inbox/$', views.inbox_view, name='inbox_view'),
+    url(r'^outward/$', views.outbox_view, name='outward'),
+    url(r'^inward/$', views.inbox_view, name='inward'),
     url(r'^confirmdelete/(?P<id>\d+)$',
         views.confirmdelete, name='confirm_delete'),
     url(r'^archive/(?P<id>\d+)/$', views.archive_view, name='archive_view'),
@@ -22,7 +22,6 @@ urlpatterns = [
     url(r'^forward/(?P<id>\d+)/$', views.forward, name='forward'),
     url(r'^ajax/$', views.AjaxDropdown1, name='ajax_dropdown1'),
     url(r'^ajax_dropdown/$', views.AjaxDropdown, name='ajax_dropdown'),
-    url(r'^test/$', views.test, name='test'),
     url(r'^delete/(?P<id>\d+)$', views.delete, name='delete'),
     url(r'^forward_inward/(?P<id>\d+)/$',
         views.forward_inward, name='forward_inward'),
@@ -39,6 +38,7 @@ urlpatterns = [
         views.unarchive_file, name='unarchive'),
     url(r'^getdesignations/(?P<username>\w+)/$', views.get_designations_view, name="get_user_designations"),
     url(r'^editdraft/(?P<id>\w+)/$', views.edit_draft_view, name="edit_draft"),
+    url(r'^download_file/(?P<id>\w+)/$', views.download_file, name="download_file"),
 
     # REST api urls
     url(r'^api/', include(urls))

@@ -154,10 +154,10 @@ class Payments(models.Model):
     amount_paid = models.IntegerField(default=0)
     payment_month = models.CharField(max_length=20, default=current_month)
     payment_year = models.IntegerField(default = current_year)
-    payment_date = models.DateField(default= datetime.date.today())
+    payment_date = models.DateField(default= datetime.date.today)
 
-    class Meta:
-        unique_together = (('student_id',  'payment_date'))
+    # class Meta:
+    #     unique_together = (('student_id',  'payment_date'))
 
     def __str__(self):
         return '{}'.format(self.student_id.id)
@@ -283,7 +283,7 @@ class Feedback(models.Model):
 class Registration_Request(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     Txn_no =models.CharField(max_length=20)
-    img = models.ImageField(upload_to='images/',default=None)
+    img = models.ImageField(upload_to='mess/images/registration_request/%Y/%m/%d/',default=None)
     amount=models.IntegerField(default=0)
     status=models.CharField(max_length=10,default='pending')
     registration_remark=models.CharField(max_length=50,default='NA')

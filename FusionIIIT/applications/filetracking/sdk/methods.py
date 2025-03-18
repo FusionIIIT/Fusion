@@ -8,15 +8,15 @@ from typing import Any
 
 
 def create_file(
-        uploader: str,
         uploader_designation: str,
         receiver: str,
         receiver_designation: str,
-        subject: str = "", 
-        description: str = "", 
-        src_module: str = "filetracking",
-        src_object_id: str = "",
+        src_module: str = "",
         file_extra_JSON: dict = {},
+        uploader: str = "",
+        subject: str = "",
+        description: str = "",
+        src_object_id: str = "",
         attached_file: Any = None) -> int:
     '''
     This function is used to create a file object corresponding to any object of a module that needs to be tracked
@@ -29,7 +29,7 @@ def create_file(
     if both complete then return id of file
     else raise error
 
-    also, delete file object if tracking isnt created
+    also, delete file object if tracking isn't created
     '''
     uploader_user_obj = get_user_object_from_username(uploader)
     uploader_extrainfo_obj = get_ExtraInfo_object_from_username(uploader)
@@ -48,7 +48,6 @@ def create_file(
         src_object_id=src_object_id,
         file_extra_JSON=file_extra_JSON,
     )
-    
 
     if attached_file is not None: 
         new_file.upload_file.save(attached_file.name, attached_file, save=True)
@@ -108,7 +107,7 @@ def view_inbox(username: str, designation: str, src_module: str) -> list:
         receiver_id=recipient_object,
         receive_design=user_designation,
         file_id__src_module=src_module,
-        file_id__is_read=False).order_by('receive_date');
+        file_id__is_read=False).order_by('-receive_date');
     received_files = [tracking.file_id for tracking in received_files_tracking]
 
     # remove duplicate file ids (from sending back and forth)
@@ -142,8 +141,12 @@ def view_outbox(username: str, designation: str, src_module: str) -> list:
     # remove duplicate file ids (from sending back and forth)
     sent_files_unique = uniqueList(sent_files)
 
-    sent_files_serialized = FileHeaderSerializer(sent_files_unique, many=True)
-    return sent_files_serialized.data
+    sent_files_serialized = list(FileHeaderSerializer(
+        sent_files_unique, many=True).data)
+    # for file in sent_files_serialized: 
+    #     file['sent_by_user'] = get_last_file_sender(file['id']).username
+    #     file['sent_by_designation'] = get_last_file_sender_designation(file['id']).name
+    return sent_files_serialized
 
 
 
@@ -167,7 +170,7 @@ def view_archived(username: str, designation: str, src_module: str) -> dict:
         current_id=sender_ExtraInfo_object,
         current_design=user_HoldsDesignation_object,
         file_id__src_module=src_module,
-        file_id__is_read=True)
+        file_id__is_read=True).order_by('-receive_date')
     
     archived_tracking = received_archived_tracking | sent_archived_tracking
     archived_files = [tracking.file_id for tracking in archived_tracking]
@@ -205,7 +208,7 @@ def unarchive_file(file_id: int) -> bool:
 def create_draft(
         uploader: str,
         uploader_designation: str,
-        src_module: str = "filetracking",
+        src_module: str = "",
         src_object_id: str = "",
         file_extra_JSON: dict = {},
         attached_file: Any = None) -> int:
@@ -214,10 +217,15 @@ def create_draft(
     It is similar to create_file but is not sent to anyone
     Later this file can be sent to someone by forward_file by using draft file_id
     '''
+    uploader_user_obj = get_user_object_from_username(uploader)
     uploader_extrainfo_obj = get_ExtraInfo_object_from_username(uploader)
     uploader_designation_obj = Designation.objects.get(
         name=uploader_designation)
-
+    print(uploader)
+    print(uploader_designation)
+    print(src_module)
+    if file_extra_JSON is None:
+        file_extra_JSON = {}
     new_file = File.objects.create(
         uploader=uploader_extrainfo_obj,
         designation=uploader_designation_obj,
@@ -236,7 +244,7 @@ def view_drafts(username: str, designation: str, src_module: str) -> dict:
     user_designation = Designation.objects.get(name=designation)
     user_ExtraInfo_object = get_ExtraInfo_object_from_username(username)
     draft_files = File.objects.filter(
-        tracking__isnull=True, uploader=user_ExtraInfo_object, designation=user_designation, src_module=src_module)
+        tracking__isnull=True, uploader=user_ExtraInfo_object, designation=user_designation, src_module=src_module).order_by('-upload_date')
     draft_files_serialized = FileHeaderSerializer(draft_files, many=True)
     return draft_files_serialized.data
 

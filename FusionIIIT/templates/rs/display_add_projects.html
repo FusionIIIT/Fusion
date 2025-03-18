@@ -9,8 +9,41 @@
 
 {% block body %}
 
+<script type="text/javascript">
+   function populateList() {
+        console.log('key up')
+
+        value = $('#input_search').val();
+
+          $.ajax({
+            type: 'POST',
+            url: '/filetracking/ajax_dropdown/',
+            data: {
+                'value': value,
+                'csrfmiddlewaretoken': '{{csrf_token}}'
+            },
+            dataType: 'json',
+            success: function(response){
+
+                all_users = JSON.parse(response.users);
+                app = []
+                $('#input_list').html('');
+                for(var i=0;i<all_users.length;i++){
+                   $('#input_list').append('<option value="'+all_users[i].fields.username+'">'+all_users[i].fields.username+'</option>');
+                }
+            },
+            error: function(rs, e){
+                console.log('error-------');
+            },
+        });
+    }
+</script>
+
 
 <script>
+
+
+
     
         document.addEventListener('DOMContentLoaded', function () {
    
@@ -50,11 +83,41 @@
                     }
                 });
             });
+
+            function addCopis(event){
+                event.preventDefault();
+                var clonedSegment = document.querySelector('.copi_segment').cloneNode(true);
+                var count = document.querySelectorAll('.copi_segment').length;
+                clonedSegment.name = 'co_project_investigator_id-' + (count + 1);
+
+                document.querySelector('.copis').appendChild(clonedSegment);
+                document.querySelector('.remove_button').classList.remove('invisible');
+
+            }
+
+            function removeCopis(event){
+                event.preventDefault();
+                var count = document.querySelectorAll('.copi_segment').length;
+                if(count > 1){
+                    var lastCopi = document.querySelectorAll('.copi_segment')[count - 1];
+                    lastCopi.remove();
+                }
+                if(count == 2){
+                    document.querySelector('.remove_button').classList.add('invisible');
+                }
+            }
+
 </script>
 <style>
     /* Hide the default file input button */
     input[type="file"] {
         display: none;
+    }
+
+    .invisible
+    {
+        display: none;
+        
     }
 
     .inputf1 {
@@ -141,17 +204,42 @@
 
                             <label class="labels1" for="project_investigator_id"
                                 style="font-size:18px ;font-weight:bold;text-transform: uppercase">Project Investigator Id:</label>
-                            <input class="input-f1" type="text" id="project_investigator_id"
+                            <input class="input-f1" type="search" id="input_search" list="input_list"
                                 placeholder="Project Investigator Id" name="project_investigator_id" required
+                                onchange= {populateList()}
                                 style="width: 100%; border: 1px solid grey;">
+                                <datalist  id="input_list">
+                                </datalist>
                         </div>
-                        <div style="flex: 1;">
+                       
+                    </div>
+                </div>
+                <div style="margin-bottom: 20px; ">
+                    
+                    <div class="">
+
+                        
+                        <div style="flex: 1; " class="copis" >
                             <label class="labels1" for="co_project_investigator_id"
-                                style="font-size:18px ;font-weight:bold;text-transform: uppercase">Co-Project Investigator ID:</label>
-                            <input class="input-f1" type="text" id="co_project_investigator_id"
-                                placeholder="Co-Project Investigator ID" name="co_project_investigator_id" required
-                                style="width: 100%; border: 1px solid grey;">
+                            style="font-size:18px ;font-weight:bold;text-transform: uppercase">Co-Project Investigator ID:</label>
+                            <input class="input-f1 copi_segment"  type="text" id="co_project_investigator_id"
+                            placeholder="Co-Project Investigator ID" name="co_project_investigator_id-1" required
+                            style="width: 100%; border: 1px solid grey; margin-bottom: 10px;">
                         </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            
+                            <button onclick={addCopis(event)} >
+                                <i class="plus icon"></i>
+                            </button>
+
+                            <div class="invisible remove_button">
+                                <button onclick={removeCopis(event)} >
+                                    <i class="minus icon"></i>
+                                </button>
+                                
+                            </div>
+                        </div>
+
                     </div>
                 </div>
                 <div style="margin-bottom: 20px;">

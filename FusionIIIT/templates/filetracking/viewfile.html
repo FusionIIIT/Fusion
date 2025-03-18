@@ -2,8 +2,13 @@
 {% load static %}
 
 {% block filetracking_tab %}
-
-    <div class="ui pointing secondary menu">
+<div class="ui pointing secondary menu">
+        <form id="download-form" action="{% url 'filetracking:download_file' file.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="item" style="position:absolute;right:10px; cursor: pointer;">
+                <b style="color:rgb(22, 82, 129)"> Download as ZIP</b>
+            </button>
+        </form>
         <a class="active item" data-tab="notesheet">
             Note Sheet
         </a>
@@ -68,24 +73,15 @@
                                 <a href="{% url 'filetracking:forward' file.id %}" style="text-decoration: none; color: inherit;"> Forward File <i class="ui send icon right floated"></i> </a>
                             </button>
 
-                            {% if not file.is_read %}
-                            <button class="ui large right floated primary button" style="margin-top:22px; float: right; display: none;"> 
+                            <button class="ui large right floated primary button" style="margin-top: 22px; float: right; {% if not file.is_read %} display: none; {% endif %}">
                                 <a href="{% url 'filetracking:unarchive' file.id %}" style="text-decoration: none; color: inherit;"> 
                                     Unarchive <i class="ui archive icon right floated"></i> 
                                 </a>  
                             </button>
-                            {% else %}
-                            <button class="ui large right floated primary button" style="margin-top:22px; float: right;"> 
-                                <a href="{% url 'filetracking:unarchive' file.id %}" style="text-decoration: none; color: inherit;"> 
-                                    Unarchive <i class="ui archive icon right floated"></i> 
-                                </a>  
-                            </button>
-                            {% endif %}
-                            
+                                                       
                             <button class="ui large right floated primary button" style="margin-right:10px; margin-top:20px; float: right;" {% if not archive_enable %} disabled {% endif %}>
                                 <a href="{% url 'filetracking:archive_finish' file.id %}" style="text-decoration: none; color: inherit;">Archive File <i class="ui archive icon right floated"></i> </a>
                             </button>
-                            
                         </div>
                         <br>
 

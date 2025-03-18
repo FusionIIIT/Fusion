@@ -14,11 +14,12 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes,authentication_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from django.http import JsonResponse
 
 
 from . import serializers
 from applications.globals.models import (ExtraInfo, Feedback, HoldsDesignation,
-                                         Issue, IssueImage, DepartmentInfo)
+                                         Issue, IssueImage, DepartmentInfo, ModuleAccess)
 from .utils import get_and_authenticate_user
 from notifications.models import Notification
 
@@ -71,13 +72,15 @@ def logout(request):
     return Response(data=resp, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
-@authentication_classes([TokenAuthentication])
-def dashboard(request):
+@permission_classes([AllowAny])
+def auth_view(request):
     user=request.user
-
     name = request.user.first_name +"_"+ request.user.last_name
+    roll_no = request.user.username
 
+    extra_info = get_object_or_404(ExtraInfo, user=user)
+    last_selected_role = extra_info.last_selected_role
+    
     designation_list = list(HoldsDesignation.objects.all().filter(working = request.user).values_list('designation'))
     designation_id = [designation for designations in designation_list for designation in designations]
     designation_info = []
@@ -85,26 +88,36 @@ def dashboard(request):
         name_ = get_object_or_404(Designation, id = id)
         designation_info.append(str(name_.name))
 
-    notifications=serializers.NotificationSerializer(request.user.notifications.all(),many=True).data
-    club_details= coordinator_club(request)
+    print(designation_info)
+    accessible_modules = {}
+    
+    for designation in designation_info:
+        module_access = ModuleAccess.objects.filter(designation__iexact=designation).first()
+        if module_access:
+            filtered_modules = {}
 
+            field_names = [field.name for field in ModuleAccess._meta.get_fields() if field.name not in ['id', 'designation']]
+
+            for field_name in field_names:
+                filtered_modules[field_name] = getattr(module_access, field_name)
+            
+            accessible_modules[designation] = filtered_modules
+            
     resp={
-        'notifications':notifications,
-        'desgination_info' :  designation_info,
-        'club_details' : club_details
+        'designation_info' : designation_info,
+        'name': name,
+        'roll_no': roll_no,
+        'accessible_modules': accessible_modules,
+        'last_selected_role': last_selected_role
     }
-
+    
     return Response(data=resp,status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def notification(request):
-  
-    print(request)
     notifications=serializers.NotificationSerializer(request.user.notifications.all(),many=True).data
-    print("get")
-    print(notifications)
 
     resp={
         'notifications':notifications, 
@@ -112,17 +125,39 @@ def notification(request):
 
     return Response(data=resp,status=status.HTTP_200_OK)
 
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def update_last_selected_role(request):
+    new_role = request.data.get('last_selected_role')
+
+    if new_role is None:
+        return Response({'error': 'last_selected_role is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    extra_info = get_object_or_404(ExtraInfo, user=request.user)
+
+    extra_info.last_selected_role = new_role
+    extra_info.save()
+
+    return Response({'message': 'last_selected_role updated successfully'}, status=status.HTTP_200_OK)
+
+# This API is only for student profile. For faculty profile, use eis_profile views
 @api_view(['GET'])
 def profile(request, username=None):
     user = get_object_or_404(User, username=username) if username else request.user
-    user_detail = serializers.UserSerializer(user).data
     profile = serializers.ExtraInfoSerializer(user.extrainfo).data
-
-    print(user)
     
     if profile['user_type'] == 'student':
         student = user.extrainfo.student
-        skills = serializers.HasSerializer(student.has_set.all(),many=True).data
+        std_sem = Student.objects.get(id=student.id).curr_semester_no
+        skills = list(
+        Has.objects.filter(unique_id_id=student)
+        .select_related("skill_id")
+        .values("skill_id__skill", "skill_rating")
+        )
+        formatted_skills = [
+            {"skill_name": skill["skill_id__skill"], "skill_rating": skill["skill_rating"]}
+            for skill in skills
+        ]
         education = serializers.EducationSerializer(student.education_set.all(), many=True).data
         course = serializers.CourseSerializer(student.course_set.all(), many=True).data
         experience = serializers.ExperienceSerializer(student.experience_set.all(), many=True).data
@@ -132,9 +167,9 @@ def profile(request, username=None):
         patent = serializers.PatentSerializer(student.patent_set.all(), many=True).data
         current = serializers.HoldsDesignationSerializer(user.current_designation.all(), many=True).data
         resp = {
-            'user' : user_detail,
             'profile' : profile,
-            'skills' : skills,
+            'semester_no' : std_sem,
+            'skills' : formatted_skills,
             'education' : education,
             'course' : course,
             'experience' : experience,
@@ -145,15 +180,8 @@ def profile(request, username=None):
             'current' : current
         }
         return Response(data=resp, status=status.HTTP_200_OK)
-    elif profile['user_type'] == 'faculty':
-        print(username)
-        return redirect('/eis/api/profile/' + (username+'/' if username else ''))
-    elif profile['user_type'] == 'staff':
-        resp = {
-            'user' : user_detail,
-            'profile' : profile,
-        }
-        return Response(data=resp, status=status.HTTP_200_OK)   
+    else:
+        return Response(data={'error': 'User is not a student'}, status=status.HTTP_400_BAD_REQUEST)  
 
 @api_view(['PUT'])
 def profile_update(request):
@@ -177,11 +205,26 @@ def profile_update(request):
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         elif 'skillsubmit' in request.data:
-            serializer = serializers.HasSerializer(data=request.data['skillsubmit'])
-            if serializer.is_valid():
-                serializer.save(unique_id=student)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                skill_data = request.data['skillsubmit']
+                skill_id = skill_data['skill_id']
+                skill_name = skill_id['skill_name']
+                skill_rating = skill_data['skill_rating']
+
+                if not skill_name or skill_rating is None:
+                    return Response({"error": "Missing skill_name or skill_rating"}, status=status.HTTP_400_BAD_REQUEST)
+
+                skill, created = Skill.objects.get_or_create(skill=skill_name)
+                has_obj, created = Has.objects.get_or_create(skill_id=skill, unique_id=student, defaults={"skill_rating": skill_rating})
+                if not created:
+                    has_obj.skill_rating = skill_rating
+                    has_obj.save()
+
+                return Response({"message": "Skill added successfully"}, status=status.HTTP_200_OK)
+
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         elif 'achievementsubmit' in request.data:
             request.data['achievementsubmit']['unique_id'] = profile
             serializer = serializers.AchievementSerializer(data=request.data['achievementsubmit'])
@@ -307,3 +350,73 @@ def NotificationRead(request):
             'error':'Failed, notification is not marked as seen.'
         }
         return Response(response,status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def NotificationUnread(request):
+    try:
+        notifId = int(request.data['id'])
+        user = request.user
+        notification = get_object_or_404(Notification, recipient=user, id=notifId)
+        if not notification.unread:  
+            notification.unread = True
+            notification.save() 
+        response = {
+            'message': 'Notification successfully marked as unread.'
+        }
+        return Response(response, status=status.HTTP_200_OK)
+    except:
+        response = {
+            'error': 'Failed to mark the notification as unread.'
+        }
+        return Response(response, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['POST']) 
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def delete_notification(request):
+    try:
+        notifId = int(request.data['id'])  
+        notification = get_object_or_404(Notification, recipient=request.user, id=notifId)
+        
+        notification.deleted = True
+        notification.save()
+        
+        response = {
+            'message': 'Notification marked as deleted.'
+        }
+        return Response(response, status=status.HTTP_200_OK)
+    except Exception as e:
+        response = {
+            'error': 'Failed to mark the notification as deleted.',
+            'details': str(e)
+        }
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
+    
+
+def search_users(request):
+    query = request.GET.get('q', '')
+    if query:
+        users = ExtraInfo.objects.filter(user__username__icontains=query).values('id', 'user__username')
+    else:
+        users = ExtraInfo.objects.none()
+
+    results = [
+        {'id': user['id'], 'text': user['user__username']} for user in users
+    ]
+    return JsonResponse({'results': results})
+
+@api_view(['GET'])  # Declare that this view handles GET requests
+@permission_classes([])  # No permissions required
+@authentication_classes([])  # No authentication required
+def department_info(request):
+    """
+    Retrieve department information and return as JSON.
+    """
+    try:
+        departments = DepartmentInfo.objects.all()  # Fetch all department objects
+        serializer = serializers.DepartmentInfoSerializer(departments, many=True)  # Serialize the data
+        return Response(serializer.data, status=status.HTTP_200_OK)  # Return serialized data as JSON
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

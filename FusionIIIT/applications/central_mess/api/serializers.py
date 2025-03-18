@@ -99,3 +99,7 @@ class DeregistrationRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Deregistration_Request
         fields = ('__all__')
+class UpdatePaymentRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Update_Payment
+        fields = ('__all__')
