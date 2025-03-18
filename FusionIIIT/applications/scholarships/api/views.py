@@ -338,7 +338,7 @@ class GetReleaseByAwardView(APIView):
 class McmStatusUpdateView(APIView):
     def post(self, request):
         # Fetch the Mcm instance based on the provided primary key (pk)
-        mcm_instance = get_object_or_404(Mcm)
+        mcm_instance = get_object_or_404(Mcm,id=request.data.get('id'))
         
         # Deserialize the input data with the existing object
         serializer = McmStatusUpdateSerializer(mcm_instance, data=request.data, partial=True)
