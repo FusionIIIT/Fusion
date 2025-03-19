@@ -544,9 +544,9 @@ def compounder_api_handler(request):
         is_dependent=request_body['is_dependent']
         fid=0
         uploaded_file = request_body['file']
-        file_binary = base64.b64decode(uploaded_file)
         print(uploaded_file)
         if uploaded_file != None :
+            file_binary = base64.b64decode(uploaded_file)
             new_file=files.objects.create(
                 file_data=file_binary
             )
@@ -714,9 +714,9 @@ def compounder_api_handler(request):
         
         fid=0
         uploaded_file = request_body['file']
-        file_binary = base64.b64decode(uploaded_file)
         print(uploaded_file)
         if uploaded_file != None :
+            file_binary = base64.b64decode(uploaded_file)
             new_file=files.objects.create(
                 file_data=file_binary
             )
