@@ -544,22 +544,13 @@ def compounder_api_handler(request):
         is_dependent=request_body['is_dependent']
         fid=0
         uploaded_file = request_body['file']
-        # if uploaded_file != None :
-        #     f=uploaded_file.read()
-        #     new_file=files.objects.create(
-        #         file_data=f
-        #     )
-        #     fid=new_file.id
-        uploaded_file = request_body['file']
         file_binary = base64.b64decode(uploaded_file)
         print(uploaded_file)
         if uploaded_file != None :
             new_file=files.objects.create(
                 file_data=file_binary
             )
-            fid=new_file.id
-        # with open(uploaded_file.name, 'wb+') as destination:   
-        #         destination.write(f)  
+            fid=new_file.id 
         if is_dependent == "self":
             pres=All_Prescription.objects.create(
                 user_id = user_id,
@@ -722,13 +713,14 @@ def compounder_api_handler(request):
             doctor = Doctor.objects.get(doctor_name=doctor_id)
         
         fid=0
-        # uploaded_file = request.FILES.get('file')
-        # if uploaded_file != None :
-        #     f=uploaded_file.read()
-        #     new_file=files.objects.create(
-        #         file_data=f
-        #     )
-        #     fid=new_file.id
+        uploaded_file = request_body['file']
+        file_binary = base64.b64decode(uploaded_file)
+        print(uploaded_file)
+        if uploaded_file != None :
+            new_file=files.objects.create(
+                file_data=file_binary
+            )
+            fid=new_file.id
 
         followup = Prescription_followup.objects.create(
             prescription_id=presc,
@@ -747,7 +739,7 @@ def compounder_api_handler(request):
             times = med['Times']
             stock = med['astock']
             med_id = All_Medicine.objects.get(id = id)
-            if(stock == ',' or stock == "N/A at moment,"):
+            if(stock == ',' or stock == "N/A at moment"):
                 All_Prescribed_medicine.objects.create(
                     prescription_id = presc,
                     medicine_id = med_id,
