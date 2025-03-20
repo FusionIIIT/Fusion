@@ -8,8 +8,6 @@ from applications.scholarships.api.views import create_award,McmUpdateView, McmR
 from applications.scholarships.api.views import ScholarshipDetailView,StudentDetailView,DirectorSilverDetailView,DirectorGoldDetailView,DirectorGoldListView,DMProficiencyListView,ReleaseCreateView,McmStatusUpdateView,DirectorSilverDecisionView,DMProficiencyDecisionView,DirectorGoldAcceptRejectView,DirectorSilverListView,GetReleaseByAwardView,McmDocumentsRetrieveView
 # ,DirectorSilverAcceptRejectView
 
-
-
 app_name = 'spacs'
 
 urlpatterns = [

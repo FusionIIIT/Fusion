@@ -3,7 +3,6 @@ from django.db import models
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo
 
-
 class Constants:
     STATUS_CHOICES = (
         ('Complete', 'COMPLETE'),
@@ -70,7 +69,6 @@ class Constants:
         ('OWNED', 'OWNED')
     )
 
-
 class Award_and_scholarship(models.Model):
     award_name = models.CharField(max_length=100, default='')
     catalog = models.TextField(max_length=5000)
@@ -80,8 +78,6 @@ class Award_and_scholarship(models.Model):
 
     def __str__(self):
         return self.award_name
-
-
 
 class Mcm(models.Model):
     brother_name = models.CharField(max_length=30, null=True)
@@ -126,20 +122,17 @@ class Mcm(models.Model):
     date = models.DateField(default=datetime.date.today)
     award_id = models.ForeignKey(Award_and_scholarship, default=4, on_delete=models.CASCADE)
 
-
     class Meta:
         db_table = 'Mcm'
 
     def __str__(self):
         return str(self.student)
 
-
 class Notional_prize(models.Model):
     spi = models.FloatField()
     cpi = models.FloatField()
     year = models.CharField(max_length=10, choices=Constants.BATCH)
     award_id = models.ForeignKey(Award_and_scholarship, default=4, on_delete=models.CASCADE)
-
 
     class Meta:
         db_table = 'Notional_prize'
@@ -153,7 +146,6 @@ class Previous_winner(models.Model):
 
     class Meta:
         db_table = 'Previous_winner'
-
 
 class Release(models.Model):
     date_time = models.DateTimeField(default=datetime.datetime.now, blank=True)
@@ -210,10 +202,8 @@ class Director_silver(models.Model):
     justification = models.TextField(max_length=1000, null=True)
     outside_achievements = models.TextField(max_length=1000, null=True)
 
-
     class Meta:
         db_table = 'Director_silver'
-
 
 class Proficiency_dm(models.Model):
     Marksheet = models.FileField(null=False, blank=False, default='', upload_to='scholarships/proficiency_dm/marksheet/')
@@ -254,7 +244,6 @@ class Proficiency_dm(models.Model):
     class Meta:
         db_table = 'Proficiency_dm'
 
-
 class Director_gold(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     status = models.CharField(max_length=20,choices=Constants.STATUS_CHOICES, default='INCOMPLETE')
@@ -289,8 +278,3 @@ class Director_gold(models.Model):
 
     class Meta:
         db_table = 'Director_gold'
-
-
-
-
-

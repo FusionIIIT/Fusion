@@ -25,8 +25,6 @@ class ReleaseCreateView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-
 #This API is for editing the catalogue by convenor and assistant and saving in the database
 class AwardAndScholarshipCreateView(APIView):
     def post(self, request, pk=None):
@@ -45,11 +43,6 @@ class AwardAndScholarshipCreateView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)  # 201 Created response
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)  # 400 Bad Request if data is invalid
 
-
-
-
-
-
 #This api for fetching the award and scholarship catalogue from the database
 class create_award(APIView):
 
@@ -57,7 +50,6 @@ class create_award(APIView):
         awards = Award_and_scholarship.objects.all()  # Fetch all awards
         serializer = AwardAndScholarshipSerializer(awards, many=True)  # Serialize the awards
         return Response(serializer.data, status=status.HTTP_200_OK)  
-
 
 #This api is for Previous Winner 
 class GetWinnersView(APIView):
@@ -111,7 +103,6 @@ class McmUpdateView(APIView):
             return Response(McmSerializer(mcm_instance).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
 class McmRetrieveView(APIView):
     def post(self, request):
         roll_number = request.user.username
@@ -128,7 +119,6 @@ class McmRetrieveView(APIView):
         
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
 class DirectorSilverRetrieveView(APIView):
     def post(self, request):
         roll_number = request.user.username
@@ -144,7 +134,6 @@ class DirectorSilverRetrieveView(APIView):
         serializer = DirectorSilverSerializer(director_silver_data, many=True)
         
         return Response(serializer.data, status=status.HTTP_200_OK)
-
 
 class DirectorSilverUpdateView(APIView):
     def post(self, request):
@@ -172,7 +161,6 @@ class DirectorGoldRetrieveView(APIView):
         
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
 class DirectorGoldUpdateView(APIView):
     def post(self, request):
         request.data['student']=request.user.username
@@ -181,7 +169,6 @@ class DirectorGoldUpdateView(APIView):
             director_gold_instance = serializer.save()
             return Response(DirectorGoldSerializer(director_gold_instance).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class ProficiencyDmUpdateView(APIView):
     def post(self, request):
@@ -192,7 +179,6 @@ class ProficiencyDmUpdateView(APIView):
             proficiency_dm_instance = serializer.save()
             return Response(ProficiencyDmSerializer(proficiency_dm_instance).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class ProficiencyDmRetrieveView(APIView):
     def post(self, request):
@@ -220,7 +206,6 @@ class ScholarshipDetailView(APIView):
         # Return the serialized data as a response
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
 class DirectorGoldListView(APIView):
     def get(self, request):
         # Fetch all entries
@@ -238,8 +223,6 @@ class DMProficiencyListView(APIView):
         serializer = ProficiencyDmSerializer(proficiency_dm_entries, many=True)
         # Return the serialized data as a response
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
-    
 
 #This api is for showing the all the documnet to the convenor or assistant submitted by the student in browse application 
 class StudentDetailView(APIView):
@@ -272,7 +255,6 @@ class DirectorSilverDetailView(APIView):
         serializer = DirectorSilverSerializer(director_silver_entry)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
 #This api is for showing the list of student who has applied for director gold in browse application in convenor and assistant
 class DirectorGoldDetailView(APIView):
     def post(self, request):
@@ -289,10 +271,7 @@ class DirectorGoldDetailView(APIView):
         serializer = DirectorGoldSerializer(director_gold_entry)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
-
 class GetReleaseByAwardView(APIView):
-
     def post(self, request, *args, **kwargs):
         # Get the award name from the request
         award_name = request.data.get('award')
@@ -332,9 +311,7 @@ class GetReleaseByAwardView(APIView):
             status=status.HTTP_404_NOT_FOUND
         )
 
-
 #This api for MCM status that is accept, reject and under review
-
 class McmStatusUpdateView(APIView):
     def post(self, request):
         # Fetch the Mcm instance based on the provided primary key (pk)
@@ -352,10 +329,7 @@ class McmStatusUpdateView(APIView):
         # Return validation errors
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-    
 #This api for Director silver accepting and rejecting the application by convenor and assistant
-
 class DirectorSilverDecisionView(APIView):
     def post(self, request):
         # Deserialize the request data
@@ -379,7 +353,6 @@ class DirectorSilverDecisionView(APIView):
         
         # If the data is invalid
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 
 class DMProficiencyDecisionView(APIView):
     def post(self, request):
@@ -445,36 +418,6 @@ class DirectorSilverListView(APIView):
         serializer = DirectorSilverSerializer(director_silver_entries, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-# class DirectorSilverAcceptRejectView(APIView):
-#     def post(self, request):
-#         # Get the ID of the Director_silver entry to update
-#         director_silver_id = request.data.get('id')
-#         action = request.data.get('action')  # 'accept' or 'reject'
-
-#         # Check if the action is valid
-#         if action not in ['accept', 'reject']:
-#             return Response({'error': 'Invalid action. Choose either "accept" or "reject".'}, status=status.HTTP_400_BAD_REQUEST)
-
-#         try:
-#             # Fetch the Director_silver entry from the database using the ID
-#             director_silver = Director_silver.objects.get(id=director_silver_id)
-#         except Director_silver.DoesNotExist:
-#             return Response({'error': 'Director_silver entry not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-#         # Update the status based on the action
-#         if action == 'accept':
-#             director_silver.status = 'ACCEPTED'
-#         else:
-#             director_silver.status = 'REJECTED'
-
-#         # Save the updated Director_silver entry
-#         director_silver.save()
-
-#         # Return the updated entry as a response
-#         serializer = DirectorSilverSerializer(director_silver)
-#         return Response(serializer.data, status=status.HTTP_200_OK)
-
-
 class GetReleaseByAwardView(APIView):
 
     def post(self, request, *args, **kwargs):
@@ -515,7 +458,6 @@ class GetReleaseByAwardView(APIView):
             {'result': 'Failure', 'error': 'No releases found for the specified award'},
             status=status.HTTP_404_NOT_FOUND
         )
-    
 
 class McmDocumentsRetrieveView(APIView):
     permission_classes = [IsAuthenticated]
