@@ -1418,3 +1418,36 @@ class UpdateBudgetAPIView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class FreeMembersForClubAPIView(APIView):
+    def get(self, request):
+        club_id = request.data.get('club_id')  # Use query_params for GET request
+        if not club_id:
+            return Response({"error": "Club id is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Get upcoming events for the club
+            events = Event_info.objects.filter(club_id=club_id, start_date__gte =timezone.now().date())
+
+            # Map incharge members to their events
+            incharge_map = {}
+            for event in events:
+                if event.incharge:  # Ensure incharge is not None
+                    incharge_map[str(event.incharge)] = event.event_name
+
+            # Get all club members
+            members = Club_member.objects.filter(club_id=club_id)
+
+            # Prepare the response data
+            response_data = []
+            for memb in members:
+                roll_no = str(memb.member_id)  # Ensure same type as incharge_map keys
+                response_data.append({
+                    "roll_no": roll_no,
+                    "event_name": incharge_map.get(roll_no, None)  # Set event_name or None
+                })
+
+            return Response(response_data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
