@@ -26,6 +26,6 @@ urlpatterns = [
     url("get_student_all_details",views.Get_Student_Details.as_view(),name="get_student_details_API"),
     url('registrationRequestApi', views.RegistrationRequestApi.as_view(), name='registrationRequestApi'),
     url('deRegistrationRequestApi', views.DeregistrationRequestApi.as_view(), name='deRegistrationRequestApi'),
-    url('deRegistrationApi', views.DeregistrationApi.as_view(), name='deRegistrationApi'),
     url('updatePaymentRequestApi', views.UpdatePaymentRequestApi.as_view(), name='updatePaymentRequestApi'),
+    url('get_mess_balance_statusApi', views.Get_Mess_Balance_Status.as_view(), name='get_mess_balance_statusApi'),
 ]

@@ -225,6 +225,7 @@ def view_a_courseslot(request, courseslot_id):
     elif 'hod' in request.session['currentDesignationSelected'].lower():
         url+='faculty/'
     course_slot = get_object_or_404(CourseSlot, Q(id=courseslot_id))
+    notifs = request.user.notifications.all()
     return render(request, url+'view_a_courseslot.html', {'course_slot': course_slot,'notifications': notifs,})
 
 
