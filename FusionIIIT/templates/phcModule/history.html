@@ -22,8 +22,13 @@
 
     <div class="ui active tab" data-tab="prescriptionhistory">
         <div id="presc_print" class="ui vertical segment" >
-            <h4 align="center">D - No.of days, &nbsp;&nbsp; T - No.of times per day</h4>
-
+            <form class="ui form" style="margin-bottom: 20px;" id="search_patientlog">
+                <div class="field">
+                    <div class="ui fluid large input">
+                        <input placeholder="search" id="patient_search" name="patient_search" type="text">
+                    </div>
+                 </div>
+            </form>
             <table  border=1 class="ui very basic collapsing celled large sortable table"
                   style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;" >
                 <thead>
@@ -39,26 +44,16 @@
                         Details
                     </td>
                     <td style="font-weight:bold;color:black;">
-                        Test
+                        Dependent
                     </td>
                     <td style="font-weight:bold;color:black;">
-                        Report
-                    </td>
-
-
-                    <td style="font-weight:bold;color:black;">
-
-                      <table>
-
-                        <tr><td style="font-weight:bold;color:black;">Medicine</td><td>D</td><td>T</td></tr>
-
-                      </table>
+                        View
                     </td>
 
                 </tr>
                 </thead>
 
-                <tbody>
+                <tbody id="prescriptions-list">
                 {% for pre in prescription %}
                 <tr>
 
@@ -79,33 +74,24 @@
                         {{pre.details}}
                     </td>
                     <td>
-                        {{pre.test}}
+                        {{pre.dependent_name}}
                     </td>
-                   
-                    <td style="white-space:nowrap;">
-                        {% if pre.file != None %}
-                        <a href="{{ pre.file }}" download>
-                            <i class="ui download icon right floated"></i>
-                        </a>
-                        {% endif %}
-                    </td>
-
                     <td>
-                      <table>
-                        {% for medicine in medicines %}
-                            {% if medicine.prescription_id.id == pre.id %}
-                                  <tr><td>{{medicine.medicine_id}}</td><td>{{medicine.days}}</td><td>{{medicine.times}}</td></tr>
-                            {% endif %}
-                        {% endfor%}
-                      </table>
+                        <button class="view-followup-btn"><a style="color: white;" href="{% url 'healthcenter:student_view_prescription' prescription_id=pre.id %}">View/Follow-up</a></button>
                     </td>
                 </tr>
 
                 {% endfor %}
                 </tbody>
             </table>
-
-          </div>
+        </div>
+        <div class="pagination" style="display: flex; justify-content: center;align-items: center;gap: 15px;margin-top: 15px;">
+            <button id="previous-page" data-page="{{ presc_hist.page.previous_page_number }}" class="ui small muted button">Previous</button>
+            <div>
+                Page <input type="number" value="{{ presc_hist.page.number }}" id="log_page_number" style="width: 40px;"> of <span id="log_total_pages">{{ presc_hist.count}}</span>
+            </div>
+            <button id="next-page" data-page="{{ presc_hist.page.next_page_number }}" class="ui small muted button">Next</button>
+        </div>
         </div>
 {% comment %} 
     <div class="ui tab" data-tab="ambulancehistory">
@@ -139,6 +125,7 @@
                 </tr>
                 </thead>
 
+                {% comment %}
                 <tbody>
                 {% for  ambulance in ambulances%}
                 <tr>
@@ -157,18 +144,45 @@
                     <td style="white-space:nowrap;">
                         {{ambulance.end_date}}
                     </td>
-					<td>
+					<!-- <td>
                         {% if ambulance.end_date >= curr_date %}
                            <input type="button" onclick="rem({{ambulance.pk}})" id="{{ambulance.pk}}" name="cancel" value="Cancel"class="ui red button" />
                         {% endif %}
-                    </td>  
+                    </td>   -->
                 </tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
     </div> {% endcomment %}
-
+    <style>
+        .view-followup-btn {
+            font-size: 13px;
+            background-color: #2185D0;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .view-followup-btn:hover {
+            background-color: #0b5ed7;
+        }
+        .w-full {
+            width: 100%;
+        }
+        .flex {
+            display: flex;
+            justify-content: space-between;
+        }
+        .flex-col {
+            flex-direction: column;
+        }
+        .bbx {
+            border: 1px solid red;
+        }
+    </style>
 <script>
             function rem(id){
            
@@ -195,6 +209,106 @@
 
             
       }
+
+      $('#search_patientlog').on('submit',function(e){
+                e.preventDefault();
+                alert('changed search')
+                $.ajax({
+                    type: "post",
+                    url: "/healthcenter/student/",
+                    data: {
+                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                        search_patientlog: $("#patient_search").val(),
+                    },
+                    success: function(data){
+                        console.log(data)
+                        $('#prescriptions-list').empty();
+                        const view_button_prescription = `<td><button class="view-followup-btn"><a style="color: white;" href='{% url 'healthcenter:view_prescription' prescription_id=0 %}'>View/Follow-up</a></button></td>` 
+                        $.each( data.presc_context.page.object_list , function(index, prescription) {
+                                console.log("inside",$('#prescriptions-list'))
+                                 $('#prescriptions-list').append(
+                                    '<tr>' +
+                                     '<td style="white-space:nowrap;"><h4 class="ui image header"><img src="{% static "globals/img/zlatan.jpg" %}" class="ui mini circular image"></h4>' + prescription.doctor_id + '</td>' +
+                                     '<td style="white-space:nowrap;">' + prescription.date + '</td>' +
+                                     '<td>' + prescription.details + '</td>' +'<td>' + prescription.dependent_name + '</td>' +
+                                     view_button_prescription.replace('0',prescription.id) + // Add any file handling logic here
+                                    '</tr>'
+                                 );
+                             });
+                             if (data.presc_context.page.has_previous) {
+                                 $('#previous-page').data('page', data.presc_context.page.previous_page_number).show();
+                             } else {
+                                 $('#previous-page').hide();
+                             }
+         
+                             if (data.presc_context.page.has_next) {
+                                 $('#next-page').data('page', data.presc_context.page.next_page_number).show();
+                             } else {
+                                 $('#next-page').hide();
+                             }
+                             document.getElementById('log_page_number').value=data.presc_context.page.number
+                             document.getElementById('log_total_pages').innerHTML=data.presc_context.count
+                        
+                    }
+                })
+            })
+      function loadPage(pageNumber) {
+                     $.ajax({
+                         url: '/healthcenter/student/',
+                         type: 'POST',
+                         data: {
+                         csrfmiddlewaretoken: '{{ csrf_token }}',
+                         page: pageNumber,
+                         search_patientlog: $("#patient_search").val(),
+                         datatype: 'patientlog'
+                         },
+                         success: function(data) {
+                             $('#prescriptions-list').empty();
+                             const view_button_prescription = `<td><button class="view-followup-btn"><a style="color: white;" href='{% url 'healthcenter:view_prescription' prescription_id=0 %}'>View/Follow-up</a></button></td>` 
+                             $.each(data.report, function(index, prescription) {
+                                console.log("inside",$('#prescriptions-list'))
+                                 $('#prescriptions-list').append(
+                                     '<tr>' +
+                                     '<td style="white-space:nowrap;"><h4 class="ui image header"><img src="{% static "globals/img/zlatan.jpg" %}" class="ui mini circular image"></h4>' + prescription.doctor_id + '</td>' +
+                                     '<td style="white-space:nowrap;">' + prescription.date + '</td>' +
+                                     '<td>' + prescription.details + '</td>' +'<td>' + prescription.dependent_name + '</td>' +
+                                     view_button_prescription.replace('0',prescription.id) + // Add any file handling logic here
+                                    '</tr>'
+                                 );
+                             });
+                             
+                             if (data.has_previous) {
+                                 $('#previous-page').data('page', data.previous_page_number).show();
+                             }
+         
+                             if (data.has_next) {
+                                 $('#next-page').data('page', data.next_page_number).show();
+                             }
+                            
+                             document.getElementById('log_page_number').value=data.page
+                             document.getElementById('log_total_pages').innerHTML=data.total_pages
+                         }
+                     });
+                 }
+         
+                 $('#previous-page').click(function() {
+                    const pageNumber = $(this).data('page');
+                     loadPage(pageNumber);
+                 });
+         
+                 $('#next-page').click(function() {
+                    const pageNumber = $(this).data('page');
+                     loadPage(pageNumber);
+                     
+                 });
+                 $('#log_page_number').change(function(){
+                    if( document.getElementById('log_page_number').value<=0 || document.getElementById('log_page_number').value > document.getElementById('log_total_pages').innerHTML){
+                        alert("enter valid page number")
+                    }
+                    else{
+                        loadPage(document.getElementById('log_page_number').value);
+                    }
+                 })
       </script>
 {% comment %} 
     <div class="ui tab" data-tab="hospitalhistory">
@@ -386,11 +500,11 @@
                     </td>
 
                    
-					<td>
+					<!-- <td>
 
                         <input type="button" onclick="rm({{appointment.pk}})" id="{{appointment.pk}}" name="cancel" value="Cancel"class="ui red button" />
 
-                    </td> 
+                    </td>  -->
                 </tr>
                 {% endfor %}
                 </tbody>
