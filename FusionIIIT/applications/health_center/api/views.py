@@ -739,7 +739,8 @@ def compounder_api_handler(request):
             times = med['Times']
             stock = med['astock']
             med_id = All_Medicine.objects.get(id = id)
-            if(stock == ',' or stock == "N/A at moment"):
+            
+            if(stock == ',' or stock == "N/A at moment,"):
                 All_Prescribed_medicine.objects.create(
                     prescription_id = presc,
                     medicine_id = med_id,
