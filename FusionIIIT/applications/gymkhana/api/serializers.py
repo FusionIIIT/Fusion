@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 from rest_framework import serializers
 from applications.gymkhana.models import Club_info,Session_info,Event_info
-from applications.gymkhana.models import Club_member,Club_budget,Club_report,Fest_budget,Fest,Registration_form,Budget,Budget_Comments,Event_Comments,Achievements,ClubPosition
+from applications.gymkhana.models import Club_member,Club_budget,Club_report,Fest_budget,Fest,Registration_form,Budget,Budget_Comments,Event_Comments,Achievements,ClubPosition, EventInput
 
 # class Voting_choicesSerializer(serializers.ModelSerializer):
 #     class Meta:
@@ -103,3 +103,13 @@ class FestSerializer(serializers.ModelSerializer):
     class Meta:
         model=Fest
         fields= ['id', 'name', 'category', 'description', 'date', 'link']
+
+class EventInputSerializer(serializers.ModelSerializer):
+    # Use event name for dropdown-like functionality
+    event = serializers.SlugRelatedField(
+        queryset=Event_info.objects.all(), 
+        slug_field='id')
+
+    class Meta:
+        model = EventInput
+        fields = ['id', 'event', 'description','images']

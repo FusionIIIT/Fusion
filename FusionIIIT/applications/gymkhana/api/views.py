@@ -1,7 +1,7 @@
 import genericpath
 import json
 import tempfile
-from datetime import datetime
+from datetime import datetime, timedelta
 from venv import logger
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
@@ -47,8 +47,17 @@ from .serializers import (
     Budget_CommentsSerializer,
     ClubPositionSerializer,
     FestSerializer,
+    EventInputSerializer
 )
 
+from io import BytesIO
+from django.http import FileResponse
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.platypus import (
+    SimpleDocTemplate, Paragraph, Spacer, Image, HRFlowable, PageBreak
+)
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from django.contrib.auth.models import User
 from applications.gymkhana.views import *
 from rest_framework import generics
@@ -1451,3 +1460,256 @@ class FreeMembersForClubAPIView(APIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class CoordinatorEventsAPIView(APIView):
+    """
+    API View to fetch events for clubs where the given person (by roll number) is a coordinator.
+    Filters by accepted events and those in the current month.
+    """
+
+    def post(self, request):
+        # Extract roll number from the request data
+        roll_number = request.data.get("roll_number")
+        if not roll_number:
+            return Response(
+                {"error": "Roll number is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            clubs = Club_info.objects.filter(co_ordinator=roll_number)
+            # Get the current month and year
+            current_month = datetime.datetime.now().month
+            current_year = datetime.datetime.now().year
+
+            # Fetch events associated with those clubs, with status 'accepted' and within the same month
+            events = Event_info.objects.filter(
+                club__in=clubs,
+                # status="Accepted",  # Replace with your actual status choice
+                # start_date__year=current_year,
+                # start_date__month=current_month,
+            )
+
+            # Serialize and return the events
+            serializer = event_infoserializer(events, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except Student.DoesNotExist:
+            return Response(
+                {"error": "Student not found with the given roll number."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+class EventInputAPIView(APIView):
+    def get(self, request):
+        """
+        Returns a list of all Event_info objects (dropdown options).
+        """
+        events = Event_info.objects.all()
+        events_data = [{"id": event.id, "name": event.event_name} for event in events]  # Adjust fields as needed
+        return Response(events_data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        """
+        Creates a new EventInput instance.
+        """
+        # print(request.data["event"])
+        # request.data["images"]=None
+        print(request.data)
+        serializer = EventInputSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#helper
+def add_page_decorations(canvas, doc):
+    canvas.saveState()
+    page_num = canvas.getPageNumber()
+    canvas.setFont('Helvetica', 10)
+    canvas.drawCentredString(letter[0] / 2.0, 20, f"Page {page_num}")
+    canvas.restoreState()
+
+class NewsletterPDFAPIView(APIView):
+    def get(self, request):
+        # Determine timeframe filter based on query parameter
+        timeframe = request.GET.get('timeframe', '').lower()
+        now = timezone.now()
+        if timeframe == 'weekly':
+            time_threshold = now - timedelta(weeks=1)
+        elif timeframe == 'monthly':
+            time_threshold = now - timedelta(days=30)
+        elif timeframe == '6 months':
+            time_threshold = now - timedelta(days=182)  # Approximation for half a year
+        else:
+            time_threshold = None
+        print(time_threshold)
+        # Fetch all unique clubs
+        clubs = Event_info.objects.values_list('club', flat=True).distinct()
+        has_events = False
+        for club in clubs:
+            club_events = EventInput.objects.filter(event__club=club)
+            if time_threshold:
+                club_events = club_events.filter(event__end_date__range=(time_threshold, now))
+            if club_events.exists():
+                has_events = True
+                break
+
+        if not has_events:
+            return Response({"message": "No events found for the selected timeframe."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Create an in-memory file
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+
+        # Get the default style sheet and create custom styles
+        styles = getSampleStyleSheet()
+        story = []
+
+        # --- Banner Section ---
+        banner_path = "path/to/your/banner.jpg"  # Update this path to your banner image
+        try:
+            banner = Image(banner_path, width=letter[0], height=150)
+            story.append(banner)
+        except Exception:
+            pass
+
+        story.append(Spacer(1, 20))
+
+        # Catchy Title and Tagline
+        title_style = ParagraphStyle(
+            name='TitleStyle',
+            parent=styles['Title'],
+            fontName='Helvetica-Bold',
+            fontSize=26,
+            leading=30,
+            alignment=1,
+            textColor=colors.darkblue
+        )
+        tagline_style = ParagraphStyle(
+            name='Tagline',
+            parent=styles['BodyText'],
+            fontName='Helvetica-Oblique',
+            fontSize=14,
+            leading=18,
+            alignment=1,
+            textColor=colors.darkgray
+        )
+
+        story.append(Paragraph("IIITDM Jabalpur Gymkhana Newsletter", title_style))
+        story.append(Spacer(1, 10))
+        story.append(Paragraph("Stay tuned for the latest happenings and exclusive updates!", tagline_style))
+        story.append(Spacer(1, 30))
+
+        # Introductory paragraph
+        intro_style = ParagraphStyle(
+            name='Intro',
+            parent=styles['BodyText'],
+            fontSize=12,
+            leading=16,
+            alignment=1,
+            textColor=colors.black
+        )
+        intro_text = (
+            "Welcome to our monthly newsletter where we bring you the most exciting events from various clubs. "
+            "Dive into details, get inspired, and mark your calendars for a memorable experience!"
+        )
+        story.append(Paragraph(intro_text, intro_style))
+        story.append(Spacer(1, 40))
+
+        # --- Newsletter Content ---
+        club_header_style = ParagraphStyle(
+            name='ClubHeader',
+            fontName='Helvetica-Bold',
+            fontSize=18,
+            leading=22,
+            textColor=colors.darkred,
+            backColor=colors.whitesmoke,
+            spaceAfter=10,
+            borderPadding=(5, 5, 5, 5)
+        )
+
+        event_heading_style = ParagraphStyle(
+            name='EventHeading',
+            fontName='Helvetica-Bold',
+            fontSize=14,
+            leading=18,
+            textColor=colors.darkgreen
+        )
+
+        body_text_style = ParagraphStyle(
+            name='BodyText',
+            parent=styles['BodyText'],
+            fontSize=12,
+            leading=15,
+            textColor=colors.black
+        )
+
+        italic_style = ParagraphStyle(
+            name='Italic',
+            parent=styles['BodyText'],
+            fontName='Helvetica-Oblique',
+            fontSize=12,
+            leading=15,
+            textColor=colors.gray
+        )
+
+        for club in clubs:
+            story.append(Paragraph(f"Club: {club}", club_header_style))
+            story.append(Spacer(1, 20))
+
+            club_events = EventInput.objects.filter(event__club=club)
+            if time_threshold:
+                club_events = club_events.filter(event__end_date__range=(time_threshold, now))
+
+            for event in club_events:
+                event_info = event.event
+
+                story.append(HRFlowable(width="100%", thickness=1, color=colors.lightgrey))
+                story.append(Spacer(1, 10))
+                story.append(Paragraph("Event Details", event_heading_style))
+                story.append(Spacer(1, 10))
+
+                story.append(Paragraph(f"<b>Event:</b> {event_info.event_name}", body_text_style))
+                story.append(Spacer(1, 10))
+
+                story.append(Paragraph(
+                    f"<b>Start Date:</b> {event_info.start_date.strftime('%B %d, %Y')}",
+                    body_text_style))
+                story.append(Spacer(1, 10))
+
+                story.append(Paragraph(
+                    f"<b>Start Time:</b> {event_info.start_time.strftime('%I:%M %p')}",
+                    body_text_style))
+                story.append(Spacer(1, 10))
+
+                story.append(Paragraph(
+                    f"<b>Venue:</b> {event_info.venue}",
+                    body_text_style))
+                story.append(Spacer(1, 10))
+
+                story.append(Paragraph("<b>Description:</b>", event_heading_style))
+                story.append(Paragraph(f"{event.description}", body_text_style))
+                story.append(Spacer(1, 10))
+
+                if event.images:
+                    image_path = event.images.path
+                    try:
+                        story.append(Image(image_path, width=200, height=150))
+                    except Exception:
+                        story.append(Paragraph("[Image could not be loaded]", body_text_style))
+                else:
+                    story.append(Paragraph("[Image Placeholder]", body_text_style))
+
+                story.append(Spacer(1, 10))
+                story.append(Paragraph(
+                    "Additional Information: Stay tuned for more updates and behind-the-scenes insights!",
+                    italic_style))
+                story.append(Spacer(1, 30))
+
+            story.append(PageBreak())
+
+        doc.build(story, onFirstPage=add_page_decorations, onLaterPages=add_page_decorations)
+        buffer.seek(0)
+
+        return FileResponse(buffer, as_attachment=True, filename="newsletter.pdf")

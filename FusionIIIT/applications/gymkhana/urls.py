@@ -62,6 +62,9 @@ from applications.gymkhana.api.views import (
     AddClubPositionAPIView,
     ListClubPositionAPIView,
     NewFestAPIView,
+    CoordinatorEventsAPIView, 
+    EventInputAPIView, 
+    NewsletterPDFAPIView
 )
 from . import views
 from rest_framework.authtoken.views import obtain_auth_token
@@ -289,4 +292,7 @@ urlpatterns = [
     url(r"^fest/$" , FestListView.as_view(), name="fest"),
     url(r'^api/new_fest/$', NewFestAPIView.as_view(), name='new_fest'),
     url(r'^api/event_allocation/$',  FreeMembersForClubAPIView.as_view(), name='event allocation'),
+    url(r'^api/coordinator_events/$', CoordinatorEventsAPIView.as_view(), name='coordinator_events'),
+    url(r'^api/coordinator_eventsinput/$', EventInputAPIView.as_view(), name='coordinator_eventsinput'),
+    url(r'^api/newsletter_pdf/$', NewsletterPDFAPIView.as_view(), name='newsletter_pdf'),
 ]

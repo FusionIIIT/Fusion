@@ -640,3 +640,10 @@ class ClubPosition(models.Model):
         return f"{self.club.club_name} - {self.name} - {self.position}"
     class Meta:
         db_table = "ClubPosition"
+
+class EventInput(models.Model):
+    event=models.ForeignKey(Event_info,on_delete=models.CASCADE)    
+    description=models.TextField(max_length=500)
+    images=models.ImageField(upload_to="gymkhana/event_images",null=True)
+    def _str_(self):
+        return str(self.event)
