@@ -8,7 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
 from applications.globals.models import (DepartmentInfo, Designation,ExtraInfo, Faculty, HoldsDesignation)
 from applications.filetracking.sdk.methods import *
-
+from django.db.models import Q
 
 class ProgrammeForm(ModelForm):
     class Meta:
@@ -38,6 +38,20 @@ class DisciplineForm(ModelForm):
             'programmes': 'Link Programmes to this Disciplines',
             'acronym' : 'Enter Acronym'
         }
+    def __init__(self, *args, **kwargs):
+        super(DisciplineForm, self).__init__(*args, **kwargs)
+
+        # Get the current discipline instance
+        discipline = kwargs.get('instance', None)
+
+        if discipline:
+            # Show programmes that are either unlinked or linked to the current discipline
+            self.fields['programmes'].queryset = Programme.objects.filter(
+                Q(discipline__isnull=True) | Q(discipline=discipline)
+            )
+        else:
+            # Show only programmes that are unlinked (no discipline assigned)
+            self.fields['programmes'].queryset = Programme.objects.filter(discipline__isnull=True)
 
 
 class CurriculumForm(ModelForm):
@@ -203,6 +217,18 @@ class BatchForm(ModelForm):
             'year' : 'Batch Year',
             'curriculum' : 'Select Curriculum For Batch Students',
         }
+    def __init__(self, *args, **kwargs):
+        super(BatchForm, self).__init__(*args, **kwargs)
+        
+        # Get the list of curriculum ids that are already assigned to batches (excluding NULL values)
+        assigned_curriculum_ids = Batch.objects.filter(curriculum__isnull=False).values_list('curriculum', flat=True)
+
+        # Exclude curriculums already in use
+        available_curriculums = Curriculum.objects.exclude(id__in=assigned_curriculum_ids)
+
+        # Add an empty option (blank choice) at the start of the curriculum choices
+        self.fields['curriculum'].queryset = available_curriculums
+        self.fields['curriculum'].empty_label = "Select Curriculum"  # This adds a blank option with a label
 
 class CourseSlotForm(ModelForm):
 
