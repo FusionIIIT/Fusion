@@ -26,6 +26,8 @@ from applications.gymkhana.api.views import (
     RejectBudgetAPIView,
     UpdateEventAPIView,
     FestListView,
+    EventReportListAPIView,
+    EventReportAPIView,
 )
 from applications.gymkhana.api.views import (
     clubname,
@@ -295,4 +297,6 @@ urlpatterns = [
     url(r'^api/coordinator_events/$', CoordinatorEventsAPIView.as_view(), name='coordinator_events'),
     url(r'^api/coordinator_eventsinput/$', EventInputAPIView.as_view(), name='coordinator_eventsinput'),
     url(r'^api/newsletter_pdf/$', NewsletterPDFAPIView.as_view(), name='newsletter_pdf'),
+    url(r'^api/event_report_list/$', EventReportListAPIView.as_view(), name='event_report_list'),
+    url(r'^api/add_event_report/$', EventReportAPIView.as_view(), name='add_event_report')
 ]

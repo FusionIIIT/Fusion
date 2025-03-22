@@ -47,7 +47,8 @@ from .serializers import (
     Budget_CommentsSerializer,
     ClubPositionSerializer,
     FestSerializer,
-    EventInputSerializer
+    EventInputSerializer,
+    EventReportSerializer
 )
 
 from io import BytesIO
@@ -1713,3 +1714,71 @@ class NewsletterPDFAPIView(APIView):
         buffer.seek(0)
 
         return FileResponse(buffer, as_attachment=True, filename="newsletter.pdf")
+
+class EventReportAPIView(APIView):
+    def post(self, request):
+        data = request.data.copy()
+        event_id = data.get("event")
+
+        if isinstance(event_id, str) and event_id.isdigit():
+            event_id = int(event_id)
+
+        try:
+            event_instance = Event_info.objects.get(pk=event_id)
+            data["event"] = event_instance.pk  # Assigning the ID, not the instance
+        except Event_info.DoesNotExist:
+            return Response({"error": "Invalid event ID"}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = EventReportSerializer(data=data)
+        if serializer.is_valid():
+            event_report = serializer.save()
+
+            # Generate PDF using ReportLab
+            buffer = BytesIO()
+            doc = SimpleDocTemplate(buffer, pagesize=letter)
+            elements = []
+
+            styles = getSampleStyleSheet()
+            title_style = ParagraphStyle(
+                "TitleStyle",
+                parent=styles["Title"],
+                fontSize=16,
+                textColor=colors.darkblue,
+                alignment=1,  # Center alignment
+            )
+            normal_style = styles["Normal"]
+
+            elements.append(Paragraph(f"Event Report for {event_instance.event_name}", title_style))
+            elements.append(HRFlowable(width="100%", thickness=1, color=colors.black))
+            elements.append(Spacer(1, 12))
+            elements.append(Paragraph(f"Club: {event_instance.club}", normal_style)) 
+            elements.append(Paragraph(f"Venue: {event_report.venue}", normal_style))
+            elements.append(Paragraph(f"Incharge: {event_report.incharge}", normal_style))
+            elements.append(Paragraph(f"Start Date: {event_report.start_date}", normal_style))
+            elements.append(Paragraph(f"End Date: {event_report.end_date}", normal_style))
+            elements.append(Paragraph(f"Start Time: {event_report.start_time}", normal_style))
+            elements.append(Paragraph(f"End Time: {event_report.end_time}", normal_style))
+            elements.append(Paragraph(f"Budget: {event_report.event_budget}", normal_style))
+            elements.append(Paragraph(f"Special Announcement: {event_report.special_announcement or 'None'}", normal_style))
+            elements.append(PageBreak())
+
+            doc.build(elements)
+            buffer.seek(0)
+
+            file_name = f"event_report_{event_report.id}.pdf"
+            event_report.report_pdf.save(file_name, ContentFile(buffer.getvalue()), save=True)
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class EventReportListAPIView(APIView):
+    def get(self, request):
+        club_id = request.query_params.get("club")
+        if not club_id:
+            return Response({"error": "Club ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+        print(club_id)
+        events = Event_info.objects.filter(club=club_id)
+        print(events)
+        event_reports = EventReport.objects.filter(event_id__in=events)
+        serializer = EventReportSerializer(event_reports, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
