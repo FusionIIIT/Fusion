@@ -3,7 +3,7 @@ from django.http import (
     HttpResponseBadRequest, JsonResponse, HttpResponse, HttpResponseRedirect,HttpResponseNotFound,FileResponse
 )
 from .models import (
-    HostelLeave, HallCaretaker, HallWarden, StudentDetails, HostelNoticeBoard, Hall, Staff, HostelAllotment, HostelHistory, HostelTransactionHistory,GuestRoom,GuestRoomBooking, HostelComplaint, HostelStudentAttendence
+    HostelLeave, HallCaretaker, HallWarden, StudentDetails, HostelNoticeBoard, Hall, Staff, HostelAllotment, HostelHistory, HostelTransactionHistory,GuestRoom,GuestRoomBooking, HostelComplaint, HostelStudentAttendence, HostelAssignedBatch
 )
 from applications.hostel_management.models import HallCaretaker, HallWarden
 from django.db import IntegrityError, transaction
@@ -748,44 +748,33 @@ class ViewAttendance(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     def get(self, request):
+        year = request.GET.get('year')
+        month = request.GET.get('month')
+
         try:
-            year = request.GET.get('year')
-            month = request.GET.get('month')
-            
-            # Get student's hall
-            try:
-                student = Student.objects.get(id=request.user.extrainfo.id)
-                hall = Hall.objects.get(hall_id=student.hall_id)
-            except Student.DoesNotExist as e:
-                print(e)
-                return HttpResponseNotFound("Student not found")
-            
-            # Get attendance record (adjust this query based on your actual model)
-            try:
-                print(hall, year, month, student.batch)
-                attendance = HostelStudentAttendence.objects.get(
-                    hall=hall,
-                    year=year,
-                    month=month,
-                    batch=student.batch  # Assuming batch is stored in Student model
-                )
-                print(attendance)
-            except HostelStudentAttendence.DoesNotExist:
-                print("NOT FOUND")
-                return HttpResponseNotFound("Attendance record not found")
-            file_path = os.path.join(settings.MEDIA_ROOT, str(attendance.file))
-            print(file_path)
-            if not os.path.exists(file_path):
-                print("FILE NOT FOUND")
-                return HttpResponseNotFound("File not found")
-            
-            # Determine content type based on file extension
-            ext = os.path.splitext(file_path)[1].lower()
-            content_type = 'application/pdf' if ext == '.pdf' else f'image/{ext[1:]}'
-            
-            return FileResponse(open(file_path, 'rb'), content_type=content_type)
-        except Exception as e:
-            print(e)
+            student = Student.objects.get(id=request.user.extrainfo.id)
+            hall = Hall.objects.get(hall_id=student.hall_id)
+        except Student.DoesNotExist as e:
+            return HttpResponseNotFound("Student not found")
+
+        try:
+            attendance = HostelStudentAttendence.objects.get(
+                hall=hall,
+                year=year,
+                month=month,
+                batch=student.batch
+            )
+
+        except HostelStudentAttendence.DoesNotExist:
+            return HttpResponseNotFound("Attendance record not found")
+        file_path = os.path.join(settings.MEDIA_ROOT, str(attendance.file))
+        if not os.path.exists(file_path):
+            return HttpResponseNotFound("File not found")
+
+        ext = os.path.splitext(file_path)[1].lower()
+        content_type = 'application/pdf' if ext == '.pdf' else f'image/{ext[1:]}'
+
+        return FileResponse(open(file_path, 'rb'), content_type=content_type)
 
 @login_required
 def generate_worker_report(request):
@@ -2593,3 +2582,41 @@ class RemoveStudentView(View):
                 {"status": "error", "message": "Method Not Allowed"}, status=405
             )
         return super().dispatch(request, *args, **kwargs)
+
+class AssignBatch(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        try:
+            year = request.POST.get('year')
+            hall_id = request.POST.get('selectedHall')
+            batch = request.POST.get('selectedBatch')
+            file = request.FILES.get('file')
+            if not all([year, hall_id, batch, file]):
+                return Response({
+                    'error': 'All fields are required'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            hall = Hall.objects.get(hall_id=hall_id)
+
+            # Create or update attendance record
+            HostelStudentAttendence.objects.update_or_create(
+                hall=hall,
+                batch=batch,
+                year=year,
+                month=month,
+                defaults={'file': file}
+            )
+
+            return Response({
+                'message': 'Attendance record uploaded successfully'
+            })
+
+        except Hall.DoesNotExist:
+            return Response({
+                'error': 'Hall not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({
+                'error': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

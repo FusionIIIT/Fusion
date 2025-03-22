@@ -213,6 +213,18 @@ class HostelNoticeBoard(models.Model):
 #     def __str__(self):
 #         return str(self.student_id) + "->" + str(self.date) + "-" + str(self.present)
 
+class HostelAssignedBatch(models.Model):
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    batch = models.CharField(max_length=50)
+    year = models.IntegerField()
+    file = models.FileField(
+        upload_to='batch_sheet/',
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx', 'xls', 'xlsx'])]
+    )
+
+    def __str__(self):
+        return f"Batch sheet - {self.hall.hall_name} - {self.batch} - {self.month} {self.year}"
+
 class HostelStudentAttendence(models.Model):
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
     batch = models.CharField(max_length=50)
