@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404, render
 from applications.globals.models import User, ExtraInfo, HoldsDesignation
 
 from notifications.models import Notification
-from .models import Caretaker, StudentComplain, Supervisor
+from .models import Caretaker, StudentComplain, ServiceProvider, ServiceAuthority
 from notification.views import complaint_system_notif
 
 from applications.filetracking.sdk.methods import *
@@ -37,20 +37,20 @@ class CheckUser(APIView):
         """
         a = request.user
         b = ExtraInfo.objects.select_related("user", "department").filter(user=a).first()
-        supervisor_list = Supervisor.objects.all()
+        service_provider_list = ServiceProvider.objects.all()
         caretaker_list = Caretaker.objects.all()
-        is_supervisor = False
+        is_service_provider = False
         is_caretaker = False
-        for i in supervisor_list:
-            if b.id == i.sup_id_id:
-                is_supervisor = True
+        for i in service_provider_list:
+            if b.id == i.ser_pro_id_id:
+                is_service_provider = True
                 break
         for i in caretaker_list:
             if b.id == i.staff_id_id:
                 is_caretaker = True
                 break
-        if is_supervisor:
-            return Response({"user_type": "supervisor", "next_url": "/complaint/supervisor/"})
+        if is_service_provider:
+            return Response({"user_type": "service_provider", "next_url": "/complaint/service_provider/"})
         elif is_caretaker:
             return Response({"user_type": "caretaker", "next_url": "/complaint/caretaker/"})
         elif b.user_type == "student":
@@ -107,8 +107,41 @@ class UserComplaintView(APIView):
         serializer = StudentComplainSerializer(data=data)
         if serializer.is_valid():
             complaint = serializer.save()
-            # Handle file uploads, notifications, etc.
-            # Omitted for brevity.
+
+            location = data.get("location", "")
+            if location == "hall-1":
+                dsgn = "hall1caretaker"
+            elif location == "hall-3":
+                dsgn = "hall3caretaker"
+            elif location == "hall-4":
+                dsgn = "hall4caretaker"
+            elif location == "CC1":
+                dsgn = "cc1convener"
+            elif location == "CC2":
+                dsgn = "CC2 convener"
+            elif location == "core_lab":
+                dsgn = "corelabcaretaker"
+            elif location == "LHTC":
+                dsgn = "lhtccaretaker"
+            elif location == "NR2":
+                dsgn = "nr2caretaker"
+            elif location == "Maa Saraswati Hostel":
+                dsgn = "mshcaretaker"
+            elif location == "Nagarjun Hostel":
+                dsgn = "nhcaretaker"
+            elif location == "Panini Hostel":
+                dsgn = "phcaretaker"
+            else:
+                dsgn = "rewacaretaker"
+            
+            caretakers = HoldsDesignation.objects.select_related('user', 'working', 'designation').filter(designation__name=dsgn).distinct('user')
+            
+            # Send notification to all relevant caretakers
+            student = 1
+            message = "A New Complaint has been lodged"
+            for caretaker in caretakers:
+                complaint_system_notif(request.user, caretaker.user, 'lodge_comp_alert', complaint.id, student, message)
+            
             return Response(serializer.data, status=201)
         else:
             return Response(serializer.errors, status=400)
@@ -208,7 +241,7 @@ from django.contrib.auth import authenticate, login
 from django.shortcuts import get_object_or_404, render
 from applications.globals.models import User, ExtraInfo, HoldsDesignation
 from notifications.models import Notification
-from .models import Caretaker, StudentComplain, Supervisor
+from .models import Caretaker, StudentComplain, ServiceProvider
 from notification.views import complaint_system_notif
 from applications.filetracking.sdk.methods import *
 from applications.filetracking.models import *
@@ -469,19 +502,19 @@ from django.contrib.auth import authenticate, login
 from django.shortcuts import get_object_or_404, render
 from applications.globals.models import User, ExtraInfo, HoldsDesignation
 from notifications.models import Notification
-from .models import Caretaker, StudentComplain, Supervisor
+from .models import Caretaker, StudentComplain, ServiceProvider
 from notification.views import complaint_system_notif
 from applications.filetracking.sdk.methods import *
 from applications.filetracking.models import *
 from operator import attrgetter
 
 # Converted to DRF APIView
-class SupervisorLodgeView(APIView):
+class ServiceProviderLodgeView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         """
-        Allows the supervisor to lodge a new complaint.
+        Allows the service_provider to lodge a new complaint.
         """
         # Get the current user
         a = request.user
@@ -553,7 +586,7 @@ class SupervisorLodgeView(APIView):
 
     def get(self, request):
         """
-        Returns the history of complaints lodged by the supervisor.
+        Returns the history of complaints lodged by the service_provider.
         """
         a = request.user
         y = ExtraInfo.objects.select_related('user', 'department').filter(user=a).first()
@@ -562,23 +595,23 @@ class SupervisorLodgeView(APIView):
         return Response(serializer.data)
 
 # Converted to DRF APIView
-class SupervisorView(APIView):
+class ServiceProviderView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         """
-        Returns the list of complaints assigned to the supervisor's area.
+        Returns the list of complaints assigned to the service_provider's area.
         """
         current_user = request.user
         y = ExtraInfo.objects.select_related('user', 'department').filter(user=current_user).first()
         try:
-            supervisor = Supervisor.objects.select_related('sup_id').get(sup_id=y)
-            type = supervisor.type
+            service_provider = ServiceProvider.objects.select_related('ser_pro_id').get(ser_pro_id=y)
+            type = service_provider.type
             complaints = StudentComplain.objects.filter(complaint_type=type, status=1).order_by('-id')
             serializer = StudentComplainSerializer(complaints, many=True)
             return Response(serializer.data)
-        except Supervisor.DoesNotExist:
-            return Response({'error': 'Supervisor does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        except ServiceProvider.DoesNotExist:
+            return Response({'error': 'ServiceProvider does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
 # Converted to DRF APIView
 class FeedbackSuperView(APIView):
@@ -586,7 +619,7 @@ class FeedbackSuperView(APIView):
 
     def get(self, request, feedcomp_id):
         """
-        Returns the feedback details for a specific complaint for the supervisor.
+        Returns the feedback details for a specific complaint for the service_provider.
         """
         try:
             complaint = StudentComplain.objects.select_related('complainer', 'complainer_user', 'complainer_department').get(id=feedcomp_id)
@@ -616,12 +649,12 @@ class CaretakerIdKnowMoreView(APIView):
             return Response({'error': 'Caretaker not found'}, status=status.HTTP_404_NOT_FOUND)
 
 # Converted to DRF APIView
-class SupervisorComplaintDetailView(APIView):
+class ServiceProviderComplaintDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, detailcomp_id1):
         """
-        Returns the details of a complaint for the supervisor, including caretaker info.
+        Returns the details of a complaint for the service_provider, including caretaker info.
         """
         try:
             complaint = StudentComplain.objects.select_related('complainer', 'complainer_user', 'complainer_department').get(id=detailcomp_id1)
@@ -633,12 +666,12 @@ class SupervisorComplaintDetailView(APIView):
             return Response({'error': 'Complaint not found'}, status=status.HTTP_404_NOT_FOUND)
 
 # Converted to DRF APIView
-class SupervisorResolvePendingView(APIView):
+class ServiceProviderResolvePendingView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, cid):
         """
-        Allows the supervisor to resolve a pending complaint.
+        Allows the service_provider to resolve a pending complaint.
         """
         serializer = ResolvePendingSerializer(data=request.data)
         if serializer.is_valid():
@@ -671,12 +704,12 @@ class SupervisorResolvePendingView(APIView):
             return Response({'error': 'Complaint not found'}, status=status.HTTP_404_NOT_FOUND)
 
 # Converted to DRF APIView
-class SupervisorSubmitFeedbackView(APIView):
+class ServiceProviderSubmitFeedbackView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, complaint_id):
         """
-        Allows the supervisor to submit feedback for a complaint.
+        Allows the service_provider to submit feedback for a complaint.
         """
         serializer = FeedbackSerializer(data=request.data)
         if serializer.is_valid():
@@ -721,7 +754,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 # Import necessary models and serializers
-from .models import Caretaker, StudentComplain, Supervisor, Workers, SectionIncharge
+from .models import Caretaker, StudentComplain, ServiceProvider, Workers, SectionIncharge
 from .serializers import StudentComplainSerializer, WorkersSerializer  # Added WorkersSerializer
 from applications.globals.models import User, ExtraInfo, HoldsDesignation
 
@@ -754,7 +787,7 @@ class ForwardCompaintView(APIView):
 
     def post(self, request, comp_id1):
         """
-        Assigns a complaint to a supervisor.
+        Assigns a complaint to a service_provider.
         """
         current_user = request.user
         y = ExtraInfo.objects.filter(user=current_user).first()
@@ -767,37 +800,43 @@ class ForwardCompaintView(APIView):
 
         complaint_type = complaint.complaint_type
 
-        supervisors = Supervisor.objects.filter(type=complaint_type)
-        if not supervisors.exists():
-            return Response({'error': 'Supervisor does not exist for this complaint type'}, status=status.HTTP_404_NOT_FOUND)
+        service_providers = ServiceProvider.objects.filter(type=complaint_type)
+        if not service_providers.exists():
+            return Response({'error': 'ServiceProvider does not exist for this complaint type'}, status=status.HTTP_404_NOT_FOUND)
 
-        supervisor = supervisors.first()
-        supervisor_details = ExtraInfo.objects.get(id=supervisor.sup_id.id)
+        service_provider = service_providers.first()
+        service_provider_details = ExtraInfo.objects.get(id=service_provider.ser_pro_id.id)
 
         # Update complaint status
         complaint.status = 1
         complaint.save()
 
-        # Forward file to supervisor
-        sup_designations = HoldsDesignation.objects.filter(user=supervisor_details.user_id)
+        # Forward file to service_provider
+        sup_designations = HoldsDesignation.objects.filter(user=service_provider_details.user_id).distinct('user_id')
+        
+        #send notification to all the service providers
+        for sup in sup_designations:
+            print(sup.user_id)
+            complaint_system_notif(request.user, User.objects.get(id=sup.user_id), 'comp_assigned_alert', complaint_id, 0, "A new complaint has been assigned to you")
+        
 
         files = File.objects.filter(src_object_id=complaint_id)
 
         if not files.exists():
             return Response({'error': 'No files associated with this complaint'}, status=status.HTTP_206_PARTIAL_CONTENT)
 
-        supervisor_username = User.objects.get(id=supervisor_details.user_id).username
+        service_provider_username = User.objects.get(id=service_provider_details.user_id).username
 
         file = forward_file(
             file_id=files.first().id,
-            receiver=supervisor_username,
+            receiver=service_provider_username,
             receiver_designation=sup_designations.first().designation,
             file_extra_JSON={},
             remarks="",
             file_attachment=None
         )
 
-        return Response({'success': 'Complaint assigned to supervisor'}, status=status.HTTP_200_OK)
+        return Response({'success': 'Complaint assigned to service_provider'}, status=status.HTTP_200_OK)
 
     def get(self, request, comp_id1):
         """
@@ -854,7 +893,7 @@ class ChangeStatusSuperView(APIView):
 
     def post(self, request, complaint_id, status):
         """
-        Allows the supervisor to change the status of a complaint.
+        Allows the service_provider to change the status of a complaint.
         """
         try:
             complaint = StudentComplain.objects.get(id=complaint_id)
@@ -873,33 +912,39 @@ class GenerateReportView(APIView):
 
     def get(self, request):
         """
-        Generates a report of complaints for the caretaker's area, warden's area, or supervisor's type.
+        Generates a report of complaints for the caretaker's area, warden's area, or service_provider's type.
         """
         user = request.user
 
         is_caretaker = hasattr(user, 'caretaker')
-        is_supervisor = False
+        is_service_provider = False
         is_warden = hasattr(user, 'warden')
 
-        # Check if user is a supervisor
+        # Check if user is a service_provider
         try:
-            supervisor = Supervisor.objects.get(sup_id=user.extrainfo)
-            is_supervisor = True
-        except Supervisor.DoesNotExist:
-            is_supervisor = False
+            service_provider = ServiceProvider.objects.get(ser_pro_id=user.extrainfo)
+            is_service_provider = True
+        except ServiceProvider.DoesNotExist:
+            is_service_provider = False
 
-        if not is_caretaker and not is_supervisor and not is_warden:
+        try:
+            is_service_authority = ServiceAuthority.objects.get(ser_pro_id=user.extrainfo)
+            is_service_authority = True
+        except ServiceAuthority.DoesNotExist:
+            is_service_authority = False
+
+        if not is_caretaker and not is_service_provider and not is_admin and not is_service_provider and not is_service_provider and not is_service_authority:
             return Response({"detail": "Not authorized to generate report."}, status=403)
 
         complaints = None
 
-        # Generate report for supervisor
-        if is_supervisor:
-            print(f"Generating report for Supervisor {supervisor}")
-            complaints = StudentComplain.objects.filter(complaint_type=supervisor.type)
+        # Generate report for service_provider
+        if is_service_provider:
+            print(f"Generating report for ServiceProvider {service_provider}")
+            complaints = StudentComplain.objects.filter(complaint_type=service_provider.type)
 
         # Generate report for caretaker
-        if is_caretaker and not is_supervisor:
+        if is_caretaker and not is_service_provider:
             caretaker = get_object_or_404(Caretaker, staff_id=user.extrainfo)
             complaints = StudentComplain.objects.filter(location=caretaker.area)
 

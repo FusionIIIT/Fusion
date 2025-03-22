@@ -89,9 +89,31 @@ class StudentComplain(models.Model):
         return str(self.complainer.user.username)
 
 
-class Supervisor(models.Model):
-    sup_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
+class ServiceProvider(models.Model):
+    ser_pro_id = models.ForeignKey(
+        ExtraInfo,
+        on_delete=models.CASCADE,
+        db_column="ser_pro_id_id"  # Map to the existing column
+    )
     type = models.CharField(choices=Constants.COMPLAINT_TYPE, max_length=30,default='Electricity')
 
+    class Meta:
+        db_table = "complaint_system_service_provider"
+
     def __str__(self):
-        return str(self.sup_id) + '-' + str(self.type)
+        return str(self.ser_pro_id) + '-' + str(self.type)
+
+
+class ServiceAuthority(models.Model):
+    ser_pro_id = models.ForeignKey(
+        ExtraInfo,
+        on_delete=models.CASCADE,
+        db_column="ser_auth_id_id"  # Map to the existing column
+    )
+    type = models.CharField(choices=Constants.COMPLAINT_TYPE, max_length=30,default='Electricity')
+
+    class Meta:
+        db_table = "complaint_system_service_authority"
+
+    def __str__(self):
+        return str(self.ser_pro_id) + '-' + str(self.type)
