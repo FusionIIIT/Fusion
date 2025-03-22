@@ -216,7 +216,7 @@ class HostelNoticeBoard(models.Model):
 class HostelAssignedBatch(models.Model):
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
     batch = models.CharField(max_length=50)
-    year = models.IntegerField()
+    session = models.CharField(max_length=50)
     file = models.FileField(
         upload_to='batch_sheet/',
         validators=[FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx', 'xls', 'xlsx'])]

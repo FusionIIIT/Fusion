@@ -52,6 +52,7 @@ urlpatterns = [
     path("students_get_students_info/", views.students_get_students_info.as_view(), name="students_get_students_info"),
     path("caretaker_get_students_info/", views.caretaker_get_students_info.as_view(), name="caretaker_get_students_info"),
     path("assign-batch/", views.AssignBatchView.as_view(), name="AssignBatchView"),
+    path("batch-assign/", views.AssignBatch.as_view(), name="AssignBatch"),
     path("hall-ids/", views.HallIdView.as_view(), name="hall"),
 
     # Admin - Assign Caretaker

@@ -2588,26 +2588,25 @@ class AssignBatch(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
         try:
-            year = request.POST.get('year')
             hall_id = request.POST.get('selectedHall')
             batch = request.POST.get('selectedBatch')
+            session = request.POST.get('academicSession')
             file = request.FILES.get('file')
-            if not all([year, hall_id, batch, file]):
+            if not all([session, hall_id, batch, file]):
                 return Response({
                     'error': 'All fields are required'
                 }, status=status.HTTP_400_BAD_REQUEST)
-
             hall = Hall.objects.get(hall_id=hall_id)
-
             # Create or update attendance record
-            HostelStudentAttendence.objects.update_or_create(
-                hall=hall,
-                batch=batch,
-                year=year,
-                month=month,
-                defaults={'file': file}
-            )
-
+            try:
+                HostelAssignedBatch.objects.update_or_create(
+                    hall=hall,
+                    batch=batch,
+                    session = session,
+                    defaults={'file': file}
+                )
+            except Exception as e:
+                print(e)
             return Response({
                 'message': 'Attendance record uploaded successfully'
             })
