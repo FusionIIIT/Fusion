@@ -686,308 +686,308 @@ def handle_process_bills(request):
     return Response({'obj': obj}, status=status.HTTP_200_OK)
 
 
-@api_view(['POST'])
-def page1_1(request):
-    project_id = request.data.get('name')
-    request.session['projectId'] = project_id
-    project = Projects(id=project_id)
-    project.save()
+# @api_view(['POST'])
+# def page1_1(request):
+#     project_id = request.data.get('name')
+#     request.session['projectId'] = project_id
+#     project = Projects(id=project_id)
+#     project.save()
         
-    serializer = PageOneDetailsSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save(id=project)  # Assign the project instance
-        return Response({'message': 'Page One Details Saved!'}, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#     serializer = PageOneDetailsSerializer(data=request.data)
+#     if serializer.is_valid():
+#         serializer.save(id=project)  # Assign the project instance
+#         return Response({'message': 'Page One Details Saved!'}, status=status.HTTP_201_CREATED)
+#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['POST'])
-def AESForm(request):
-    serializer = AESDetailsSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save(key=Projects.objects.get(id=request.session['projectId']))
-        return Response({'message': 'AES Details Saved!'}, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+# @api_view(['POST'])
+# def AESForm(request):
+#     serializer = AESDetailsSerializer(data=request.data)
+#     if serializer.is_valid():
+#         serializer.save(key=Projects.objects.get(id=request.session['projectId']))
+#         return Response({'message': 'AES Details Saved!'}, status=status.HTTP_201_CREATED)
+#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['POST'])
-def page2_1(request):
-    request.session['projectId'] = request.data.get('id')
-    serializer = PageTwoDetailsSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save(id=Projects.objects.get(id=request.session['projectId']))
-        return Response({'message': 'Page Two Details Saved!'}, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+# @api_view(['POST'])
+# def page2_1(request):
+#     request.session['projectId'] = request.data.get('id')
+#     serializer = PageTwoDetailsSerializer(data=request.data)
+#     if serializer.is_valid():
+#         serializer.save(id=Projects.objects.get(id=request.session['projectId']))
+#         return Response({'message': 'Page Two Details Saved!'}, status=status.HTTP_201_CREATED)
+#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['POST'])
-def corrigendumInput(request):
-    existingObject = CorrigendumTable.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
-    if existingObject.count() == 1:
-        existingObject.delete()
+# @api_view(['POST'])
+# def corrigendumInput(request):
+#     existingObject = CorrigendumTable.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+#     if existingObject.count() == 1:
+#         existingObject.delete()
 
-    serializer = CorrigendumTableSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save(key=Projects.objects.get(id=request.session['projectId']))
-        return Response({'message': 'Corrigendum Input Saved!'}, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#     serializer = CorrigendumTableSerializer(data=request.data)
+#     if serializer.is_valid():
+#         serializer.save(key=Projects.objects.get(id=request.session['projectId']))
+#         return Response({'message': 'Corrigendum Input Saved!'}, status=status.HTTP_201_CREATED)
+#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['POST'])
-def addendumInput(request):
-    existingObject = Addendum.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
-    if existingObject.count() == 1:
-        existingObject.delete()
+# @api_view(['POST'])
+# def addendumInput(request):
+#     existingObject = Addendum.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+#     if existingObject.count() == 1:
+#         existingObject.delete()
 
-    serializer = AddendumSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save(key=Projects.objects.get(id=request.session['projectId']))
-        return Response({'message': 'Addendum Input Saved!'}, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#     serializer = AddendumSerializer(data=request.data)
+#     if serializer.is_valid():
+#         serializer.save(key=Projects.objects.get(id=request.session['projectId']))
+#         return Response({'message': 'Addendum Input Saved!'}, status=status.HTTP_201_CREATED)
+#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['POST'])
-def PreBidForm(request):
-    existingObject = PreBidDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
-    if existingObject.count() == 1:
-        existingObject.delete()
+# @api_view(['POST'])
+# def PreBidForm(request):
+#     existingObject = PreBidDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+#     if existingObject.count() == 1:
+#         existingObject.delete()
 
-    serializer = PreBidDetailsSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save(key=Projects.objects.get(id=request.session['projectId']))
-        return Response({'message': 'PreBid Form Saved!'}, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#     serializer = PreBidDetailsSerializer(data=request.data)
+#     if serializer.is_valid():
+#         serializer.save(key=Projects.objects.get(id=request.session['projectId']))
+#         return Response({'message': 'PreBid Form Saved!'}, status=status.HTTP_201_CREATED)
+#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['POST'])
-def noOfEntriesTechnicalBid(request):
-    existingObject = NoOfTechnicalBidTimes.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
-    if existingObject.count() == 1:
-        existingObject.delete()
+# @api_view(['POST'])
+# def noOfEntriesTechnicalBid(request):
+#     existingObject = NoOfTechnicalBidTimes.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+#     if existingObject.count() == 1:
+#         existingObject.delete()
         
-    serializer = NoOfTechnicalBidTimesSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save(key=Projects.objects.get(id=request.session['projectId']))
-        return Response({'message': 'Number of Entries for Technical Bid Saved!'}, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#     serializer = NoOfTechnicalBidTimesSerializer(data=request.data)
+#     if serializer.is_valid():
+#         serializer.save(key=Projects.objects.get(id=request.session['projectId']))
+#         return Response({'message': 'Number of Entries for Technical Bid Saved!'}, status=status.HTTP_201_CREATED)
+#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['POST'])
-def TechnicalBidForm(request):
-    numberOfTechnicalBidTimes = NoOfTechnicalBidTimes.objects.get(key=Projects.objects.get(id=request.session['projectId'])).number
-    existingObject = TechnicalBidDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
-    if existingObject.count() == 1:
-        existingObject.delete()
+# @api_view(['POST'])
+# def TechnicalBidForm(request):
+#     numberOfTechnicalBidTimes = NoOfTechnicalBidTimes.objects.get(key=Projects.objects.get(id=request.session['projectId'])).number
+#     existingObject = TechnicalBidDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+#     if existingObject.count() == 1:
+#         existingObject.delete()
 
-    serializer = TechnicalBidDetailsSerializer(data=request.data)
-    if serializer.is_valid():
-        technical_bid = serializer.save(key=Projects.objects.get(id=request.session['projectId']))
+#     serializer = TechnicalBidDetailsSerializer(data=request.data)
+#     if serializer.is_valid():
+#         technical_bid = serializer.save(key=Projects.objects.get(id=request.session['projectId']))
             
-        TechnicalBidContractorDetails.objects.filter(key=technical_bid).all().delete()
-        for w in range(numberOfTechnicalBidTimes):
-            contractor_serializer = TechnicalBidContractorDetailsSerializer(data={
-                'key': technical_bid,
-                'name': request.data.get(f'{w}name'),
-                'description': request.data.get(f'{w}Description'),
-            })
-            if contractor_serializer.is_valid():
-                contractor_serializer.save()
+#         TechnicalBidContractorDetails.objects.filter(key=technical_bid).all().delete()
+#         for w in range(numberOfTechnicalBidTimes):
+#             contractor_serializer = TechnicalBidContractorDetailsSerializer(data={
+#                 'key': technical_bid,
+#                 'name': request.data.get(f'{w}name'),
+#                 'description': request.data.get(f'{w}Description'),
+#             })
+#             if contractor_serializer.is_valid():
+#                 contractor_serializer.save()
             
-        return Response({'message': 'Technical Bid Form Saved!'}, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#         return Response({'message': 'Technical Bid Form Saved!'}, status=status.HTTP_201_CREATED)
+#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['POST', 'GET'])
-def noOfEntriesFinancialBid(request):
-    project_id = request.session['projectId']
-    objectTechnicalBid = TechnicalBidDetails.objects.get(key=Projects.objects.get(id=project_id))
-    objects = TechnicalBidContractorDetails.objects.filter(key=objectTechnicalBid)
+# @api_view(['POST', 'GET'])
+# def noOfEntriesFinancialBid(request):
+#     project_id = request.session['projectId']
+#     objectTechnicalBid = TechnicalBidDetails.objects.get(key=Projects.objects.get(id=project_id))
+#     objects = TechnicalBidContractorDetails.objects.filter(key=objectTechnicalBid)
 
-    listOfContractors = [t.name for t in objects]
+#     listOfContractors = [t.name for t in objects]
 
-    if request.method == 'POST':
-        existingObject = FinancialBidDetails.objects.filter(key=Projects.objects.get(id=project_id))
-        if existingObject.count() == 1:
-            existingObject.delete()
+#     if request.method == 'POST':
+#         existingObject = FinancialBidDetails.objects.filter(key=Projects.objects.get(id=project_id))
+#         if existingObject.count() == 1:
+#             existingObject.delete()
 
-        serializer = FinancialBidDetailsSerializer(data=request.data)
-        if serializer.is_valid():
-            financial_bid = serializer.save(key=Projects.objects.get(id=project_id))
-            for contractor in listOfContractors:
-                contractor_serializer = FinancialContractorDetailsSerializer(data={
-                    'key': financial_bid,
-                    'name': contractor,
-                    'totalCost': request.data[contractor + 'totalCost'],
-                    'estimatedCost': request.data[contractor + 'estimatedCost'],
-                    'percentageRelCost': request.data[contractor + 'percentageRelCost'],
-                    'perFigures': request.data[contractor + 'perFigures'],
-                })
-                if contractor_serializer.is_valid():
-                    contractor_serializer.save()
-            return Response({"message": "Financial bid details saved successfully."}, status=status.HTTP_201_CREATED)
+#         serializer = FinancialBidDetailsSerializer(data=request.data)
+#         if serializer.is_valid():
+#             financial_bid = serializer.save(key=Projects.objects.get(id=project_id))
+#             for contractor in listOfContractors:
+#                 contractor_serializer = FinancialContractorDetailsSerializer(data={
+#                     'key': financial_bid,
+#                     'name': contractor,
+#                     'totalCost': request.data[contractor + 'totalCost'],
+#                     'estimatedCost': request.data[contractor + 'estimatedCost'],
+#                     'percentageRelCost': request.data[contractor + 'percentageRelCost'],
+#                     'perFigures': request.data[contractor + 'perFigures'],
+#                 })
+#                 if contractor_serializer.is_valid():
+#                     contractor_serializer.save()
+#             return Response({"message": "Financial bid details saved successfully."}, status=status.HTTP_201_CREATED)
 
-    return Response({'list': listOfContractors}, status=status.HTTP_200_OK)
+#     return Response({'list': listOfContractors}, status=status.HTTP_200_OK)
 
-@api_view(['POST', 'GET'])
-def letterOfIntent(request):
-    if request.method == 'POST':
-        existingObject = LetterOfIntentDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
-        if existingObject.count() == 1:
-            existingObject.delete()
+# @api_view(['POST', 'GET'])
+# def letterOfIntent(request):
+#     if request.method == 'POST':
+#         existingObject = LetterOfIntentDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+#         if existingObject.count() == 1:
+#             existingObject.delete()
 
-        serializer = LetterOfIntentDetailsSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(key=Projects.objects.get(id=request.session['projectId']))
-            return Response({"message": "Letter of Intent saved successfully."}, status=status.HTTP_201_CREATED)
+#         serializer = LetterOfIntentDetailsSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save(key=Projects.objects.get(id=request.session['projectId']))
+#             return Response({"message": "Letter of Intent saved successfully."}, status=status.HTTP_201_CREATED)
 
-    return Response({}, status=status.HTTP_200_OK)
+#     return Response({}, status=status.HTTP_200_OK)
 
-@api_view(['POST', 'GET'])
-def AgreementInput(request):
-    project_id = request.session.get('projectId')
-    if request.method == 'POST':
-        existingObject = Agreement.objects.filter(key=Projects.objects.get(id=project_id))
-        if existingObject.exists():
-            existingObject.delete()
+# @api_view(['POST', 'GET'])
+# def AgreementInput(request):
+#     project_id = request.session.get('projectId')
+#     if request.method == 'POST':
+#         existingObject = Agreement.objects.filter(key=Projects.objects.get(id=project_id))
+#         if existingObject.exists():
+#             existingObject.delete()
 
-        serializer = AgreementSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(key=Projects.objects.get(id=project_id))
-            return Response({"message": "Agreement saved successfully."}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#         serializer = AgreementSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save(key=Projects.objects.get(id=project_id))
+#             return Response({"message": "Agreement saved successfully."}, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    return Response({}, status=status.HTTP_200_OK)
+#     return Response({}, status=status.HTTP_200_OK)
 
-@api_view(['POST', 'GET'])
-def milestonesForm(request):
-    project_id = request.session.get('projectId')
-    if request.method == 'POST':
-        serializer = MilestonesSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(key=Projects.objects.get(id=project_id))
-            return Response({"message": "Milestone saved successfully."}, status=status.HTTP_201_CREATED)
+# @api_view(['POST', 'GET'])
+# def milestonesForm(request):
+#     project_id = request.session.get('projectId')
+#     if request.method == 'POST':
+#         serializer = MilestonesSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save(key=Projects.objects.get(id=project_id))
+#             return Response({"message": "Milestone saved successfully."}, status=status.HTTP_201_CREATED)
 
-    Milestones.objects.filter(key=Projects.objects.get(id=project_id)).delete()
-    return Response({}, status=status.HTTP_200_OK)
-
-
-@api_view(['POST', 'GET'])
-def page3_1(request):
-    if request.method == 'POST':
-        request.session['projectId'] = request.data['id']
-        serializer = PageThreeDetailsSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(id=Projects.objects.get(id=request.session['projectId']))
-            return Response({"message": "Page 3 details saved successfully."}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    return Response({}, status=status.HTTP_200_OK)
-
-@api_view(['POST', 'GET'])
-def ExtensionOfTimeForm(request):
-    project_id = request.session.get('projectId')
-    if request.method == 'POST':
-        serializer = ExtensionOfTimeDetailsSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(key=Projects.objects.get(id=project_id))
-            return Response({"message": "Extension of Time details saved successfully."}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    return Response({}, status=status.HTTP_200_OK)
-
-@api_view(['POST'])
-def page1View(request):
-    request.session['projectId'] = request.data['id']
-    projectPageOne = PageOneDetails.objects.get(id=Projects.objects.get(id=request.session['projectId']))
-    return Response({'x': projectPageOne}, status=status.HTTP_200_OK)
-
-@api_view(['POST'])
-def page2View(request):
-    projectPageTwo = PageTwoDetails.objects.get(id=Projects.objects.get(id=request.session['projectId']))
-    return Response({'x': projectPageTwo}, status=status.HTTP_200_OK)
-
-@api_view(['GET'])
-def AESView(request):
-    objects = AESDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
-    serializer = AESDetailsSerializer(objects, many=True)
-    return Response({'AES': serializer.data}, status=status.HTTP_200_OK)
-
-@api_view(['GET'])
-def financialBidView(request):
-    elements = []
-    objects = FinancialBidDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
-    for f in objects:
-        contractorObjects = FinancialContractorDetails.objects.filter(key=f)
-        for w in contractorObjects:
-            obj = [f.sNo, f.description, w.name, w.estimatedCost, w.percentageRelCost, w.perFigures, w.totalCost]
-            elements.append(obj)
-    return Response({'financial': elements}, status=status.HTTP_200_OK)
-
-@api_view(['GET'])
-def technicalBidView(request):
-    elements = []
-    objects = TechnicalBidDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
-    for f in objects:
-        contractorObjects = TechnicalBidContractorDetails.objects.filter(key=f)
-        for w in contractorObjects:
-            obj = [f.sNo, f.requirements, w.name, w.description]
-            elements.append(obj)
-    return Response({'technical': elements}, status=status.HTTP_200_OK)
-
-@api_view(['GET'])
-def preBidDetailsView(request):
-    preBidObjects = PreBidDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
-    serializer = PreBidDetailsSerializer(preBidObjects, many=True)
-    return Response({'preBidDetails': serializer.data}, status=status.HTTP_200_OK)
-
-@api_view(['GET'])
-def corrigendumView(request):
-    try:
-        corrigendumObject = CorrigendumTable.objects.get(key=Projects.objects.get(id=request.session['projectId']))
-        serializer = CorrigendumTableSerializer(corrigendumObject)
-        return Response({'corrigendum': serializer.data}, status=status.HTTP_200_OK)
-    except CorrigendumTable.DoesNotExist:
-        return Response({'error': 'Corrigendum not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-@api_view(['GET'])
-def addendumView(request):
-    try:
-        addendumObject = Addendum.objects.get(key=Projects.objects.get(id=request.session['projectId']))
-        serializer = AddendumSerializer(addendumObject)
-        return Response({'addendum': serializer.data}, status=status.HTTP_200_OK)
-    except Addendum.DoesNotExist:
-        return Response({'error': 'Addendum not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-@api_view(['GET'])
-def letterOfIntentView(request):
-    try:
-        letterOfIntentObject = LetterOfIntentDetails.objects.get(key=Projects.objects.get(id=request.session['projectId']))
-        serializer = LetterOfIntentDetailsSerializer(letterOfIntentObject)
-        return Response({'letterOfIntent': serializer.data}, status=status.HTTP_200_OK)
-    except LetterOfIntentDetails.DoesNotExist:
-        return Response({'error': 'Letter of Intent not found.'}, status=status.HTTP_404_NOT_FOUND)
+#     Milestones.objects.filter(key=Projects.objects.get(id=project_id)).delete()
+#     return Response({}, status=status.HTTP_200_OK)
 
 
-@api_view(['GET'])
-def agreementView(request):
-    try:
-        agreementObject = Agreement.objects.get(key=Projects.objects.get(id=request.session['projectId']))
-        serializer = AgreementSerializer(agreementObject)
-        return Response({'agreement': serializer.data}, status=status.HTTP_200_OK)
-    except Agreement.DoesNotExist:
-        return Response({'error': 'Agreement not found.'}, status=status.HTTP_404_NOT_FOUND)
+# @api_view(['POST', 'GET'])
+# def page3_1(request):
+#     if request.method == 'POST':
+#         request.session['projectId'] = request.data['id']
+#         serializer = PageThreeDetailsSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save(id=Projects.objects.get(id=request.session['projectId']))
+#             return Response({"message": "Page 3 details saved successfully."}, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
-def milestoneView(request):
-    milestoneObjects = Milestones.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
-    serializer = MilestonesSerializer(milestoneObjects, many=True)
-    return Response({'milestones': serializer.data}, status=status.HTTP_200_OK)
+#     return Response({}, status=status.HTTP_200_OK)
 
-@api_view(['GET'])
-def page3View(request):
-    try:
-        pageThreeDetails = PageThreeDetails.objects.get(key=Projects.objects.get(id=request.session['projectId']))
-        serializer = PageThreeDetailsSerializer(pageThreeDetails)
-        return Response({'pageThreeDetails': serializer.data}, status=status.HTTP_200_OK)
-    except PageThreeDetails.DoesNotExist:
-        return Response({'error': 'Page Three Details not found.'}, status=status.HTTP_404_NOT_FOUND)
+# @api_view(['POST', 'GET'])
+# def ExtensionOfTimeForm(request):
+#     project_id = request.session.get('projectId')
+#     if request.method == 'POST':
+#         serializer = ExtensionOfTimeDetailsSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save(key=Projects.objects.get(id=project_id))
+#             return Response({"message": "Extension of Time details saved successfully."}, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
-def extensionFormView(request):
-    extensionObjects = ExtensionOfTimeDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
-    serializer = ExtensionOfTimeDetailsSerializer(extensionObjects, many=True)
-    return Response({'extension': serializer.data}, status=status.HTTP_200_OK)
+#     return Response({}, status=status.HTTP_200_OK)
+
+# @api_view(['POST'])
+# def page1View(request):
+#     request.session['projectId'] = request.data['id']
+#     projectPageOne = PageOneDetails.objects.get(id=Projects.objects.get(id=request.session['projectId']))
+#     return Response({'x': projectPageOne}, status=status.HTTP_200_OK)
+
+# @api_view(['POST'])
+# def page2View(request):
+#     projectPageTwo = PageTwoDetails.objects.get(id=Projects.objects.get(id=request.session['projectId']))
+#     return Response({'x': projectPageTwo}, status=status.HTTP_200_OK)
+
+# @api_view(['GET'])
+# def AESView(request):
+#     objects = AESDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+#     serializer = AESDetailsSerializer(objects, many=True)
+#     return Response({'AES': serializer.data}, status=status.HTTP_200_OK)
+
+# @api_view(['GET'])
+# def financialBidView(request):
+#     elements = []
+#     objects = FinancialBidDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+#     for f in objects:
+#         contractorObjects = FinancialContractorDetails.objects.filter(key=f)
+#         for w in contractorObjects:
+#             obj = [f.sNo, f.description, w.name, w.estimatedCost, w.percentageRelCost, w.perFigures, w.totalCost]
+#             elements.append(obj)
+#     return Response({'financial': elements}, status=status.HTTP_200_OK)
+
+# @api_view(['GET'])
+# def technicalBidView(request):
+#     elements = []
+#     objects = TechnicalBidDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+#     for f in objects:
+#         contractorObjects = TechnicalBidContractorDetails.objects.filter(key=f)
+#         for w in contractorObjects:
+#             obj = [f.sNo, f.requirements, w.name, w.description]
+#             elements.append(obj)
+#     return Response({'technical': elements}, status=status.HTTP_200_OK)
+
+# @api_view(['GET'])
+# def preBidDetailsView(request):
+#     preBidObjects = PreBidDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+#     serializer = PreBidDetailsSerializer(preBidObjects, many=True)
+#     return Response({'preBidDetails': serializer.data}, status=status.HTTP_200_OK)
+
+# @api_view(['GET'])
+# def corrigendumView(request):
+#     try:
+#         corrigendumObject = CorrigendumTable.objects.get(key=Projects.objects.get(id=request.session['projectId']))
+#         serializer = CorrigendumTableSerializer(corrigendumObject)
+#         return Response({'corrigendum': serializer.data}, status=status.HTTP_200_OK)
+#     except CorrigendumTable.DoesNotExist:
+#         return Response({'error': 'Corrigendum not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+# @api_view(['GET'])
+# def addendumView(request):
+#     try:
+#         addendumObject = Addendum.objects.get(key=Projects.objects.get(id=request.session['projectId']))
+#         serializer = AddendumSerializer(addendumObject)
+#         return Response({'addendum': serializer.data}, status=status.HTTP_200_OK)
+#     except Addendum.DoesNotExist:
+#         return Response({'error': 'Addendum not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+# @api_view(['GET'])
+# def letterOfIntentView(request):
+#     try:
+#         letterOfIntentObject = LetterOfIntentDetails.objects.get(key=Projects.objects.get(id=request.session['projectId']))
+#         serializer = LetterOfIntentDetailsSerializer(letterOfIntentObject)
+#         return Response({'letterOfIntent': serializer.data}, status=status.HTTP_200_OK)
+#     except LetterOfIntentDetails.DoesNotExist:
+#         return Response({'error': 'Letter of Intent not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+
+# @api_view(['GET'])
+# def agreementView(request):
+#     try:
+#         agreementObject = Agreement.objects.get(key=Projects.objects.get(id=request.session['projectId']))
+#         serializer = AgreementSerializer(agreementObject)
+#         return Response({'agreement': serializer.data}, status=status.HTTP_200_OK)
+#     except Agreement.DoesNotExist:
+#         return Response({'error': 'Agreement not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+# @api_view(['GET'])
+# def milestoneView(request):
+#     milestoneObjects = Milestones.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+#     serializer = MilestonesSerializer(milestoneObjects, many=True)
+#     return Response({'milestones': serializer.data}, status=status.HTTP_200_OK)
+
+# @api_view(['GET'])
+# def page3View(request):
+#     try:
+#         pageThreeDetails = PageThreeDetails.objects.get(key=Projects.objects.get(id=request.session['projectId']))
+#         serializer = PageThreeDetailsSerializer(pageThreeDetails)
+#         return Response({'pageThreeDetails': serializer.data}, status=status.HTTP_200_OK)
+#     except PageThreeDetails.DoesNotExist:
+#         return Response({'error': 'Page Three Details not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+# @api_view(['GET'])
+# def extensionFormView(request):
+#     extensionObjects = ExtensionOfTimeDetails.objects.filter(key=Projects.objects.get(id=request.session['projectId']))
+#     serializer = ExtensionOfTimeDetailsSerializer(extensionObjects, many=True)
+#     return Response({'extension': serializer.data}, status=status.HTTP_200_OK)
 
 designations_list = ["Junior Engineer", "Executive Engineer (Civil)", "Electrical_AE", "Electrical_JE", "EE", "Civil_AE", "Civil_JE", "Dean (P&D)", "Director", "Accounts Admin", "Admin IWD", "Auditor"]
 
@@ -1027,95 +1027,95 @@ def engineer_processed_requests(request):
     return Response(obj)
 
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def generateFinalBill(request):
-    request_id = request.data.get("id", 0)
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def generateFinalBill(request):
+#     request_id = request.data.get("id", 0)
 
-    # Fetch the related work order
-    work_order = WorkOrder.objects.get(request_id=request_id)
+#     # Fetch the related work order
+#     work_order = WorkOrder.objects.get(request_id=request_id)
 
-    # Fetch IWD items
-    iwd_items = StockItem.objects.filter(department=34)
+#     # Fetch IWD items
+#     iwd_items = StockItem.objects.filter(department=34)
 
-    items_list = []
+#     items_list = []
 
-    # Collecting items related to the request
-    for x in iwd_items:
-        stock_entry_id = x.StockEntryId.item_id.file_info
-        indent_file_objects = IndentFile.objects.filter(file_info=stock_entry_id)
-        for item in indent_file_objects:
-            if item.purpose == request_id:
-                element = [item.item_name, item.quantity, item.estimated_cost, item.file_info.upload_date]
-                items_list.append(element)
+#     # Collecting items related to the request
+#     for x in iwd_items:
+#         stock_entry_id = x.StockEntryId.item_id.file_info
+#         indent_file_objects = IndentFile.objects.filter(file_info=stock_entry_id)
+#         for item in indent_file_objects:
+#             if item.purpose == request_id:
+#                 element = [item.item_name, item.quantity, item.estimated_cost, item.file_info.upload_date]
+#                 items_list.append(element)
 
-    filename = f"Request_id_{request_id}_final_bill.pdf"
+#     filename = f"Request_id_{request_id}_final_bill.pdf"
 
-    buffer = BytesIO()
-    c = canvas.Canvas(buffer, pagesize=letter)
-    c.setFont("Helvetica", 12)
+#     buffer = BytesIO()
+#     c = canvas.Canvas(buffer, pagesize=letter)
+#     c.setFont("Helvetica", 12)
 
-    y_position = 750
-    rid = f"Request Id : {request_id}"
-    agency = f"Agency : {work_order.agency}"
+#     y_position = 750
+#     rid = f"Request Id : {request_id}"
+#     agency = f"Agency : {work_order.agency}"
     
-    c.drawString(100, y_position, rid)
-    y_position -= 20
-    c.drawString(100, y_position, agency)
-    y_position -= 20
-    c.drawString(100, y_position - 40, "Items:")
+#     c.drawString(100, y_position, rid)
+#     y_position -= 20
+#     c.drawString(100, y_position, agency)
+#     y_position -= 20
+#     c.drawString(100, y_position - 40, "Items:")
 
-    # Prepare data for the table
-    data = [["Item Name", "Quantity", "Cost (in Rupees)", "Date of Purchase", "Total Amount"]]
-    for item in items_list:
-        data.append([item[0], str(item[1]), "{:.2f}".format(item[2]), item[3], "{:.2f}".format(item[1] * item[2])])
+#     # Prepare data for the table
+#     data = [["Item Name", "Quantity", "Cost (in Rupees)", "Date of Purchase", "Total Amount"]]
+#     for item in items_list:
+#         data.append([item[0], str(item[1]), "{:.2f}".format(item[2]), item[3], "{:.2f}".format(item[1] * item[2])])
 
-    total_amount_to_be_paid = sum(item[1] * item[2] for item in items_list)
-    c.drawString(100, y_position - 80, f"Total Amount (in Rupees): {total_amount_to_be_paid:.2f}")
+#     total_amount_to_be_paid = sum(item[1] * item[2] for item in items_list)
+#     c.drawString(100, y_position - 80, f"Total Amount (in Rupees): {total_amount_to_be_paid:.2f}")
 
-    # Create a table for the PDF
-    table = Table(data)
-    table.setStyle(TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-                                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                                ('GRID', (0, 0), (-1, -1), 1, colors.black)]))
+#     # Create a table for the PDF
+#     table = Table(data)
+#     table.setStyle(TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+#                                 ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+#                                 ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+#                                 ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+#                                 ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+#                                 ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+#                                 ('GRID', (0, 0), (-1, -1), 1, colors.black)]))
 
-    table.wrapOn(c, 400, 600)
-    table.drawOn(c, 100, y_position - 60)
-    c.save()
+#     table.wrapOn(c, 400, 600)
+#     table.drawOn(c, 100, y_position - 60)
+#     c.save()
 
-    buffer.seek(0)
+#     buffer.seek(0)
 
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{filename}"'
-    response.write(buffer.getvalue())
+#     response = HttpResponse(content_type='application/pdf')
+#     response['Content-Disposition'] = f'attachment; filename="{filename}"'
+#     response.write(buffer.getvalue())
 
-    return response
+#     return response
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def handleBillGeneratedRequests(request):
     request_id = request.data.get("id", 0)
-    # if request_id:
-    #     Requests.objects.filter(id=request_id).update(status="Bill Generated", billGenerated=1)
+    if request_id:
+        Requests.objects.filter(id=request_id).update(status="Bill Generated", billGenerated=1)
 
-    # requests_object = Requests.objects.filter(issuedWorkOrder=1, billGenerated=0)
-    # obj = []
-    # for x in requests_object:
-    #     element = {
-    #         "id": x.id,
-    #         "name": x.name,
-    #         "area": x.area,
-    #         "description": x.description,
-    #         "requestCreatedBy": x.requestCreatedBy,
-    #         "workCompleted": x.workCompleted,
-    #     }
-    #     obj.append(element)
+    requests_object = Requests.objects.filter(issuedWorkOrder=1, billGenerated=0)
+    obj = []
+    for x in requests_object:
+        element = {
+            "id": x.id,
+            "name": x.name,
+            "area": x.area,
+            "description": x.description,
+            "requestCreatedBy": x.requestCreatedBy,
+            "workCompleted": x.workCompleted,
+        }
+        obj.append(element)
 
-    # return Response({'obj': obj}, status=status.HTTP_200_OK)
+    return Response({'obj': obj}, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])

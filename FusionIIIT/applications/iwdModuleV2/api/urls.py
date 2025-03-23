@@ -35,7 +35,7 @@ urlpatterns = [
     path('handle-process-bills/', views.handle_process_bills, name='handleProcessedBills'),
 
     path('engineer-processed-requests/', views.engineer_processed_requests, name='engineerProcessedRequests'),
-    path('generate-final-bill/', views.generateFinalBill, name='generateFinalBill'),
+    # path('generate-final-bill/', views.generateFinalBill, name='generateFinalBill'),
     path('handle-bill-generated-requests/', views.handleBillGeneratedRequests, name='handleBillGeneratedRequests'),
     path('generated-bills-view/', views.generatedBillsView, name='generatedBillsView'),
     path('settle-bills-view/', views.settle_bills_view, name='settleBillsView'),
