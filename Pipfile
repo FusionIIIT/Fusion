@@ -19,7 +19,6 @@ django-semanticui-forms = "*"
 django-unused-media = "*"
 html-text = "*"
 numpy = "*"
-psycopg2-binary = "*"
 requests = "*"
 whitenoise = {extras = ["brotli"], version = "*"}
 xhtml2pdf = "*"
