@@ -55,6 +55,7 @@ from Fusion.settings.common import LOGIN_URL
 from time import localtime
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from django.conf import settings
+import pandas as pd
 
 def is_superuser(user):
     return user.is_authenticated and user.is_superuser
@@ -2757,6 +2758,101 @@ class AssignRoomsbyWarden(APIView):
                     'error': f'Error updating batch: {str(e)}'
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+        except Exception as e:
+            return Response({
+                'error': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+def update_student_data(request):
+    hall = HallWarden.objects.get(
+        faculty_id=request.user.extrainfo.id
+    ).hall
+    # Get current date
+    current_date = datetime.now()
+    current_month = current_date.month
+    current_year = current_date.year
+
+    # Determine current session
+    # If current month is between January and July, session is "August [previous year] - July [current year]"
+    # If current month is between August and December, session is "August [current year] - July [next year]"
+    if 1 <= current_month <= 7:
+        current_session = f"August {current_year - 1} - July {current_year}"
+    else:
+        current_session = f"August {current_year} - July {current_year + 1}"
+
+    # Query the database for records in the current session
+    current_batches = HostelAssignedBatch.objects.filter(session=current_session, hall = hall)
+
+    all_student_data = []
+
+    # Process each file
+    for record in current_batches:
+        file_path = os.path.join(settings.MEDIA_ROOT, str(record.file))
+
+        try:
+            # Check file extension to determine how to read it
+            if file_path.endswith('.xlsx') or file_path.endswith('.xls'):
+                df = pd.read_excel(file_path)
+            elif file_path.endswith('.csv'):
+                df = pd.read_csv(file_path)
+            else:
+                print(f"Unsupported file format: {file_path}")
+                continue
+
+            # Standardize column names (handling potential case differences)
+            df.columns = df.columns.str.lower().str.strip()
+            # Check if required columns exist
+            required_cols = ['roll no', 'room no']
+            found_cols = [col for col in required_cols if any(c in df.columns for c in [col, col.replace(' ', ''), col.replace(' ', '_')])]
+
+            if len(found_cols) < len(required_cols):
+                print(f"File {record.file} is missing some required columns. Found: {found_cols}")
+                continue
+
+            # Extract relevant data and add batch information
+            for _, row in df.iterrows():
+                student_data = {
+                    'batch': record.batch,
+                    'roll_no': row['roll no'],
+                    'room_no': row['room no'],
+                }
+                all_student_data.append(student_data)
+
+        except Exception as e:
+            print(e)
+            print(f"Error processing file {record.file}: {str(e)}")
+
+    room_assignments = {str(student['roll_no']): str(student['room_no']) for student in all_student_data}
+
+    # Get all students in the specified hall
+    students = Student.objects.filter(hall_id = hall)
+    # Count for tracking updates
+    updated_count = 0
+    not_found_count = 0
+
+    # Update each student's room number if found in our data
+    for student in students:
+        # Get the student's username/roll number
+        roll_no = str(student.id.user.username)  # Assuming id links to ExtraInfo which links to User
+        if roll_no in room_assignments:
+            # Update room number
+            student.room_no = room_assignments[roll_no]
+            student.save()
+            updated_count += 1
+        else:
+            not_found_count += 1
+
+    return
+
+class UpdateStudentsData(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        try:
+            update_student_data(request)
+            return Response({
+                'message': "Allotment Updated succesfully",
+            })
         except Exception as e:
             return Response({
                 'error': str(e)
