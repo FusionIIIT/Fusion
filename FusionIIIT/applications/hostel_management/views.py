@@ -2689,3 +2689,75 @@ class DownloadHostelAllotment(APIView):
          print("Unhandled Error:", str(e))
          return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class AssignRoomsbyWarden(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+   
+    def get_academic_session(self, upload_date):
+        """
+        Determine academic session based on upload date.
+        Session runs from August of start_year to July of end_year.
+        Returns format: 'August {startYear} - July {endYear}'
+        """
+        year = upload_date.year
+        if upload_date.month >= 8:  # August to December
+            start_year = year
+            end_year = year + 1
+        else:  # January to July
+            start_year = year - 1
+            end_year = year
+        return f"August {start_year} - July {end_year}"
+
+    def post(self, request):
+        try:
+            # Get the batch and file from request
+            batch = request.POST.get('selectedBatch')
+            file = request.FILES.get('file')
+            
+            if not all([batch, file]):
+                return Response({
+                    'error': 'Batch and file are required'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Get the warden's hall
+            try:
+                hall_warden = HallWarden.objects.get(
+                    faculty_id=request.user.extrainfo.id
+                )
+                hall = hall_warden.hall
+            except HallWarden.DoesNotExist:
+                return Response({
+                    'error': 'Warden not assigned to any hall'
+                }, status=status.HTTP_403_FORBIDDEN)
+
+            # Determine academic session from current date
+            current_date = date.today()
+            session = self.get_academic_session(current_date)
+
+            # Create or update the batch assignment
+            try:
+                assigned_batch, created = HostelAssignedBatch.objects.update_or_create(
+                    hall=hall,
+                    batch=batch,
+                    session=session,
+                    defaults={'file': file}
+                )
+                
+                message = 'Batch file updated successfully' if not created else 'Batch file uploaded successfully'
+                
+                return Response({
+                    'message': message,
+                    'hall_id': hall.hall_id,
+                    'batch': batch,
+                    'session': session
+                })
+
+            except Exception as e:
+                return Response({
+                    'error': f'Error updating batch: {str(e)}'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        except Exception as e:
+            return Response({
+                'error': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
