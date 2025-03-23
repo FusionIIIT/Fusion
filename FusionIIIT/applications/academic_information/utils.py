@@ -31,7 +31,7 @@ def check_for_registration_complete(batch, sem, year):
         if prd_start_date <= date <= prd_end_date:
             return {"status": -1, "message": "Registration is under process"}
 
-        if FinalRegistrations.objects.filter(Q(semester=sem) & Q(batch=batch)).exists():
+        if FinalRegistration.objects.filter(Q(semester_id__semester_no = sem) & Q(student_id__batch = batch)).exists() :
             return {"status": 2, "message": "Courses already allocated"}
 
         return {"status": 1, "message": "Courses not yet allocated"}
