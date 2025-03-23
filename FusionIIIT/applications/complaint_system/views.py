@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404, render
 from applications.globals.models import User, ExtraInfo, HoldsDesignation
 
 from notifications.models import Notification
-from .models import Caretaker, StudentComplain, ServiceProvider, ServiceAuthority
+from .models import Caretaker,Warden, StudentComplain, ServiceProvider, ServiceAuthority, Complaint_Admin
 from notification.views import complaint_system_notif
 
 from applications.filetracking.sdk.methods import *
@@ -23,6 +23,8 @@ from .serializers import (
     StudentComplainSerializer,
     CaretakerSerializer,
     ExtraInfoSerializer,
+    Complaint_AdminSerializer,
+    WardenSerializer
 )
 
 # Converted to DRF APIView
@@ -39,8 +41,16 @@ class CheckUser(APIView):
         b = ExtraInfo.objects.select_related("user", "department").filter(user=a).first()
         service_provider_list = ServiceProvider.objects.all()
         caretaker_list = Caretaker.objects.all()
+        warden_list=Warden.objects.all()
+        complaint_admin_list=Complaint_Admin.objects.all()
         is_service_provider = False
         is_caretaker = False
+        is_warden=False
+        is_complaint_admin = False
+        for i in complaint_admin_list:
+            if b.id == i.sup_id_id:
+                is_complaint_admin = True
+                break
         for i in service_provider_list:
             if b.id == i.ser_pro_id_id:
                 is_service_provider = True
@@ -49,10 +59,19 @@ class CheckUser(APIView):
             if b.id == i.staff_id_id:
                 is_caretaker = True
                 break
+        for i in warden_list:
+            if b.id == i.staff_id_id:
+                is_warden = True
+                break
+
         if is_service_provider:
             return Response({"user_type": "service_provider", "next_url": "/complaint/service_provider/"})
+        elif is_complaint_admin:
+            return Response({"user_type": "complaint_admin", "next_url": "/complaint/complaint_admin/"})
         elif is_caretaker:
             return Response({"user_type": "caretaker", "next_url": "/complaint/caretaker/"})
+        elif is_warden:
+            return Response({"user_type": "warden", "next_url": "/complaint/warden/"})
         elif b.user_type == "student":
             return Response({"user_type": "student", "next_url": "/complaint/user/"})
         elif b.user_type == "staff":
@@ -915,46 +934,55 @@ class GenerateReportView(APIView):
         Generates a report of complaints for the caretaker's area, warden's area, or service_provider's type.
         """
         user = request.user
-
-        is_caretaker = hasattr(user, 'caretaker')
-        is_service_provider = False
-        is_warden = hasattr(user, 'warden')
+        complaint_admin_user = 'anil'
+        if user.username == complaint_admin_user:  #hardcoding data for now as complaint_admin role dont exist in database for now 
+            complaints = StudentComplain.objects.all()
+        else:
+            is_caretaker = hasattr(user, 'caretaker')
+            is_service_provider = False
+            is_complaint_admin = hasattr(user, 'complaint_admin')  # Check if the user has the 'complaintadmin' attribute
 
         # Check if user is a service_provider
-        try:
-            service_provider = ServiceProvider.objects.get(ser_pro_id=user.extrainfo)
-            is_service_provider = True
-        except ServiceProvider.DoesNotExist:
-            is_service_provider = False
+            try:
+               service_provider = ServiceProvider.objects.get(ser_pro_id=user.extrainfo)
+               is_service_provider = True
+            except ServiceProvider.DoesNotExist:
+               is_service_provider = False
 
-        try:
-            is_service_authority = ServiceAuthority.objects.get(ser_pro_id=user.extrainfo)
-            is_service_authority = True
-        except ServiceAuthority.DoesNotExist:
-            is_service_authority = False
+            try:
+               is_service_authority = ServiceAuthority.objects.get(ser_pro_id=user.extrainfo)
+               is_service_authority = True
+            except ServiceAuthority.DoesNotExist:
+               is_service_authority = False
 
-        if not is_caretaker and not is_service_provider and not is_admin and not is_service_provider and not is_service_provider and not is_service_authority:
-            return Response({"detail": "Not authorized to generate report."}, status=403)
+            try:
+               warden = Warden.objects.get(staff_id=user.extrainfo)
+               is_warden = True
+            except Warden.DoesNotExist:
+               is_warden = False
 
-        complaints = None
+            if not is_caretaker and not is_service_provider and not is_admin and not is_service_provider and not is_service_provider and not is_service_authority and not is_warden:
+                return Response({"detail": "Not authorized to generate report."}, status=403)
+
+            complaints = None
 
         # Generate report for service_provider
-        if is_service_provider:
-            print(f"Generating report for ServiceProvider {service_provider}")
-            complaints = StudentComplain.objects.filter(complaint_type=service_provider.type)
+            if is_service_provider:
+                print(f"Generating report for ServiceProvider {service_provider}")
+                complaints = StudentComplain.objects.filter(complaint_type=service_provider.type)
 
         # Generate report for caretaker
-        if is_caretaker and not is_service_provider:
-            caretaker = get_object_or_404(Caretaker, staff_id=user.extrainfo)
-            complaints = StudentComplain.objects.filter(location=caretaker.area)
+            if is_caretaker and not is_service_provider and not is_warden:
+                caretaker = get_object_or_404(Caretaker, staff_id=user.extrainfo)
+                complaints = StudentComplain.objects.filter(location=caretaker.area)
 
-        # if is_warden:
-        #     warden = get_object_or_404(Warden, staff_id=user.extrainfo)
-        #     if complaints:
-        #         complaints = complaints.filter(location=warden.area)
-        #     else:
-        #         complaints = StudentComplain.objects.filter(location=warden.area)
+            if is_warden:
+                warden=get_object_or_404(Warden, staff_id=user.extrainfo)
+                complaints = StudentComplain.objects.filter(location=warden.area)
 
-        # Serialize and return the complaints
+            # Generate report for complaint admin
+            if is_complaint_admin:
+                complaints = StudentComplain.objects.all()  # Complaint admin can see all complaints
+    
         serializer = StudentComplainSerializer(complaints, many=True)
         return Response(serializer.data)
