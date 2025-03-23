@@ -934,7 +934,8 @@ class GenerateReportView(APIView):
         Generates a report of complaints for the caretaker's area, warden's area, or service_provider's type.
         """
         user = request.user
-        if user.username == 'anil':  #hardcoding data for now as complaint_admin role dont exist in database for now 
+        complaint_admin_user = 'anil'
+        if user.username == complaint_admin_user:  #hardcoding data for now as complaint_admin role dont exist in database for now 
             complaints = StudentComplain.objects.all()
         else:
             is_caretaker = hasattr(user, 'caretaker')
