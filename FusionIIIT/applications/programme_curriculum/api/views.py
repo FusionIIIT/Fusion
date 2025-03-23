@@ -12,6 +12,7 @@ from ..forms import ProgrammeForm, DisciplineForm, CurriculumForm, SemesterForm,
 from ..filters import CourseFilter, BatchFilter, CurriculumFilter
 
 from .serializers import CourseSerializer,CurriculumSerializer,BatchSerializer
+from django.core.serializers import serialize
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 from django.forms.models import model_to_dict
@@ -1618,25 +1619,42 @@ def replicate_curriculum(request, curriculum_id):
         return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 #new
 
-@login_required(login_url='/accounts/login')
+@permission_classes([IsAuthenticated])
+@csrf_exempt  # Use this decorator if you're not using CSRF tokens in your API calls
 def view_course_proposal_forms(request):
-    data=""
-    user_details = ExtraInfo.objects.get(user = request.user)
-    des = HoldsDesignation.objects.all().filter(user = request.user).last()
-    
-    if request.session['currentDesignationSelected']  == "Associate Professor" or request.session['currentDesignationSelected']  == "Professor" or request.session['currentDesignationSelected']  == "Assistant Professor" :
-            pass
-    elif request.session['currentDesignationSelected']  == "student" :
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
-    elif request.session['currentDesignationSelected']== "acadadmin":
-        return render(request, 'programme_curriculum/admin_programmes/')
-    else:
-        data='Files Cannot be sent with current Designation Switch to "Professor or Assistant Professor or Associate Professor"'
-    notifs = request.user.notifications.all()
-    courseProposal = NewProposalFile.objects.filter(uploader=des.user,designation=request.session['currentDesignationSelected'],is_update=False)
-    updatecourseProposal = NewProposalFile.objects.filter(uploader=des.user,designation=request.session['currentDesignationSelected'],is_update=True)
-    
-    return render(request, 'programme_curriculum/faculty/view_course_proposal_forms.html',{'courseProposals': courseProposal,'updateProposals':updatecourseProposal,'data':data,'notifications': notifs,})
+    data = {}
+    username = request.GET.get('username')  # Get username from query parameters
+    des = request.GET.get('des')  # Get designation from query parameters
+
+    if not username or not des:
+        return JsonResponse({'error': 'Username and designation are required'}, status=400)
+
+    # Check the user's designation
+    if des not in ["Associate Professor", "Professor", "Assistant Professor"]:
+        if des == "student":
+            return JsonResponse({'redirect': '/programme_curriculum/programmes/'}, status=302)
+        elif des == "acadadmin":
+            return JsonResponse({'redirect': '/programme_curriculum/admin_programmes/'}, status=302)
+        else:
+            data['error'] = 'Files Cannot be sent with current Designation. Switch to "Professor or Assistant Professor or Associate Professor"'
+            return JsonResponse(data, status=403)
+
+    # Fetch course proposals
+    courseProposal = NewProposalFile.objects.filter(uploader=username, designation=des, is_update=False)
+    updatecourseProposal = NewProposalFile.objects.filter(uploader=username, designation=des, is_update=True)
+
+    # Serialize the querysets to JSON
+    courseProposal_data = json.loads(serialize('json', courseProposal))
+    updatecourseProposal_data = json.loads(serialize('json', updatecourseProposal))
+
+    # Prepare the response data
+    response_data = {
+        'courseProposals': courseProposal_data,
+        'updateProposals': updatecourseProposal_data,
+        'message': 'Data fetched successfully',
+    }
+
+    return JsonResponse(response_data, status=200)
 
 @login_required(login_url='/accounts/login')
 def faculty_view_all_courses(request):
