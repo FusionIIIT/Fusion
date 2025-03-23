@@ -34,24 +34,48 @@ class Constants:
         ('COORDINATOR', 'Coordinator Review'),
         ('FIC', 'FIC Review'),
         ('COUNSELLOR', 'Counsellor Review'),
-        ('DEAN', 'Dean Review')
+        ('DEAN', 'Dean Review'),
+        ('REREVIEW', 'ReReview'),
     )
     fest = (("Abhikalpan", "Abhikalpan"), ("Gusto", "Gusto"), ("Tarang", "Tarang"))
     venue = (
-        (
-            "Classroom",
-            (
-                ("CR101", "CR101"),
-                ("CR102", "CR102"),
-            ),
-        ),
-        (
-            "Lecturehall",
-            (
-                ("L101", "L101"),
-                ("L102", "L102"),
-            ),
-        ),
+        ("CR101", "CR101"),
+        ("CR102", "CR102"),
+        ("CR103", "CR103"),
+        ("CR104", "CR104"),
+        ("CR107", "CR107"),
+        ("CR108", "CR108"),
+        ("CR109", "CR109"),
+        ("CR201", "CR201"),
+        ("CR202", "CR202"),
+        ("CR208", "CR208"),
+        ("L101", "L101"),
+        ("L102", "L102"),
+        ("L103", "L103"),
+        ("L104", "L104"),
+        ("L105", "L105"),
+        ("L106", "L106"),
+        ("L107", "L107"),
+        ("L108", "L108"),
+        ("L201", "L201"),
+        ("L202", "L202"),
+        ("L206", "L206"),
+        ("L207", "L207"),
+        ("Football Ground", "Football Ground"),
+        ("Cricket Ground", "Cricket Ground"),
+        ("Basketball Ground", "Basketball Ground"),
+        ("Volleyball Ground", "Volleyball Ground"),
+        ("Tennis Court", "Tennis Court"),
+        ("Athletics Ground", "Athletics Ground"),
+        ("Badminton Court", "Badminton Court"),
+        ("Table Tennis Court", "Table Tennis Court"),
+        ("Chess Room", "Chess Room"),
+        ("Carrom Room", "Carrom Room"),
+        ("Gym", "Gym"),
+        ("CC First Floor", "CC First Floor"),
+        ("CC Second Floor", "CC Second Floor"),
+        ("CC Third Floor", "CC Third Floor"),
+        ("OAT", "OAT"),
     )
 
 
@@ -556,11 +580,13 @@ class Budget(models.Model):
         Club_info, on_delete=models.CASCADE, max_length=50, null=False
     )
     budget_for = models.CharField(max_length=256, null=False)
-    budget_amt = models.IntegerField(default=0, null=False)
+    budget_requested = models.IntegerField(default=0, null=False)
+    budget_allocated = models.IntegerField(default=0, null=True)
     budget_file = models.FileField(upload_to="uploads/", null=True)
     description = models.TextField(max_length=256, null=False)
     status = models.CharField(max_length=50, choices=Constants.STATUS_CHOICES, default="COORDINATOR")
     remarks = models.CharField(max_length=256, null=True)
+    budget_comment = models.CharField(max_length=2000, null=True)
 
     def __str__(self):
         return str(self.id)

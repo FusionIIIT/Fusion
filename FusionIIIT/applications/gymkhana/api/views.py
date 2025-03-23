@@ -338,9 +338,13 @@ class ChangeHeadAPIView(APIView):
 
 class AddMemberToClub(APIView):
     def post(self, request):
+        member = request.data.get("member")
+        club = request.data.get("club")
+        if Club_member.objects.filter(member=member, club=club).exists():
+            return Response({"error": "Member has already applied to this club."}, status=status.HTTP_400_BAD_REQUEST)
         data = {
-            "member": request.data.get("member"),
-            "club": request.data.get("club"),
+            "member": member,
+            "club": club,
             "description": request.data.get("description"),
             "status": "open",
         }
@@ -349,6 +353,7 @@ class AddMemberToClub(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class ClubMemberAPIView(APIView):
@@ -1171,19 +1176,19 @@ class FICApproveBudgetAPIView(APIView):
 
 class CounsellorApproveBudgetAPIView(APIView):
     def put(self, request):
-        budget_id = request.data.get("id")
+        budget_id = request.data.get('id')
         budget = get_object_or_404(Budget, id=budget_id)
-        if budget.status != "COUNSELLOR":
-            return Response(
-                {"error": "Budget is not under Counsellor review."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        budget.status = "DEAN"
-        budget.save()
-        return Response(
-            {"message": "Budget status changed to 'Dean Review'."},
-            status=status.HTTP_200_OK,
-        )
+        if budget.status != 'COUNSELLOR' and budget.status != 'REREVIEW':
+            return Response({"error": "Budget is not under Counsellor review."}, status=status.HTTP_400_BAD_REQUEST)
+        if budget.status == 'REREVIEW':
+            budget.status = 'ACCEPT'
+        else:
+            budget.status = 'DEAN'
+        serializer = BudgetSerializer(budget, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save(status=budget.status)
+            return Response({"message": "Budget updated and status changed"}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class DeanApproveBudgetAPIView(APIView):
@@ -1202,6 +1207,19 @@ class DeanApproveBudgetAPIView(APIView):
             status=status.HTTP_200_OK,
         )
 
+class DeanReviewBudgetAPIView(APIView):
+    def put(self, request):
+        budget_id = request.data.get('id')
+        budget = get_object_or_404(Budget, id=budget_id)
+
+        if budget.status != 'DEAN':
+            return Response({"error": "Budget is not under Dean review."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = BudgetSerializer(budget, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save(status='REREVIEW')
+            return Response({"message": "Budget updated and status changed to 'Dean Review'."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class RejectBudgetAPIView(APIView):
     def put(self, request):
@@ -1537,21 +1555,23 @@ class NewsletterPDFAPIView(APIView):
         timeframe = request.GET.get('timeframe', '').lower()
         now = timezone.now()
         if timeframe == 'weekly':
-            time_threshold = now - timedelta(weeks=1)
+            time_threshold = (now - timedelta(weeks=1))
         elif timeframe == 'monthly':
             time_threshold = now - timedelta(days=30)
         elif timeframe == '6 months':
             time_threshold = now - timedelta(days=182)  # Approximation for half a year
         else:
             time_threshold = None
-        print(time_threshold)
+        print(time_threshold,now)
         # Fetch all unique clubs
         clubs = Event_info.objects.values_list('club', flat=True).distinct()
         has_events = False
+        print(clubs)
         for club in clubs:
             club_events = EventInput.objects.filter(event__club=club)
             if time_threshold:
                 club_events = club_events.filter(event__end_date__range=(time_threshold, now))
+                print(club_events)
             if club_events.exists():
                 has_events = True
                 break
@@ -1793,3 +1813,16 @@ class EventReportPDFView(APIView):
         
         except EventReport.DoesNotExist:
             return Response({"error": "Event report not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class UpdateBudgetAPIView(APIView):
+    def put(self, request):
+        budget_id = request.data.get('id')
+        budget = get_object_or_404(Budget, id=budget_id)
+        if budget.status != 'COORDINATOR':
+            return Response({"error": "Budget is not under Coordinator."}, status=status.HTTP_400_BAD_REQUEST)
+        budget.status = 'FIC'
+        serializer = BudgetSerializer(budget, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save(status=budget.status)
+            return Response({"message": "Budget updated and status changed"}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

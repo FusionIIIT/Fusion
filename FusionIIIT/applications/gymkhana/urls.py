@@ -10,6 +10,7 @@ from applications.gymkhana.api.views import (
     ClubMemberApproveView,
     ClubMemberDeleteAPIView,
     CreateClubAPIView,
+    DeanReviewBudgetAPIView,
     DeleteClubAPIView,
     DeleteClubBudgetAPIView,
     EventDeleteAPIView,
@@ -229,6 +230,7 @@ urlpatterns = [
         DeanApproveBudgetAPIView.as_view(),
         name="dean approve budget",
     ),
+    url(r'^api/dean_review_budget/$', DeanReviewBudgetAPIView.as_view(), name = 'review budget'),
     # new event api
     url(r"^api/new_events/$", NewEventAPIView.as_view(), name="new events"),
     # fic approve event api
@@ -289,7 +291,7 @@ urlpatterns = [
         ListClubPositionAPIView.as_view(),
         name="list club position",
     ),
-    url(r"^/api/new_event/$", UpdateEventAPIView.as_view(), name="update event"),
+    url(r"^api/new_event/$", UpdateEventAPIView.as_view(), name="update event"),
     url(r"^api/update_event/$", UpdateEventAPIView.as_view(), name="update event"),
     url(r"^api/update_budget/$", UpdateBudgetAPIView.as_view(), name="update budget"),
     url(r"^fest/$" , FestListView.as_view(), name="fest"),
@@ -300,5 +302,6 @@ urlpatterns = [
     url(r'^api/newsletter_pdf/$', NewsletterPDFAPIView.as_view(), name='newsletter_pdf'),
     url(r'^api/event_report_list/$', EventReportListAPIView.as_view(), name='event_report_list'),
     url(r'^api/add_event_report/$', EventReportAPIView.as_view(), name='add_event_report'),
-    url(r'^api/event_report_pdf/(?P<report_id>\d+)/$', EventReportPDFView.as_view(), name='event_report_pdf')
+    url(r'^api/event_report_pdf/(?P<report_id>\d+)/$', EventReportPDFView.as_view(), name='event_report_pdf'),
+    url(r'^api/update_budget/$',  UpdateBudgetAPIView.as_view(), name='update event'),
 ]

@@ -81,7 +81,7 @@ class Registration_formSerializer(serializers.ModelSerializer):
 class BudgetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Budget
-        fields = ['id', 'club', 'budget_for', 'budget_amt', 'budget_file', 'description', 'status', 'remarks']
+        fields = ['id', 'club', 'budget_for', 'budget_requested', 'budget_allocated', 'budget_file', 'description', 'status', 'remarks', 'budget_comment']
 class AchievementsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Achievements
