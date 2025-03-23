@@ -2619,3 +2619,73 @@ class AssignBatch(APIView):
             return Response({
                 'error': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class DownloadHostelAllotment(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_current_session(self):
+        """Calculate the academic session based on the current month and year."""
+        current_date = datetime.now()
+        current_month = current_date.month
+        current_year = current_date.year
+        current_session = ""
+
+        if 1 <= current_month <= 7:
+            current_session = f"August {current_year - 1} - July {current_year}"
+        else:
+            current_session = f"August {current_year} - July {current_year+1}"
+                                                              
+        return current_session
+
+    def get(self, request):
+     try:
+        print("Request received for file download")
+
+        # Get the warden's hall
+        hall_warden = HallWarden.objects.get(faculty_id=request.user.extrainfo.id)
+        print("Hall Warden:", hall_warden)
+
+        hall_id = hall_warden.hall  
+        print("Hall ID:", hall_id)
+
+        session = self.get_current_session()
+        print("Current Session:", session)
+
+        assigned_batches = HostelAssignedBatch.objects.filter(hall=hall_id, session=session)
+        print("Assigned Batches:", assigned_batches)
+
+        if not assigned_batches.exists():
+            print("No allotment files found for this session.")
+            return HttpResponseNotFound("No allotment files found for this session.")
+
+        files = []
+        for record in assigned_batches:
+            file_path = os.path.join(settings.MEDIA_ROOT, str(record.file))
+            print("Checking file path:", file_path)
+            if os.path.exists(file_path):
+                files.append(file_path)
+
+        if not files:
+            print("No valid files found for download.")
+            return HttpResponseNotFound("No valid files found for download.")
+
+        file_urls = []
+        for record in assigned_batches:
+            file_path = os.path.join(settings.MEDIA_URL, str(record.file))
+            file_urls.append(request.build_absolute_uri(file_path))
+
+        if not file_urls:
+            return HttpResponseNotFound("No valid files found for download.")
+
+        return JsonResponse({"files": file_urls})
+
+
+     except HallWarden.DoesNotExist:
+         print("Hall not found for this user.")
+         return Response({"error": "Hall not found for this user."}, status=status.HTTP_404_NOT_FOUND)
+
+     except Exception as e:
+         print("Unhandled Error:", str(e))
+         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+

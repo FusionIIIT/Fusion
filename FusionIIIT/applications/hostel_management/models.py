@@ -223,7 +223,7 @@ class HostelAssignedBatch(models.Model):
     )
 
     def __str__(self):
-        return f"Batch sheet - {self.hall.hall_name} - {self.batch} - {self.month} {self.year}"
+        return f"Batch sheet - {self.hall.hall_name} - {self.batch}"
 
 class HostelStudentAttendence(models.Model):
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
