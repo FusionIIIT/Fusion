@@ -1782,3 +1782,14 @@ class EventReportListAPIView(APIView):
         event_reports = EventReport.objects.filter(event_id__in=events)
         serializer = EventReportSerializer(event_reports, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+class EventReportPDFView(APIView):
+    def get(self, request, report_id):
+        try:
+            event_report = EventReport.objects.get(pk=report_id)
+            if not event_report.report_pdf:
+                return Response({"error": "No PDF report available for this event"}, status=status.HTTP_404_NOT_FOUND)
+
+            return FileResponse(event_report.report_pdf.open('rb'), content_type='application/pdf')
+        
+        except EventReport.DoesNotExist:
+            return Response({"error": "Event report not found"}, status=status.HTTP_404_NOT_FOUND)
