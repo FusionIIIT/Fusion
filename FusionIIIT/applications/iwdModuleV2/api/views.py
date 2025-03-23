@@ -583,13 +583,11 @@ def requests_status(request):
 
     params = request.query_params
     desg = params.get('role')
-    outbox_files = view_outbox(username=request.user, designation=desg, src_module="IWD")
+    files = Requests.objects.all()
     obj = []
-    for result in outbox_files:
-        src_object_id = result['src_object_id']
-        request_object = Requests.objects.filter(id=src_object_id).first()
-        file_obj = File.objects.get(src_object_id=src_object_id, src_module="IWD")
-        print(request_object)
+    print(files)
+    for request_object in files:
+        file_obj = File.objects.get(src_object_id=request_object.id, src_module="IWD")
         if request_object:
             element = {
                 'request_id': request_object.id,
@@ -599,6 +597,8 @@ def requests_status(request):
                 'requestCreatedBy': request_object.requestCreatedBy,
                 'file_id': file_obj.id,
                 'processed_by_director': request_object.directorApproval,
+                'work_order': request_object.issuedWorkOrder,
+                'work_completed': request_object.workCompleted,
                 'processed_by_dean': request_object.deanProcessed,
                 'status': request_object.status,
                 'active_proposal': request_object.activeProposal,
