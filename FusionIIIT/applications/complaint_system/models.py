@@ -45,6 +45,15 @@ class Caretaker(models.Model):
 
     def __str__(self):
         return str(self.id) + '-' + str(self.area)
+    
+class Warden(models.Model):
+    staff_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
+    area = models.CharField(choices=Constants.AREA, max_length=20, default='hall-1')
+    rating = models.IntegerField(default=0)
+    myfeedback = models.CharField(max_length=400, default="No feedback yet")
+
+    def __str__(self):
+        return str(self.staff_id) + '-' + str(self.area)
 
 class SectionIncharge(models.Model):
     staff_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
@@ -102,6 +111,12 @@ class ServiceProvider(models.Model):
 
     def __str__(self):
         return str(self.ser_pro_id) + '-' + str(self.type)
+    
+class Complaint_Admin(models.Model):
+    sup_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.sup_id)
 
 
 class ServiceAuthority(models.Model):
