@@ -4,8 +4,13 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, redirect
 from django.db import transaction
 from django.db.models import Prefetch
+from django.db.models.functions import Concat,ExtractYear,ExtractMonth,ExtractDay,Cast
+from django.db.models import Max,Value,IntegerField,CharField,F,Sum, Case, When
+from io import BytesIO
+import json
+from xlsxwriter.workbook import Workbook
 
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import status
@@ -669,46 +674,48 @@ def student_pre_registration(request):
 
 @api_view(['POST'])
 def final_registration(request):
-    try:    
-        print(request.data)
-        current_user = get_object_or_404(User, username=request.data.get('user'))
-        current_user = ExtraInfo.objects.all().select_related('user','department').filter(user=current_user).first()
-        current_user = Student.objects.all().filter(id=current_user.id).first()
+    try:
+        with transaction.atomic():
+            print(request.data)
+            current_user = request.user
+            extra_info = current_user.extrainfo
+            student = Student.objects.filter(id=extra_info).first()
 
-        sem_id = Semester.objects.get(id = request.data.get('semester'))
+            sem_id = Semester.objects.get(id=request.data.get('semester'))
 
-        mode = str(request.data.get('mode'))
-        transaction_id = str(request.data.get('transaction_id'))
-        deposit_date = request.data.get('deposit_date')
-        utr_number = str(request.data.get('utr_number'))
-        fee_paid = request.data.get('fee_paid')
-        actual_fee = request.data.get('actual_fee')
-        reason = str(request.data.get('reason'))
-        if reason=="":
-            reason=None
-        # fee_receipt = request.FILES['fee_receipt']
-
-        obj = FeePayments(
-            student_id = current_user,
-            semester_id = sem_id,
-            mode = mode,
-            transaction_id = transaction_id,
-            # fee_receipt = fee_receipt,
-            deposit_date = deposit_date,
-            utr_number = utr_number,
-            fee_paid = fee_paid,
-            actual_fee = actual_fee,
-            reason = reason
+            mode = str(request.data.get('mode'))
+            transaction_id = str(request.data.get('transaction_id'))
+            deposit_date = request.data.get('deposit_date')
+            utr_number = str(request.data.get('utr_number'))
+            fee_paid = request.data.get('fee_paid')
+            actual_fee = request.data.get('actual_fee')
+            reason = str(request.data.get('reason')) or None  # Handle empty string
+            fee_receipt = request.FILES['fee_receipt']
+            # Save FeePayments object
+            obj = FeePayments(
+                student_id=student,
+                semester_id=sem_id,
+                mode=mode,
+                transaction_id=transaction_id,
+                deposit_date=deposit_date,
+                utr_number=utr_number,
+                fee_paid=fee_paid,
+                actual_fee=actual_fee,
+                reason=reason,
+                fee_receipt=fee_receipt
             )
-        obj.save()
+            obj.save()
+
+            # Update StudentRegistrationChecks
+            StudentRegistrationChecks.objects.filter(
+                student_id=student,
+                semester_id=sem_id
+            ).update(final_registration_flag=True)
+
+            return JsonResponse({'message': 'Final Registration Successful'})
         
-        try:
-            return JsonResponse({'message': 'Final Registration Successfull'})
-        except Exception as e:
-            return JsonResponse({'message': 'Final Registration Failed '}, status=500)
-            
     except Exception as e:
-        return JsonResponse({'message': 'Final Registration Failed '}, status=500)
+        return JsonResponse({'message': f'Final Registration Failed: {str(e)}'}, status=500)
         
         
 # with this student can do his final registration for the upcoming semester
@@ -1025,9 +1032,13 @@ def add_one_course(request):
 
 @transaction.atomic
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 def verify_registration(request):
-    if request.data.get('status_req') == "accept" :
-        student_id = request.data.get('student_id')
+    data = json.loads(request.body)
+    print(data)
+    if data.get('status_req') == "accept" :
+        student_id = data.get('student_id')
         student = Student.objects.get(id = student_id)
         batch = student.batch_id
         curr_id = batch.curriculum
@@ -1046,16 +1057,26 @@ def verify_registration(request):
         # final_register_list = FinalRegistration.objects.all().filter(student_id = student, verified = False)
         
         with transaction.atomic():
+            ver_reg = []
             for obj in final_register_list:
+                p = course_registration(
+                    course_id=obj.course_id,
+                    student_id=student,
+                    semester_id=obj.semester_id,
+                    course_slot_id = obj.course_slot_id,
+                    working_year = datetime.datetime.now().year,
+                    )
+                ver_reg.append(p)
                 o = FinalRegistration.objects.filter(id= obj.id).update(verified = True)
+            course_registration.objects.bulk_create(ver_reg)
             academics_module_notif(request.user, student.id.user, 'registration_approved')
             
             Student.objects.filter(id = student_id).update(curr_semester_no = sem_no)
             return JsonResponse({'status': 'success', 'message': 'Successfully Accepted'})
          
-    elif request.data.get('status_req') == "reject" :
-        reject_reason = request.data.get('reason')
-        student_id = request.data.get('student_id')
+    elif data.get('status_req') == "reject" :
+        reject_reason = data.get('reason', '')
+        student_id = data.get('student_id')
         student_id = Student.objects.get(id = student_id)
         batch = student_id.batch_id
         curr_id = batch.curriculum
@@ -1065,9 +1086,10 @@ def verify_registration(request):
             sem_no = student_id.curr_semester_no+1
         sem_id = Semester.objects.get(curriculum = curr_id, semester_no = sem_no)
         with transaction.atomic():
-            academicadmin = get_object_or_404(User, username = "acadadmin")
+            academicadmin = get_object_or_404(User, username = request.user.username)
+            # print(sem_id)
             # FinalRegistration.objects.filter(student_id = student_id, verified = False, semester_id = sem_id).delete()
-            StudentRegistrationChecks.objects.filter(student_id = student_id, semester_id = sem_id).update(final_registration_flag = False)
+            # StudentRegistrationChecks.objects.filter(student_id = student_id, semester_id = sem_id).update(final_registration_flag = False)
             FeePayments.objects.filter(student_id = student_id, semester_id = sem_id).delete()
             academics_module_notif(academicadmin, student_id.id.user, 'Registration Declined - '+reject_reason)
             return JsonResponse({'status': 'success', 'message': 'Successfully Rejected'})
@@ -1580,6 +1602,8 @@ def verify_course(request):
 #     else:
 #         return Response({'error':'Cannot approve thesis'}, status=status.HTTP_400_BAD_REQUEST)
 
+#--------------------------------------- New APIs Made for React ----------------------------------------------------------
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
@@ -1639,3 +1663,142 @@ def current_courseregistration(request):
         return Response({"error": "Student profile not found"}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def final_registration_page(request):
+    try:
+        current_user = request.user
+        user_details = current_user.extrainfo
+        student = Student.objects.get(id=user_details)
+        curr_id = student.batch_id.curriculum
+        next_sem_id = Semester.objects.get(curriculum=curr_id, semester_no=student.curr_semester_no+1)
+        current_date = date_time.date()
+        final_registration_date_flag = get_final_registration_eligibility(current_date)
+        student_registration_check = get_student_registrtion_check(student, next_sem_id)
+        final_registration_flag = False
+        if student_registration_check:
+            final_registration_flag = student_registration_check.final_registration_flag
+
+        final_registration = FinalRegistration.objects.filter(
+            student_id=user_details.id, semester_id=next_sem_id
+        )
+        if final_registration.exists():
+            final_registration = serializers.FinalRegistrationSerializer(final_registration, many=True).data
+        else:
+            final_registration = None
+        resp = {
+            'frd': final_registration_date_flag,
+            'final_registration_flag': final_registration_flag,
+            'final_registration': final_registration,
+        }
+        return Response(data=resp, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+
+@api_view(['GET', 'POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def student_list(request):
+    if request.method == 'POST':
+        excel_export = request.GET.get("excel_export", "false")
+        data = json.loads(request.body)
+        batch = data.get('batch')
+        print(batch)
+        
+        year = demo_date.year
+        month = demo_date.month
+        yearr = f'{year}-{year+1}'
+        semflag = 1 if month >= 7 else 2
+        queryflag = 1
+
+        batch_id = Batch.objects.get(id=batch)
+        student_obj = FeePayments.objects.all().select_related('student_id').filter(student_id__batch_id=batch_id)
+
+        if excel_export == "false":
+            if student_obj:
+                reg_table = list(student_obj.prefetch_related('student_id__studentregistrationchecks')
+                    .filter(semester_id=student_obj[0].semester_id, student_id__studentregistrationchecks__final_registration_flag=True, 
+                            student_id__finalregistration__verified=False, student_id__finalregistration__semester_id=student_obj[0].semester_id)
+                    .select_related('student_id', 'student_id__id', 'student_id__id__user', 'student_id__id__department')
+                    .values(
+                        'student_id__id', 'student_id__id__user__first_name', 'student_id__id__user__last_name',
+                        'student_id__batch', 'student_id__id__department__name', 'student_id__programme',
+                        'student_id__curr_semester_no', 'student_id__id__sex', 'student_id__id__phone_no',
+                        'student_id__category', 'student_id__specialization', 'mode', 'transaction_id', 'deposit_date',
+                        'fee_paid', 'utr_number', 'reason', 'fee_receipt', 'actual_fee',
+                        'student_id__id__user__username'
+                    ).distinct())
+            else:
+                reg_table = []
+
+            response_data = {
+                'date': {'year': yearr, 'month': month, 'semflag': semflag, 'queryflag': queryflag},
+                'students': reg_table
+            }
+
+            return JsonResponse(response_data, safe=False)
+
+        elif excel_export == "true":
+            if student_obj:
+                table = [("Admission Year", "Semester", "Roll Number", "Full Name", "Program", "Discipline", "Specialization", "Gender", "Category", "PWD Status", "Mobile Number", "Actual Fee", "Fee Paid By Student", "Reason", "Date", "Mode", "UTR Number", "Fee Receipt")]
+                
+                table += student_obj.prefetch_related('student_id__studentregistrationchecks').filter(semester_id=student_obj[0].semester_id, student_id__studentregistrationchecks__final_registration_flag=True).select_related('student_id', 'student_id__id', 'student_id__id__user', 'student_id__id__department').annotate(
+                    admission_year = F('student_id__batch'),
+                    semester=F('student_id__curr_semester_no') + 1,
+                    roll_no=F('student_id__id__user__username'),
+                    full_name=Concat('student_id__id__user__first_name', Value(' '), 'student_id__id__user__last_name'),
+                    program=F('student_id__programme'),
+                    discipline=F('student_id__id__department__name'),
+                    specialization=F('student_id__specialization'),
+                    gender=F('student_id__id__sex'),
+                    category=F('student_id__category'),
+                    pwd_status=Value("YES", output_field = CharField()) if F('student_id__pwd_status') == True else Value("NO", output_field = CharField()),
+                    phone_no=F('student_id__id__phone_no'),
+                    date_deposited=Concat(Cast(ExtractDay('deposit_date'), CharField()), Value('/'),
+                                      Cast(ExtractMonth('deposit_date'), CharField()), Value('/'),
+                                      Cast(ExtractYear('deposit_date'), CharField()), output_field=CharField())
+                    ).values_list('admission_year', 'semester', 'roll_no', 'full_name', 'program', 'discipline', 'specialization', 'gender', 'category', 'pwd_status', 'phone_no', 'actual_fee', 'fee_paid', 'reason', 'date_deposited', 'mode', 'utr_number', 'fee_receipt').distinct()
+
+                excel_response = BytesIO()
+                final_register_workbook = Workbook(excel_response)
+                final_register_worksheet = final_register_workbook.add_worksheet()
+
+                for i, row in enumerate(table):
+                    for j, cell in enumerate(row):
+                        final_register_worksheet.write(i, j, cell)
+
+                final_register_workbook.close()
+                excel_response.seek(0)
+
+                response = HttpResponse(excel_response.read(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                response['Content-Disposition'] = f'attachment; filename="{batch_id.name}_{batch_id.discipline.acronym}_{batch_id.year}_final_registered.xlsx"'
+                return response
+
+            else:
+                return JsonResponse({'error': 'No registered students found'}, status=404)
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def course_list(request):
+    request_body = json.loads(request.body)
+    student_id = request_body['student_id']
+    semester_no = request_body['semester_no']
+
+    # final_registration_table = FinalRegistration.objects.all().filter(semester_id = semester_id, verified = False)
+    # final = final_registration_table.filter(student_id = student_id, semester_id = semester_id)
+    final = FinalRegistration.objects.all().filter(semester_id__semester_no = semester_no, student_id__id=student_id, verified = False)
+    if final.exists():
+        final_registration = serializers.FinalRegistrationSerializer(final, many=True).data
+    else:
+        final_registration = None
+    resp = {
+        'final_registration': final_registration,
+    }
+    return Response(data=resp, status=status.HTTP_200_OK)

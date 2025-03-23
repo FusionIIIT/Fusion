@@ -16,6 +16,7 @@ urlpatterns = [
     # url(r'^stu/replaceCourse' , views.replaceCourse , name = 'replaceCourse')
     url(r'^stu/next_sem_courses/', views.student_next_sem_courses, name = 'student_next_sem_courses'),
     url(r'^stu/current_courseregistration/$', views.current_courseregistration, name='current_courseregistration'),
+    url(r'^stu/finalregistrationpage/$', views.final_registration_page, name='final_registration_page'),
 
 
 
@@ -25,6 +26,8 @@ urlpatterns = [
     url(r'^acad/get_course_list' , views.get_course_list , name = 'get_course_list' ),
     url(r'^acad/get_all_courses' , views.get_all_courses , name = 'get_all_courses' ),
     url(r'^acad/gen_roll_list' , views.gen_roll_list , name = 'gen_roll_list' ),
+    url(r'^acad/student_list' , views.student_list , name = 'student_list' ),
+    url(r'^acad/course_list' , views.course_list , name = 'course_list' ),
     url(r'^acad/configure_pre_registration' , views.configure_pre_registration_date , name = 'configure_pre_registration'),
     url(r'^acad/configure_final_registration' , views.configure_final_registration_date , name = 'configure_final_registration'),
     url(r'^acad/add_course_to_slot' , views.add_course_to_slot , name = 'add_course_to_slot'),
