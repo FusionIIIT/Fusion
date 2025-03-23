@@ -1,5 +1,7 @@
+import json
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
+from applications.academic_information.utils import allocate, check_for_registration_complete
 from applications.globals.models import (HoldsDesignation,Designation)
 from django.shortcuts import get_object_or_404
 from django.forms.models import model_to_dict
@@ -13,6 +15,8 @@ from applications.globals.models import User,ExtraInfo
 from applications.academic_information.models import Student, Course, Curriculum, Curriculum_Instructor, Student_attendance, Meeting, Calendar, Holiday, Grades, Spi, Timetable, Exam_timetable
 from . import serializers
 from rest_framework.generics import ListCreateAPIView
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -225,3 +229,78 @@ def spi_api(request):
             'spi' : spi_serialized,
         }
         return Response(data=resp,status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def check_allocation_api(request):
+    """
+    API to check the allocation status for a given batch, semester, and year.
+    Uses the utility function to avoid code repetition.
+    """
+    try:
+        batch = request.data.get('batch')
+        sem = request.data.get('sem')
+        year = request.data.get('year')
+
+        if not batch or not sem or not year:
+            return Response(
+                {"status": -3, "message": "Batch, semester, and year are required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            batch = int(batch)
+            sem = int(sem)
+        except ValueError:
+            return Response(
+                {"status": -3, "message": "Invalid batch or semester value"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        result = check_for_registration_complete(batch, sem, year)
+
+        # Map status values to appropriate HTTP codes
+        status_code_map = {
+            -3: status.HTTP_404_NOT_FOUND,
+            -2: status.HTTP_403_FORBIDDEN,
+            -1: status.HTTP_200_OK,
+             1: status.HTTP_200_OK,
+             2: status.HTTP_200_OK,
+        }
+
+        return Response(result, status=status_code_map.get(result["status"], status.HTTP_500_INTERNAL_SERVER_ERROR))
+
+    except Exception as e:
+        return Response(
+            {"status": -3, "message": f"Internal Server Error: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+@csrf_exempt
+def start_allocation_api(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid request method"}, status=400)
+
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        batch = data.get("batch")
+        semester = data.get("semester")
+        year = data.get("year")
+
+        if not batch or not semester or not year:
+            return JsonResponse({"error": "Missing required fields"}, status=400)
+
+        batch = int(batch)
+        semester = int(semester)
+
+        mock_request = type('MockRequest', (), {})()
+        mock_request.POST = {'batch': batch, 'sem': semester, 'year': year}
+
+        return allocate(mock_request)
+
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON format"}, status=400)
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

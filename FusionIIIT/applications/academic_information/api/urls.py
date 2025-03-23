@@ -18,6 +18,9 @@ urlpatterns = [
     url(r'^update-calendar',views.update_calendar,name='calendar-update-api'),
     url(r'^add-calendar',views.add_calendar,name='calendar-add-api'),
     url(r'^delete-calendar',views.delete_calendar,name='calendar-delete-api'),
+    url(r'^check-allocation$', views.check_allocation_api, name='check-allocation-api'),
+    url(r'^start-allocation$', views.start_allocation_api, name='start-allocation-api'),
+
 
     # url(r'^holiday',views.holiday_api,name='holiday-get-api'),
 
