@@ -191,4 +191,5 @@ urlpatterns = [
         views.HostelFineUpdateView.as_view(),
         name="update-fine-status",
     ),
+    path("download_hostel_allotment/", views.DownloadHostelAllotment.as_view(), name="download_hostel_allotment"),
 ]
