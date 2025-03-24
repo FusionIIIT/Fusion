@@ -1190,6 +1190,81 @@ def check_out(request):
             return Response({'error': str(e)}, status=400)
     else:
         return Response({'error': 'Invalid request method'}, status=400)
+    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def check_out_with_inventory(request):
+    if request.method == 'POST':
+        booking_id = request.data.get('booking_id')
+        inventory_items = request.data.get('inventory_items', [])
+        meal_bill = request.data.get('meal_bill', 0)
+        room_bill = request.data.get('room_bill', 0)
+        checkout_date = datetime.date.today()
+        checkout_time = request.data.get('check_out_time')
+
+        try:
+            # Update booking details
+            booking = BookingDetail.objects.select_related('intender', 'caretaker').get(id=booking_id)
+            booking.status = "Complete"
+            booking.check_out = checkout_date
+            booking.check_out_time = checkout_time  # Update check-out time
+            booking.save()
+
+            # Add inventory items to the database
+            for item in inventory_items:
+                item_name = item.get('name')
+                quantity = item.get('quantity', 0)
+                cost = item.get('cost', 0)
+
+                # Check if the inventory item already exists
+                inventory_item = Inventory.objects.filter(item_name=item_name).first()
+                if inventory_item:
+                    # Update existing inventory item
+                    inventory_item.quantity += quantity
+                    inventory_item.save()
+                else:
+                    # Create a new inventory item
+                    inventory_data = {
+                        'item_name': item_name,
+                        'quantity': quantity,
+                        'consumable': True,  # Assuming all items are consumable
+                    }
+                    inventory_serializer = InventorySerializer(data=inventory_data)
+                    if inventory_serializer.is_valid():
+                        inventory_item = inventory_serializer.save()
+                    else:
+                        return Response(inventory_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+                # Create an inventory bill
+                bill_data = {
+                    'item_name': inventory_item.id,  # Link to inventory item
+                    'bill_number': f"INV-{booking_id}-{item_name[:3].upper()}",
+                    'cost': cost,
+                }
+                bill_serializer = InventoryBillSerializer(data=bill_data)
+                if bill_serializer.is_valid():
+                    bill_serializer.save()
+                else:
+                    return Response(bill_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            # Optionally, create a bill for the booking
+            # Bill.objects.create(
+            #     booking=booking,
+            #     meal_bill=meal_bill,
+            #     room_bill=room_bill,
+            #     caretaker=request.user,
+            #     payment_status=True,
+            #     bill_date=checkout_date
+            # )
+
+            return Response({'status': 'visitor checked out and inventory updated', 'check_out_time': checkout_time})
+        except BookingDetail.DoesNotExist:
+            return Response({'error': 'Booking not found'}, status=404)
+        except Exception as e:
+            return Response({'error': str(e)}, status=400)
+    else:
+        return Response({'error': 'Invalid request method'}, status=400)
 # @login_required(login_url='/accounts/login/')
 # def check_out(request):
 #     user = get_object_or_404(User, username=request.user.username)

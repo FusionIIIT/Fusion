@@ -23,6 +23,7 @@ urlpatterns = [
     url(r'^record-meal/', views.record_meal, name = 'record_meal'),
     url(r'^bill/', views.bill_generation, name = 'bill_generation'),
     url(r'^update-booking/', views.update_booking, name = 'update_booking'),
+    url(r'^check-out-with-inventory/', views.check_out_with_inventory, name = 'check_out_with_inventory'),
 
     url(r'^bill_between_date_range/', views.bill_between_dates, name = 'generate_records'),
     url(r'^room-availability/', views.room_availabity, name = 'room_availabity'),
