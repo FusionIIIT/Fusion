@@ -1361,28 +1361,48 @@ def edit_courseslot_form(request, courseslot_id):
     else:
         return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
     
-def delete_courseslot(request, courseslot_id):
-    
-    user_details = ExtraInfo.objects.get(user = request.user)
-    des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
-    elif str(request.user) == "acadadmin" :
-        pass
-    elif 'hod' in request.session['currentDesignationSelected'].lower():
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
-    
-    courseslot = get_object_or_404(CourseSlot, Q(id=courseslot_id))
-    submitbutton= request.POST.get('Submit')
-    if submitbutton:
-        if request.method == 'POST':
-            courseslotname = courseslot.name
-            curriculum_id = courseslot.semester.curriculum.id
-            courseslot.delete() 
-            messages.success(request, "Deleted "+ courseslotname +" successful")
-            return HttpResponseRedirect('/programme_curriculum/admin_curriculum_semesters/' + str(curriculum_id) + '/')  
 
-    return render(request, 'programme_curriculum/view_a_courseslot.html', {'course_slot': courseslot})
+
+@csrf_exempt
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_courseslot(request, courseslot_id):
+    print(request.session.keys())
+    try:
+        # Check if the user has the required session key
+        # if 'currentDesignationSelected' not in request.session:
+        #     return JsonResponse({'error': 'User role not defined in session'}, status=403)
+        
+        # Check user permissions
+        user_details = ExtraInfo.objects.get(user=request.user)
+        des = HoldsDesignation.objects.all().filter(user=request.user).first()
+        
+        # Restrict access based on user role
+        # print(request.session.keys())
+        # print(request.session['currentDesignationSelected'])
+        # current_designation = request.session['currentDesignationSelected']
+        # if current_designation == "student" or \
+        #    current_designation == "Associate Professor" or \
+        #    current_designation == "Professor" or \
+        #    current_designation == "Assistant Professor":
+        #     return JsonResponse({'error': 'Permission denied'}, status=403)
+        # elif str(request.user) == "acadadmin":
+        #     pass  # Allow access for academic admin
+        # elif 'hod' in current_designation.lower():
+        #     return JsonResponse({'error': 'Permission denied'}, status=403)
+        
+        # Fetch the course slot
+        courseslot = get_object_or_404(CourseSlot, id=courseslot_id)
+        
+        # Delete the course slot
+        courseslotname = courseslot.name
+        curriculum_id = courseslot.semester.curriculum.id
+        courseslot.delete()
+        
+        return JsonResponse({'message': f"Deleted {courseslotname} successfully"}, status=200)
+    except Exception as e:
+        # Return a generic error message without logging
+        return JsonResponse({'error': 'Internal server error'}, status=500)
 
 
 @permission_classes([IsAuthenticated])
