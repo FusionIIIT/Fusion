@@ -118,7 +118,9 @@ def view_curriculums_of_a_programme(request, programme_id):
 
     # Fetch program and related curriculums
     program = get_object_or_404(Programme, id=programme_id)
+    print(program.name)
     curriculums = program.curriculums.all()  # Adjust if it's a related name
+
 
     # Apply filters
     curriculumfilter = CurriculumFilter(request.GET, queryset=curriculums)
@@ -132,11 +134,13 @@ def view_curriculums_of_a_programme(request, programme_id):
     # Prepare JSON data
     data = {
         'program': model_to_dict(program),
+        'name':program.name,
         # 'working_curriculums': [model_to_dict(c) for c in working_curriculums],
         'working_curriculums': [
             {
                 **model_to_dict(c),
-                'batches': [model_to_dict(b) for b in c.batches.all()]  # Add batches for each curriculum
+                'batches': [model_to_dict(b) for b in c.batches.all()]
+                # Add batches for each curriculum
             }
             for c in working_curriculums
         ],
