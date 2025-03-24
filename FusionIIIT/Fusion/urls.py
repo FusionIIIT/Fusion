@@ -22,6 +22,8 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 
+from django.views.static import serve
+
 
 urlpatterns = [
     url(r'^', include('applications.globals.urls')),
@@ -37,6 +39,8 @@ urlpatterns = [
     url(r'^__debug__/', include(debug_toolbar.urls)),
     url(r'^research_procedures/', include('applications.research_procedures.urls')),
     url(r'^accounts/', include('allauth.urls')),
+    
+    # url(r'^api/iwdModuleV2/', include('applications.iwdModuleV2.api.urls')),
 
 
     url(r'^eis/', include('applications.eis.urls')),
@@ -63,4 +67,5 @@ urlpatterns = [
     url(r'^recruitment/', include('applications.recruitment.urls')),
     url(r'^examination/', include('applications.examination.urls')),
     url(r'^otheracademic/', include('applications.otheracademic.urls')),
+    url(r'^media/(?P<path>.*)$', serve, {"document_root": settings.MEDIA_ROOT},),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

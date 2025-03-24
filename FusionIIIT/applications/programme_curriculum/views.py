@@ -225,6 +225,7 @@ def view_a_courseslot(request, courseslot_id):
     elif 'hod' in request.session['currentDesignationSelected'].lower():
         url+='faculty/'
     course_slot = get_object_or_404(CourseSlot, Q(id=courseslot_id))
+    notifs = request.user.notifications.all()
     return render(request, url+'view_a_courseslot.html', {'course_slot': course_slot,'notifications': notifs,})
 
 
@@ -438,7 +439,7 @@ def admin_view_semesters_of_a_curriculum(request, curriculum_id):
     
     transpose_semester_slots = list(zip(*semester_slots))
 
-    all_batches = Batch.objects.filter(running_batch=True).exclude(curriculum=curriculum_id).order_by('year')
+    all_batches = Batch.objects.filter(running_batch=True, curriculum__isnull=True).order_by('year')
 
     return render(request, 'programme_curriculum/acad_admin/admin_view_semesters_of_a_curriculum.html', {'curriculum': curriculum, 'semesters': semesters, 'semester_slots': transpose_semester_slots, 'semester_credits': semester_credits, 'all_batches':all_batches})
 
@@ -924,29 +925,32 @@ def delete_courseslot(request, courseslot_id):
     return render(request, 'programme_curriculum/view_a_courseslot.html', {'course_slot': courseslot})
 
 
+# views.py
 def add_batch_form(request):
-    
-    user_details = ExtraInfo.objects.get(user = request.user)
-    des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
+    user_details = ExtraInfo.objects.get(user=request.user)
+    des = HoldsDesignation.objects.all().filter(user=request.user).first()
+
+    if request.session['currentDesignationSelected'] in ["student", "Associate Professor", "Professor", "Assistant Professor"]:
         return HttpResponseRedirect('/programme_curriculum/programmes/')
-    elif str(request.user) == "acadadmin" :
+    elif str(request.user) == "acadadmin":
         pass
     elif 'hod' in request.session['currentDesignationSelected'].lower():
         return HttpResponseRedirect('/programme_curriculum/programmes/')
-    
-    curriculum_id = request.GET.get('curriculum_id', -1)
-    form = BatchForm(initial={'curriculum': curriculum_id})
-    submitbutton= request.POST.get('Submit')
+
+    # Explicitly setting curriculum to None or '' to prevent any default value
+    form = BatchForm(initial={'curriculum': None})
+
+    submitbutton = request.POST.get('Submit')
     if submitbutton:
         if request.method == 'POST':
             form = BatchForm(request.POST)
             if form.is_valid():
                 form.save()
-                messages.success(request, "Added Batch successful")
+                messages.success(request, "Added Batch successfully")
                 return HttpResponseRedirect('/programme_curriculum/admin_batches/')
-    return render(request, 'programme_curriculum/acad_admin/add_batch_form.html',{'form':form, 'submitbutton': submitbutton})
-    
+
+    return render(request, 'programme_curriculum/acad_admin/add_batch_form.html', {'form': form, 'submitbutton': submitbutton})
+
 
 def edit_batch_form(request, batch_id):
     

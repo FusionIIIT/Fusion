@@ -6,7 +6,7 @@ app_name = 'iwdModuleV2'
 
 urlpatterns = [
 
-
+    url(r'^api/', include('applications.iwdModuleV2.api.urls')),
     url(r'^$', views.dashboard, name='IWD Dashboard'),
     url(r'^page1_1/$', views.page1_1, name='IWD Page1.1'),
     url(r'page2_1/$', views.page2_1, name='IWD Page2.1'),
