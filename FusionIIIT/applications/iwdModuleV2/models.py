@@ -192,6 +192,9 @@ class WorkOrder(models.Model):
 class Bills(models.Model):
     request_id = models.ForeignKey(Requests, on_delete=models.CASCADE)
     file = models.FileField()
+    # item = models.CharField(max_length=200)
+    # quantity = models.IntegerField(default=1)
+
 
 
 class Budget(models.Model):

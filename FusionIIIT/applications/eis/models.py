@@ -3,7 +3,8 @@ import datetime
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.db import models
-from applications.globals.models import ExtraInfo
+from applications.globals.models import ExtraInfo, Designation, DepartmentInfo, HoldsDesignation, Staff, Faculty, Feedback, Issue_image_directory, IssueImage, Issue, ModuleAccess
+from applications.office_module.models import Project_Registration, Project_Extension, Project_Closure, Project_Reallocation
 
 class emp_visits(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
@@ -397,3 +398,65 @@ class faculty_about(models.Model):
 
     def __str__(self):
         return str(self.user)
+    
+class emp_administrative_position(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    pf_no = models.CharField(max_length=20)
+    title = models.CharField(max_length=255, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    from_date = models.DateField(null=True, blank=True)
+    to_date = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(null=True, blank=True, auto_now_add=True)
+    updated_at = models.DateTimeField(null=True, blank=True, auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'title')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.title}"
+    
+class emp_honors(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    pf_no = models.CharField(max_length=20)
+    title = models.CharField(max_length=255)  # NOT NULL constraint
+    period = models.CharField(max_length=255, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(null=True, blank=True, auto_now_add=True)
+    updated_at = models.DateTimeField(null=True, blank=True, auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'title')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.title}"
+    
+class emp_professional_experience(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    pf_no = models.CharField(max_length=20)
+    title = models.CharField(max_length=255, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    from_date = models.DateField(null=True, blank=True)
+    to_date = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(null=True, blank=True, auto_now_add=True)
+    updated_at = models.DateTimeField(null=True, blank=True, auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'title')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.title}"
+    
+class emp_qualifications(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    pf_no = models.CharField(max_length=20)
+    degree = models.CharField(max_length=255)
+    college = models.CharField(max_length=255)
+    description = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(null=True, blank=True, auto_now_add=True)
+    updated_at = models.DateTimeField(null=True, blank=True, auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'degree')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.degree} from {self.college}"
