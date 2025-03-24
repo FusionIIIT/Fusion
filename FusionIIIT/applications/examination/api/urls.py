@@ -26,4 +26,6 @@ urlpatterns = [
     url(r'update_enter_grades_dean/',views.UpdateEnterGradesDeanView.as_view(),name='update_enter_grades_dean'),
     url(r'validate_dean/',views.ValidateDeanView.as_view(),name='validate_dean'),
     url(r'validate_dean_submit/',views.ValidateDeanSubmitView.as_view(),name='validate_dean_submit'),
+    url(r'check_result/',views.CheckResultView.as_view(),name='check_result'),
+
 ]
