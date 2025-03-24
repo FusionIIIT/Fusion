@@ -953,8 +953,8 @@ def stockEntry(request,username):
         location = request.POST.get('location')
         print("location-",location)
         try:
-            temp1 = File.objects.get(id=id)
-            temp = IndentFile.objects.get(file_id=id)
+            # temp1 = File.objects.get(id=id)
+            temp = IndentItem.objects.get(indent_file_id=id)
         except (File.DoesNotExist, IndentFile.DoesNotExist):
             return Response({"message": "File with given ID does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
