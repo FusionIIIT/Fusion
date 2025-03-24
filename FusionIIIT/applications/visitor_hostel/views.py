@@ -1229,6 +1229,7 @@ def check_out_with_inventory(request):
                         'item_name': item_name,
                         'quantity': quantity,
                         'consumable': True,  # Assuming all items are consumable
+                        'total_usable': cost,
                     }
                     inventory_serializer = InventorySerializer(data=inventory_data)
                     if inventory_serializer.is_valid():

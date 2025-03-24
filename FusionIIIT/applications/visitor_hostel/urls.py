@@ -45,7 +45,7 @@ urlpatterns = [
      url(r'^confirm-booking-new/$', views.confirm_booking_new, name='confirm_booking_new'),  #
 
     url(r'^inventory/$', views.get_inventory_items, name='get_inventory_items'),
-    url(r'^inventory/(?P<pk>\d+)/$', views.get_inventory_item, name='get_inventory_item'),
+    # url(r'^inventory/(?P<pk>\d+)/$', views.get_inventory_item, name='get_inventory_item'),
     url(r'^inventory-bills/$', views.get_inventory_bills, name='get_inventory_bills'),
     url(r'^inventory-bills/(?P<pk>\d+)/$', views.get_inventory_bill, name='get_inventory_bill'),
 
