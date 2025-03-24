@@ -1,13 +1,16 @@
-from rest_framework import viewsets
-from rest_framework import filters
+from rest_framework import viewsets, filters
 from rest_framework.views import APIView 
 from rest_framework.response import Response
-from django.db.models import Sum  # Import Sum directly
-from ..models import DepartmentInfo, SectionInfo  
+from django.db.models import Sum
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
-from ..models import Item, DepartmentInfo, SectionInfo
-from .serializers import ItemSerializer, DepartmentInfoSerializer, SectionInfoSerializer
+from ..models import Item, DepartmentInfo, SectionInfo, InventoryRequest
+from .serializers import (
+    ItemSerializer, 
+    DepartmentInfoSerializer, 
+    SectionInfoSerializer,
+    InventoryRequestSerializer
+)
 
 class ItemViewSet(viewsets.ModelViewSet):
     queryset = Item.objects.all()
@@ -23,16 +26,13 @@ class DepartmentInfoViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()
         department = self.request.query_params.get('department', None)
-        
         if department:
             # Case-insensitive filtering
-            queryset = queryset.filter(department_name=department)
+            queryset = queryset.filter(department_name__iexact=department)
         else:
             # Return an empty queryset if no department is provided
             queryset = queryset.none()
-
         return queryset
-
 
 class SectionInfoViewSet(viewsets.ModelViewSet):
     queryset = SectionInfo.objects.all()
@@ -44,16 +44,21 @@ class SectionInfoViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()
         section = self.request.query_params.get('section', None)
-        
         if section:
             # Case-insensitive filtering
-            queryset = queryset.filter(section_name=section)
+            queryset = queryset.filter(section_name__iexact=section)
         else:
-            # Return an empty queryset if no department is provided
+            # Return an empty queryset if no section is provided
             queryset = queryset.none()
-
         return queryset
 
+class InventoryRequestViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing InventoryRequest objects.
+    """
+    queryset = InventoryRequest.objects.all()
+    serializer_class = InventoryRequestSerializer
+    permission_classes = [IsAuthenticated]
 
 class ItemCountView(APIView):
     permission_classes = [IsAuthenticated]
@@ -64,7 +69,6 @@ class ItemCountView(APIView):
             department_total = DepartmentInfo.objects.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
             section_total = SectionInfo.objects.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
 
-            # Returning the response
             return Response({
                 "department_total_quantity": department_total,
                 "section_total_quantity": section_total,
