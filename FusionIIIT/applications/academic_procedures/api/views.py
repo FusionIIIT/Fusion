@@ -24,7 +24,7 @@ from applications.programme_curriculum.models import ( CourseSlot, Course as Cou
 
 from applications.academic_procedures.models import ( Student, Curriculum , ThesisTopicProcess, InitialRegistrations,
                                                      FinalRegistration, SemesterMarks,backlog_course,
-                                                     BranchChange , StudentRegistrationChecks, Semester , FeePayments , course_registration)
+                                                     BranchChange , StudentRegistrationChecks, Semester , FeePayments , course_registration, course_replacement)
 
 from applications.academic_information.models import (Curriculum_Instructor , Calendar)
 
@@ -1097,6 +1097,8 @@ def verify_registration(request):
     return JsonResponse({'status': 'error', 'message': 'Error in processing'})
 
 @api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def verify_course(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().select_related(
@@ -1128,19 +1130,19 @@ def verify_course(request):
     details = []
 
     current_sem_courses = get_currently_registered_course(
-        roll_no, curr_sem_id)
+        roll_no, curr_sem_id, True)
 
     idd = obj2
     for z in current_sem_courses:
-        z = z[1]
         print(z)
-        course_code = z.code
-        course_name = z.name
+        course_code = z.course_id.code
+        course_name = z.course_id.name
+        replaced_by = course_replacement.objects.all().filter(old_course_registration=z).first()
         # course_code, course_name = str(z).split(" - ")
         k = {}
         # reg_ig has course registration id appended with the the roll number
         # so that when we have removed the registration we can be redirected to this view
-        k['reg_id'] = roll_no+" - "+course_code
+        k['reg_id'] = z.id
         k['rid'] = roll_no+" - "+course_code
         # Name ID Confusion here , be carefull
         courseobj2 = Courses.objects.all().filter(code=course_code)
@@ -1148,8 +1150,10 @@ def verify_course(request):
         for p in courseobj2:
             k['course_id'] = course_code
             k['course_name'] = course_name
-            k['sem'] = curr_sem_id.semester_no
+            k['sem'] = z.semester_id.semester_no
             k['credits'] = p.credit
+            k['registration_type'] = z.registration_type
+            k['replaced_by'] = serializers.CourseRegistrationSerializer(replaced_by.new_course_registration).data if (replaced_by) else None
         details.append(k)
 
     year = demo_date.year
@@ -1163,8 +1167,9 @@ def verify_course(request):
     # TO DO Bdes
     date = {'year': yearr, 'semflag': semflag}
     course_list = Courses.objects.all()
-    semester_list = Semester.objects.all()
+    semester_list = Semester.objects.filter(curriculum=curr_id)
     semester_no_list=[]
+    courseslot_list = CourseSlot.objects.filter(semester__in=semester_list)
     for i in semester_list:
         semester_no_list.append(int(i.semester_no))
     # return JsonResponse(
@@ -1177,8 +1182,10 @@ def verify_course(request):
     
     return JsonResponse({
         'details': details,
+        'dict2': dict2,
         'course_list': serializers.CourseSerializer(course_list, many=True).data,
         'semester_list': serializers.SemesterSerializer(semester_list, many=True).data,
+        'courseslot_list': serializers.CourseSlotSerializer(courseslot_list, many=True).data,
         'date': date
     })
 
@@ -1802,3 +1809,66 @@ def course_list(request):
         'final_registration': final_registration,
     }
     return Response(data=resp, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def dropcourseadmin(request):
+    '''
+        This function is used to get the view when Acad Admin drops any course of any student.
+        @param:
+                request - trivial
+
+        @variables:
+                data - user's id.
+                rid - Registration ID of Registers table
+                response_data - data to be responded.
+    '''
+    data = request.GET.get('id')
+    # data = data.split(" - ")
+    reg_id = int(data)
+    # student_id = data[0]
+    # course_code = data[1]
+    # course = Courses.objects.get(code=course_code , version = 1.0)
+    # need to add batch and programme
+    # curriculum_object = Curriculum.objects.all().filter(course_code = course_code)
+    try:
+        # Register.objects.filter(curr_id = curriculum_object.first(),student_id=int(data[0])).delete()
+        course_registration.objects.filter(id=reg_id).delete()
+    except Exception as e:
+        print(str(e))
+        return JsonResponse({'error': str(e)}, status=400)
+        # print("hello ")
+    return JsonResponse({'message': 'Success!'}, status=200)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def acad_add_course(request):
+    if(request.method == "POST"):
+        course_id = request.POST["course_id"]
+        courseslot_id = request.POST["courseslot_id"]
+        course = Courses.objects.get(id=course_id)
+        courseslot = CourseSlot.objects.get(id=courseslot_id)
+        roll_no = request.POST['roll_no']
+        student = Student.objects.all().select_related(
+            'id', 'id__user', 'id__department').filter(id=roll_no).first()
+        sem_id = request.POST['semester_id']
+        semester = Semester.objects.get(id=sem_id)
+        registration_type = request.POST["registration_type"]
+        working_year = request.POST.get("working_year", datetime.datetime.now().year)
+        old_course_id = request.POST.get("old_course")
+        with transaction.atomic():
+            cr = course_registration(
+                course_slot_id=courseslot, course_id=course, student_id=student, semester_id=semester , working_year = working_year, registration_type=registration_type)
+            cr.save()
+            if old_course_id:
+                old_course_obj = course_registration.objects.filter(id=old_course_id).first()
+                if old_course_obj:
+                    course_replacement.objects.create(
+                        old_course_registration=old_course_obj, 
+                        new_course_registration=cr
+                    )
+                    
+    return JsonResponse({'message': 'Success!'}, status=200)
