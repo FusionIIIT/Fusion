@@ -587,7 +587,7 @@ def requests_status(request):
     obj = []
     print(files)
     for request_object in files:
-        file_obj = File.objects.get(src_object_id=request_object.id, src_module="IWD").first()
+        file_obj = File.objects.filter(src_object_id=request_object.id, src_module="IWD").first()
         if request_object:
             element = {
                 'request_id': request_object.id,
