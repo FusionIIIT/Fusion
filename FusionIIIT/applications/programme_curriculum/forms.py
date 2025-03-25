@@ -293,7 +293,7 @@ class NewCourseProposalFile(ModelForm):
             'subject' : forms.Textarea(attrs={'placeholder': 'Subject','class':'field',}),
             'description' : forms.Textarea(attrs={'placeholder': 'Description','class':'field',}),
             'upload_date' : forms.TextInput(),
-            
+            'max_seats' : forms.NumberInput(attrs={'placeholder': '',}, ), 
             
         }
         labels = {
@@ -321,6 +321,7 @@ class NewCourseProposalFile(ModelForm):
             'subject' : 'title',
             'description' : 'Description',
             'upload_date' : '',
+            'max_seats':''
             
         }
 
