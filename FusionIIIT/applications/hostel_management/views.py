@@ -890,16 +890,25 @@ class NoticeBoardView(APIView):
                 hall = Student.objects.filter(id=staff_student_info).values("hall_id").first()
                 if not hall: return JsonResponse({"error": "Hall ID not found for the user."}, status=404)
                 hall_id = hall["hall_id"]
-            if(hall_id is None): return JsonResponse({"error": "Hall ID not found for the user."}, status=404)
-            hall = Hall.objects.get(hall_id=hall_id)
-            notices = HostelNoticeBoard.objects.filter(Q(hall = hall) | Q(scope=1)).values(
-                "id", "hall", "posted_by", "head_line", "content", "description", "scope"
-            )
-            #.values("id", "hall", "posted_by", "head_line", "content", "description", "scope")
-            data = list(notices)
-            for notice in data:
-                notice["hall_id"] = Hall.objects.filter(id=int(notice["hall"])).values("hall_id").first()["hall_id"]
-            return JsonResponse(data, safe=False)
+            if(hall_id is not None):
+                hall = Hall.objects.get(hall_id=hall_id)
+                notices = HostelNoticeBoard.objects.filter(Q(hall = hall) | Q(scope=1)).values(
+                    "id", "hall", "posted_by", "head_line", "content", "description", "scope"
+                )
+                #.values("id", "hall", "posted_by", "head_line", "content", "description", "scope")
+                data = list(notices)
+                for notice in data:
+                    notice["hall_id"] = Hall.objects.filter(id=int(notice["hall"])).values("hall_id").first()["hall_id"]
+                return JsonResponse(data, safe=False)
+            else:
+                notices = HostelNoticeBoard.objects.filter(Q(scope=1)).values(
+                    "id", "hall", "posted_by", "head_line", "content", "description", "scope"
+                )
+                #.values("id", "hall", "posted_by", "head_line", "content", "description", "scope")
+                data = list(notices)
+                for notice in data:
+                    notice["hall_id"] = Hall.objects.filter(id=int(notice["hall"])).values("hall_id").first()["hall_id"]
+                return JsonResponse(data, safe=False)
 
 class AllLeaveData(APIView):
     authentication_classes = [TokenAuthentication]
@@ -1109,26 +1118,42 @@ class students_get_students_info(APIView):
                 if not hall:
                     return JsonResponse({"error": "Hall ID not found for the user."}, status=404)
                 hall_id = hall["hall_id"]
-            if(hall_id is None): return JsonResponse({"error": "Hall ID not found for the user."}, status=404)
+            if(hall_id is not None):
             # Get the students in the same hall
-            student_details = Student.objects.filter(hall_id=hall_id).values(
-                "id__user__username",  # Assuming `id` is linked to `ExtraInfo` and `user`
-                "programme",
-                "batch",
-                "cpi",
-                "category",
-                "father_name",
-                "mother_name",
-                "hall_id",
-                "room_no",
-                "specialization",
-                "curr_semester_no",
-            )
-            # Return the data as a JSON response
-            return JsonResponse(list(student_details), safe=False, status=200)
+                student_details = Student.objects.filter(hall_id=hall_id).values(
+                    "id__user__username",  # Assuming `id` is linked to `ExtraInfo` and `user`
+                    "programme",
+                    "batch",
+                    "cpi",
+                    "category",
+                    "father_name",
+                    "mother_name",
+                    "hall_id",
+                    "room_no",
+                    "specialization",
+                    "curr_semester_no",
+                )
+                # Return the data as a JSON response
+                return JsonResponse(list(student_details), safe=False, status=200)
+            else:
+                student_details = Student.objects.filter(id=staff_student_info).values(
+                    "id__user__username",  # Assuming `id` is linked to `ExtraInfo` and `user`
+                    "programme",
+                    "batch",
+                    "cpi",
+                    "category",
+                    "father_name",
+                    "mother_name",
+                    "hall_id",
+                    "room_no",
+                    "specialization",
+                    "curr_semester_no",
+                )
+                # Return the data as a JSON response
+                return JsonResponse(list(student_details), safe=False, status=200)
+                return JsonResponse([], safe=False, status=200)
         
         except Exception as e:
-            print(e)
             return JsonResponse({"error": str(e)}, status=500)
 
 
@@ -1172,7 +1197,6 @@ class caretaker_get_students_info(APIView):
             return JsonResponse(list(student_details), safe=False, status=200)
         
         except Exception as e:
-            print(f"Error: {e}")
             return JsonResponse({"error": str(e)}, status=500)
 
 
@@ -1420,7 +1444,6 @@ class AssignBatchView(APIView):
             )
 
         except Exception as e:
-            print(e)
             return JsonResponse({"status": "error", "error": str(e)}, status=500)
 
 class AssignWardenView(APIView):
@@ -2195,7 +2218,6 @@ def update_guest_room_status(request):
                 {"status": "error", "message": "Guest room not found."}, status=404
             )
         except Exception as e:
-            print(e)
             return JsonResponse({"status": "error", "message": str(e)}, status=500)
     else:
         return JsonResponse(
@@ -2606,11 +2628,16 @@ class AssignBatch(APIView):
                     session = session,
                     defaults={'file': file}
                 )
+                if hall.assigned_batch is None: hall.assigned_batch = batch
+                else: hall.assigned_batch = hall.assigned_batch + ',' + batch
+                hall.save()
+                return Response({
+                    'message': 'Attendance record uploaded successfully'
+                })
             except Exception as e:
-                print(e)
-            return Response({
-                'message': 'Attendance record uploaded successfully'
-            })
+                return Response({
+                    'message': 'Attendance record upload failed'
+                })
 
         except Hall.DoesNotExist:
             return Response({
@@ -2641,34 +2668,22 @@ class DownloadHostelAllotment(APIView):
 
     def get(self, request):
      try:
-        print("Request received for file download")
-
         # Get the warden's hall
         hall_warden = HallWarden.objects.get(faculty_id=request.user.extrainfo.id)
-        print("Hall Warden:", hall_warden)
-
-        hall_id = hall_warden.hall  
-        print("Hall ID:", hall_id)
-
+        hall_id = hall_warden.hall
         session = self.get_current_session()
-        print("Current Session:", session)
-
         assigned_batches = HostelAssignedBatch.objects.filter(hall=hall_id, session=session)
-        print("Assigned Batches:", assigned_batches)
 
         if not assigned_batches.exists():
-            print("No allotment files found for this session.")
             return HttpResponseNotFound("No allotment files found for this session.")
 
         files = []
         for record in assigned_batches:
             file_path = os.path.join(settings.MEDIA_ROOT, str(record.file))
-            print("Checking file path:", file_path)
             if os.path.exists(file_path):
                 files.append(file_path)
 
         if not files:
-            print("No valid files found for download.")
             return HttpResponseNotFound("No valid files found for download.")
 
         file_urls = []
@@ -2683,11 +2698,9 @@ class DownloadHostelAllotment(APIView):
 
 
      except HallWarden.DoesNotExist:
-         print("Hall not found for this user.")
          return Response({"error": "Hall not found for this user."}, status=status.HTTP_404_NOT_FOUND)
 
      except Exception as e:
-         print("Unhandled Error:", str(e))
          return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class AssignRoomsbyWarden(APIView):
@@ -2782,7 +2795,7 @@ def update_student_data(request):
 
     # Query the database for records in the current session
     current_batches = HostelAssignedBatch.objects.filter(session=current_session, hall = hall)
-
+    all_batches = []
     all_student_data = []
 
     # Process each file
@@ -2796,7 +2809,6 @@ def update_student_data(request):
             elif file_path.endswith('.csv'):
                 df = pd.read_csv(file_path)
             else:
-                print(f"Unsupported file format: {file_path}")
                 continue
 
             # Standardize column names (handling potential case differences)
@@ -2806,7 +2818,6 @@ def update_student_data(request):
             found_cols = [col for col in required_cols if any(c in df.columns for c in [col, col.replace(' ', ''), col.replace(' ', '_')])]
 
             if len(found_cols) < len(required_cols):
-                print(f"File {record.file} is missing some required columns. Found: {found_cols}")
                 continue
 
             # Extract relevant data and add batch information
@@ -2816,16 +2827,15 @@ def update_student_data(request):
                     'roll_no': row['roll no'],
                     'room_no': row['room no'],
                 }
+                if(record.batch not in all_batches): all_batches.append(record.batch)
                 all_student_data.append(student_data)
-
         except Exception as e:
-            print(e)
             print(f"Error processing file {record.file}: {str(e)}")
 
     room_assignments = {str(student['roll_no']): str(student['room_no']) for student in all_student_data}
 
     # Get all students in the specified hall
-    students = Student.objects.filter(hall_id = hall)
+    students = Student.objects.filter(batch__in = all_batches)
     # Count for tracking updates
     updated_count = 0
     not_found_count = 0
@@ -2837,6 +2847,7 @@ def update_student_data(request):
         if roll_no in room_assignments:
             # Update room number
             student.room_no = room_assignments[roll_no]
+            student.hall_id = str(hall)
             student.save()
             updated_count += 1
         else:
