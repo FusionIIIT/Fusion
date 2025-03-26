@@ -22,6 +22,12 @@ from applications.programme_curriculum.models import Course as Courses
 from applications.programme_curriculum.models import CourseInstructor
 from applications.academic_procedures.models import course_registration
 from applications.globals.models import ExtraInfo
+
+
+from django.shortcuts import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import permission_classes
+
 # from applications.globals.models import *
 
 # from .forms import *
@@ -538,3 +544,46 @@ def course(request, course_code, version):
         }
         return Response(data,status=status.HTTP_200_OK)
        
+
+#Grading Scheme
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_grading_scheme(request):
+    """
+    API to create/update grading scheme.
+    - Only faculty users can access this API.
+    - Accepts all required data in the request body.
+    """
+
+    user = request.user
+
+    # Check if user is faculty
+    extrainfo = get_object_or_404(ExtraInfo, user=user)
+    if extrainfo.user_type != 'faculty':
+        return Response({"error": "Only faculty can create grading schemes"}, status=status.HTTP_403_FORBIDDEN)
+
+    # Extract request data
+    course_code = request.data.get("course_code")
+    version = request.data.get("version")
+    evaluations = request.data.get("evaluations", {})
+    grading_boundaries = request.data.get("grading_boundaries", {})
+
+    # Validate course existence
+    course = get_object_or_404(Courses, code=course_code, version=version)
+
+    # ✅ Save Grading Scheme (Evaluations)
+    for eval_type, weightage in evaluations.items():
+        GradingScheme.objects.update_or_create(
+            course_id=course,
+            type_of_evaluation=eval_type,
+            defaults={"weightage": weightage}
+        )
+
+    # ✅ Save Grading Boundaries
+    GradingScheme_grades.objects.update_or_create(
+        course_id=course,
+        defaults=grading_boundaries
+    )
+
+    return Response({"message": "Grading scheme created successfully"}, status=status.HTTP_201_CREATED)

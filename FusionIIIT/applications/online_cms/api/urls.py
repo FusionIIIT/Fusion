@@ -12,4 +12,5 @@ urlpatterns = [
     # url(r'^courses', CourseListView.as_view(), name='courses'),
     url(r'^(?P<course_code>[A-Za-z0-9]+)/(?P<version>[\d.]+)/$', views.course, name='course'),
     url(r'^courses', views.courseview, name='courseview'),
+    url(r'^upload-grading-scheme/', views.create_grading_scheme, name='create_grading_scheme'),
 ]
