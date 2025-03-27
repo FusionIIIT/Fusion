@@ -166,8 +166,6 @@ def submit_application(request):
         return JsonResponse({"error": "Invalid JSON format"}, status=400)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
-
-
 # End of the submit application
 
 def applicant_dashboard(request):
@@ -177,7 +175,32 @@ def applicant_main_dashboard(request):
     return JsonResponse({"message": "Load applicant main dashboard"})
 
 def view_applications(request):
-    return JsonResponse({"message": "view_applications"})
+    user_id = request.GET.get('user_id')
+    try:
+        # Get the applicant based on user_id
+        applicant = get_object_or_404(Applicant, user_id=user_id)
+        
+        # Get all application IDs associated with this applicant
+        associated_apps = AssociatedWith.objects.filter(applicant=applicant).values_list('application_id', flat=True)
+        
+        # Retrieve applications based on application IDs
+        applications = Application.objects.filter(id__in=associated_apps)
+        
+        # Prepare response data
+        applications_data = []
+        for app in applications:
+            applications_data.append({
+                "application_id": app.id,
+                "title": app.title,
+                "token_no": app.token_no,
+                "attorney_name": app.attorney.name if app.attorney else "Not Assigned",
+                "submitted_date": app.submitted_date.strftime("%Y-%m-%d") if app.submitted_date else None
+            })
+        
+        return JsonResponse({"applications": applications_data}, safe=False)
+
+    except Applicant.DoesNotExist:
+        return JsonResponse({"error": "Applicant not found"}, status=404)
 
 def saved_drafts(request):
     return JsonResponse({"message": "save drafts"})
