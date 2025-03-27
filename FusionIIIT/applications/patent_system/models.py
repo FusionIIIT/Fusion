@@ -91,7 +91,7 @@ def poc_file_upload_path(instance, filename):
     new_filename = f"{base}_{timestamp}{extension}"
 
     # Define the custom upload path
-    return os.path.join("patent/Section-I/poc_details", new_filename)
+    return os.path.join("patent/Application/Section-I/poc_details", new_filename)
 
 
 class ApplicationSectionI(models.Model):
@@ -125,7 +125,7 @@ def generate_mou_file_path(instance, filename):
     base = base.replace(" ", "_")  # Replace spaces with underscores for safety
     timestamp = now().strftime("%Y%m%d%H%M%S")  # Generate timestamp
     new_filename = f"{base}_{timestamp}{extension}"  # Append timestamp
-    return os.path.join("patent/Section-II/mou_files", new_filename)
+    return os.path.join("patent/Application/Section-II/mou_files", new_filename)
 
 class ApplicationSectionII(models.Model):
     id = models.AutoField(primary_key=True)
@@ -157,7 +157,7 @@ def generate_form_iii_file_path(instance, filename):
     base = base.replace(" ", "_")  # Replace spaces with underscores for safety
     timestamp = now().strftime("%Y%m%d%H%M%S")  # Generate timestamp
     new_filename = f"{base}_{timestamp}{extension}"  # Append timestamp
-    return os.path.join("patent/Section-III/form_iii_files", new_filename)
+    return os.path.join("patent/Application/Section-III/form_iii_files", new_filename)
 
 class ApplicationSectionIII(models.Model):
     DEVELOPMENT_STAGE_CHOICES = [
@@ -171,7 +171,7 @@ class ApplicationSectionIII(models.Model):
     contact_person = models.CharField(max_length=255)
     contact_no = models.CharField(max_length=15)
     development_stage = models.CharField(max_length=30, choices=DEVELOPMENT_STAGE_CHOICES)
-    form_iii = models.FileField(upload_to=generate_form_iii_file_path, blank=True, null=True)
+    form_iii = models.FileField(upload_to=generate_form_iii_file_path)
 
     class Meta:
         db_table = 'patent_system_application_section_iii'
