@@ -1,6 +1,9 @@
+from django.conf import settings
+from django.conf.urls.static import static
 from django.urls import path
 from . import views
 
+# to be delete
 urlpatterns = [
     # Applicant-related paths
     path("applicant/dashboard", views.applicant_dashboard, name="applicant_dashboard"),
@@ -34,4 +37,9 @@ urlpatterns = [
     path("pccAdmin/downloads", views.downloads_page, name="downloads_page"),
     path("pccAdmin/insights", views.insights_page, name="insights_page"),
     path("pccAdmin/application/view-details", views.pcc_admin_status_view, name="pcc_admin_status_view"),
+    
 ]
+
+# //Add comments
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
