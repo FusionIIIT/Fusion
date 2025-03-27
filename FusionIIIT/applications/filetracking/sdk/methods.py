@@ -107,7 +107,7 @@ def view_inbox(username: str, designation: str, src_module: str) -> list:
         receiver_id=recipient_object,
         receive_design=user_designation,
         file_id__src_module=src_module,
-        file_id__is_read=False).order_by('-receive_date');
+        file_id__is_read=False).order_by('-receive_date')
     received_files = [tracking.file_id for tracking in received_files_tracking]
 
     # remove duplicate file ids (from sending back and forth)
@@ -254,7 +254,7 @@ def forward_file(
         file_id: int,
         receiver: str,
         receiver_designation: str,
-        file_extra_JSON: dict,
+        file_extra_JSON: dict = {}, #optional
         remarks: str = "",
         file_attachment: Any = None) -> int:
     '''
