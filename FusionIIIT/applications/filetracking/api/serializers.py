@@ -21,4 +21,4 @@ class FileHeaderSerializer(serializers.ModelSerializer):
     '''
     class Meta:
         model = File
-        exclude = ['upload_file', 'is_read']
+        exclude = ['is_read']
