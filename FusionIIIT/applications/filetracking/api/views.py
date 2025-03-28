@@ -10,7 +10,7 @@ from rest_framework.authentication import TokenAuthentication
 from ..models import File, Tracking
 from applications.globals.models import Designation
 from ..sdk.methods import create_draft, create_file, view_drafts, view_file, delete_file, view_inbox, view_outbox, view_history, forward_file, get_designations, archive_file, view_archived, unarchive_file
-
+from notification.views import file_tracking_notif
 
 class CreateFileView(APIView):
     authentication_classes = [TokenAuthentication]
@@ -46,7 +46,9 @@ class CreateFileView(APIView):
                     attached_file=file,  # Pass individual file here
                     src_module=src_module
                 )
+                receiver = User.objects.get(username=receiver_username)
                 file_ids.append(file_id)  # Store the IDs of the created files
+                file_tracking_notif(current_user, receiver, "File Received from " + str(current_user))  # Call the notification function here
 
             return Response({'file_ids': file_ids}, status=status.HTTP_201_CREATED)
 
@@ -207,6 +209,8 @@ class ForwardFileView(APIView):
                     remarks,
                     file_attachment
                 )
+                receiver_user = User.objects.get(username=receiver)
+                file_tracking_notif(request.user, receiver_user, "File Forwarded from" + str(request.user))
                 tracking_ids.append(new_tracking_id)
                 logging.info(f"Successfully forwarded file {file_id} with tracking ID: {new_tracking_id}")
             except Exception as e:
