@@ -49,9 +49,8 @@ def create_file(
         file_extra_JSON=file_extra_JSON,
     )
 
-    if attached_file is not None: 
+    if attached_file is not None:
         new_file.upload_file.save(attached_file.name, attached_file, save=True)
-
     uploader_holdsdesignation_obj = HoldsDesignation.objects.get(
         user=uploader_user_obj, designation=uploader_designation_obj)
 

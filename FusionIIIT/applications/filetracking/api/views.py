@@ -1,6 +1,7 @@
-import logging
+import logging, zipfile, io
 from venv import logger
 from django.core import serializers
+from django.core.files.base import ContentFile
 from django.forms import ValidationError
 from django.contrib.auth.models import User
 from rest_framework.views import APIView
@@ -25,32 +26,40 @@ class CreateFileView(APIView):
             subject = request.data.get('subject')
             description = request.data.get('description')
             src_module = request.data.get('src_module')
-            uploaded_files = request.FILES.getlist('files')  # Retrieve the list of files
+            attached_files = request.FILES.getlist('files')
+            remarks = request.data.get('remarks', "")
+            if remarks:
+                file_extra_JSON['remarks'] = remarks
             # Check for missing required fields
             if None in [current_designation, receiver_username, receiver_designation, subject, description, src_module]:
                 return Response({'error': 'One or more required fields are missing.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Process each file in the list
-            file_ids = []
-            for file in uploaded_files:
-                # Debugging log for each file
+            zip_file = None
+            if attached_files:
+                zip_buffer = io.BytesIO()
+                with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_archive:
+                    for file in attached_files:
+                        zip_archive.writestr(file.name, file.read())
+                zip_buffer.seek(0)
+                zip_filename=f"attachments_{subject}.zip"
+                zip_file = ContentFile(zip_buffer.getvalue(), name=zip_filename)
 
-                # Call your `create_file` function for each file
-                file_id = create_file(
-                    uploader=current_user,
-                    uploader_designation=current_designation,
-                    receiver=receiver_username,
-                    receiver_designation=receiver_designation,
-                    subject=subject,
-                    description=description,
-                    attached_file=file,  # Pass individual file here
-                    src_module=src_module
-                )
-                receiver = User.objects.get(username=receiver_username)
-                file_ids.append(file_id)  # Store the IDs of the created files
-                file_tracking_notif(current_user, receiver, "File Received from " + str(current_user))  # Call the notification function here
+            file_id = create_file(
+                uploader=current_user,
+                uploader_designation=current_designation,
+                receiver=receiver_username,
+                receiver_designation=receiver_designation,
+                subject=subject,
+                description=description,
+                src_module=src_module,
+                attached_file=zip_file
+            )
 
-            return Response({'file_ids': file_ids}, status=status.HTTP_201_CREATED)
+
+            receiver = User.objects.get(username=receiver_username)
+            file_tracking_notif(current_user, receiver, "File Received from " + str(current_user))  # Call the notification function here
+
+            return Response({'file_id': file_id}, status=status.HTTP_201_CREATED)
 
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
