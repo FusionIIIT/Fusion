@@ -119,6 +119,7 @@ def view_inbox(username: str, designation: str, src_module: str) -> list:
     for file in received_files_serialized: 
         file['sent_by_user'] = get_last_file_sender(file['id']).username
         file['sent_by_designation'] = get_last_file_sender_designation(file['id']).name
+        file['branch'] = get_last_file_sender(file['id']).extrainfo.department.name
     return received_files_serialized
 
 
@@ -143,9 +144,8 @@ def view_outbox(username: str, designation: str, src_module: str) -> list:
 
     sent_files_serialized = list(FileHeaderSerializer(
         sent_files_unique, many=True).data)
-    # for file in sent_files_serialized: 
-    #     file['sent_by_user'] = get_last_file_sender(file['id']).username
-    #     file['sent_by_designation'] = get_last_file_sender_designation(file['id']).name
+    for file in sent_files_serialized:
+        file['branch'] = get_last_file_sender(file['id']).extrainfo.department.name
     return sent_files_serialized
 
 
@@ -179,6 +179,8 @@ def view_archived(username: str, designation: str, src_module: str) -> dict:
     archived_files_unique = uniqueList(archived_files)
 
     archived_files_serialized = FileHeaderSerializer(archived_files_unique, many=True)
+    for file in archived_files_serialized:
+        file['branch'] = get_last_file_sender(file['id']).extrainfo.department.name
     return archived_files_serialized.data
 
 

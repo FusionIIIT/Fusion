@@ -109,7 +109,6 @@ class ViewInboxView(APIView):
         Returns:
             JSON response containing a list of serialized file data, including sender information.
         """
-
         username = request.query_params.get('username')
         designation = request.query_params.get('designation')
         src_module = request.query_params.get('src_module')
