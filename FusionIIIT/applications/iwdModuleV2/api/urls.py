@@ -29,6 +29,7 @@ urlpatterns = [
     path('audit-document/', views.handle_audit_document, name='auditDocument'),
     path('get-proposals/', views.get_proposals, name='getProposals'),
     path('get-items/', views.get_items, name='getItems'),
+    path('handle-admin-approval/', views.handle_admin_approval, name='handleAdminApproval'),
 
     
     # partially integrated on frontend

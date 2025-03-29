@@ -48,6 +48,7 @@ class CreateRequestsSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data['engineerProcessed'] = 0
+        validated_data['iwdAdminApproval'] = 0
         validated_data['directorApproval'] = 0
         validated_data['deanProcessed'] = 0
         validated_data['status'] = "Pending"
@@ -57,6 +58,11 @@ class CreateRequestsSerializer(serializers.ModelSerializer):
         validated_data['billProcessed'] = 0
         validated_data['billSettled'] = 0
         return super().create(validated_data)
+    
+class IWDAdminApprovedRequestsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Requests
+        fields = ['id', 'name', 'area', 'description', 'requestCreatedBy']
     
 class DirectorApprovedRequestsSerializer(serializers.ModelSerializer):
     class Meta:
