@@ -1,6 +1,10 @@
+import datetime
 import json
+from io import BytesIO
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
+import xlsxwriter
+from applications.academic_procedures.models import course_registration
 from applications.academic_information.utils import allocate, check_for_registration_complete
 from applications.globals.models import (HoldsDesignation,Designation)
 from django.shortcuts import get_object_or_404
@@ -13,10 +17,11 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from applications.globals.models import User,ExtraInfo
 from applications.academic_information.models import Student, Course, Curriculum, Curriculum_Instructor, Student_attendance, Meeting, Calendar, Holiday, Grades, Spi, Timetable, Exam_timetable
+from applications.programme_curriculum.models import Course as Courses
 from . import serializers
 from rest_framework.generics import ListCreateAPIView
 from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -304,3 +309,74 @@ def start_allocation_api(request):
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def generate_xlsheet_api(request):
+    try:
+        # Extract parameters
+        batch = request.data.get('batch', datetime.datetime.now().year)
+        course_id = request.data.get('course')
+
+        # Validate course ID
+        if not course_id:
+            return Response({"error": "Course ID is required"}, status=400)
+
+        try:
+            # Ensure the course exists
+            course = get_object_or_404(Courses, id=course_id)
+        except Courses.DoesNotExist:
+            return Response({"error": "Invalid course ID"}, status=400)
+
+        # Fetch registered students
+        registered_courses = course_registration.objects.filter(
+            working_year=int(batch),
+            course_id=course,
+            student_id__finalregistration__verified=True
+        ).select_related("student_id__id__user")
+
+        # Prepare student data
+        ans = []
+        student_ids = set()
+        for reg in registered_courses:
+            student = reg.student_id
+            if student.id.id not in student_ids:
+                student_ids.add(student.id.id)
+                ans.append([
+                    student.id.id,
+                    student.id.user.first_name,
+                    student.id.user.last_name,
+                    student.id.department
+                ])
+
+        # Sort students
+        ans.sort()
+
+        # Create Excel file
+        output = BytesIO()
+        book = xlsxwriter.Workbook(output, {'in_memory': True})
+        sheet = book.add_worksheet()
+
+        # Add headers
+        headers = ["Sl. No", "Roll No", "Name", "Discipline", "Signature"]
+        for col, header in enumerate(headers):
+            sheet.write(2, col, header)
+
+        # Add student data
+        for index, row in enumerate(ans, start=1):
+            sheet.write(index + 2, 0, index)
+            sheet.write(index + 2, 1, row[0])
+            sheet.write(index + 2, 2, f"{row[1]} {row[2]}")
+            sheet.write(index + 2, 3, row[3])
+
+        book.close()
+        output.seek(0)
+
+        # Return as a downloadable file
+        response = HttpResponse(output.getvalue(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = f'attachment; filename={course.code}.xlsx'
+        return response
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)

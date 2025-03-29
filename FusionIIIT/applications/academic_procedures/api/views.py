@@ -18,11 +18,11 @@ from rest_framework.decorators import api_view, permission_classes,authenticatio
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from applications.globals.models import HoldsDesignation, Designation, ExtraInfo
-from applications.programme_curriculum.models import ( CourseSlot, Course as Courses, Batch, Semester)
+from applications.globals.models import Faculty, HoldsDesignation, Designation, ExtraInfo
+from applications.programme_curriculum.models import ( CourseInstructor, CourseSlot, Course as Courses, Batch, Semester)
 # from applications.programme_curriculum.models import Course
 
-from applications.academic_procedures.models import ( Student, Curriculum , ThesisTopicProcess, InitialRegistrations,
+from applications.academic_procedures.models import ( MTechGraduateSeminarReport, PhDProgressExamination, Student, Curriculum , ThesisTopicProcess, InitialRegistrations,
                                                      FinalRegistration, SemesterMarks,backlog_course,
                                                      BranchChange , StudentRegistrationChecks, Semester , FeePayments , course_registration, course_replacement)
 
@@ -1872,3 +1872,142 @@ def acad_add_course(request):
                     )
                     
     return JsonResponse({'message': 'Success!'}, status=200)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def academic_procedures_faculty_api(request):
+    """
+    Comprehensive API for faculty academic procedures.
+    Returns detailed information about faculty's academic responsibilities and requests.
+    
+    Endpoints:
+    - Faculty profile details
+    - Assigned courses
+    - Thesis supervision requests
+    - Assistantship claims
+    - Seminar and progress report requests
+    """
+    try:
+        # Authenticate and validate user
+        current_user = get_object_or_404(User, username=request.user.username)
+        
+        # Verify user is a faculty member
+        if request.user.extrainfo.user_type != 'faculty':
+            return Response(
+                {"error": "Unauthorized access. Faculty only."}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Fetch extended user information
+        user_details = ExtraInfo.objects.select_related(
+            'user', 
+            'department'
+        ).get(user=request.user)
+        
+        # Get faculty's current designation
+        designation = HoldsDesignation.objects.filter(user=request.user).first()
+        
+        # Determine current semester based on month
+        current_month = timezone.now().month
+        semesters = [1, 3, 5, 7] if 7 <= current_month <= 12 else [2, 4, 6, 8]
+        
+        # Fetch faculty object with related information
+        faculty_object = Faculty.objects.select_related(
+            'id', 
+            'id__user', 
+            'id__department'
+        ).get(id=user_details.pk)
+        
+        # 1. Thesis Supervision Requests
+        thesis_requests = ThesisTopicProcess.objects.filter(supervisor_id=faculty_object)
+        thesis_supervision_requests = thesis_requests.filter(pending_supervisor=True)
+        approved_thesis_requests = thesis_requests.filter(approval_supervisor=True)
+        
+        # 2. Assistantship Claims
+        assistantship_requests = AssistantshipClaim.objects.all()
+        hod_assistantship_requests = assistantship_requests.filter(
+            ta_supervisor_remark=True, 
+            thesis_supervisor_remark=True, 
+            hod_approval=False
+        )
+        hod_approved_assistantship = assistantship_requests.filter(
+            ta_supervisor_remark=True, 
+            thesis_supervisor_remark=True, 
+            acad_approval=False
+        )
+        
+        # 3. Seminar and Progress Reports
+        mtechseminar_requests = MTechGraduateSeminarReport.objects.filter(Overall_grade='')
+        phdprogress_requests = PhDProgressExamination.objects.filter(Overall_grade='')
+        
+        # 4. Assigned Courses
+        courses_list = list(
+            CourseInstructor.objects.filter(instructor_id=user_details.id)
+            .select_related('course_id')
+            .values(
+                'course_id__id',      # Course database ID
+                'course_id__code',    # Course code
+                'course_id__name',    # Course name
+                'course_id__version', # Course version
+                'year',                # Academic year
+                'semester_no'          # Semester number
+            )
+        )
+        
+        # Calculate batch for each course
+        for course in courses_list:
+            course['batch'] = int(course['year'] - (course['semester_no'] // 2))
+            
+        # Filter out inactive batches
+        excluded_years = set()
+        for course_instructor in CourseInstructor.objects.filter(
+            instructor_id=user_details.id, 
+            course_id__working_course=True
+        ):
+            target_year = course_instructor.year - (course_instructor.semester_no // 2)
+            batches_for_year = Batch.objects.filter(year=target_year)
+            if batches_for_year.exists() and not batches_for_year.filter(running_batch=True).exists():
+                excluded_years.add(course_instructor.year)
+        
+        # Final assigned courses (excluding inactive batches)
+        assigned_courses = [
+            course for course in courses_list 
+            if course['year'] not in excluded_years
+        ]
+        
+        # Prepare response
+        response_data = {
+            # Faculty Profile Information
+            'faculty_id': user_details.id,
+            'faculty_name': f"{user_details.user.first_name} {user_details.user.last_name}",
+            'department': user_details.department.name if user_details.department else None,
+            'designation': designation.designation.name if designation else None,
+            
+            # Academic Semester Information
+            'semester': semesters,
+            
+            # Thesis Related
+            'thesis_supervision_requests': len(thesis_supervision_requests),
+            'approved_thesis_requests': len(approved_thesis_requests),
+            'pending_thesis_requests': len(thesis_supervision_requests),
+            
+            # Assistantship Claims
+            'assistantship_requests': len(assistantship_requests),
+            'hod_assistantship_requests': len(hod_assistantship_requests),
+            'hod_approved_assistantship': len(hod_approved_assistantship),
+            
+            # Seminar and Progress Reports
+            'mtech_seminar_requests': len(mtechseminar_requests),
+            'phd_progress_requests': len(phdprogress_requests),
+            
+            # Assigned Courses
+            'assigned_courses': assigned_courses
+        }
+        
+        return Response(response_data)
+    
+    except Exception as e:
+        return Response(
+            {"error": f"An error occurred: {str(e)}"}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

@@ -17,6 +17,7 @@ urlpatterns = [
     url(r'^stu/next_sem_courses/', views.student_next_sem_courses, name = 'student_next_sem_courses'),
     url(r'^stu/current_courseregistration/$', views.current_courseregistration, name='current_courseregistration'),
     url(r'^stu/finalregistrationpage/$', views.final_registration_page, name='final_registration_page'),
+    url(r'^fac/academic_procedures_faculty', views.academic_procedures_faculty_api, name='academic_procedures_faculty_api'),
 
 
 
