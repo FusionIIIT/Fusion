@@ -3,7 +3,9 @@ from django.db import models
 from applications.globals.models import *
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField
+
 from datetime import datetime
+
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 
