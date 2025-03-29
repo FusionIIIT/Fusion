@@ -119,7 +119,10 @@ def view_inbox(username: str, designation: str, src_module: str) -> list:
         file['sent_by_user'] = get_last_file_sender(file['id']).username
         file['sent_by_designation'] = get_last_file_sender_designation(file['id']).name
         file['branch'] = get_last_file_sender(file['id']).extrainfo.department.name
-    return received_files_serialized
+    filtered_files = [
+        file for file in received_files_serialized if get_current_file_owner(file['id']).username == username
+    ]
+    return filtered_files
 
 
 def view_outbox(username: str, designation: str, src_module: str) -> list:
@@ -145,7 +148,12 @@ def view_outbox(username: str, designation: str, src_module: str) -> list:
         sent_files_unique, many=True).data)
     for file in sent_files_serialized:
         file['branch'] = get_last_file_sender(file['id']).extrainfo.department.name
-    return sent_files_serialized
+        file['receiver'] = get_current_file_owner(file['id']).username
+        file['receiver_designation'] = get_current_file_owner_designation(file['id']).name
+    filtered_files = [
+        file for file in sent_files_serialized if get_last_file_sender(file['id']).username == username
+    ]
+    return filtered_files
 
 
 
