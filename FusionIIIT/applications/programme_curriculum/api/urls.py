@@ -82,5 +82,5 @@ urlpatterns = [
     path('admin_faculties/', views.admin_view_all_faculties, name='admin_view_all_faculties'),
     path('admin_add_course_instructor/', views.add_course_instructor, name='add_course_instructor'),
     path('admin_update_course_instructor/<instructor_id>/', views.update_course_instructor_form, name='update_course_instructor_form'),
-    
+    path('get_superior_data/', views.get_superior_data, name='get_superior_data'),
 ]
