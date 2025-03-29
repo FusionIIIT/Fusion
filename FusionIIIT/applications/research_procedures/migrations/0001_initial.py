@@ -64,7 +64,6 @@ class Migration(migrations.Migration):
                 ('file', models.FileField(blank=True, null=True, upload_to='')),
                 ('description', models.TextField(blank=True, null=True)),
                 ('total_budget', models.IntegerField(default=0)),
-                ('rem_budget', models.IntegerField(default=0)),
                 ('category', models.CharField(choices=[('govt', 'Governement'), ('private', 'Private Entity'), ('iiitdmj', 'Institute'), ('other', 'Other')], max_length=50)),
                 ('pi_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pi_id', to=settings.AUTH_USER_MODEL)),
             ],
