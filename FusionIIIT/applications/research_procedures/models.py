@@ -3,7 +3,7 @@ from django.db import models
 from applications.globals.models import *
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField
-import datetime
+from datetime import datetime
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 
@@ -58,15 +58,15 @@ class projects(models.Model):
     name= models.CharField(max_length=600)
     pi_id=models.CharField(max_length=150)
     pi_name=models.CharField(max_length=150)
-    access = models.CharField(max_length=10, choices=ACCESS_SPECIFIERS)
+    access = models.CharField(max_length=10, choices=ACCESS_SPECIFIERS, default='Co')
     type= models.CharField(max_length=50, choices=PROJECT_TYPES)
     dept=models.CharField(max_length=50, choices=DEPT_CHOICES)
     category=models.CharField(max_length=50, choices=CATEGORY_CHOICES)
     sponsored_agency= models.CharField(max_length=500)
     scheme = models.CharField(max_length=300, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
-    duration = models.IntegerField()
-    submission_date = models.DateField()
+    duration = models.IntegerField(default=0)
+    submission_date = models.DateField(default=datetime.now().date())
     total_budget=models.IntegerField(default=0)
     sanction_date=models.DateField(null=True, blank=True)
     sanctioned_amount = models.IntegerField(default=0)
@@ -108,7 +108,7 @@ class expenditure(models.Model):
         ('Pending' , 'Pending')
     )
     id = models.AutoField(primary_key=True)
-    file_id=models.IntegerField()
+    file_id=models.IntegerField(default=0)
     pid=models.ForeignKey(projects, on_delete=models.CASCADE)
     exptype = models.CharField(max_length=50, choices=EXPENDITURE_TYPES)
     item = models.CharField(max_length=300)
@@ -166,18 +166,18 @@ class staff(models.Model):
     biodata_number = models.IntegerField(null=True, blank=True)
     start_date = models.DateField(null=True, blank=True)
 
-    duration = models.IntegerField()
+    duration = models.IntegerField(default=0)
     eligibility = models.TextField(blank=True, null=True)
-    type = models.CharField(max_length=50, choices=TYPE_CHOICES)
+    type = models.CharField(max_length=50, choices=TYPE_CHOICES, default='Supporting Staff')
     salary = models.DecimalField(max_digits=10, decimal_places=2)
-    has_funds = models.CharField(max_length=10, choices=BOOLEAN_CHOICES)
+    has_funds = models.CharField(max_length=10, choices=BOOLEAN_CHOICES, default='Yes')
     post_on_website = models.FileField(upload_to="RSPC/", null=True, blank=True)
-    submission_date = models.DateField()
-    interview_date = models.DateField()
-    test_date = models.DateField()
-    test_mode = models.CharField(max_length=100)
-    interview_place = models.CharField(max_length=100)
-    selection_committee = models.JSONField()
+    submission_date = models.DateField(default=datetime.now().date())
+    interview_date = models.DateField(default=datetime.now().date())
+    test_date = models.DateField(default=datetime.now().date())
+    test_mode = models.CharField(max_length=100, default='Written')
+    interview_place = models.CharField(max_length=100, default='IIITDM Jabalpur')
+    selection_committee = models.JSONField(default={})
 
     candidates_applied = models.IntegerField(null=True, blank=True)
     candidates_called = models.IntegerField(null=True, blank=True)
