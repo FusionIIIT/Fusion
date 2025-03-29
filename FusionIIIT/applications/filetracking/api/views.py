@@ -203,30 +203,33 @@ class ForwardFileView(APIView):
         # Validate data
         if not receiver or not receiver_designation:
             raise ValidationError("Missing required fields: receiver and receiver_designation")
-
-        files = request.FILES.getlist('files')
-        tracking_ids = []
-        for file_attachment in files:
-        # Call forward_file function
-            try:
-                new_tracking_id = forward_file(
-                    int(file_id),
-                    receiver,
-                    receiver_designation,
-                    file_extra_JSON,
-                    remarks,
-                    file_attachment
-                )
-                receiver_user = User.objects.get(username=receiver)
-                file_tracking_notif(request.user, receiver_user, "File Forwarded from" + str(request.user))
-                tracking_ids.append(new_tracking_id)
-                logging.info(f"Successfully forwarded file {file_id} with tracking ID: {new_tracking_id}")
-            except Exception as e:
-                logging.error(f"Error forwarding file {file_id}: {str(e)}")
-                raise ValidationError(str(e))  # Re-raise exception with a user-friendly message
-
+        attached_files = request.FILES.getlist('files')
+        zip_file = None
+        if attached_files:
+            zip_buffer = io.BytesIO()
+            with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_archive:
+                for file in attached_files:
+                    zip_archive.writestr(file.name, file.read())
+            zip_buffer.seek(0)
+            zip_filename=f"attachments_{receiver}.zip"
+            zip_file = ContentFile(zip_buffer.getvalue(), name=zip_filename)
+        try:
+            new_tracking_id = forward_file(
+                int(file_id),
+                receiver,
+                receiver_designation,
+                file_extra_JSON,
+                remarks,
+                file_attachment = zip_file
+            )
+            receiver_user = User.objects.get(username=receiver)
+            file_tracking_notif(request.user, receiver_user, "File Forwarded from" + str(request.user))
+            logging.info(f"Successfully forwarded file {file_id} with tracking ID: {new_tracking_id}")
+        except Exception as e:
+            logging.error(f"Error forwarding file {file_id}: {str(e)}")
+            raise ValidationError(str(e))  # Re-raise exception with a user-friendly message
         # Return response
-        return Response({'tracking_ids': tracking_ids}, status=status.HTTP_201_CREATED)
+        return Response({'tracking_ids': new_tracking_id}, status=status.HTTP_201_CREATED)
 class CreateDraftFile(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]

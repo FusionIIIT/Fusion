@@ -297,6 +297,8 @@ def forward_file(
     if tracking_entry.is_valid():
         tracking_entry.save()
         return tracking_entry.instance.id
+    elif len(remarks) > 1000:
+        raise(ValidationError('Remarks are too long'))
     else:
         raise ValidationError('forward data is incomplete')
 
