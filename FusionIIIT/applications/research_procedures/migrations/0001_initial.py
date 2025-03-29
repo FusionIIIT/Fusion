@@ -58,8 +58,6 @@ class Migration(migrations.Migration):
                 ('sponsored_agency', models.CharField(max_length=500)),
                 ('dept', models.CharField(choices=[('CSE', 'Computer Science and Engineering'), ('ECE', 'Electronics and Communication Engineering'), ('ME', 'Mechanical Engineering'), ('SM', 'School of Management'), ('Des', 'Design'), ('NS', 'Natural Sciences'), ('LA', 'Liberal Arts'), ('none', 'None Of The Above')], max_length=50)),
                 ('start_date', models.DateField()),
-                ('deadline', models.DateField()),
-                ('finish_date', models.DateField(blank=True, null=True)),
                 ('status', models.IntegerField(default=0)),
                 ('file', models.FileField(blank=True, null=True, upload_to='')),
                 ('description', models.TextField(blank=True, null=True)),
