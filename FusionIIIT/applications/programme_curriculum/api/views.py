@@ -2310,7 +2310,9 @@ def view_inward_files(request,ProposalId):
                 'ref_books': proposal_file.ref_books,
                 'pre_requisits': proposal_file.pre_requisits,
                 'max_seats': proposal_file.max_seats,
-                # 'pre_requisit_courses': list(proposal_file.pre_requisit_courses.values('id', 'name','code','version')),
+                'pre_requisit_courses': list(proposal_file.pre_requisit_courses.values('id', 'name','code','version')),
+                'subject': proposal_file.subject,
+                'description': proposal_file.description,
 
             },
             'tracking': {
@@ -2846,7 +2848,7 @@ def get_superior_data(request):
                     dean_extra_info = dean_user.extrainfo
                     response_data['superior_data'] = {
                         'username': dean_user.username,
-                        'name': f"{dean_user.first_name} {hod_user.last_name}",
+                        'name': f"{dean_user.first_name} {dean_user.last_name}",
                         'designation': 'Dean Academic',
                         'department': dean_extra_info.department.name if dean_extra_info.department else None,
                         'department_id': dean_extra_info.department.id if dean_extra_info.department else None,
@@ -2863,4 +2865,5 @@ def get_superior_data(request):
     except ExtraInfo.DoesNotExist:
         return JsonResponse({'error': 'User extra info not found'}, status=404)
     except Exception as e:
+        print(str(e))   
         return JsonResponse({'error': str(e)}, status=500)
