@@ -1209,7 +1209,7 @@ def create_proposal(request):
     data["created_by"] = str(request.user)
     data["request"] = data.get('id')
     receiver_desg, receiver_user = data.get('designation').split('|')
-    serializer = ProposalSerializer(data=data)
+    serializer = CreateProposalSerializer(data=data)
     print(serializer)
     if serializer.is_valid():
         # print(serializer)
