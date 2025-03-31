@@ -21,10 +21,6 @@
                       Feedback
                   </th>
 
-                  <th class="two wide">
-                      Response
-                  </th>
-
               </tr>
               </thead>
 
@@ -35,65 +31,14 @@
                   <td style="white-space:nowrap;">
                       <h4 class="ui image header">
                           <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                            {{complaint.user_id}}
+                            {{complaint.user_id.user.username}}
                       </h4>
                   </td>
 
                   <td>
                       {{complaint.complaint}}
                   </td>
-
-                    {% if complaint.feedback == None %}
-                    <form method='POST'>{% csrf_token %}
-                    <td>  <textarea class="ui textarea" rows="2" id='feed' name="feedback" required></textarea><br>
-                      <p id="update_feed"></p>
-                    <input type="hidden" id="com_id" name="com_id" value={{complaint.id}} />
-                    <input type="button" id="feed_com" name="feed_com" class="ui small right floated primary button" value="Submit"/>
-                    </td>
-                    </form>
-                    {%else%}
-                    <td>{{complaint.feedback}}</td>
-                    {% endif %}
                   {% endfor %}
-                  <script src="{% static 'globals/js/jquery.min.js' %}"></script>
-                  <script type="text/javascript">
-
-                        function trimfield(str)
-                                       {
-                                         return str.replace(/^\s+|\s+$/g,'');
-                                       }
-                        $('#feed_com').click(function(e)
-                                                         {
-                                                            if(trimfield(document.getElementById("feed").value) == '')
-                                                              {
-                                                                  alert("*Please fill in your response!")
-                                                                  document.getElementById("feed").focus();
-                                                               }
-
-                                                            else{
-                                                              $.ajax({
-                                                                type:'post',
-                                                                url:'/healthcenter/compounder/',
-                                                                data: {
-                                                                csrfmiddlewaretoken: '{{ csrf_token }}',
-                                                                feed:$("#feed").val(),
-                                                                feed_com:$("#feed_com").val(),
-                                                                com_id:$("#com_id").val()
-                                                              },
-                                                                success: function(data){
-                                                                  alert("feedback submitted");
-                                                                  $('#update_feed').html(data.feedback);
-                                                                  document.getElementById("feed").style.visibility='hidden';
-                                                                  document.getElementById("feed_com").style.visibility='hidden';
-                                                                  window.location.reload();
-                                                              }
-                                                            });
-                                                                 }
-
-                                                          });
-
-
-      </script>
                   </tr>
               </tbody>
           </table>

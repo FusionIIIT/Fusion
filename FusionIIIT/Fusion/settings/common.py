@@ -141,6 +141,7 @@ INSTALLED_APPS = [
     'applications.income_expenditure',
     'applications.hr2',
     'applications.department',
+    'applications.inventory',
     'applications.iwdModuleV2',
     'allauth',
     'allauth.account',

@@ -25,7 +25,7 @@
                             <h4 class="header">
                                 Batches:&nbsp;&nbsp;&nbsp;&nbsp;
                                 {% for batch in curriculum.batches.all %}
-                                    {{ batch }},&nbsp;&nbsp;&nbsp;&nbsp;
+                                    {{ batch }}
                                 {% endfor %}
                             </h4>
                         </td>
@@ -189,14 +189,30 @@
             </div>
             <div class="ui divider"></div>
             <div class="ui fitted item">
-                <a class="fluid ui large primary animated button"
-                    href="{% url 'programme_curriculum:add_batch_form' %}?curriculum_id={{ curriculum.id }}"
-                    type="Submit" name="Submit" target="_blank" rel="noopener">
-                    <div class="visible content">NEW BATCH</div>
-                    <div class="hidden content">
-                    <i class="add icon"></i>
-                    </div>
-                </a>
+                <div class="ui fitted item">
+                    {% if curriculum.batches.count < 1 %}
+                        <!-- Show the regular NEW BATCH button if no batch is attached -->
+                        <a class="fluid ui large primary animated button"
+                           href="{% url 'programme_curriculum:add_batch_form' %}?curriculum_id={{ curriculum.id }}"
+                           type="submit" name="Submit" target="_blank" rel="noopener">
+                            <div class="visible content">NEW BATCH</div>
+                            <div class="hidden content">
+                                <i class="add icon"></i>
+                            </div>
+                        </a>
+                    {% else %}
+                        <!-- Disable the button and add hover effect for message -->
+                        <a class="fluid ui large primary animated button disabled-tooltip"
+                           href="javascript:void(0);" title="A batch is already attached to this curriculum"
+                           style="cursor: not-allowed;">
+                            <div class="visible content">BATCH ALREADY ATTACHED</div>
+                            <div class="hidden content">
+                                <i class="add icon"></i>
+                            </div>
+                        </a>
+                    {% endif %}
+                </div>
+                
             </div>
             <div class="ui fitted item">
                 <div class="fluid ui large positive animated button">
@@ -228,6 +244,7 @@
                         <i class="tag icon"></i>
                     </div>
                 </div>
+                {% if curriculum.batches.count < 1 %}
                 <div class="ui vertical left menu">
                     {% if all_batches.count < 1 %}
                         <div class="item">No other batches avaliable</div>
@@ -239,6 +256,11 @@
                         {% endfor %}
                     {% endif %}
                 </div>
+                {% else %}
+                <div class="ui vertical left menu">
+                    <div class="item">A batch is already attached</div>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>

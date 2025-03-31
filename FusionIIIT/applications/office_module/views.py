@@ -758,7 +758,7 @@ def project_register(request):
     mou = request.POST.get('agreement')
 
     """Validations for project Registration MOU and Co PI name"""
-    if len(sponsored_agency) is 0 and amount_sanctioned > '0':
+    if len(sponsored_agency) == 0 and amount_sanctioned > '0':
         messages.error(request, 'Error in Project Registration form: Amount cannot be sanctioned without Agency')
         return HttpResponseRedirect('/profile/')
 
@@ -774,7 +774,7 @@ def project_register(request):
         messages.error(request, 'Error in Project Registration form: Attach the MOU')
         return HttpResponseRedirect('/profile/')
 
-    if len(sponsored_agency) is 0 and file:
+    if len(sponsored_agency) == 0 and file:
         messages.error(request, 'Error in Project Registration form: Enter agency name mentioned on MOU')
         return HttpResponseRedirect('/profile/')
 

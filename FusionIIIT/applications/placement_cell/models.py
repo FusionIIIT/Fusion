@@ -92,14 +92,14 @@ class Project(models.Model):
     sdate = models.DateField(_("Date"), default=datetime.date.today)
     edate = models.DateField(null=True, blank=True)
 
-    def __str__(self):
+    def _str_(self):
         return '{} - {}'.format(self.unique_id.id, self.project_name)
 
 
 class Skill(models.Model):
     skill = models.CharField(max_length=30, default='')
 
-    def __str__(self):
+    def _str_(self):
         return self.skill
 
 
@@ -111,7 +111,7 @@ class Has(models.Model):
     class Meta:
         unique_together = (('skill_id', 'unique_id'),)
 
-    def __str__(self):
+    def _str_(self):
         return '{} - {}'.format(self.unique_id.id, self.skill_id.skill)
 
 
@@ -161,7 +161,7 @@ class Experience(models.Model):
     sdate = models.DateField(_("Date"), default=datetime.date.today)
     edate = models.DateField(null=True, blank=True)
 
-    def __str__(self):
+    def _str_(self):
         return '{} - {}'.format(self.unique_id.id, self.company)
 
 
@@ -173,7 +173,7 @@ class Course(models.Model):
     sdate = models.DateField(_("Date"), default=datetime.date.today)
     edate = models.DateField(null=True, blank=True)
 
-    def __str__(self):
+    def _str_(self):
         return '{} - {}'.format(self.unique_id.id, self.course_name)
 
 
@@ -184,7 +184,7 @@ class Conference(models.Model):
     sdate = models.DateField(_("Date"), default=datetime.date.today)
     edate = models.DateField(null=True, blank=True)
 
-    def __str__(self):
+    def _str_(self):
         return '{} - {}'.format(self.unique_id.id, self.conference_name)
 
 
@@ -195,7 +195,7 @@ class Publication(models.Model):
     publisher = models.TextField(max_length=250, default='')
     publication_date = models.DateField(_("Date"), default=datetime.date.today)
 
-    def __str__(self):
+    def _str_(self):
         return '{} - {}'.format(self.unique_id.id, self.publication_title)
 
 
@@ -206,7 +206,7 @@ class Reference(models.Model):
     email = models.CharField(max_length=50, default='')
     mobile_number = models.CharField(max_length=15, blank=True, null=True)
 
-    def __str__(self):
+    def _str_(self):
         return '{} - {}'.format(self.unique_id.id, self.reference_name)
 
 
@@ -214,7 +214,7 @@ class Coauthor(models.Model):
     publication_id = models.ForeignKey(Publication, on_delete=models.CASCADE)
     coauthor_name = models.CharField(max_length=100, default='')
 
-    def __str__(self):
+    def _str_(self):
         return '{} - {}'.format(self.publication_id.publication_title, self.coauthor_name)
 
 
@@ -225,7 +225,7 @@ class Patent(models.Model):
     patent_office = models.TextField(max_length=250, default='')
     patent_date = models.DateField()
 
-    def __str__(self):
+    def _str_(self):
         return '{} - {}'.format(self.unique_id.id, self.patent_name)
 
 
@@ -233,7 +233,7 @@ class Coinventor(models.Model):
     patent_id = models.ForeignKey(Patent, on_delete=models.CASCADE)
     coinventor_name = models.CharField(max_length=100, default='')
 
-    def __str__(self):
+    def _str_(self):
         return '{} - {}'.format(self.patent_id.patent_name, self.coinventor_name)
 
 
@@ -241,7 +241,7 @@ class Interest(models.Model):
     unique_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     interest = models.CharField(max_length=100, default='')
 
-    def __str__(self):
+    def _str_(self):
         return '{} - {}'.format(self.unique_id.id, self.interest)
 
 
@@ -254,7 +254,7 @@ class Achievement(models.Model):
     issuer = models.CharField(max_length=200, default='')
     date_earned = models.DateField(_("Date"), default=datetime.date.today)
 
-    def __str__(self):
+    def _str_(self):
         return '{} - {}'.format(self.unique_id.id, self.achievement)
 
 class Extracurricular(models.Model):
@@ -266,7 +266,7 @@ class Extracurricular(models.Model):
     name_of_position = models.CharField(max_length=200, default='')
     date_earned = models.DateField(_("Date"), default=datetime.date.today)
 
-    def __str__(self):
+    def _str_(self):
         return '{} - {}'.format(self.unique_id.id, self.event_name)
 
 
@@ -274,7 +274,7 @@ class MessageOfficer(models.Model):
     message = models.CharField(max_length=100, default='')
     timestamp = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
+    def _str_(self):
         return self.message
 
 
@@ -286,7 +286,7 @@ class NotifyStudent(models.Model):
     description = models.TextField(max_length=1000, default='', null=True, blank=True)
     timestamp = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
+    def _str_(self):
         return '{} - {}'.format(self.company_name, self.placement_type)
 
     @property
@@ -297,13 +297,13 @@ class NotifyStudent(models.Model):
 class Role(models.Model):
     role = models.CharField(max_length=100, blank=True, null=True)
 
-    def __str__(self):
+    def _str_(self):
         return self.role
 
 class CompanyDetails(models.Model):
     company_name = models.CharField(max_length=100, blank=True, null=True)
 
-    def __str__(self):
+    def _str_(self):
         return self.company_name
 
 
@@ -324,7 +324,7 @@ class PlacementStatus(models.Model):
     def response_date(self):
         return self.timestamp+datetime.timedelta(days=self.no_of_days)
 
-    def __str__(self):
+    def _str_(self):
         return '{} - {}'.format(self.unique_id.id, self.notify_id.company_name)
 
 
@@ -337,7 +337,7 @@ class PlacementRecord(models.Model):
     test_score = models.IntegerField(default=0, null=True, blank=True)
     test_type = models.CharField(max_length=30, default='', null=True, blank=True)
 
-    def __str__(self):
+    def _str_(self):
         return '{} - {}'.format(self.name, self.year)
 
 
@@ -348,7 +348,7 @@ class StudentRecord(models.Model):
     class Meta:
         unique_together = (('record_id', 'unique_id'),)
 
-    def __str__(self):
+    def _str_(self):
         return '{} - {}'.format(self.unique_id.id, self.record_id.name)
 
 
@@ -359,13 +359,24 @@ class ChairmanVisit(models.Model):
     description = models.TextField(max_length=1000, default='', null=True, blank=True)
     timestamp = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
+    def _str_(self):
         return self.company_name
 
+class company_registration(models.Model):
+    name = models.CharField(max_length=50)
+    description = models.CharField(max_length=100)
+    address = models.CharField(max_length=100)
+    web_url = models.URLField()
+    company_logo = models.ImageField(upload_to='placement_cell/company_logos/')
 
+    
+    def _str_(self):
+        return str(self.name)
+    
 class PlacementSchedule(models.Model):
     notify_id = models.ForeignKey(NotifyStudent, on_delete=models.CASCADE)
     title = models.CharField(max_length=100, default='')
+    company_id = models.ForeignKey(company_registration, on_delete=models.CASCADE,null=True, blank=True)
     placement_date = models.DateField(_("Date"), default=datetime.date.today)
     location = models.CharField(max_length=100, default='')
     description = models.TextField(max_length=500, default='', null=True, blank=True)
@@ -374,7 +385,7 @@ class PlacementSchedule(models.Model):
     attached_file = models.FileField(upload_to='documents/placement/schedule', null=True, blank=True)
     schedule_at = models.DateTimeField(auto_now_add=False, auto_now=False, default=timezone.now, blank=True, null=True)
 
-    def __str__(self):
+    def _str_(self):
         return '{} - {}'.format(self.notify_id.company_name, self.placement_date)
 
     @property
@@ -397,5 +408,95 @@ class StudentPlacement(models.Model):
     package = models.DecimalField(decimal_places=2, max_digits=5, null=True,
                                   blank=True)
 
-    def __str__(self):
+    def _str_(self):
         return self.unique_id.id.id
+
+
+
+class NextRoundInfo(models.Model):
+    schedule_id = models.ForeignKey(PlacementSchedule, on_delete=models.CASCADE)
+    round_no = models.IntegerField(default=1)
+    test_type = models.CharField(max_length=20,default="Interview")
+    test_date = models.DateField(_("Date"),  null=True, blank=True)
+    description = models.CharField(max_length=200 ,null=True, blank=True)
+
+    def _str_(self):
+        return f'Round {self.round_no}: {self.test_type} on {self.test_date}'
+
+
+class StudentApplication(models.Model):
+    schedule_id = models.ForeignKey(PlacementSchedule, on_delete=models.CASCADE)
+    unique_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    current_status = models.CharField(max_length=20,default="Pending")
+
+    class Meta:
+        unique_together = (('schedule_id', 'unique_id'),)
+
+    def _str_(self):
+        return '{} - {}'.format(self.unique_id.id, self.schedule_id.title)
+    
+    
+class DebarStudentInfo(models.Model):
+    unique_id = models.OneToOneField(Student, on_delete=models.CASCADE)
+    description = models.CharField(max_length=500)
+
+    def str(self):
+        return self.unique_id
+
+
+class Eligibility(models.Model):
+    company_id = models.ForeignKey(NotifyStudent,on_delete=models.CASCADE)
+    cpi = models.DecimalField(decimal_places=2, max_digits=5,default=0,null=True, blank=True)
+    passout_year = models.IntegerField(default=-1,null=True, blank=True)
+    branch = models.CharField(max_length=100,default="All",null=True, blank=True)
+    gender = models.CharField(max_length=20,default="All",null=True, blank=True)
+
+    def str(self):
+        return self.company_id.company_name
+
+class CustomField(models.Model):
+    field_name = models.CharField(max_length=50)
+    field_type = models.CharField(max_length=50)
+    required = models.BooleanField(default=False)
+
+
+    def str(self):
+        return self.field_name
+
+
+class Placementform_fields(models.Model):
+    company_id = models.ForeignKey(PlacementSchedule, on_delete=models.CASCADE)
+    custom_field = models.ForeignKey(CustomField, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('company_id', 'custom_field')
+    
+    def str(self):
+        return self.company_id.company_name
+    
+
+class PlacementForm_responses(models.Model):
+    unique_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    company_id = models.ForeignKey(PlacementSchedule, on_delete=models.CASCADE)
+    field_id = models.ForeignKey(CustomField, on_delete=models.CASCADE)
+    value = models.JSONField(default=dict)
+
+    class Meta:
+        unique_together = (('company_id', 'unique_id', 'field_id'),)  
+
+    def _str_(self):
+        return str(self.unique_id.id)
+    
+
+
+class GlobalRestrictions(models.Model):
+    criteria = models.CharField(max_length=20)
+    condition = models.CharField(max_length=20)
+    value = models.JSONField(default=dict)
+    description = models.CharField(max_length=500)
+
+    class Meta:
+        unique_together = (('criteria', 'condition', 'value'),)      
+
+    def _str_(self):
+        return self.description
