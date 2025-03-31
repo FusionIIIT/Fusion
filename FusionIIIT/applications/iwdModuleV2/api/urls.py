@@ -7,6 +7,7 @@ urlpatterns = [
     path('fetch-designations/', views.fetch_designations, name='fetch_designations'),
     path('fetch-designations/', views.fetch_designations, name='fetch_designations'),
     path('create-request/', views.create_request, name='create_request'),
+    path('create-proposal/', views.create_proposal, name='create_proposal'),
     path('created-requests/', views.created_requests, name='created_requests'),
     path('view-file/', views.view_file, name='view_file'),
     path('dean-processed-requests/', views.dean_processed_requests, name='dean_processed_requests'),
@@ -26,12 +27,15 @@ urlpatterns = [
     path('requests-status/', views.requests_status, name='requestsStatus'),
     path('audit-document-view/', views.audit_document_view, name='auditDocumentView'),
     path('audit-document/', views.handle_audit_document, name='auditDocument'),
+    path('get-proposals/', views.get_proposals, name='getProposals'),
+    path('get-items/', views.get_items, name='getItems'),
+
     
     # partially integrated on frontend
     path('handle-process-bills/', views.handle_process_bills, name='handleProcessedBills'),
 
     path('engineer-processed-requests/', views.engineer_processed_requests, name='engineerProcessedRequests'),
-    path('generate-final-bill/', views.generateFinalBill, name='generateFinalBill'),
+    # path('generate-final-bill/', views.generateFinalBill, name='generateFinalBill'),
     path('handle-bill-generated-requests/', views.handleBillGeneratedRequests, name='handleBillGeneratedRequests'),
     path('generated-bills-view/', views.generatedBillsView, name='generatedBillsView'),
     path('settle-bills-view/', views.settle_bills_view, name='settleBillsView'),
