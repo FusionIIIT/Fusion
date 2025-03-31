@@ -2,7 +2,7 @@ from rest_framework import serializers
 from applications.globals.models import *
 from applications.iwdModuleV2.models import *
 from applications.ps1.models import *
-
+from decimal import Decimal
 class WorkOrderFormSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkOrder
@@ -148,50 +148,37 @@ class RequestsInProgressSerializer(serializers.ModelSerializer):
 class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
-        fields = ['name', 'description', 'unit', 'price_per_unit', 'quantity', 'docs', 'total_price']
+        fields = ['id', 'name', 'description', 'unit', 'price_per_unit', 'quantity', 'docs', 'total_price']
 class ProposalSerializer(serializers.ModelSerializer):
-    items = ItemSerializer(many=True)
+
     class Meta:
         model = Proposal
         fields = '__all__'
 
     def create(self, validated_data):
-        items_data = validated_data.pop('items', [])
+        items = ItemSerializer(many=True)
+        items_data = validated_data.pop('items', [])  
         proposal = Proposal.objects.create(**validated_data)
-        total_budget = 0
+
+        total_budget = Decimal(0)
+        items = []  
+
         for item_data in items_data:
-            print(item_data)
-            item_data['total_price'] = item_data['quantity'] * item_data['price_per_unit']
-            total_budget += item_data['total_price']
-            item = Item.objects.create(proposal=proposal, **item_data)
+            try:
+                quantity = item_data['quantity']
+                price_per_unit = item_data['price_per_unit']
+                total_price = quantity * price_per_unit  
+                total_budget += total_price  
+                items.append(Item(proposal=proposal, total_price=total_price, **item_data))  
 
-        proposal.proposal_budget = total_budget
+            except (ValueError, TypeError) as e:
+                print(f"Error processing item: {item_data}, Error: {e}")
+                continue
+
+        if items:
+            Item.objects.bulk_create(items)  
+
+        proposal.proposal_budget = total_budget  
         proposal.save()
-        return proposal 
 
-    # def update(self, instance, validated_data):
-    #     items_data = validated_data.pop('items')
-    #     instance.supporting_documents = validated_data.get('supporting_documents', instance.supporting_documents)
-    #     instance.status = validated_data.get('status', instance.status)
-    #     instance.save()
-
-    #     total_budget = 0
-    #     for item_data in items_data:
-    #         item_id = item_data.get('id')
-    #         if item_id:
-    #             item = Item.objects.get(id=item_id, proposal=instance)
-    #             item.name = item_data.get('name', item.name)
-    #             item.description = item_data.get('description', item.description)
-    #             item.unit = item_data.get('unit', item.unit)
-    #             item.price_per_unit = item_data.get('price_per_unit', item.price_per_unit)
-    #             item.quantity = item_data.get('quantity', item.quantity)
-    #             item.total_price = item_data.get('total_price', item.total_price)
-    #             item.docs = item_data.get('docs', item.docs)
-    #             item.save()
-    #         else:
-    #             item = Item.objects.create(proposal=instance, **item_data)
-    #         total_budget += item.total_price
-
-    #     instance.proposal_budget = total_budget
-    #     instance.save()
-    #     return instance
+        return proposal

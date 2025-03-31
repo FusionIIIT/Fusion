@@ -215,7 +215,7 @@ def handle_dean_process_request(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def handle_engineer_process_requests(request):
+def forward_request(request):
     data = request.data
     fileid = data.get('fileid')
     request_id = File.objects.get(id=fileid).src_object_id
@@ -233,7 +233,6 @@ def handle_engineer_process_requests(request):
         file_attachment=attachment,
     )
 
-    Requests.objects.filter(id=request_id).update(engineerProcessed=1)
     receiver_user_obj = get_object_or_404(User, username=receiver_user)
     iwd_notif(request.user, receiver_user_obj, "file_forward")
 
@@ -615,7 +614,6 @@ def requests_status(request):
                 'active_proposal': request_object.activeProposal,
             }
             obj.append(element)
-            print(type(element['request_id']))
     return Response(obj, status=200)
 
 
@@ -1204,22 +1202,21 @@ def create_proposal(request):
     data = request.data.copy()
     request_id = data.get('id')
 
-    # Check if the request is approved by the IWD Admin
     request_instance = Requests.objects.filter(id=request_id, iwdAdminApproval=True).first()
     if not request_instance:
         return Response({'error': 'Request not approved by IWD Admin'}, status=status.HTTP_400_BAD_REQUEST)
 
     data["created_by"] = str(request.user)
     data["request"] = data.get('id')
-    print(data)
-    receiver_user = "bhartenduks"
-    # receiver_desg, receiver_user = data.get('designation').split('|')
+    receiver_desg, receiver_user = data.get('designation').split('|')
     serializer = ProposalSerializer(data=data)
+    print(serializer)
     if serializer.is_valid():
-        print(serializer)
+        # print(serializer)
+        print("wowowowow ")
         proposal = serializer.save()
-        # proposal.save()
-        Requests.objects.filter(id=proposal.id).update(activeProposal=proposal.id)
+        print(proposal, "wowowowow ", proposal.id)
+        Requests.objects.filter(id=request_id).update(activeProposal=proposal.id)
         receiver_user_obj = User.objects.get(username=receiver_user)
         iwd_notif(request.user, receiver_user_obj, "Proposal_added")
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -1237,16 +1234,14 @@ def get_proposals(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_items(request):
-    print(1)
     try:
-
         data = request.query_params
-        print(data)
+        proposal = Proposal.objects.filter(id = data['proposal_id']).first()
         items = Item.objects.filter(proposal=data['proposal_id'])
-        serializer = ItemSerializer(items, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        itemsdata = ItemSerializer(items, many=True)
+        proposaldata = ProposalSerializer(proposal)
+        return Response({"itemsList": itemsdata.data, "proposal":proposaldata.data}, status=status.HTTP_200_OK)
     except Proposal.DoesNotExist:
-        print("1trq3t3\n\n\n\n\n12q")
         return Response({'error': 'Proposal not found'}, status=status.HTTP_404_NOT_FOUND)
     
 @api_view(['POST'])
