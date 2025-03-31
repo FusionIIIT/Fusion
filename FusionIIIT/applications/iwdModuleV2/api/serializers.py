@@ -203,11 +203,8 @@ class ProposalSerializer(serializers.ModelSerializer):
                 total_price = quantity * price_per_unit  
                 total_budget += total_price  
                 items.append(Item(proposal=proposal, total_price=total_price, **item_data))  
-
             except (ValueError, TypeError) as e:
                 print(f"Error processing item: {item_data}, Error: {e}")
-                continue
-
         if items:
             Item.objects.bulk_create(items)  
 
