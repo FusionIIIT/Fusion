@@ -35,6 +35,9 @@ urlpatterns = [
     url(r'^acad/configure_final_registration' , views.configure_final_registration_date , name = 'configure_final_registration'),
     url(r'^acad/add_course_to_slot' , views.add_course_to_slot , name = 'add_course_to_slot'),
     url(r'^acad/remove_course_from_slot' , views.remove_course_from_slot , name = 'remove_course_from_slot'),
+    url(r'^acad/search_preregistration' , views.search_preregistration , name = 'search_preregistration'),
+    url(r'^acad/delete_preregistration' , views.delete_preregistration , name = 'delete_preregistration'),
+    url(r'^acad/allot_courses' , views.allot_courses , name = 'allot_courses'),
     url(r'^get_next_sem_courses' , views.get_next_sem_courses , name= 'get_next_sem_courses'),
 
 

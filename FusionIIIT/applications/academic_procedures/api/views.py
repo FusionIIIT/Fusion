@@ -8,6 +8,7 @@ from django.db.models.functions import Concat,ExtractYear,ExtractMonth,ExtractDa
 from django.db.models import Max,Value,IntegerField,CharField,F,Sum, Case, When
 from io import BytesIO
 import json
+import xlrd
 from xlsxwriter.workbook import Workbook
 
 from django.http import JsonResponse, HttpResponse
@@ -24,7 +25,7 @@ from applications.programme_curriculum.models import ( CourseInstructor, CourseS
 
 from applications.academic_procedures.models import ( MTechGraduateSeminarReport, PhDProgressExamination, Student, Curriculum , ThesisTopicProcess, InitialRegistrations,
                                                      FinalRegistration, SemesterMarks,backlog_course,
-                                                     BranchChange , StudentRegistrationChecks, Semester , FeePayments , course_registration, course_replacement)
+                                                     BranchChange , StudentRegistrationChecks, Semester , FeePayments , course_registration, course_replacement, AssistantshipClaim)
 
 from applications.academic_information.models import (Curriculum_Instructor , Calendar)
 
@@ -2009,5 +2010,155 @@ def academic_procedures_faculty_api(request):
     except Exception as e:
         return Response(
             {"error": f"An error occurred: {str(e)}"}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def search_preregistration(request):
+    try:
+        roll_no=request.data.get("roll_no")
+        sem_no=request.data.get("sem_no")
+        initial_registrations = InitialRegistration.objects.filter(
+            student_id_id=roll_no, semester_id__semester_no=sem_no
+        )
+        student_registration_check = StudentRegistrationChecks.objects.filter(
+            student_id_id=roll_no, semester_id__semester_no=sem_no
+        ).first()
+        initial = serializers.InitialRegistrationSerializer(initial_registrations, many=True)
+        student_registration_check_data = serializers.StudentRegistrationChecksSerializer(student_registration_check)
+        return Response({
+            "initial_registration": initial.data,  # Send serialized initial registrations
+            "student_registration_check": student_registration_check_data.data if student_registration_check else None
+        })
+    except Exception as e:
+        return Response(
+            {"error": f"An error occurred: {str(e)}"}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def delete_preregistration(request):
+    try:
+        # Extract roll_no and sem_no from the request
+        roll_no = request.data.get("roll_no")
+        sem_no = request.data.get("sem_no")
+
+        # Validate input data
+        if not roll_no or not sem_no:
+            return Response(
+                {"error": "Both roll_no and sem_no are required"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Delete initial registration entries
+        initial_registrations = InitialRegistration.objects.filter(
+            student_id_id=roll_no, semester_id__semester_no=sem_no
+        )
+        initial_count = initial_registrations.delete()
+
+        # Delete student registration check entries
+        student_registration_check = StudentRegistrationChecks.objects.filter(
+            student_id_id=roll_no, semester_id__semester_no=sem_no
+        )
+        student_registration_check_count = student_registration_check.delete()
+
+        # Return a success response with counts of deleted entries
+        return Response({
+            "message": "Successfully Deleted."
+        })
+
+    except Exception as e:
+        return Response(
+            {"error": f"An error occurred: {str(e)}"}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def allot_courses(request):
+    try:
+        if request.method == 'POST' and request.FILES:
+            profiles=request.FILES['allotedCourses']
+            batch_id=request.data.get('batch')
+            sem_no=int(request.data.get('semester'))
+            working_year =int(request.data.get('working_year'))
+            
+            batch=Batch.objects.get(id=batch_id)
+            sem_id=Semester.objects.get(curriculum=batch.curriculum,semester_no=sem_no)
+            print(batch , sem_id)
+            #  format of excel sheet being uploaded should be xls only , otherwise error
+            excel = xlrd.open_workbook(file_contents=profiles.read())
+            sheet=excel.sheet_by_index(0)
+            course_registrations=[]
+            final_registrations=[]
+            pre_registrations=[]
+            student_checks=[]
+            # print('>>>>>>>>>>>>>>>>>>>' , sheet.nrows)
+            currroll=set()
+            for i in range(1,sheet.nrows):
+                roll_no = str(sheet.cell(i,0).value).split(".")[0]
+                # print("Roll No from Excel:", roll_no)
+                course_slot_name = sheet.cell_value(i,1)
+                course_code = sheet.cell_value(i,2)
+                course_name = sheet.cell_value(i,3)
+                try:
+
+                    user=User.objects.get(username=roll_no)
+                    user_info = ExtraInfo.objects.get(user=user)
+                    student = Student.objects.get(id=user_info)
+                    course_slot=CourseSlot.objects.get(name=course_slot_name.strip(),semester=sem_id)
+                    slot_courses = course_slot.courses.filter() 
+                    # for i in slot_courses:
+                    #     print("slot course ", i)
+                    # print(course_slot)
+                    print(course_code.strip() , course_name.strip(),student)
+                    course = slot_courses.get(code=course_code.strip())
+                    # print(course_code.strip() , course_name.strip(),student)
+                    # course = Courses.objects.get(code=course_code.strip(),name=course_name.strip())
+                    if(roll_no not in currroll):
+                        student_check=StudentRegistrationChecks(student_id = student, semester_id = sem_id, pre_registration_flag = True,final_registration_flag = True)
+                        student_checks.append(student_check)
+                        currroll.add(roll_no)
+                    # print(">>>>>",roll_no,course_slot_name,course_code,course_name)
+                except Exception as e:
+                    print('----------------------' , e)
+                pre_registration=InitialRegistration(student_id=student,course_slot_id=course_slot,
+                                                    course_id=course,semester_id=sem_id,priority=1)
+                pre_registrations.append(pre_registration)
+                final_registration=FinalRegistration(student_id=student,course_slot_id=course_slot,
+                                                    course_id=course,semester_id=sem_id, verified=True )
+                final_registrations.append(final_registration)
+    
+                courseregistration=course_registration(working_year=working_year,course_id=course,semester_id=sem_id,student_id=student,course_slot_id=course_slot)
+                course_registrations.append(courseregistration)
+                
+
+
+            try:
+                with transaction.atomic():
+                    InitialRegistration.objects.bulk_create(pre_registrations)
+                    StudentRegistrationChecks.objects.bulk_create(student_checks)
+                    FinalRegistration.objects.bulk_create(final_registrations)
+                    course_registration.objects.bulk_create(course_registrations)
+                return Response({"message": 'Successfully uploaded!'})
+                # return HttpResponse("Success")
+            except Exception as e:
+                return Response(
+                    {"error": f"An error occurred: {str(e)}"}, 
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+                # return HttpResponse("Success")
+    except Exception as e:
+        print(e)
+        return Response(
+            {"error": f"Query does not match. Please check if all the data input is in the correct format."}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )

@@ -21,6 +21,7 @@ urlpatterns = [
     url(r'^check-allocation$', views.check_allocation_api, name='check-allocation-api'),
     url(r'^start-allocation$', views.start_allocation_api, name='start-allocation-api'),
     url(r'^generatexlsheet$', views.generate_xlsheet_api, name='generate-xlsheet-api'),
+    url(r'^generate_preregistration_report',views.generate_preregistration_report, name = "generate_preregistration_report"),
 
 
     # url(r'^holiday',views.holiday_api,name='holiday-get-api'),
