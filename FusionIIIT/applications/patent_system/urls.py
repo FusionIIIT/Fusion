@@ -3,14 +3,12 @@ from django.conf.urls.static import static
 from django.urls import path
 from . import views
 
-# to be delete
 urlpatterns = [
     # Applicant-related paths
-    path("applicant/dashboard", views.applicant_dashboard, name="applicant_dashboard"),
-    path("applicant/", views.applicant_main_dashboard, name="applicant_main_dashboard"),
-    path("applicant/applications/", views.view_applications, name="view_applications"),
-    path("applicant/drafts", views.saved_drafts, name="saved_drafts"),
     path("applicant/applications/submit", views.submit_application, name="submit_application"),
+    path("applicant/applications/", views.view_applications, name="view_applications"),
+    path("applicant/applications/details/<int:application_id>/", views.view_application_details, name="view_application_details"),
+    path("applicant/drafts", views.saved_drafts, name="saved_drafts"),
     path("applicant/notifications", views.applicant_notifications, name="applicant_notifications"),
     path("applicant/applications/submit/new", views.application_form, name="application_form"),
     path("applicant/applications/submitted", views.ip_filing_form, name="ip_filing_form"),
@@ -40,6 +38,6 @@ urlpatterns = [
     
 ]
 
-# //Add comments
+# Serve media files in development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

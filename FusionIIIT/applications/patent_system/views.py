@@ -1,14 +1,22 @@
+import os
+import json
+import logging
+
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.utils.timezone import now
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.storage import default_storage
-from django.utils.timezone import now
+from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 
-# auth_user import
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 
-
-import json
 from .models import (
     Application,
     ApplicationSectionI,
@@ -18,18 +26,13 @@ from .models import (
     Applicant,
     Attorney
 )
-# to be delete
+
+# Logger setup - used for debugging and logging errors
+logger = logging.getLogger(__name__)
+
 # -----------------------------------------
 # 🔹 Applicant Views
 # -----------------------------------------
-
-import json
-import os
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.core.files.storage import default_storage
-from django.utils.timezone import now
-from .models import Application, ApplicationSectionI, ApplicationSectionII, ApplicationSectionIII, Applicant, AssociatedWith
 
 def generate_file_path(folder, filename):
     """Helper function to generate a unique file path."""
@@ -37,7 +40,9 @@ def generate_file_path(folder, filename):
     timestamp = now().strftime("%Y%m%d%H%M%S")
     return os.path.join(f"patent/{folder}", f"{base}_{timestamp}{extension}")
 
-@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 def submit_application(request):
     if request.method != "POST":
         return JsonResponse({"error": "Invalid request method"}, status=405)
@@ -168,14 +173,11 @@ def submit_application(request):
         return JsonResponse({"error": str(e)}, status=500)
 # End of the submit application
 
-def applicant_dashboard(request):
-    return JsonResponse({"message": "Load applicant dashboard"})
-
-def applicant_main_dashboard(request):
-    return JsonResponse({"message": "Load applicant main dashboard"})
-
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 def view_applications(request):
-    user_id = request.GET.get('user_id')
+    user_id = request.user.id
     try:
         # Get the applicant based on user_id
         applicant = get_object_or_404(Applicant, user_id=user_id)
@@ -193,14 +195,112 @@ def view_applications(request):
                 "application_id": app.id,
                 "title": app.title,
                 "token_no": app.token_no,
-                "attorney_name": app.attorney.name if app.attorney else "Not Assigned",
-                "submitted_date": app.submitted_date.strftime("%Y-%m-%d") if app.submitted_date else None
+                "attorney_name": app.attorney.name if app.attorney else None,
+                "submitted_date": app.submitted_date if app.submitted_date else None
             })
         
         return JsonResponse({"applications": applications_data}, safe=False)
 
     except Applicant.DoesNotExist:
         return JsonResponse({"error": "Applicant not found"}, status=404)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def view_application_details(request, application_id):
+    user = request.user
+
+    # Check if the logged-in user is an applicant
+    try:
+        applicant = Applicant.objects.get(user=user)
+    except Applicant.DoesNotExist:
+        return JsonResponse({"error": "Unauthorized: User is not an applicant"}, status=403)
+
+    # Verify if the user is associated with the application
+    is_associated = AssociatedWith.objects.filter(application_id=application_id, applicant=applicant).exists()
+    if not is_associated:
+        return JsonResponse({"error": "Forbidden: You are not associated with this application"}, status=403)
+
+    # Fetch application details
+    application = get_object_or_404(Application, id=application_id)
+
+    # Fetch attorney details using attorney_id
+    attorney_name = None
+    if application.attorney_id:
+        attorney = Attorney.objects.filter(id=application.attorney_id).first()
+        attorney_name = attorney.name if attorney else None  # Get attorney name safely
+
+    # Fetch associated applicants
+    associated_applicants = AssociatedWith.objects.filter(application=application)
+    applicants_data = [
+        {
+            "name": app.applicant.name,
+            "email": app.applicant.email,
+            "mobile": app.applicant.mobile,
+            "address": app.applicant.address,
+            "percentage_share": app.percentage_share 
+        }
+        for app in associated_applicants
+    ]
+
+    # Fetch Section I details
+    section_i = ApplicationSectionI.objects.filter(application=application).first()
+    section_i_data = {
+        "area": section_i.area if section_i else None,
+        "problem": section_i.problem if section_i else None,
+        "objective": section_i.objective if section_i else None,
+        "novelty": section_i.novelty if section_i else None,
+        "advantages": section_i.advantages if section_i else None,
+        "is_tested": section_i.is_tested if section_i else None,
+        "poc_details": section_i.poc_details if section_i else None,
+        "applications": section_i.applications if section_i else None,
+    }
+
+   # Fetch Section II details
+    section_ii = ApplicationSectionII.objects.filter(application=application).first()
+    section_ii_data = {
+        "funding_details": section_ii.funding_details if section_ii else None,
+        "funding_source": section_ii.funding_source if section_ii else None,
+        "source_agreement": section_ii.source_agreement.url if section_ii and section_ii.source_agreement else None,
+        "publication_details": section_ii.publication_details if section_ii else None,
+        "mou_details": section_ii.mou_details if section_ii else None,
+        "mou_file": section_ii.mou_file.url if section_ii and section_ii.mou_file else None,
+        "research_details": section_ii.research_details if section_ii else None
+    }
+
+    # Fetch Section III details
+    section_iii = ApplicationSectionIII.objects.filter(application=application).first()
+    section_iii_data = {
+        "company_name": section_iii.company_name if section_iii else None,
+        "contact_person": section_iii.contact_person if section_iii else None,
+        "contact_no": section_iii.contact_no if section_iii else None,
+        "development_stage": section_iii.development_stage if section_iii else None,
+        "form_iii": section_iii.form_iii.url if section_iii and section_iii.form_iii else None
+    }
+
+    # Prepare response
+    response_data = {
+        "application_id": application.id,
+        "title": application.title,
+        "status": application.status,
+        "token_no": application.token_no,
+        "attorney_name": attorney_name,
+        "dates": {
+            "patentability_check_date": application.patentability_check_date,
+            "patentability_file_date": application.patentability_file_date,
+            "assigned_date": application.assigned_date,
+            "decision_date": application.decision_date,
+            "submitted_date": application.submitted_date if application.submitted_date else None
+        },
+        "decision_status": application.decision_status,
+        "comments": application.comments if application.comments else None,
+        "applicants": applicants_data,
+        "section_I": section_i_data,
+        "section_II": section_ii_data,
+        "section_III": section_iii_data
+    }
+
+    return JsonResponse(response_data, safe=False)
 
 def saved_drafts(request):
     return JsonResponse({"message": "save drafts"})
