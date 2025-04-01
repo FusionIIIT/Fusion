@@ -728,7 +728,8 @@ class GenerateTranscriptForm(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        role = request.headers.get('X-User-Role')
+        role = request.GET.get("role") 
+        print(role,"abcd")
         if not role or role != "acadadmin":
             return Response({"error": "Access denied. Invalid or missing role."}, status=status.HTTP_403_FORBIDDEN)
 
@@ -1829,7 +1830,8 @@ class CheckResultView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request, *args, **kwargs):
         roll_number = request.user.username
-        semester = request.POST.get('semester')
+        semester = request.data.get('semester')
+        # print(roll_number,semester)
         grades_info = Student_grades.objects.filter(roll_no=roll_number, semester=semester).select_related('course_id')
 
         gained_credit = 0
@@ -1866,13 +1868,13 @@ class CheckResultView(APIView):
 
         all_grades = Student_grades.objects.filter(roll_no=roll_number)
         total_units = sum(grade.course_id.credit for grade in all_grades)
-
+        # print(grades_info)
         response_data = {
             "success": True,
             "courses": [
                 {
-                    "courseid": grade.course_id.course_id,
-                    "coursename": grade.course_id.course_name,
+                    "courseid": grade.course_id.id,
+                    "coursename": grade.course_id.name,
                     "credits": grade.course_id.credit,
                     "grade": grade.grade,
                 }
