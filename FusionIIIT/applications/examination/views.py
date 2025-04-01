@@ -96,8 +96,8 @@ def exam(request):
         return HttpResponseRedirect("/examination/updateGrades/")
     elif request.session.get("currentDesignationSelected") == "Dean Academic":
         return HttpResponseRedirect("/examination/verifyGradesDean/")
-    # elif request.session.get("currentDesignationSelected") == "student":
-    #     return HttpResponseRedirect("/examination/checkresult/")
+    elif request.session.get("currentDesignationSelected") == "student":
+        return HttpResponseRedirect("/examination/checkresult/")
     return HttpResponseRedirect("/dashboard/")
 
 
@@ -1133,14 +1133,14 @@ def download_template(request):
         writer = csv.writer(response)
         
         # Write header
-        writer.writerow(["roll_no", "name", "grade", "remarks"])
+        writer.writerow(["roll_no", "name", "grade", "remarks", "semester"])
         
         # Write student roll numbers and names
         for entry in course_info:
             student_entry = entry.student_id
             # Fetching the user instance dynamically
             student_user = User.objects.get(username=student_entry.id_id)
-            writer.writerow([student_entry.id_id, student_user.first_name+" "+student_user.last_name, "", ""])
+            writer.writerow([student_entry.id_id, student_user.first_name+" "+student_user.last_name, "", "", ""])
         
         return response
     
@@ -1897,57 +1897,66 @@ def grades_report(request):
             return HttpResponseRedirect('/dashboard/')
         roll_number=request.user.username
         semester=request.POST.get('semester')
-        grades_info=Student_grades.objects.filter(roll_no=roll_number,semester=semester).select_related('course_id')
-        gained_credit=0
-        total_credit=0
-        all_credits=0
-        for grades in grades_info:
-            credits=grades.course_id.credit
-            grade=grades.grade
-            if grade=="O" or grade=="A+":
-                        gained_credit+=1*credits
-                        total_credit+=credits
-            elif grade=="A":
-                        gained_credit+=0.9*credits
-                        total_credit+=credits
-            elif grade=="B+":
-                        gained_credit+=0.8*credits
-                        total_credit+=credits
-            elif grade=="B":
-                        gained_credit+=0.7*credits
-                        total_credit+=credits
-            elif grade=="C+":
-                        gained_credit+=0.6*credits
-                        total_credit+=credits
-            elif grade=="C":
-                        gained_credit+=0.5*credits
-                        total_credit+=credits
-            elif grade=="D+":
-                        gained_credit+=0.4*credits
-                        total_credit+=credits
-            elif grade=="D":
-                        gained_credit+=0.3*credits
-                        total_credit+=credits
-            elif grade=="F":
-                        gained_credit+=0.2*credits
-                        total_credit+=credits 
-            all_credits+=credits
-        spi = 10*(gained_credit/total_credit) if total_credit > 0 else 0
-        all_grades = Student_grades.objects.filter(roll_no=roll_number)
-        total_units = sum(grade.course_id.credit for grade in all_grades)
-        student_user = request.user.first_name+' '+request.user.last_name 
-        student = Student.objects.filter(id=roll_number).first()
-        # count=Student.objects.filter(id=roll.id).count()
-        # student=students.count()
-        
-        context = {
-                'student': student,
-                'student_user': student_user,
-                'grades': grades_info,
-                'spi': round(spi, 2),
-                'semester_units': all_credits,
-                'total_units': total_units,
-            }
-        return render(request, '../templates/examination/grades_report.html', context)
+        user=User.objects.get(username=roll_number)
+        user_info = ExtraInfo.objects.get(user=user)
+        student = Student.objects.get(id=user_info)
+        print(student.curr_semester_no, int(semester))
+        if int(semester) >= (student.curr_semester_no - 1):
+            return render(request, '../templates/examination/grades_report.html', {'message' : 'Not Available', 'semester': semester })
+        else :
+            grades_info=Student_grades.objects.filter(roll_no=roll_number,semester=semester).select_related('course_id')
+            gained_credit=0
+            total_credit=0
+            all_credits=0
+            for grades in grades_info:
+                credits=grades.course_id.credit
+                grade=grades.grade
+                if grade=="O" or grade=="A+":
+                            gained_credit+=1*credits
+                            total_credit+=credits
+                elif grade=="A":
+                            gained_credit+=0.9*credits
+                            total_credit+=credits
+                elif grade=="B+":
+                            gained_credit+=0.8*credits
+                            total_credit+=credits
+                elif grade=="B":
+                            gained_credit+=0.7*credits
+                            total_credit+=credits
+                elif grade=="C+":
+                            gained_credit+=0.6*credits
+                            total_credit+=credits
+                elif grade=="C":
+                            gained_credit+=0.5*credits
+                            total_credit+=credits
+                elif grade=="D+":
+                            gained_credit+=0.4*credits
+                            total_credit+=credits
+                elif grade=="D":
+                            gained_credit+=0.3*credits
+                            total_credit+=credits
+                elif grade=="F":
+                            gained_credit+=0.2*credits
+                            total_credit+=credits 
+                all_credits+=credits
+            spi = 10*(gained_credit/total_credit) if total_credit > 0 else 0
+            all_grades = Student_grades.objects.filter(roll_no=roll_number)
+            till_grades = Student_grades.objects.filter(roll_no=roll_number, semester__lte =semester)
+            total_units = sum(grade.course_id.credit for grade in till_grades)
+            student_user = request.user.first_name+' '+request.user.last_name 
+            student = Student.objects.filter(id=roll_number).first()
+            # count=Student.objects.filter(id=roll.id).count()
+            # student=students.count()
+            
+            context = {
+                    'student': student,
+                    'student_user': student_user,
+                    'grades': grades_info,
+                    'spi': round(spi, 1),
+                    'semester_units': all_credits,
+                    'total_units': total_units,
+                    'semester': semester
+                }
+            return render(request, '../templates/examination/grades_report.html', context)
 
 
