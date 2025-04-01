@@ -129,6 +129,80 @@ from .serializers import *
 #         else:
 #             return Response({'message': 'Invalid user type'}, status=status.HTTP_400_BAD_REQUEST)
 
+# add a module
+@api_view(['POST'])
+def add_module(request):
+    # Extract data from the request
+    course_id = request.data.get('course_id')
+    module_name = request.data.get('module_name')
+
+
+    # Ensure the course exists
+    try:
+        course = Courses.objects.get(id=course_id)
+    except Courses.DoesNotExist:
+        return Response({"error": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    # Create the module
+    module = Modules.objects.create(module_name=module_name, course_id=course)
+
+    # Serialize the module data and return
+    serializer = ModulesSerializer(module)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+# delete a module
+@api_view(['DELETE'])
+def delete_module(request, module_id):
+    try:
+        # Get the module by primary key
+        module = Modules.objects.get(pk=module_id)
+        module.delete()  # Delete the module
+        return Response(status=status.HTTP_204_NO_CONTENT)  # No content after deletion
+    except Modules.DoesNotExist:
+        return Response({"error": "Module not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+# Add a slide
+@api_view(['POST'])
+def add_slide(request, module_id):
+    try:
+        # Get the module using module_id from the URL
+        module = Modules.objects.get(id=module_id)
+    except Modules.DoesNotExist:
+        return Response({"error": "Module not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    # Extract data from the request body
+    document_name = request.data.get('document_name')
+    document_url = request.data.get('document_url')
+    description = request.data.get('description', '')  # Default to empty string if not provided
+
+    # Create a new CourseDocument for the slide
+    course_document = CourseDocuments.objects.create(
+        course_id=module.course_id,
+        module_id=module,
+        document_name=document_name,
+        document_url=document_url,
+        description=description
+    )
+
+    # Serialize the document data and return the response
+    serializer = CourseDocumentsSerializer(course_document)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+# Delete a slide
+@api_view(['DELETE'])
+def delete_slide(request, slide_id):
+    try:
+        # Get the slide by primary key
+        slide = CourseDocuments.objects.get(pk=slide_id)
+        slide.delete()  # Delete the slide
+        return Response(status=status.HTTP_204_NO_CONTENT)  # No content after deletion
+    except CourseDocuments.DoesNotExist:
+        return Response({"error": "Slide not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
 @api_view(['GET'])
 def courseview(request):
     user = request.user
