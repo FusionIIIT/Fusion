@@ -63,6 +63,7 @@ urlpatterns = [
     path('filetracking/<proposal_id>/',views.filetracking,name='filetracking'),
     path('inward_files/',views.inward_files,name='inward_files'),
     path('forward_course_forms/<ProposalId>/',views.forward_course_forms,name='forward_course_forms'),
+    path('forward_course_forms_II/',views.forward_course_forms_II,name='forward_course_forms'),
     path('view_inward_files/<ProposalId>/',views.view_inward_files,name='view_inward_files'),
     path('outward_files/',views.outward_files,name='outward_files'),
     path('tracking_archive/<ProposalId>/',views.tracking_archive,name='tracking_archive'),
