@@ -1133,14 +1133,14 @@ def download_template(request):
         writer = csv.writer(response)
         
         # Write header
-        writer.writerow(["roll_no", "name", "grade", "remarks"])
+        writer.writerow(["roll_no", "name", "grade", "remarks", "semester"])
         
         # Write student roll numbers and names
         for entry in course_info:
             student_entry = entry.student_id
             # Fetching the user instance dynamically
             student_user = User.objects.get(username=student_entry.id_id)
-            writer.writerow([student_entry.id_id, student_user.first_name+" "+student_user.last_name, "", ""])
+            writer.writerow([student_entry.id_id, student_user.first_name+" "+student_user.last_name, "", "", ""])
         
         return response
     
@@ -1941,7 +1941,8 @@ def grades_report(request):
                 all_credits+=credits
             spi = 10*(gained_credit/total_credit) if total_credit > 0 else 0
             all_grades = Student_grades.objects.filter(roll_no=roll_number)
-            total_units = sum(grade.course_id.credit for grade in all_grades)
+            till_grades = Student_grades.objects.filter(roll_no=roll_number, semester__lte =semester)
+            total_units = sum(grade.course_id.credit for grade in till_grades)
             student_user = request.user.first_name+' '+request.user.last_name 
             student = Student.objects.filter(id=roll_number).first()
             # count=Student.objects.filter(id=roll.id).count()
