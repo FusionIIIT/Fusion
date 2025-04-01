@@ -1216,65 +1216,105 @@ def add_course_form(request):
 
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-    
+  
 
+@csrf_exempt
+@api_view(['GET', 'PUT'])
+@permission_classes([IsAuthenticated])
 def update_course_form(request, course_id):
-    des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if request.session['currentDesignationSelected']== "student":
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
-    elif str(request.user) == "acadadmin" :
-        pass
-    elif 'hod' in request.session['currentDesignationSelected'].lower():
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
+    """
+    Handle getting and updating Course through an API endpoint.
+    """
+    try:
+        course = get_object_or_404(Course, id=course_id)
+        
+        if request.method == 'GET':
+            # Return course data for editing
+            data = {
+                'name': course.name,
+                'code': course.code,
+                'credit': course.credit,
+                'version': course.version,
+                'lecture_hours': course.lecture_hours,
+                'tutorial_hours': course.tutorial_hours,
+                'pratical_hours': course.pratical_hours,
+                'discussion_hours': course.discussion_hours,
+                'project_hours': course.project_hours,
+                'disciplines': [d.id for d in course.disciplines.all()],
+                'pre_requisits': course.pre_requisits,
+                'pre_requisit_courses': [c.id for c in course.pre_requisit_courses.all()],
+                'syllabus': course.syllabus,
+                'ref_books': course.ref_books,
+                'percent_quiz_1': course.percent_quiz_1,
+                'percent_midsem': course.percent_midsem,
+                'percent_quiz_2': course.percent_quiz_2,
+                'percent_endsem': course.percent_endsem,
+                'percent_project': course.percent_project,
+                'percent_lab_evaluation': course.percent_lab_evaluation,
+                'percent_course_attendance': course.percent_course_attendance,
+            }
+            return Response(data, status=status.HTTP_200_OK)
+        
+        elif request.method == 'PUT':
+            # Handle course update
+            data = request.data
+            previous_version = Course.objects.filter(code=course.code).order_by('version').last()
+            
+            # Validate version
+            new_version = data.get('version', course.version)
+            if float(new_version) <= float(previous_version.version):
+                return Response(
+                    {'error': f'Version must be greater than current version ({previous_version.version})'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Update basic course fields
+            update_fields = [
+                'code', 'name', 'credit', 'lecture_hours', 'tutorial_hours',
+                'pratical_hours', 'discussion_hours', 'project_hours',
+                'pre_requisits', 'syllabus', 'percent_quiz_1', 'percent_midsem',
+                'percent_quiz_2', 'percent_endsem', 'percent_project',
+                'percent_lab_evaluation', 'percent_course_attendance', 'ref_books'
+            ]
+            
+            for field in update_fields:
+                if field in data:
+                    setattr(course, field, data[field])
+            
+            # Set version and latest version flags
+            course.version = new_version
+            previous_version.latest_version = False
+            previous_version.save()
+            course.latest_version = True
+            
+            course.save()
+            
+            # Update many-to-many relationships
+            if 'disciplines' in data:
+                discipline_ids = data['disciplines']
+                disciplines = Discipline.objects.filter(id__in=discipline_ids)
+                course.disciplines.set(disciplines)
+            
+            if 'pre_requisit_courses' in data:
+                prereq_course_ids = data['pre_requisit_courses']
+                prereq_courses = Course.objects.filter(id__in=prereq_course_ids)
+                course.pre_requisit_courses.set(prereq_courses)
+            
+            return Response(
+                {
+                    'message': 'Course updated successfully!',
+                    'course_id': course.id,
+                    'code': course.code,
+                    'name': course.name
+                },
+                status=status.HTTP_200_OK
+            )
     
-    course = get_object_or_404(Course, Q(id=course_id))
-    previous = Course.objects.all().filter(code=course.code).order_by('version').last()
-    course.version=previous.version
-    version_error=''
-    form = CourseForm(instance=course)
-    submitbutton= request.POST.get('Submit')
-    if submitbutton:
-        if request.method == 'POST':
-            form = CourseForm(request.POST)  
-            if form.is_valid() :
-                previous.latest_version=False
-                previous.save()
-                form.latest_version=True
-                new_course = form.save(commit=False)
-                add=True
-                ver=0
-                if(new_course.version>previous.version):
-                    # Check if a course with the same values (except version, latest_version, disciplines, and pre_requisit_courses) already exists
-                    old_course=Course.objects.filter(code=new_course.code, name=new_course.name, credit=new_course.credit, lecture_hours=new_course.lecture_hours, tutorial_hours=new_course.tutorial_hours, pratical_hours=new_course.pratical_hours, discussion_hours=new_course.discussion_hours, project_hours=new_course.project_hours, pre_requisits=new_course.pre_requisits, syllabus=new_course.syllabus, percent_quiz_1=new_course.percent_quiz_1, percent_midsem=new_course.percent_midsem, percent_quiz_2=new_course.percent_quiz_2, percent_endsem=new_course.percent_endsem, percent_project=new_course.percent_project, percent_lab_evaluation=new_course.percent_lab_evaluation, percent_course_attendance=new_course.percent_course_attendance, ref_books=new_course.ref_books)
-                    if old_course:
-                        # Check if disciplines or pre_requisit_courses have been changed
-                        for i in old_course:
-                            if set(form.cleaned_data['disciplines']) != set(i.disciplines.all()) or set(form.cleaned_data['pre_requisit_courses']) != set(i.pre_requisit_courses.all()):
-                                add=True
-                            else:
-                                add=False
-                                ver=i.version
-                                break
-                        if add:
-                            new_course.save()  # Save the new course first before adding many-to-many fields
-                            new_course.disciplines.set(form.cleaned_data['disciplines'])
-                            new_course.pre_requisit_courses.set(form.cleaned_data['pre_requisit_courses'])
-                            course = Course.objects.last()
-                            messages.success(request, "Added successful")
-                            return HttpResponseRedirect("/programme_curriculum/admin_course/" + str(course.id) + "/")
-                        else:
-                            form.add_error(None,  'A Course with the same values already exists at "Version Number '+' ' +str(ver)+'"')
-                    else:
-                        new_course.save()  # Save the new course first before adding many-to-many fields
-                        new_course.disciplines.set(form.cleaned_data['disciplines'])
-                        new_course.pre_requisit_courses.set(form.cleaned_data['pre_requisit_courses'])
-                        course = Course.objects.last()
-                        messages.success(request, "Added successful")
-                        return HttpResponseRedirect("/programme_curriculum/admin_course/" + str(course.id) + "/")
-                else:
-                    version_error+=f'The version should be greater than {previous.version}'
-                    
-    return render(request,'programme_curriculum/acad_admin/course_form.html',{'course':course, 'form':form, 'submitbutton': submitbutton,'version_error':version_error})
+    except Exception as e:
+        return Response(
+            {'error': str(e)},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 @permission_classes([IsAuthenticated])
 @api_view(['POST'])
