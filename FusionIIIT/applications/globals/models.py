@@ -335,6 +335,7 @@ class ModuleAccess(models.Model):
     placement_cell = models.BooleanField(default=False)
     visitor_hostel = models.BooleanField(default=False)
     phc = models.BooleanField(default=False)
+    patent_management = models.BooleanField(default=False)
 
     def __str__(self):
         return self.designation

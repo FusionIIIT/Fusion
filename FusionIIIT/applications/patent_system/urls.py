@@ -5,14 +5,22 @@ from . import views
 
 urlpatterns = [
     # Applicant-related paths
-    path("applicant/applications/submit", views.submit_application, name="submit_application"),
+    path("applicant/applications/submit/", views.submit_application, name="submit_application"),
     path("applicant/applications/", views.view_applications, name="view_applications"),
     path("applicant/applications/details/<int:application_id>/", views.view_application_details, name="view_application_details"),
-    path("applicant/drafts", views.saved_drafts, name="saved_drafts"),
-    path("applicant/notifications", views.applicant_notifications, name="applicant_notifications"),
-    path("applicant/applications/submit/new", views.application_form, name="application_form"),
-    path("applicant/applications/submitted", views.ip_filing_form, name="ip_filing_form"),
-    path("applicant/applications/status-view", views.status_view, name="status_view"),
+    path("applicant/drafts/", views.saved_drafts, name="saved_drafts"),
+
+    # PCCAdmin-related paths
+    path("pccAdmin/insights/yearly/", views.insights_by_year, name="insights_by_year"),
+    path("pccAdmin/applications/new/", views.new_applications, name="new_applications"),
+    path("pccAdmin/applications/review/", views.review_applications, name="review_applications"),
+    path("pccAdmin/applications/forward/", views.forward_applications, name="forward_applications"),
+    path("pccAdmin/applications/reviewed/", views.reviewed_applications, name="reviewed_applications"),
+    path("pccAdmin/attorney/add/", views.add_attorney, name="add_attorney"),
+    path("pccAdmin/attorney/remove/", views.remove_attorney, name="remove_attorney"),
+    path("pccAdmin/attorneys/", views.view_attorney_list, name="view_attorney_list"),
+    path("pccAdmin/attorneys/<int:attorney_id>/", views.view_attorney_details, name="view_attorney_details"),
+    path("pccAdmin/attorneys/<int:attorney_id>/edit/", views.edit_attorney_details, name="edit_attorney_details"),
 
     # Director-related paths
     path("director", views.director_main_dashboard, name="director_main_dashboard"),
@@ -26,16 +34,6 @@ urlpatterns = [
     path("director/notifications/", views.director_notifications, name="director_notifications"),
     path("director/submitted-applications", views.submitted_applications, name="submitted_applications"),
 
-    # PCCAdmin-related paths
-    path("pccAdmin/", views.pcc_admin_main_dashboard, name="pcc_admin_main_dashboard"),
-    path("pccAdmin/dashboard", views.pcc_admin_dashboard, name="pcc_admin_dashboard"),
-    path("pccAdmin/reviewed-applications", views.review_applications, name="review_applications"),
-    path("pccAdmin/manageAttorney", views.manage_attorney, name="manage_attorney"),
-    path("pccAdmin/notifyApplicant", views.notify_applicant, name="notify_applicant"),
-    path("pccAdmin/downloads", views.downloads_page, name="downloads_page"),
-    path("pccAdmin/insights", views.insights_page, name="insights_page"),
-    path("pccAdmin/application/view-details", views.pcc_admin_status_view, name="pcc_admin_status_view"),
-    
 ]
 
 # Serve media files in development

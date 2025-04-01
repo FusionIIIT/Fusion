@@ -43,6 +43,7 @@ def generate_file_path(folder, filename):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
+@csrf_exempt
 def submit_application(request):
     if request.method != "POST":
         return JsonResponse({"error": "Invalid request method"}, status=405)
@@ -56,6 +57,7 @@ def submit_application(request):
 
         # Required file fields
         poc_file = request.FILES.get("poc_details")
+        source_file=request.FILES.get("source_file")
         mou_file = request.FILES.get("mou_file")
         form_iii_file = request.FILES.get("form_iii")
 
@@ -63,8 +65,8 @@ def submit_application(request):
             "title", "inventors", "area_of_invention", "problem_statement", "objective",
             "novelty", "advantages", "tested_experimentally", "applications",
             "funding_details", "funding_source", "publication_details", "mou_details",
-            "research_details", "company_name", "contact_person", "contact_no",
-            "development_stage", "user_id", "inventor_contributions"
+            "research_details", "company_details",
+            "development_stage", "user_id"
         ]
         
         for field in required_fields:
@@ -81,12 +83,17 @@ def submit_application(request):
 
         # Save file uploads and store paths
         poc_file_path = None
+        source_file_path = None
         mou_file_path = None
         form_iii_file_path = None
 
         if poc_file:
             poc_file_path = default_storage.save(
                 generate_file_path("Section-I/poc_details", poc_file.name), poc_file
+            )
+        if source_file:
+            source_file_path = default_storage.save(
+                generate_file_path("Section-II/source_details", source_file.name), source_file
             )
         if mou_file:
             mou_file_path = default_storage.save(
@@ -113,22 +120,39 @@ def submit_application(request):
             application=application,
             funding_details=data["funding_details"],
             funding_source=data["funding_source"],
+            source_agreement=source_file_path,
             publication_details=data["publication_details"],
             mou_details=data["mou_details"],
             mou_file=mou_file_path,
             research_details=data["research_details"]
         )
 
-        ApplicationSectionIII.objects.create(
-            application=application,
-            company_name=data["company_name"],
-            contact_person=data["contact_person"],
-            contact_no=data["contact_no"],
-            development_stage=data["development_stage"],
-            form_iii=form_iii_file_path
-        )
+        # Process multiple companies
+        company_details = data.get("company_details", [])
+        if not isinstance(company_details, list):
+            return JsonResponse({"error": "company_details should be a list"}, status=400)
+        # print("Company Details:", company_details)
+        
+        for company in data.get("company_details", []):
+            # print("Processing Company:", company)
+            company_name = company.get("company_name")
+            contact_person = company.get("contact_person")
+            contact_no = company.get("contact_no")
 
-        for inventor in json.loads(data["inventor_contributions"]):
+            if not (company_name and contact_person and contact_no):
+                return JsonResponse({"error": "Each company entry must have company_name, contact_person, and contact_no"}, status=400)
+
+            # Create an entry for each company
+            ApplicationSectionIII.objects.create(
+                application=application,
+                company_name=company_name,
+                contact_person=contact_person,
+                contact_no=contact_no,
+                development_stage=data["development_stage"],
+                form_iii=form_iii_file_path
+            )
+
+        for inventor in data["inventors"]:
             email = inventor["institute_mail"]
             percentage = inventor["percentage"]
             name = inventor.get("name", "")
@@ -305,21 +329,43 @@ def view_application_details(request, application_id):
 def saved_drafts(request):
     return JsonResponse({"message": "save drafts"})
 
-def applicant_notifications(request):
-    return JsonResponse({"notifications": ["Patent approved", "Review required"]})
+# -----------------------------------------
+# 🔹 PCC Admin Views
+# -----------------------------------------
 
+# For dashboard tab
+def insights_by_year(request):
+    return JsonResponse({"message": "Insights by Year"})
 
-def application_form(request):
-    return JsonResponse({"message": "Load application form"})
+# For new applications tab
+def new_applications(request):
+    return JsonResponse({"message": "New Applications"})
 
+def review_applications(request):
+    return JsonResponse({"message": "Review Applications"})
 
-def ip_filing_form(request):
-    return JsonResponse({"message": "Load IP filing form"})
+def forward_applications(request):
+    return JsonResponse({"message": "Forward Applications"})
 
+# For status of applications tab
+def reviewed_applications(request):
+    return JsonResponse({"message": "Reviewed Applications"})
 
-def status_view(request):
-    return JsonResponse({"message": "View application status"})
+# For manage attorney tab
+def add_attorney(request):
+    return JsonResponse({"message": "Attorney added successfully"})
 
+def remove_attorney(request):
+    return JsonResponse({"message": "Attorney removed successfully"})   
+
+def view_attorney_list(request):
+    return JsonResponse({"message": "List of attorneys", "attorneys": []}) 
+
+def view_attorney_details(request, attorney_id):
+    return JsonResponse({"message": f"Details of attorney {attorney_id}"})
+
+def edit_attorney_details(request, attorney_id):
+    return JsonResponse({"message": f"Attorney {attorney_id} details updated successfully"})
 
 # -----------------------------------------
 # 🔹 Director Views
@@ -332,8 +378,6 @@ def director_main_dashboard(request):
 def director_dashboard(request):
     return JsonResponse({"message": "Director Dashboard"})
 
-
-@csrf_exempt
 def director_accept_reject(request):
     if request.method == "POST":
         data = json.loads(request.body)
@@ -380,46 +424,4 @@ def submitted_applications(request):
     return JsonResponse({"submitted_applications": submitted})
 
 
-# -----------------------------------------
-# 🔹 PCC Admin Views
-# -----------------------------------------
 
-def pcc_admin_main_dashboard(request):
-    return JsonResponse({"message": "PCC Admin Main Dashboard"})
-
-
-def pcc_admin_dashboard(request):
-    return JsonResponse({"message": "PCC Admin Dashboard"})
-
-
-def review_applications(request):
-    applications = list(Application.objects.filter(status="Under Review").values("id", "title"))
-    return JsonResponse({"review_applications": applications})
-
-
-@csrf_exempt
-def manage_attorney(request):
-    if request.method == "POST":
-        data = json.loads(request.body)
-        return JsonResponse({"message": f"Attorney assigned to application {data['app_id']}"})
-    return JsonResponse({"error": "Invalid request method"}, status=405)
-
-
-@csrf_exempt
-def notify_applicant(request):
-    if request.method == "POST":
-        data = json.loads(request.body)
-        return JsonResponse({"message": f"Notification sent to applicant of application {data['app_id']}"})
-    return JsonResponse({"error": "Invalid request method"}, status=405)
-
-
-def downloads_page(request):
-    return JsonResponse({"message": "Downloads Page"})
-
-
-def insights_page(request):
-    return JsonResponse({"message": "Insights Page"})
-
-
-def pcc_admin_status_view(request):
-    return JsonResponse({"message": "PCC Admin Status View"})
