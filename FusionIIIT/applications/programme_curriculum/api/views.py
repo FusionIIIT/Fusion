@@ -12,6 +12,7 @@ from ..forms import ProgrammeForm, DisciplineForm, CurriculumForm, SemesterForm,
 from ..filters import CourseFilter, BatchFilter, CurriculumFilter
 
 from .serializers import CourseSerializer,CurriculumSerializer,BatchSerializer
+from django.core.serializers import serialize
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 from django.forms.models import model_to_dict
@@ -24,6 +25,7 @@ from django.core.exceptions import PermissionDenied
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
+import re
 
 from notification.views import prog_and_curr_notif
 # from applications.academic_information.models import Student
@@ -117,7 +119,9 @@ def view_curriculums_of_a_programme(request, programme_id):
 
     # Fetch program and related curriculums
     program = get_object_or_404(Programme, id=programme_id)
+    print(program.name)
     curriculums = program.curriculums.all()  # Adjust if it's a related name
+
 
     # Apply filters
     curriculumfilter = CurriculumFilter(request.GET, queryset=curriculums)
@@ -131,11 +135,13 @@ def view_curriculums_of_a_programme(request, programme_id):
     # Prepare JSON data
     data = {
         'program': model_to_dict(program),
+        'name':program.name,
         # 'working_curriculums': [model_to_dict(c) for c in working_curriculums],
         'working_curriculums': [
             {
                 **model_to_dict(c),
-                'batches': [model_to_dict(b) for b in c.batches.all()]  # Add batches for each curriculum
+                'batches': [model_to_dict(b) for b in c.batches.all()]
+                # Add batches for each curriculum
             }
             for c in working_curriculums
         ],
@@ -560,13 +566,25 @@ def admin_view_semesters_of_a_curriculum(request, curriculum_id):
             'running_batch': batch.running_batch
         } for batch in all_batches
     ]
+    batches_without_curriculum = Batch.objects.filter(curriculum__isnull=True)
+    unlinked_batch_data=[
+        {
+            'id': batch.id,
+            'name': batch.name,
+            'discipline': batch.discipline.acronym,  # Use acronym or other attributes if available in Discipline
+            'year': batch.year,
+            'running_batch': batch.running_batch
+        } for batch in batches_without_curriculum
+    ]
     curriculum_data = {
         'curriculum_id': curriculum.id,
         'curriculum_name': curriculum.name,
         'version': curriculum.version,
         'programme_id': curriculum.programme.id,
         'batches':batch_data,
-        'semesters': semester_data
+        'semesters': semester_data,
+        'unlikedbatches':unlinked_batch_data,
+        'working_curriculum':curriculum.working_curriculum
     }
 
     return JsonResponse(curriculum_data)
@@ -1198,65 +1216,105 @@ def add_course_form(request):
 
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-    
+  
 
+@csrf_exempt
+@api_view(['GET', 'PUT'])
+@permission_classes([IsAuthenticated])
 def update_course_form(request, course_id):
-    des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if request.session['currentDesignationSelected']== "student":
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
-    elif str(request.user) == "acadadmin" :
-        pass
-    elif 'hod' in request.session['currentDesignationSelected'].lower():
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
+    """
+    Handle getting and updating Course through an API endpoint.
+    """
+    try:
+        course = get_object_or_404(Course, id=course_id)
+        
+        if request.method == 'GET':
+            # Return course data for editing
+            data = {
+                'name': course.name,
+                'code': course.code,
+                'credit': course.credit,
+                'version': course.version,
+                'lecture_hours': course.lecture_hours,
+                'tutorial_hours': course.tutorial_hours,
+                'pratical_hours': course.pratical_hours,
+                'discussion_hours': course.discussion_hours,
+                'project_hours': course.project_hours,
+                'disciplines': [d.id for d in course.disciplines.all()],
+                'pre_requisits': course.pre_requisits,
+                'pre_requisit_courses': [c.id for c in course.pre_requisit_courses.all()],
+                'syllabus': course.syllabus,
+                'ref_books': course.ref_books,
+                'percent_quiz_1': course.percent_quiz_1,
+                'percent_midsem': course.percent_midsem,
+                'percent_quiz_2': course.percent_quiz_2,
+                'percent_endsem': course.percent_endsem,
+                'percent_project': course.percent_project,
+                'percent_lab_evaluation': course.percent_lab_evaluation,
+                'percent_course_attendance': course.percent_course_attendance,
+            }
+            return Response(data, status=status.HTTP_200_OK)
+        
+        elif request.method == 'PUT':
+            # Handle course update
+            data = request.data
+            previous_version = Course.objects.filter(code=course.code).order_by('version').last()
+            
+            # Validate version
+            new_version = data.get('version', course.version)
+            if float(new_version) <= float(previous_version.version):
+                return Response(
+                    {'error': f'Version must be greater than current version ({previous_version.version})'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Update basic course fields
+            update_fields = [
+                'code', 'name', 'credit', 'lecture_hours', 'tutorial_hours',
+                'pratical_hours', 'discussion_hours', 'project_hours',
+                'pre_requisits', 'syllabus', 'percent_quiz_1', 'percent_midsem',
+                'percent_quiz_2', 'percent_endsem', 'percent_project',
+                'percent_lab_evaluation', 'percent_course_attendance', 'ref_books'
+            ]
+            
+            for field in update_fields:
+                if field in data:
+                    setattr(course, field, data[field])
+            
+            # Set version and latest version flags
+            course.version = new_version
+            previous_version.latest_version = False
+            previous_version.save()
+            course.latest_version = True
+            
+            course.save()
+            
+            # Update many-to-many relationships
+            if 'disciplines' in data:
+                discipline_ids = data['disciplines']
+                disciplines = Discipline.objects.filter(id__in=discipline_ids)
+                course.disciplines.set(disciplines)
+            
+            if 'pre_requisit_courses' in data:
+                prereq_course_ids = data['pre_requisit_courses']
+                prereq_courses = Course.objects.filter(id__in=prereq_course_ids)
+                course.pre_requisit_courses.set(prereq_courses)
+            
+            return Response(
+                {
+                    'message': 'Course updated successfully!',
+                    'course_id': course.id,
+                    'code': course.code,
+                    'name': course.name
+                },
+                status=status.HTTP_200_OK
+            )
     
-    course = get_object_or_404(Course, Q(id=course_id))
-    previous = Course.objects.all().filter(code=course.code).order_by('version').last()
-    course.version=previous.version
-    version_error=''
-    form = CourseForm(instance=course)
-    submitbutton= request.POST.get('Submit')
-    if submitbutton:
-        if request.method == 'POST':
-            form = CourseForm(request.POST)  
-            if form.is_valid() :
-                previous.latest_version=False
-                previous.save()
-                form.latest_version=True
-                new_course = form.save(commit=False)
-                add=True
-                ver=0
-                if(new_course.version>previous.version):
-                    # Check if a course with the same values (except version, latest_version, disciplines, and pre_requisit_courses) already exists
-                    old_course=Course.objects.filter(code=new_course.code, name=new_course.name, credit=new_course.credit, lecture_hours=new_course.lecture_hours, tutorial_hours=new_course.tutorial_hours, pratical_hours=new_course.pratical_hours, discussion_hours=new_course.discussion_hours, project_hours=new_course.project_hours, pre_requisits=new_course.pre_requisits, syllabus=new_course.syllabus, percent_quiz_1=new_course.percent_quiz_1, percent_midsem=new_course.percent_midsem, percent_quiz_2=new_course.percent_quiz_2, percent_endsem=new_course.percent_endsem, percent_project=new_course.percent_project, percent_lab_evaluation=new_course.percent_lab_evaluation, percent_course_attendance=new_course.percent_course_attendance, ref_books=new_course.ref_books)
-                    if old_course:
-                        # Check if disciplines or pre_requisit_courses have been changed
-                        for i in old_course:
-                            if set(form.cleaned_data['disciplines']) != set(i.disciplines.all()) or set(form.cleaned_data['pre_requisit_courses']) != set(i.pre_requisit_courses.all()):
-                                add=True
-                            else:
-                                add=False
-                                ver=i.version
-                                break
-                        if add:
-                            new_course.save()  # Save the new course first before adding many-to-many fields
-                            new_course.disciplines.set(form.cleaned_data['disciplines'])
-                            new_course.pre_requisit_courses.set(form.cleaned_data['pre_requisit_courses'])
-                            course = Course.objects.last()
-                            messages.success(request, "Added successful")
-                            return HttpResponseRedirect("/programme_curriculum/admin_course/" + str(course.id) + "/")
-                        else:
-                            form.add_error(None,  'A Course with the same values already exists at "Version Number '+' ' +str(ver)+'"')
-                    else:
-                        new_course.save()  # Save the new course first before adding many-to-many fields
-                        new_course.disciplines.set(form.cleaned_data['disciplines'])
-                        new_course.pre_requisit_courses.set(form.cleaned_data['pre_requisit_courses'])
-                        course = Course.objects.last()
-                        messages.success(request, "Added successful")
-                        return HttpResponseRedirect("/programme_curriculum/admin_course/" + str(course.id) + "/")
-                else:
-                    version_error+=f'The version should be greater than {previous.version}'
-                    
-    return render(request,'programme_curriculum/acad_admin/course_form.html',{'course':course, 'form':form, 'submitbutton': submitbutton,'version_error':version_error})
+    except Exception as e:
+        return Response(
+            {'error': str(e)},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 @permission_classes([IsAuthenticated])
 @api_view(['POST'])
@@ -1348,28 +1406,48 @@ def edit_courseslot_form(request, courseslot_id):
     else:
         return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
     
-def delete_courseslot(request, courseslot_id):
-    
-    user_details = ExtraInfo.objects.get(user = request.user)
-    des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
-    elif str(request.user) == "acadadmin" :
-        pass
-    elif 'hod' in request.session['currentDesignationSelected'].lower():
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
-    
-    courseslot = get_object_or_404(CourseSlot, Q(id=courseslot_id))
-    submitbutton= request.POST.get('Submit')
-    if submitbutton:
-        if request.method == 'POST':
-            courseslotname = courseslot.name
-            curriculum_id = courseslot.semester.curriculum.id
-            courseslot.delete() 
-            messages.success(request, "Deleted "+ courseslotname +" successful")
-            return HttpResponseRedirect('/programme_curriculum/admin_curriculum_semesters/' + str(curriculum_id) + '/')  
 
-    return render(request, 'programme_curriculum/view_a_courseslot.html', {'course_slot': courseslot})
+
+@csrf_exempt
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_courseslot(request, courseslot_id):
+    print(request.session.keys())
+    try:
+        # Check if the user has the required session key
+        # if 'currentDesignationSelected' not in request.session:
+        #     return JsonResponse({'error': 'User role not defined in session'}, status=403)
+        
+        # Check user permissions
+        user_details = ExtraInfo.objects.get(user=request.user)
+        des = HoldsDesignation.objects.all().filter(user=request.user).first()
+        
+        # Restrict access based on user role
+        # print(request.session.keys())
+        # print(request.session['currentDesignationSelected'])
+        # current_designation = request.session['currentDesignationSelected']
+        # if current_designation == "student" or \
+        #    current_designation == "Associate Professor" or \
+        #    current_designation == "Professor" or \
+        #    current_designation == "Assistant Professor":
+        #     return JsonResponse({'error': 'Permission denied'}, status=403)
+        # elif str(request.user) == "acadadmin":
+        #     pass  # Allow access for academic admin
+        # elif 'hod' in current_designation.lower():
+        #     return JsonResponse({'error': 'Permission denied'}, status=403)
+        
+        # Fetch the course slot
+        courseslot = get_object_or_404(CourseSlot, id=courseslot_id)
+        
+        # Delete the course slot
+        courseslotname = courseslot.name
+        curriculum_id = courseslot.semester.curriculum.id
+        courseslot.delete()
+        
+        return JsonResponse({'message': f"Deleted {courseslotname} successfully"}, status=200)
+    except Exception as e:
+        # Return a generic error message without logging
+        return JsonResponse({'error': 'Internal server error'}, status=500)
 
 
 @permission_classes([IsAuthenticated])
@@ -1424,24 +1502,29 @@ def edit_batch_form(request, batch_id):
             'curriculum_id': batch.curriculum_id,
             'running_batch':batch.running_batch,
         }
-        curriculum = get_object_or_404(Curriculum,Q(id=batch.curriculum_id))
 
-        # Serialize the unused curricula
-        curricula_data =[ 
-            {
+        curricula_data = None
+
+        if batch.curriculum_id is not None:
+            # Fetch the curriculum object
+            curriculum = get_object_or_404(Curriculum, Q(id=batch.curriculum_id))
+            
+            # Serialize the curriculum data
+            curricula_data = [{
                 'id': curriculum.id,
                 'name': curriculum.name,
                 'version': curriculum.version,
+                # Uncomment these if you want to include discipline and programme details
                 # 'discipline': curriculum.discipline.name,
                 # 'programme': curriculum.programme.name,
-            }
-        ]
+            }]
         
         print(batch_data)
         print(curricula_data)
-        return JsonResponse({'status': 'success', 'batch': batch_data,'curriculum':curricula_data})
+        return JsonResponse({'status': 'success', 'batch': batch_data,'curriculum':curricula_data if curricula_data is not None else None})
     
     elif request.method == 'PUT':
+        print("put is used")
         try:
             # Fetch the existing batch instance
             try:
@@ -1527,87 +1610,116 @@ def instigate_semester(request, semester_id):
 
     return render(request,'programme_curriculum/acad_admin/instigate_semester_form.html',{'semester':semester, 'form':form, 'submitbutton':submitbutton, 'curriculum_id':curriculum_id})
 
-
+@csrf_exempt  # Use this decorator if you're not using CSRF tokens in your API calls
+@permission_classes([IsAuthenticated])
 def replicate_curriculum(request, curriculum_id):
     """
     This function is used to replicate the previous curriculum into a new curriculum.
+    It accepts data from a React frontend via a POST request.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Only POST requests are allowed'}, status=405)
+
+    try:
+        # Parse JSON data from the request body
+        data = json.loads(request.body)
         
-    @variables:
-        no_of_semester - For initializing the next version into a new curriculum.
+        # Extract data from the request
+        # curriculum_id = data.get('curriculum_id')
+        curriculum_name = data.get('curriculum_name')
+        programme_id = data.get('programme')
+        working_curriculum = data.get('working_curriculum')
+        version_no = data.get('version_no')
+        num_semesters = data.get('num_semesters')
+        num_credits = data.get('num_credits')
 
-    """    
-    user_details = ExtraInfo.objects.get(user = request.user)
-    des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if request.session['currentDesignationSelected']== "student" or request.session['currentDesignationSelected']== "Associate Professor" or request.session['currentDesignationSelected']== "Professor" or request.session['currentDesignationSelected']== "Assistant Professor" :
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
-    elif str(request.user) == "acadadmin" :
-        pass
-    elif 'hod' in request.session['currentDesignationSelected'].lower():
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
+        # Fetch the old curriculum
+        old_curriculum = get_object_or_404(Curriculum, Q(id=curriculum_id))
 
-    old_curriculum = get_object_or_404(Curriculum, Q(id=curriculum_id))
-    programme = old_curriculum.programme
-    name = old_curriculum.name
-    version = int(old_curriculum.version) + 1
-    working_curriculum = old_curriculum.working_curriculum
-    no_of_semester = old_curriculum.no_of_semester
+        # Create a new curriculum
+        #  curriculum = Curriculum(
+        #         name=curriculum_name,
+        #         programme=programme,
+        #         working_curriculum=working_curriculum,
+        #         version=version_no,
+        #         no_of_semester=num_semesters,
+        #         min_credit=num_credits,
+        #         latest_version=True
+        #     )
+        try:
+            programme = Programme.objects.get(id=programme_id)
+        except Programme.DoesNotExist:
+            return JsonResponse({'error': 'Invalid programme ID'}, status=400)
+        
 
+        new_curriculum = Curriculum(
+            programme=programme,
+            name=curriculum_name,
+            version=version_no,
+            working_curriculum=working_curriculum,
+            no_of_semester=num_semesters,
+            min_credit=num_credits,
+            latest_version=True
+        )
+        new_curriculum.save()
 
+        # Replicate semesters and course slots
+        old_semesters = old_curriculum.semesters.all()
+        for semester_no in range(1, num_semesters + 1):
+            new_semester = Semester(curriculum=new_curriculum, semester_no=semester_no)
+            new_semester.save()
 
-    form = CurriculumForm(initial={'programme': programme.id,
-                                    'name': name,
-                                    'version': version,
-                                    'working_curriculum': working_curriculum,
-                                    'no_of_semester': no_of_semester,
-                                })
-    submitbutton= request.POST.get('Submit')
-    if submitbutton:
-        if request.method == 'POST':
-            form = CurriculumForm(request.POST)  
-            if form.is_valid():
-                form.save()
-                no_of_semester = int(form.cleaned_data['no_of_semester'])
-                old_semesters = old_curriculum.semesters
-                curriculum = Curriculum.objects.all().last()
-                for semester_no in range(1, no_of_semester+1):
-                    
-                    NewSemester = Semester(curriculum=curriculum,semester_no=semester_no)
-                    NewSemester.save()
-                    for old_sem in old_semesters:
-                        if old_sem.semester_no == semester_no:
-                            for slot in old_sem.courseslots:
-                                courses = slot.courses.all()
-                                slot.pk = None
-                                slot.semester = NewSemester
-                                slot.save(force_insert=True)
-                                slot.courses.set(courses)
-                
-                messages.success(request, "Added successful")
-                return HttpResponseRedirect('/programme_curriculum/admin_curriculum_semesters/' + str(curriculum.id) + '/')
+            for old_sem in old_semesters:
+                if old_sem.semester_no == semester_no:
+                    for slot in old_sem.courseslots.all():
+                        courses = slot.courses.all()
+                        slot.pk = None
+                        slot.semester = new_semester
+                        slot.save(force_insert=True)
+                        slot.courses.set(courses)
 
-    return render(request, 'programme_curriculum/acad_admin/add_curriculum_form.html',{'form':form, 'submitbutton': submitbutton})
+        return JsonResponse({'status': 'success', 'message': 'Curriculum replicated successfully', 'curriculum_id': new_curriculum.id})
 
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 #new
 
-@login_required(login_url='/accounts/login')
+@permission_classes([IsAuthenticated])
+@csrf_exempt  # Use this decorator if you're not using CSRF tokens in your API calls
 def view_course_proposal_forms(request):
-    data=""
-    user_details = ExtraInfo.objects.get(user = request.user)
-    des = HoldsDesignation.objects.all().filter(user = request.user).last()
-    
-    if request.session['currentDesignationSelected']  == "Associate Professor" or request.session['currentDesignationSelected']  == "Professor" or request.session['currentDesignationSelected']  == "Assistant Professor" :
-            pass
-    elif request.session['currentDesignationSelected']  == "student" :
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
-    elif request.session['currentDesignationSelected']== "acadadmin":
-        return render(request, 'programme_curriculum/admin_programmes/')
-    else:
-        data='Files Cannot be sent with current Designation Switch to "Professor or Assistant Professor or Associate Professor"'
-    notifs = request.user.notifications.all()
-    courseProposal = NewProposalFile.objects.filter(uploader=des.user,designation=request.session['currentDesignationSelected'],is_update=False)
-    updatecourseProposal = NewProposalFile.objects.filter(uploader=des.user,designation=request.session['currentDesignationSelected'],is_update=True)
-    
-    return render(request, 'programme_curriculum/faculty/view_course_proposal_forms.html',{'courseProposals': courseProposal,'updateProposals':updatecourseProposal,'data':data,'notifications': notifs,})
+    data = {}
+    username = request.GET.get('username')  # Get username from query parameters
+    des = request.GET.get('des')  # Get designation from query parameters
+
+    if not username or not des:
+        return JsonResponse({'error': 'Username and designation are required'}, status=400)
+
+    # Check the user's designation
+    if des not in ["Associate Professor", "Professor", "Assistant Professor"]:
+        if des == "student":
+            return JsonResponse({'redirect': '/programme_curriculum/programmes/'}, status=302)
+        elif des == "acadadmin":
+            return JsonResponse({'redirect': '/programme_curriculum/admin_programmes/'}, status=302)
+        else:
+            data['error'] = 'Files Cannot be sent with current Designation. Switch to "Professor or Assistant Professor or Associate Professor"'
+            return JsonResponse(data, status=403)
+
+    # Fetch course proposals
+    courseProposal = NewProposalFile.objects.filter(uploader=username, designation=des, is_update=False)
+    updatecourseProposal = NewProposalFile.objects.filter(uploader=username, designation=des, is_update=True)
+
+    # Serialize the querysets to JSON
+    courseProposal_data = json.loads(serialize('json', courseProposal))
+    updatecourseProposal_data = json.loads(serialize('json', updatecourseProposal))
+
+    # Prepare the response data
+    response_data = {
+        'courseProposals': courseProposal_data,
+        'updateProposals': updatecourseProposal_data,
+        'message': 'Data fetched successfully',
+    }
+
+    return JsonResponse(response_data, status=200)
 
 @login_required(login_url='/accounts/login')
 def faculty_view_all_courses(request):
@@ -1671,142 +1783,320 @@ def view_a_course_proposal_form(request,CourseProposal_id):
     return render(request, 'programme_curriculum/faculty/view_a_course_proposal.html', {'proposal': proposalform,'notifications': notifs,})
 
 
+@permission_classes([IsAuthenticated])
+@csrf_exempt  # Only for development, remove in production with proper CSRF handling
 def new_course_proposal_file(request):
-    des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor":
-        pass
-    elif request.session['currentDesignationSelected'] == "acadadmin" :
-        return HttpResponseRedirect('/programme_curriculum/admin_programmes')
-    else:
-        return HttpResponseRedirect('/programme_curriculum/programmes')
+    # des = HoldsDesignation.objects.all().filter(user = request.user).first()
+    # if request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor":
+    #     pass
+    # elif request.session['currentDesignationSelected'] == "acadadmin" :
+    #     return HttpResponseRedirect('/programme_curriculum/admin_programmes')
+    # else:
+    #     return HttpResponseRedirect('/programme_curriculum/programmes')
+    print("new course proposal file")
     
-    uploader = request.user.extrainfo
-    design=request.session['currentDesignationSelected']
-    form=NewCourseProposalFile(initial={'uploader':des.user,'designation':design})
-    submitbutton= request.POST.get('Submit')
-    
-    if submitbutton:
-        if request.method == 'POST':
-            form = NewCourseProposalFile(request.POST)  
+    if request.method == 'POST':
+        try:
+            # Parse JSON data from request body
+            data = json.loads(request.body)
+            
+            # Create form data dictionary mapping frontend fields to model fields
+            form_data = {
+                'name': data.get('name'),
+                'code': data.get('code'),
+                'credit': data.get('credit'),
+                'version': data.get('version'),
+                'lecture_hours': data.get('lecture_hours'),
+                'tutorial_hours': data.get('tutorial_hours'),
+                'pratical_hours': data.get('pratical_hours'),
+                'project_hours': data.get('project_hours'),
+                'discussion_hours': data.get('discussion_hours'),
+                'syllabus': data.get('syllabus'),
+                'percent_quiz_1': data.get('percent_quiz_1'),
+                'percent_midsem': data.get('percent_midsem'),
+                'percent_quiz_2': data.get('percent_quiz_2'),
+                'percent_endsem': data.get('percent_endsem'),
+                'percent_project': data.get('percent_project'),
+                'percent_lab_evaluation': data.get('percent_lab_evaluation'),
+                'percent_course_attendance': data.get('percent_course_attendance'),
+                'ref_books': data.get('ref_books'),
+                'disciplines': data.get('disciplines'),
+                # 'pre_requisit_courses': data.get('pre_requisit_courses'),
+                'pre_requisits': data.get('pre_requisits'),
+                'max_seats': data.get('maxSeats'),
+                'subject': data.get('Title'),
+                'description': data.get('Description'),
+                'uploader': data.get('uploader'),
+                'designation': data.get('Designation'),
+                # 'designation': request.session.get('currentDesignationSelected', ''),
+            }
+            prerequisite_course_ids = data.get('pre_requisit_courses', [])
+            valid_courses = Course.objects.filter(id__in=prerequisite_course_ids)
+            if len(valid_courses) != len(prerequisite_course_ids):
+                invalid_ids = set(prerequisite_course_ids) - set(c.id for c in valid_courses)
+                return JsonResponse({
+                    'status': 'error',
+                    'message': f'Invalid prerequisite course IDs: {invalid_ids}'
+                }, status=400)
+            # Create and validate form
+            form = NewCourseProposalFile(form_data)
+            
             if form.is_valid():
-                new_course=form.save(commit=False)
-                new_course.is_read=False
+                new_course = form.save(commit=False)
+                new_course.is_read = False
                 new_course.save()
-                messages.success(request, "Added successful")
 
-                return HttpResponseRedirect('/programme_curriculum/view_course_proposal_forms/')
+                if prerequisite_course_ids:
+                    new_course.pre_requisit_courses.add(*valid_courses)
+                
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Course added successfully',
+                    'course_id': new_course.id,
+                    'prerequisite_courses_added': len(prerequisite_course_ids)
+                }, status=201)
+            else:
+                print(form.errors)
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Invalid form data',
+                    'errors': form.errors
+                }, status=400)
+                
+        except json.JSONDecodeError:
+            print("error")
 
-    return render(request,'programme_curriculum/faculty/course_proposal_form.html',{'form':form,'submitbutton': submitbutton})
-
-
-
-def filetracking(request,proposal_id):
-
-
-    des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor" or request.session['currentDesignationSelected'] == "Dean Academic":
-        pass
-    elif 'hod' in request.session['currentDesignationSelected'].lower():
-        pass
-    elif request.session['currentDesignationSelected'] == "acadadmin":
-        return HttpResponseRedirect('/programme_curriculum/admin_programmes')
-    uploader = request.user.extrainfo
-    design=request.session['currentDesignationSelected']
-    file = get_object_or_404(NewProposalFile, Q(id=proposal_id))
-    file_data=file.name+' '+file.code
-    form=CourseProposalTrackingFile(initial={'current_id':file.uploader,'current_design':file.designation,'file_id':int(proposal_id)})
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid JSON data'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=500)
     
-    submitbutton= request.POST.get('Submit')
-    
-    if submitbutton:
-        if request.method == 'POST':
-            form = CourseProposalTrackingFile(request.POST)
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Only POST requests are allowed'
+    }, status=405)
+
+@permission_classes([IsAuthenticated])
+@csrf_exempt  # Remove in production and use proper CSRF handling
+def filetracking(request, proposal_id):
+    if request.method == 'POST':
+        try:
+            # Parse JSON data from request body
+            data = json.loads(request.body)
+            
+            # Get the file being tracked
+            file = get_object_or_404(NewProposalFile, id=proposal_id)
+            print(file)
+            # Get user objects from IDs
+            try:
+                receiver_user = User.objects.get(username=data.get('receiverId'))
+                receiver_designation = Designation.objects.get(name=data.get('receiverDesignation'))
+                print("receiver_user",receiver_user)
+                print("receiver des",receiver_designation)
+                print(data.get('discipline'))
+                discipline = Discipline.objects.get(id=data.get('discipline'))  # Assuming single discipline
+                print(discipline)
+            except (User.DoesNotExist, Designation.DoesNotExist, Discipline.DoesNotExist) as e:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': f'Invalid reference: {str(e)}'
+                }, status=400)
+            
+            # Create tracking record
+            tracking_data = {
+                'file_id': proposal_id,
+                'current_id': data.get('uploader'),
+                'current_design': data.get('designation'),
+                'receive_id': receiver_user.id,
+                'receive_design': receiver_designation.id,
+                'disciplines': discipline.id,
+                'remarks': data.get('remarks', ''),
+                # 'is_submitted': True
+            }
+            print(tracking_data)
+            form = CourseProposalTrackingFile(tracking_data)
+            
             if form.is_valid():
                 try:
-                    form.is_read=False
-                    form.save()
-                    receiver=request.POST.get('receive_id')
-                    receiver_id = User.objects.get(id=receiver)
-                    receiver_design=request.POST.get('receive_design')
-                    receiver_des= Designation.objects.get(id=receiver_design)
-                    uploader=request.POST.get('current_id')
-                    uploader_design=request.POST.get('current_design')
+                    tracking = form.save(commit=False)
+                    tracking.save()
                     
-                    data='Received as '+ str(receiver_id) +'-'+str(receiver_des) +' Course Proposal Form "'+file_data +'"  By   '+str(uploader)+' - '+str(uploader_design)
-                    # data=file.subject
-                    messages.success(request, "Submitted successful")
-                    prog_and_curr_notif(request.user,receiver_id,data)
-                    return HttpResponseRedirect('/programme_curriculum/outward_files/')
-                except IntegrityError as e:
-                # Handle the IntegrityError here, for example:
-                    form.add_error(None, 'Proposal_ tracking with this File id, Current id, Current design and Disciplines already exists.')
-                
+                    # Prepare notification data
+                    file_data = f"{file.name} {file.code}"
+                    notification_data = (
+                        f"Received as {receiver_user} - {receiver_designation} "
+                        f"Course Proposal Form '{file_data}' "
+                        f"By {data.get('uploader')} - {data.get('designation')}"
+                    )
+                    
+                    return JsonResponse({
+                        'status': 'success',
+                        'message': 'File tracking submitted successfully',
+                        'notification': notification_data
+                    }, status=201)
+                    
+                except IntegrityError:
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': 'This file tracking record already exists'
+                    }, status=400)
+            else:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Invalid form data',
+                    'errors': form.errors
+                }, status=400)
+            print("till here is okay")       
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid JSON data'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=500)
+    
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Only POST requests are allowed'
+    }, status=405)
 
 
-    return render(request,'programme_curriculum/faculty/filetracking.html',{'form':form,'submitbutton': submitbutton,'file_info':file_data,})
-
-
-
+@permission_classes([IsAuthenticated])
+@csrf_exempt
 def inward_files(request):
-    user_details = ExtraInfo.objects.get(user = request.user)
-    des = HoldsDesignation.objects.all().filter(user = request.user).last()
-    data=''
-    
-    if request.session['currentDesignationSelected']  == "Associate Professor" or request.session['currentDesignationSelected']  == "Professor" or request.session['currentDesignationSelected']  == "Assistant Professor" :
-        data=f'As a "{request.session["currentDesignationSelected"]}" you cannot receive any proposal requests'
-        pass
-    elif 'hod' in request.session['currentDesignationSelected'].lower():
-        pass
-    elif request.session['currentDesignationSelected'] == "Dean Academic":
-        pass
-    elif request.session['currentDesignationSelected']  == "acadadmin" :
-        return HttpResponseRedirect('/programme_curriculum/admin_programmes/')
-    else:
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
-    
-    id=request.user
-    user_designation=HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
-    notifs = request.user.notifications.all()
-    designation = Designation.objects.get(name=request.session['currentDesignationSelected'])
-    des_id = designation.id
-    
-    courseProposal = Proposal_Tracking.objects.filter(receive_design = des_id,receive_id= id)
 
-    
-    return render(request, 'programme_curriculum/faculty/inward_course_forms.html',{'courseProposals': courseProposal,'design':request.session['currentDesignationSelected'],'data':data,'notifications': notifs,})
+    try:
 
+        username = request.GET.get('username')
+        designation_name = request.GET.get('des')
+        print("username ",username)
+        print("designation ",designation_name)
+        if not username or not designation_name:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Username and designation are required'
+            }, status=400)
+        
+        # Get user and designation objects
+        user = User.objects.get(username=username)
+        print('user',user)
+        designation = Designation.objects.get(name=designation_name)
+        print('des',designation)
+        # Get inward files
+        course_proposals = Proposal_Tracking.objects.filter(
+            receive_design=designation.id,
+            receive_id=user.id
+        ).values(
+            'id',
+            'file_id',
+            'current_id',
+            'current_design',
+            'receive_id__username',
+            'receive_design__name',
+            'remarks',
+            'receive_date',
+            'forward_date',
+            'sender_archive',
+            'receiver_archive',
+            'disciplines'
+        )
+        
+        return JsonResponse({
+            'status': 'success',
+            'courseProposals': list(course_proposals),
+            'designation': designation_name
+        })
+        
+    except User.DoesNotExist:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'User not found'
+        }, status=404)
+    except Designation.DoesNotExist:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Designation not found'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)
 
-
+@permission_classes([IsAuthenticated])
+@csrf_exempt
 def outward_files(request):
-    user_details = ExtraInfo.objects.get(user = request.user)
-    des = HoldsDesignation.objects.all().filter(user = request.user).last()
-    data=''
-    if request.session['currentDesignationSelected'] == "Dean Academic" :
-        data=f'As a "{request.session["currentDesignationSelected"]}" you cannot have any out going files'
-        pass
-    elif request.session['currentDesignationSelected']  == "Associate Professor" or request.session['currentDesignationSelected']  == "Professor" or request.session['currentDesignationSelected']  == "Assistant Professor" :
-        pass
-    elif 'hod' in request.session['currentDesignationSelected'].lower():
-        pass
-    elif request.session['currentDesignationSelected']  == "student" :
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
-    elif request.session['currentDesignationSelected']== "acadadmin":
-        return render(request, 'programme_curriculum/admin_programmes/')
-    
-    id=request.user
-    notifs = request.user.notifications.all()
-    user_designation=HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
-    design=request.session['currentDesignationSelected']
-    
-    
-    designation = Designation.objects.get(name=request.session['currentDesignationSelected'])
-    des_id = designation.id
-    
-    courseProposal = Proposal_Tracking.objects.filter(current_design = design,current_id= des.user)
+    try:
+        # Get user details
+        # user_details = ExtraInfo.objects.get(user=request.user)
+        
+        # Get current designation
+        current_designation = request.GET.get('des', '')
+        current_username = request.GET.get('username', '') 
+       
+        if not current_designation:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Designation is required'
+            }, status=400)
 
-    
-    return render(request, 'programme_curriculum/faculty/outward_course_forms.html',{'courseProposals': courseProposal,'design':request.session['currentDesignationSelected'],'data':data,'notifications': notifs,})
+        # Check permissions based on designation
+        if current_designation.lower() == "dean academic":
+            return JsonResponse({
+                'status': 'success',
+                'message': f'As a "{current_designation}" you cannot have any outgoing files',
+                'courseProposals': []
+            })
+        
+        try:
+            designation = Designation.objects.get(name=current_designation)
+        except Designation.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid designation'
+            }, status=400)
 
+        # Get outward files
+        course_proposals = Proposal_Tracking.objects.filter(
+            current_design=current_designation,
+            current_id=current_username # Changed from des.user to username
+        ).values(
+            'id',
+            'file_id',
+            'current_id',
+            'current_design',
+            'receive_id__username',
+            'receive_design__name',
+            'remarks',
+            'receive_date',
+            'forward_date',
+            'sender_archive'
+        )
+
+        return JsonResponse({
+            'status': 'success',
+            'courseProposals': list(course_proposals),
+            'designation': current_designation
+        })
+
+    except ExtraInfo.DoesNotExist:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'User details not found'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)
 def update_course_proposal_file(request, course_id):
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
     if request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor":
@@ -1865,160 +2155,501 @@ def update_course_proposal_file(request, course_id):
 
 
 
-def forward_course_forms(request,ProposalId):
-    de= ProposalId
-    des = HoldsDesignation.objects.all().filter(user = request.user).first()
+# def forward_course_forms(request,ProposalId):
+#     de= ProposalId
+#     des = HoldsDesignation.objects.all().filter(user = request.user).first()
 
-    courseform = Proposal_Tracking.objects.all().filter(id=ProposalId)
+#     courseform = Proposal_Tracking.objects.all().filter(id=ProposalId)
     
-    uploader = request.user.extrainfo
-    design=request.session['currentDesignationSelected']
-    file = get_object_or_404(Proposal_Tracking, Q(id=ProposalId))
-    file_id = int(file.file_id)
-    file2 = get_object_or_404(NewProposalFile, Q(id=file_id))
-    file_data=file2.code + ' ' + file2.name
-    Proposal_D = file.id
+#     uploader = request.user.extrainfo
+#     design=request.session['currentDesignationSelected']
+#     file = get_object_or_404(Proposal_Tracking, Q(id=ProposalId))
+#     file_id = int(file.file_id)
+#     file2 = get_object_or_404(NewProposalFile, Q(id=file_id))
+#     file_data=file2.code + ' ' + file2.name
+#     Proposal_D = file.id
             
-    if request.session['currentDesignationSelected'] == "Dean Academic" :
-        file = get_object_or_404(Proposal_Tracking, Q(id=ProposalId))
-        file_id = int(file.file_id)
-        file2 = get_object_or_404(NewProposalFile, Q(id=file_id))
-        course =Course.objects.all().filter(code=file2.code).last()
-        version_error=''
-        if(course):
-            previous = Course.objects.all().filter(code=course.code).order_by('version').last()
-            course.version=previous.version
-            form = CourseForm(instance=file2,initial={'disciplines':file.disciplines})
-            submitbutton= request.POST.get('Submit')
-            if submitbutton:
-                if request.method == 'POST':
-                    form = CourseForm(request.POST)  
-                    if form.is_valid() :
+#     if request.session['currentDesignationSelected'] == "Dean Academic" :
+#         file = get_object_or_404(Proposal_Tracking, Q(id=ProposalId))
+#         file_id = int(file.file_id)
+#         file2 = get_object_or_404(NewProposalFile, Q(id=file_id))
+#         course =Course.objects.all().filter(code=file2.code).last()
+#         version_error=''
+#         if(course):
+#             previous = Course.objects.all().filter(code=course.code).order_by('version').last()
+#             course.version=previous.version
+#             form = CourseForm(instance=file2,initial={'disciplines':file.disciplines})
+#             submitbutton= request.POST.get('Submit')
+#             if submitbutton:
+#                 if request.method == 'POST':
+#                     form = CourseForm(request.POST)  
+#                     if form.is_valid() :
                         
-                        new_course = form.save(commit=False)
-                        if(new_course.version>previous.version):
-                            previous.latest_version=False
-                            previous.save()
-                            file.is_added=True
-                            file.is_submitted=True
-                            file.save()
-                            form.latest_version=True
-                            form.save()
-                            course = Course.objects.last()
+#                         new_course = form.save(commit=False)
+#                         if(new_course.version>previous.version):
+#                             previous.latest_version=False
+#                             previous.save()
+#                             file.is_added=True
+#                             file.is_submitted=True
+#                             file.save()
+#                             form.latest_version=True
+#                             form.save()
+#                             course = Course.objects.last()
                         
-                            receiver=file2.uploader
-                            receiver_id = User.objects.get(username=receiver)
-                            data=f'The Course " {file2.code} -{file2.name}" Updated Successfully'
-                            # data=file.subject
-                            prog_and_curr_notif(request.user,receiver_id,data)
-                            messages.success(request, "Updated "+ file2.code+'-'+file2.name +" successful")
-                            return HttpResponseRedirect("/programme_curriculum/course/" + str(course.id) + "/")
-                        else:
-                            version_error+=f'The version should be greater than {previous.version}'
+#                             receiver=file2.uploader
+#                             receiver_id = User.objects.get(username=receiver)
+#                             data=f'The Course " {file2.code} -{file2.name}" Updated Successfully'
+#                             # data=file.subject
+#                             prog_and_curr_notif(request.user,receiver_id,data)
+#                             messages.success(request, "Updated "+ file2.code+'-'+file2.name +" successful")
+#                             return HttpResponseRedirect("/programme_curriculum/course/" + str(course.id) + "/")
+#                         else:
+#                             version_error+=f'The version should be greater than {previous.version}'
                     
-            return render(request,'programme_curriculum/faculty/dean_view_a_course_proposal.html',{'course':course, 'form':form, 'submitbutton': submitbutton,'version_error':version_error,'id':Proposal_D})
-        else:
-            form = CourseForm(instance=file2,initial={'disciplines':file.disciplines})
-            # course1 =Course.objects.filter(code=file2.code,name=file2.name,credit=file2.credit,lecture_hours=file2.lecture_hours,tutorial_hours=file2.tutorial_hours,pratical_hours=file2.pratical_hours,discussion_hours=file2.discussion_hours,project_hours=file2.project_hours,pre_requisits=file2.pre_requisits,syllabus=file2.syllabus,percent_quiz_1=file2.percent_quiz_1,percent_midsem=file2.percent_midsem,percent_quiz_2=file2.percent_quiz_2,percent_project=file2.percent_project,percent_endsem=file2.percent_endsem,percent_lab_evaluation=file2.percent_lab_evaluation,percent_course_attendance=file2.percent_course_attendance,ref_books=file2.ref_books)
-            submitbutton= request.POST.get('Submit')
+#             return render(request,'programme_curriculum/faculty/dean_view_a_course_proposal.html',{'course':course, 'form':form, 'submitbutton': submitbutton,'version_error':version_error,'id':Proposal_D})
+#         else:
+#             form = CourseForm(instance=file2,initial={'disciplines':file.disciplines})
+#             # course1 =Course.objects.filter(code=file2.code,name=file2.name,credit=file2.credit,lecture_hours=file2.lecture_hours,tutorial_hours=file2.tutorial_hours,pratical_hours=file2.pratical_hours,discussion_hours=file2.discussion_hours,project_hours=file2.project_hours,pre_requisits=file2.pre_requisits,syllabus=file2.syllabus,percent_quiz_1=file2.percent_quiz_1,percent_midsem=file2.percent_midsem,percent_quiz_2=file2.percent_quiz_2,percent_project=file2.percent_project,percent_endsem=file2.percent_endsem,percent_lab_evaluation=file2.percent_lab_evaluation,percent_course_attendance=file2.percent_course_attendance,ref_books=file2.ref_books)
+#             submitbutton= request.POST.get('Submit')
             
-            if submitbutton:
-                if request.method == 'POST':
-                    form = CourseForm(request.POST)
+#             if submitbutton:
+#                 if request.method == 'POST':
+#                     form = CourseForm(request.POST)
                     
-                    if form.is_valid():
-                        file.is_added=True
-                        file.is_submitted=True
-                        file.save()
-                        form.save()
-                        receiver=file2.uploader
-                        receiver_id = User.objects.get(username=receiver)
-                        data='The Course "'+ file2.code+ ' - '+ file2.name + '" Added Successfully'
-                        # data=file.subject
-                        prog_and_curr_notif(request.user,receiver_id,data)
-                        course =Course.objects.all().filter(code=file2.code).last()
-                        messages.success(request, "Added "+ file2.name +" successful")
-                        return HttpResponseRedirect("/programme_curriculum/course/" + str(course.id) + "/")
+#                     if form.is_valid():
+#                         file.is_added=True
+#                         file.is_submitted=True
+#                         file.save()
+#                         form.save()
+#                         receiver=file2.uploader
+#                         receiver_id = User.objects.get(username=receiver)
+#                         data='The Course "'+ file2.code+ ' - '+ file2.name + '" Added Successfully'
+#                         # data=file.subject
+#                         prog_and_curr_notif(request.user,receiver_id,data)
+#                         course =Course.objects.all().filter(code=file2.code).last()
+#                         messages.success(request, "Added "+ file2.name +" successful")
+#                         return HttpResponseRedirect("/programme_curriculum/course/" + str(course.id) + "/")
                             
                            
                         
-            return render(request, 'programme_curriculum/faculty/dean_view_a_course_proposal.html', {'course': file2 ,'form':form,'submitbutton': submitbutton,'id':Proposal_D})
+#             return render(request, 'programme_curriculum/faculty/dean_view_a_course_proposal.html', {'course': file2 ,'form':form,'submitbutton': submitbutton,'id':Proposal_D})
     
-    elif 'hod' in request.session['currentDesignationSelected'].lower():
+#     elif 'hod' in request.session['currentDesignationSelected'].lower():
         
-        form=CourseProposalTrackingFile(initial={'current_id':des.user,'current_design':request.session['currentDesignationSelected'],'file_id':file.file_id,'disciplines':file.disciplines})
+#         form=CourseProposalTrackingFile(initial={'current_id':des.user,'current_design':request.session['currentDesignationSelected'],'file_id':file.file_id,'disciplines':file.disciplines})
         
-        # The above code is trying to retrieve the value of the 'Submit' key from the POST request
-        # data. It is using the `get` method on the `request.POST` dictionary to access the value
-        # associated with the 'Submit' key.
-        submitbutton= request.POST.get('Submit')
+#         # The above code is trying to retrieve the value of the 'Submit' key from the POST request
+#         # data. It is using the `get` method on the `request.POST` dictionary to access the value
+#         # associated with the 'Submit' key.
+#         submitbutton= request.POST.get('Submit')
         
-        if submitbutton:
-            if request.method == 'POST':
-                form = CourseProposalTrackingFile(request.POST)
-                if form.is_valid():
-                    try:
-                        file.is_submitted=True
-                        file.save()
-                        form.is_read=False
-                        form.save()
+#         if submitbutton:
+#             if request.method == 'POST':
+#                 form = CourseProposalTrackingFile(request.POST)
+#                 if form.is_valid():
+#                     try:
+#                         file.is_submitted=True
+#                         file.save()
+#                         form.is_read=False
+#                         form.save()
                         
-                        receiver=request.POST.get('receive_id')
+#                         receiver=request.POST.get('receive_id')
                         
-                        uploader=request.POST.get('current_id')
-                        uploader_design=request.POST.get('current_design')
+#                         uploader=request.POST.get('current_id')
+#                         uploader_design=request.POST.get('current_design')
                         
                         
-                        receiver_design=request.POST.get('receive_design')
-                        receiver_des= Designation.objects.get(id=receiver_design)
-                        receiver_id = User.objects.get(id=receiver)
-                        messages.success(request, "Added successful")
-                        data='Received as '+ str(receiver_id) +'-'+str(receiver_des) +' Course Proposal of Course '+file_data +' By   '+str(uploader)+' - '+str(uploader_design)
+#                         receiver_design=request.POST.get('receive_design')
+#                         receiver_des= Designation.objects.get(id=receiver_design)
+#                         receiver_id = User.objects.get(id=receiver)
+#                         messages.success(request, "Added successful")
+#                         data='Received as '+ str(receiver_id) +'-'+str(receiver_des) +' Course Proposal of Course '+file_data +' By   '+str(uploader)+' - '+str(uploader_design)
 
-                        prog_and_curr_notif(request.user,receiver_id,data)
-                        return HttpResponseRedirect('/programme_curriculum/outward_files/')
-                    except IntegrityError as e:
-                        form.add_error(None, 'Proposal_ tracking with this File id, Current id, Current design and Disciplines already exists.')
-    elif request.session['currentDesignationSelected'] == "acadadmin" :
-        return HttpResponseRedirect('/programme_curriculum/admin_programmes')
-    else:
-        return HttpResponseRedirect('/programme_curriculum/programmes')
+#                         prog_and_curr_notif(request.user,receiver_id,data)
+#                         return HttpResponseRedirect('/programme_curriculum/outward_files/')
+#                     except IntegrityError as e:
+#                         form.add_error(None, 'Proposal_ tracking with this File id, Current id, Current design and Disciplines already exists.')
+#     elif request.session['currentDesignationSelected'] == "acadadmin" :
+#         return HttpResponseRedirect('/programme_curriculum/admin_programmes')
+#     else:
+#         return HttpResponseRedirect('/programme_curriculum/programmes')
         
         
         
-    return render(request,'programme_curriculum/faculty/forward.html',{'form':form,'receive_date':file.receive_date,'proposal':file2,'submitbutton': submitbutton,'id':Proposal_D})
+#     return render(request,'programme_curriculum/faculty/forward.html',{'form':form,'receive_date':file.receive_date,'proposal':file2,'submitbutton': submitbutton,'id':Proposal_D})
 
+@csrf_exempt
+@permission_classes([IsAuthenticated])
+def forward_course_forms(request, ProposalId):
+    try:
+        # Parse JSON data from request body
+        data = json.loads(request.body)
+        print(data)
+        username = request.GET.get('username')
+        designation = request.GET.get('des')
+        print(designation)
+        if not username or not designation:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Username and designation are required'
+            }, status=400)
+        
+        # Get the tracking record
+        file = get_object_or_404(Proposal_Tracking, id=ProposalId)
+        file_id = int(file.file_id)
+        file2 = get_object_or_404(NewProposalFile, id=file_id)
+        
+        # Handle different designation cases
+        if designation == "Dean Academic":
+            print("gaurav 1")
+            course = Course.objects.filter(code=file2.code).last()
+            print(course)
+            previous = None
+            version_error = None
+            
+            if course:
+                previous = Course.objects.filter(code=course.code).order_by('version').last()
+                if data.get('version') <= previous.version:
+                    version_error = f'The version should be greater than {previous.version}'
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': version_error
+                    }, status=400)
+            
+            # Update course and tracking
+            print("gaurav 2")
+            course_data = {
+                'code': data.get('code'),
+                'name': data.get('name'),
+                'version': data.get('version'),
+                'credit': data.get('credit'),
+                'lecture_hours': data.get('lecture_hours'),
+                'tutorial_hours': data.get('tutorial_hours'),
+                'pratical_hours': data.get('pratical_hours'),
+                'discussion_hours': data.get('discussion_hours'),
+                'project_hours': data.get('project_hours'),
+                'pre_requisits': data.get('pre_requisits'),
+                'pre_requisit_courses': data.get('pre_requisit_courses'),
+                'syllabus': data.get('syllabus'),
+                'percent_quiz_1': data.get('percent_quiz_1'),
+                'percent_midsem': data.get('percent_midsem'),
+                'percent_quiz_2': data.get('percent_quiz_2'),
+                'percent_endsem': data.get('percent_endsem'),
+                'percent_project': data.get('percent_project'),
+                'percent_lab_evaluation': data.get('percent_lab_evaluation'),
+                'percent_course_attendance': data.get('percent_course_attendance'),
+                'ref_books': data.get('ref_books'),
+                'working_course': data.get('working_course'),
+                # 'disciplines': data.get('disciplines'),
+                'latest_version': True,
+                'max_seats': data.get('maxSeats')
+            }
+            prerequisite_course_ids = data.get('pre_requisit_courses', [])
+            discipline_ids = data.get('disciplines',[])
+            # if discipline_ids:
+            #     valid_disciplines = Discipline.objects.filter(id__in=discipline_ids)
+            #     if len(valid_disciplines) != len(discipline_ids):
+            #         invalid_ids = set(discipline_ids) - set(d.id for d in valid_disciplines)
+            #         return JsonResponse({
+            #             'status': 'error',
+            #             'message': f'Invalid discipline IDs: {invalid_ids}'
+            #         }, status=400)
 
+            valid_courses = Course.objects.filter(id__in=prerequisite_course_ids)
+            if len(valid_courses) != len(prerequisite_course_ids):
+                invalid_ids = set(prerequisite_course_ids) - set(c.id for c in valid_courses)
+                return JsonResponse({
+                    'status': 'error',
+                    'message': f'Invalid prerequisite course IDs: {invalid_ids}'
+                }, status=400)
+            
+            form = CourseForm(course_data)
+            
+            if form.is_valid():
+                
+                new_course = form.save(commit=False)
+                # new_course.is_read = False
+                new_course.save()
+                file.is_added = True
+                file.is_submitted = True
+                file.save()
+
+                if prerequisite_course_ids:
+                    new_course.pre_requisit_courses.add(*valid_courses)
+                if discipline_ids:
+                    new_course.disciplines.add(*discipline_ids)
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Course added successfully',
+                    'course_id': new_course.id,
+                    'prerequisite_courses_added': len(prerequisite_course_ids)
+                }, status=201)
+            else:
+                print(form.errors)
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Invalid form data',
+                    'errors': form.errors
+                }, status=400)
+            
+        elif 'hod' in designation.lower():
+            try:
+                receiver_user = User.objects.get(username=data.get('receiverId'))
+                receiver_designation = Designation.objects.get(name=data.get('receiverDesignation'))
+                print("receiver_user ff",receiver_user)
+                print("receiver des ff",receiver_designation)
+                print(data.get('discipline'))
+                discipline = Discipline.objects.get(id=data.get('discipline'))  # Assuming single discipline
+                print(discipline)
+            except (User.DoesNotExist, Designation.DoesNotExist, Discipline.DoesNotExist) as e:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': f'Invalid reference: {str(e)}'
+                }, status=400)
+            
+            # Create tracking record
+            tracking_data = {
+                'file_id': data.get('fileId'),
+                'current_id': data.get('uploader'),
+                'current_design': data.get('designation'),
+                'receive_id': receiver_user.id,
+                'receive_design': receiver_designation.id,
+                'disciplines': discipline.id,
+                'remarks': data.get('remarks', ''),
+                # 'is_submitted': True
+            }
+            print("traking data ff",tracking_data)
+            # Validate form data
+            print("gaurav 1")
+            required_fields = ['receiverId', 'receiverDesignation']
+            if not all(field in data for field in required_fields):
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Missing required fields'
+                }, status=400)
+            
+            # Update tracking
+            file.is_submitted = True
+            file.save()
+            form = CourseProposalTrackingFile(tracking_data)
+            
+            if form.is_valid():
+                try:
+                    tracking = form.save(commit=False)
+                    tracking.save()
+                    
+                    # Prepare notification data
+                    # file_data = f"{file.name} {file.code}"
+                    # notification_data = (
+                    #     f"Received as {receiver_user} - {receiver_designation} "
+                    #     f"Course Proposal Form '{file_data}' "
+                    #     f"By {data.get('uploader')} - {data.get('designation')}"
+                    # )
+                    
+                except IntegrityError:
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': 'This file tracking record already exists'
+                    }, status=400)
+            else:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Invalid form data',
+                    'errors': form.errors
+                }, status=400)
+            
+            # Create notification
+            # notification_data = {
+            #     'sender': username,
+            #     'receiver': data['receiverId'],
+            #     'message': f'Received as {data["receiverId"]}-{data["receiverDesignation"]} Course Proposal of Course {file2.code} {file2.name} By {username} - {designation}',
+            #     'course_id': file2.id
+            # }
+            
+            return JsonResponse({
+                    'status': 'success',
+                    'message': 'File tracking submitted successfully',
+                    # 'notification': notification_data
+                }, status=201)
+                
+            
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Unauthorized designation'
+            }, status=403)
+            
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Invalid JSON data'
+        }, status=400)
+    except Exception as e:
+        print(str(e))
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)
+    
+
+@csrf_exempt
+@permission_classes([IsAuthenticated])
+def forward_course_forms_II(request):
+    try:
+        id=request.GET.get('id')
+        if not id:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'ProposalId is required'
+            }, status=400)
+        # Get the tracking record
+        file = get_object_or_404(Proposal_Tracking, id=id)
+        file_id = int(file.file_id)
+        file2 = get_object_or_404(NewProposalFile, id=file_id)
+
+        response_data = {
+            'proposal': {
+                'id': file2.id,
+                'name': file2.name,
+                'code': file2.code,
+                'credit': file2.credit,
+                'uploader': file2.uploader,
+                'designation': file2.designation,
+                'lecture_hours': file2.lecture_hours,
+                'tutorial_hours': file2.tutorial_hours,
+                'pratical_hours': file2.pratical_hours,
+                'project_hours': file2.project_hours,
+                'discussion_hours': file2.discussion_hours,
+                'syllabus': file2.syllabus,
+                'percent_quiz_1': file2.percent_quiz_1,
+                'percent_midsem': file2.percent_midsem,
+                'percent_quiz_2': file2.percent_quiz_2,
+                'percent_endsem': file2.percent_endsem,
+                'percent_project': file2.percent_project,
+                'percent_lab_evaluation': file2.percent_lab_evaluation,
+                'percent_course_attendance': file2.percent_course_attendance,
+                'ref_books': file2.ref_books,
+                'pre_requisits': file2.pre_requisits,
+                'max_seats': file2.max_seats,
+                'pre_requisits_courses': list(file2.pre_requisit_courses.values('id', 'name','code','version')),
+                'discipline':[file.disciplines.id],
+            },
+            # Add other fields as needed
+        }
+        return JsonResponse({
+            'status': 'success',
+            'data': response_data
+        })
+    except Exception as e:
+        print(str(e))
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)
+   
+
+@csrf_exempt
+@permission_classes([IsAuthenticated])
 def view_inward_files(request,ProposalId):
-    
-    if request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor" or request.session['currentDesignationSelected'] == "Dean Academic":
-        pass
-    elif 'hod' in request.session['currentDesignationSelected'].lower():
-        pass
-    elif request.session['currentDesignationSelected'] == "acadadmin":
-        return HttpResponseRedirect('/programme_curriculum/admin_programmes/')
-    else:
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
-    
-    des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    uploader = request.user.extrainfo
-    design=request.session['currentDesignationSelected']
-    file = get_object_or_404(Proposal_Tracking, Q(id=ProposalId))
-    file_id = int(file.file_id)
-    file2 = get_object_or_404(NewProposalFile, Q(id=file_id))
-    file_data=''
-    file_data2=''
-    
-    
-    if(file.is_rejected):
-        file_data='"'+str(file2.name) + '"'+' Course Rejected by ' + str(file.receive_id) + ' - ' +str(file.receive_design)
-    if(file.is_added and not file.is_rejected):
-        file_data2='"'+str(file2.code)+' - '+str(file2.name) +'"  Course Added Succesfully'
-    
-    courseProposal = Proposal_Tracking.objects.filter(file_id=file.file_id,disciplines=file.disciplines)
-    form=CourseProposalTrackingFile(initial={'current_id':des.user,'current_design':request.session['currentDesignationSelected'],'file_id':file.file_id,'disciplines':file.disciplines})
+    try:
+        # Get parameters from frontend
+        # proposal_id = request.GET.get('proposalId')
+        username = request.GET.get('username')
+        designation = request.GET.get('des')
+        
+        if not all([ProposalId, username, designation]):
+            return JsonResponse({
+                'status': 'error',
+                'message': 'proposalId, username and designation are required'
+            }, status=400)
+        
+        # Get the tracking record
+        file = get_object_or_404(Proposal_Tracking, id=ProposalId)
+        file_id = int(file.file_id)
+        proposal_file = get_object_or_404(NewProposalFile, id=file_id)
+        
+        # Get user details
+        # user = request.user
+        # user_details = ExtraInfo.objects.get(user=username)
+        # user_designation = HoldsDesignation.objects.filter(user=username).first()
+        
+        # Prepare response data
+        response_data = {
+            'proposal': {
+                'id': proposal_file.id,
+                'name': proposal_file.name,
+                'code': proposal_file.code,
+                'credit': proposal_file.credit,
+                'uploader': proposal_file.uploader,
+                'designation': proposal_file.designation,
+                'lecture_hours': proposal_file.lecture_hours,
+                'tutorial_hours': proposal_file.tutorial_hours,
+                'pratical_hours': proposal_file.pratical_hours,
+                'project_hours': proposal_file.project_hours,
+                'discussion_hours': proposal_file.discussion_hours,
+                'syllabus': proposal_file.syllabus,
+                'percent_quiz_1': proposal_file.percent_quiz_1,
+                'percent_midsem': proposal_file.percent_midsem,
+                'percent_quiz_2': proposal_file.percent_quiz_2,
+                'percent_endsem': proposal_file.percent_endsem,
+                'percent_project': proposal_file.percent_project,
+                'percent_lab_evaluation': proposal_file.percent_lab_evaluation,
+                'percent_course_attendance': proposal_file.percent_course_attendance,
+                'ref_books': proposal_file.ref_books,
+                'pre_requisits': proposal_file.pre_requisits,
+                'max_seats': proposal_file.max_seats,
+                'pre_requisit_courses': list(proposal_file.pre_requisit_courses.values('id', 'name','code','version')),
+                'subject': proposal_file.subject,
+                'description': proposal_file.description,
 
-    return render(request,'programme_curriculum/faculty/view_file.html',{'form':form,'receive_date':file.receive_date,'proposal':file2,'trackings':courseProposal,'file_info':file_data,'file_sucess':file_data2})
+            },
+            'tracking': {
+                'id': file.id,
+                'file_id': file.file_id,
+                'receive_date': file.receive_date,
+                'forward_date': file.forward_date,
+                'is_rejected': file.is_rejected,
+                'is_added': file.is_added,
+                'receive_id': file.receive_id.username,
+                'receive_design': file.receive_design.name,
+                'current_id': file.current_id,
+                'current_design': file.current_design,
+                'remarks': file.remarks,
+                'disciplines_name': file.disciplines.name,
+                'disciplines_acronym': file.disciplines.acronym,
+            },
+            'trackings': list(Proposal_Tracking.objects.filter(
+                file_id=file.file_id,
+                disciplines=file.disciplines
+            ).values(
+                'id',
+                'current_id',
+                'current_design',
+                'receive_date',
+                'forward_date',
+                'remarks',
+                'is_rejected',
+                'is_added'
+            )),
+            'status_info': {
+                'rejected_message': f'"{proposal_file.name}" Course Rejected by {file.receive_id} - {file.receive_design}' 
+                                    if file.is_rejected else None,
+                'added_message': f'"{proposal_file.code} - {proposal_file.name}" Course Added Successfully' 
+                                if (file.is_added and not file.is_rejected) else None
+            }
+        }
+        
+        return JsonResponse({
+            'status': 'success',
+            'data': response_data
+        })
+        
+    except Exception as e:
+        print(str(e))
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)
 
 def reject_form(request,ProposalId):
     
@@ -2048,86 +2679,145 @@ def reject_form(request,ProposalId):
         messages.error(request, "course already forwarded or added can't be rejected")
     return HttpResponseRedirect('/programme_curriculum/inward_files/')
 
-
+    
+@csrf_exempt
+@permission_classes([IsAuthenticated])
 def tracking_unarchive(request,ProposalId):
-    if request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor" or request.session['currentDesignationSelected'] == "Dean Academic":
-        pass
-    elif 'hod' in request.session['currentDesignationSelected'].lower():
-        pass
-    elif request.session['currentDesignationSelected'] == "acadadmin":
-        return HttpResponseRedirect('/programme_curriculum/admin_programmes/')
-    else:
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
-    
-    track=get_object_or_404(Proposal_Tracking, Q(id=ProposalId))
-    file = get_object_or_404(NewProposalFile,Q(id = track.file_id))
-    print(request.user)
-    if str(track.current_design)==str(request.session['currentDesignationSelected']) and str(track.current_id)==str(request.user):
-        track.sender_archive=False
+    try:
+        # Parse JSON data from request body
+        # data = json.loads(request.body)
+        # proposal_id = request.GET.get('proposalId')
+        username = request.GET.get('username',' ')
+        designation = request.GET.get('des',' ')
+        
+        if not all([username, designation]):
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Missing required fields'
+            }, status=400)
+        
+        # Get the tracking record
+        track = get_object_or_404(Proposal_Tracking, id=ProposalId)
+        
+        # Check if current user is the sender or receiver
+        if (str(track.current_design) == designation and 
+            str(track.current_id) == username):
+            # Current user is the sender
+            track.sender_archive = False
+            action = 'sender_archive'
+        else:
+            # Current user is the receiver
+            track.receiver_archive = False
+            action = 'receiver_archive'
+        
         track.save()
-        messages.success(request, "File UnArchived")
-        return HttpResponseRedirect('/programme_curriculum/outward_files/')
-    else : 
-        track.receiver_archive=False
-        track.save()
-        messages.success(request, "File UnArchived")
-        return HttpResponseRedirect('/programme_curriculum/inward_files/')
-    
-    
-    
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': 'File Unarchived successfully',
+            'action': action,
+            'proposal_id': ProposalId
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Invalid JSON data'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)
+
+@csrf_exempt
+@permission_classes([IsAuthenticated])
 def tracking_archive(request,ProposalId):
-    
-    if request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor" or request.session['currentDesignationSelected'] == "Dean Academic":
-        pass
-    elif 'hod' in request.session['currentDesignationSelected'].lower():
-        pass
-    elif request.session['currentDesignationSelected'] == "acadadmin":
-        return HttpResponseRedirect('/programme_curriculum/admin_programmes/')
-    else:
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
-    
-    track=get_object_or_404(Proposal_Tracking, Q(id=ProposalId))
-    if str(track.current_design)==str(request.session['currentDesignationSelected']) and str(track.current_id)==str(request.user):
-        track.sender_archive=True
+    try:
+        # Parse JSON data from request body
+        # data = json.loads(request.body)
+        # proposal_id = request.GET.get('proposalId')
+        username = request.GET.get('username',' ')
+        designation = request.GET.get('des',' ')
+        
+        if not all([username, designation]):
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Missing required fields'
+            }, status=400)
+        
+        # Get the tracking record
+        track = get_object_or_404(Proposal_Tracking, id=ProposalId)
+        
+        # Check if current user is the sender or receiver
+        if (str(track.current_design) == designation and 
+            str(track.current_id) == username):
+            # Current user is the sender
+            track.sender_archive = True
+            action = 'sender_archive'
+        else:
+            # Current user is the receiver
+            track.receiver_archive = True
+            action = 'receiver_archive'
+        
         track.save()
-        messages.success(request, "File Archived")
-        return HttpResponseRedirect('/programme_curriculum/outward_files/')
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': 'File archived successfully',
+            'action': action,
+            'proposal_id': ProposalId
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Invalid JSON data'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)
 
-    else:
-        track.receiver_archive=True
-        track.save()
-        messages.success(request, "File Archived")
-        return HttpResponseRedirect('/programme_curriculum/inward_files/')
-    
+@csrf_exempt  # Use this decorator if you're not using CSRF tokens in your API calls
+@permission_classes([IsAuthenticated])
 def file_archive(request,FileId):
-    if request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor" or request.session['currentDesignationSelected'] == "Dean Academic":
-        pass
-    elif 'hod' in request.session['currentDesignationSelected'].lower():
-        pass
-    elif request.session['currentDesignationSelected'] == "acadadmin":
-        return HttpResponseRedirect('/programme_curriculum/admin_programmes/')
-    else:
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
-    
-    file = get_object_or_404(NewProposalFile,Q(id = FileId))
-    file.is_archive=True
-    file.save()
-    return HttpResponseRedirect('/programme_curriculum/view_course_proposal_forms/')
+    print("ID:", FileId)
+    try:
+        file = get_object_or_404(NewProposalFile, Q(id=FileId))
+        file.is_archive = True
+        file.save()
+        return JsonResponse({
+            'status': 'success',
+            'message': 'File archived successfully',
+            'file_id': FileId
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
 
+@csrf_exempt  # Use this decorator if you're not using CSRF tokens in your API calls
+@permission_classes([IsAuthenticated])
 def file_unarchive(request,FileId):
-    if request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor" or request.session['currentDesignationSelected'] == "Dean Academic":
-        pass
-    elif 'hod' in request.session['currentDesignationSelected'].lower():
-        pass
-    elif request.session['currentDesignationSelected'] == "acadadmin":
-        return HttpResponseRedirect('/programme_curriculum/admin_programmes/')
-    else:
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
     
-    file = get_object_or_404(NewProposalFile,Q(id = FileId))
-    file.is_archive=False
-    file.save()
-    return HttpResponseRedirect('/programme_curriculum/view_course_proposal_forms/')
+    print("ID:", FileId)
+    try:
+        file = get_object_or_404(NewProposalFile, Q(id=FileId))
+        file.is_archive = False
+        file.save()
+        return JsonResponse({
+            'status': 'success',
+            'message': 'File archived successfully',
+            'file_id': FileId
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
 
 
 def course_slot_type_choices(request):
@@ -2369,3 +3059,99 @@ def update_course_instructor_form(request, instructor_id):
 
     # Handle unsupported HTTP methods
     return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
+
+@csrf_exempt  # Use this decorator if you're not using CSRF tokens in your API calls
+@permission_classes([IsAuthenticated])
+def get_superior_data(request):
+    try:
+        # Get parameters from request
+        username = request.GET.get('uploaderId')
+        print("username",username)
+        designation = request.GET.get('uploaderDes', '').lower()
+        print("designation",designation)
+        
+        if not username:
+            return JsonResponse({'error': 'Username is required'}, status=400)
+        
+        # Get the user object
+        user = User.objects.get(username=username)
+        print("user",user)
+        
+        # Get user's extra info and department
+        extra_info = ExtraInfo.objects.get(user=user)
+        print("extra_info",extra_info)
+        user_department = extra_info.department
+        print("user_department",user_department)
+        
+        # Initialize response data
+        response_data = {
+            'user': username,
+            'department': user_department.name if user_department else None,
+            'superior_data': None
+        }
+        
+        # Check if user is Professor/Associate Professor/Assistant Professor
+        professor_designations = ['professor', 'associate professor', 'assistant professor']
+        is_professor = designation in professor_designations
+        print("is_professor",is_professor)
+        
+        # Check if user is HOD (using regex to match HOD (DEPT) pattern)
+        is_hod = bool(re.match(r'^hod\s*\(.*\)$', designation, re.IGNORECASE))
+        print("is_hod",is_hod)
+        
+        if is_professor and user_department:
+            # Get HOD of the same department
+            hod_designation_name = f"HOD ({user_department.name})"
+            try:
+                hod_designation = Designation.objects.get(name__iexact=hod_designation_name)
+                hod = HoldsDesignation.objects.filter(
+                    designation=hod_designation
+                ).select_related('working', 'working__extrainfo').first()
+                
+                if hod:
+                    hod_user = hod.working
+                    hod_extra_info = hod_user.extrainfo
+                    response_data['superior_data'] = {
+                        'username': hod_user.username,
+                        'name': f"{hod_user.first_name} {hod_user.last_name}",
+                        'designation': hod_designation_name,
+                        'department': user_department.name,
+                        'department_id': user_department.id,
+                        'email': hod_user.email,
+                        'phone': hod_extra_info.phone_no
+                    }
+            except Designation.DoesNotExist:
+                pass  # HOD designation for this department doesn't exist
+        
+        elif is_hod:
+            # Get Dean Academic
+            try:
+                dean_designation = Designation.objects.get(name__iexact='Dean Academic')
+                dean = HoldsDesignation.objects.filter(
+                    designation=dean_designation
+                ).select_related('working', 'working__extrainfo').first()
+                
+                if dean:
+                    dean_user = dean.working
+                    dean_extra_info = dean_user.extrainfo
+                    response_data['superior_data'] = {
+                        'username': dean_user.username,
+                        'name': f"{dean_user.first_name} {dean_user.last_name}",
+                        'designation': 'Dean Academic',
+                        'department': dean_extra_info.department.name if dean_extra_info.department else None,
+                        'department_id': dean_extra_info.department.id if dean_extra_info.department else None,
+                        'email': dean_user.email,
+                        'phone': dean_extra_info.phone_no
+                    }
+            except Designation.DoesNotExist:
+                pass  # Dean Academic designation doesn't exist
+        
+        return JsonResponse(response_data)
+    
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User not found'}, status=404)
+    except ExtraInfo.DoesNotExist:
+        return JsonResponse({'error': 'User extra info not found'}, status=404)
+    except Exception as e:
+        print(str(e))   
+        return JsonResponse({'error': str(e)}, status=500)
