@@ -728,7 +728,8 @@ class GenerateTranscriptForm(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        role = request.headers.get('X-User-Role')
+        role = request.GET.get("role") 
+        print(role,"abcd")
         if not role or role != "acadadmin":
             return Response({"error": "Access denied. Invalid or missing role."}, status=status.HTTP_403_FORBIDDEN)
 
@@ -746,7 +747,7 @@ class GenerateTranscriptForm(APIView):
 
     def post(self, request):
         
-        role = request.headers.get('X-User-Role')
+        role = request.data.get("Role")
         if not role or role != "acadadmin":
             return Response({"error": "Access denied. Invalid or missing role."}, status=status.HTTP_403_FORBIDDEN)
 
@@ -764,11 +765,11 @@ class GenerateTranscriptForm(APIView):
         if specialization:
             students = Student.objects.filter(
                 programme=programme, batch=batch, specialization=specialization
-            )
+            ).order_by('id')
         else:
             students = Student.objects.filter(
                 programme=programme, batch=batch
-            )
+            ).order_by('id')
 
         return Response({
             "students": list(students.values()),
@@ -1228,7 +1229,7 @@ class DownloadGradesAPI(APIView):
         - Body (JSON):
             {
                 "Role": "Associate Professor",
-                "academic_year"(optional): "2023"
+                "academic_year": "2023"
             }
 
     """
@@ -1823,3 +1824,65 @@ class ValidateDeanSubmitView(APIView):
                 {"error": f"An error occurred while processing the file: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class CheckResultView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, *args, **kwargs):
+        roll_number = request.user.username
+        semester = request.data.get('semester')
+        # print(roll_number,semester)
+        grades_info = Student_grades.objects.filter(roll_no=roll_number, semester=semester).select_related('course_id')
+
+        gained_credit = 0
+        total_credit = 0
+        all_credits = 0
+
+        for grades in grades_info:
+            credits = grades.course_id.credit
+            grade = grades.grade
+
+            if grade == "O" or grade == "A+":
+                gained_credit += 1 * credits
+            elif grade == "A":
+                gained_credit += 0.9 * credits
+            elif grade == "B+":
+                gained_credit += 0.8 * credits
+            elif grade == "B":
+                gained_credit += 0.7 * credits
+            elif grade == "C+":
+                gained_credit += 0.6 * credits
+            elif grade == "C":
+                gained_credit += 0.5 * credits
+            elif grade == "D+":
+                gained_credit += 0.4 * credits
+            elif grade == "D":
+                gained_credit += 0.3 * credits
+            elif grade == "F":
+                gained_credit += 0.2 * credits
+
+            total_credit += credits
+            all_credits += credits
+
+        spi = 10 * (gained_credit / total_credit) if total_credit > 0 else 0
+
+        all_grades = Student_grades.objects.filter(roll_no=roll_number)
+        total_units = sum(grade.course_id.credit for grade in all_grades)
+        # print(grades_info)
+        response_data = {
+            "success": True,
+            "courses": [
+                {
+                    "courseid": grade.course_id.id,
+                    "coursename": grade.course_id.name,
+                    "credits": grade.course_id.credit,
+                    "grade": grade.grade,
+                }
+                for grade in grades_info
+            ],
+            "spi": round(spi, 2),
+            "su": all_credits, 
+            "tu": total_units,  
+        }
+
+        return JsonResponse(response_data)
