@@ -30,13 +30,11 @@ class LeaveFormTable(models.Model):
     purpose = models.TextField()
     leave_type = models.CharField(max_length=20, choices=LEAVE_TYPES)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
-    approved=models.BooleanField(default=False,null=False),  # Initially not approved
-    rejected=models.BooleanField(default=False,null=False),  # Initially not rejected
     hod = models.CharField(max_length=100)
     stud_mobile_no = models.CharField(max_length=15, null=True, blank=True)
     parent_mobile_no = models.CharField(max_length=15, null=True, blank=True)
     leave_mobile_no = models.CharField(max_length=15, null=True, blank=True)
-    curr_sem=models.IntegerField(max_length=10,null=True)
+    curr_sem=models.IntegerField(null=True)
 
     class Meta:
         db_table = 'LeaveFormTable'
@@ -86,7 +84,7 @@ class LeavePG(models.Model):
     stud_mobile_no = models.CharField(max_length=15, null=True, blank=True)
     parent_mobile_no = models.CharField(max_length=15, null=True, blank=True)
     leave_mobile_no = models.CharField(max_length=15, null=True, blank=True)
-    curr_sem=models.IntegerField(max_length=10,null=True)
+    curr_sem=models.IntegerField(null=True)
     
 
     class Meta:
@@ -239,8 +237,12 @@ class AssistantshipClaimFormStatusUpd(models.Model):
     Ths_rejected = models.BooleanField()
     HOD_approved = models.BooleanField()
     HOD_rejected = models.BooleanField()
-    Acad_approved = models.BooleanField()
-    Acad_rejected = models.BooleanField()
+    Dean_approved = models.BooleanField(default=False)
+    Dean_rejected = models.BooleanField(default=False)
+    Director_approved = models.BooleanField(default=False)
+    Director_rejected = models.BooleanField(default=False)
+    AcadAdmin_approved = models.BooleanField(default=False)
+    AcadAdmin_rejected = models.BooleanField(default=False)
 
     amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
