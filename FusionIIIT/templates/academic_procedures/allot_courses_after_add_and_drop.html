@@ -1,5 +1,5 @@
 {% load static %}
-{% block allot_courses %}
+{% block allot_courses_after_add_and_drop %}
 
 {% if messages %}
 <ul class="messages">
@@ -13,7 +13,7 @@
 
 <div class="ui pointing secondary menu">
     <a class="active item" data-tab="allotment">
-        Allot Student Courses
+        Allot Student Courses After Add and Drop
     </a>
 </div>
 
@@ -21,38 +21,14 @@
 
 <div class="ui active tab segment" data-tab="allotment">
 
-    <form class="ui form" method="POST" action='/academic-procedures/acad_person/allot_courses/'
-        enctype="multipart/form-data" id='allot_courses_form'>
+    <form class="ui form" method="POST" action='/academic-procedures/acad_person/allot_courses_after_add_and_drop/'
+        enctype="multipart/form-data" id='allot_courses_form_after_add_and_drop'>
         {% csrf_token %}
         <div class="field">
             <h4 class="ui blue header">Note : Provide the data in Excel Sheet in following format:</h4>
-            RollNo | CourseSlot Name | CourseCode | CourseName
+            RollNo | CourseSlot Name | CourseCode
             <h4 class="ui dividing header"><a href="../media/Administrator/academic_procedures/sample_courses_allotment.xls">Download</a>
                 the sample Excel, fill the data accordingly and then upload the same</h4>
-        </div>
-        <div class="field">
-            <label>Programme</label>
-            <select class="ui dropdown" required="true" name="batch">
-                <option value=""> Select Batch </option>
-                {% for batch in batch_branch_data %}
-                <option value="{{batch.id}}" id="batch">{{batch.name}} {{batch.discipline.acronym}} {{batch.year}}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="field">
-            <label>Semester</label>
-            <select class="ui dropdown" required="true" name="semester">
-                <option value="NULL" class="sem">Select Semester</option>
-                <option value="1" class="sem">1</option>
-                <option value="2" class="sem">2</option>
-                <option value="3" class="sem">3</option>
-                <option value="4" class="sem">4</option>
-                <option value="5" class="sem">5</option>
-                <option value="6" class="sem">6</option>
-                <option value="7" class="sem">7</option>
-                <option value="8" class="sem">8</option>
-            </select>
         </div>
         <div class="field">
             <label>Working Year</label>          
@@ -77,7 +53,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js" type="text/javascript">
 
 $(function() {
-    $("#allot_courses_form").submit(function(event) {
+    $("#allot_courses_form_after_add_and_drop").submit(function(event) {
 
         event.preventDefault();
         var friendForm = $(this);

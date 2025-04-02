@@ -1,0 +1,64 @@
+{% extends 'examination/base.html' %}
+{% block sidetabmenu %}
+<div class="ui medium fluid vertical pointing menu" style="max-width: 320px;">
+  <a class="item" href="{% url 'examination:checkresult' %}">Check Result
+    <i class="right floated chevron right icon"></i>
+  </a>
+</div>
+{% endblock %}
+{% block content %}
+    <div class="ui container" style="padding: 2em;">
+        <div class="ui segment">
+            <h2 class="ui header">Grade Report</h2>
+            <div class="ui grid">
+                <div class="eight wide column">
+                    <p><strong>Roll No:</strong> {{ student.id_id }}</p>
+                    <p><strong>Name:</strong> {{ student_user }}</p>
+                </div>
+                <div class="eight wide column">
+                    <p><strong>Discipline:</strong> {{ student.specialization }}</p>
+                </div>
+            </div>
+            
+            <table class="ui celled table">
+                <thead>
+                    <tr>
+                        <th>Course Code</th>
+                        <th>Course Name</th>
+                        <th>Credits</th>
+                        <th>Grade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for grade in grades %}
+                    <tr>
+                        <td>{{ grade.course_id.code }}</td>
+                        <td>{{ grade.course_id.name }}</td>
+                        <td>{{ grade.course_id.credit }}</td>
+                        <td>{{ grade.grade }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <div class="ui statistics">
+                <div class="statistic">
+                    <div class="value">{{ spi }}</div>
+                    <div class="label">SPI</div>
+                </div>
+                <div class="statistic">
+                    <div class="value">{{ semester_units }}</div>
+                    <div class="label">SU</div>
+                </div>
+                <div class="statistic">
+                    <div class="value">{{ total_units }}</div>
+                    <div class="label">TU</div>
+                </div>
+            </div>
+            
+            <p class="ui tiny header">Note: This is system generated, there is no need for signature.</p>
+            
+           
+        </div>
+    </div>
+    {% endblock %}
