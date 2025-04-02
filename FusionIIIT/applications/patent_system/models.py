@@ -11,7 +11,7 @@ class Applicant(models.Model):
     mobile = models.CharField(max_length=15)
     address = models.CharField(max_length=255)
 
-    def _str_(self):
+    def str(self):
         return self.name
 
     class Meta:
@@ -27,7 +27,7 @@ class Attorney(models.Model):
     specialization = models.CharField(max_length=255, blank=True, null=True)
     assigned_cases = models.IntegerField(default=0)
 
-    def _str_(self):
+    def str(self):
         return self.name
 
     class Meta:
@@ -60,7 +60,7 @@ class Application(models.Model):
     submitted_date = models.DateField(blank=True, null=True)
     comments = models.TextField(blank=True, null=True)
 
-    def _str_(self):
+    def str(self):
         return self.title
 
     class Meta:
@@ -127,12 +127,29 @@ def generate_mou_file_path(instance, filename):
     new_filename = f"{base}_{timestamp}{extension}"  # Append timestamp
     return os.path.join("patent/Application/Section-II/mou_files", new_filename)
 
+def generate_source_agreement_file_path(instance, filename):
+    """
+    Generate a unique file path for MOU file.
+
+    Args:
+        instance: The model instance that the file is associated with.
+        filename: The original filename of the uploaded file.
+
+    Returns:
+        str: A custom file path where the file will be stored.
+    """
+    base, extension = os.path.splitext(filename)  # Split filename and extension
+    base = base.replace(" ", "_")  # Replace spaces with underscores for safety
+    timestamp = now().strftime("%Y%m%d%H%M%S")  # Generate timestamp
+    new_filename = f"{base}_{timestamp}{extension}"  # Append timestamp
+    return os.path.join("patent/Application/Section-II/source_agreement_files", new_filename)
+
 class ApplicationSectionII(models.Model):
     id = models.AutoField(primary_key=True)
     application = models.OneToOneField(Application, on_delete=models.CASCADE, related_name="section_ii")
     funding_details = models.TextField()
     funding_source = models.TextField()
-    source_agreement = models.BinaryField(blank=True, null=True)
+    source_agreement = models.FileField(upload_to=generate_source_agreement_file_path, blank=True, null=True) 
     publication_details = models.TextField()
     mou_details = models.TextField()
     mou_file = models.FileField(upload_to=generate_mou_file_path, blank=True, null=True)  # FileField for MOU file
@@ -166,7 +183,7 @@ class ApplicationSectionIII(models.Model):
         ("Off-the-shelf", "Off-the-shelf"),
     ]
     id = models.AutoField(primary_key=True)
-    application = models.OneToOneField(Application, on_delete=models.CASCADE, related_name="section_iii")
+    application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name="section_iii")
     company_name = models.CharField(max_length=255)
     contact_person = models.CharField(max_length=255)
     contact_no = models.CharField(max_length=15)
@@ -183,7 +200,7 @@ class AssociatedWith(models.Model):
     applicant = models.ForeignKey(Applicant, on_delete=models.CASCADE)
     percentage_share = models.DecimalField(max_digits=5, decimal_places=2)
 
-    def _str_(self):
+    def str(self):
         return f"{self.applicant.name} - {self.application.title} ({self.percentage_share}%)"
     
     class Meta:
