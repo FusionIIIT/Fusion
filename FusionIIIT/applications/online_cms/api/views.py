@@ -129,6 +129,13 @@ from .serializers import *
 #         else:
 #             return Response({'message': 'Invalid user type'}, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['GET'])
+def get_modules(request):
+    if request.method == "GET":
+        modules = Modules.objects.all().values("id", "module_name")  # Use correct field name
+        return JsonResponse(list(modules), safe=False)
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+    
 # add a module
 @api_view(['POST'])
 def add_module(request):
@@ -661,3 +668,46 @@ def create_grading_scheme(request):
     )
 
     return Response({"message": "Grading scheme created successfully"}, status=status.HTTP_201_CREATED)
+
+
+@api_view(['GET'])
+def view_attendance(request, course_code, version):
+    user = request.user
+
+    if not course_code or not version:
+        return Response({"error": "course_code and version are required parameters"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        extrainfo = ExtraInfo.objects.select_related().get(user=user)
+    except ExtraInfo.DoesNotExist:
+        return Response({"error": "User information not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    if extrainfo.user_type == 'student':
+        try:
+            student = Student.objects.select_related('id').get(id=extrainfo)
+            course = Courses.objects.select_related().get(code=course_code, version=version)
+            instructor = CourseInstructor.objects.select_related().get(course_id=course, batch_id=student.batch_id)
+            print(instructor)
+            print(student)
+            print(course)
+        except (Student.DoesNotExist, Courses.DoesNotExist, CourseInstructor.DoesNotExist):
+            return Response({"error": "Course or instructor not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        attendance_records = Attendance.objects.select_related().filter(student_id=student, instructor_id=instructor)
+        attendance_serializer = AttendanceSerializer(attendance_records, many=True)
+
+        return Response(attendance_serializer.data, status=status.HTTP_200_OK)
+
+    elif extrainfo.user_type == 'instructor':
+        try:
+            instructor = CourseInstructor.objects.select_related('course_id').get(instructor_id=extrainfo, course_id__code=course_code, course_id__version=version)
+        except CourseInstructor.DoesNotExist:
+            return Response({"error": "Instructor or course not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        registered_students = course_registration.objects.select_related('student_id').filter(course_id=instructor.course_id)
+        attendance_records = Attendance.objects.select_related().filter(instructor_id=instructor, student_id__in=[stu.student_id for stu in registered_students])
+        attendance_serializer = AttendanceSerializer(attendance_records, many=True)
+
+        return Response(attendance_serializer.data, status=status.HTTP_200_OK)
+
+    return Response({"error": "Invalid user type"}, status=status.HTTP_400_BAD_REQUEST)

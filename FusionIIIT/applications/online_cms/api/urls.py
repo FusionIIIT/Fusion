@@ -20,4 +20,8 @@ urlpatterns = [
     url(r'^slides/(?P<module_id>\d+)/add_document/$', views.add_slide, name='add_document'),
     url(r'^slides/delete/(?P<slide_id>\d+)/$', views.delete_slide, name='delete_document'),
 
+    url(r'^attendance', views.view_attendance, name='view_attendance'),
+
+    url(r'^modules/$', views.get_modules, name='get_modules'),
+
 ]
