@@ -1,0 +1,110 @@
+{% load static %}
+{% block  delete_preregistration %}
+
+
+{% comment %}The tab menu starts here!{% endcomment %}
+<div class="ui container">
+    {% if messages %}
+        <div class="ui container">
+            {% for message in messages %}
+                <div class="ui message {% if message.tags %}{{ message.tags }}{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    <h1 class="ui header">Search and Manage Registrations</h1>
+
+    <!-- Search Form -->
+    <form method="POST" class="ui form">
+        {% csrf_token %}
+            <!-- Roll No Field -->
+        <div class="field">
+            <label for="id_roll_no">Roll No:</label>
+            <input type="text" 
+                   id="id_roll_no" 
+                   name="roll_no" 
+                   {% if initial_registrations %}
+                   value="{{ initial_registrations.0.student_id }}" 
+                   {% endif %}
+                   {% if initial_registrations %}readonly{% endif %}>
+        </div>
+
+        <!-- Semester Field -->
+        <div class="field">
+            <label for="id_semester">Semester:</label>
+            <input type="text" 
+                   id="id_semester" 
+                   name="semester_no" 
+                   {% if initial_registrations %}
+                   value="{{ initial_registrations.0.semester_id.semester_no }}" 
+                   {% endif %}
+                   {% if initial_registrations %}readonly{% endif %}>
+        </div>
+        <button type="submit" name="search_preregistration" class="ui blue button">Search</button>
+
+
+    {% if initial_registration or student_registration_check %}
+        <div class="ui segment">
+            <h2 class="ui header">Search Results</h2>
+
+            {% if initial_registrations %}
+                <h3 class="ui dividing header">Initial Registration(s)</h3>
+                <div class="ui list">
+                    {% for registration in initial_registrations %}
+                        <div class="item">
+                            <strong>Student Roll No:</strong> {{ registration.student_id }}
+                            <br>
+                            <strong>Semester:</strong> {{ registration.semester_id }}
+                            <br>
+                            <strong>Course:</strong> {{ registration.course_id }}
+                            <br>
+                            <strong>Course Slot:</strong> {{ registration.course_slot_id }}
+                            <br>
+                            <strong>Timestamp:</strong> {{ registration.timestamp }}
+                            <br>
+                            <strong>Priority:</strong> {{ registration.priority }}
+                            <br><br>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="ui message">
+                    <div class="header">No Initial Registration found.</div>
+                </div>
+            {% endif %}
+
+            {% if student_registration_check %}
+                <h3 class="ui dividing header">Student Registration Check</h3>
+                <div class="ui list">
+                    <div class="item">
+                        <strong>Student Roll No:</strong> {{ student_registration_check.student_id }}
+                    </div>
+                    <div class="item">
+                        <strong>Pre-Registration Flag:</strong> {{ student_registration_check.pre_registration_flag }}
+                    </div>
+                    <div class="item">
+                        <strong>Final Registration Flag:</strong> {{ student_registration_check.final_registration_flag }}
+                    </div>
+                </div>
+            {% else %}
+                <div class="ui message">
+                    <div class="header">No Student Registration Check found.</div>
+                </div>
+            {% endif %}
+
+            <!-- Delete Button -->
+                <button type="submit" name="delete_preregistration" class="ui red button">Delete</button>
+        </div>
+    {% else %}
+        {% if delete_preregistration and not messages %}
+        <div class="ui message">
+            <div class="header">Student's Pre Registration Data not found.</div>
+        </div>
+        {% endif %}
+    {% endif %}
+</div>
+</form>
+
+
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'examination/base.html' %}
+{% block sidetabmenu %}
+<div class="ui medium fluid vertical pointing menu" style="max-width: 320px;">
+  <a class="active item" href="{% url 'examination:checkresult' %}"><B>Check Result</B>
+    <i class="right floated chevron right icon"></i>
+  </a>
+</div>
+{% endblock %}
+{% block content %}
+    <div class="ui container" style="padding-top: 2em;">
+        <h2 class="ui header">Student Grade Report</h2>
+        <form class="ui form" method="POST" action="{% url 'examination:grades_report' %}">
+            {% csrf_token %}
+            <div class="field">
+                <label>Semester</label>
+                <select class="ui dropdown" name="semester" required>
+                    <option value="">Select Semester</option>
+                    {% for i in "12345678" %}
+                        <option value="{{ i }}">Semester {{ i }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button class="ui primary button" type="submit">View Grades</button>
+        </form>
+    </div>
+    <script>
+        $('.ui.dropdown').dropdown();
+    </script>
+
+{% endblock %}

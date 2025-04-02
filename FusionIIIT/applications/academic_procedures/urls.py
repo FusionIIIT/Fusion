@@ -27,6 +27,7 @@ urlpatterns = [
     url(r'^acad_person/branch_change/$',
         views.acad_branch_change, name='acad_branch_change'),
     url(r'^stu/', views.academic_procedures_student),
+    url(r'^course_reg_receipt/', views.generate_course_registration_receipt, name='Course_reg_PDF1'),
     url(r'^fac/', views.academic_procedures_faculty, name='faculty_procedures'),
     url(r'^account/$', views.account),
     url(r'^addThesis/$', views.add_thesis, name='add_thesis'),
@@ -65,6 +66,7 @@ urlpatterns = [
     url(r'^mdue/$', views.mdue),
     url(r'^assis_stat/$', views.assis_stat),
     url(r'^acad_person/allot_courses/' , views.allot_courses, name='allot_courses'),
+    url(r'^acad_person/allot_courses_after_add_and_drop/' , views.allot_courses_after_add_and_drop, name='allot_courses_after_add_and_drop'),
 
     url(r'^acad_person/get_next_sem_courses/' , views.get_next_sem_courses , name = 'get_next_sem_courses'),
 

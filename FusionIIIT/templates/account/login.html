@@ -24,10 +24,15 @@
     <div class="field">
       <button class="ui fluid large primary button" type="submit">Login</button>
     </div>
-    <div class="center aligned">
+    <!-- <div class="center aligned">
       <a href="{% url 'account_reset_password' %}" style="color:white">{% trans "Forgot Password?" %}</a>
-    </div>
+    </div> -->
   </form>
+
+  <div class="ui bottom attached warning message">
+    <i class="icon help"></i>
+    <a href="/password-reset">Forgot Password</a>.
+  </div>
 
   <div class="box-header with-border">
     {% get_providers as socialaccount_providers %}
