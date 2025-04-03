@@ -27,6 +27,13 @@ from .models import (
     Attorney
 )
 
+from applications.globals.models import (
+    Designation,
+    DepartmentInfo,
+    ExtraInfo,
+    HoldsDesignation,
+)
+
 # Logger setup - used for debugging and logging errors
 logger = logging.getLogger(__name__)
 
@@ -57,7 +64,7 @@ def submit_application(request):
 
         # Required file fields
         poc_file = request.FILES.get("poc_details")
-        source_file=request.FILES.get("source_file")
+        source_file = request.FILES.get("source_file")
         mou_file = request.FILES.get("mou_file")
         form_iii_file = request.FILES.get("form_iii")
 
@@ -66,19 +73,34 @@ def submit_application(request):
             "novelty", "advantages", "tested_experimentally", "applications",
             "funding_details", "funding_source", "publication_details", "mou_details",
             "research_details", "company_details",
-            "development_stage", "user_id"
+            "development_stage"
         ]
         
         for field in required_fields:
             if field not in data:
                 return JsonResponse({"error": f"Missing required field: {field}"}, status=400)
 
-        # Create application entry with submitted date
+        # Get the logged-in user
+        user = request.user
+
+        # Check if the user has an applicant profile, create one if not
+        applicant, created = Applicant.objects.get_or_create(
+            user=user,
+            defaults={
+                "email": user.email,  # Assuming User model has email
+                "name": user.get_full_name() or user.username,  # Use full name or username
+                "mobile": "",  # Set to empty initially
+                "address": "",  # Set to empty initially
+            }
+        )
+
+        # Create application entry with the logged-in user as the primary applicant
         application = Application.objects.create(
             title=data["title"],
             status="Submitted",
             decision_status="Pending",
             submitted_date=now(),
+            primary_applicant=applicant,  # Store the Applicant instance here
         )
 
         # Save file uploads and store paths
@@ -131,10 +153,8 @@ def submit_application(request):
         company_details = data.get("company_details", [])
         if not isinstance(company_details, list):
             return JsonResponse({"error": "company_details should be a list"}, status=400)
-        # print("Company Details:", company_details)
         
-        for company in data.get("company_details", []):
-            # print("Processing Company:", company)
+        for company in company_details:
             company_name = company.get("company_name")
             contact_person = company.get("contact_person")
             contact_no = company.get("contact_no")
@@ -142,7 +162,6 @@ def submit_application(request):
             if not (company_name and contact_person and contact_no):
                 return JsonResponse({"error": "Each company entry must have company_name, contact_person, and contact_no"}, status=400)
 
-            # Create an entry for each company
             ApplicationSectionIII.objects.create(
                 application=application,
                 company_name=company_name,
@@ -152,6 +171,7 @@ def submit_application(request):
                 form_iii=form_iii_file_path
             )
 
+        # Associate inventors with the application
         for inventor in data["inventors"]:
             email = inventor["institute_mail"]
             percentage = inventor["percentage"]
@@ -163,7 +183,7 @@ def submit_application(request):
             try:
                 user = User.objects.get(email=email)
                 applicant, created = Applicant.objects.get_or_create(
-                    user_id=user.id,
+                    user=user,
                     defaults={
                         "email": personal_mail,
                         "name": name,
@@ -191,6 +211,7 @@ def submit_application(request):
             "application_id": application_id,
             "token": token
         })
+    
     except json.JSONDecodeError:
         return JsonResponse({"error": "Invalid JSON format"}, status=400)
     except Exception as e:
@@ -200,6 +221,7 @@ def submit_application(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
+@csrf_exempt
 def view_applications(request):
     user_id = request.user.id
     try:
@@ -231,6 +253,7 @@ def view_applications(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
+@csrf_exempt
 def view_application_details(request, application_id):
     user = request.user
 
@@ -276,7 +299,7 @@ def view_application_details(request, application_id):
         "novelty": section_i.novelty if section_i else None,
         "advantages": section_i.advantages if section_i else None,
         "is_tested": section_i.is_tested if section_i else None,
-        "poc_details": section_i.poc_details if section_i else None,
+        "poc_details": section_i.poc_details.url if section_i else None,
         "applications": section_i.applications if section_i else None,
     }
 
@@ -339,7 +362,40 @@ def insights_by_year(request):
 
 # For new applications tab
 def new_applications(request):
-    return JsonResponse({"message": "New Applications"})
+    applications = Application.objects.filter(status="Submitted").select_related("primary_applicant")
+
+    application_dict = {}  # Using a dictionary instead of a list
+
+    for app in applications:
+        applicant = app.primary_applicant  # Get the Applicant instance
+
+        # Ensure applicant exists and fetch the linked User
+        user = applicant.user if applicant else None
+
+        # Fetch extra info (assuming ExtraInfo is linked to User)
+        extra_info = ExtraInfo.objects.filter(user=user).first()
+
+        # Fetch department
+        department_name = extra_info.department.name if extra_info and extra_info.department else "Unknown"
+
+        # Fetch designation (get latest held designation)
+        holds_designation = HoldsDesignation.objects.filter(user=user).select_related("designation").first()
+        designation_name = holds_designation.designation.name if holds_designation else "Unknown"
+
+        # Use token_no as a unique key (fallback to app.id if missing)
+        key = str(app.token_no) if app.token_no else f"app_{app.id}"
+
+        # Format response as a dictionary
+        application_dict[key] = {
+            "token_no": app.token_no if app.token_no else "Token not generated as attorney not assigned",
+            "title": app.title,
+            "submitted_by": applicant.name if applicant else "Unknown",  # Use name from Applicant
+            "designation": designation_name,
+            "department": department_name,
+            "submitted_on": app.submitted_date.strftime("%Y-%m-%d") if app.submitted_date else "Unknown"
+        }
+
+    return JsonResponse({"applications": application_dict}, safe=False)
 
 def review_applications(request):
     return JsonResponse({"message": "Review Applications"})
@@ -422,6 +478,3 @@ def director_notifications(request):
 def submitted_applications(request):
     submitted = list(Application.objects.filter(status="Submitted").values("id", "title"))
     return JsonResponse({"submitted_applications": submitted})
-
-
-
