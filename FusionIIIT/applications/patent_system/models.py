@@ -37,8 +37,12 @@ class Application(models.Model):
     STATUS_CHOICES = [
         ("Draft", "Draft"),
         ("Submitted", "Submitted"),
-        ("Under Review", "Under Review"),
-        ("Approved", "Approved"),
+        ("Attorney Assigned", "Attorney Assigned"),
+        ("Forwarded for Director's Review", "Forwarded for Director's Review"),
+        ("Director's Approval Received", "Director's Approval Received"),
+        ("Forwarded to Attorney", "Forwarded to Attorney"),
+        ("Patentability Search Report Generated", "Patentability Search Report Generated"),
+        ("Patent Filed", "Patent Filed"),
         ("Rejected", "Rejected"),
     ]
     
@@ -53,6 +57,7 @@ class Application(models.Model):
     patentability_check_date = models.DateField(blank=True, null=True)
     patentability_file_date = models.DateField(blank=True, null=True)
     token_no = models.CharField(max_length=100, blank=True, null=True)
+    primary_applicant = models.ForeignKey(Applicant, on_delete=models.CASCADE, related_name="applications")  
     attorney = models.ForeignKey(Attorney, on_delete=models.CASCADE, related_name="applications", blank=True, null=True)
     assigned_date = models.DateField(blank=True, null=True)
     decision_status = models.CharField(max_length=50, choices=DECISION_STATUS_CHOICES, default = "Pending")
