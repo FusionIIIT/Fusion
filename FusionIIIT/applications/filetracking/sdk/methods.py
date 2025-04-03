@@ -79,6 +79,7 @@ def view_file(file_id: int) -> dict:
         requested_file = File.objects.get(id=file_id)
         serializer = FileSerializer(requested_file)
         file_details = serializer.data
+        file_details['branch'] = get_last_file_sender(file_details['id']).extrainfo.department.name
         return file_details
     except File.DoesNotExist:
         raise NotFound("File Not Found with provided ID")
@@ -150,10 +151,7 @@ def view_outbox(username: str, designation: str, src_module: str) -> list:
         file['branch'] = get_last_file_sender(file['id']).extrainfo.department.name
         file['receiver'] = get_current_file_owner(file['id']).username
         file['receiver_designation'] = get_current_file_owner_designation(file['id']).name
-    filtered_files = [
-        file for file in sent_files_serialized if get_last_file_sender(file['id']).username == username
-    ]
-    return filtered_files
+    return sent_files_serialized
 
 
 
