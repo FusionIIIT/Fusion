@@ -2,7 +2,7 @@ from django.db.models.query_utils import Q
 from django.http import request
 from django.shortcuts import get_object_or_404, render, HttpResponse,redirect
 from django.http import HttpResponse, HttpResponseRedirect,JsonResponse
-
+import datetime
 # import itertools
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -231,7 +231,8 @@ def view_semesters_of_a_curriculum(request, curriculum_id):
             [{
                 'id': course_slot.id,
                 'name': course_slot.name,
-                'courses': [{'name': course.name, 'lecture_hours': course.lecture_hours, 'tutorial_hours': course.tutorial_hours, 'credit': course.credit} for course in course_slot.courses.all()]
+                # 'code':course_slot.code,
+                'courses': [{'name': course.name, 'code':course.code,'lecture_hours': course.lecture_hours, 'tutorial_hours': course.tutorial_hours, 'credit': course.credit} for course in course_slot.courses.all()]
             } if course_slot else None for course_slot in course_slots]
             for course_slots in transpose_semester_slots
         ],
@@ -903,8 +904,9 @@ def admin_view_all_batches(request):
 #                 return HttpResponseRedirect('/programme_curriculum/admin_disciplines/')    
 #     return render(request, 'programme_curriculum/acad_admin/add_discipline_form.html',{'form':form})
 
-@csrf_exempt  # Disable CSRF for simplicity (use a more secure method in production)
-@api_view(['GET'])
+@csrf_exempt  
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def add_discipline_form(request):
     if request.method == 'POST':
         try:
@@ -923,6 +925,7 @@ def add_discipline_form(request):
         return JsonResponse({"error": "Invalid HTTP method. Use POST."}, status=405)
 
 @csrf_exempt
+@permission_classes([IsAuthenticated])
 def edit_discipline_form(request, discipline_id):
 
     # user_details = ExtraInfo.objects.get(user = request.user)
@@ -998,10 +1001,21 @@ def edit_discipline_form(request, discipline_id):
 #                 return HttpResponseRedirect('/programme_curriculum/admin_curriculums/' + str(programme.id) + '/')  
 #     return render(request,'programme_curriculum/acad_admin/add_programme_form.html',{'form':form, 'submitbutton': submitbutton})
 
+# @permission_classes([IsAuthenticated])
+# @api_view(['POST'])
 @csrf_exempt
 def add_programme_form(request):
     if request.method == 'POST':
-        form = ProgrammeForm(request.POST)
+        # print(request.body)
+        data = json.loads(request.body)
+        print(data)
+        form_data={
+            'name': data.get('name'),
+            'category': data.get('category'),
+            'programme_begin_year': data.get('programme_begin_year'),
+            # 'discipline': data.get('discipline')
+        }
+        form = ProgrammeForm(form_data)
 
         if form.is_valid():
             form.save()
@@ -1020,6 +1034,7 @@ def add_programme_form(request):
 
 
 @csrf_exempt
+@permission_classes([IsAuthenticated])
 def edit_programme_form(request, programme_id):
 
     # user_details = ExtraInfo.objects.get(user = request.user)
@@ -1186,8 +1201,8 @@ def edit_curriculum_form(request, curriculum_id):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     return JsonResponse({'error': 'Invalid request method.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
 @csrf_exempt
+@permission_classes([IsAuthenticated])
 def add_course_form(request):
 
     # user_details = ExtraInfo.objects.get(user = request.user)
@@ -1205,7 +1220,7 @@ def add_course_form(request):
             form = CourseForm(data)
             if form.is_valid():
                 new_course = form.save(commit=False)
-                new_course.version = 1.0
+                # new_course.version = 1.0
                 new_course.save()
                 course = Course.objects.last()
                 return JsonResponse({'success': True, 'message': 'Course added successfully', 'course_id': course.id}, status=201)
@@ -1257,9 +1272,11 @@ def update_course_form(request, course_id):
         
         elif request.method == 'PUT':
             # Handle course update
-            data = request.data
+            print("gaurav")
+            data = json.loads(request.body)
+            print(data)
             previous_version = Course.objects.filter(code=course.code).order_by('version').last()
-            
+            print(previous_version)
             # Validate version
             new_version = data.get('version', course.version)
             if float(new_version) <= float(previous_version.version):
@@ -1762,7 +1779,8 @@ def faculty_view_a_course(request, course_id):
     notifs = request.user.notifications.all()
     return render(request, 'programme_curriculum/faculty/faculty_view_a_course.html', {'course': course,'notifications': notifs,})
 
-
+@csrf_exempt
+@permission_classes([IsAuthenticated])
 def view_a_course_proposal_form(request,CourseProposal_id):
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
@@ -2097,6 +2115,9 @@ def outward_files(request):
             'status': 'error',
             'message': str(e)
         }, status=500)
+    
+@csrf_exempt
+@permission_classes([IsAuthenticated])
 def update_course_proposal_file(request, course_id):
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
     if request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor":
@@ -2651,6 +2672,8 @@ def view_inward_files(request,ProposalId):
             'message': str(e)
         }, status=500)
 
+@csrf_exempt
+@permission_classes([IsAuthenticated])
 def reject_form(request,ProposalId):
     
     if request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor" or request.session['currentDesignationSelected'] == "Dean Academic":
@@ -2819,7 +2842,8 @@ def file_unarchive(request,FileId):
             'message': str(e)
         }, status=400)
 
-
+@csrf_exempt
+@permission_classes([IsAuthenticated])
 def course_slot_type_choices(request):
     """
     API endpoint to return the list of course slot type choices from the CourseSlot model.
@@ -2828,7 +2852,8 @@ def course_slot_type_choices(request):
     # print(choices)
     return JsonResponse({'choices': choices})
 
-
+@csrf_exempt
+@permission_classes([IsAuthenticated])
 def semester_details(request):
     curriculum_id = request.GET.get('curriculum_id')
 
@@ -2861,6 +2886,8 @@ def semester_details(request):
     return JsonResponse(data)
 
 @api_view(['GET'])
+@csrf_exempt
+@permission_classes([IsAuthenticated])
 def get_programme(request, programme_id):
     program = get_object_or_404(Programme, id=programme_id)
     # curriculums = program.curriculums.all()
@@ -2881,7 +2908,8 @@ def get_programme(request, programme_id):
     }
     return JsonResponse(data)
 
-
+@csrf_exempt
+@permission_classes([IsAuthenticated])
 def get_batch_names(request):
     choices = [{'value': key, 'label': label} for key, label in Batch._meta.get_field('name').choices]
     # print('choices',choices)
@@ -2894,7 +2922,8 @@ def get_batch_names(request):
     # Return the list as a JSON response
     return JsonResponse({'choices': choices})
 
-
+@csrf_exempt
+@permission_classes([IsAuthenticated])
 def get_all_disciplines(request):
     # Fetch all disciplines from the database
     disciplines = Discipline.objects.all()
@@ -2912,7 +2941,8 @@ def get_all_disciplines(request):
     
     # Return the serialized data as a JSON response
     return JsonResponse(disciplines_data, safe=False)
-
+@csrf_exempt
+@permission_classes([IsAuthenticated])
 def get_unused_curriculam(request):
     # Fetch all curriculum IDs that are present in the Batch table
     used_curriculum_ids = Batch.objects.exclude(curriculum__isnull=True).values_list('curriculum_id', flat=True)
@@ -2935,7 +2965,8 @@ def get_unused_curriculam(request):
 
     # Return the serialized data as a JSON response
     return JsonResponse(unused_curricula_data, safe=False)
-
+@csrf_exempt
+@permission_classes([IsAuthenticated])
 def admin_view_all_course_instructor(request):
     # Fetch all records from the CourseInstructor table
     course_instructors = CourseInstructor.objects.select_related(
@@ -2958,7 +2989,8 @@ def admin_view_all_course_instructor(request):
     # Convert queryset to a list
     # course_instructors_data = list(course_instructors)
     return JsonResponse({'course_instructors': course_instructors_data})
-
+@csrf_exempt
+@permission_classes([IsAuthenticated])
 def admin_view_all_faculties(request):
     # Fetch all faculties with their user details
     faculties = Faculty.objects.select_related('id__user').annotate(
@@ -2976,21 +3008,28 @@ def admin_view_all_faculties(request):
     return JsonResponse({'faculties': faculties_data})
 
 @csrf_exempt
+@permission_classes([IsAuthenticated])
 def add_course_instructor(request):
     
-    print(request)
+    # print(request.body)
     if request.method == 'POST':
-        data = json.loads(request.body)
+        print("gaurav 1")
 
-        if data.get('form_submit'):
+        # data = json.loads(request.body) 
+        # print(data)
+        if request.body and request.content_type == 'application/json':
+            print("gaurav 2")
+            data = json.loads(request.body) 
             form = CourseInstructorForm(data)
             if form.is_valid():
                 form.save()
                 return JsonResponse({"success": "Instructor added successfully"}, status=201)
             return JsonResponse({"error": "Invalid form data", "details": form.errors}, status=400)
 
-        elif data.get('excel_submit'):
+        elif request.FILES.get('manual_instructor_xsl') and request.POST.get('excel_submit'):
+            print("gaurav 3")
             manual_instructor_xsl = request.FILES.get('manual_instructor_xsl')
+            print(manual_instructor_xsl)
             if not manual_instructor_xsl:
                 return JsonResponse({"error": "Excel file is required"}, status=400)
 
@@ -2999,46 +3038,82 @@ def add_course_instructor(request):
                 sheet = excel.sheet_by_index(0)
 
                 with transaction.atomic():
-                    all_success = True
                     errors = []
+                    valid_rows = []
 
-                    for i in range(1, sheet.nrows):  # Skip the header row
+                    # Step 1: Validate all rows first (no DB changes yet)
+                    for i in range(1, sheet.nrows):  # Skip header row
                         try:
                             course_code = str(sheet.cell(i, 0).value).strip()
                             course_version = float(sheet.cell(i, 1).value)
                             instructor_id = str(sheet.cell(i, 2).value).strip()
-                            year = int(sheet.cell(i, 3).value)
+                            year = int(sheet.cell(i, 3).value) if sheet.cell(i, 3).value else datetime.date.today().year
                             semester_no = int(sheet.cell(i, 4).value)
 
-                            course = Course.objects.filter(
-                                code__iexact=course_code, version=course_version
-                            ).first()
+                            # Validate semester_no
+                            if not (1 <= semester_no <= 8):
+                                raise ValueError(f"Semester must be 1-8 (got {semester_no})")
 
+                            # Check if course exists
+                            course = Course.objects.filter(
+                                code__iexact=course_code, 
+                                version=course_version
+                            ).first()
                             if not course:
                                 raise ValueError(f"Course {course_code} (v{course_version}) not found")
 
-                            instructor = get_object_or_404(Faculty, id=instructor_id)
+                            # Check if instructor exists
+                            instructor = Faculty.objects.filter(id=instructor_id).first()
+                            if not instructor:
+                                raise ValueError(f"Instructor {instructor_id} not found")
 
-                            CourseInstructor.objects.create(
-                                course=course,
-                                instructor=instructor,
-                                year=year,
-                                semester_no=semester_no
-                            )
+                            # Check for duplicates (optional)
+                            if CourseInstructor.objects.filter(
+                                course_id=course,
+                                instructor_id=instructor,
+                                year=year
+                            ).exists():
+                                raise ValueError("Duplicate entry (course + instructor + year)")
+
+                            # Store valid row data
+                            valid_rows.append({
+                                "course": course,
+                                "instructor": instructor,
+                                "year": year,
+                                "semester_no": semester_no
+                            })
+
                         except Exception as e:
-                            all_success = False
-                            errors.append({"row": i, "error": str(e)})
+                            errors.append({"row": i + 1, "error": str(e)})
 
-                    if all_success:
-                        return JsonResponse({"success": "Instructors added successfully from Excel"}, status=201)
-                    return JsonResponse({"error": "Some rows failed", "details": errors}, status=400)
+                    # Step 2: If any errors, abort and return them
+                    if errors:
+                        return JsonResponse({
+                            "error": "Validation failed",
+                            "details": errors
+                        }, status=400)
+
+                    # Step 3: Only if ALL rows are valid, insert into DB
+                    for row in valid_rows:
+                        CourseInstructor.objects.create(
+                            course_id=row["course"],
+                            instructor_id=row["instructor"],
+                            year=row["year"],
+                            semester_no=row["semester_no"]
+                        )
+
+                    return JsonResponse({
+                        "success": f"{len(valid_rows)} instructors added successfully"
+                    }, status=201)
 
             except Exception as e:
-                return JsonResponse({"error": f"Error processing Excel file: {e}"}, status=500)
+                return JsonResponse({
+                    "error": f"Excel parsing error: {str(e)}"
+                }, status=400)
 
     return JsonResponse({"error": "Invalid request method"}, status=405)
-
 @csrf_exempt
+@permission_classes([IsAuthenticated])
 def update_course_instructor_form(request, instructor_id):
     # Retrieve the CourseInstructor object or return 404 if not found
     course_instructor = get_object_or_404(CourseInstructor, id=instructor_id)

@@ -811,7 +811,7 @@ def add_course_form(request):
             form = CourseForm(request.POST)  
             if form.is_valid():
                 new_course = form.save(commit=False)
-                new_course.version=1.0
+                # new_course.version=1.0
                 new_course.save()
                 course = Course.objects.last()
                 messages.success(request, "Added successful")
