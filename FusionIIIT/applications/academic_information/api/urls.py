@@ -16,6 +16,8 @@ urlpatterns = [
 
     url(r'^calendar',views.ListCalendarView.as_view(),name='calendar-get-api'),
     url(r'^update-calendar',views.update_calendar,name='calendar-update-api'),
+    url(r'^add-calendar',views.add_calendar,name='calendar-add-api'),
+    url(r'^delete-calendar',views.delete_calendar,name='calendar-delete-api'),
 
     # url(r'^holiday',views.holiday_api,name='holiday-get-api'),
 

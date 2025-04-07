@@ -16,12 +16,13 @@ from django.template.loader import get_template
 from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
-from applications.academic_procedures.models import MinimumCredits, Register, InitialRegistration, course_registration, AssistantshipClaim,Assistantship_status
+from applications.academic_procedures.models import MinimumCredits, Register, InitialRegistration, course_registration, AssistantshipClaim,Assistantship_status,FinalRegistration, StudentRegistrationChecks
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation, DepartmentInfo)
 
-from .forms import AcademicTimetableForm, ExamTimetableForm, MinuteForm
+from .forms import AcademicTimetableForm, ExamTimetableForm, MinuteForm, PreRegistrationSearchForm
 from .models import (Calendar, Course, Exam_timetable, Grades, Curriculum_Instructor,Constants,
                      Meeting, Student, Student_attendance, Timetable,Curriculum)
 from applications.programme_curriculum.models import (CourseSlot, Course as Courses, Batch, Semester, Programme, Discipline)                     
@@ -31,6 +32,7 @@ from applications.programme_curriculum.models import (CourseSlot, Course as Cour
 from applications.academic_procedures.views import acad_proced_global_context , get_sem_courses
 from applications.programme_curriculum.models import Batch
 from django.db.models import Q
+from .utils import check_for_registration_complete,allocate,view_alloted_course
 
 
 @login_required
@@ -128,6 +130,7 @@ def get_context(request):
         assistant_flag =""
         hod_flag = ""
         account_flag = ""
+        PreRegistrationsrchform = PreRegistrationSearchForm()
 
         for obj in assis_stat:
             assistant_flag = obj.student_status
@@ -177,6 +180,7 @@ def get_context(request):
         'hod_flag' : hod_flag,
         'account_flag' : account_flag,
         'notifications': notifs,
+        'preregistrationsrchform': PreRegistrationsrchform,
     }
 
     return context
@@ -214,8 +218,50 @@ def homepage(request):
     """
     if user_check(request):
         return HttpResponseRedirect('/academic-procedures/')
-
+    
     context = get_context(request)
+    
+    if request.method == "POST":
+        if 'check_allocation' in request.POST : 
+            return  check_for_registration_complete(request)
+        if 'start_allocation' in request.POST :
+            return allocate(request)
+        if 'view_allocation' in request.POST :
+            return view_alloted_course(request)
+        if 'search_preregistration' in request.POST or 'delete_preregistration' in request.POST:
+            form = PreRegistrationSearchForm(request.POST)
+            if form.is_valid():
+                roll_no = form.cleaned_data['roll_no'].upper()
+                semester_no = form.cleaned_data['semester_no']
+                print(roll_no, semester_no)
+
+                # Fetch student object by roll number
+                # student = get_object_or_404(Student, id=roll_no)
+
+                # Fetch semester by semester number
+                # semester = get_object_or_404(Semester, semester_no=semester_no)
+                # print(f"Student -> {student}")
+
+                # Search for all initial registrations and student registration check
+                initial_registrations = InitialRegistration.objects.filter(
+                    student_id_id=roll_no, semester_id__semester_no=semester_no
+                )
+                student_registration_check = StudentRegistrationChecks.objects.filter(
+                    student_id_id=roll_no, semester_id__semester_no=semester_no
+                ).first()
+                if ('delete_preregistration' in request.POST):
+                    print(initial_registrations, student_registration_check)
+                    try:
+                        initial_registrations.delete()
+                        student_registration_check.delete()
+                        messages.success(request, "Student's pre registration data successfully deleted.")
+                    except:
+                        messages.error(request, "An error occured while deleting.")
+                    context['delete_preregistration'] = True
+                else :
+                    context['initial_registrations'] = initial_registrations
+                    context['student_registration_check'] = student_registration_check
+                    context['delete_preregistration'] = True
 
     return render(request, "ais/ais.html", context)
 
@@ -1141,7 +1187,52 @@ def generate_preregistration_report(request):
         st = 'attachment; filename = ' + batch.name + batch.discipline.acronym + str(batch.year) + '-preresgistration.xlsx'
         response['Content-Disposition'] = st
         return response
+    
+@login_required
+def get_excel(request):
+    batch = request.POST.get('batch-check-view')
+    sem = request.POST.get('semester-check-view')
+    year = request.POST.get('year-check-view')
+    course = request.POST.get('Course-check-view')
+    registrations = FinalRegistration.objects.filter(Q(student_id__batch = batch) & Q(semester_id__semester_no = sem) & Q(course_id__code = course))
+    return_list = []
+    for registration in registrations:
+            return_list.append(registration.student_id.id.id)
+    
+    return_list.sort()
+    output = BytesIO()
 
+    book = Workbook(output,{'in_memory':True})
+    title = book.add_format({'bold': True,
+                                    'font_size': 22,
+                                    'align': 'center',
+                                    'valign': 'vcenter'})
+    subtitle = book.add_format({'bold': True,
+                                    'font_size': 15,
+                                    'align': 'center',
+                                    'valign': 'vcenter'})
+    normaltext = book.add_format({'bold': False,
+                                    'font_size': 15,
+                                    'align': 'center',
+                                    'valign': 'vcenter'})
+    sheet = book.add_worksheet()
+    sheet.set_default_row(25)
+    sheet.write_string('A1','Student Roll no',subtitle)
+    sheet.write_string('B1','Student name',subtitle)
+    k=2
+    for no in return_list :
+        student= User.objects.get(username=no)
+        sheet.write_string('A'+str(k),no,normaltext)
+        sheet.write_string('B'+str(k),student.first_name+student.last_name,normaltext)
+        k+=1
+    
+    book.close()
+    output.seek(0)
+
+    response = HttpResponse(output.read(),content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename='+ course +'_student_list.xlsx'
+    response['Content-Transfer-Encoding'] = 'binary'
+    return response
 
 @login_required
 def add_new_profile (request):
@@ -2044,6 +2135,10 @@ def confirm_grades(request):
 def view_all_student_data(request):
     """ views all the students """
 
+
+    if request.session.get('currentDesignationSelected') in ["studentacadadmin"]:
+        return HttpResponseRedirect('/aims/')
+    
 
     data = []
     #students = Student.objects.select_related('batch_id', 'id__user', 'batch_id__discipline', 'id') .filter(batch=2019).order_by('id').all().only('batch', 'id__id', 'id__user', 'programme', 'batch_id__discipline__acronym', 'specialization', 'id__sex', 'category', 'id__phone_no', 'id__date_of_birth', 'id__user__first_name', 'id__user__last_name', 'id__user__email', 'father_name', 'mother_name', 'id__address')[0:20]
