@@ -4,6 +4,7 @@ from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from django.db import transaction
 from notification.views import  healthcare_center_notif
 from rest_framework.permissions import IsAuthenticated
+from django.http import FileResponse
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes,authentication_classes
@@ -162,6 +163,28 @@ def compounder_api_handler(request):
                         dic['status']=status
                     inbox.append(dic)
         return JsonResponse({'status':1,'inbox':inbox[0]})
+    
+    elif 'get_file' in request_body:
+        file_id = request_body['file_id']
+        file_id_int = int(file_id)
+        if(file_id_int == -2):
+            return FileResponse(open('static/health_center/add_stock_example.xlsx', 'rb'), as_attachment=True, filename="example_add_stock.xlsx")
+        if(file_id_int == -1):
+            return FileResponse(open('static/health_center/add_medicine_example.xlsx', 'rb'), as_attachment=True, filename="example_add_medicine.xlsx")  
+        filepath = "applications/health_center/static/health_center/generated.pdf"
+
+        file=files.objects.get(id=file_id_int)
+        f=file.file_data
+        
+        with open("applications/health_center/static/health_center/generated.pdf", 'wb+') as destination:   
+            destination.write(f)  
+        
+        pdf = open(filepath, 'rb')
+        response = FileResponse(pdf, content_type="application/pdf")
+        response['Content-Disposition'] = 'inline; filename="generated.pdf"'
+
+        return response
+
     
     elif 'get_doctors' in request_body :
         doctors = Doctor.objects.filter(active=True).order_by('id')
@@ -711,7 +734,7 @@ def compounder_api_handler(request):
             doctor = None
         else:
             doctor = Doctor.objects.get(doctor_name=doctor_id)
-        
+
         fid=0
         uploaded_file = request_body['file']
         print(uploaded_file)
