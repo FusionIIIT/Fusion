@@ -72,6 +72,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib import colors
 from reportlab.lib.colors import HexColor
 from reportlab.lib.units import inch 
+from decimal import Decimal, ROUND_HALF_UP
 @login_required(login_url="/accounts/login")
 def exam(request):
     """
@@ -1885,6 +1886,10 @@ def checkresult(request):
     return render(request, "../templates/examination/check_result.html")
 
 
+def round_excel_style(number, decimal_places=1):
+    quantize_str = '0.' + '0' * (decimal_places - 1) + '1'
+    return float(Decimal(str(number)).quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP))
+
 def grades_report(request):
     if request.method == 'POST':
         des = request.session.get("currentDesignationSelected")
@@ -1952,7 +1957,7 @@ def grades_report(request):
                     'student': student,
                     'student_user': student_user,
                     'grades': grades_info,
-                    'spi': round(spi, 1),
+                    'spi': round_excel_style(spi),
                     'semester_units': all_credits,
                     'total_units': total_units,
                     'semester': semester
