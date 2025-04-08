@@ -1846,6 +1846,7 @@ def new_course_proposal_file(request):
                 'description': data.get('Description'),
                 'uploader': data.get('uploader'),
                 'designation': data.get('Designation'),
+                'is_update': data.get('isUpdate', False),
                 # 'designation': request.session.get('currentDesignationSelected', ''),
             }
             prerequisite_course_ids = data.get('pre_requisit_courses', [])
@@ -2117,62 +2118,90 @@ def outward_files(request):
         }, status=500)
     
 @csrf_exempt
-@permission_classes([IsAuthenticated])
 def update_course_proposal_file(request, course_id):
-    des = HoldsDesignation.objects.all().filter(user = request.user).first()
-    if request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor":
-        pass
-    elif request.session['currentDesignationSelected'] == "acadadmin" :
-        return HttpResponseRedirect('/programme_curriculum/admin_programmes')
-    else:
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
-    
-    uploader = request.user.extrainfo
-    design=request.session['currentDesignationSelected']
-    course = get_object_or_404(Course, Q(id=course_id))
-    file_data=course.code+' - '+course.name
-    form = NewCourseProposalFile(initial={'uploader':des.user,'designation':design},instance=course)
-    submitbutton= request.POST.get('Submit')
-    
-    if submitbutton:
-        if request.method == 'POST':
-            form = NewCourseProposalFile(request.POST)  
-            if form.is_valid():
-                previous = Course.objects.all().filter(code=course.code).order_by('version').last()
-                course.version=previous.version
-                new_course=form.save(commit=False)
-                new_course.is_read=False
-                new_course.is_update=True
-                add=True
-                ver=0
-                # Check if a course with the same values (except version, latest_version, disciplines, and pre_requisit_courses) already exists
-                old_course=Course.objects.filter(code=new_course.code, name=new_course.name, credit=new_course.credit, lecture_hours=new_course.lecture_hours, tutorial_hours=new_course.tutorial_hours, pratical_hours=new_course.pratical_hours, discussion_hours=new_course.discussion_hours, project_hours=new_course.project_hours, pre_requisits=new_course.pre_requisits, syllabus=new_course.syllabus, percent_quiz_1=new_course.percent_quiz_1, percent_midsem=new_course.percent_midsem, percent_quiz_2=new_course.percent_quiz_2, percent_endsem=new_course.percent_endsem, percent_project=new_course.percent_project, percent_lab_evaluation=new_course.percent_lab_evaluation, percent_course_attendance=new_course.percent_course_attendance, ref_books=new_course.ref_books)
-                if old_course:
-                    # Check if disciplines or pre_requisit_courses have been changed
-                    for i in old_course:
-                        if set(form.cleaned_data['pre_requisit_courses']) != set(i.pre_requisit_courses.all()):
-                            add=True
-                        else:
-                            add=False
-                            ver=i.version
-                            break
-                    if add:
-                        new_course.save()  # Save the new course first before adding many-to-many fields
-                        new_course.pre_requisit_courses.set(form.cleaned_data['pre_requisit_courses'])
-                        course = Course.objects.last()
-                        messages.success(request, "Added successful")
-                        return HttpResponseRedirect("/programme_curriculum/admin_course/" + str(course.id) + "/")
-                    else:
-                        form.add_error(None,  'A Course with the same values already exists at "Version Number '+' ' +str(ver)+'"')
-                else:
-                    new_course.save()  # Save the new course first before adding many-to-many fields
-                    new_course.pre_requisit_courses.set(form.cleaned_data['pre_requisit_courses'])
-                    course = Course.objects.last()
-                    messages.success(request, "Added successful")
-                    return HttpResponseRedirect("/programme_curriculum/admin_course/" + str(course.id) + "/")
-                    
-    return render(request,'programme_curriculum/faculty/course_proposal_form.html',{'form':form,'submitbutton': submitbutton,'file_info':file_data,})
+    # Fetch user designation (will break if request.user is Anonymous)
+    # try:
+    #     des = HoldsDesignation.objects.filter(user=request.user).first()
+    # except Exception:
+    #     return JsonResponse({'error': 'Could not determine designation. Are you logged in?'}, status=400)
 
+    # current_designation = request.session.get('currentDesignationSelected', None)
+    # if current_designation in ["Associate Professor", "Professor", "Assistant Professor"]:
+    #     pass
+    # elif current_designation == "acadadmin":
+    #     return HttpResponseRedirect('/programme_curriculum/admin_programmes')
+    # else:
+    #     return HttpResponseRedirect('/programme_curriculum/programmes/')
+
+    uploader = getattr(request.user, 'extrainfo', None)
+    # design = current_designation
+    course = get_object_or_404(Course, Q(id=course_id))
+    file_data = course.code + ' - ' + course.name
+
+    if request.method == "PUT":
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+        form = NewCourseProposalFile(data, instance=course)
+        if form.is_valid():
+            previous = Course.objects.filter(code=course.code).order_by('version').last()
+            course.version = previous.version
+
+            new_course = form.save(commit=False)
+            new_course.is_read = False
+            new_course.is_update = True
+
+            add = True
+            ver = 0
+
+            old_course = Course.objects.filter(
+                code=new_course.code,
+                name=new_course.name,
+                credit=new_course.credit,
+                lecture_hours=new_course.lecture_hours,
+                tutorial_hours=new_course.tutorial_hours,
+                pratical_hours=new_course.pratical_hours,
+                discussion_hours=new_course.discussion_hours,
+                project_hours=new_course.project_hours,
+                pre_requisits=new_course.pre_requisits,
+                syllabus=new_course.syllabus,
+                percent_quiz_1=new_course.percent_quiz_1,
+                percent_midsem=new_course.percent_midsem,
+                percent_quiz_2=new_course.percent_quiz_2,
+                percent_endsem=new_course.percent_endsem,
+                percent_project=new_course.percent_project,
+                percent_lab_evaluation=new_course.percent_lab_evaluation,
+                percent_course_attendance=new_course.percent_course_attendance,
+                ref_books=new_course.ref_books
+            )
+
+            if old_course.exists():
+                for i in old_course:
+                    if set(form.cleaned_data['pre_requisit_courses']) != set(i.pre_requisit_courses.all()):
+                        add = True
+                    else:
+                        add = False
+                        ver = i.version
+                        break
+
+            if add:
+                new_course.save()
+                new_course.pre_requisit_courses.set(form.cleaned_data['pre_requisit_courses'])
+                return JsonResponse({"message": "Course updated successfully", "course_id": new_course.id}, status=200)
+            else:
+                return JsonResponse({"error": f"A Course with the same values already exists at Version Number {ver}"}, status=400)
+        else:
+            return JsonResponse({"error": form.errors}, status=400)
+
+    # For GET (rendering form in browser), fallback
+    form = NewCourseProposalFile(initial={'uploader': des.user, 'designation': design}, instance=course)
+    return render(request, 'programme_curriculum/faculty/course_proposal_form.html', {
+        'form': form,
+        'submitbutton': None,
+        'file_info': file_data,
+    })
 
 
 
