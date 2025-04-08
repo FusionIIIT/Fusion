@@ -182,9 +182,8 @@ def view_archived(username: str, designation: str, src_module: str) -> dict:
 
     # remove duplicate file ids (from sending back and forth)
     archived_files_unique = uniqueList(archived_files)
-
     archived_files_serialized = FileHeaderSerializer(archived_files_unique, many=True)
-    for file in archived_files_serialized:
+    for file in archived_files_serialized.data:
         file['branch'] = get_last_file_sender(file['id']).extrainfo.department.name
     return archived_files_serialized.data
 
