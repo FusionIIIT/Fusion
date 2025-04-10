@@ -151,6 +151,9 @@ def view_outbox(username: str, designation: str, src_module: str) -> list:
         file['branch'] = User.objects.get(username = file['uploader']).extrainfo.department.name
         file['receiver'] = get_current_file_owner(file['id']).username
         file['receiver_designation'] = get_current_file_owner_designation(file['id']).name
+    filtered_files = [
+        file for file in sent_files_serialized if get_current_file_owner(file['id']).username != username
+    ]
     return sent_files_serialized
 
 
