@@ -79,7 +79,7 @@ def view_file(file_id: int) -> dict:
         requested_file = File.objects.get(id=file_id)
         serializer = FileSerializer(requested_file)
         file_details = serializer.data
-        file_details['branch'] = get_last_file_sender(file_details['id']).extrainfo.department.name
+        file_details['branch'] = User.objects.get(username = file_details['uploader']).extrainfo.department.name
         return file_details
     except File.DoesNotExist:
         raise NotFound("File Not Found with provided ID")
