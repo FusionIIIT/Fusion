@@ -154,7 +154,7 @@ def view_outbox(username: str, designation: str, src_module: str) -> list:
     filtered_files = [
         file for file in sent_files_serialized if get_current_file_owner(file['id']).username != username
     ]
-    return sent_files_serialized
+    return filtered_files
 
 
 
