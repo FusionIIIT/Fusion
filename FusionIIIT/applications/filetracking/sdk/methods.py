@@ -79,7 +79,7 @@ def view_file(file_id: int) -> dict:
         requested_file = File.objects.get(id=file_id)
         serializer = FileSerializer(requested_file)
         file_details = serializer.data
-        file_details['branch'] = get_last_file_sender(file_details['id']).extrainfo.department.name
+        file_details['branch'] = User.objects.get(username = file_details['uploader']).extrainfo.department.name
         return file_details
     except File.DoesNotExist:
         raise NotFound("File Not Found with provided ID")
@@ -119,7 +119,7 @@ def view_inbox(username: str, designation: str, src_module: str) -> list:
     for file in received_files_serialized: 
         file['sent_by_user'] = get_last_file_sender(file['id']).username
         file['sent_by_designation'] = get_last_file_sender_designation(file['id']).name
-        file['branch'] = get_last_file_sender(file['id']).extrainfo.department.name
+        file['branch'] = User.objects.get(username = file['uploader']).extrainfo.department.name
     filtered_files = [
         file for file in received_files_serialized if get_current_file_owner(file['id']).username == username
     ]
@@ -148,10 +148,13 @@ def view_outbox(username: str, designation: str, src_module: str) -> list:
     sent_files_serialized = list(FileHeaderSerializer(
         sent_files_unique, many=True).data)
     for file in sent_files_serialized:
-        file['branch'] = get_last_file_sender(file['id']).extrainfo.department.name
+        file['branch'] = User.objects.get(username = file['uploader']).extrainfo.department.name
         file['receiver'] = get_current_file_owner(file['id']).username
         file['receiver_designation'] = get_current_file_owner_designation(file['id']).name
-    return sent_files_serialized
+    filtered_files = [
+        file for file in sent_files_serialized if get_current_file_owner(file['id']).username != username
+    ]
+    return filtered_files
 
 
 
@@ -184,7 +187,7 @@ def view_archived(username: str, designation: str, src_module: str) -> dict:
     archived_files_unique = uniqueList(archived_files)
     archived_files_serialized = FileHeaderSerializer(archived_files_unique, many=True)
     for file in archived_files_serialized.data:
-        file['branch'] = get_last_file_sender(file['id']).extrainfo.department.name
+        file['branch'] = User.objects.get(username = file['uploader']).extrainfo.department.name
     return archived_files_serialized.data
 
 
