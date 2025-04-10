@@ -15,13 +15,13 @@ urlpatterns = [
     url(r'^stu/swayam_add_course/', views.student_swayam_add_course, name = 'student_swayam_add_course'),
     # url(r'^stu/replaceCourse' , views.replaceCourse , name = 'replaceCourse')
     url(r'^stu/next_sem_courses/', views.student_next_sem_courses, name = 'student_next_sem_courses'),
-    url(r'^stu/current_courseregistration/$', views.current_courseregistration, name='current_courseregistration'),
+    # url(r'^stu/current_courseregistration/$', views.current_courseregistration, name='current_courseregistration'),
     url(r'^stu/preregistration/$', views.get_preregistration_data, name='get_preregistration_data'),
     url(r'^stu/preregistration/submit/$', views.submit_preregistration, name='preregistration-submit'),
     url(r'^stu/swayam_courses/$', views.get_swayam_registration_data, name='get_swayam_data'),
     url(r'^stu/swayam/submit/$', views.submit_swayam_registration, name='swayam-submit'),
     url(r'^stu/next_sem_courses/', views.student_next_sem_courses, name = 'student_next_sem_courses'),
-    url(r'^stu/current_courseregistration/$', views.current_courseregistration, name='current_courseregistration'),
+    url(r'^stu/current_courseregistration/$', views.course_registration_view, name='current_courseregistration'),
     url(r'^stu/finalregistrationpage/$', views.final_registration_page, name='final_registration_page'),
     url(r'^fac/academic_procedures_faculty', views.academic_procedures_faculty_api, name='academic_procedures_faculty_api'),
 

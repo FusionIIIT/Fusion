@@ -272,6 +272,18 @@ class Student_grades(models.Model):
     remarks = models.CharField(max_length=500,null=True)
     verified = models.BooleanField(default=False) 
     reSubmit = models.BooleanField(default=True) 
+    academic_year = models.CharField(max_length=9, null=True)
+    
+    SEMESTER_TYPE_CHOICES = [
+        ("Odd Semester", "Odd Semester"),
+        ("Even Semester", "Even Semester"),
+        ("Summer Semester", "Summer Semester"),
+    ]
+    semester_type = models.CharField(
+        max_length=20,
+        choices=SEMESTER_TYPE_CHOICES,
+        null=True
+    )
     def __str__(self):
         return '{} - {}'.format(self.pk, self.course_id)
 

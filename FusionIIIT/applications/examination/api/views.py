@@ -78,103 +78,125 @@ def exam_view(request):
 @permission_classes([IsAuthenticated])
 def download_template(request):
     """
-    API to download a CSV template for a course based on the provided role, course, and year.
+    API to download a CSV template for a course based on the provided role, course, academic year, and semester type.
+    
+    Expected request data:
+      - Role: User role (only allowed roles can access, e.g., "acadadmin")
+      - course: Course ID
+      - year: Academic year (session) in the format "YYYY-YY" (e.g., "2023-24")
+      - semester_type: Semester type (e.g., "Odd Semester", "Even Semester", "Summer Semester")
     """
     role = request.data.get('Role')
     course = request.data.get('course')
-    year = request.data.get('year')
+    session_year = request.data.get('year')  # Academic year provided as a session string
+    semester_type = request.data.get('semester_type')
 
     if not role:
         return Response({"error": "Role parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
-    if not course or not year:
-        return Response({"error": "Course and year are required."}, status=status.HTTP_400_BAD_REQUEST)
+    if not course or not session_year or not semester_type:
+        return Response(
+            {"error": "Course, academic year, and semester type are required."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-    if role not in ["acadadmin", "Associate Professor", "Professor", "Assistant Professor", "Dean Academic"]:
+    # Check access for allowed roles.
+    allowed_roles = [
+        "acadadmin", "Associate Professor", "Professor",
+        "Assistant Professor", "Dean Academic"
+    ]
+    if role not in allowed_roles:
         return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
 
     try:
         User = get_user_model()
-        
+
+        # Filter course_registration records using course, session (academic year), and semester_type.
         course_info = course_registration.objects.filter(
             course_id_id=course,
-            working_year=year
+            session=session_year,
+            semester_type=semester_type
         )
 
         if not course_info.exists():
-            return Response({"error": "No registration data found for the provided course and year"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "No registration data found for the provided course, academic year, and semester type."},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
+        # Get course information from the first matched registration.
         course_obj = course_info.first().course_id
         response = HttpResponse(content_type="text/csv")
-        filename = f"{course_obj.code}_template_{year}.csv"
+        filename = f"{course_obj.code}_template_{session_year}.csv"
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
         writer = csv.writer(response)
+        writer.writerow(["roll_no", "name", "grade", "remarks", "semester"])
 
-        writer.writerow(["roll_no", "name", "grade", "remarks"])
-
+        # Write a CSV row for each student registration.
         for entry in course_info:
             student_entry = entry.student_id
+            # Assuming student_entry.id_id is the student's roll number.
             student_user = User.objects.get(username=student_entry.id_id)
-            writer.writerow([student_entry.id_id, f"{student_user.first_name} {student_user.last_name}", "", ""])
+            writer.writerow([
+                student_entry.id_id,
+                f"{student_user.first_name} {student_user.last_name}",
+                "",
+                "",
+                ""
+            ])
 
         return response
 
     except Exception as e:
         print(f"Error in download_template: {str(e)}")
         return Response({'error': 'An unexpected error occurred'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
 
 class SubmitGradesView(APIView):
     """
-    API to retrieve course information for a specific academic year
-    or available working years for the dropdown.
+    API to retrieve course information for a given academic year session and semester type.
+
+    If both academic_year (formatted as "YYYY-YY") and semester_type are provided in the request,
+    the API filters courses from course_registration records based on:
+      - session: must equal the provided academic_year, and
+      - semester_type: must match the provided semester type.
+
+    Otherwise, if academic_year is not provided, it returns available sessions.
     """
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         designation = request.data.get("Role")
         academic_year = request.data.get("academic_year")
+        semester_type = request.data.get("semester_type")
 
-        
+        # Only allow access to 'acadadmin'
         if designation != "acadadmin":
             return Response(
                 {"success": False, "error": "Access denied."},
                 status=status.HTTP_403_FORBIDDEN
             )
 
-       
-        if academic_year:
-            if not str(academic_year).isdigit():
-                return Response(
-                    {"error": "Invalid academic year. It must be numeric."},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            # Fetch unique course IDs for the given academic year
+        # If both academic_year and semester_type are provided, filter courses.
+        if academic_year and semester_type:
+            # Use academic_year to match the session field.
             unique_course_ids = course_registration.objects.filter(
-                working_year=academic_year
+                session=academic_year,
+                semester_type=semester_type
             ).values("course_id").distinct()
 
-            unique_course_ids = unique_course_ids.annotate(
-                course_id_int=Cast("course_id", IntegerField())
-            )
-
-            # Retrieve course information
             courses_info = Courses.objects.filter(
-                id__in=unique_course_ids.values_list("course_id_int", flat=True)
-            ).order_by('code')
+                id__in=unique_course_ids.values_list("course_id", flat=True)
+            ).order_by("code")
 
-            
             return Response(
                 {"courses": list(courses_info.values())},
                 status=status.HTTP_200_OK
             )
 
-        # If no academic year is provided, return available working years
-        working_years = course_registration.objects.values("working_year").distinct()
-
+        # If academic_year is not provided, return available sessions.
+        sessions = course_registration.objects.values("session").distinct()
         return Response(
-            {"working_years": list(working_years)},
+            {"sessions": list(sessions)},
             status=status.HTTP_200_OK
         )
     
@@ -1974,6 +1996,7 @@ class CheckResultView(APIView):
             "success": True,
             "courses": [
                 {
+                    "coursecode": grade.course_id.code, 
                     "courseid": grade.course_id.id,
                     "coursename": grade.course_id.name,
                     "credits": grade.course_id.credit,
