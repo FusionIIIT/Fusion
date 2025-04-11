@@ -47,10 +47,10 @@ def generate_file_path(folder, filename):
     timestamp = now().strftime("%Y%m%d%H%M%S")
     return os.path.join(f"patent/{folder}", f"{base}_{timestamp}{extension}")
 
+@csrf_exempt
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-@csrf_exempt
 def submit_application(request):
     if request.method != "POST":
         return JsonResponse({"error": "Invalid request method"}, status=405)
@@ -221,7 +221,6 @@ def submit_application(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-@csrf_exempt
 def view_applications(request):
     user_id = request.user.id
     try:
@@ -253,8 +252,7 @@ def view_applications(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-@csrf_exempt
-def view_application_details(request, application_id):
+def view_application_details_for_applicant(request, application_id):
     user = request.user
 
     # Check if the logged-in user is an applicant
@@ -400,12 +398,58 @@ def new_applications(request):
 def review_applications(request):
     return JsonResponse({"message": "Review Applications"})
 
-def forward_applications(request):
+def forward_application(request):
     return JsonResponse({"message": "Forward Applications"})
 
 # For status of applications tab
-def reviewed_applications(request):
-    return JsonResponse({"message": "Reviewed Applications"})
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def status_of_applications(request):
+    REVIEW_STATUSES = [
+    "Forwarded for Director's Review",
+    "Director's Approval Received",
+    "Patentability Check",
+    "Patentability Search Report Generated",
+    "Patent Filed"
+    ]
+
+    applications = Application.objects.filter(status__in=REVIEW_STATUSES).select_related("primary_applicant")
+
+
+    application_dict = {}  # Using a dictionary instead of a list
+
+    for app in applications:
+        applicant = app.primary_applicant  # Get the Applicant instance
+
+        # Ensure applicant exists and fetch the linked User
+        user = applicant.user if applicant else None
+
+        # Fetch extra info (assuming ExtraInfo is linked to User)
+        extra_info = ExtraInfo.objects.filter(user=user).first()
+
+        # Fetch department
+        department_name = extra_info.department.name if extra_info and extra_info.department else "Unknown"
+
+        # Fetch designation (get latest held designation)
+        holds_designation = HoldsDesignation.objects.filter(user=user).select_related("designation").first()
+        designation_name = holds_designation.designation.name if holds_designation else "Unknown"
+
+        # Use token_no as a unique key (fallback to app.id if missing)
+        key = str(app.token_no) if app.token_no else f"app_{app.id}"
+
+        # Format response as a dictionary
+        application_dict[key] = {
+            "token_no": app.token_no if app.token_no else "Token not generated as attorney not assigned",
+            "title": app.title,
+            "submitted_by": applicant.name if applicant else "Unknown",  # Use name from Applicant
+            "designation": designation_name,
+            "department": department_name,
+            "submitted_on": app.submitted_date.strftime("%Y-%m-%d") if app.submitted_date else "Unknown",
+            "status": app.status,
+        }
+
+    return JsonResponse({"applications": application_dict}, safe=False)
 
 # For manage attorney tab
 def add_attorney(request):

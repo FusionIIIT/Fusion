@@ -37,10 +37,11 @@ class Application(models.Model):
     STATUS_CHOICES = [
         ("Draft", "Draft"),
         ("Submitted", "Submitted"),
+        ("Reviewed by PCC Admin", "Reviewed by PCC Admin"),
         ("Attorney Assigned", "Attorney Assigned"),
         ("Forwarded for Director's Review", "Forwarded for Director's Review"),
         ("Director's Approval Received", "Director's Approval Received"),
-        ("Forwarded to Attorney", "Forwarded to Attorney"),
+        ("Patentability Check", "Patentability Check"),
         ("Patentability Search Report Generated", "Patentability Search Report Generated"),
         ("Patent Filed", "Patent Filed"),
         ("Rejected", "Rejected"),

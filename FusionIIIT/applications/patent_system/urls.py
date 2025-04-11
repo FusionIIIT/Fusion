@@ -7,15 +7,16 @@ urlpatterns = [
     # Applicant-related paths
     path("applicant/applications/submit/", views.submit_application, name="submit_application"),
     path("applicant/applications/", views.view_applications, name="view_applications"),
-    path("applicant/applications/details/<int:application_id>/", views.view_application_details, name="view_application_details"),
+    path("applicant/applications/details/<int:application_id>/", views.view_application_details_for_applicant, name="view_application_details"),
     path("applicant/drafts/", views.saved_drafts, name="saved_drafts"),
 
     # PCCAdmin-related paths
     path("pccAdmin/insights/yearly/", views.insights_by_year, name="insights_by_year"),
     path("pccAdmin/applications/new/", views.new_applications, name="new_applications"),
     path("pccAdmin/applications/review/", views.review_applications, name="review_applications"),
-    path("pccAdmin/applications/forward/", views.forward_applications, name="forward_applications"),
-    path("pccAdmin/applications/reviewed/", views.reviewed_applications, name="reviewed_applications"),
+    path("pccAdmin/applications/forward/", views.forward_application, name="forward_applications"),
+    path("pccAdmin/applications/status/", views.status_of_applications, name="status_of_applications"),
+    path("pccAdmin/applications/status/details/<int:application_id>/", views.view_application_details_for_pccAdmin, name="view_application_details_for_pccAdmin"),
     path("pccAdmin/attorney/add/", views.add_attorney, name="add_attorney"),
     path("pccAdmin/attorney/remove/", views.remove_attorney, name="remove_attorney"),
     path("pccAdmin/attorneys/", views.view_attorney_list, name="view_attorney_list"),
