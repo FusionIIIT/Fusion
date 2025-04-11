@@ -112,6 +112,9 @@ def create_stock_items(sender, instance, created, **kwargs):
     if created:
         # Automatically create 'n' number of StockItem instances based on current_stock of StockEntry
         # instance is stockEntry 
+        department = instance.item_id.indent_file.file_info.uploader.department
         current_stock = int(instance.current_stock)
-        for _ in range(current_stock):
-            StockItem.objects.create(StockEntryId=instance,location=instance.location,department=instance.item_id.file_info.uploader.department)
+        for _ in range(current_stock):    
+            StockItem.objects.create(StockEntryId=instance,location=instance.location,department=department)
+        # for _ in range(current_stock):
+        #     StockItem.objects.create(StockEntryId=instance,location=instance.location,department=instance.item_id.file_info.uploader.department)
