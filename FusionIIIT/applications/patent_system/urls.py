@@ -15,6 +15,7 @@ urlpatterns = [
     path("pccAdmin/applications/new/", views.new_applications, name="new_applications"),
     path("pccAdmin/applications/review/", views.review_applications, name="review_applications"),
     path("pccAdmin/applications/forward/", views.forward_application, name="forward_applications"),
+    path("pccAdmin/applications/reject/", views.reject_application, name="reject_applications"),
     path("pccAdmin/applications/status/", views.status_of_applications, name="status_of_applications"),
     path("pccAdmin/applications/status/details/<int:application_id>/", views.view_application_details_for_pccAdmin, name="view_application_details_for_pccAdmin"),
     path("pccAdmin/attorney/add/", views.add_attorney, name="add_attorney"),

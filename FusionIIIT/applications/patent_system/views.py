@@ -395,11 +395,103 @@ def new_applications(request):
 
     return JsonResponse({"applications": application_dict}, safe=False)
 
+# @csrf_exempt
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# @authentication_classes([TokenAuthentication])
 def review_applications(request):
-    return JsonResponse({"message": "Review Applications"})
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            application_id = data.get("application_id")
 
+            if not application_id:
+                return JsonResponse({"error": "Application ID is required."}, status=400)
+
+            try:
+                application = Application.objects.get(id=application_id)
+            except Application.DoesNotExist:
+                return JsonResponse({"error": "Application not found."}, status=404)
+
+            application.status = "Reviewed by PCC Admin"
+            application.save()
+
+            return JsonResponse({
+                "message": "Application status updated to 'Reviewed by PCC Admin'.",
+                "application_id": application.id,
+                "new_status": application.status
+            })
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON."}, status=400)
+
+    return JsonResponse({"error": "Only POST requests are allowed."}, status=405)
+
+# @csrf_exempt
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# @authentication_classes([TokenAuthentication])
 def forward_application(request):
-    return JsonResponse({"message": "Forward Applications"})
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            application_id = data.get("application_id")
+
+            if not application_id:
+                return JsonResponse({"error": "Application ID is required."}, status=400)
+
+            try:
+                application = Application.objects.get(id=application_id)
+            except Application.DoesNotExist:
+                return JsonResponse({"error": "Application not found."}, status=404)
+
+            application.status = "Forwarded for Director's Review"
+            application.save()
+
+            return JsonResponse({
+                "message": "Application status updated to 'Forwarded for Director's Review'.",
+                "application_id": application.id,
+                "new_status": application.status
+            })
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON."}, status=400)
+
+    return JsonResponse({"error": "Only POST requests are allowed."}, status=405)
+
+# @csrf_exempt
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# @authentication_classes([TokenAuthentication])
+def reject_application(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            application_id = data.get("application_id")
+
+            if not application_id:
+                return JsonResponse({"error": "Application ID is required."}, status=400)
+
+            try:
+                application = Application.objects.get(id=application_id)
+            except Application.DoesNotExist:
+                return JsonResponse({"error": "Application not found."}, status=404)
+
+            application.status = "Rejected"
+            application.decision_date = now()
+            application.decision_status = "Rejected"
+            application.save()
+
+            return JsonResponse({
+                "message": "Application status updated to 'Forwarded for Director's Review'.",
+                "application_id": application.id,
+                "new_status": application.status
+            })
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON."}, status=400)
+
+    return JsonResponse({"error": "Only POST requests are allowed."}, status=405)
 
 # For status of applications tab
 @api_view(['GET'])
