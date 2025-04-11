@@ -1781,6 +1781,7 @@ def allot_courses_after_add_and_drop(request):
                 roll_no = str(sheet.cell(i,0).value).split(".")[0]
                 course_slot_name = sheet.cell_value(i,1)
                 course_code = sheet.cell_value(i,2)
+                roll_no =roll_no.strip()
                 try:
                     user=User.objects.get(username=roll_no)
                     user_info = ExtraInfo.objects.get(user=user)
@@ -1795,7 +1796,7 @@ def allot_courses_after_add_and_drop(request):
                         student_checks.append(student_check)
                         currroll.add(roll_no)
                 except Exception as e:
-                    print('----------------------' , e)
+                    print(e, '---', roll_no, course_slot_name, course_code)
 
 
                 pre_registration=InitialRegistration(student_id=student,course_slot_id=course_slot,

@@ -64,7 +64,15 @@ class CourseSerializer(serializers.ModelSerializer):
         model = Course
         fields = ('__all__')
 
+class CourseSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Course
+        fields = ('__all__')
+
 class CourseRegistrationSerializer(serializers.ModelSerializer):
+    course_id = CourseSerializer(read_only=True)
+    semester_id= SemesterSerializer(read_only=True)
     course_id = CourseSerializer(read_only=True)
     semester_id= SemesterSerializer(read_only=True)
     class Meta:
@@ -72,7 +80,11 @@ class CourseRegistrationSerializer(serializers.ModelSerializer):
         fields = ('__all__')
 
 
+
 class CourseSlotSerializer(serializers.ModelSerializer):
+    courses = CourseSerializer(read_only=True, many=True)  # Serialize related courses
+    semester = SemesterSerializer(read_only=True) # Serialize related semester
+
     courses = CourseSerializer(read_only=True, many=True)  # Serialize related courses
     semester = SemesterSerializer(read_only=True) # Serialize related semester
 
