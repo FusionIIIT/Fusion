@@ -7,12 +7,12 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import JsonResponse
-
+from decimal import Decimal, ROUND_HALF_UP
 # from applications.academic_information.models import Student
 from applications.globals.models import (DepartmentInfo, Designation,
                                          ExtraInfo, Faculty, HoldsDesignation)
 
-from applications.academic_procedures.models import(course_registration , Register, Semester)
+from applications.academic_procedures.models import(course_registration , Register, Semester,course_replacement)
 # from applications.academic_information.models import Course , Curriculum
 from applications.programme_curriculum.models import Course as Courses , Curriculum, Discipline, Batch, CourseSlot, CourseInstructor
 from applications.examination.models import(hidden_grades , authentication , grade)
@@ -541,6 +541,7 @@ class ModerateStudentGradesAPI(APIView):
         semester_ids = request.data.get("semester_ids", [])
         course_ids = request.data.get("course_ids", [])
         grades = request.data.get("grades", [])
+        remarks=request.data.get("remarks",[])
         allow_resubmission = request.data.get("allow_resubmission", "NO")
 
        
@@ -559,13 +560,14 @@ class ModerateStudentGradesAPI(APIView):
             )
 
         # Update or create grades
-        for student_id, semester_id, course_id, grade in zip(
-            student_ids, semester_ids, course_ids, grades
+        for student_id, semester_id, course_id, grade,remark in zip(
+            student_ids, semester_ids, course_ids, grades,remarks
         ):
             try:
                 grade_of_student = Student_grades.objects.get(
                     course_id=course_id, roll_no=student_id, semester=semester_id
                 )
+                grade_of_student.remarks=remark
                 grade_of_student.grade = grade
                 grade_of_student.verified = True
                 if allow_resubmission.upper() == "YES":
@@ -934,7 +936,7 @@ class GenerateResultAPI(APIView):
 
                 # Calculate SPI
                 spi = (10 * gained_credit / total_credit) if total_credit else 0
-                ws.cell(row=row_idx, column=col_idx).value = round(spi, 2)
+                ws.cell(row=row_idx, column=col_idx).value = round_from_last_decimal(spi, 1)
                 ws.cell(row=row_idx, column=col_idx + 1).value = 0  # CPI Placeholder
                 ws.cell(row=row_idx, column=col_idx).alignment = ws.cell(row=row_idx, column=col_idx + 1).alignment = Alignment(horizontal="center", vertical="center")
 
@@ -1826,18 +1828,33 @@ class ValidateDeanSubmitView(APIView):
             )
 
 
+def round_from_last_decimal(number, decimal_places=1):
+    d = Decimal(str(number))
+    current_places = abs(d.as_tuple().exponent)
+
+    # Keep rounding from the last decimal place until we reach the desired one
+    while current_places > decimal_places:
+        quantize_str = '0.' + '0' * (current_places - 1) + '1'
+        d = d.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
+        current_places -= 1
+
+    # Final rounding to target place
+    final_quantize = '0.' + '0' * (decimal_places - 1) + '1'
+    return float(d.quantize(Decimal(final_quantize), rounding=ROUND_HALF_UP))
+
 class CheckResultView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request, *args, **kwargs):
         roll_number = request.user.username
         semester = request.data.get('semester')
-        # print(roll_number,semester)
-        grades_info = Student_grades.objects.filter(roll_no=roll_number, semester=semester).select_related('course_id')
-
+        
+        all_grades = Student_grades.objects.filter(roll_no=roll_number)
+        grades_info = all_grades.filter(semester=semester).select_related('course_id')
+        
         gained_credit = 0
         total_credit = 0
         all_credits = 0
-
+        
         for grades in grades_info:
             credits = grades.course_id.credit
             grade = grades.grade
@@ -1865,10 +1882,83 @@ class CheckResultView(APIView):
             all_credits += credits
 
         spi = 10 * (gained_credit / total_credit) if total_credit > 0 else 0
-
-        all_grades = Student_grades.objects.filter(roll_no=roll_number)
-        total_units = sum(grade.course_id.credit for grade in all_grades)
-        # print(grades_info)
+        
+        cpi_available_credits = 0
+        cpi_acquired_credits = 0
+        replacement_map = {}
+        total_earned_credits=0
+        
+        grade_weights = {
+            "O": 1,
+            "A+": 1,
+            "A": 0.9,
+            "B+": 0.8,
+            "B": 0.7,
+            "C+": 0.6,
+            "C": 0.5,
+            "D+": 0.4,
+            "D": 0.3,
+            "F": 0.2
+        }
+        
+        for grade in all_grades:
+            current_course_id = grade.course_id.id
+            
+            replacing = course_replacement.objects.filter(
+                new_course_registration__student_id=roll_number,
+                new_course_registration__course_id=current_course_id
+            ).select_related('old_course_registration').first()
+            
+            if replacing:
+                old_course_reg_id = replacing.old_course_registration.id
+                old_course_id = replacing.old_course_registration.course_id
+                
+                if old_course_id not in replacement_map:
+                    replacement_map[old_course_id] = {
+                        'old_course_id': old_course_id,
+                        'replacements': []
+                    }
+                
+                replacement_map[old_course_id]['replacements'].append({
+                    'new_course_id': current_course_id,
+                    'grade': grade.grade,
+                    'credit': grade.course_id.credit
+                })
+            else:
+                replaced_by = course_replacement.objects.filter(
+                    old_course_registration__student_id=roll_number,
+                    old_course_registration__course_id=current_course_id
+                ).first()
+                
+                if not replaced_by:
+                    total_earned_credits+= grade.course_id.credit
+                    cpi_available_credits += grade.course_id.credit
+                    cpi_acquired_credits += grade_weights.get(grade.grade, 0) * grade.course_id.credit
+                else:
+                    replacement_map[current_course_id]['replacements'].append({
+                    'new_course_id': current_course_id,
+                    'grade': grade.grade,
+                    'credit': grade.course_id.credit
+                })
+        
+        for old_course_reg_id, replacement_data in replacement_map.items():
+           replacements = replacement_data['replacements']
+           if replacements:
+            regular_replacements = [r for r in replacements if r['grade'] not in ['S', 'X', 'I']]
+            special_replacements = [r for r in replacements if r['grade'] in ['S', 'X', 'I']]
+        
+            if regular_replacements:
+             best_replacement = max(regular_replacements, 
+                                 key=lambda x: grade_weights.get(x['grade'], 0))
+             total_earned_credits += best_replacement['credit']
+             cpi_available_credits += best_replacement['credit']
+             cpi_acquired_credits += grade_weights.get(best_replacement['grade'], 0) * best_replacement['credit']
+            elif special_replacements:
+             selected_replacement = special_replacements[0]
+             total_earned_credits += selected_replacement['credit']
+          
+        cpi = 10 * (cpi_acquired_credits / cpi_available_credits) if cpi_available_credits > 0 else 0
+        # print(cpi)
         response_data = {
             "success": True,
             "courses": [
@@ -1880,9 +1970,10 @@ class CheckResultView(APIView):
                 }
                 for grade in grades_info
             ],
-            "spi": round(spi, 2),
+            "spi":round_from_last_decimal(spi, 1),
+            "cpi":round_from_last_decimal(cpi, 1),
             "su": all_credits, 
-            "tu": total_units,  
+            "tu": total_earned_credits,
         }
 
         return JsonResponse(response_data)
