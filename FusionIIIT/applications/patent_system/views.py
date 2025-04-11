@@ -47,10 +47,10 @@ def generate_file_path(folder, filename):
     timestamp = now().strftime("%Y%m%d%H%M%S")
     return os.path.join(f"patent/{folder}", f"{base}_{timestamp}{extension}")
 
+@csrf_exempt
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-@csrf_exempt
 def submit_application(request):
     if request.method != "POST":
         return JsonResponse({"error": "Invalid request method"}, status=405)
@@ -221,7 +221,6 @@ def submit_application(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-@csrf_exempt
 def view_applications(request):
     user_id = request.user.id
     try:
@@ -253,8 +252,7 @@ def view_applications(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-@csrf_exempt
-def view_application_details(request, application_id):
+def view_application_details_for_applicant(request, application_id):
     user = request.user
 
     # Check if the logged-in user is an applicant
@@ -400,12 +398,150 @@ def new_applications(request):
 def review_applications(request):
     return JsonResponse({"message": "Review Applications"})
 
-def forward_applications(request):
+def forward_application(request):
     return JsonResponse({"message": "Forward Applications"})
 
 # For status of applications tab
-def reviewed_applications(request):
-    return JsonResponse({"message": "Reviewed Applications"})
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def status_of_applications(request):
+    REVIEW_STATUSES = [
+    "Forwarded for Director's Review",
+    "Director's Approval Received",
+    "Patentability Check",
+    "Patentability Search Report Generated",
+    "Patent Filed"
+    ]
+
+    applications = Application.objects.filter(status__in=REVIEW_STATUSES).select_related("primary_applicant")
+
+
+    application_dict = {}  # Using a dictionary instead of a list
+
+    for app in applications:
+        applicant = app.primary_applicant  # Get the Applicant instance
+
+        # Ensure applicant exists and fetch the linked User
+        user = applicant.user if applicant else None
+
+        # Fetch extra info (assuming ExtraInfo is linked to User)
+        extra_info = ExtraInfo.objects.filter(user=user).first()
+
+        # Fetch department
+        department_name = extra_info.department.name if extra_info and extra_info.department else "Unknown"
+
+        # Fetch designation (get latest held designation)
+        holds_designation = HoldsDesignation.objects.filter(user=user).select_related("designation").first()
+        designation_name = holds_designation.designation.name if holds_designation else "Unknown"
+
+        # Use token_no as a unique key (fallback to app.id if missing)
+        key = str(app.token_no) if app.token_no else f"app_{app.id}"
+
+        # Format response as a dictionary
+        application_dict[key] = {
+            "token_no": app.token_no if app.token_no else "Token not generated as attorney not assigned",
+            "title": app.title,
+            "submitted_by": applicant.name if applicant else "Unknown",  # Use name from Applicant
+            "designation": designation_name,
+            "department": department_name,
+            "submitted_on": app.submitted_date.strftime("%Y-%m-%d") if app.submitted_date else "Unknown",
+            "status": app.status,
+        }
+
+    return JsonResponse({"applications": application_dict}, safe=False)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def view_application_details_for_pccAdmin(request, application_id):
+    # Fetch application details
+    application = get_object_or_404(Application, id=application_id)
+
+    # Fetch primary applicant details using primary_applicant_id
+    primary_applicant_name = None
+    if application.primary_applicant_id:
+        primary_applicant = Applicant.objects.filter(id=application.primary_applicant_id).first()
+        primary_applicant_name = primary_applicant.name if primary_applicant else None  # Get primary applicant name safely
+
+    # Fetch attorney details using attorney_id
+    attorney_name = None
+    if application.attorney_id:
+        attorney = Attorney.objects.filter(id=application.attorney_id).first()
+        attorney_name = attorney.name if attorney else None  # Get attorney name safely
+
+    # Fetch associated applicants
+    associated_applicants = AssociatedWith.objects.filter(application=application)
+    applicants_data = [
+        {
+            "name": app.applicant.name,
+            "email": app.applicant.email,
+            "mobile": app.applicant.mobile,
+            "address": app.applicant.address,
+            "percentage_share": app.percentage_share 
+        }
+        for app in associated_applicants
+    ]
+
+    # Fetch Section I details
+    section_i = ApplicationSectionI.objects.filter(application=application).first()
+    section_i_data = {
+        "area": section_i.area if section_i else None,
+        "problem": section_i.problem if section_i else None,
+        "objective": section_i.objective if section_i else None,
+        "novelty": section_i.novelty if section_i else None,
+        "advantages": section_i.advantages if section_i else None,
+        "is_tested": section_i.is_tested if section_i else None,
+        "poc_details": section_i.poc_details.url if section_i else None,
+        "applications": section_i.applications if section_i else None,
+    }
+
+   # Fetch Section II details
+    section_ii = ApplicationSectionII.objects.filter(application=application).first()
+    section_ii_data = {
+        "funding_details": section_ii.funding_details if section_ii else None,
+        "funding_source": section_ii.funding_source if section_ii else None,
+        "source_agreement": section_ii.source_agreement.url if section_ii and section_ii.source_agreement else None,
+        "publication_details": section_ii.publication_details if section_ii else None,
+        "mou_details": section_ii.mou_details if section_ii else None,
+        "mou_file": section_ii.mou_file.url if section_ii and section_ii.mou_file else None,
+        "research_details": section_ii.research_details if section_ii else None
+    }
+
+    # Fetch Section III details
+    section_iii = ApplicationSectionIII.objects.filter(application=application).first()
+    section_iii_data = {
+        "company_name": section_iii.company_name if section_iii else None,
+        "contact_person": section_iii.contact_person if section_iii else None,
+        "contact_no": section_iii.contact_no if section_iii else None,
+        "development_stage": section_iii.development_stage if section_iii else None,
+        "form_iii": section_iii.form_iii.url if section_iii and section_iii.form_iii else None
+    }
+
+    # Prepare response
+    response_data = {
+        "application_id": application.id,
+        "primary_applicant_name": primary_applicant_name,
+        "title": application.title,
+        "status": application.status,
+        "token_no": application.token_no,
+        "attorney_name": attorney_name,
+        "dates": {
+            "patentability_check_date": application.patentability_check_date,
+            "patentability_file_date": application.patentability_file_date,
+            "assigned_date": application.assigned_date,
+            "decision_date": application.decision_date,
+            "submitted_date": application.submitted_date if application.submitted_date else None
+        },
+        "decision_status": application.decision_status,
+        "comments": application.comments if application.comments else None,
+        "applicants": applicants_data,
+        "section_I": section_i_data,
+        "section_II": section_ii_data,
+        "section_III": section_iii_data
+    }
+
+    return JsonResponse(response_data, safe=False)
 
 # For manage attorney tab
 def add_attorney(request):
