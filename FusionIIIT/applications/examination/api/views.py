@@ -1861,24 +1861,33 @@ class CheckResultView(APIView):
 
             if grade == "O" or grade == "A+":
                 gained_credit += 1 * credits
+                total_credit += credits
             elif grade == "A":
                 gained_credit += 0.9 * credits
+                total_credit += credits
             elif grade == "B+":
                 gained_credit += 0.8 * credits
+                total_credit += credits
             elif grade == "B":
                 gained_credit += 0.7 * credits
+                total_credit += credits
             elif grade == "C+":
                 gained_credit += 0.6 * credits
+                total_credit += credits
             elif grade == "C":
                 gained_credit += 0.5 * credits
+                total_credit += credits
             elif grade == "D+":
                 gained_credit += 0.4 * credits
+                total_credit += credits
             elif grade == "D":
                 gained_credit += 0.3 * credits
+                total_credit += credits
             elif grade == "F":
                 gained_credit += 0.2 * credits
+                total_credit += credits
 
-            total_credit += credits
+            
             all_credits += credits
 
         spi = 10 * (gained_credit / total_credit) if total_credit > 0 else 0
