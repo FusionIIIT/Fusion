@@ -63,7 +63,7 @@ urlpatterns = [
     path('downloadGrades/',views.downloadGrades,name='downloadGrades'),
     path('generate_pdf/',views.generate_pdf,name='generate_pdf'),
     path('generate-result/',views.generate_result,name='generate_pdf'),
-#     path('get_courses/',views.get_courses,name='get_courses'), 
-# path('checkresult/',views.checkresult,name='checkresult'),
+    # path('get_courses/',views.get_courses,name='get_courses'), 
+path('checkresult/',views.checkresult,name='checkresult'),
 # path('grades_report/',views.grades_report,name='grades_report'),
 ]
