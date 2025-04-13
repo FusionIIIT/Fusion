@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import StudentComplain, Caretaker
+from .models import StudentComplain, Caretaker, Warden,Complaint_Admin
 from applications.globals.models import ExtraInfo
 
 # Added StudentComplainSerializer
@@ -61,6 +61,16 @@ class CaretakerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Caretaker
         fields = '__all__'
+        
+class WardenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Warden
+        fields = '__all__'
+        
+class Complaint_AdminSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Complaint_Admin
+        fields = '__all__'
 
 # Serializer for Feedback submission
 class FeedbackSerializer(serializers.Serializer):
@@ -88,3 +98,5 @@ class WorkersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workers
         fields = '__all__'
+
+

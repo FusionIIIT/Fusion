@@ -961,7 +961,7 @@ class GenerateReportView(APIView):
             except Warden.DoesNotExist:
                is_warden = False
 
-            if not is_caretaker and not is_service_provider and not is_admin and not is_service_provider and not is_service_provider and not is_service_authority and not is_warden:
+            if not is_caretaker and not is_service_provider and not is_complaint_admin and not is_service_provider and not is_service_provider and not is_service_authority and not is_warden:
                 return Response({"detail": "Not authorized to generate report."}, status=403)
 
             complaints = None
