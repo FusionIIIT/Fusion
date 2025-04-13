@@ -693,21 +693,18 @@ class moderate_student_grades(APIView):
         semester_ids = request.POST.getlist('semester_ids[]')
         course_ids = request.POST.getlist('course_ids[]')
         grades = request.POST.getlist('grades[]')
-        remarks = request.POST.getlist('remarks[]')
-
         allow_resubmission = request.POST.get('allow_resubmission', 'NO')
         
         if len(student_ids) != len(semester_ids) != len(course_ids) != len(grades):
             return Response({'error': 'Invalid grade data provided'}, status=status.HTTP_400_BAD_REQUEST)
 
-        for student_id, semester_id, course_id, grade, remark in zip(student_ids, semester_ids, course_ids, grades, remarks):
+        for student_id, semester_id, course_id, grade in zip(student_ids, semester_ids, course_ids, grades):
 
             try:
                 grade_of_student = Student_grades.objects.get(
                     course_id=course_id, roll_no=student_id, semester=semester_id)
                 grade_of_student.grade = grade
                 grade_of_student.verified = True
-                grade_of_student.remarks=remark
                 if allow_resubmission == 'YES':
                     grade_of_student.reSubmit = True
                 grade_of_student.save()
@@ -1947,7 +1944,7 @@ def grades_report(request):
                 'student': student,
                 'student_user': student_user,
                 'grades': grades_info,
-                'spi': spi,
+                'spi': round(spi, 2),
                 'semester_units': all_credits,
                 'total_units': total_units,
             }
