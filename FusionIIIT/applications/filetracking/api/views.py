@@ -1,6 +1,7 @@
-import logging
+import logging, zipfile, io
 from venv import logger
 from django.core import serializers
+from django.core.files.base import ContentFile
 from django.forms import ValidationError
 from django.contrib.auth.models import User
 from rest_framework.views import APIView
@@ -10,7 +11,7 @@ from rest_framework.authentication import TokenAuthentication
 from ..models import File, Tracking
 from applications.globals.models import Designation
 from ..sdk.methods import create_draft, create_file, view_drafts, view_file, delete_file, view_inbox, view_outbox, view_history, forward_file, get_designations, archive_file, view_archived, unarchive_file
-
+from notification.views import file_tracking_notif
 
 class CreateFileView(APIView):
     authentication_classes = [TokenAuthentication]
@@ -25,32 +26,40 @@ class CreateFileView(APIView):
             subject = request.data.get('subject')
             description = request.data.get('description')
             src_module = request.data.get('src_module')
-            uploaded_files = request.FILES.getlist('files')  # Retrieve the list of files
-
+            attached_files = request.FILES.getlist('files')
+            remarks = request.data.get('remarks', "")
+            if remarks:
+                file_extra_JSON['remarks'] = remarks
             # Check for missing required fields
             if None in [current_designation, receiver_username, receiver_designation, subject, description, src_module]:
                 return Response({'error': 'One or more required fields are missing.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Process each file in the list
-            file_ids = []
-            for file in uploaded_files:
-                # Debugging log for each file
-                print("Processing file: ", file.name)
+            zip_file = None
+            if attached_files:
+                zip_buffer = io.BytesIO()
+                with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_archive:
+                    for file in attached_files:
+                        zip_archive.writestr(file.name, file.read())
+                zip_buffer.seek(0)
+                zip_filename=f"attachments_{subject}.zip"
+                zip_file = ContentFile(zip_buffer.getvalue(), name=zip_filename)
 
-                # Call your `create_file` function for each file
-                file_id = create_file(
-                    uploader=current_user,
-                    uploader_designation=current_designation,
-                    receiver=receiver_username,
-                    receiver_designation=receiver_designation,
-                    subject=subject,
-                    description=description,
-                    attached_file=file,  # Pass individual file here
-                    src_module=src_module
-                )
-                file_ids.append(file_id)  # Store the IDs of the created files
+            file_id = create_file(
+                uploader=current_user,
+                uploader_designation=current_designation,
+                receiver=receiver_username,
+                receiver_designation=receiver_designation,
+                subject=subject,
+                description=description,
+                src_module=src_module,
+                attached_file=zip_file
+            )
 
-            return Response({'file_ids': file_ids}, status=status.HTTP_201_CREATED)
+
+            receiver = User.objects.get(username=receiver_username)
+            file_tracking_notif(current_user, receiver, "File Received from " + str(current_user))  # Call the notification function here
+
+            return Response({'file_id': file_id}, status=status.HTTP_201_CREATED)
 
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -59,11 +68,9 @@ class CreateFileView(APIView):
 class ViewFileView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
-
     def get(self, request, file_id):
         try:
             file_details = view_file(int(file_id))
-            print("File: ",file_details)
             return Response(file_details, status=status.HTTP_200_OK)
         except ValueError:
             return Response({'error': 'Invalid file ID format.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -74,8 +81,6 @@ class ViewFileView(APIView):
 
     def delete(self, request, file_id):
         try:
-            # file_details = view_file(int(file_id))
-            # print(file_details)
             success = delete_file(int(file_id))
             if success:
                 return Response({'message': 'File deleted successfully'},
@@ -112,7 +117,6 @@ class ViewInboxView(APIView):
         Returns:
             JSON response containing a list of serialized file data, including sender information.
         """
-
         username = request.query_params.get('username')
         designation = request.query_params.get('designation')
         src_module = request.query_params.get('src_module')
@@ -121,7 +125,6 @@ class ViewInboxView(APIView):
         # if not username or not src_module:
         #     return Response({'error': 'Missing required query parameters: username and src_module.'}, status=400)
         inbox_files = view_inbox(username, designation, src_module)
-        print("inbox viewed", inbox_files)
         return Response(inbox_files)
 
 class ViewOutboxView(APIView):
@@ -196,20 +199,19 @@ class ForwardFileView(APIView):
         receiver_designation = request.data.get('receiver_designation')
         file_extra_JSON = request.data.get('file_extra_JSON', {})
         remarks = request.data.get('remarks', "")
-        print(receiver)
-        print(receiver_designation)
         # Validate data
         if not receiver or not receiver_designation:
             raise ValidationError("Missing required fields: receiver and receiver_designation")
-
-        # # Extract and validate file attachment (if present)
-        file_attachment = request.FILES.get('file_attachment')
-        print(file_attachment)
-        if file_attachment:
-            if file_attachment.size > 10 * 1024 * 1024:  # Adjust size limit as needed
-                raise ValidationError("File size exceeds limit (10 MB)")
-
-        # Call forward_file function
+        attached_files = request.FILES.getlist('files')
+        zip_file = None
+        if attached_files:
+            zip_buffer = io.BytesIO()
+            with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_archive:
+                for file in attached_files:
+                    zip_archive.writestr(file.name, file.read())
+            zip_buffer.seek(0)
+            zip_filename=f"attachments_{receiver}.zip"
+            zip_file = ContentFile(zip_buffer.getvalue(), name=zip_filename)
         try:
             new_tracking_id = forward_file(
                 int(file_id),
@@ -217,51 +219,57 @@ class ForwardFileView(APIView):
                 receiver_designation,
                 file_extra_JSON,
                 remarks,
-                file_attachment
+                file_attachment = zip_file
             )
+            receiver_user = User.objects.get(username=receiver)
+            file_tracking_notif(request.user, receiver_user, "File Forwarded from" + str(request.user))
             logging.info(f"Successfully forwarded file {file_id} with tracking ID: {new_tracking_id}")
         except Exception as e:
             logging.error(f"Error forwarding file {file_id}: {str(e)}")
             raise ValidationError(str(e))  # Re-raise exception with a user-friendly message
-
         # Return response
-        return Response({'tracking_id': new_tracking_id}, status=status.HTTP_201_CREATED)
-
+        return Response({'tracking_ids': new_tracking_id}, status=status.HTTP_201_CREATED)
 class CreateDraftFile(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
-
     def post(self, request):
         uploader = request.user
-        uploader_designation = request.data.get('designation')
-        src_module = request.data.get('src_module')
-        src_object_id = request.data.get('src_object_id', '')
-        uploaded_files = request.FILES.getlist('files')  # Retrieve multiple files
-        print(uploader_designation, src_module)
-        # Validate required fields
-        if None in [uploader_designation, src_module] or not uploaded_files:
+        uploader_designation = request.data.get("designation", "")
+        src_module = request.data.get("src_module", "")
+        src_object_id = request.data.get("src_object_id", "")
+        file_extra_JSON = request.data.get("file_extra_JSON", {})
+        uploaded_files = request.FILES.getlist("files", [])  # Retrieve multiple files
+        subject = request.data.get("subject", "")  # Optional field
+        description = request.data.get("description", "")  # Optional field
+        remarks = request.data.get("remarks", "")  # Optional field
+        if None in [uploader_designation, src_module]:
             return Response({'error': 'One or more required fields are missing.'}, status=status.HTTP_400_BAD_REQUEST)
+        # Add optional fields to file_extra_JSON
+        if subject:
+            file_extra_JSON["subject"] = subject
+        if description:
+            file_extra_JSON["description"] = description
+        if remarks:
+            file_extra_JSON["remarks"] = remarks
 
         draft_file_ids = []
         try:
             for file in uploaded_files:
                 # Debugging log for each file
-                print("Processing draft file:", file.name)
-
+                print(file.name)
                 file_id = create_draft(
                     uploader=uploader,
                     uploader_designation=uploader_designation,
                     src_module=src_module,
                     src_object_id=src_object_id,
-                    attached_file=file  # Pass individual file
+                    file_extra_JSON=file_extra_JSON,
+                    attached_file=file
                 )
                 draft_file_ids.append(file_id)  # Collect created draft file IDs
-            print(draft_file_ids)
             return Response({'file_ids': draft_file_ids}, status=status.HTTP_201_CREATED)
 
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 class DraftFileView(APIView):
    authentication_classes = [TokenAuthentication]
    permission_classes = [permissions.IsAuthenticated]
@@ -273,7 +281,6 @@ class DraftFileView(APIView):
 
        try:
            draft_files = view_drafts(username, designation, src_module)
-           print(draft_files)
            return Response(draft_files, status=status.HTTP_200_OK)
        except Exception as e:
            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -14,10 +14,36 @@ class IndentFile(models.Model):
     director_approval = models.BooleanField(default=False)
     financial_approval = models.BooleanField(default=False)
     purchased = models.BooleanField(default=False)
+    file_info = models.OneToOneField(File, on_delete=models.CASCADE, primary_key=True)
+    indent_name = models.CharField(max_length=250, blank=False, default='Untitled Indent')
+    description = models.TextField(blank=True)  # Description of the indent   
+    head_approval = models.BooleanField(default=False)
+    director_approval = models.BooleanField(default=False)
+    financial_approval = models.BooleanField(default=False)
+    purchased = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'IndentFile'
 
+class IndentItem(models.Model):
+    indent_file = models.ForeignKey(IndentFile, on_delete=models.CASCADE, related_name='items')
+    item_name = models.CharField(max_length=250, blank=False)  
+    quantity = models.IntegerField(blank=False)
+    present_stock = models.IntegerField(blank=False)
+    estimated_cost = models.IntegerField(null=True, blank=False)
+    purpose = models.CharField(max_length=250, blank=False)
+    specification = models.CharField(max_length=250)
+    item_type = models.CharField(max_length=250)
+    item_subtype = models.CharField(max_length=250, blank=False, default='computers')
+    nature = models.BooleanField(default=False)
+    indigenous = models.BooleanField(default=False)
+    replaced = models.BooleanField(default=False)
+    budgetary_head = models.CharField(max_length=250)
+    expected_delivery = models.DateField(blank=False)
+    sources_of_supply = models.CharField(max_length=250)
+
+    class Meta:
+        db_table = 'IndentItem'   
 class IndentItem(models.Model):
     indent_file = models.ForeignKey(IndentFile, on_delete=models.CASCADE, related_name='items')
     item_name = models.CharField(max_length=250, blank=False)  
@@ -50,6 +76,7 @@ class Constants:
 class StockEntry(models.Model):
 
     item_id = models.OneToOneField(IndentItem, on_delete=models.CASCADE, primary_key=True)
+    item_id = models.OneToOneField(IndentItem, on_delete=models.CASCADE, primary_key=True)
     dealing_assistant_id=models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     vendor=models.CharField(max_length=250, blank=False)
     current_stock=models.IntegerField(blank=False)
@@ -65,6 +92,7 @@ class StockItem(models.Model):
 
     # this StockEntryId will never ever change onces StockItem instance is created and will therefore be used for obtaining the grade,indentfile etc. details.
 
+    StockEntryId = models.ForeignKey(StockEntry, on_delete=models.CASCADE)
     StockEntryId = models.ForeignKey(StockEntry, on_delete=models.CASCADE)
     nomenclature = models.CharField(max_length=100, unique=True)  # Unique identifier for each StockItem
     inUse = models.BooleanField(default=True)
