@@ -1480,7 +1480,8 @@ def check_partial_booking(request):
                 rooms__id=room_id,
                 booking_from__lt=end_date,
                 booking_to__gt=start_date,
-                status="Confirmed"
+                status__in=["Confirmed", "CheckedIn"]
+
             ).order_by('booking_from')
 
             # Initialize response data
@@ -1759,6 +1760,86 @@ def forward_booking_new(request):
         return JsonResponse({'error': 'One or more rooms not found'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
+    
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def update_booking_new(request):
+    try:
+        # Log the incoming data
+        logger.info(f"Request data: {request.data}")
+
+        booking_id = request.data.get('booking_id')
+        modified_category = request.data.get('modified_category')
+        rooms = request.data.get('rooms', [])
+        remarks = request.data.get('remarks')
+        visitor_organization = request.data.get('visitorOrganization')
+        visitor_phone = request.data.get('visitorPhone')
+        visitor_email = request.data.get('visitorEmail')
+        visitor_name = request.data.get('visitorName')
+        visitor_address = request.data.get('visitorAddress')
+        bill_to_be_settled_by = request.data.get('billToBeSettledBy')
+        purpose = request.data.get('purpose')
+        number_of_rooms = request.data.get('numberOfRooms')  # New field
+        person_count = request.data.get('personCount')  # New field
+
+        # Validate required fields
+        if not booking_id or not modified_category or not visitor_organization:
+            return JsonResponse({'error': 'Missing required fields'}, status=400)
+
+        logger.info(f"Received rooms: {rooms}")
+
+        booking = BookingDetail.objects.select_related('intender', 'caretaker').get(id=booking_id)
+        # booking.status = "Forward"
+        booking.modified_visitor_category = modified_category
+        booking.remark = remarks
+        booking.bill_to_be_settled_by = bill_to_be_settled_by
+        booking.purpose = purpose
+        booking.number_of_rooms = number_of_rooms
+        booking.person_count = person_count  
+
+        # Update visitor details
+        for visitor in booking.visitor.all():
+            visitor.visitor_organization = visitor_organization
+            visitor.visitor_phone = visitor_phone
+            visitor.visitor_email = visitor_email
+            visitor.visitor_name = visitor_name
+            visitor.visitor_address = visitor_address
+            visitor.save()
+
+        # Clear existing rooms and add new rooms
+        booking.rooms.clear()
+        for room in rooms:
+            try:
+                room_object = RoomDetail.objects.get(room_number=room)
+                booking.rooms.add(room_object)
+            except RoomDetail.DoesNotExist:
+                logger.error(f"Room {room} does not exist")
+                return JsonResponse({'error': f'Room {room} not found'}, status=404)
+
+        booking.number_of_rooms_alloted = len(rooms)
+        booking.save()
+
+        # Notify the VhIncharge about the forwarded booking
+        incharge_designations = HoldsDesignation.objects.select_related(
+            'user', 'working', 'designation').filter(designation__name="VhIncharge")
+
+        if not incharge_designations.exists():
+            return JsonResponse({'error': 'VhIncharge not found'}, status=404)
+
+        incharge_name = incharge_designations.first()
+        visitors_hostel_notif(request.user, incharge_name.user, 'booking_forwarded')
+
+        return JsonResponse({'success': 'Booking successfully forwarded'})
+    except BookingDetail.DoesNotExist:
+        return JsonResponse({'error': 'Booking not found'}, status=404)
+    except RoomDetail.DoesNotExist:
+        return JsonResponse({'error': 'One or more rooms not found'}, status=404)
+    except Exception as e:
+        logger.error(f"Error: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=400)
+
 
 
 #account statements
