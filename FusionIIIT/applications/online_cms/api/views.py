@@ -169,7 +169,13 @@ def delete_module(request, module_id):
     except Modules.DoesNotExist:
         return Response({"error": "Module not found"}, status=status.HTTP_404_NOT_FOUND)
 
-
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_slides(request):
+    documents = CourseDocuments.objects.all()  # Fetch all documents
+    serializer = CourseDocumentsSerializer(documents, many=True)
+    return Response(serializer.data)
+    
 # Add a slide
 @api_view(['POST'])
 def add_slide(request, module_id):

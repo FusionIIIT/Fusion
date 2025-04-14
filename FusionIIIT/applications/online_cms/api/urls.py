@@ -24,4 +24,6 @@ urlpatterns = [
 
     url(r'^modules/$', views.get_modules, name='get_modules'),
 
+    url(r'^slides/$', views.get_slides, name='get_slides'),
+
 ]
