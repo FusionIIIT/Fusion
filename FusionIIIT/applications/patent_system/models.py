@@ -23,9 +23,6 @@ class Attorney(models.Model):
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=15)
     firm_name = models.CharField(max_length=255, blank=True, null=True)
-    experience_years = models.IntegerField(default=0)
-    specialization = models.CharField(max_length=255, blank=True, null=True)
-    assigned_cases = models.IntegerField(default=0)
 
     def str(self):
         return self.name
@@ -59,14 +56,14 @@ class Application(models.Model):
     patentability_file_date = models.DateField(blank=True, null=True)
     token_no = models.CharField(max_length=100, blank=True, null=True)
     primary_applicant = models.ForeignKey(Applicant, on_delete=models.CASCADE, related_name="applications")  
-    attorney = models.ForeignKey(Attorney, on_delete=models.CASCADE, related_name="applications", blank=True, null=True)
+    attorney = models.ForeignKey(Attorney, on_delete=models.SET_NULL, related_name="applications", blank=True, null=True)
     assigned_date = models.DateField(blank=True, null=True)
     decision_status = models.CharField(max_length=50, choices=DECISION_STATUS_CHOICES, default = "Pending")
     decision_date = models.DateField(blank=True, null=True)
     submitted_date = models.DateField(blank=True, null=True)
     comments = models.TextField(blank=True, null=True)
 
-    def str(self):
+    def __str__(self):
         return self.title
 
     class Meta:

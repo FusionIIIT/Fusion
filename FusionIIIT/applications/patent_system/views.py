@@ -16,6 +16,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from django.db.models import Count
 
 from .models import (
     Application,
@@ -33,6 +34,8 @@ from applications.globals.models import (
     ExtraInfo,
     HoldsDesignation,
 )
+
+from .serializers import AttorneySerializer
 
 # Logger setup - used for debugging and logging errors
 logger = logging.getLogger(__name__)
@@ -706,3 +709,88 @@ def director_notifications(request):
 def submitted_applications(request):
     submitted = list(Application.objects.filter(status="Submitted").values("id", "title"))
     return JsonResponse({"submitted_applications": submitted})
+
+# -----------------------------------------
+# 🔹 PCC Admin Attorney Management Views
+# -----------------------------------------
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_attorney_list(request):
+    try:
+        # Get all attorneys with their application count
+        attorneys = Attorney.objects.annotate(
+            assigned_applications_count=Count('applications')
+        ).all()
+        
+        # Serialize the data
+        serializer = AttorneySerializer(attorneys, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_attorney(request):
+    try:
+        serializer = AttorneySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def remove_attorney(request, attorney_id):
+    try:
+        attorney = Attorney.objects.get(id=attorney_id)
+        attorney.delete()
+        return Response({'message': 'Attorney removed successfully'}, status=status.HTTP_200_OK)
+    except Attorney.DoesNotExist:
+        return Response({'error': 'Attorney not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_attorney_applications(request, attorney_id):
+    try:
+        # Get the attorney
+        attorney = Attorney.objects.get(id=attorney_id)
+        
+        # Get all applications assigned to this attorney
+        applications = Application.objects.filter(attorney=attorney).values('id', 'title', 'status')
+        
+        # Get the count of assigned applications
+        assigned_count = applications.count()
+        
+        response_data = {
+            'attorney_id': attorney.id,
+            'attorney_name': attorney.name,
+            'assigned_applications_count': assigned_count,
+            'applications': list(applications)
+        }
+        
+        return Response(response_data, status=status.HTTP_200_OK)
+    except Attorney.DoesNotExist:
+        return Response({'error': 'Attorney not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def update_attorney_details(request, attorney_id):
+    try:
+        attorney = Attorney.objects.get(id=attorney_id)
+        serializer = AttorneySerializer(attorney, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except Attorney.DoesNotExist:
+        return Response({'error': 'Attorney not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

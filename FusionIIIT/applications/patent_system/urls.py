@@ -18,11 +18,6 @@ urlpatterns = [
     path("pccAdmin/applications/reject/", views.reject_application, name="reject_applications"),
     path("pccAdmin/applications/status/", views.status_of_applications, name="status_of_applications"),
     path("pccAdmin/applications/status/details/<int:application_id>/", views.view_application_details_for_pccAdmin, name="view_application_details_for_pccAdmin"),
-    path("pccAdmin/attorney/add/", views.add_attorney, name="add_attorney"),
-    path("pccAdmin/attorney/remove/", views.remove_attorney, name="remove_attorney"),
-    path("pccAdmin/attorneys/", views.view_attorney_list, name="view_attorney_list"),
-    path("pccAdmin/attorneys/<int:attorney_id>/", views.view_attorney_details, name="view_attorney_details"),
-    path("pccAdmin/attorneys/<int:attorney_id>/edit/", views.edit_attorney_details, name="edit_attorney_details"),
 
     # Director-related paths
     path("director", views.director_main_dashboard, name="director_main_dashboard"),
@@ -36,6 +31,12 @@ urlpatterns = [
     path("director/notifications/", views.director_notifications, name="director_notifications"),
     path("director/submitted-applications", views.submitted_applications, name="submitted_applications"),
 
+    # Attorney management URLs
+    path("pccAdmin/attorneys/", views.get_attorney_list, name="get_attorney_list"),
+    path("pccAdmin/attorneys/add/", views.add_attorney, name="add_attorney"),
+    path("pccAdmin/attorneys/<int:attorney_id>/remove/", views.remove_attorney, name="remove_attorney"),
+    path("pccAdmin/attorneys/<int:attorney_id>/applications/", views.get_attorney_applications, name="get_attorney_applications"),
+    path("pccAdmin/attorneys/<int:attorney_id>/update/", views.update_attorney_details, name="update_attorney_details"),
 ]
 
 # Serve media files in development
