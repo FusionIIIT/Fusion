@@ -262,9 +262,8 @@ def handle_director_approval(request):
     if not request_instance:
         return Response({'error': 'Request not approved by IWD Admin'}, status=status.HTTP_400_BAD_REQUEST)
 
-    proposal_instance = Proposal.objects.filter(request_id=request_id).first()
-    if not proposal_instance:
-        return Response({'error': 'No proposal exists for this request'}, status=status.HTTP_400_BAD_REQUEST)
+    if not request_instance.activeProposal:
+        return Response({'error': 'No active proposal exists for this request'}, status=status.HTTP_400_BAD_REQUEST)
 
     remarks = data.get('remarks')
     attachment = request.FILES.get('file')
@@ -282,10 +281,10 @@ def handle_director_approval(request):
     iwd_notif(request.user, receiver_user_obj, "file_forward")
 
     if action == "approve":
-        Requests.objects.filter(id=request_id).update(directorApproval=1, status="Approved by Director")
+        Requests.objects.filter(id=request_id).update(directorApproval=1, status="Approved by the director")
         return Response({'message': 'Request approved by Director'}, status=status.HTTP_200_OK)
     elif action == "reject":
-        Requests.objects.filter(id=request_id).update(directorApproval=-1, status="Rejected by Director")
+        Requests.objects.filter(id=request_id).update(directorApproval=-1, status="Rejected by the director", iwdAdminApproval=0, activeProposal=None)
         return Response({'message': 'Request rejected by Director'}, status=status.HTTP_200_OK)
     else:
         return Response({'error': 'Invalid action'}, status=status.HTTP_400_BAD_REQUEST)
@@ -365,6 +364,15 @@ def handle_update_requests(request):
     '''
     data = request.data
     request_id = data.get("id")
+
+    # Check if the request exists and has been rejected by IWD Admin
+    request_instance = Requests.objects.filter(id=request_id).first()
+    if not request_instance:
+        return Response({'error': 'Request not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request_instance.iwdAdminApproval == -1:
+        return Response({'error': 'This request has been rejected by IWD Admin and cannot be updated.'}, status=status.HTTP_403_FORBIDDEN)
+
     desg = data.get('role')
     receiver_desg, receiver_user = data.get('designation').split('|')
 
@@ -391,7 +399,7 @@ def handle_update_requests(request):
         "status": "Pending",
         "items": data.get('items', [])
     }
-    proposal_serializer = ProposalSerializer(data=proposal_data)
+    proposal_serializer = CreateProposalSerializer(data=proposal_data)
     if proposal_serializer.is_valid():
         proposal = proposal_serializer.save()
 
@@ -411,6 +419,12 @@ def handle_update_requests(request):
                 src_object_id=str(request_id),
                 file_extra_JSON={"value": 2},
                 attached_file=None
+            )
+            Requests.objects.filter(id=request_id).update(
+                status="Pending",
+                iwdAdminApproval=0,
+                directorApproval=0,
+                activeProposal=proposal.id,
             )
         else:
             print("request id is invalid")
@@ -1216,7 +1230,10 @@ def create_proposal(request):
         print("wowowowow ")
         proposal = serializer.save()
         print(proposal, "wowowowow ", proposal.id)
-        Requests.objects.filter(id=request_id).update(activeProposal=proposal.id)
+        if(request_instance.activeProposal is None):
+            Requests.objects.filter(id=request_id).update(activeProposal=proposal.id, status="Proposal created")
+        else:
+            Requests.objects.filter(id=request_id).update(activeProposal=proposal.id)
         receiver_user_obj = User.objects.get(username=receiver_user)
         iwd_notif(request.user, receiver_user_obj, "Proposal_added")
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -1279,11 +1296,18 @@ def handle_admin_approval(request):
     if not request_id or not action:
         return Response({'error': 'Request ID and action are required'}, status=status.HTTP_400_BAD_REQUEST)
 
+    request_instance = Requests.objects.filter(id=request_id).first()
+    if not request_instance:
+        return Response({'error': 'Request not found'}, status=status.HTTP_404_NOT_FOUND)
+
     if action == "approve":
-        Requests.objects.filter(id=request_id).update(iwdAdminApproval=1, status="Approved by IWD Admin")
+        if request_instance.activeProposal:
+            Requests.objects.filter(id=request_id).update(iwdAdminApproval=1, status="Proposal created")
+        else:
+            Requests.objects.filter(id=request_id).update(iwdAdminApproval=1, status="Approved by the IWD Admin")
         return Response({'message': 'Request approved by IWD Admin'}, status=status.HTTP_200_OK)
     elif action == "reject":
-        Requests.objects.filter(id=request_id).update(iwdAdminApproval=-1, status="Rejected by IWD Admin")
+        Requests.objects.filter(id=request_id).update(iwdAdminApproval=-1, status="Rejected", activeProposal=None)
         return Response({'message': 'Request rejected by IWD Admin'}, status=status.HTTP_200_OK)
     else:
         return Response({'error': 'Invalid action'}, status=status.HTTP_400_BAD_REQUEST)
