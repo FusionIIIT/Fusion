@@ -1941,8 +1941,9 @@ class CheckResultView(APIView):
                 
                 if not replaced_by:
                     total_earned_credits+= grade.course_id.credit
-                    cpi_available_credits += grade.course_id.credit
                     cpi_acquired_credits += grade_weights.get(grade.grade, 0) * grade.course_id.credit
+                    if grade.grade in grade_weights:
+                     cpi_available_credits += grade.course_id.credit
                 else:
                     replacement_map[current_course_id]['replacements'].append({
                     'new_course_id': current_course_id,
@@ -1968,6 +1969,7 @@ class CheckResultView(APIView):
           
         cpi = 10 * (cpi_acquired_credits / cpi_available_credits) if cpi_available_credits > 0 else 0
         # print(cpi)
+        # print(cpi_acquired_credits)
         response_data = {
             "success": True,
             "courses": [
