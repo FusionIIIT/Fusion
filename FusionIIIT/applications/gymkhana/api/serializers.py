@@ -50,14 +50,13 @@ class event_infoserializer(serializers.ModelSerializer):
 
     class Meta:
         model=Event_info
-        fields=['club','event_name','incharge','start_date','end_date','venue','start_time','id','details','status','end_time','details']
+        fields=['club','event_name','incharge','start_date','end_date','venue','start_time','id','details','status','end_time','details','file_id']
 
 class club_budgetserializer(serializers.ModelSerializer):
 
     class Meta:
         model=Club_budget
-        fields=['club','budget_for','budget_amt','budget_file','status','id','description','remarks']
-
+        fields=['club','budget_for','budget_amt','budget_file','status','id','description','remarks','file_id']
 class Club_reportSerializers(serializers.ModelSerializer):
     class Meta:
         model = Club_report
@@ -81,7 +80,10 @@ class Registration_formSerializer(serializers.ModelSerializer):
 class BudgetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Budget
-        fields = ['id', 'club', 'budget_for', 'budget_requested', 'budget_allocated', 'budget_file', 'description', 'status', 'remarks', 'budget_comment']
+        fields = '__all__'
+        extra_kwargs = {
+            'budget_file': {'required': False},  # <- allow optional on update
+        }
 class AchievementsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Achievements

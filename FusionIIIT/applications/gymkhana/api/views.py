@@ -66,6 +66,42 @@ from django.core.files.base import ContentFile
 import base64
 
 from rest_framework.parsers import MultiPartParser
+from notifications.signals import notify
+
+def gymkhana_notif(sender, recipient, notif_type, message=None, club_name=None):
+    url = 'gymkhana:gymkhana'
+    module = 'Gymkhana'
+    verb = ""
+
+    if notif_type == "session_scheduled":
+        verb = f"{club_name} has scheduled a new session: '{message}'."
+    elif notif_type == "member_approved":
+        verb = f"You've been approved as a member of '{club_name}'."
+    elif notif_type == "member_rejected":
+        verb = f"Your request to join '{club_name}' has been rejected."
+    elif notif_type == "new_member_request":
+        verb = f"Someone has applied to join '{club_name}'."
+    elif notif_type == "new_event_request":
+        verb = f"New event request pending approval from '{club_name}'."
+    elif notif_type == "event_approved_fic":
+        verb = f"FIC has approved an event from '{club_name}': '{message}'."
+    elif notif_type == "event_approved_counsellor":
+        verb = f"Counsellor has approved an event from '{club_name}': '{message}'."
+    elif notif_type == "event_approved_dean":
+        verb = f"Dean has approved an event from '{club_name}': '{message}'."
+    elif notif_type == "new_budget_request":
+        verb = f"New budget request pending approval from '{club_name}'."
+    elif notif_type == "budget_approved_fic":
+        verb = f"FIC has approved a budget (ID: {message}) for '{club_name}'."
+    elif notif_type == "budget_approved_counsellor":
+        verb = f"Counsellor has approved budget (ID: {message}) for '{club_name}'."
+    elif notif_type == "budget_approved_dean":
+        verb = f"Dean has approved budget (ID: {message}) for '{club_name}'."
+    elif notif_type == "event_report_submitted":
+        verb=f"The event report for '{message}' has been submitted by the coordinator of {club_name}."
+
+    if verb:
+        notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 
 class Budgetinfo(APIView):
@@ -174,46 +210,62 @@ class UploadActivityCalendarAPIView(APIView):
 #         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class ClubMemberApproveView(generics.UpdateAPIView):
+class ClubMemberApproveView(APIView):
     def post(self, request):
-        club_member_id = request.data.get(
-            "id"
-        )  # Assuming the ID is sent in the request body
+        club_member_id = request.data.get('id')
         try:
             club_member = Club_member.objects.get(id=club_member_id)
         except Club_member.DoesNotExist:
-            return Response(
-                {"error": "Club member not found."}, status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"error": "Club member not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Update the status of the club member
-        club_member.status = "member"  # Assuming 'member' is the status for approval
+        club_member.status = 'confirmed'
         club_member.save()
 
-        return Response(
-            {"message": "Status updated successfully."}, status=status.HTTP_200_OK
-        )
+        try:
+            print("hi")
+            coordinator = ClubPosition.objects.get(club=club_member.club, position='COORDINATOR')
+            sender = User.objects.get(username=coordinator.name)
+            recipient = club_member.member
+            recipient= User.objects.get(username=recipient)
+            gymkhana_notif(
+                sender=sender,
+                recipient=recipient,
+                notif_type="member_approved",
+                club_name=str(club_member.club)
+            )
+        except (ClubPosition.DoesNotExist, User.DoesNotExist):
+            pass
+
+        return Response({"message": "Status updated and member notified."}, status=status.HTTP_200_OK)
 
 
 class ClubMemberDeleteAPIView(APIView):
     def post(self, request):
-        club_member_id = request.data.get(
-            "id"
-        )  # Assuming the ID is sent in the request body
+        club_member_id = request.data.get('id')
         try:
             club_member = Club_member.objects.get(id=club_member_id)
         except Club_member.DoesNotExist:
-            return Response(
-                {"error": "Club member not found."}, status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"error": "Club member not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Delete the club member object
+        club = club_member.club
+        try:
+            print("hi")
+            coordinator = ClubPosition.objects.get(club=club, position='COORDINATOR')
+            sender = User.objects.get(username=coordinator.name)
+            recipient = club_member.member
+            recipient = User.objects.get(username=recipient)
+            gymkhana_notif(
+                sender=sender,
+                recipient=recipient,
+                notif_type="member_rejected",
+                club_name=str(club)
+            )
+        except (ClubPosition.DoesNotExist, User.DoesNotExist):
+            pass
+
         club_member.delete()
 
-        return Response(
-            {"message": "Club member deleted successfully."},
-            status=status.HTTP_204_NO_CONTENT,
-        )
+        return Response({"message": "Status updated and member notified."}, status=status.HTTP_200_OK)
 
 
 # class UpdateClubDetailsAPIView(APIView):
@@ -340,8 +392,10 @@ class AddMemberToClub(APIView):
     def post(self, request):
         member = request.data.get("member")
         club = request.data.get("club")
+
         if Club_member.objects.filter(member=member, club=club).exists():
             return Response({"error": "Member has already applied to this club."}, status=status.HTTP_400_BAD_REQUEST)
+
         data = {
             "member": member,
             "club": club,
@@ -350,9 +404,24 @@ class AddMemberToClub(APIView):
         }
         serializer = Club_memberSerializer(data=data)
         if serializer.is_valid():
-            serializer.save()
+            club_member = serializer.save()
+            try:
+                club_obj = Club_info.objects.get(club_name=club)
+                coordinator = ClubPosition.objects.get(club=club_obj, position='COORDINATOR')
+                recipient = User.objects.get(username=coordinator.name)
+                gymkhana_notif(
+                    sender=request.user,
+                    recipient=recipient,
+                    notif_type="new_member_request",
+                    club_name=str(club_obj.club_name)
+                )
+            except Exception:
+                pass
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 
@@ -1085,10 +1154,27 @@ class AddClubAPI(APIView):
 
 class NewEventAPIView(APIView):
     def put(self, request):
+        print(1)
         request.data["status"] = "FIC"
         serializer = event_infoserializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
+
+            try:
+                print(2)
+                event = serializer.instance  # Get the saved event instance
+                club = event.club  # Get the club of the event
+                fic_position = ClubPosition.objects.get(club=club, position='FIC')  # Fetch the coordinator position
+                fic_user = User.objects.get(username=fic_position.name)  # Get the user associated with the coordinator
+                gymkhana_notif(
+                    sender=request.user,
+                    recipient=fic_user,
+                    notif_type="new_event_request",
+                    club_name=str(event.club)
+                )
+            except (ClubPosition.DoesNotExist, User.DoesNotExist) as e:
+                print(f"[Notification Error]: {e}")
+
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1097,13 +1183,32 @@ class FICApproveEventAPIView(APIView):
     def put(self, request):
         event_id = request.data.get("id")
         event = get_object_or_404(Event_info, id=event_id)
+
         if event.status != "FIC":
             return Response(
                 {"error": "Event is not under FIC review."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
         event.status = "COUNSELLOR"
         event.save()
+
+        try:
+            counsellor = ClubPosition.objects.get(
+                club=event.club,
+                position__in=['TECHNICAL_COUNSELLOR', 'CULTURAL_COUNSELLOR', 'SPORTS_COUNSELLOR']
+            )
+            recipient = User.objects.get(username=counsellor.name)
+            sender = request.user
+            gymkhana_notif(
+                sender=sender,
+                recipient=recipient,
+                notif_type="event_approved_fic",
+                club_name=str(event.club),
+                message=event.event_name
+            )
+        except (ClubPosition.DoesNotExist, User.DoesNotExist):
+            pass
 
         return Response(
             {"message": "Event status changed to 'Counsellor Review'."},
@@ -1115,13 +1220,30 @@ class CounsellorApproveEventAPIView(APIView):
     def put(self, request):
         event_id = request.data.get("id")
         event = get_object_or_404(Event_info, id=event_id)
+
         if event.status != "COUNSELLOR":
             return Response(
                 {"error": "Event is not under Counsellor review."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
         event.status = "DEAN"
         event.save()
+
+        try:
+            print("hi")
+            recipient = User.objects.get(username="mkroy")
+            print(recipient)
+            sender = request.user
+            gymkhana_notif(
+                sender=sender,
+                recipient=recipient,
+                notif_type="event_approved_counsellor",
+                club_name=str(event.club),
+                message=event.event_name
+            )
+        except User.DoesNotExist:
+            pass
 
         return Response(
             {"message": "Event status changed to 'Dean Review'."},
@@ -1153,6 +1275,21 @@ class NewBudgetAPIView(APIView):
         serializer = BudgetSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
+            try:
+                budget = serializer.instance
+                club = budget.club
+                fic = ClubPosition.objects.get(club=club, position='FIC')
+                fic_user = User.objects.get(username=fic.name)
+                gymkhana_notif(
+                    sender=request.user,
+                    recipient=fic_user,
+                    notif_type="new_budget_request",
+                    message=budget.id,
+                    club_name=str(club)
+                )
+            except (ClubPosition.DoesNotExist, User.DoesNotExist):
+                pass
+
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1168,6 +1305,23 @@ class FICApproveBudgetAPIView(APIView):
             )
         budget.status = "COUNSELLOR"
         budget.save()
+        try:
+            counsellor = ClubPosition.objects.get(
+                club=budget.club,
+                position__in=['TECHNICAL_COUNSELLOR', 'CULTURAL_COUNSELLOR', 'SPORTS_COUNSELLOR']
+            )
+            recipient = User.objects.get(username=counsellor.name)
+            sender = request.user
+            gymkhana_notif(
+                sender=sender,
+                recipient=recipient,
+                notif_type="budget_approved_fic",
+                message=budget.id,
+                club_name=str(budget.club)
+            )
+        except (ClubPosition.DoesNotExist, User.DoesNotExist):
+            pass
+
         return Response(
             {"message": "Budget status changed to 'Counsellor Review'."},
             status=status.HTTP_200_OK,
@@ -1178,15 +1332,27 @@ class CounsellorApproveBudgetAPIView(APIView):
     def put(self, request):
         budget_id = request.data.get('id')
         budget = get_object_or_404(Budget, id=budget_id)
-        if budget.status != 'COUNSELLOR' and budget.status != 'REREVIEW':
+        if budget.status not in ['COUNSELLOR', 'REREVIEW']:
             return Response({"error": "Budget is not under Counsellor review."}, status=status.HTTP_400_BAD_REQUEST)
-        if budget.status == 'REREVIEW':
-            budget.status = 'ACCEPT'
-        else:
-            budget.status = 'DEAN'
+
+        new_status = 'ACCEPT' if budget.status == 'REREVIEW' else 'DEAN'
         serializer = BudgetSerializer(budget, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.save(status=budget.status)
+            serializer.save(status=new_status)
+
+            if new_status == 'DEAN':
+                try:
+                    dean_user = User.objects.get(username="mkroy")
+                    gymkhana_notif(
+                        sender=request.user,
+                        recipient=dean_user,
+                        notif_type="budget_approved_counsellor",
+                        message=budget.id,
+                        club_name=str(budget.club)
+                    )
+                except User.DoesNotExist:
+                    pass
+
             return Response({"message": "Budget updated and status changed"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1202,6 +1368,20 @@ class DeanApproveBudgetAPIView(APIView):
             )
         budget.status = "ACCEPT"
         budget.save()
+        try:
+            coordinator = ClubPosition.objects.get(club=budget.club, position='COORDINATOR')
+            recipient = User.objects.get(username=coordinator.name)
+            sender = request.user
+            gymkhana_notif(
+                sender=sender,
+                recipient=recipient,
+                notif_type="budget_approved_dean",
+                message=budget.id,
+                club_name=str(budget.club)
+            )
+        except (ClubPosition.DoesNotExist, User.DoesNotExist):
+            pass
+
         return Response(
             {"message": "Budget status changed to 'Accepted'."},
             status=status.HTTP_200_OK,
@@ -1227,6 +1407,21 @@ class RejectBudgetAPIView(APIView):
         budget = get_object_or_404(Budget, id=budget_id)
         budget.status = "REJECT"
         budget.save()
+
+        try:
+            coordinator = ClubPosition.objects.get(club=budget.club, position='COORDINATOR') 
+            recipient = User.objects.get(username=coordinator.name)
+            sender = request.user
+            gymkhana_notif(
+                sender=sender,
+                recipient=recipient,
+                notif_type="budget_rejected",
+                club_name=str(budget.club),
+                message=f"Budget ID #{budget.id}"
+            )
+        except (ClubPosition.DoesNotExist, User.DoesNotExist):
+            pass
+
         return Response(
             {"message": "Budget status changed to 'Rejected'."},
             status=status.HTTP_200_OK,
@@ -1239,6 +1434,19 @@ class RejectEventAPIView(APIView):
         event = get_object_or_404(Event_info, id=event_id)
         event.status = "REJECT"
         event.save()
+        try:
+            coordinator = ClubPosition.objects.get(club=event.club, position='COORDINATOR') 
+            recipient = User.objects.get(username=coordinator.name)
+            sender = request.user
+            gymkhana_notif(
+                sender=sender,
+                recipient=recipient,
+                notif_type="event_rejected",
+                club_name=str(event.club),
+                message=event.event_name
+            )
+        except (ClubPosition.DoesNotExist, User.DoesNotExist):
+            pass
         return Response(
             {"message": "Event status changed to 'Rejected'."},
             status=status.HTTP_200_OK,
@@ -1341,6 +1549,23 @@ class ModifyEventAPIView(APIView):
         event = get_object_or_404(Event_info, id=event_id)
         event.status = "COORDINATOR"
         event.save()
+        try:
+            coordinator = ClubPosition.objects.get(club=event.club, position='COORDINATOR') 
+            recipient = User.objects.get(username=coordinator.name)
+            sender = request.user
+            gymkhana_notif(
+                sender=sender,
+                recipient=recipient,
+                notif_type="event_modified",
+                club_name=str(event.club),
+                message=event.event_name
+            )
+        except (ClubPosition.DoesNotExist, User.DoesNotExist):
+            pass
+        return Response(
+            {"message": "Event status changed to 'Rejected'."},
+            status=status.HTTP_200_OK,
+        )
         return Response(
             {"message": "Event status changed to 'Coordinator review'."},
             status=status.HTTP_200_OK,
@@ -1353,6 +1578,21 @@ class ModifyBudgetAPIView(APIView):
         budget = get_object_or_404(Budget, id=budget_id)
         budget.status = "COORDINATOR"
         budget.save()
+
+        try:
+            coordinator = ClubPosition.objects.get(club=budget.club, position='COORDINATOR') 
+            recipient = User.objects.get(username=coordinator.name)
+            sender = request.user
+            gymkhana_notif(
+                sender=sender,
+                recipient=recipient,
+                notif_type="budget_modified",
+                club_name=str(budget.club),
+                message=f"Budget ID #{budget.id}"
+            )
+        except (ClubPosition.DoesNotExist, User.DoesNotExist):
+            pass
+
         return Response(
             {"message": "Budget status changed to 'Coordinator Review'."},
             status=status.HTTP_200_OK,
@@ -1384,6 +1624,11 @@ class ListClubPositionAPIView(APIView):
     def post(self, request):
         name = request.data.get("name")
         positions = ClubPosition.objects.filter(name=name)
+        serializer = ClubPositionSerializer(positions, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+class ListAllClubPositionAPIView(APIView):
+    def get(self, request):
+        positions = ClubPosition.objects.all()
         serializer = ClubPositionSerializer(positions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -1787,6 +2032,27 @@ class EventReportAPIView(APIView):
 
             file_name = f"event_report_{event_report.id}.pdf"
             event_report.report_pdf.save(file_name, ContentFile(buffer.getvalue()), save=True)
+            try:
+                counsellor = ClubPosition.objects.get(
+                    club=event_instance.club,
+                    position__in=[
+                        'TECHNICAL_COUNSELLOR',
+                        'CULTURAL_COUNSELLOR',
+                        'SPORTS_COUNSELLOR'
+                    ]
+                )
+                recipient = User.objects.get(username=counsellor.name)
+                sender = request.user
+                gymkhana_notif(
+                    sender=sender,
+                    recipient=recipient,
+                    notif_type="event_report_submitted",
+                    club_name=str(event_instance.club),
+                    message=event_instance.event_name
+                )
+            except (ClubPosition.DoesNotExist, User.DoesNotExist):
+                pass
+
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -1826,3 +2092,4 @@ class UpdateBudgetAPIView(APIView):
             serializer.save(status=budget.status)
             return Response({"message": "Budget updated and status changed"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
