@@ -27,6 +27,11 @@ from applications.globals.models import ExtraInfo
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
+from django.db import connection
+from rest_framework.permissions import IsAuthenticated
+from applications.online_cms.models import Attendance
+import pandas as pd
+from datetime import datetime
 
 # from applications.globals.models import *
 
@@ -129,6 +134,153 @@ from .serializers import *
 #         else:
 #             return Response({'message': 'Invalid user type'}, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def upload_attendance(request):
+    if 'file' not in request.FILES:
+        return JsonResponse({'error': 'No file uploaded'}, status=400)
+
+    try:
+        excel_file = request.FILES['file']
+        df = pd.read_excel(excel_file, keep_default_na=False)
+
+        # Normalize columns
+        df.columns = df.columns.str.strip().str.lower().str.replace(' ', '_')
+
+        required_columns = ['student_id', 'instructor_id', 'date', 'present', 'no_of_attendance']
+        missing_cols = [col for col in required_columns if col not in df.columns]
+        if missing_cols:
+            return JsonResponse({
+                'error': 'Missing required columns',
+                'missing': missing_cols,
+                'found': df.columns.tolist()
+            }, status=400)
+
+        successes = 0
+        errors = []
+
+        for index, row in df.iterrows():
+            try:
+                # Get the actual values from the Excel columns
+                student_id = str(row['student_id'])  # Changed from student_id_id
+                instructor_id = str(row['instructor_id'])  # Changed from instructor_id_id
+
+                if pd.isna(row['date']):
+                    raise ValueError("Date cannot be empty")
+
+                if isinstance(row['date'], str):
+                    date_str = row['date'].split()[0]
+                    try:
+                        date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+                    except ValueError:
+                        date_obj = datetime.strptime(date_str, '%d/%m/%Y').date()
+                else:
+                    date_obj = row['date'].date()
+
+                present = int(row['present'])
+                no_of_attendance = int(row['no_of_attendance'])
+
+                with connection.cursor() as cursor:
+                    # Check if record exists
+                    cursor.execute(
+                        "SELECT 1 FROM online_cms_attendance WHERE student_id_id = %s AND instructor_id_id = %s AND date = %s",
+                        [student_id, instructor_id, date_obj]
+                    )
+                    exists = cursor.fetchone()
+
+                    if exists:
+                        # Update existing record
+                        cursor.execute(
+                            "UPDATE online_cms_attendance SET present = %s, no_of_attendance = %s "
+                            "WHERE student_id_id = %s AND instructor_id_id = %s AND date = %s",
+                            [present, no_of_attendance, student_id, instructor_id, date_obj]
+                        )
+                        action = 'updated'
+                    else:
+                        # Insert new record
+                        cursor.execute(
+                            "INSERT INTO online_cms_attendance (student_id_id, instructor_id_id, date, present, no_of_attendance) "
+                            "VALUES (%s, %s, %s, %s, %s)",
+                            [student_id, instructor_id, date_obj, present, no_of_attendance]
+                        )
+                        action = 'created'
+
+                successes += 1
+                print(f"Row {index + 2}: {action} successfully")
+
+            except Exception as e:
+                error_msg = f"Row {index + 2}: {str(e)}"
+                errors.append(error_msg)
+                print(f"Error in row {index + 2}:", e)
+
+        return JsonResponse({
+            'message': f'Processed {successes} rows successfully',
+            'success_count': successes,
+            'error_count': len(errors),
+            'errors': errors if errors else None
+        })
+
+    except Exception as e:
+        print("Upload failed:", str(e))
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_attendance(request):
+    try:
+        # Get query parameters for filtering
+        student_id = request.GET.get('student_id')
+        instructor_id = request.GET.get('instructor_id')
+        date_from = request.GET.get('date_from')
+        date_to = request.GET.get('date_to')
+        
+        # Start with all records
+        queryset = Attendance.objects.all()
+        
+        # Apply filters if provided
+        if student_id:
+            queryset = queryset.filter(student_id_id=student_id)
+        if instructor_id:
+            queryset = queryset.filter(instructor_id_id=instructor_id)
+        if date_from and date_to:
+            queryset = queryset.filter(date__range=[date_from, date_to])
+        elif date_from:
+            queryset = queryset.filter(date__gte=date_from)
+        elif date_to:
+            queryset = queryset.filter(date__lte=date_to)
+        
+        # Prepare the response data
+        data = []
+        for attendance in queryset:
+            data.append({
+                'id': attendance.id,
+                'student_id': attendance.student_id_id,  # Directly access the ID
+                'instructor_id': attendance.instructor_id_id,  # Directly access the ID
+                'date': attendance.date.strftime('%Y-%m-%d'),
+                'present': attendance.present,
+                'no_of_attendance': attendance.no_of_attendance
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'count': len(data),
+            'data': data
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+@api_view(['GET'])
+def get_modules(request):
+    if request.method == "GET":
+        modules = Modules.objects.all().values("id", "module_name")  # Use correct field name
+        return JsonResponse(list(modules), safe=False)
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+    
 # add a module
 @api_view(['POST'])
 def add_module(request):
@@ -162,7 +314,13 @@ def delete_module(request, module_id):
     except Modules.DoesNotExist:
         return Response({"error": "Module not found"}, status=status.HTTP_404_NOT_FOUND)
 
-
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_slides(request):
+    documents = CourseDocuments.objects.all()  # Fetch all documents
+    serializer = CourseDocumentsSerializer(documents, many=True)
+    return Response(serializer.data)
+    
 # Add a slide
 @api_view(['POST'])
 def add_slide(request, module_id):
@@ -661,3 +819,46 @@ def create_grading_scheme(request):
     )
 
     return Response({"message": "Grading scheme created successfully"}, status=status.HTTP_201_CREATED)
+
+
+@api_view(['GET'])
+def view_attendance(request, course_code, version):
+    user = request.user
+
+    if not course_code or not version:
+        return Response({"error": "course_code and version are required parameters"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        extrainfo = ExtraInfo.objects.select_related().get(user=user)
+    except ExtraInfo.DoesNotExist:
+        return Response({"error": "User information not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    if extrainfo.user_type == 'student':
+        try:
+            student = Student.objects.select_related('id').get(id=extrainfo)
+            course = Courses.objects.select_related().get(code=course_code, version=version)
+            instructor = CourseInstructor.objects.select_related().get(course_id=course, batch_id=student.batch_id)
+            print(instructor)
+            print(student)
+            print(course)
+        except (Student.DoesNotExist, Courses.DoesNotExist, CourseInstructor.DoesNotExist):
+            return Response({"error": "Course or instructor not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        attendance_records = Attendance.objects.select_related().filter(student_id=student, instructor_id=instructor)
+        attendance_serializer = AttendanceSerializer(attendance_records, many=True)
+
+        return Response(attendance_serializer.data, status=status.HTTP_200_OK)
+
+    elif extrainfo.user_type == 'instructor':
+        try:
+            instructor = CourseInstructor.objects.select_related('course_id').get(instructor_id=extrainfo, course_id__code=course_code, course_id__version=version)
+        except CourseInstructor.DoesNotExist:
+            return Response({"error": "Instructor or course not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        registered_students = course_registration.objects.select_related('student_id').filter(course_id=instructor.course_id)
+        attendance_records = Attendance.objects.select_related().filter(instructor_id=instructor, student_id__in=[stu.student_id for stu in registered_students])
+        attendance_serializer = AttendanceSerializer(attendance_records, many=True)
+
+        return Response(attendance_serializer.data, status=status.HTTP_200_OK)
+
+    return Response({"error": "Invalid user type"}, status=status.HTTP_400_BAD_REQUEST)

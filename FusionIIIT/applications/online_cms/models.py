@@ -2,7 +2,7 @@ from django.db import models
 #import models used from academic procedure and academic information  modules and globals
 from applications.academic_information.models import Student, Curriculum
 from applications.programme_curriculum.models import Course as Courses, CourseInstructor
-from applications.globals.models import ExtraInfo
+from applications.globals.models import ExtraInfo, Faculty
 
 #the modules for containing course content
 class Modules(models.Model):
@@ -279,7 +279,7 @@ class Attendance(models.Model):
     student_id = models.ForeignKey(Student,on_delete=models.CASCADE)
 #    course_id = models.ForeignKey(Course)
 #    attend = models.CharField(max_length=6, choices=Constants.ATTEND_CHOICES)
-    instructor_id = models.ForeignKey(CourseInstructor, on_delete=models.CASCADE)
+    instructor_id = models.ForeignKey(Faculty, on_delete=models.CASCADE)
 #    curriculum_id = models.ForeignKey(Curriculum, on_delete=models.CASCADE)
     date = models.DateField()
     present = models.IntegerField(default=0)
