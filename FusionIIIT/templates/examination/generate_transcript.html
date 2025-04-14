@@ -54,9 +54,9 @@
     <a class="item" href="{% url 'examination:updateGrades' %}">Verify
         <i class="right floated chevron right icon"></i>
     </a>
-    <a class="item" href="{% url 'examination:authenticate' %}">Authenticate Course
+    {% comment %} <a class="item" href="{% url 'examination:authenticate' %}">Authenticate Course
         <i class="right floated chevron right icon"></i>
-    </a>
+    </a> {% endcomment %}
 
     <a class="item" href="{% url 'examination:announcement' %}">Announcement
         <i class="right floated chevron right icon"></i>
@@ -106,14 +106,9 @@
                         <td>{{ course_detail.name }}</td>
                         <td>{{ course_detail.code }}</td>
                         <td>{{ course_detail.credit }}</td>
-                        <td>
-                            {% if data.all_authenticators_true %}
-                                {{ data.grade.grade }}
-                            {% else %}
-                                Course must be authenticated to generate grade
-                            {% endif %}
+                        <td>    
+                                {{ data.grade.grade }}         
                         </td>
-                        <td>{{data.all_authenticators_true}}</td>
                     </tr>
                 {% endfor %}
             </tbody>

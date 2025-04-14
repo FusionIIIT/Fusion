@@ -42,9 +42,9 @@
   <a class="item" href="{% url 'examination:updateGrades' %}">Verify
     <i class="right floated chevron right icon"></i>
   </a>
-  <a class="item" href="{% url 'examination:authenticate' %}">Authenticate Course
+  {% comment %} <a class="item" href="{% url 'examination:authenticate' %}">Authenticate Course
     <i class="right floated chevron right icon"></i>
-  </a>
+  </a> {% endcomment %}
 
   
   <a class="item" href="{% url 'examination:announcement' %}">Announcement
@@ -223,4 +223,4 @@
         window.location.href = "{% url 'examination:updateGrades' %}";
     }
 </script>
-{% endblock %}
+{% endblock %}

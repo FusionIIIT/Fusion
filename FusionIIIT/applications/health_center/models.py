@@ -2,6 +2,7 @@
 from django.db import models
 from datetime import date
 from django.contrib.auth.models import User
+import datetime
 
 from applications.globals.models import ExtraInfo
 from applications.hr2.models import EmpDependents
@@ -48,12 +49,20 @@ class Pathologist(models.Model):
 
     def __str__(self):
         return self.pathologist_name
+    
+class Announcements(models.Model):
+    anno_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE, related_name='announcements_made')
+    ann_date = models.DateTimeField(default=datetime.date.today)
+    message = models.CharField(max_length=200)   
+    upload_announcement = models.FileField(upload_to='health_center/upload_announcement', null=True, default=" ")
+    def __str__(self):
+        return str(self.anno_id.user.username)
 
-# class Complaint(models.Model):
-#     user_id = models.ForeignKey(ExtraInfo,on_delete=models.CASCADE)
-#     feedback = models.CharField(max_length=100, null=True, blank=False)                          #This is the feedback given by the compounder
-#     complaint = models.CharField(max_length=100, null=True, blank=False)                         #Here Complaint given by user cannot be NULL!
-#     date = models.DateField(auto_now=True)
+class Complaint(models.Model):
+    user_id = models.ForeignKey(ExtraInfo,on_delete=models.CASCADE)
+    feedback = models.CharField(max_length=100, null=True, blank=False)                          #This is the feedback given by the compounder
+    complaint = models.CharField(max_length=100, null=True, blank=False)                         #Here Complaint given by user cannot be NULL!
+    date = models.DateField(auto_now=True)
 
 class All_Medicine(models.Model):
     medicine_name = models.CharField(max_length=1000,default="NOT_SET", null=True)
@@ -162,6 +171,7 @@ class medical_relief(models.Model):
     file_id=models.IntegerField(default=0)
     compounder_forward_flag = models.BooleanField(default=False)
     acc_admin_forward_flag = models.BooleanField(default=False)
+    compounder_reject_flag = models.BooleanField(default=False)
     
     
 class MedicalProfile(models.Model):

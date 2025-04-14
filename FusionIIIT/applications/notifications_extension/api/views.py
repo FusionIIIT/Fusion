@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListAPIView
 from notifications.models import Notification
 from rest_framework import status
-from .serializers import NotificationSerializer
+from .serializers import NotificationSerializer, AnnouncementSerializer, AnnouncementListSerializer
 from notification.views import (leave_module_notif,
     placement_cell_notif,
     academics_module_notif,
@@ -30,7 +30,9 @@ from notification.views import (leave_module_notif,
     department_notif,
     office_module_DeanRSPC_notif,
     research_procedures_notif,
-    hostel_notifications)
+    hostel_notifications,
+    announcement_list,
+    RSPC_notif)
 
 
 
@@ -369,3 +371,51 @@ class NotificationsList(ListAPIView):
     serializer_class = NotificationSerializer
     def get_queryset(self):
         return Notification.objects.all().filter(recipient_id=self.request.user.id)
+
+class AnnouncementCreateView(APIView):
+    def post(self, request):
+        # Extract module from request or default to 'Fusion'
+        module = request.data.get('module', 'Fusion')
+        request.data['module'] = module
+
+        # Initialize serializer with the request data
+        serializer = AnnouncementSerializer(data=request.data)
+        if serializer.is_valid():
+            # Save the announcement with the current user as 'created_by'
+            serializer.save(created_by=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        # Return error response if data is invalid
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class AnnouncementListView(APIView):
+    """
+    API View that reuses the announcement_list function to fetch announcements for the user
+    and return them via an API response.
+    """
+
+    def get(self, request):
+        # Call the existing announcement_list function
+        announcement_context = announcement_list(request)
+        
+        # Get the queryset of announcements from the context
+        announcements = announcement_context['announcements']
+
+        # Serialize the queryset
+        serializer = AnnouncementListSerializer(announcements, many=True)
+
+        # Return the serialized data as JSON response
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class RSPCNotificationAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+
+        sender = request.user
+        recipient_id = request.data.get('recipient')
+        type = request.data.get('type')
+        User = get_user_model()
+        recipient = User.objects.get(pk=recipient_id)
+
+        RSPC_notif(sender,recipient, type)
+
+        return Response({'message' : 'Notification sent successfully'}, status=status.HTTP_201_CREATED)    

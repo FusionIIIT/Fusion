@@ -20,10 +20,11 @@ from django.shortcuts import render, get_object_or_404
 from datetime import date
 from applications.filetracking.models import *
 from applications.filetracking.sdk.methods import *
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
 
 from notification.views import otheracademic_notif
-
-
 
 @login_required
 def otheracademic(request):
@@ -70,6 +71,7 @@ def leave_form_submit(request):
         data = request.POST
         file = request.FILES.get('related_document')
         hodname = data.get('hod_credential')
+        print(data.get('mobile_number'),data.get('parents_mobile'),"hello ab")
         
         # Create a new LeaveFormTable instance and save it to the database
         leave = LeaveFormTable.objects.create(
@@ -82,10 +84,15 @@ def leave_form_submit(request):
             address=data.get('address'),
             purpose=data.get('purpose'),
             date_of_application=date.today(),
-            approved=False,  # Initially not approved
-            rejected=False,  # Initially not rejected
+            # approved=False,  # Initially not approved
+            # rejected=False,  # Initially not rejected
+            stud_mobile_no=data.get('mobile_number'),
+            parent_mobile_no=data.get('parents_mobile'),
+            leave_mobile_no=data.get('mobile_during_leave'),
+            curr_sem=int(data.get('semester')),
             hod=data.get('hod_credential')
         )
+        print(data.get('mobile_number'),data.get('parents_mobile'))
         
         leave_hod = User.objects.get(username=hodname)
         receiver_value = User.objects.get(username=request.user.username)
@@ -93,8 +100,6 @@ def leave_form_submit(request):
         lis = list(receiver_value_designation)
         obj = lis[0].designation
 
-    
-        
         file_id = create_file(
             uploader=request.user.username,
             uploader_designation=obj,
@@ -114,6 +119,75 @@ def leave_form_submit(request):
             
         return HttpResponseRedirect('/otheracademic/leaveform')
 
+@csrf_exempt  # Exempt CSRF verification for this view
+# @login_required
+def fetch_pending_leave_requests(request):
+    # Query the LeaveFormTable for entries with status = "Pending"
+    pending_leaves = LeaveFormTable.objects.filter(status="Pending")
+    
+    # Format the data as an array of JSON objects
+    data = []
+    for leave in pending_leaves:
+        data.append({
+            "rollNo": leave.roll_no.roll_no,  # Assuming roll_no field in ExtraInfo has roll_no property
+            "name": leave.student_name,
+            "form": leave.upload_file.url if leave.upload_file else None,
+            "details": {
+                "dateFrom": leave.date_from.strftime("%Y-%m-%d"),
+                "dateTo": leave.date_to.strftime("%Y-%m-%d"),
+                "leaveType": leave.leave_type,
+                "address": leave.address,
+                "purpose": leave.purpose,
+                "hodCredential": leave.hod,
+                "mobileNumber": leave.stud_mobile_no,
+                "parentsMobile": leave.parent_mobile_no,
+                "mobileDuringLeave": leave.leave_mobile_no,
+                "semester": str(leave.curr_sem),
+                "academicYear": f"{leave.date_from.year}-{leave.date_to.year}",
+                "dateOfApplication": leave.date_of_application.strftime("%Y-%m-%d"),
+            }
+        })
+
+    # Return the data as a JSON response
+    return JsonResponse(data, safe=False)
+
+@csrf_exempt
+@api_view(['POST'])
+@login_required
+def get_leave_requests(request):
+    # Get roll_no and username from the request body
+    roll_no = request.data.get("roll_no")
+    username = request.data.get("username")
+
+    if not roll_no or not username:
+        return Response(
+            {"error": "roll_no and username are required."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Filter the leave requests based on roll_no and student_name (username)
+    leave_requests = LeaveFormTable.objects.filter(
+        roll_no_id=roll_no, student_name=username
+    )
+
+    # Serialize the data (assuming the serializer is defined for LeaveFormTable)
+    data = [
+        {
+            "rollNo": leave.roll_no.id,  # Assuming roll_number is the field in ExtraInfo
+            "name": leave.student_name,
+            "branch": leave.branch,  # Assuming branch is a field in LeaveFormTable
+            "dateFrom": leave.date_from,
+            "dateTo": leave.date_to,
+            "leaveType": leave.leave_type,
+            "attachment": leave.upload_file.url if leave.upload_file else None,
+            "purpose": leave.purpose,
+            "address": leave.address,
+            "action": leave.status,
+        }
+        for leave in leave_requests
+    ]
+
+    return Response(data, status=status.HTTP_200_OK)
 
 def leaveApproveForm(request):
     """
@@ -593,9 +667,6 @@ def bonafide(request):
     return render(request,'otheracademic/bonafideForm.html')
 
 
-
-
-
 def bonafide_form_submit(request):
     """
     Bonafide form submitted to acadadmin
@@ -622,11 +693,6 @@ def bonafide_form_submit(request):
         bonafide.save()
         acad_admin_des_id = Designation.objects.get(name="acadadmin")        
         user_ids = HoldsDesignation.objects.filter(designation_id=acad_admin_des_id.id).values_list('user_id', flat=True) 
-        # print(user_ids)  
-        # print(user_ids[0]) 
-        # acad_admins = ExtraInfo.objects.get(user_id=user_ids[0])
-        # # print(acad_admins)
-        # user=ExtraInfo.objects.get(pk=acad_admins.id)
         bonafide_receiver = User.objects.get(id=user_ids[0])
         message='A Bonafide applicationn received'
         otheracademic_notif(request.user,bonafide_receiver, 'bonafide', 1, 'student', message)

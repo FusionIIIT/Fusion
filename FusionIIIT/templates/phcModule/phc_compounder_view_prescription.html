@@ -657,7 +657,6 @@
                     function view_report(f){
                         console.log(f.id)
                         var pk=f.id
-                        alert('view_report')
                         var url= `{% url 'healthcenter:view_file' file_id='0' %}`
                         var newurl=url.replace('0',f.id)
                         window.open(newurl,"_blank")

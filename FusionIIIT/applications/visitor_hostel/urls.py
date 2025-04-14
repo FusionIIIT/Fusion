@@ -32,6 +32,11 @@ urlpatterns = [
     url(r'^check-partial-booking/', views.check_partial_booking, name='check_partial_booking'),
 
 
+    url(r'^room_availabity_new/', views.room_availabity_new, name = 'room_availabity_new'),
+
+    url(r'^check-partial-booking/', views.check_partial_booking, name='check_partial_booking'),
+
+
     url(r'^add-to-inventory/', views.add_to_inventory, name = 'add_to_inventory'),
     url(r'^update-inventory/', views.update_inventory, name = 'update_inventory'),
     url(r'^edit-room-status/', views.edit_room_status, name = 'edit_room_status'),

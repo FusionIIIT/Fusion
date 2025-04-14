@@ -9,9 +9,9 @@
   <a class="active item" href="{% url 'examination:updateGrades' %}"><B>Verify</B>
     <i class="right floated chevron right icon"></i>
   </a>
-  <a class="item" href="{% url 'examination:authenticate' %}">Authenticate Course
+  {% comment %} <a class="item" href="{% url 'examination:authenticate' %}">Authenticate Course
     <i class="right floated chevron right icon"></i>
-  </a>
+  </a> {% endcomment %}
 
   <a class="item" href="{% url 'examination:announcement' %}">Announcement
     <i class="right floated chevron right icon"></i>
@@ -24,86 +24,76 @@
 
 {% block content %}
 <h1>Update Result</h1>
-<br />
+<div style="margin: 34px; margin-left: 0;">
 
-<div style="display: flex; flex-direction: column; gap: 30px;">
-    <div style="display: flex; flex-direction: row; gap: 50px;">
-        <div style="display: flex; flex-direction: row; gap: 10px;">
-            <div style="margin-top: 8px;">
-                <label>Course</label>
-            </div>
-            <div class="ui selection dropdown" id="course-dropdown">
-                <input type="hidden" name="gender">
-                <i class="dropdown icon"></i>
-                <div class="default text">Select Item</div>
-                <div class="menu">
+  <!-- Container for Dropdowns -->
+  <div style="display: flex; gap: 50px; margin-top: 20px; align-items: flex-start;">
+      
+      <!-- Course Dropdown -->
+      <div style="flex: 1; min-width: 500px;">
+          <label style="font-weight: bold; margin-bottom: 10px; display: inline-block;">Course</label>
+          <div class="ui fluid search selection dropdown" id="course-dropdown">
+              <input type="hidden" name="course">
+              <i class="dropdown icon"></i>
+              <div class="default text">Select Course</div>
+              <div class="menu">
                   {% for course in courses_info %}
-                  <div class="item" data-value="{{ course.id }}"> {{ course.code }}- {{ course.name }} -{{ course.version    }}</div>
-              {% empty %}
-                  <div class="item">No Courses Available</div>
-              {% endfor %}
-                </div>
-            </div>
-        </div>
-        <div style="display: flex; flex-direction: row; gap: 10px;">
-            <div style="margin-top: 8px;">
-                <label>Semester</label>
-            </div>
-            <div class="ui selection dropdown" id="semester-dropdown">
-                <input type="hidden" name="gender">
-                <i class="dropdown icon"></i>
-                <div class="default text">Select Item</div>
-                <div class="menu">
-                    <div class="item" data-value="1">1</div>
-                    <div class="item" data-value="2">2</div>
-                    <div class="item" data-value="3">3</div>
-                    <div class="item" data-value="4">4</div>
-                    <div class="item" data-value="5">5</div>
-                    <div class="item" data-value="6">6</div>
-                    <div class="item" data-value="7">7</div>
-                    <div class="item" data-value="8">8</div>
-                </div>
-            </div>
-        </div>
-        <div style="display: flex; flex-direction: row; gap: 10px;">
-            <div style="margin-top: 8px;">
-                <label>Batch</label>
-            </div>
-            <div class="ui selection dropdown" id="batch-dropdown">
-                <input type="hidden" name="gender">
-                <i class="dropdown icon"></i>
-                <div class="default text">Select Item</div>
-                <div class="menu">
-                  {% for unique_batch_id in unique_batch_ids %}
-                  <div class="item" data-value="{{ unique_batch_id.batch }}">{{unique_batch_id.batch }}</div>
-              {% empty %}
-                  <div class="item">No Batch</div>
-              {% endfor %}  
-                </div>
-            </div>
-        </div>
-    </div>
+                  <div class="item" data-value="{{ course.id }}">{{ course.code }} - {{ course.name }} - {{ course.version }}</div>
+                  {% empty %}
+                  <div class="item disabled">No Courses Available</div>
+                  {% endfor %}
+              </div>
+          </div>
+      </div>
 
-    <div style="display: flex; flex-direction: row; gap: 50px; margin-left: 10px; ">
+      <!-- Academic Year Dropdown -->
+      <div style="flex: 1; min-width: 200px;">
+          <label style="font-weight: bold; margin-bottom: 10px; display: inline-block;">Academic Year</label>
+          <div class="ui fluid selection dropdown" id="year-dropdown">
+              <input type="hidden" name="academic_year">
+              <i class="dropdown icon"></i>
+              <div class="default text">Select Year</div>
+              <div class="menu">
+                  {% for unique_year_id in unique_year_ids %}
+                  <div class="item" data-value="{{ unique_year_id.year }}">{{ unique_year_id.year }}</div>
+                  {% empty %}
+                  <div class="item disabled">No Batch</div>
+                  {% endfor %}
+              </div>
+          </div>
+      </div>
+  </div>
 
+  <!-- Search Button -->
+  <div style="margin-top: 30px;">
       <button class="ui primary button" onclick="search()">Search</button>
-  
   </div>
+</div>
 
-  </div>
   <script>
+    $(document).ready(function () {
+      // Initialize the dropdown with search functionality
+      $('#course-dropdown').dropdown({
+        placeholder: 'Search by Course',
+        fullTextSearch: true, // Enable partial and full-text search
+      });
+  
+      $('#year-dropdown').dropdown({
+        placeholder: 'Select Year',
+      });
+    });
     function search() {
       // Get selected course and semester values
       var selectedCourse = $('#course-dropdown .menu .item.active').attr('data-value');
-      var selectedSemester = $('#semester-dropdown .menu .item.active').attr('data-value');
-      var selectedBatch = $('#batch-dropdown .menu .item.active').attr('data-value');
-  
+     // var selectedSemester = $('#semester-dropdown .menu .item.active').attr('data-value');
+      var selectedYear = $('#year-dropdown .menu .item.active').attr('data-value');
+   console.log('unique_year_id')
       // Check if both course and semester are selected
-      if (selectedCourse && selectedSemester&&selectedBatch) {
+      if (selectedCourse && selectedYear) {
         // Redirect to the new page with parameters
-        window.location.href = `/examination/updateEntergrades?course=${selectedCourse}&semester=${selectedSemester}&batch=${selectedBatch}`;
+        window.location.href = `/examination/updateEntergrades?course=${selectedCourse}&year=${selectedYear}`;
       } else {
-        alert('Please select both course and semester.');
+        alert('Please select all course,semester and year.');
       }
     }
   </script>
