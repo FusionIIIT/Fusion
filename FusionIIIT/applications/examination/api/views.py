@@ -1861,24 +1861,33 @@ class CheckResultView(APIView):
 
             if grade == "O" or grade == "A+":
                 gained_credit += 1 * credits
+                total_credit += credits
             elif grade == "A":
                 gained_credit += 0.9 * credits
+                total_credit += credits
             elif grade == "B+":
                 gained_credit += 0.8 * credits
+                total_credit += credits
             elif grade == "B":
                 gained_credit += 0.7 * credits
+                total_credit += credits
             elif grade == "C+":
                 gained_credit += 0.6 * credits
+                total_credit += credits
             elif grade == "C":
                 gained_credit += 0.5 * credits
+                total_credit += credits
             elif grade == "D+":
                 gained_credit += 0.4 * credits
+                total_credit += credits
             elif grade == "D":
                 gained_credit += 0.3 * credits
+                total_credit += credits
             elif grade == "F":
                 gained_credit += 0.2 * credits
+                total_credit += credits
 
-            total_credit += credits
+            
             all_credits += credits
 
         spi = 10 * (gained_credit / total_credit) if total_credit > 0 else 0
@@ -1932,8 +1941,9 @@ class CheckResultView(APIView):
                 
                 if not replaced_by:
                     total_earned_credits+= grade.course_id.credit
-                    cpi_available_credits += grade.course_id.credit
                     cpi_acquired_credits += grade_weights.get(grade.grade, 0) * grade.course_id.credit
+                    if grade.grade in grade_weights:
+                     cpi_available_credits += grade.course_id.credit
                 else:
                     replacement_map[current_course_id]['replacements'].append({
                     'new_course_id': current_course_id,
@@ -1959,6 +1969,7 @@ class CheckResultView(APIView):
           
         cpi = 10 * (cpi_acquired_credits / cpi_available_credits) if cpi_available_credits > 0 else 0
         # print(cpi)
+        # print(cpi_acquired_credits)
         response_data = {
             "success": True,
             "courses": [
