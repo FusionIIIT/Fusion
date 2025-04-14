@@ -37,6 +37,10 @@ urlpatterns = [
     path("pccAdmin/attorneys/<int:attorney_id>/remove/", views.remove_attorney, name="remove_attorney"),
     path("pccAdmin/attorneys/<int:attorney_id>/applications/", views.get_attorney_applications, name="get_attorney_applications"),
     path("pccAdmin/attorneys/<int:attorney_id>/update/", views.update_attorney_details, name="update_attorney_details"),
+
+    # Document Management URLs
+    path('documents/', views.manage_documents, name='manage_documents'),
+    path('pccAdmin/documents/<int:document_id>/delete/', views.delete_document, name='delete_document'),
 ]
 
 # Serve media files in development

@@ -25,7 +25,8 @@ from .models import (
     ApplicationSectionIII,
     AssociatedWith,
     Applicant,
-    Attorney
+    Attorney,
+    Document
 )
 
 from applications.globals.models import (
@@ -35,7 +36,7 @@ from applications.globals.models import (
     HoldsDesignation,
 )
 
-from .serializers import AttorneySerializer
+from .serializers import AttorneySerializer, DocumentSerializer
 
 # Logger setup - used for debugging and logging errors
 logger = logging.getLogger(__name__)
@@ -794,3 +795,67 @@ def update_attorney_details(request, attorney_id):
         return Response({'error': 'Attorney not found'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# -----------------------------------------
+# 🔹 Document Management Views
+# -----------------------------------------
+
+@api_view(['GET', 'POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def manage_documents(request):
+    """
+    GET: List all documents
+    POST: Create a new document
+    """
+    if request.method == 'GET':
+        try:
+            documents = Document.objects.all().order_by('-created_at')
+            serializer = DocumentSerializer(documents, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            logger.error(f"Error fetching documents: {str(e)}")
+            return Response(
+                {'error': 'Failed to fetch documents'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    elif request.method == 'POST':
+        try:
+            serializer = DocumentSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.error(f"Error creating document: {str(e)}")
+            return Response(
+                {'error': 'Failed to create document'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+@api_view(['DELETE'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def delete_document(request, document_id):
+    """
+    Delete a document by ID
+    """
+    try:
+        document = Document.objects.get(id=document_id)
+        document.delete()
+        return Response(
+            {'message': 'Document deleted successfully'},
+            status=status.HTTP_200_OK
+        )
+    except Document.DoesNotExist:
+        return Response(
+            {'error': 'Document not found'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        logger.error(f"Error deleting document: {str(e)}")
+        return Response(
+            {'error': 'Failed to delete document'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
