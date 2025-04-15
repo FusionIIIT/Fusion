@@ -61,7 +61,9 @@ def create_request(request):
         formObject = serializer.save()
         print(formObject.requestCreatedBy)
         request_object = Requests.objects.get(pk=formObject.pk)
-        receiver_desg, receiver_user = data.get('designation').split('|')
+        receiver_desg = "Admin IWD"
+        receiver_user = "kunal"
+        # receiver_desg, receiver_user = data.get('designation').split('|')
         try:
             receiver_user_obj = User.objects.get(username=receiver_user)
         except User.DoesNotExist:
@@ -213,7 +215,7 @@ def handle_dean_process_request(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def handle_engineer_process_requests(request):
+def forward_request(request):
     data = request.data
     fileid = data.get('fileid')
     request_id = File.objects.get(id=fileid).src_object_id
@@ -231,7 +233,6 @@ def handle_engineer_process_requests(request):
         file_attachment=attachment,
     )
 
-    Requests.objects.filter(id=request_id).update(engineerProcessed=1)
     receiver_user_obj = get_object_or_404(User, username=receiver_user)
     iwd_notif(request.user, receiver_user_obj, "file_forward")
 
@@ -239,26 +240,36 @@ def handle_engineer_process_requests(request):
         "message": "File forwarded successfully",
     }, status=status.HTTP_200_OK)
 
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def handle_director_approval(request):
-
-    '''
-        This api is to approve or reject file based on director's action
-    '''
-
+    """
+    Approve or reject a request by the director.
+    """
     data = request.data
     fileid = data.get('fileid')
-    request_id = File.objects.get(id=fileid).src_object_id
+    action = data.get('action')
+
+    if not fileid or not action:
+        return Response({'error': 'File ID and action are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        request_id = File.objects.get(id=fileid).src_object_id
+    except File.DoesNotExist:
+        return Response({'error': 'File not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    request_instance = Requests.objects.filter(id=request_id, iwdAdminApproval=True).first()
+    if not request_instance:
+        return Response({'error': 'Request not approved by IWD Admin'}, status=status.HTTP_400_BAD_REQUEST)
+
+    proposal_instance = Proposal.objects.filter(request_id=request_id).first()
+    if not proposal_instance:
+        return Response({'error': 'No proposal exists for this request'}, status=status.HTTP_400_BAD_REQUEST)
 
     remarks = data.get('remarks')
     attachment = request.FILES.get('file')
     receiver_desg, receiver_user = data.get('designation').split('|')
 
-    if not fileid:
-        return Response({'error': 'File ID not provided'}, status=status.HTTP_400_BAD_REQUEST)
-    
     forward_file(
         file_id=fileid,
         receiver=receiver_user,
@@ -269,17 +280,15 @@ def handle_director_approval(request):
     )
     receiver_user_obj = get_object_or_404(User, username=receiver_user)
     iwd_notif(request.user, receiver_user_obj, "file_forward")
-    message = ""
-    print(data)
-    if data.get('action') == 'approve':
-        message = "Request_approved"
-        print(message)
-        Requests.objects.filter(id=request_id).update(directorApproval=1, status="Approved by the director")
-    else:
-        message = "Request_rejected"
-        Requests.objects.filter(id=request_id).update(directorApproval=-1, status="Rejected by the director")
 
-    return Response({'message': message})
+    if action == "approve":
+        Requests.objects.filter(id=request_id).update(directorApproval=1, status="Approved by Director")
+        return Response({'message': 'Request approved by Director'}, status=status.HTTP_200_OK)
+    elif action == "reject":
+        Requests.objects.filter(id=request_id).update(directorApproval=-1, status="Rejected by Director")
+        return Response({'message': 'Request rejected by Director'}, status=status.HTTP_200_OK)
+    else:
+        return Response({'error': 'Invalid action'}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -596,6 +605,7 @@ def requests_status(request):
                 'description': request_object.description,
                 'requestCreatedBy': request_object.requestCreatedBy,
                 'file_id': file_obj.id,
+                'processed_by_admin': request_object.iwdAdminApproval,
                 'processed_by_director': request_object.directorApproval,
                 'work_order': request_object.issuedWorkOrder,
                 'work_completed': request_object.workCompleted,
@@ -604,7 +614,6 @@ def requests_status(request):
                 'active_proposal': request_object.activeProposal,
             }
             obj.append(element)
-            print(type(element['request_id']))
     return Response(obj, status=200)
 
 
@@ -1191,16 +1200,23 @@ def handle_settle_bill_requests(request):
 @permission_classes([IsAuthenticated])
 def create_proposal(request):
     data = request.data.copy()
+    request_id = data.get('id')
+
+    request_instance = Requests.objects.filter(id=request_id, iwdAdminApproval=True).first()
+    if not request_instance:
+        return Response({'error': 'Request not approved by IWD Admin'}, status=status.HTTP_400_BAD_REQUEST)
+
     data["created_by"] = str(request.user)
     data["request"] = data.get('id')
-    print(data)
     receiver_desg, receiver_user = data.get('designation').split('|')
-    serializer = ProposalSerializer(data=data)
+    serializer = CreateProposalSerializer(data=data)
+    print(serializer)
     if serializer.is_valid():
-        print(serializer)
+        # print(serializer)
+        print("wowowowow ")
         proposal = serializer.save()
-        # proposal.save()
-        Requests.objects.filter(id=proposal.id).update(activeProposal=proposal.id)
+        print(proposal, "wowowowow ", proposal.id)
+        Requests.objects.filter(id=request_id).update(activeProposal=proposal.id)
         receiver_user_obj = User.objects.get(username=receiver_user)
         iwd_notif(request.user, receiver_user_obj, "Proposal_added")
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -1218,14 +1234,56 @@ def get_proposals(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_items(request):
-    print(1)
     try:
-
         data = request.query_params
-        print(data)
+        proposal = Proposal.objects.filter(id = data['proposal_id']).first()
         items = Item.objects.filter(proposal=data['proposal_id'])
-        serializer = ItemSerializer(items, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        itemsdata = ItemSerializer(items, many=True)
+        proposaldata = ProposalSerializer(proposal)
+        return Response({"itemsList": itemsdata.data, "proposal":proposaldata.data}, status=status.HTTP_200_OK)
     except Proposal.DoesNotExist:
-        print("1trq3t3\n\n\n\n\n12q")
         return Response({'error': 'Proposal not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def handle_admin_approval(request):
+    """
+    Approve or reject a request by the IWD Admin.
+    """
+    data = request.data
+    action = data.get('action')
+
+    fileid = data.get('fileid')
+    request_id = File.objects.get(id=fileid).src_object_id
+
+    remarks = data.get('remarks')
+    attachment = request.FILES.get('file')
+    receiver_desg, receiver_user = data.get('designation').split('|')
+
+    if not fileid:
+        return Response({'error': 'File ID not provided'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    forward_file(
+        file_id=fileid,
+        receiver=receiver_user,
+        receiver_designation=receiver_desg,
+        file_extra_JSON={"message": "Request forwarded."},
+        remarks=remarks,
+        file_attachment=attachment,
+    )
+    receiver_user_obj = get_object_or_404(User, username=receiver_user)
+    iwd_notif(request.user, receiver_user_obj, "file_forward")
+    message = ""
+    print(data)
+
+    if not request_id or not action:
+        return Response({'error': 'Request ID and action are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if action == "approve":
+        Requests.objects.filter(id=request_id).update(iwdAdminApproval=1, status="Approved by IWD Admin")
+        return Response({'message': 'Request approved by IWD Admin'}, status=status.HTTP_200_OK)
+    elif action == "reject":
+        Requests.objects.filter(id=request_id).update(iwdAdminApproval=-1, status="Rejected by IWD Admin")
+        return Response({'message': 'Request rejected by IWD Admin'}, status=status.HTTP_200_OK)
+    else:
+        return Response({'error': 'Invalid action'}, status=status.HTTP_400_BAD_REQUEST)

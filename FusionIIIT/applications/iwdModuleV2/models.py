@@ -168,6 +168,7 @@ class Requests(models.Model):
     area = models.CharField(max_length=200)
     requestCreatedBy = models.CharField(max_length=200)
     engineerProcessed = models.IntegerField(default=0)
+    iwdAdminApproval = models.IntegerField(default=0)
     directorApproval = models.IntegerField(default=0)
     deanProcessed = models.IntegerField(default=0)
     status = models.CharField(max_length=200)
