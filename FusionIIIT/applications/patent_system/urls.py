@@ -11,13 +11,12 @@ urlpatterns = [
     path("applicant/drafts/", views.saved_drafts, name="saved_drafts"),
 
     # PCCAdmin-related paths
-    path("pccAdmin/insights/yearly/", views.insights_by_year, name="insights_by_year"),
     path("pccAdmin/applications/new/", views.new_applications, name="new_applications"),
     path("pccAdmin/applications/review/", views.review_applications, name="review_applications"),
     path("pccAdmin/applications/forward/", views.forward_application, name="forward_applications"),
     path("pccAdmin/applications/reject/", views.reject_application, name="reject_applications"),
-    path("pccAdmin/applications/status/", views.status_of_applications, name="status_of_applications"),
-    path("pccAdmin/applications/status/details/<int:application_id>/", views.view_application_details_for_pccAdmin, name="view_application_details_for_pccAdmin"),
+    path("pccAdmin/applications/ongoing/", views.ongoing_applications, name="ongoing_applications"),
+    path("pccAdmin/applications/past/", views.past_applications, name="past_applications"),
 
     # Director-related paths
     path("director", views.director_main_dashboard, name="director_main_dashboard"),

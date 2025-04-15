@@ -35,13 +35,15 @@ class Application(models.Model):
         ("Draft", "Draft"),
         ("Submitted", "Submitted"),
         ("Reviewed by PCC Admin", "Reviewed by PCC Admin"),
-        ("Attorney Assigned", "Attorney Assigned"),
         ("Forwarded for Director's Review", "Forwarded for Director's Review"),
         ("Director's Approval Received", "Director's Approval Received"),
-        ("Patentability Check", "Patentability Check"),
+        ("Patentability Check Started", "Patentability Check Started"),
+        ("Patentability Check Completed", "Patentability Check Completed"),
         ("Patentability Search Report Generated", "Patentability Search Report Generated"),
         ("Patent Filed", "Patent Filed"),
-        ("Rejected", "Rejected"),
+        ("Patent Published", "Patent Published"),
+        ("Patent Granted", "Patent Granted"),
+        ("Patent Refused", "Patent Refused"),
     ]
     
     DECISION_STATUS_CHOICES = [
@@ -50,17 +52,23 @@ class Application(models.Model):
         ("Pending", "Pending"),
     ]
     id = models.AutoField(primary_key=True)
-    title = models.CharField(max_length=255)
-    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default = "Draft")
-    patentability_check_date = models.DateField(blank=True, null=True)
-    patentability_file_date = models.DateField(blank=True, null=True)
     token_no = models.CharField(max_length=100, blank=True, null=True)
     primary_applicant = models.ForeignKey(Applicant, on_delete=models.CASCADE, related_name="applications")  
-    attorney = models.ForeignKey(Attorney, on_delete=models.SET_NULL, related_name="applications", blank=True, null=True)
-    assigned_date = models.DateField(blank=True, null=True)
+    title = models.CharField(max_length=255)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default = "Draft")
+    attorney = models.ForeignKey(Attorney, on_delete=models.CASCADE, related_name="applications", blank=True, null=True)
+    submitted_date = models.DateField(blank=True, null=True)
+    reviewed_by_pcc_date = models.DateField(blank=True, null=True)
+    forwarded_to_director_date = models.DateField(blank=True, null=True)
+    director_approval_date = models.DateField(blank=True, null=True)
+    patentability_check_start_date = models.DateField(blank=True, null=True)
+    patentability_check_completed_date = models.DateField(blank=True, null=True)
+    search_report_generated_date = models.DateField(blank=True, null=True)
+    patent_filed_date = models.DateField(blank=True, null=True)
+    patent_published_date = models.DateField(blank=True, null=True)
+    final_decision_date = models.DateField(blank=True, null=True)
     decision_status = models.CharField(max_length=50, choices=DECISION_STATUS_CHOICES, default = "Pending")
     decision_date = models.DateField(blank=True, null=True)
-    submitted_date = models.DateField(blank=True, null=True)
     comments = models.TextField(blank=True, null=True)
 
     def __str__(self):
@@ -98,8 +106,17 @@ def poc_file_upload_path(instance, filename):
 
 
 class ApplicationSectionI(models.Model):
+    IP_TYPE_CHOICES = [
+        ("Patent", "Patent"),
+        ("Copyright", "Copyright"),
+        ("Trademark", "Trademark"),
+        ("Industrial Design", "Industrial Design"),
+        ("Trade Secret", "Trade Secret"),
+        ("Geographical Indication", "Geographical Indication"),
+    ]
     id = models.AutoField(primary_key=True)
     application = models.OneToOneField(Application, on_delete=models.CASCADE, related_name="section_i")
+    type_of_ip = models.CharField(max_length=255, choices=IP_TYPE_CHOICES, default="Patent")
     area = models.TextField()
     problem = models.TextField()
     objective = models.TextField()
@@ -199,8 +216,8 @@ class ApplicationSectionIII(models.Model):
 
 class AssociatedWith(models.Model):
     id = models.AutoField(primary_key=True)
-    application = models.ForeignKey(Application, on_delete=models.CASCADE)
     applicant = models.ForeignKey(Applicant, on_delete=models.CASCADE)
+    application = models.ForeignKey(Application, on_delete=models.CASCADE)
     percentage_share = models.DecimalField(max_digits=5, decimal_places=2)
 
     def str(self):

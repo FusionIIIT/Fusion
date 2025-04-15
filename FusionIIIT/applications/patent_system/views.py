@@ -132,6 +132,7 @@ def submit_application(request):
 
         ApplicationSectionI.objects.create(
             application=application,
+            type_of_ip=data["type_of_ip"],
             area=data["area_of_invention"],
             problem=data["problem_statement"],
             objective=data["objective"],
@@ -295,6 +296,7 @@ def view_application_details_for_applicant(request, application_id):
     # Fetch Section I details
     section_i = ApplicationSectionI.objects.filter(application=application).first()
     section_i_data = {
+        "type_of_ip": section_i.type_of_ip if section_i else None,
         "area": section_i.area if section_i else None,
         "problem": section_i.problem if section_i else None,
         "objective": section_i.objective if section_i else None,
@@ -358,13 +360,11 @@ def saved_drafts(request):
 # 🔹 PCC Admin Views
 # -----------------------------------------
 
-# For dashboard tab
-def insights_by_year(request):
-    return JsonResponse({"message": "Insights by Year"})
-
 # For new applications tab
 def new_applications(request):
-    applications = Application.objects.filter(status="Submitted").select_related("primary_applicant")
+    REVIEW_STATUSES = ["Submitted", "Reviewed by PCC Admin"]
+
+    applications = Application.objects.filter(status__in=REVIEW_STATUSES).select_related("primary_applicant")
 
     application_dict = {}  # Using a dictionary instead of a list
 
@@ -384,14 +384,11 @@ def new_applications(request):
         holds_designation = HoldsDesignation.objects.filter(user=user).select_related("designation").first()
         designation_name = holds_designation.designation.name if holds_designation else "Unknown"
 
-        # Use token_no as a unique key (fallback to app.id if missing)
-        key = str(app.token_no) if app.token_no else f"app_{app.id}"
-
         # Format response as a dictionary
-        application_dict[key] = {
-            "token_no": app.token_no if app.token_no else "Token not generated as attorney not assigned",
+        application_dict[app.id] = {
+            # "application_no": app.id,
             "title": app.title,
-            "submitted_by": applicant.name if applicant else "Unknown",  # Use name from Applicant
+            "submitted_by": applicant.name,
             "designation": designation_name,
             "department": department_name,
             "submitted_on": app.submitted_date.strftime("%Y-%m-%d") if app.submitted_date else "Unknown"
@@ -399,10 +396,10 @@ def new_applications(request):
 
     return JsonResponse({"applications": application_dict}, safe=False)
 
-# @csrf_exempt
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
-# @authentication_classes([TokenAuthentication])
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 def review_applications(request):
     if request.method == "POST":
         try:
@@ -431,10 +428,10 @@ def review_applications(request):
 
     return JsonResponse({"error": "Only POST requests are allowed."}, status=405)
 
-# @csrf_exempt
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
-# @authentication_classes([TokenAuthentication])
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 def forward_application(request):
     if request.method == "POST":
         try:
@@ -463,10 +460,10 @@ def forward_application(request):
 
     return JsonResponse({"error": "Only POST requests are allowed."}, status=405)
 
-# @csrf_exempt
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
-# @authentication_classes([TokenAuthentication])
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 def reject_application(request):
     if request.method == "POST":
         try:
@@ -497,17 +494,19 @@ def reject_application(request):
 
     return JsonResponse({"error": "Only POST requests are allowed."}, status=405)
 
-# For status of applications tab
+# For ongoing applications tab
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-def status_of_applications(request):
+def ongoing_applications(request):
     REVIEW_STATUSES = [
     "Forwarded for Director's Review",
     "Director's Approval Received",
-    "Patentability Check",
+    "Patentability Check Started",
+    "Patentability Check Completed",
     "Patentability Search Report Generated",
-    "Patent Filed"
+    "Patent Filed",
+    "Patent Published",
     ]
 
     applications = Application.objects.filter(status__in=REVIEW_STATUSES).select_related("primary_applicant")
@@ -531,14 +530,12 @@ def status_of_applications(request):
         holds_designation = HoldsDesignation.objects.filter(user=user).select_related("designation").first()
         designation_name = holds_designation.designation.name if holds_designation else "Unknown"
 
-        # Use token_no as a unique key (fallback to app.id if missing)
-        key = str(app.token_no) if app.token_no else f"app_{app.id}"
-
         # Format response as a dictionary
-        application_dict[key] = {
-            "token_no": app.token_no if app.token_no else "Token not generated as attorney not assigned",
+        application_dict[app.id] = {
+            # "application_no": app.id,
+            "token_no": app.token_no if app.token_no else "Token not generated yet",
             "title": app.title,
-            "submitted_by": applicant.name if applicant else "Unknown",  # Use name from Applicant
+            "submitted_by": applicant.name if applicant else "Unknown",
             "designation": designation_name,
             "department": department_name,
             "submitted_on": app.submitted_date.strftime("%Y-%m-%d") if app.submitted_date else "Unknown",
@@ -550,7 +547,49 @@ def status_of_applications(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-def view_application_details_for_pccAdmin(request, application_id):
+def past_applications(request):
+    DECISION_STATUSES = [
+        "Accepted", 
+        "Rejected",
+    ]
+
+    applications = Application.objects.filter(decision_status__in=DECISION_STATUSES).select_related("primary_applicant")
+
+    application_dict = {}  # Using a dictionary instead of a list
+
+    for app in applications:
+        applicant = app.primary_applicant  # Get the Applicant instance
+
+        # Ensure applicant exists and fetch the linked User
+        user = applicant.user if applicant else None
+
+        # Fetch extra info (assuming ExtraInfo is linked to User)
+        extra_info = ExtraInfo.objects.filter(user=user).first()
+
+        # Fetch department
+        department_name = extra_info.department.name if extra_info and extra_info.department else "Unknown"
+
+        # Fetch designation (get latest held designation)
+        holds_designation = HoldsDesignation.objects.filter(user=user).select_related("designation").first()
+        designation_name = holds_designation.designation.name if holds_designation else "Unknown"
+
+        # Format response as a dictionary
+        application_dict[app.id] = {
+            "token_no": app.token_no if app.token_no else "Token not generated yet",
+            "title": app.title,
+            "submitted_by": applicant.name if applicant else "Unknown",
+            "designation": designation_name,
+            "department": department_name,
+            "submitted_on": app.submitted_date.strftime("%Y-%m-%d") if app.submitted_date else "Unknown",
+            "status": app.status,
+        }
+
+    return JsonResponse({"applications": application_dict}, safe=False)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def view_past_application_details_for_pccAdmin(request, application_id):
     # Fetch application details
     application = get_object_or_404(Application, id=application_id)
 
@@ -638,22 +677,6 @@ def view_application_details_for_pccAdmin(request, application_id):
     }
 
     return JsonResponse(response_data, safe=False)
-
-# For manage attorney tab
-def add_attorney(request):
-    return JsonResponse({"message": "Attorney added successfully"})
-
-def remove_attorney(request):
-    return JsonResponse({"message": "Attorney removed successfully"})   
-
-def view_attorney_list(request):
-    return JsonResponse({"message": "List of attorneys", "attorneys": []}) 
-
-def view_attorney_details(request, attorney_id):
-    return JsonResponse({"message": f"Details of attorney {attorney_id}"})
-
-def edit_attorney_details(request, attorney_id):
-    return JsonResponse({"message": f"Attorney {attorney_id} details updated successfully"})
 
 # -----------------------------------------
 # 🔹 Director Views
