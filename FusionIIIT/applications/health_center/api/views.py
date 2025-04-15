@@ -13,6 +13,9 @@ from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.csrf import csrf_exempt
 import pandas as pd
+import os
+import io
+import openpyxl
 from django.db import transaction
 from datetime import datetime, timedelta,date
 from django.core import serializers
@@ -167,17 +170,22 @@ def compounder_api_handler(request):
     elif 'get_file' in request_body:
         file_id = request_body['file_id']
         file_id_int = int(file_id)
+        filepath = os.path.join(os.path.dirname(os.path.dirname(__file__)),'health_center/static/health_center/add_stock_example.xlsx')
+        
         if(file_id_int == -2):
-            return FileResponse(open('static/health_center/add_stock_example.xlsx', 'rb'), as_attachment=True, filename="example_add_stock.xlsx")
+            return FileResponse(open(filepath, 'rb'), as_attachment=True, filename="example_add_stock.xlsx")
+        
         if(file_id_int == -1):
-            return FileResponse(open('static/health_center/add_medicine_example.xlsx', 'rb'), as_attachment=True, filename="example_add_medicine.xlsx")  
-        filepath = "applications/health_center/static/health_center/generated.pdf"
+            filepath = os.path.join(os.path.dirname(os.path.dirname(__file__)),'health_center/static/health_center/add_medicine_example.xlsx')
+            return FileResponse(open(filepath , 'rb'), as_attachment=True, filename="example_add_medicine.xlsx")
+        
+        filepath = os.path.join(os.path.dirname(os.path.dirname(__file__)),'health_center/static/health_center/generated.pdf')
 
         file=files.objects.get(id=file_id_int)
         f=file.file_data
         
-        with open("applications/health_center/static/health_center/generated.pdf", 'wb+') as destination:   
-            destination.write(f)  
+        with open(filepath, 'wb+') as destination:   
+            destination.write(f)
         
         pdf = open(filepath, 'rb')
         response = FileResponse(pdf, content_type="application/pdf")
@@ -812,60 +820,99 @@ def compounder_api_handler(request):
         
         return JsonResponse({"status":1})
     
-    elif 'add_medicine_excel' in request.POST:
-        excel_file = request.FILES.get('file')
-        df = pd.read_excel(excel_file)
+    elif 'add_medicine_excel' in request_body:
+        base64_file_data = request_body["file_data"]
+
+        if not base64_file_data:
+            return Response({"error": "No file data provided"}, status=400)
         tot_rows = All_Medicine.objects.all().count()
         t = 1
+
         try:
-            required_columns = ['medicine_name', 'brand_name', 'manufacturer_name', 'packsize', 'constituents' , 'threshold']
-            if not all(column in df.columns for column in required_columns):
-                return JsonResponse({"status":0})
-            with transaction.atomic():
-                for _, row in df.iterrows():
+            # Decode base64 to binary
+            file_bytes = base64.b64decode(base64_file_data)
+
+            # Convert to a file-like object
+            file_stream = io.BytesIO(file_bytes)
+
+            # Load the workbook and get the first sheet
+            workbook = openpyxl.load_workbook(file_stream)
+            sheet = workbook.active
+
+            # Get headers from the first row
+            headers = [cell.value for cell in sheet[1]]
+
+            expected_headers = ['medicine_name', 'brand_name', 'manufacturer_name', 'packsize', 'constituents', 'threshold']
+            if headers != expected_headers:
+                return Response({"error": "Invalid headers in Excel file."}, status=400)
+
+            # Loop through the rows starting from the second (skip header)
+            for row in sheet.iter_rows(min_row=2, values_only=True):
+                if any(row):  # skip empty rows
+                    row_data = dict(zip(headers, row))
                     All_Medicine.objects.create(
                         id = tot_rows+t,
-                        medicine_name=row['medicine_name'],
-                        brand_name=row['brand_name'],
-                        manufacturer_name=row['manufacturer_name'],
-                        pack_size_label=row['packsize'],
-                        constituents = row['constituents'],
-                        threshold = row['threshold']
+                        medicine_name=row_data['medicine_name'],
+                        brand_name=row_data['brand_name'],
+                        manufacturer_name=row_data['manufacturer_name'],
+                        pack_size_label=row_data['packsize'],
+                        constituents = row_data['constituents'],
+                        threshold = row_data['threshold']
                     )
-                    t+=1
-            return JsonResponse({"status":1})
-        except Exception as e:
-            return JsonResponse({"status":0})
 
-    elif 'add_stock_excel' in request.POST:
-        excel_file = request.FILES.get('file')
-        df = pd.read_excel(excel_file)
+            return Response({"status": 1})
+
+        except Exception as e:
+            return Response({"status":0 , "error": str(e)}, status=500)
+
+    elif 'add_stock_excel' in request_body:
+        base64_file_data = request_body["file_data"]
+
+        if not base64_file_data:
+            return Response({"error": "No file data provided"}, status=400)
+        tot_rows = All_Medicine.objects.all().count()
+        tot_rows1 = Present_Stock.objects.all().count()
+        t = 1
+
         try:
-            tot_rows = All_Medicine.objects.all().count()
-            tot_rows1 = Present_Stock.objects.all().count()
-            t = 1
-            required_columns = ['brand_name', 'manufacturer_name', 'packsize','quantity','supplier','Expiry_date']
-            if not all(column in df.columns for column in required_columns):
-                return JsonResponse({"status":0})
-            with transaction.atomic():
-                for _, row in df.iterrows():
+            # Decode base64 to binary
+            file_bytes = base64.b64decode(base64_file_data)
+
+            # Convert to a file-like object
+            file_stream = io.BytesIO(file_bytes)
+
+            # Load the workbook and get the first sheet
+            workbook = openpyxl.load_workbook(file_stream)
+            sheet = workbook.active
+
+            # Get headers from the first row
+            headers = [cell.value for cell in sheet[1]]
+
+            expected_headers = ['brand_name', 'manufacturer_name', 'packsize','quantity','supplier','Expiry_date']
+            if headers != expected_headers:
+                return Response({"error": "Invalid headers in Excel file."}, status=400)
+
+            # Loop through the rows starting from the second (skip header)
+            for row in sheet.iter_rows(min_row=2, values_only=True):
+                if any(row):  # skip empty rows
+                    row_data = dict(zip(headers, row))
                     med=All_Medicine.objects.get(
-                        Q(brand_name=row['brand_name']) & Q(manufacturer_name=row['manufacturer_name']) & Q(pack_size_label=row['packsize'])
+                        Q(brand_name=row_data['brand_name']) & Q(manufacturer_name=row_data['manufacturer_name']) & Q(pack_size_label=row_data['packsize'])
                     )
                     stk=Stock_entry.objects.create(
                         id = tot_rows+t,
-                        quantity=row['quantity'],
+                        quantity=row_data['quantity'],
                         medicine_id=med,
-                        supplier=row['supplier'],
-                        Expiry_date=row['Expiry_date'],
+                        supplier=row_data['supplier'],
+                        Expiry_date=row_data['Expiry_date'],
                         date=date.today()
                     )
                     Present_Stock.objects.create(
                         id = tot_rows1+t,
-                        quantity=row['quantity'],
+                        quantity=row_data['quantity'],
                         stock_id=stk,
                         medicine_id=med,
-                        Expiry_date=row['Expiry_date'],
+                        Expiry_date=row_data['Expiry_date'],
                     )
                     t+=1
                     if Required_medicine.objects.filter(medicine_id = med).exists():
@@ -873,9 +920,11 @@ def compounder_api_handler(request):
                         req.quantity+=qty
                         if(req.quantity<req.threshold) : req.save()
                         else : req.delete() 
-            return JsonResponse({"status":1})
+
+            return Response({"status": 1})
+
         except Exception as e:
-            return JsonResponse({"status":0})
+            return Response({"status":0 , "error": str(e)}, status=500)
 
     elif 'medicine' in request.POST:
         med_id = request.POST.get('medicine')

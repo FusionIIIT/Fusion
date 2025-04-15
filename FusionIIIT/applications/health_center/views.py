@@ -809,17 +809,22 @@ def compounder_view_prescription(request,prescription_id):
 @login_required
 def view_file(request,file_id):
     file_id_int = int(file_id)
+    filepath = os.path.join(os.path.dirname(os.path.dirname(__file__)),'health_center/static/health_center/add_stock_example.xlsx')
+        
     if(file_id_int == -2):
-        return FileResponse(open('static/health_center/add_stock_example.xlsx', 'rb'), as_attachment=True, filename="example_add_stock.xlsx")
+        return FileResponse(open(filepath, 'rb'), as_attachment=True, filename="example_add_stock.xlsx")
+    
     if(file_id_int == -1):
-        return FileResponse(open('static/health_center/add_medicine_example.xlsx', 'rb'), as_attachment=True, filename="example_add_medicine.xlsx")  
-    filepath = "applications/health_center/static/health_center/generated.pdf"
+        filepath = os.path.join(os.path.dirname(os.path.dirname(__file__)),'health_center/static/health_center/add_medicine_example.xlsx')
+        return FileResponse(open(filepath , 'rb'), as_attachment=True, filename="example_add_medicine.xlsx")
+    
+    filepath = os.path.join(os.path.dirname(os.path.dirname(__file__)),'health_center/static/health_center/generated.pdf')
 
-    file=files.objects.get(id=file_id)
+    file=files.objects.get(id=file_id_int)
     f=file.file_data
     
-    with open("applications/health_center/static/health_center/generated.pdf", 'wb+') as destination:   
-        destination.write(f)  
+    with open(filepath, 'wb+') as destination:   
+        destination.write(f)
     
     pdf = open(filepath, 'rb')
     response = FileResponse(pdf, content_type="application/pdf")
