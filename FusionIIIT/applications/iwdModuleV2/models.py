@@ -178,6 +178,7 @@ class Requests(models.Model):
     billProcessed = models.IntegerField(default=0)
     billSettled = models.IntegerField(default=0)
     activeProposal = models.IntegerField(null = True)
+    creationTime = models.DateTimeField(auto_now_add=True)
 
 class WorkOrder(models.Model):
     request_id = models.ForeignKey(Requests, on_delete=models.CASCADE)
