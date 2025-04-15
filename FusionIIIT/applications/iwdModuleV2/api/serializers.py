@@ -3,6 +3,7 @@ from applications.globals.models import *
 from applications.iwdModuleV2.models import *
 from applications.ps1.models import *
 from decimal import Decimal
+import json
 class WorkOrderFormSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkOrder
@@ -145,70 +146,31 @@ class RequestsInProgressSerializer(serializers.ModelSerializer):
 #         model = LetterOfIntentDetails
 #         fields = '__all__'
 
-class ItemSerializer(serializers.ModelSerializer):
+class ItemsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
-        fields = ['id', 'name', 'description', 'unit', 'price_per_unit', 'quantity', 'docs', 'total_price']
+        fields = ['name', 'description', 'unit', 'price_per_unit', 'quantity', 'docs', 'total_price', 'id']
+
+
 class CreateProposalSerializer(serializers.ModelSerializer):
-    items = ItemSerializer(many=True)
+    items = ItemsSerializer(many=True, write_only=True)  # Keep the many=True option
+
     class Meta:
         model = Proposal
         fields = '__all__'
 
     def create(self, validated_data):
-        items_data = validated_data.pop('items', [])  
+        # Pop the 'items' from the validated data
+        items_data = validated_data.pop('items', [])
+
+        # Create the proposal instance with the validated data
         proposal = Proposal.objects.create(**validated_data)
 
-        total_budget = Decimal(0)
-        items = []  
-
-        for item_data in items_data:
-            try:
-                quantity = item_data['quantity']
-                price_per_unit = item_data['price_per_unit']
-                total_price = quantity * price_per_unit  
-                total_budget += total_price  
-                items.append(Item(proposal=proposal, total_price=total_price, **item_data))  
-
-            except (ValueError, TypeError) as e:
-                print(f"Error processing item: {item_data}, Error: {e}")
-                continue
-
-        if items:
-            Item.objects.bulk_create(items)  
-
-        proposal.proposal_budget = total_budget  
         proposal.save()
 
         return proposal
 
 class ProposalSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Proposal
         fields = '__all__'
-
-    def create(self, validated_data):
-        items = ItemSerializer(many=True)
-        items_data = validated_data.pop('items', [])  
-        proposal = Proposal.objects.create(**validated_data)
-
-        total_budget = Decimal(0)
-        items = []  
-
-        for item_data in items_data:
-            try:
-                quantity = item_data['quantity']
-                price_per_unit = item_data['price_per_unit']
-                total_price = quantity * price_per_unit  
-                total_budget += total_price  
-                items.append(Item(proposal=proposal, total_price=total_price, **item_data))  
-            except (ValueError, TypeError) as e:
-                print(f"Error processing item: {item_data}, Error: {e}")
-        if items:
-            Item.objects.bulk_create(items)  
-
-        proposal.proposal_budget = total_budget  
-        proposal.save()
-
-        return proposal
