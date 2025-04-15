@@ -1,0 +1,366 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+    Home
+{% endblock %}
+
+{% block body %}
+    <link href="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.css" rel="stylesheet" type="text/css" />
+
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}The left-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}ROW #1 starts here!{% endcomment %}
+            <div class="row">
+                {% comment %}The Employee Image Card starts here!{% endcomment %}
+                {% block userCard %}
+                    {% include 'globals/usercard.html' %}
+                {% endblock %}
+                {% comment %}The Employee Image Card ends here!{% endcomment %}
+            </div>
+            {% comment %}ROW #1 ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}ROW #2 starts here!{% endcomment %}
+            <div class="row">
+                {% comment %}The Tab-Menu starts here!{% endcomment %}
+                <div class="ui large fluid vertical pointing menu">
+
+                    <a class=" active item" href="{% url 'healthcenter:compounder_view' %}">
+                        health center
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                </div>
+                {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+            </div>
+            {% comment %}ROW #2 ends here!{% endcomment %}
+
+        </div>
+        {% comment %}The left-rail segment ends here!{% endcomment %}
+
+        {% comment %}The central-rail segment starts here!{% endcomment %}
+        <div class="eight wide column">
+
+            {% comment %}The ap `pointment approval tab starts here!{% endcomment %}
+            <div class="ui active tab segment" style='height:650px;width:820px;overflow-x:scroll;display: flex;flex-direction: column;' id="whole_prescription">
+                <link href="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.css" rel="stylesheet" type="text/css" />
+                {% block patientlog %}
+                <div class="ui vertical stripe team segment"
+                style="padding-left: 3.5%;
+                   padding-right: 3.5%;">
+                    <div>
+                        <p style="font-size: 2rem;font-weight: 700;">{{inbox.uploader}}'s Relief form</p>
+                    </div>
+                    <div class="hidden_print">
+                        <div id="util_btns" style="height: 65px;display: flex;justify-content: space-between;gap: 10px;align-items: center;">           
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <div id="print_options">
+                                    <div>
+                                        <input type="checkbox" id="print_lat_follow_up" name="print_lat_follow_up" value="print_lat_follow_up" checked onchange="printHandleChange(this)">
+                                        <label for="print_lat_follow_up">Print Latest Follow-up</label>
+                                    </div>
+                                    <div>
+                                        <input type="checkbox" id="print_whole_prescription" name="print_whole_prescription" value="print_whole_prescription" onchange="printHandleChange(this)">
+                                        <label for="print_whole_prescription">Print Whole Prescription</label>
+                                    </div>
+                                </div>
+                                <button id="print_button" class="ui medium primary button">Print</button>
+                            </div>   
+                        </div>
+                    </div>
+
+                   <div class="follow_up_presc">
+                   <form class="ui form">
+                       <div class="field">
+                           <label>Date</label>
+                           <input placeholder="User Id" value="{{inbox.upload_date}}" id="doctor" name="doctor" type="text" readonly>
+                    </div>
+                     <div class="field">
+                       <label>Discription</label>
+                        <div class="spl-textarea">
+                            {{inbox.desc}}
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>status</label>
+                        <div class="spl-textarea">
+                            {{inbox.status}}
+                        </div>
+                    </div>
+                   </div>
+                   {% if inbox.status == "Pending" %}
+                   <div class="hidden_print">
+                        <div class="flex">
+                            <div class="field">
+                                <label><br></label>
+                                    <button class="ui primary button" id="reject_relief">Reject</button>
+                            </div>
+                            <div class="field">
+                                <label><br></label>
+                                    <button class="ui primary button" id="approve_relief">Approve</button>
+                            </div>
+                        </div>
+                   </div>
+                   {% endif %}
+                   </form>
+                   </div>
+                </div>
+                <br>
+                
+               </div></div>
+               <script src="{% static 'globals/js/jquery.min.js' %}"></script>
+               <script type="text/javascript">
+
+                $("#approve_relief").click(function(){
+                    $.ajax({
+                        type: 'POST',
+                        url: '/healthcenter/compounder/', // Specify the URL
+                        data: {
+                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                            file_id: "{{inbox.id}}",  
+                            compounder_forward: 1,                            
+                        },
+                        success: function(data) {
+                            if (data.status === 1) {
+                                alert("Forwarded to Accounts Admin");
+                                // Optionally, reload the page
+                                window.location.reload();
+                            }
+                        }
+                    });
+                });
+                $('#reject_relief').click(function(){
+                    console.log("HI")
+                    $.ajax({
+                        type: 'POST',
+                        url: '/healthcenter/compounder/', // Specify the URL
+                        data: {
+                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                            file_id: "{{inbox.id}}",
+                            rejected_user : "{{inbox.uploader}}",  
+                            compounder_reject: 1,                            
+                        },
+                        success: function(data) {
+                            if (data.status === 1) {
+                                alert("Rejected Relief application");
+                                // Optionally, reload the page
+                                window.location.reload();
+                            }
+                        }
+                    });
+                })
+                    
+                    var form = document.getElementById('followup_form')
+                    form.style.display="none"
+            
+            
+            $('#printArea').click((e)=>{
+            var printReport = document.getElementById("printingAreaTest").innerHTML;
+             var iframe = document.createElement("iframe");
+             iframe.style.position = "absolute";
+             iframe.style.top = "-99999px"; // Move the iframe off-screen
+             document.body.appendChild(iframe);
+             var doc = iframe.contentWindow.document;
+             doc.write(
+               "<html><head><style>@media print { .avoid-page-break { page-break-inside: avoid; } } #printArea{ display:none; } #add_followup{display:none;} </style></head><body>" +
+                 printReport +
+                 "</body></html>"
+             );
+             doc.close();
+             iframe.contentWindow.focus();
+             iframe.contentWindow.print();
+             iframe.contentWindow.onafterprint = function () {
+               document.body.removeChild(iframe);
+               close();
+             };
+                })
+
+                    function view_report(f){
+                        console.log(f.id)
+                        var pk=f.id
+                        alert('view_report')
+                        var url= `{% url 'healthcenter:view_file' file_id='0' %}`
+                        var newurl=url.replace('0',f.id)
+                        window.open(newurl,"_blank")
+                     }
+       </script>
+                {% endblock %}
+            </div>
+        </div>
+        <div id="logo-div" style="display: none;">
+            <img src="{% static 'health_center/institute_logo.jpg' %}" alt="IIITDMJ Logo" style="width: 80px; height: 80px; margin: auto; display: block;" />
+        </div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            {% comment %} <div class="row">
+                {% block sidepanel %} {% include 'notifications/sidepanel.html' with notifications=notifications %}
+                {% endblock %}
+            </div> {% endcomment %}
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+    </div>
+    <div class="ui stackable doubling grid">
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+    <style>
+        .w-full {
+            width: 100%;
+        }
+        .flex {
+            display: flex;
+            justify-content: space-between;
+        }
+        .flex-col {
+            flex-direction: column;
+        }
+        .bbx {
+            border: 1px solid red;
+        }
+        .spl-textarea {
+            border: 1px solid rgba(34, 36, 38, .15);
+            padding: .67861429em 1em;
+            border-radius: .28571429rem;
+            width: 100%;
+        }
+    </style>
+
+    <script>
+        function printHandleChange(e){
+            if(e.id=="print_lat_follow_up"){
+                if(e.checked){
+                    document.getElementById('print_whole_prescription').checked=false;
+                }
+            }
+            else{
+                if(e.checked){
+                    document.getElementById('print_lat_follow_up').checked=false;
+                }
+            }
+        }
+        document.getElementById('print_button').addEventListener('click',() => {
+            handleprint()
+        })
+        function handleprint() {
+            let follow_up = document.getElementById('print_lat_follow_up').checked;
+            let whole_prescription = document.getElementById('print_whole_prescription').checked;
+            if(!follow_up && !whole_prescription){
+                alert('Please select one option to print!')
+                return
+            }
+            let reqHtml = '';
+            if(follow_up){
+                var captures = document.querySelectorAll('.follow_up_presc');
+                reqHtml = `
+                    <link href="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.css" rel="stylesheet" type="text/css" />
+                    <div>
+                        <p style="font-size: 1.3rem;font-weight: 700;">Patient ID : {{prescription.user_id}}</p>
+                        <p>Of prescription ID #{{prescription.id}} on {{prescription.date}}</p>
+                    </div>
+                    ${captures[0].innerHTML}
+                `;
+            }
+            else{
+                reqHtml = document.getElementById('whole_prescription').innerHTML;
+            }
+            let logoHtml = document.getElementById('logo-div').innerHTML;
+            let content = `
+                <html lang="en">
+                <head>
+                <title>
+                    PHC IIITDMJ
+                </title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        margin: 0;
+                        padding: 0;
+                        box-sizing: border-box;
+                        min-height: 100dvh;
+                    }
+                    .prescription-container {
+                        margin: 20px;
+                        padding: 20px;
+                        border: 1px solid #ccc;
+                        border-radius: 10px;
+                        max-width: 600px;
+                        margin: auto;
+                        page-break-inside: avoid;
+                    }
+                    .hidden_print {
+                        display: none;
+                    }
+                    .spl-textarea {
+                        border: 1px solid rgba(34, 36, 38, .15);
+                        padding: .67861429em 1em;
+                        border-radius: .28571429rem;
+                        width: 100%;
+                    }
+                    @media print {
+                        body, .prescription-container {
+                            margin: 0;
+                            padding: 0;
+                        }
+                        .prescription-container {
+                            border: 1px solid #ccc;
+                            border-radius: 10px;
+                            margin: 20px auto;
+                            padding: 20px;
+                            box-sizing: border-box;
+                        }
+                    }
+                </style>
+                </head>
+                <body>
+                <div class="prescription-container">
+                    <div style="display: flex;width: 100%;gap: 20px;margin-bottom: 30px;">
+                        <div>
+                            ${logoHtml}
+                        </div>
+                        <div style="flex-grow: 1;">
+                            <p style="font-size: 2rem;font-wieght: 700;margin-bottom: 7px;">Primary Health Care Center</p>
+                            <p>PDPM IIITDM Jabalpur</p>
+                        </div>
+                    </div>
+                    ${reqHtml}
+                </div>
+                </body>
+                </html>
+            `
+            var printWindow = window.open('', '', 'height=900,width=1000');
+            printWindow.document.write(content);
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+        }
+    </script>
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.2/jspdf.min.js"></script>
+   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.22/pdfmake.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+
+{% endblock %}

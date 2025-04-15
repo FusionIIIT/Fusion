@@ -20,6 +20,7 @@ from notification.views import department_notif
 from .models import SpecialRequest, Announcements , Information
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
+from notification.views import create_announcement
 
 
 def department_information(request):
@@ -261,127 +262,128 @@ def staff_view(request):
     department_context = department_information(request)
     
     requests_received = get_to_request(usrnm)
-    if request.method == 'POST':
-        form_type =   request.POST.get('form_type', '')
-        if form_type == 'form1' :
+    # if request.method == 'POST':
+    #     form_type =   request.POST.get('form_type', '')
+    #     if form_type == 'form1' :
             
-            batch = request.POST.get('batch', '')
-            programme = request.POST.get('programme', '')
-            message = request.POST.get('announcement', '')
-            upload_announcement = request.FILES.get('upload_announcement')
-            department = request.POST.get('department')
-            ann_date = date.today()
-            user_info = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id)
-            getstudents = ExtraInfo.objects.select_related('user')
-            recipients = User.objects.filter(extrainfo__in=getstudents)
+    #         batch = request.POST.get('batch', '')
+    #         programme = request.POST.get('programme', '')
+    #         message = request.POST.get('announcement', '')
+    #         upload_announcement = request.FILES.get('upload_announcement')
+    #         department = request.POST.get('department')
+    #         ann_date = date.today()
+    #         user_info = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id)
+    #         getstudents = ExtraInfo.objects.select_related('user')
+    #         recipients = User.objects.filter(extrainfo__in=getstudents)
 
-            obj1, created = Announcements.objects.get_or_create(maker_id=user_info,
-                                        batch=batch,
-                                        programme=programme,
-                                        message=message,
-                                        upload_announcement=upload_announcement,
-                                        department = department,
-                                        ann_date=ann_date)
-            department_notif(usrnm, recipients , message)
+    #         obj1, created = Announcements.objects.get_or_create(maker_id=user_info,
+    #                                     batch=batch,
+    #                                     programme=programme,
+    #                                     message=message,
+    #                                     upload_announcement=upload_announcement,
+    #                                     department = department,
+    #                                     ann_date=ann_date)
+    #         department_notif(usrnm, recipients , message)
             
-        elif form_type == 'form2' :
+    #     elif form_type == 'form2' :
             
-            email = request.POST.get('email', '')
-            phone_number = request.POST.get('contact_number', '')
-            facilites = request.POST.get('facilities', '')
-            labs = request.POST.get('labs', '')
-            department_id = user_departmentid
+    #         email = request.POST.get('email', '')
+    #         phone_number = request.POST.get('contact_number', '')
+    #         facilites = request.POST.get('facilities', '')
+    #         labs = request.POST.get('labs', '')
+    #         department_id = user_departmentid
 
-            # Check if a row with the specified department_id already exists
-            try:
-                department_info = Information.objects.get(department_id=department_id)
-                # If row exists, update the values
-                department_info.email = email
-                department_info.phone_number_number = phone_number
-                department_info.facilites = facilites
-                department_info.labs = labs
-                department_info.save()
-            except Information.DoesNotExist:
-                # If row does not exist, create a new one
-                department_info = Information.objects.create(
-                    department_id=department_id,
-                    email=email,
-                    phone_number=phone_number,
-                    facilites=facilites,
-                    labs=labs
-                )
+    #         # Check if a row with the specified department_id already exists
+    #         try:
+    #             department_info = Information.objects.get(department_id=department_id)
+    #             # If row exists, update the values
+    #             department_info.email = email
+    #             department_info.phone_number_number = phone_number
+    #             department_info.facilites = facilites
+    #             department_info.labs = labs
+    #             department_info.save()
+    #         except Information.DoesNotExist:
+    #             # If row does not exist, create a new one
+    #             department_info = Information.objects.create(
+    #                 department_id=department_id,
+    #                 email=email,
+    #                 phone_number=phone_number,
+    #                 facilites=facilites,
+    #                 labs=labs
+    #             )
             
         
-    context = browse_announcements()
+    # context = browse_announcements()
     
     
-    department_templates = {
-        51: 'department/csedep_request.html',
-        30: 'department/ecedep_request.html',
-        37: 'department/medep_request.html',
-        53: 'department/smdep_request.html',
+    # department_templates = {
+    #     51: 'department/csedep_request.html',
+    #     30: 'department/ecedep_request.html',
+    #     37: 'department/medep_request.html',
+    #     53: 'department/smdep_request.html',
 
-    } 
-    default_template = 'department/dep_request.html'
+    # } 
+    # default_template = 'department/dep_request.html'
     
-    desig=request.session.get('currentDesignationSelected', 'default_value')
-    if desig=='deptadmin_cse':
-        template_name = 'department/admin_cse.html'
+    # desig=request.session.get('currentDesignationSelected', 'default_value')
+    # if desig=='deptadmin_cse':
+    #     template_name = 'department/admin_cse.html'
     
-        return render(request, template_name, {
-            "user_designation": user_info.user_type,
-            "announcements": context,
-            "request_to": requests_received,
-            "fac_list": context_f,
-            "department_info": department_context
-        }) 
-    elif desig=='deptadmin_ece':
-        template_name = 'department/admin_ece.html'
-        return render(request, template_name, {
-            "user_designation": user_info.user_type,
-            "announcements": context,
-            "request_to": requests_received,
-            "fac_list": context_f,
-            "department_info": department_context
-        }) 
-    elif desig=='deptadmin_me':
-        template_name = 'department/admin_me.html'
-        return render(request, template_name, {
-            "user_designation": user_info.user_type,
-            "announcements": context,
-            "request_to": requests_received,
-            "fac_list": context_f,
-            "department_info": department_context
-        }) 
-    elif desig=='deptadmin_sm':
-        template_name = 'department/admin_sm.html'
-        return render(request, template_name, {
-            "user_designation": user_info.user_type,
-            "announcements": context,
-            "request_to": requests_received,
-            "fac_list": context_f,
-            "department_info": department_context
-        }) 
+    #     return render(request, template_name, {
+    #         "user_designation": user_info.user_type,
+    #         "announcements": context,
+    #         "request_to": requests_received,
+    #         "fac_list": context_f,
+    #         "department_info": department_context
+    #     }) 
+    # elif desig=='deptadmin_ece':
+    #     template_name = 'department/admin_ece.html'
+    #     return render(request, template_name, {
+    #         "user_designation": user_info.user_type,
+    #         "announcements": context,
+    #         "request_to": requests_received,
+    #         "fac_list": context_f,
+    #         "department_info": department_context
+    #     }) 
+    # elif desig=='deptadmin_me':
+    #     template_name = 'department/admin_me.html'
+    #     return render(request, template_name, {
+    #         "user_designation": user_info.user_type,
+    #         "announcements": context,
+    #         "request_to": requests_received,
+    #         "fac_list": context_f,
+    #         "department_info": department_context
+    #     }) 
+    # elif desig=='deptadmin_sm':
+    #     template_name = 'department/admin_sm.html'
+    #     return render(request, template_name, {
+    #         "user_designation": user_info.user_type,
+    #         "announcements": context,
+    #         "request_to": requests_received,
+    #         "fac_list": context_f,
+    #         "department_info": department_context
+    #     }) 
          
-    # if  desig == 'deptadmin_cse':
-    #     return render(request, 'admin_cse.html')
-    # elif desig == 'deptadmin_ece':
-    #     return render(request, 'admin_ece.html')
-    # elif desig == 'deptadmin_sm':
-    #     return render(request, 'admin_sm.html')
-    # elif desig == 'deptadmin_me':
-    #     return render(request, 'admin_me.html')
-    # else:
-    #     return render(request, 'default.html')
+    # # if  desig == 'deptadmin_cse':
+    # #     return render(request, 'admin_cse.html')
+    # # elif desig == 'deptadmin_ece':
+    # #     return render(request, 'admin_ece.html')
+    # # elif desig == 'deptadmin_sm':
+    # #     return render(request, 'admin_sm.html')
+    # # elif desig == 'deptadmin_me':
+    # #     return render(request, 'admin_me.html')
+    # # else:
+    # #     return render(request, 'default.html')
 
-    template_name = department_templates.get(user_departmentid, default_template)
-    return render(request, template_name, {
-        "user_designation": user_info.user_type,
-        "announcements": context,
-        "request_to": requests_received,
-        "fac_list": context_f,
-        "department_info": department_context
-    })
+    # template_name = department_templates.get(user_departmentid, default_template)
+    # return render(request, template_name, {
+    #     "user_designation": user_info.user_type,
+    #     "announcements": context,
+    #     "request_to": requests_received,
+    #     "fac_list": context_f,
+    #     "department_info": department_context
+    # })
+    return create_announcement(request, 'department/dep_request.html', 'Department', {"user_designation": user_info.user_type})
     
    
 

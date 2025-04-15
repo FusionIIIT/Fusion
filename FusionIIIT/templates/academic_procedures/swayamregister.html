@@ -1,0 +1,87 @@
+{% load static %}
+{% block finalregister %}
+
+<style type="text/css">
+    table#view_1 {
+        border-style: hidden;
+        width: 100%;
+    }
+</style>
+
+
+<center><b>Swayam Registration</b></center>
+
+<div class="ui vertical segment">
+    {% if swayam_registration_flag == True %}
+    <form id="swayam_reg_form" class="ui form" action = "/academic-procedures/api/stu/swayam_add_course/" method = "post">
+                {% csrf_token %}
+                <div class="field">
+                    <label>Course Slot </label>
+                    <div class="ui fluid search selection dropdown">
+                        <input type="hidden" name="courseslot_id">
+                        <i class="dropdown icon"></i>
+                        <div class="default text">Select</div>
+                        <div class="menu">
+                            {% for courseslot in swayam_courseslots %}
+                            <div class="item" data-value="{{ courseslot.id }}">{{ courseslot.name }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Course </label>
+                    <div class="ui fluid search selection dropdown">
+                        <input type="hidden" name="course_id">
+                        <i class="dropdown icon"></i>
+                        <div class="default text">Select</div>
+                        <div class="menu">
+                            {% for course in swayam_courses %}
+                            <div class="item" data-value="{{ course.id }}">{{ course.code }} - {{ course.name }} - {{ course.version }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Registration Type</label>
+                    <select class="ui fluid dropdown" name = "registration_type">
+                        <option value="Extra Credits">Extra Credits</option>
+                        <option value="Replacement">Replacement</option>
+                    </select>
+                </div>
+
+                <input type = "text" value = {{dict2.roll_no}} name="roll_no" hidden/>
+                <button class="ui fluid positive button" type="submit" name = "AddCourse" value = "submit">Add Course</button>
+                
+            </form>
+    <br>
+    <br>
+    {% else %}
+    <CENTER>
+        <p style="color: red"> Swayam Registration Date is yet to come </p>
+    </CENTER>
+    {% endif %}
+</div>
+{% endblock %}
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script>
+    $(document).ready(function () {
+        // Attach submit handler to the form
+        $("#swayam_reg_form").on("submit", function (event) {
+            event.preventDefault(); // Prevent default form submission
+            const form_data = $(this).serialize()
+            console.log($(this).attr("action"))
+            $.ajax({
+                url: '/academic-procedures/api/stu/swayam_add_course/',
+                type: "POST",
+                data: form_data,
+                success: function (response) {
+                    alert(response.message);
+                },
+                error: function (xhr, status, error) {
+                    alert(xhr.responseJSON.message);
+                }
+            });
+        });
+    });
+</script>

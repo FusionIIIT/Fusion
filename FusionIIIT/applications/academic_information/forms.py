@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Exam_timetable, Meeting, Timetable
+from .models import Exam_timetable, Meeting, Timetable, Student
 
 
 class MinuteForm(forms.ModelForm):
@@ -49,3 +49,15 @@ class ExamTimetableForm(forms.ModelForm):
     class Meta:
         model = Exam_timetable
         fields = ('programme', 'exam_time_table',)
+
+
+class PreRegistrationSearchForm(forms.Form):
+    roll_no = forms.CharField(
+        max_length=20,
+        widget=forms.TextInput(attrs={'class': 'ui input', 'placeholder': 'Enter Roll Number'}),
+        label="Roll Number"
+    )
+    semester_no = forms.IntegerField(
+        widget=forms.NumberInput(attrs={'class': 'ui input', 'placeholder': 'Enter Semester No'}),
+        label="Semester No"
+    )

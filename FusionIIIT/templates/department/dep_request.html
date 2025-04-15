@@ -89,13 +89,7 @@
 
                 {% comment %}Make announcement{% endcomment %}
                 <div class="ui active tab segment" data-tab="first">
-                    {% block make_announcement %}
-                        {% if user_designation == "faculty" %}
-                                {% include "department/make_announcements_fac.html" %}
-                        {% elif user_designation == "staff" %}
-                                {% include "department/make_announcements_staff.html" %}
-                        {% endif %}
-                    {% endblock %}
+                        {{ rendered_form|safe}}
                 </div>
                 {% comment %}Make announcement{% endcomment %}
 
