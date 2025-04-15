@@ -51,7 +51,6 @@ def generate_file_path(folder, filename):
     timestamp = now().strftime("%Y%m%d%H%M%S")
     return os.path.join(f"patent/{folder}", f"{base}_{timestamp}{extension}")
 
-@csrf_exempt
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
@@ -221,7 +220,6 @@ def submit_application(request):
         return JsonResponse({"error": "Invalid JSON format"}, status=400)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
-# End of the submit application
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -297,6 +295,7 @@ def view_application_details_for_applicant(request, application_id):
     section_i = ApplicationSectionI.objects.filter(application=application).first()
     section_i_data = {
         "type_of_ip": section_i.type_of_ip if section_i else None,
+        "type_of_ip": section_i.type_of_ip if section_i else None,
         "area": section_i.area if section_i else None,
         "problem": section_i.problem if section_i else None,
         "objective": section_i.objective if section_i else None,
@@ -361,7 +360,13 @@ def saved_drafts(request):
 # -----------------------------------------
 
 # For new applications tab
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 def new_applications(request):
+    REVIEW_STATUSES = ["Submitted", "Reviewed by PCC Admin"]
+
+    applications = Application.objects.filter(status__in=REVIEW_STATUSES).select_related("primary_applicant")
     REVIEW_STATUSES = ["Submitted", "Reviewed by PCC Admin"]
 
     applications = Application.objects.filter(status__in=REVIEW_STATUSES).select_related("primary_applicant")
@@ -389,6 +394,7 @@ def new_applications(request):
             # "application_no": app.id,
             "title": app.title,
             "submitted_by": applicant.name,
+            "submitted_by": applicant.name,
             "designation": designation_name,
             "department": department_name,
             "submitted_on": app.submitted_date.strftime("%Y-%m-%d") if app.submitted_date else "Unknown"
@@ -396,104 +402,174 @@ def new_applications(request):
 
     return JsonResponse({"applications": application_dict}, safe=False)
 
-@csrf_exempt
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-def review_applications(request):
+def review_application(request, application_id):
+    # Check if request method is POST
     if request.method == "POST":
         try:
-            data = json.loads(request.body)
-            application_id = data.get("application_id")
-
+            # Validate that application_id is provided
             if not application_id:
                 return JsonResponse({"error": "Application ID is required."}, status=400)
 
+            # Try to fetch the application by its ID
             try:
                 application = Application.objects.get(id=application_id)
             except Application.DoesNotExist:
                 return JsonResponse({"error": "Application not found."}, status=404)
 
+            # Optional: Check if it's already reviewed to prevent redundant updates
+            if application.status == "Reviewed by PCC Admin":
+                return JsonResponse({"message": "Application already reviewed."})
+
+            # Parse JSON body
+            try:
+                data = json.loads(request.body)
+                attorney_name = data.get("attorney_name", "").strip()
+                comments = data.get("comments")
+            except json.JSONDecodeError:
+                return JsonResponse({"error": "Invalid JSON body."}, status=400)
+
+            # Update application status and review date
             application.status = "Reviewed by PCC Admin"
+            application.comments = comments
+            application.reviewed_by_pcc_date = now()
             application.save()
 
+            # Return success response with updated status and date
             return JsonResponse({
                 "message": "Application status updated to 'Reviewed by PCC Admin'.",
                 "application_id": application.id,
-                "new_status": application.status
+                "new_status": application.status,
+                "reviewed_by_pcc_date": application.reviewed_by_pcc_date,
             })
 
+        # Handle invalid JSON (though not used directly here)
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON."}, status=400)
 
+    # Handle non-POST requests
     return JsonResponse({"error": "Only POST requests are allowed."}, status=405)
 
-@csrf_exempt
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-def forward_application(request):
+def forward_application(request, application_id):
     if request.method == "POST":
         try:
-            data = json.loads(request.body)
-            application_id = data.get("application_id")
-
             if not application_id:
                 return JsonResponse({"error": "Application ID is required."}, status=400)
 
+            # Get the application
             try:
                 application = Application.objects.get(id=application_id)
             except Application.DoesNotExist:
                 return JsonResponse({"error": "Application not found."}, status=404)
 
+            # Prevent double forwarding
+            if application.status == "Forwarded for Director's Review":
+                return JsonResponse({"message": "Application is already forwarded for Director's review."}, status=400)
+
+            # Parse JSON body
+            try:
+                data = json.loads(request.body)
+                attorney_name = data.get("attorney_name", "").strip()
+                comments = data.get("comments")
+            except json.JSONDecodeError:
+                return JsonResponse({"error": "Invalid JSON body."}, status=400)
+
+            if not attorney_name:
+                return JsonResponse({"error": "attorney_name is required in the request body."}, status=400)
+
+            # Get attorney (case-insensitive)
+            attorney = Attorney.objects.filter(name__iexact=attorney_name).first()
+            if not attorney:
+                return JsonResponse({"error": f"Attorney with name '{attorney_name}' not found."}, status=404)
+
+            # Optional: Limit comment length
+            if comments and len(comments) > 1000:
+                return JsonResponse({"error": "Comments too long. Max 1000 characters allowed."}, status=400)
+
+            # Update the application
             application.status = "Forwarded for Director's Review"
+            application.forwarded_to_director_date = now()
+            application.attorney = attorney
+            application.comments = comments
             application.save()
 
             return JsonResponse({
-                "message": "Application status updated to 'Forwarded for Director's Review'.",
+                "message": "Application forwarded to director.",
                 "application_id": application.id,
-                "new_status": application.status
+                "new_status": application.status,
+                "forwarded_to_director_date": application.forwarded_to_director_date,
+                "attorney_id": attorney.id,
+                "attorney_name": attorney.name,
+                "comments": comments
             })
 
-        except json.JSONDecodeError:
-            return JsonResponse({"error": "Invalid JSON."}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Only POST requests are allowed."}, status=405)
 
-@csrf_exempt
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-def reject_application(request):
+def request_application_modification(request, application_id):
     if request.method == "POST":
         try:
-            data = json.loads(request.body)
-            application_id = data.get("application_id")
-
+            # Validate if application_id is provided
             if not application_id:
                 return JsonResponse({"error": "Application ID is required."}, status=400)
 
+            # Fetch the application object from the database
             try:
                 application = Application.objects.get(id=application_id)
             except Application.DoesNotExist:
                 return JsonResponse({"error": "Application not found."}, status=404)
 
-            application.status = "Rejected"
-            application.decision_date = now()
-            application.decision_status = "Rejected"
-            application.save()
+            # Check if the application is already in Draft status to prevent redundant updates
+            if application.status == "Draft":
+                return JsonResponse({"message": "Application is already in Draft status."}, status=400)
 
+            # Parse the request body for comments
+            try:
+                data = json.loads(request.body)
+                comments = data.get("comments", "").strip()  # Remove leading/trailing whitespace
+            except json.JSONDecodeError:
+                return JsonResponse({"error": "Invalid JSON body."}, status=400)
+
+            # Validate comments field
+            if not comments:
+                return JsonResponse({"error": "Comments are required."}, status=400)
+            if len(comments) > 1000:
+                return JsonResponse({"error": "Comments too long. Maximum 1000 characters allowed."}, status=400)
+
+            # Update application fields
+            application.status = "Draft" 
+            application.decision_date = now() 
+            application.decision_status = "Draft"  
+            application.comments = comments 
+            application.save() 
+
+            # Return a success response
             return JsonResponse({
-                "message": "Application status updated to 'Forwarded for Director's Review'.",
+                "message": "Application status updated to 'Draft'.",
                 "application_id": application.id,
-                "new_status": application.status
+                "new_status": application.status,
+                "last_updated_at": application.last_updated_at,
+                "comments": comments,
             })
 
-        except json.JSONDecodeError:
-            return JsonResponse({"error": "Invalid JSON."}, status=400)
+        except Exception as e:
+            # Catch-all for any unexpected exceptions
+            return JsonResponse({"error": str(e)}, status=500)
 
+    # Return error for methods other than POST
     return JsonResponse({"error": "Only POST requests are allowed."}, status=405)
 
+# For ongoing applications tab
 # For ongoing applications tab
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -504,7 +580,11 @@ def ongoing_applications(request):
     "Director's Approval Received",
     "Patentability Check Started",
     "Patentability Check Completed",
+    "Patentability Check Started",
+    "Patentability Check Completed",
     "Patentability Search Report Generated",
+    "Patent Filed",
+    "Patent Published",
     "Patent Filed",
     "Patent Published",
     ]
@@ -544,6 +624,94 @@ def ongoing_applications(request):
 
     return JsonResponse({"applications": application_dict}, safe=False)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def change_application_status(request, application_id):
+    REVIEW_STATUSES = [
+    "Forwarded for Director's Review",
+    "Director's Approval Received",
+    "Patentability Check Started",
+    "Patentability Check Completed",
+    "Patentability Search Report Generated",
+    "Patent Filed",
+    "Patent Published",
+    "Patent Granted",
+    "Patent Refused",
+    ]
+    if request.method == "POST":
+        try:
+            # Validate if application_id is provided
+            if not application_id:
+                return JsonResponse({"error": "Application ID is required."}, status=400)
+
+            # Fetch the application object from the database
+            try:
+                application = Application.objects.get(id=application_id)
+            except Application.DoesNotExist:
+                return JsonResponse({"error": "Application not found."}, status=404)
+
+            # Parse the request body for the next status
+            try:
+                data = json.loads(request.body)
+                next_status = data.get("next_status", "").strip()  # Remove leading/trailing whitespace
+            except json.JSONDecodeError:
+                return JsonResponse({"error": "Invalid JSON body."}, status=400)
+
+            # Validate next_status field
+            if not next_status:
+                return JsonResponse({"error": "next_status is required."}, status=400)
+            if next_status not in REVIEW_STATUSES:
+                return JsonResponse({"error": f"Invalid next_status. Allowed statuses: {REVIEW_STATUSES}"}, status=400)
+
+            # Check if the current status allows transitioning to the next status
+            current_status_index = REVIEW_STATUSES.index(application.status) if application.status in REVIEW_STATUSES else -1
+            next_status_index = REVIEW_STATUSES.index(next_status)
+
+            if next_status_index != current_status_index + 1:
+                return JsonResponse({
+                    "error": f"Invalid status transition. Current status: '{application.status}', "
+                             f"allowed next status: '{REVIEW_STATUSES[current_status_index + 1]}'" if current_status_index + 1 < len(REVIEW_STATUSES) else "None"
+                }, status=400)
+
+            # Update application status and save
+            application.status = next_status
+            if application.status == "Patentability Check Started":
+                application.patentability_check_start_date = now()
+            elif application.status == "Patentability Check Completed":
+                application.patentability_check_completed_date = now()
+            elif application.status == "Patentability Search Report Generated":
+                application.search_report_generated_date = now()
+            elif application.status == "Patent Filed":
+                application.patent_filed_date = now()
+            elif application.status == "Patent Published":
+                application.patent_published_date = now()
+            elif application.status == "Patent Granted":
+                application.patent_granted_date = now()
+                application.decision_status = "Accepted"
+                application.decision_date = now()
+            elif application.status == "Patent Refused":
+                application.patent_refused_date = now()
+                application.decision_status = "Rejected"
+                application.decision_date = now()
+            application.save()
+
+            # Return a success response
+            return JsonResponse({
+                "message": f"Application status updated to '{next_status}'.",
+                "application_id": application.id,
+                "new_status": application.status,
+                "last_updated_at": application.last_updated_at,
+            })
+
+        except Exception as e:
+            # Catch-all for any unexpected exceptions
+            return JsonResponse({"error": str(e)}, status=500)
+
+    # Return error for methods other than POST
+    return JsonResponse({"error": "Only POST requests are allowed."}, status=405)
+
+# For past applications tab
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
@@ -578,6 +746,7 @@ def past_applications(request):
             "token_no": app.token_no if app.token_no else "Token not generated yet",
             "title": app.title,
             "submitted_by": applicant.name if applicant else "Unknown",
+            "submitted_by": applicant.name if applicant else "Unknown",
             "designation": designation_name,
             "department": department_name,
             "submitted_on": app.submitted_date.strftime("%Y-%m-%d") if app.submitted_date else "Unknown",
@@ -589,7 +758,7 @@ def past_applications(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-def view_past_application_details_for_pccAdmin(request, application_id):
+def view_application_details_for_pccAdmin(request, application_id):
     # Fetch application details
     application = get_object_or_404(Application, id=application_id)
 
@@ -621,6 +790,7 @@ def view_past_application_details_for_pccAdmin(request, application_id):
     # Fetch Section I details
     section_i = ApplicationSectionI.objects.filter(application=application).first()
     section_i_data = {
+        "type_of_ip": section_i.type_of_ip if section_i else None,
         "area": section_i.area if section_i else None,
         "problem": section_i.problem if section_i else None,
         "objective": section_i.objective if section_i else None,
@@ -656,17 +826,24 @@ def view_past_application_details_for_pccAdmin(request, application_id):
     # Prepare response
     response_data = {
         "application_id": application.id,
+        "last_updated_at": application.last_updated_at,
+        "token_no": application.token_no,
         "primary_applicant_name": primary_applicant_name,
         "title": application.title,
         "status": application.status,
-        "token_no": application.token_no,
         "attorney_name": attorney_name,
         "dates": {
-            "patentability_check_date": application.patentability_check_date,
-            "patentability_file_date": application.patentability_file_date,
-            "assigned_date": application.assigned_date,
+            "submitted_date": application.submitted_date if application.submitted_date else None,
+            "reviewed_by_pcc_date": application.reviewed_by_pcc_date,
+            "forwarded_to_director_date": application.forwarded_to_director_date,
+            "director_approval_date": application.director_approval_date,
+            "patentability_check_start_date": application.patentability_check_start_date,
+            "patentability_check_completed_date": application.patentability_check_completed_date,
+            "search_report_generated_date": application.search_report_generated_date,
+            "patent_filed_date": application.patent_filed_date,
+            "patent_published_date": application.patent_published_date,
+            "final_decision_date": application.final_decision_date,
             "decision_date": application.decision_date,
-            "submitted_date": application.submitted_date if application.submitted_date else None
         },
         "decision_status": application.decision_status,
         "comments": application.comments if application.comments else None,
