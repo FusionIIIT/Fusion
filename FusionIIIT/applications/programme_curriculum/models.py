@@ -132,21 +132,21 @@ class Curriculum(models.Model):
     name = models.CharField(max_length=100, null=False, blank=False)
     # version = models.FloatField(default=1.0, null=False)
     # version = models.PositiveIntegerField(default=1, null=False)
-    # version = models.DecimalField(
-    # max_digits=5, 
-    # decimal_places=1,  
-    # default=1.0, 
-    # validators=[MinValueValidator(1.0), DecimalValidator(max_digits=5, decimal_places=1)])
+    version = models.DecimalField(
+    max_digits=5, 
+    decimal_places=1,  
+    default=1.0, 
+    validators=[MinValueValidator(1.0), DecimalValidator(max_digits=5, decimal_places=1)])
     working_curriculum = models.BooleanField(default=True, null=False)
     no_of_semester = models.PositiveIntegerField(default=1, null=False)
     min_credit = models.PositiveIntegerField(default=0, null=False)
     latest_version = models.BooleanField(default=True)
-    version = models.PositiveIntegerField(default=1, null=False)
+    
 
     
 
-    # class Meta:
-    #     unique_together = ('name', 'version',)
+    class Meta:
+        unique_together = ('name', 'version',)
 
     def __str__(self):
         return str(self.name + " v" + str(self.version))
