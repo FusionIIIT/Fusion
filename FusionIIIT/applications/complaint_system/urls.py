@@ -1,49 +1,78 @@
-from django.conf.urls import url,include
+#urls.py
 
-from . import views
+# complaint/urls.py
+from django.urls import path
+from .views import (
+    CheckUser,
+    UserComplaintView,
+    CaretakerFeedbackView,
+    SubmitFeedbackView,
+    ComplaintDetailView,
+)
+from .views import (
+    CaretakerLodgeView,
+    CaretakerView,
+    FeedbackCareView,
+    ResolvePendingView,
+    ComplaintDetailView,
+    SearchComplaintView,
+    SubmitFeedbackCaretakerView,
+)
+from .views import (
+    SupervisorLodgeView,
+    SupervisorView,
+    FeedbackSuperView,
+    CaretakerIdKnowMoreView,
+    SupervisorComplaintDetailView,
+    SupervisorResolvePendingView,
+    SupervisorSubmitFeedbackView,
+)
 
-app_name = 'complaint'
+from django.urls import path
+from .views import (
+    RemoveWorkerView,
+    ForwardCompaintView,
+    DeleteComplaintView,
+    ChangeStatusView,
+    ChangeStatusSuperView,
+    GenerateReportView,
+    # Other imported views
+)
+
+
+
+app_name = "complaint"
 
 urlpatterns = [
+    path("", CheckUser.as_view(), name="complaint"),
+    path("user/", UserComplaintView.as_view(), name="user-complaints"),
+    path("user/caretakerfb/", CaretakerFeedbackView.as_view(), name="caretaker-feedback"),
+    path("user/<int:complaint_id>/", SubmitFeedbackView.as_view(), name="submit-feedback"),
+    path("user/detail/<int:detailcomp_id1>/", ComplaintDetailView.as_view(), name="detail"),
+    # Other URL patterns
+    path('caretaker/lodge/', CaretakerLodgeView.as_view()),  # Converted to DRF
+    path('caretaker/', CaretakerView.as_view(), name='caretaker'),  # Converted to DRF
+    path('caretaker/feedback/<int:feedcomp_id>/', FeedbackCareView.as_view()),  # Converted to DRF
+    path('caretaker/pending/<int:cid>/', ResolvePendingView.as_view()),  # Converted to DRF
+    path('caretaker/detail2/<int:detailcomp_id1>/', ComplaintDetailView.as_view()),  # Converted to DRF
+    path('caretaker/search_complaint', SearchComplaintView.as_view()),  # Converted to DRF
+    path('caretaker/<int:complaint_id>/feedback/', SubmitFeedbackCaretakerView.as_view()),  # Converted to DRF
+        # Supervisor URLs
+    path('supervisor/lodge/', SupervisorLodgeView.as_view()),
+    path('supervisor/', SupervisorView.as_view()),
+    path('supervisor/feedback/<int:feedcomp_id>/', FeedbackSuperView.as_view()),
+    path('supervisor/caretaker_id_know_more/<int:caretaker_id>/', CaretakerIdKnowMoreView.as_view()),
+    # The following URL is commented out as per the original code
+    # path('supervisor/caretaker_id_know_more/<int:caretaker_id>/complaint_reassign_super/<int:iid>/', views.complaint_reassign_super, name='complaint_reassign_super'),
+    path('supervisor/detail/<int:detailcomp_id1>/', SupervisorComplaintDetailView.as_view(), name='detail3'),
+    path('supervisor/pending/<int:cid>/', SupervisorResolvePendingView.as_view()),
+    path('supervisor/<int:complaint_id>/', SupervisorSubmitFeedbackView.as_view()),
+    # CRUD task URLs
+    path('caretaker/worker_id_know_more/<int:work_id>/removew/', RemoveWorkerView.as_view()),
+    path('caretaker/<int:comp_id1>/', ForwardCompaintView.as_view(), name='assign_worker'),
+    path('caretaker/deletecomplaint/<int:comp_id1>/', DeleteComplaintView.as_view()),
+    path('caretaker/<int:complaint_id>/<str:status>/', ChangeStatusView.as_view()),
+    path('supervisor/<int:complaint_id>/<str:status>/', ChangeStatusSuperView.as_view()),
 
-    url(r'^$', views.check, name='complaint'),
-  #  url(r'^login/$', views.login1, name='complaint'),
-    url(r'^user/$', views.user),
-    url(r'^user/caretakerfb/$' , views.caretaker_feedback),
-    url(r'^user/(?P<complaint_id>[0-9]+)/$', views.submitfeedback),
-    url(r'^user/detail/(?P<detailcomp_id1>[0-9]+)/$', views.detail,name='detail'),
-   # url(r'^user/check_complaint/$', views.save_comp),   
-    
-    # caretaker
-    url(r'^caretaker/lodge/$', views.caretakerlodge),
-    url(r'^caretaker/$', views.caretaker, name='caretaker'),
-    url(r'^caretaker/feedback/(?P<feedcomp_id>[0-9]+)/$', views.feedback_care),
-    url(r'^caretaker/pending/(?P<cid>[0-9]+)/$', views.resolvepending),
-    url(r'^caretaker/detail2/(?P<detailcomp_id1>[0-9]+)/$', views.detail),
-    url(r'^caretaker/search_complaint$', views.search_complaint),
-    url(r'^caretaker/(?P<complaint_id>[0-9]+)/feedback/$', views.submitfeedbackcaretaker),
-    
-    
-    # supervisor
-    url(r'^supervisor/lodge/$', views.supervisorlodge),
-    url(r'^supervisor/$', views.supervisor),
-    url(r'^supervisor/feedback/(?P<feedcomp_id>[0-9]+)/$', views.feedback_super),
-    url(r'^supervisor/caretaker_id_know_more/(?P<caretaker_id>[0-9]+)/$', views.caretaker_id_know_more),
-    # url(r'^supervisor/caretaker_id_know_more/(?P<caretaker_id>[0-9]+)/complaint_reassign_super/(?P<iid>[0-9]+)/$', views.complaint_reassign_super, name = 'complaint_reassign_super'),
-    url(r'^supervisor/detail/(?P<detailcomp_id1>[0-9]+)/$', views.detail3, name = 'detail3'),
-    url(r'^supervisor/pending/(?P<cid>[0-9]+)/$', views.resolvependingsuper),
-    url(r'^supervisor/(?P<complaint_id>[0-9]+)/$', views.submitfeedbacksuper),
-    
-    
-    
-    # CRUD task
-    url(r'^caretaker/worker_id_know_more/(?P<work_id>[0-9]+)/removew/$', views.removew),
-    url(r'^caretaker/(?P<comp_id1>[0-9]+)/$', views.assign_worker,name='assign_worker'),
-    url(r'^caretaker/deletecomplaint/(?P<comp_id1>[0-9]+)/$', views.deletecomplaint),
-    # url(r'^caretaker/(?P<comp_id>[0-9]+)/$', views.assign_worker),
-    url(r'^caretaker/(?P<complaint_id>[0-9]+)/(?P<status>[0-9]+)/$', views.changestatus),
-    url(r'^supervisor/(?P<complaint_id>[0-9]+)/(?P<status>[0-9]+)/$', views.changestatussuper),
-
-    url(r'^api/',include('applications.complaint_system.api.urls'))
-
+    path('generate-report/', GenerateReportView.as_view(), name='generate-report-api'),
 ]

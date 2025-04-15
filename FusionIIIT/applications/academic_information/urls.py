@@ -43,4 +43,5 @@ urlpatterns = [
     url(r'^api/',include('applications.academic_information.api.urls')),
     url(r'^view_all_student_data', views.view_all_student_data, name='view_all_student_data'),
     url(r'^generateStudentSheet$',views.generatestudentxlsheet, name = 'generatestudentxlsheet'),
+    url(r'^course_allocated_students$',views.get_excel, name = 'course_allocated_students'),
 ]

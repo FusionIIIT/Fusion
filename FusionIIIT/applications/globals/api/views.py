@@ -14,6 +14,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes,authentication_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from django.http import JsonResponse
 
 
 from . import serializers
@@ -139,17 +140,24 @@ def update_last_selected_role(request):
 
     return Response({'message': 'last_selected_role updated successfully'}, status=status.HTTP_200_OK)
 
+# This API is only for student profile. For faculty profile, use eis_profile views
 @api_view(['GET'])
 def profile(request, username=None):
     user = get_object_or_404(User, username=username) if username else request.user
-    user_detail = serializers.UserSerializer(user).data
     profile = serializers.ExtraInfoSerializer(user.extrainfo).data
-
-    print(user)
     
     if profile['user_type'] == 'student':
         student = user.extrainfo.student
-        skills = serializers.HasSerializer(student.has_set.all(),many=True).data
+        std_sem = Student.objects.get(id=student.id).curr_semester_no
+        skills = list(
+        Has.objects.filter(unique_id_id=student)
+        .select_related("skill_id")
+        .values("skill_id__skill", "skill_rating")
+        )
+        formatted_skills = [
+            {"skill_name": skill["skill_id__skill"], "skill_rating": skill["skill_rating"]}
+            for skill in skills
+        ]
         education = serializers.EducationSerializer(student.education_set.all(), many=True).data
         course = serializers.CourseSerializer(student.course_set.all(), many=True).data
         experience = serializers.ExperienceSerializer(student.experience_set.all(), many=True).data
@@ -159,9 +167,9 @@ def profile(request, username=None):
         patent = serializers.PatentSerializer(student.patent_set.all(), many=True).data
         current = serializers.HoldsDesignationSerializer(user.current_designation.all(), many=True).data
         resp = {
-            'user' : user_detail,
             'profile' : profile,
-            'skills' : skills,
+            'semester_no' : std_sem,
+            'skills' : formatted_skills,
             'education' : education,
             'course' : course,
             'experience' : experience,
@@ -172,15 +180,8 @@ def profile(request, username=None):
             'current' : current
         }
         return Response(data=resp, status=status.HTTP_200_OK)
-    elif profile['user_type'] == 'faculty':
-        print(username)
-        return redirect('/eis/api/profile/' + (username+'/' if username else ''))
-    elif profile['user_type'] == 'staff':
-        resp = {
-            'user' : user_detail,
-            'profile' : profile,
-        }
-        return Response(data=resp, status=status.HTTP_200_OK)   
+    else:
+        return Response(data={'error': 'User is not a student'}, status=status.HTTP_400_BAD_REQUEST)  
 
 @api_view(['PUT'])
 def profile_update(request):
@@ -204,11 +205,26 @@ def profile_update(request):
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         elif 'skillsubmit' in request.data:
-            serializer = serializers.HasSerializer(data=request.data['skillsubmit'])
-            if serializer.is_valid():
-                serializer.save(unique_id=student)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                skill_data = request.data['skillsubmit']
+                skill_id = skill_data['skill_id']
+                skill_name = skill_id['skill_name']
+                skill_rating = skill_data['skill_rating']
+
+                if not skill_name or skill_rating is None:
+                    return Response({"error": "Missing skill_name or skill_rating"}, status=status.HTTP_400_BAD_REQUEST)
+
+                skill, created = Skill.objects.get_or_create(skill=skill_name)
+                has_obj, created = Has.objects.get_or_create(skill_id=skill, unique_id=student, defaults={"skill_rating": skill_rating})
+                if not created:
+                    has_obj.skill_rating = skill_rating
+                    has_obj.save()
+
+                return Response({"message": "Skill added successfully"}, status=status.HTTP_200_OK)
+
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         elif 'achievementsubmit' in request.data:
             request.data['achievementsubmit']['unique_id'] = profile
             serializer = serializers.AchievementSerializer(data=request.data['achievementsubmit'])
@@ -377,3 +393,30 @@ def delete_notification(request):
             'details': str(e)
         }
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
+    
+
+def search_users(request):
+    query = request.GET.get('q', '')
+    if query:
+        users = ExtraInfo.objects.filter(user__username__icontains=query).values('id', 'user__username')
+    else:
+        users = ExtraInfo.objects.none()
+
+    results = [
+        {'id': user['id'], 'text': user['user__username']} for user in users
+    ]
+    return JsonResponse({'results': results})
+
+@api_view(['GET'])  # Declare that this view handles GET requests
+@permission_classes([])  # No permissions required
+@authentication_classes([])  # No authentication required
+def department_info(request):
+    """
+    Retrieve department information and return as JSON.
+    """
+    try:
+        departments = DepartmentInfo.objects.all()  # Fetch all department objects
+        serializer = serializers.DepartmentInfoSerializer(departments, many=True)  # Serialize the data
+        return Response(serializer.data, status=status.HTTP_200_OK)  # Return serialized data as JSON
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

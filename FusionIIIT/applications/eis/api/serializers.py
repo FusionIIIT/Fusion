@@ -7,7 +7,7 @@ from applications.eis.models import (emp_research_papers,emp_published_books,emp
                                     emp_consultancy_projects,emp_patents,emp_techtransfer,emp_mtechphd_thesis,
                                     emp_visits,emp_confrence_organised,emp_achievement,
                                     emp_expert_lectures,emp_session_chair,emp_keynote_address,
-                                    emp_event_organized,faculty_about)
+                                    emp_event_organized,faculty_about,AdministrativePosition,Honor,ProfessionalExperience,Qualification)
 from applications.globals.api.serializers import ExtraInfoSerializer, UserSerializer, HoldsDesignationSerializer
 
 User = get_user_model()
@@ -100,4 +100,28 @@ class FacultyAboutSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = faculty_about
+        fields = ('__all__')
+
+class AdministrativePositionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = AdministrativePosition
+        fields = ('__all__')
+
+class HonorSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Honor
+        fields = ('__all__')
+
+class ProfessionalExperienceSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ProfessionalExperience
+        fields = ('__all__')
+
+class QualificationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Qualification
         fields = ('__all__')
