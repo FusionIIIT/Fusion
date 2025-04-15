@@ -52,6 +52,7 @@ class Application(models.Model):
         ("Pending", "Pending"),
     ]
     id = models.AutoField(primary_key=True)
+    last_updated_at = models.DateTimeField(auto_now=True)
     token_no = models.CharField(max_length=100, blank=True, null=True)
     primary_applicant = models.ForeignKey(Applicant, on_delete=models.CASCADE, related_name="applications")  
     title = models.CharField(max_length=255)
@@ -224,7 +225,7 @@ class AssociatedWith(models.Model):
         return f"{self.applicant.name} - {self.application.title} ({self.percentage_share}%)"
     
     class Meta:
-        db_table = 'patent_system_associatedWith'
+        db_table = 'patent_system_associatedwith'
 
 class Document(models.Model):
     title = models.CharField(max_length=255)
