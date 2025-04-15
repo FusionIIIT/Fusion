@@ -19,16 +19,13 @@ urlpatterns = [
     path("pccAdmin/applications/past/", views.past_applications, name="past_applications"),
 
     # Director-related paths
-    path("director", views.director_main_dashboard, name="director_main_dashboard"),
-    path("director-dashboard", views.director_dashboard, name="director_dashboard"),
-    path("director/accept_reject", views.director_accept_reject, name="director_accept_reject"),
-    path("director/recents", views.recents_view, name="recents_view"),
-    path("director/pending-reviews", views.pending_reviews, name="pending_reviews"),
-    path("director/reviewedapplications", views.reviewed_applications, name="reviewed_applications"),
+    path("director/applications/new/", views.director_new_applications, name="director_new_applications"), 
+    path("director/application/reject", views.director_reject, name="director_reject"),
+    path("director/application/accept", views.director_accept, name="director_accept"),
+    path("director/reviewedapplications", views.director_reviewed_applications, name="director_reviewed_applications"),
     path("director/active", views.active_applications, name="active_applications"),
-    path("director/final-review/details", views.director_status_view, name="director_status_view"),
+    # path("director/final-review/details", views.director_status_view, name="director_status_view"),
     path("director/notifications/", views.director_notifications, name="director_notifications"),
-    path("director/submitted-applications", views.submitted_applications, name="submitted_applications"),
 
     # Attorney management URLs
     path("pccAdmin/attorneys/", views.get_attorney_list, name="get_attorney_list"),

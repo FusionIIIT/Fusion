@@ -73,7 +73,7 @@ def submit_application(request):
         form_iii_file = request.FILES.get("form_iii")
 
         required_fields = [
-            "title", "inventors", "area_of_invention", "problem_statement", "objective",
+            "title", "inventors", "area_of_invention", "problem_statement", "objective", "ip_type",
             "novelty", "advantages", "tested_experimentally", "applications",
             "funding_details", "funding_source", "publication_details", "mou_details",
             "research_details", "company_details",
@@ -132,7 +132,7 @@ def submit_application(request):
 
         ApplicationSectionI.objects.create(
             application=application,
-            type_of_ip=data["type_of_ip"],
+            type_of_ip=data["ip_type"],
             area=data["area_of_invention"],
             problem=data["problem_statement"],
             objective=data["objective"],
@@ -682,57 +682,213 @@ def view_past_application_details_for_pccAdmin(request, application_id):
 # 🔹 Director Views
 # -----------------------------------------
 
-def director_main_dashboard(request):
-    return JsonResponse({"message": "Director Main Dashboard"})
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def director_new_applications(request):
+    applications = Application.objects.filter(
+        status="Forwarded for Director's Review"
+    ).select_related("primary_applicant", "attorney")
 
+    application_dict = {}
 
-def director_dashboard(request):
-    return JsonResponse({"message": "Director Dashboard"})
+    for app in applications:
+        applicant = app.primary_applicant
+        user = applicant.user if applicant else None
 
-def director_accept_reject(request):
+        # Get department name from ExtraInfo
+        extra_info = ExtraInfo.objects.filter(user=user).first()
+        department_name = extra_info.department.name if extra_info and extra_info.department else "Unknown"
+
+        # Get attorney name using foreign key
+        assigned_attorney = app.attorney.name if app.attorney else "Not Assigned"
+
+        # Unique key for dictionary
+        key = str(app.token_no) if app.token_no else f"app_{app.id}"
+
+        # Build the application summary
+        application_dict[key] = {
+            "token_no": app.token_no if app.token_no else "Token not generated",
+            "title": app.title,
+            "submitted_by": applicant.name if applicant else "Unknown",
+            "department": department_name,
+            "forwarde_on": app.forwarded_to_director_date.strftime("%Y-%m-%d %H:%M:%S") if app.forwarded_to_director_date else "Unknown",
+            "assigned_attorney": assigned_attorney,
+        }
+
+    return JsonResponse({"applications": application_dict}, safe=False)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def director_reject(request):
     if request.method == "POST":
-        data = json.loads(request.body)
         try:
-            application = Application.objects.get(id=data["app_id"])
-            application.status = data["status"]
+            data = json.loads(request.body)
+            application_id = data.get("application_id")
+
+            if not application_id:
+                return JsonResponse({"error": "Application ID is required."}, status=400)
+
+            try:
+                application = Application.objects.get(id=application_id)
+            except Application.DoesNotExist:
+                return JsonResponse({"error": "Application not found."}, status=404)
+
+            application.status = "Rejected"
+            application.decision_date = now()
+            application.decision_status = "Rejected"
             application.save()
-            return JsonResponse({"message": f"Application {data['status']} by Director"})
-        except ObjectDoesNotExist:
-            return JsonResponse({"error": "Application not found"}, status=404)
-    return JsonResponse({"error": "Invalid request method"}, status=405)
 
+            return JsonResponse({
+                "message": "Application status updated to Rejected",
+                "application_id": application.id,
+                "new_status": application.status
+            })
 
-def recents_view(request):
-    recents = list(Application.objects.order_by("-updated_at").values("id", "title", "status")[:5])
-    return JsonResponse({"recent_applications": recents})
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON."}, status=400)
 
+    return JsonResponse({"error": "Only POST requests are allowed."}, status=405)
 
-def pending_reviews(request):
-    pending = list(Application.objects.filter(status="Pending").values("id", "title"))
-    return JsonResponse({"pending_reviews": pending})
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def director_accept(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            application_id = data.get("application_id")
 
+            if not application_id:
+                return JsonResponse({"error": "Application ID is required."}, status=400)
 
-def reviewed_applications(request):
-    reviewed = list(Application.objects.filter(status="Reviewed").values("id", "title"))
-    return JsonResponse({"reviewed_applications": reviewed})
+            try:
+                application = Application.objects.get(id=application_id)
+            except Application.DoesNotExist:
+                return JsonResponse({"error": "Application not found."}, status=404)
 
+            application.status = "Director's Approval Received"
+            application.decision_date = now()
+            application.decision_status = "Director's Approval Received"
+            application.save()
 
+            return JsonResponse({
+                "message": "Director's Approval Received",
+                "application_id": application.id,
+                "new_status": application.status
+            })
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON."}, status=400)
+
+    return JsonResponse({"error": "Only POST requests are allowed."}, status=405)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def director_reviewed_applications(request):
+    # Define the list of statuses to include
+    reviewed_statuses = [
+        "Director's Approval Received",
+        "Patentability Check Started",
+        "Patentability Check Completed",
+        "Patentability Search Report Generated",
+        "Patent Filed",
+        "Patent Published",
+        "Patent Granted",
+        "Patent Refused",
+    ]
+
+    applications = Application.objects.filter(
+        status__in=reviewed_statuses
+    ).select_related("primary_applicant", "attorney")
+
+    application_dict = {}
+
+    for app in applications:
+        applicant = app.primary_applicant
+        user = applicant.user if applicant else None
+
+        # Get department name from ExtraInfo
+        extra_info = ExtraInfo.objects.filter(user=user).first()
+        department_name = extra_info.department.name if extra_info and extra_info.department else "Unknown"
+
+        # Get attorney name using foreign key
+        assigned_attorney = app.attorney.name if app.attorney else "Not Assigned"
+
+        # Unique key for dictionary
+        key = str(app.token_no) if app.token_no else f"app_{app.id}"
+
+        # Build the application summary
+        application_dict[key] = {
+            "token_no": app.token_no if app.token_no else "Token not generated",
+            "title": app.title,
+            "submitted_by": applicant.name if applicant else "Unknown",
+            "department": department_name,
+            "arrival_date": app.forwarded_to_director_date if app.submitted_date else "Unknown",
+            "reviewed_date": app.decision_date if app.decision_date else "Unknown",
+            "assigned_attorney": assigned_attorney,
+            "current_status": app.status,
+        }
+
+    return JsonResponse({"applications": application_dict}, safe=False)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 def active_applications(request):
-    active = list(Application.objects.filter(status="Active").values("id", "title"))
-    return JsonResponse({"active_applications": active})
+    # Define statuses relevant to active applications
+    active_statuses = [
+        "Director's Approval Received",
+        "Patentability Check Started",
+        "Patentability Check Completed",
+        "Patentability Search Report Generated",
+        "Patent Filed",
+        "Patent Published",
+        "Patent Granted",
+        "Patent Refused",
+    ]
 
+    applications = Application.objects.filter(
+        status__in=active_statuses,
+        decision_status="Pending"
+    ).select_related("primary_applicant", "attorney")
 
-def director_status_view(request):
-    return JsonResponse({"message": "Director Status View"})
+    application_dict = {}
 
+    for app in applications:
+        applicant = app.primary_applicant
+        user = applicant.user if applicant else None
 
+        # Get department name from ExtraInfo
+        extra_info = ExtraInfo.objects.filter(user=user).first()
+        department_name = extra_info.department.name if extra_info and extra_info.department else "Unknown"
+
+        # Get attorney name using foreign key
+        assigned_attorney = app.attorney.name if app.attorney else "Not Assigned"
+
+        # Unique key for dictionary
+        key = str(app.token_no) if app.token_no else f"app_{app.id}"
+
+        # Build the application summary
+        application_dict[key] = {
+            "token_no": app.token_no if app.token_no else "Token not generated",
+            "title": app.title,
+            "submitted_by": applicant.name if applicant else "Unknown",
+            "department": department_name,
+            "submitted_on": app.submitted_date if app.submitted_date else "Unknown",
+            "assigned_attorney": assigned_attorney,
+            "current_status": app.status,
+        }
+
+    return JsonResponse({"applications": application_dict}, safe=False)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 def director_notifications(request):
     return JsonResponse({"notifications": ["New submission", "Pending review"]})
-
-
-def submitted_applications(request):
-    submitted = list(Application.objects.filter(status="Submitted").values("id", "title"))
-    return JsonResponse({"submitted_applications": submitted})
 
 # -----------------------------------------
 # 🔹 PCC Admin Attorney Management Views
