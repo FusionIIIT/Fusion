@@ -31,10 +31,10 @@
                         <i class="right floated chevron right icon"></i>
                     </a>   
                     {% endif %}
-                    <a class="item" data-tab="fourth">
+                    <!-- <a class="item" data-tab="fourth">
                         Course Management
                         <i class="right floated chevron right icon"></i>
-                    </a>
+                    </a> -->
                     <a class=" item disabled" data-tab="three">
                         Submit Marks
                         <i class="right floated chevron right icon"></i>
@@ -81,9 +81,9 @@
         
         
                         <td colspan="2"><h4>Course Version</h4></td>
-                        <td colspan="2"><h4>Programme</h4></td>
+                        <td colspan="2"><h4>Working Year</h4></td>
         
-                        <td colspan="2"><h4>Branch</h4></td>
+                        <td colspan="2"><h4>Semester No</h4></td>
                         <!-- <td colspan="2"><h4>Year</h4></td> -->
 
                         <td colspan="2"><h4>Download Roll List</h4></td>
@@ -95,10 +95,10 @@
                         {% for course in assigned_courses %}
                         <tr>
                             <td colspan="2"> {{course.course_id.name }}</td>
-                            <td colspan="2"> {{course.course_id.code }}</td>
+                            <td colspan="2"> <a href="{% url 'programme_curriculum:view_a_course' course.course_id.id %}">{{course.course_id.code }}</a></td>
                             <td colspan="2"> {{course.course_id.version }}</td>
-                            <td colspan="2"> {{course.batch_id.name }}</td>
-                            <td colspan="2"> {{course.batch_id.discipline.name }}</td>
+                            <td colspan="2"> {{course.year }}</td>
+                            <td colspan="2"> {{course.semester_no }}</td>
                             <!-- <td colspan="2"> {{course.batch_id.year }}</td> -->
 
                             <!-- <td colspan="2"><a href="">Roll List</a></td> -->
@@ -120,35 +120,27 @@
                 </div>
             </div>
 
-            <div class="ui tab segment" data-tab="fourth">
+            <!-- <div class="ui tab segment" data-tab="fourth">
                     <br> <br>
                     <table class="ui orange table">
                         <thead>
                             <tr>
                                <th>Course Code</th>
                                <th>Name Of the Courses</th>
-                               <th>Batch</th>
+                               <th>working year</th>
+                               <th>semester no</th>
                                </tr>
                         </thead>
                         <tbody>
                             {% for obj in courses_list %}
                             <tr>
-                                <td><a href="{% url 'programme_curriculum:view_a_course' obj.course_id.id %}">{{obj.course_id.code}}</a></td>
-                                <td>{{obj.course_id.name}}</td>
-                                <td>{{ obj.batch_id.name}} {{obj.batch_id.year}}-{{obj.batch_id.discipline.name}}</td>
-                                 
-                                <td class="collapsing"><a class="tiny ui positive animated button"  tabindex="0"
-                                    href="{% url 'programme_curriculum:update_course_form' obj.course_id.id %}"
-                                    type="Submit" name="Submit">
-                                        <div class="visible content">EDIT</div>
-                                        <div class="hidden content">
-                                        <i class="edit icon"></i>
-                                        </div>
-                                    </a>
-                                </td>
+                                <td><a href="{% url 'programme_curriculum:view_a_course' obj.course_id_id %}">{{obj.course_id__code}}</a></td>
+                                <td>{{obj.course_id__name}}</td>
+                                <td>{{ obj.year}}</td>
+                                <td>{{obj.semester_no}}</td>
                                 {%if items.0.type != "Swayam" %}
                                 <td class="collapsing"><a class="tiny ui positive animated button"  style="background:#2590e2;" tabindex="0"
-                                    href="{% url 'online_cms:course' obj.course_id.code obj.course_id.version %}"
+                                    href="{% url 'online_cms:course' obj.course_id__code obj.course_id__version %}"
                                     type="Submit" name="Submit">
                                         <div class="visible content">MANAGE</div>
                                         <div class="hidden content">
@@ -161,7 +153,7 @@
                             {% endfor %}
                         </tbody>
                     </table>
-            </div>        
+            </div> -->
         
             <div class="ui  tab segment" data-tab="two" style="width: 110%">
                 <div class = "ui pointing secondary menu">
