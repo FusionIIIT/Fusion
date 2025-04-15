@@ -14,7 +14,6 @@ class IndentFile(models.Model):
     director_approval = models.BooleanField(default=False)
     financial_approval = models.BooleanField(default=False)
     purchased = models.BooleanField(default=False)
-
     class Meta:
         db_table = 'IndentFile'
 
@@ -37,7 +36,6 @@ class IndentItem(models.Model):
 
     class Meta:
         db_table = 'IndentItem'   
-
 class Constants:
     Locations = (
         ('SR1', 'LHTC'),
@@ -112,6 +110,9 @@ def create_stock_items(sender, instance, created, **kwargs):
     if created:
         # Automatically create 'n' number of StockItem instances based on current_stock of StockEntry
         # instance is stockEntry 
+        department = instance.item_id.indent_file.file_info.uploader.department
         current_stock = int(instance.current_stock)
-        for _ in range(current_stock):
-            StockItem.objects.create(StockEntryId=instance,location=instance.location,department=instance.item_id.file_info.uploader.department)
+        for _ in range(current_stock):    
+            StockItem.objects.create(StockEntryId=instance,location=instance.location,department=department)
+        # for _ in range(current_stock):
+        #     StockItem.objects.create(StockEntryId=instance,location=instance.location,department=instance.item_id.file_info.uploader.department)
