@@ -1910,14 +1910,23 @@ def filetracking(request, proposal_id):
             
             # Get the file being tracked
             file = get_object_or_404(NewProposalFile, id=proposal_id)
+
             print(file)
             # Get user objects from IDs
             try:
+                receiver_id=data.get('receiverId')
+                receiver_des=data.get('receiverDesignation')
                 receiver_user = User.objects.get(username=data.get('receiverId'))
+                uploader_user=User.objects.get(username=data.get('uploader'))
+
+                # print("uploader_user",uploader_user)
+                # print('type',type(uploader_user))
+
                 receiver_designation = Designation.objects.get(name=data.get('receiverDesignation'))
-                print("receiver_user",receiver_user)
-                print("receiver des",receiver_designation)
-                print(data.get('discipline'))
+
+                # print("receiver_user",receiver_user)
+                # print('type',type(receiver_user))
+
                 discipline = Discipline.objects.get(id=data.get('discipline'))  # Assuming single discipline
                 print(discipline)
             except (User.DoesNotExist, Designation.DoesNotExist, Discipline.DoesNotExist) as e:
@@ -1947,11 +1956,15 @@ def filetracking(request, proposal_id):
                     
                     # Prepare notification data
                     file_data = f"{file.name} {file.code}"
+                    print('file data',file_data)
                     notification_data = (
-                        f"Received as {receiver_user} - {receiver_designation} "
+                        f"Received as {receiver_id} - {receiver_des} "
                         f"Course Proposal Form '{file_data}' "
                         f"By {data.get('uploader')} - {data.get('designation')}"
                     )
+                    print('notification data',notification_data)    
+                    prog_and_curr_notif(uploader_user,receiver_user,notification_data)
+                    print('success')
                     
                     return JsonResponse({
                         'status': 'success',
@@ -2348,6 +2361,8 @@ def forward_course_forms(request, ProposalId):
         file = get_object_or_404(Proposal_Tracking, id=ProposalId)
         file_id = int(file.file_id)
         file2 = get_object_or_404(NewProposalFile, id=file_id)
+        file_data = f"{file2.name} {file2.code}"
+
         
         # Handle different designation cases
         if designation == "Dean Academic":
@@ -2367,7 +2382,7 @@ def forward_course_forms(request, ProposalId):
                     }, status=400)
             
             # Update course and tracking
-            print("gaurav 2")
+            # print("gaurav 2")
             course_data = {
                 'code': data.get('code'),
                 'name': data.get('name'),
@@ -2424,6 +2439,17 @@ def forward_course_forms(request, ProposalId):
                 file.is_submitted = True
                 file.save()
 
+                receiver=file2.uploader
+                receiver_id = User.objects.get(username=receiver)
+                uploader_id=  User.objects.get(username=username)
+                flag_updated = file2.is_update
+                notification_data = (
+                    f'The updated version of course "{file_data}" was added successfully' 
+                    if flag_updated 
+                    else f'The course "{file_data}" was added successfully'
+                )
+                prog_and_curr_notif(uploader_id, receiver_id, notification_data)
+
                 if prerequisite_course_ids:
                     new_course.pre_requisit_courses.add(*valid_courses)
                 if discipline_ids:
@@ -2445,12 +2471,13 @@ def forward_course_forms(request, ProposalId):
         elif 'hod' in designation.lower():
             try:
                 receiver_user = User.objects.get(username=data.get('receiverId'))
+                uploader_user = User.objects.get(username=data.get('uploader'))
                 receiver_designation = Designation.objects.get(name=data.get('receiverDesignation'))
-                print("receiver_user ff",receiver_user)
-                print("receiver des ff",receiver_designation)
-                print(data.get('discipline'))
+                # print("receiver_user ff",receiver_user)
+                # print("receiver des ff",receiver_designation)
+                # print(data.get('discipline'))
                 discipline = Discipline.objects.get(id=data.get('discipline'))  # Assuming single discipline
-                print(discipline)
+                # print(discipline)
             except (User.DoesNotExist, Designation.DoesNotExist, Discipline.DoesNotExist) as e:
                 return JsonResponse({
                     'status': 'error',
@@ -2468,9 +2495,9 @@ def forward_course_forms(request, ProposalId):
                 'remarks': data.get('remarks', ''),
                 # 'is_submitted': True
             }
-            print("traking data ff",tracking_data)
+            # print("traking data ff",tracking_data)
             # Validate form data
-            print("gaurav 1")
+            # print("gaurav 1")
             required_fields = ['receiverId', 'receiverDesignation']
             if not all(field in data for field in required_fields):
                 return JsonResponse({
@@ -2479,22 +2506,24 @@ def forward_course_forms(request, ProposalId):
                 }, status=400)
             
             # Update tracking
-            file.is_submitted = True
-            file.save()
+           
             form = CourseProposalTrackingFile(tracking_data)
             
             if form.is_valid():
                 try:
                     tracking = form.save(commit=False)
                     tracking.save()
+                    file.is_submitted = True
+                    file.save()
                     
                     # Prepare notification data
                     # file_data = f"{file.name} {file.code}"
-                    # notification_data = (
-                    #     f"Received as {receiver_user} - {receiver_designation} "
-                    #     f"Course Proposal Form '{file_data}' "
-                    #     f"By {data.get('uploader')} - {data.get('designation')}"
-                    # )
+                    notification_data = (
+                        f"Received as {receiver_user} - {receiver_designation} "
+                        f"Course Proposal Form '{file_data}' "
+                        f"By {data.get('uploader')} - {data.get('designation')}"
+                    )
+                    prog_and_curr_notif(uploader_user,receiver_user,notification_data)
                     
                 except IntegrityError:
                     return JsonResponse({
