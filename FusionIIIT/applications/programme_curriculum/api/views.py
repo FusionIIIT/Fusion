@@ -2110,7 +2110,8 @@ def outward_files(request):
             'remarks',
             'receive_date',
             'forward_date',
-            'sender_archive'
+            'sender_archive',
+            'is_rejected'
         )
 
         return JsonResponse({
@@ -2731,34 +2732,78 @@ def view_inward_files(request,ProposalId):
         }, status=500)
 
 @csrf_exempt
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def reject_form(request,ProposalId):
-    
-    if request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor" or request.session['currentDesignationSelected'] == "Dean Academic":
-        pass
-    elif 'hod' in request.session['currentDesignationSelected'].lower():
-        pass
-    elif request.session['currentDesignationSelected'] == "acadadmin":
-        return HttpResponseRedirect('/programme_curriculum/admin_programmes/')
-    else:
-        return HttpResponseRedirect('/programme_curriculum/programmes/')
-    
-    track=get_object_or_404(Proposal_Tracking, Q(id=ProposalId))
-    file2 = get_object_or_404(NewProposalFile,Q(id = track.file_id))
-    if(not track.is_added and not track.is_submitted):
-        track.is_rejected=True
-        track.is_submitted=True
-        track.save()
-        messages.success(request, "Course Proposal Form Rejected")
-        receiver=file2.uploader
-        receiver_id = User.objects.get(username=receiver)
-        data='The Course "'+ file2.code+ ' - '+ file2.name + '" was Rejected by ' + str(request.user) + ' - ' +str(request.session['currentDesignationSelected'])
-        prog_and_curr_notif(request.user,receiver_id,data)
-
+def reject_form(request, ProposalId):
+    try:
+        # Debugging - print incoming request data
+        print(f"Incoming request - User: {request.user}, Method: {request.method}")
+        print(f"Query params: {request.GET}")
         
-    else:
-        messages.error(request, "course already forwarded or added can't be rejected")
-    return HttpResponseRedirect('/programme_curriculum/inward_files/')
+        # Get query parameters
+        username = request.GET.get('username', '')
+        designation = request.GET.get('des', '')
+        
+        if not username or not designation:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Missing username or designation parameters'
+            }, status=400)
+
+        # Get the tracking and file objects
+        try:
+            track = Proposal_Tracking.objects.get(id=ProposalId)
+            file2 = NewProposalFile.objects.get(id=track.file_id)
+        except Proposal_Tracking.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Proposal not found'
+            }, status=404)
+        except NewProposalFile.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Proposal file not found'
+            }, status=404)
+
+        if track.is_added:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Course already forwarded or added, cannot be rejected'
+            }, status=400)
+
+        # Update tracking
+        track.is_rejected = True
+        track.is_submitted = True
+        track.save()
+        
+        # Send notification
+        try:
+            receiver_user = User.objects.get(username=file2.uploader)
+            notification_message = (
+                f'The Course "{file2.code} - {file2.name}" was Rejected by '
+                f'{username} ({designation})'
+            )
+            prog_and_curr_notif(request.user, receiver_user, notification_message)
+        except User.DoesNotExist:
+            # Continue even if notification fails
+            pass
+
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Course Proposal Form Rejected',
+            'data': {
+                'proposal_id': ProposalId,
+                'rejected_by': username,
+                'designation': designation
+            }
+        }, status=200)
+            
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Server error: ' + str(e)
+        }, status=500)
+
 
     
 @csrf_exempt
