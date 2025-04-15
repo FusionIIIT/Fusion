@@ -61,12 +61,12 @@ class CaretakerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Caretaker
         fields = '__all__'
-        
+
 class WardenSerializer(serializers.ModelSerializer):
     class Meta:
         model = Warden
         fields = '__all__'
-        
+
 class Complaint_AdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = Complaint_Admin
@@ -78,10 +78,15 @@ class FeedbackSerializer(serializers.Serializer):
     rating = serializers.IntegerField()
 
 # Serializer for Resolve Pending complaints
+# class ResolvePendingSerializer(serializers.Serializer):
+#     yesorno = serializers.ChoiceField(choices=[('Yes', 'Yes'), ('No', 'No')])
+#     comment = serializers.CharField(required=False, allow_blank=True)
+# serializers.py
+
 class ResolvePendingSerializer(serializers.Serializer):
     yesorno = serializers.ChoiceField(choices=[('Yes', 'Yes'), ('No', 'No')])
     comment = serializers.CharField(required=False, allow_blank=True)
-# serializers.py
+    upload_resolved = serializers.ImageField(required=False, allow_null=True)
 
 from rest_framework import serializers
 from .models import StudentComplain, Caretaker, Workers

@@ -93,6 +93,7 @@ class StudentComplain(models.Model):
     upload_complaint = models.FileField(blank=True)
     comment = models.CharField(max_length=100,  default="None")
     #upload_resolved = models.FileField(blank=True,null=True)
+    upload_resolved = models.FileField(upload_to='resolved_complaints/', blank=True, null=True)
     
     class meta:
         db_table = "complaint_system_student_complain"
