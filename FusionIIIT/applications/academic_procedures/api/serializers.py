@@ -29,17 +29,10 @@ class FinalRegistrationsSerializer(serializers.ModelSerializer):
         model = FinalRegistrations
         fields = ('__all__')
 
-class InitialRegistrationSerializer(serializers.ModelSerializer):
-
+class CourseSlotMinimalSerializer(serializers.ModelSerializer):
     class Meta:
-        model = InitialRegistration
-        fields = ('__all__')
-
-class FinalRegistrationSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = FinalRegistration
-        fields = ('__all__')
+        model = CourseSlot
+        fields = '__all__'
 
 class StudentRegistrationChecksSerializer(serializers.ModelSerializer):
     class Meta:
@@ -65,20 +58,51 @@ class SemesterSerializer(serializers.ModelSerializer):
         model = Semester
         fields = ('__all__')
 
-class CourseRegistrationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = course_registration
-        fields = ('__all__')
-
-class CourseSlotSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CourseSlot
-        fields = ('__all__')
-        
-        
 class CourseSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Course
-        fields = ['id','code','name','credit']
-        
+        fields = ('__all__')
+
+class CourseSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Course
+        fields = ('__all__')
+
+class CourseRegistrationSerializer(serializers.ModelSerializer):
+    course_id = CourseSerializer(read_only=True)
+    semester_id= SemesterSerializer(read_only=True)
+    course_id = CourseSerializer(read_only=True)
+    semester_id= SemesterSerializer(read_only=True)
+    class Meta:
+        model = course_registration
+        fields = ('__all__')
+
+
+
+class CourseSlotSerializer(serializers.ModelSerializer):
+    courses = CourseSerializer(read_only=True, many=True)  # Serialize related courses
+    semester = SemesterSerializer(read_only=True) # Serialize related semester
+
+    courses = CourseSerializer(read_only=True, many=True)  # Serialize related courses
+    semester = SemesterSerializer(read_only=True) # Serialize related semester
+
+    class Meta:
+        model = CourseSlot
+        fields = ('__all__')
+
+class FinalRegistrationSerializer(serializers.ModelSerializer):
+    course_id = CourseSerializer(read_only=True)
+    semester_id= SemesterSerializer(read_only=True)
+    class Meta:
+        model = FinalRegistration
+        fields = ('__all__')
+
+class InitialRegistrationSerializer(serializers.ModelSerializer):
+    course_id = CourseSerializer(read_only=True)
+    semester_id= SemesterSerializer(read_only=True)
+    course_slot_id = CourseSlotMinimalSerializer(read_only=True)
+    class Meta:
+        model = InitialRegistration
+        fields = ('__all__')

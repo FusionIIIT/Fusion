@@ -267,7 +267,9 @@ def healthcare_center_notif(sender, recipient, type, message):
     elif type == 'rel_approve':
         verb = "You have a new medical relief approval request"
     elif type == 'rel_approved':
-        verb = 'Your medical relief request has been approved' 
+        verb = 'Your medical relief request has been approved'
+    elif type == 'reject_relief':
+        verb = "Your medical relief request has been rejected"
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb, flag=flag)
     # send_notification_email.delay(recipient.username, recipient.email, verb, module)
 
@@ -714,4 +716,10 @@ def iwd_notif(sender,recipient,type):
         verb = "Request approved by " + sender.username + "."
     if type == "Request_rejected": 
         verb = "Request rejected by " + sender.username + "." 
+    notify.send(sender=sender,recipient=recipient,url=url,module=module,verb=verb)
+
+def purchase_notif(sender,recipient):   
+    module= 'purchase-and-store'
+    url= 'purchase'
+    verb="A new Indent Received" 
     notify.send(sender=sender,recipient=recipient,url=url,module=module,verb=verb)

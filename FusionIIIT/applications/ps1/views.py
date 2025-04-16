@@ -270,6 +270,8 @@ def create_proposal(request):
                     financial_approval=financial_approval,
                     purchased =purchased,
                 )
+                # print(request.user.id)
+                # print("her"+receiver_id)
 
                 office_module_notif(request.user, receiver_id)
                 messages.success(request,'Indent Filed Successfully!')
@@ -571,7 +573,10 @@ def indentview2(request,id):
     s = str(abcd).split(" - ")
     designations = s[1]
     data = view_inbox(request.user.username, designations, "ps1")
-
+    for item in data:
+        # from data print everything
+        print(item)
+        print("\n")
     outboxd = view_outbox(request.user.username, designations, "ps1")
 
     data = sorted(data, key=lambda x: datetime.fromisoformat(x['upload_date']), reverse=True)
@@ -940,6 +945,8 @@ def forwardedIndent(request, id):
     
     # end = timer()
     indent=IndentFile.objects.select_related('file_info').get(file_info=id)
+    print("indent : ",indent)
+    print(dir(indent))
     file=indent.file_info
     # start = timer()
     track = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department',

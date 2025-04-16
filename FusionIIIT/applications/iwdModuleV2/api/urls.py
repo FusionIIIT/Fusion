@@ -7,11 +7,12 @@ urlpatterns = [
     path('fetch-designations/', views.fetch_designations, name='fetch_designations'),
     path('fetch-designations/', views.fetch_designations, name='fetch_designations'),
     path('create-request/', views.create_request, name='create_request'),
+    path('create-proposal/', views.create_proposal, name='create_proposal'),
     path('created-requests/', views.created_requests, name='created_requests'),
     path('view-file/', views.view_file, name='view_file'),
     path('dean-processed-requests/', views.dean_processed_requests, name='dean_processed_requests'),
     path('handle-director-approval/', views.handle_director_approval, name='handle_director_approval'),
-    path('handle-engineer-process/', views.handle_engineer_process_requests, name='handle_engineer_process_requests'),
+    path('forward-request/', views.forward_request, name='handle_engineer_process_requests'),
     path('handle-dean-process-request/', views.handle_dean_process_request, name='handleDeanProcessRequests'),
     path('rejected-requests-view/', views.rejected_requests, name='rejectedRequests'),
     path('handle-update-requests/', views.handle_update_requests, name='handleUpdateRequests'),
@@ -26,12 +27,16 @@ urlpatterns = [
     path('requests-status/', views.requests_status, name='requestsStatus'),
     path('audit-document-view/', views.audit_document_view, name='auditDocumentView'),
     path('audit-document/', views.handle_audit_document, name='auditDocument'),
+    path('get-proposals/', views.get_proposals, name='getProposals'),
+    path('get-items/', views.get_items, name='getItems'),
+    path('handle-admin-approval/', views.handle_admin_approval, name='handleAdminApproval'),
+
     
     # partially integrated on frontend
     path('handle-process-bills/', views.handle_process_bills, name='handleProcessedBills'),
 
     path('engineer-processed-requests/', views.engineer_processed_requests, name='engineerProcessedRequests'),
-    path('generate-final-bill/', views.generateFinalBill, name='generateFinalBill'),
+    # path('generate-final-bill/', views.generateFinalBill, name='generateFinalBill'),
     path('handle-bill-generated-requests/', views.handleBillGeneratedRequests, name='handleBillGeneratedRequests'),
     path('generated-bills-view/', views.generatedBillsView, name='generatedBillsView'),
     path('settle-bills-view/', views.settle_bills_view, name='settleBillsView'),

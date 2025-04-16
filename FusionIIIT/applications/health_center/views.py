@@ -17,7 +17,7 @@ from notification.views import  healthcare_center_notif
 from .models import ( Constants,All_Medicine,All_Prescribed_medicine,All_Prescription,Prescription_followup,
                     Present_Stock,Doctor,Pathologist,
                     Doctors_Schedule,Pathologist_Schedule,Stock_entry,
-                    medical_relief,MedicalProfile,Required_medicine,files,Required_tabel_last_updated)
+                    medical_relief,MedicalProfile,Required_medicine,files,Required_tabel_last_updated,Announcements,Complaint)
 from .utils import datetime_handler, compounder_view_handler, student_view_handler
 from applications.filetracking.sdk.methods import *
 from django.db.models import Q
@@ -78,7 +78,7 @@ def compounder_view(request):
 
         else:
             notifs = request.user.notifications.all()           
-            # all_complaints = Complaint.objects.select_related('user_id','user_id__user','user_id__department').all()
+            all_complaints = Complaint.objects.select_related('user_id','user_id__user','user_id__department').all().order_by('-id')
             # all_hospitals = Hospital_admit.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').all().order_by('-admission_date')
             # hospitals_list = Hospital.objects.all().order_by('hospital_name')
             # all_ambulances = Ambulance_request.objects.select_related('user_id','user_id__user','user_id__department').all().order_by('-date_request')
@@ -90,6 +90,7 @@ def compounder_view(request):
             schedule1=Pathologist_Schedule.objects.select_related('pathologist_id').all().order_by('pathologist_id')
             # expired=Expiry.objects.select_related('medicine_id').filter(expiry_date__lt=datetime.now(),returned=False).order_by('expiry_date')
             # live_meds=Expiry.objects.select_related('medicine_id').filter(returned=False).order_by('quantity')
+            announcements_data=Announcements.objects.all().order_by('-id').values()
             page_size=2
             fir=Required_tabel_last_updated.objects.first()
             if fir == None:
@@ -280,15 +281,16 @@ def compounder_view(request):
                         # dic['file']=view_file(file_id=ib['id'])['upload_file']
                         dic['status']=mr.compounder_forward_flag
                         dic['status1']=mr.acc_admin_forward_flag
+                        dic['status2']=mr.compounder_reject_flag
                 inbox.append(dic)
                        
             # print(inbox_files)
                       
             return render(request, 'phcModule/phc_compounder.html',
                           {'days': days, 'users': users,'expired':ExpiredstockContext,
-                           'stocks': stocks,
+                           'stocks': stocks,"all_complaints":all_complaints,
                             'doctors': doctors, 'pathologists':pathologists, 
-                        'schedule': schedule, 'schedule1': schedule1, 'live_meds': stockContext, 'presc_hist': prescContext,'inbox_files':inbox,'medicines_presc':medicine_presc})
+                        'schedule': schedule, 'schedule1': schedule1, 'live_meds': stockContext, 'presc_hist': prescContext,'inbox_files':inbox,'medicines_presc':medicine_presc,'announcements':announcements_data,})
     else:
         return HttpResponseRedirect("/healthcenter/student")                                      # compounder view ends
 
@@ -323,10 +325,10 @@ def student_view(request):
             notifs = request.user.notifications.all()
             users = ExtraInfo.objects.all()
             user_id = ExtraInfo.objects.select_related('user','department').get(user=request.user)
-            hospitals = Hospital_admit.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').filter(user_id=user_id).order_by('-admission_date')
-            appointments = Appointment.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','schedule','schedule__doctor_id').filter(user_id=user_id).order_by('-date')
-            ambulances = Ambulance_request.objects.select_related('user_id','user_id__user','user_id__department').filter(user_id=user_id).order_by('-date_request')
-            announcements_data=Announcements.objects.all().values()
+            # hospitals = Hospital_admit.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').filter(user_id=user_id).order_by('-admission_date')
+            # appointments = Appointment.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','schedule','schedule__doctor_id').filter(user_id=user_id).order_by('-date')
+            # ambulances = Ambulance_request.objects.select_related('user_id','user_id__user','user_id__department').filter(user_id=user_id).order_by('-date_request')
+            announcements_data=Announcements.objects.all().order_by('-id').values()
             medical_profile=MedicalProfile.objects.filter(user_id=request.user.username)
             usrnm = get_object_or_404(User, username=request.user.username)
             user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
@@ -343,8 +345,8 @@ def student_view(request):
                     
                 mp.append(dic)
                 
-            medicines = Prescribed_medicine.objects.select_related('prescription_id','prescription_id__user_id','prescription_id__user_id__user','prescription_id__user_id__department','prescription_id__doctor_id','medicine_id').all()
-            complaints = Complaint.objects.select_related('user_id','user_id__user','user_id__department').filter(user_id=user_id).order_by('-date')
+            # medicines = Prescribed_medicine.objects.select_related('prescription_id','prescription_id__user_id','prescription_id__user_id__user','prescription_id__user_id__department','prescription_id__doctor_id','medicine_id').all()
+            # complaints = Complaint.objects.select_related('user_id','user_id__user','user_id__department').filter(user_id=user_id).order_by('-date')
             days = Constants.DAYS_OF_WEEK
             schedule=Doctors_Schedule.objects.select_related('doctor_id').all().order_by('doctor_id')
             schedule1=Pathologist_Schedule.objects.select_related('pathologist_id').all().order_by('pathologist_id')
@@ -352,29 +354,29 @@ def student_view(request):
             pathologists=Pathologist.objects.filter(active=True)
             
             #prescription
-            prescription= Prescription.objects.filter(user_id=request.user.username)
-            report=[]
-            for pre in prescription:
-                dic={}
-                dic['id']=pre.id
-                dic['doctor_id'] = pre.doctor_id  # Use dot notation
-                dic['date'] = pre.date  # Use dot notation
-                dic['details'] = pre.details  # Use dot notation
-                dic['test'] = pre.test  # Use dot notation
-                if pre.file_id:
-                    dic['file'] = view_file(file_id=pre.file_id)['upload_file']
-                else:
-                    dic['file']=None 
+            # prescription= Prescription.objects.filter(user_id=request.user.username)
+            # report=[]
+            # for pre in prescription:
+            #     dic={}
+            #     dic['id']=pre.id
+            #     dic['doctor_id'] = pre.doctor_id  # Use dot notation
+            #     dic['date'] = pre.date  # Use dot notation
+            #     dic['details'] = pre.details  # Use dot notation
+            #     dic['test'] = pre.test  # Use dot notation
+            #     if pre.file_id:
+            #         dic['file'] = view_file(file_id=pre.file_id)['upload_file']
+            #     else:
+            #         dic['file']=None 
                 
                 
-                report.append(dic)
+            #     report.append(dic)
             
-            count=Counter.objects.all()
+            # count=Counter.objects.all()
 
-            if count:
-                Counter.objects.all().delete()
-            Counter.objects.create(count=0,fine=0)
-            count=Counter.objects.get()
+            # if count:
+            #     Counter.objects.all().delete()
+            # Counter.objects.create(count=0,fine=0)
+            # count=Counter.objects.get()
 
             designations = Designation.objects.filter()
             holdsDesignations = []
@@ -404,7 +406,25 @@ def student_view(request):
           
             uploader_inbox=view_inbox(username=request.user.username,designation=request.session['currentDesignationSelected'],src_module='health_center')
             medicalRelief=[]
-           
+            page_size =2
+            current_page = 1
+            page_size_prescription = page_size  # Default to 2 if not specified
+            offset = (current_page - 1) * page_size_prescription
+            prescriptions = All_Prescription.objects.filter(user_id__iexact = request.user.extrainfo.id).order_by('-date', '-id')[offset:offset + page_size_prescription]
+            total_count = All_Prescription.objects.filter(user_id__iexact = request.user.extrainfo.id).count()
+            # Calculate total number of pages
+            total_pages = (total_count + page_size_prescription - 1) // page_size_prescription  # This ensures rounding up
+            prescContext = {
+                'count': total_pages,
+                'page': {
+                    'object_list': prescriptions,
+                    'number': current_page,
+                    'has_previous': current_page > 1,
+                    'has_next': current_page < total_pages,
+                    'previous_page_number': current_page - 1 if current_page > 1 else None,
+                    'next_page_number': current_page + 1 if current_page < total_pages else None,
+                }
+            }
             for out in uploader_outbox:
                 dic={}
             
@@ -413,7 +433,7 @@ def student_view(request):
                         dic['id']=out['id']                    
                         dic['upload_date']=datetime.fromisoformat(out['upload_date']).date()                   
                         dic['desc']=mr.description
-                        dic['file']=view_file(file_id=out['id'])['upload_file']
+                        # dic['file']=view_file(file_id=out['id'])['upload_file']       
                         dic['status']=mr.acc_admin_forward_flag
                         dic['approval_date']=''
             
@@ -423,11 +443,14 @@ def student_view(request):
                 medicalRelief.append(dic)                               
     
             
+            # return render(request, 'phcModule/phc_student.html',
+            #               {'complaints': complaints, 'medicines': medicines,
+            #                'ambulances': ambulances, 'doctors': doctors, 'pathologists':pathologists, 'days': days,'count':count,
+            #                'hospitals': hospitals, 'appointments': appointments,
+            #                'prescription': report, 'schedule': schedule,  'schedule1': schedule1,'users': users, 'curr_date': datetime.now().date(),'holdsDesignations':holdsDesignations,'acc_admin_inbox':acc_ib,'medicalRelief':medicalRelief,'announcements':announcements_data,'medical_profile':mp})
             return render(request, 'phcModule/phc_student.html',
-                          {'complaints': complaints, 'medicines': medicines,
-                           'ambulances': ambulances, 'doctors': doctors, 'pathologists':pathologists, 'days': days,'count':count,
-                           'hospitals': hospitals, 'appointments': appointments,
-                           'prescription': report, 'schedule': schedule,  'schedule1': schedule1,'users': users, 'curr_date': datetime.now().date(),'holdsDesignations':holdsDesignations,'acc_admin_inbox':acc_ib,'medicalRelief':medicalRelief,'announcements':announcements_data,'medical_profile':mp})
+                          {'doctors': doctors, 'pathologists':pathologists, 'days': days,'prescription':prescriptions,
+                           'schedule': schedule,  'schedule1': schedule1,'users': users, 'curr_date': datetime.now().date(),'presc_hist': prescContext,'holdsDesignations':holdsDesignations,'acc_admin_inbox':acc_ib,'medicalRelief':medicalRelief,'medical_profile':mp,'announcements':announcements_data,})
     else:
         return HttpResponseRedirect("/healthcenter/compounder")                                     # student view ends
 
@@ -464,15 +487,15 @@ def schedule_entry(request):
             to_time=time(y//3600,(y%3600)//60,y%60)
             print(to_time)
             room=int(z.cell(i,4).value)
-            u = Schedule.objects.create(
-                        doctor_id = doc_id,
-                        day = da,
-                        from_time=from_time,
-                        to_time=to_time,
-                        room=room,
-                        date=datetime.now()
-            )
-            print("Schedule done -> ")
+            # u = Schedule.objects.create(
+            #             doctor_id = doc_id,
+            #             day = da,
+            #             from_time=from_time,
+            #             to_time=to_time,
+            #             room=room,
+            #             date=datetime.now()
+            # )
+            # print("Schedule done -> ")
         except Exception as e:
             print(e)
             print(i)
@@ -647,65 +670,65 @@ def browse_announcements():
 
     return context
 
-def get_to_request(username):
-    """
-    This function is used to get requests for the receiver
+# def get_to_request(username):
+#     """
+#     This function is used to get requests for the receiver
 
-    @variables:
-        req - Contains request queryset
+#     @variables:
+#         req - Contains request queryset
 
-    """
-    req = SpecialRequest.objects.filter(request_receiver=username)
-    return req
+#     """
+#     # req = SpecialRequest.objects.filter(request_receiver=username)
+#     return req
 
 
 
-@login_required(login_url='/accounts/login')
-def announcement(request):
-    """
-    This function is contains data for Requests and Announcement Related methods.
-    Data is added to Announcement Table using this function.
+# @login_required(login_url='/accounts/login')
+# def announcement(request):
+#     """
+#     This function is contains data for Requests and Announcement Related methods.
+#     Data is added to Announcement Table using this function.
 
-    @param:
-        request - contains metadata about the requested page
+#     @param:
+#         request - contains metadata about the requested page
 
-    @variables:
-        usrnm, user_info, ann_anno_id - Stores data needed for maker
-        batch, programme, message, upload_announcement,
-        department, ann_date, user_info - Gets and store data from FORM used for Announcements for Students.
+#     @variables:
+#         usrnm, user_info, ann_anno_id - Stores data needed for maker
+#         batch, programme, message, upload_announcement,
+#         department, ann_date, user_info - Gets and store data from FORM used for Announcements for Students.
 
-    """
-    usrnm = get_object_or_404(User, username=request.user.username)
-    user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
-    num = 1
-    ann_anno_id = user_info.id
-    requests_received = get_to_request(usrnm)
+#     """
+#     usrnm = get_object_or_404(User, username=request.user.username)
+#     user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
+#     num = 1
+#     ann_anno_id = user_info.id
+#     requests_received = get_to_request(usrnm)
 
-    if request.method == 'POST':
-        formObject = Announcements()
-        # formObject.key = Projects.objects.get(id=request.session['projectId'])
-        user_info = ExtraInfo.objects.all().select_related('user','department').get(id=ann_anno_id)
-        getstudents = ExtraInfo.objects.select_related('user')
-        recipients = User.objects.filter(extrainfo__in=getstudents)
-        # formObject.anno_id=1
-        formObject.anno_id=user_info
-        # formObject.batch = request.POST['batch']
-        # formObject.programme = request.POST['programme']
-        formObject.message = request.POST['announcement']
-        formObject. upload_announcement = request.FILES.get('upload_announcement')
-        # formObject.department = request.POST['department']
-        formObject.ann_date = date.today()
-        #formObject.amount = request.POST['amount']
-        formObject.save()
-        healthcare_center_notif(usrnm, recipients , 'new_announce',formObject.message ) 
-        return redirect('../../compounder/')    
+#     if request.method == 'POST':
+#         formObject = Announcements()
+#         # formObject.key = Projects.objects.get(id=request.session['projectId'])
+#         user_info = ExtraInfo.objects.all().select_related('user','department').get(id=ann_anno_id)
+#         getstudents = ExtraInfo.objects.select_related('user')
+#         recipients = User.objects.filter(extrainfo__in=getstudents)
+#         # formObject.anno_id=1
+#         formObject.anno_id=user_info
+#         # formObject.batch = request.POST['batch']
+#         # formObject.programme = request.POST['programme']
+#         formObject.message = request.POST['announcement']
+#         formObject. upload_announcement = request.FILES.get('upload_announcement')
+#         # formObject.department = request.POST['department']
+#         formObject.ann_date = date.today()
+#         #formObject.amount = request.POST['amount']
+#         formObject.save()
+#         healthcare_center_notif(usrnm, recipients , 'new_announce',formObject.message ) 
+#         return redirect('../../compounder/')    
         
-    announcements_data=Announcements.objects.all().values()
+#     announcements_data=Announcements.objects.all().values()
     
-    return render(request, 'health_center/make_announce_comp.html', {"user_designation":user_info.user_type,
-                                                            'announcements':announcements_data,
-                                                            "request_to":requests_received
-                                                        })  
+#     return render(request, 'health_center/make_announce_comp.html', {"user_designation":user_info.user_type,
+#                                                             'announcements':announcements_data,
+#                                                             "request_to":requests_received
+#                                                         })  
         # batch = request.POST.get('batch', '')
         # programme = request.POST.get('programme', '')
         # message = request.POST.get('announcement', '')
@@ -724,54 +747,54 @@ def announcement(request):
         #                             department = department,
         #                             ann_date=ann_date)
      
-@login_required(login_url='/accounts/login')      
-def medical_profile(request): 
-    usrnm = get_object_or_404(User, username=request.user.username)
-    user_id_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
-    num = 1
-    user_id = user_id_info.id
-    requests_received = get_to_request(usrnm)
-    user = request.user
-    # medical_profile, created = MedicalProfile.objects.get_or_create(user_id==request.user.username)
-    medical_profile=MedicalProfile.objects.filter(user_id=request.user.username)
-    usrnm = get_object_or_404(User, username=request.user.username)
-    user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
-    # mp=[]/
-    cnt=0
-    for mr in medical_profile:                   
-        cnt += 1
-    if request.method == 'POST':
-        user_info = ExtraInfo.objects.all().select_related('user','department').get(id=user_id)
+# @login_required(login_url='/accounts/login')      
+# def medical_profile(request): 
+#     usrnm = get_object_or_404(User, username=request.user.username)
+#     user_id_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
+#     num = 1
+#     user_id = user_id_info.id
+#     # requests_received = get_to_request(usrnm)
+#     user = request.user
+#     # medical_profile, created = MedicalProfile.objects.get_or_create(user_id==request.user.username)
+#     medical_profile=MedicalProfile.objects.filter(user_id=request.user.username)
+#     usrnm = get_object_or_404(User, username=request.user.username)
+#     user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
+#     # mp=[]/
+#     cnt=0
+#     for mr in medical_profile:                   
+#         cnt += 1
+#     if request.method == 'POST':
+#         user_info = ExtraInfo.objects.all().select_related('user','department').get(id=user_id)
    
-        if cnt==0:
-            medical_profile = MedicalProfile()
-            medical_profile.user_id = user_info
-            medical_profile.date_of_birth = request.POST.get('date_of_birth')
-            medical_profile.gender = request.POST.get('gender')
-            medical_profile.blood_type = request.POST.get('blood_type')
-            medical_profile.height = request.POST.get('height')
-            medical_profile.weight = request.POST.get('weight')
-            # medical_profile.form_submitted = True
-            medical_profile.save()
-            return redirect('../../compounder/')    
+#         if cnt==0:
+#             medical_profile = MedicalProfile()
+#             medical_profile.user_id = user_info
+#             medical_profile.date_of_birth = request.POST.get('date_of_birth')
+#             medical_profile.gender = request.POST.get('gender')
+#             medical_profile.blood_type = request.POST.get('blood_type')
+#             medical_profile.height = request.POST.get('height')
+#             medical_profile.weight = request.POST.get('weight')
+#             # medical_profile.form_submitted = True
+#             medical_profile.save()
+#             return redirect('../../compounder/')    
             
-        else:
-            # Process the form submission for the first time
-            medical_profile1=MedicalProfile.objects.filter(user_id=user_info).first()
+#         else:
+#             # Process the form submission for the first time
+#             medical_profile1=MedicalProfile.objects.filter(user_id=user_info).first()
             
-            medical_profile1.date_of_birth = request.POST.get('date_of_birth')
-            medical_profile1.gender = request.POST.get('gender')
-            medical_profile1.blood_type = request.POST.get('blood_type')
-            medical_profile1.height = request.POST.get('height')
-            medical_profile1.weight = request.POST.get('weight')
-            # medical_profile.form_submitted = True
-            medical_profile1.save()
-            return redirect('../../compounder/')    
+#             medical_profile1.date_of_birth = request.POST.get('date_of_birth')
+#             medical_profile1.gender = request.POST.get('gender')
+#             medical_profile1.blood_type = request.POST.get('blood_type')
+#             medical_profile1.height = request.POST.get('height')
+#             medical_profile1.weight = request.POST.get('weight')
+#             # medical_profile.form_submitted = True
+#             medical_profile1.save()
+#             return redirect('../../compounder/')    
             
-    return render(request, 'health_center/medical_profile.html', {"user_designation":user_info.user_type,
-                                                            'medical_profile':medical_profile,
-                                                            "request_to":requests_received
-                                                        })
+#     return render(request, 'health_center/medical_profile.html', {"user_designation":user_info.user_type,
+#                                                             'medical_profile':medical_profile,
+#                                                             "request_to":requests_received
+#                                                         })
 
 @login_required
 def compounder_view_prescription(request,prescription_id):
@@ -779,8 +802,6 @@ def compounder_view_prescription(request,prescription_id):
     pre_medicine = All_Prescribed_medicine.objects.filter(prescription_id=prescription)
     doctors=Doctor.objects.filter(active=True).order_by('id')
     follow_presc =Prescription_followup.objects.filter(prescription_id=prescription).order_by('-id')
-    if request.method == "POST":
-        print("post")
     return render(request, 'phcModule/phc_compounder_view_prescription.html',{'prescription':prescription,
                             'pre_medicine':pre_medicine,'doctors':doctors,
                             "follow_presc":follow_presc})
@@ -788,20 +809,62 @@ def compounder_view_prescription(request,prescription_id):
 @login_required
 def view_file(request,file_id):
     file_id_int = int(file_id)
+    filepath = os.path.join(os.path.dirname(os.path.dirname(__file__)),'health_center/static/health_center/add_stock_example.xlsx')
+        
     if(file_id_int == -2):
-        return FileResponse(open('static/health_center/add_stock_example.xlsx', 'rb'), as_attachment=True, filename="example_add_stock.xlsx")
+        return FileResponse(open(filepath, 'rb'), as_attachment=True, filename="example_add_stock.xlsx")
+    
     if(file_id_int == -1):
-        return FileResponse(open('static/health_center/add_medicine_example.xlsx', 'rb'), as_attachment=True, filename="example_add_medicine.xlsx")  
-    filepath = "applications/health_center/static/health_center/generated.pdf"
+        filepath = os.path.join(os.path.dirname(os.path.dirname(__file__)),'health_center/static/health_center/add_medicine_example.xlsx')
+        return FileResponse(open(filepath , 'rb'), as_attachment=True, filename="example_add_medicine.xlsx")
+    
+    filepath = os.path.join(os.path.dirname(os.path.dirname(__file__)),'health_center/static/health_center/generated.pdf')
 
-    file=files.objects.get(id=file_id)
+    file=files.objects.get(id=file_id_int)
     f=file.file_data
     
-    with open("applications/health_center/static/health_center/generated.pdf", 'wb+') as destination:   
-        destination.write(f)  
+    with open(filepath, 'wb+') as destination:   
+        destination.write(f)
     
     pdf = open(filepath, 'rb')
     response = FileResponse(pdf, content_type="application/pdf")
     response['Content-Disposition'] = 'inline; filename="generated.pdf"'
 
     return response
+
+@login_required
+def student_view_prescription(request,prescription_id):
+    prescription = All_Prescription.objects.get(id=prescription_id)
+    pre_medicine = All_Prescribed_medicine.objects.filter(prescription_id=prescription)
+    doctors=Doctor.objects.filter(active=True).order_by('id')
+    follow_presc =Prescription_followup.objects.filter(prescription_id=prescription).order_by('-id')
+    return render(request, 'phcModule/phc_student_view_prescription.html',{'prescription':prescription,
+                            'pre_medicine':pre_medicine,'doctors':doctors,
+                            "follow_presc":follow_presc})
+
+@login_required
+def compounder_view_relief(request,relief_id):
+    inbox_files=view_inbox(username=request.user.username,designation='Compounder',src_module='health_center')
+    medicalrelief=medical_relief.objects.all()
+                 
+    inbox=[]
+    for ib in inbox_files:
+        if int(ib['id']) == int(relief_id) :
+            dic={}
+            for mr in medicalrelief:
+                if mr.file_id==int(ib['id']):   
+                    dic['id']=ib['id'] 
+                    dic['uploader']=ib['uploader']                   
+                    dic['upload_date']=datetime.fromisoformat(ib['upload_date']).date()                   
+                    dic['desc']=mr.description
+                    # dic['file']=view_file(file_id=ib['id'])['upload_file']
+                    status = "Pending"
+                    if mr.acc_admin_forward_flag :
+                        status = "Approved"
+                    elif mr.compounder_forward_flag :
+                        status = "Forwarded"
+                    elif mr.compounder_reject_flag :
+                        status = "Rejected"
+                    dic['status']=status
+                inbox.append(dic)
+    return render(request,'phcModule/phc_compounder_view_relief.html',{'inbox':inbox[0],})

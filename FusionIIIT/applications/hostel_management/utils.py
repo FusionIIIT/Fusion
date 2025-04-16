@@ -98,23 +98,3 @@ def save_worker_report_sheet(excel, sheet, user_id):
     except Exception as e:
         print("Error:", e)
         # Handle the error here, such as logging it or displaying a message to the user
-
-# def save_worker_report_sheet(excel,sheet,user_id):
-#     """
-#     This function saves details of worker report sheet into the database.
-#     """
-#     month = excel.sheet_names()[0][:2]
-#     year = excel.sheet_names()[0][3:]
-#     for row in range(1, sheet.nrows):
-#         worker_id = str(sheet.cell(row,0).value)
-#         worker_name = str(sheet.cell(row,1).value)
-#         present = 0
-#         for col in range(2, sheet.ncols):
-#             if int(sheet.cell(row,col).value) == 1:
-#                 present += 1
-#         working_days = sheet.ncols - 2
-#         absent = working_days-present
-#         hall_no = HallCaretaker.objects.get(staff__id=user_id).hall
-#         print(month,year)
-#         new_report = WorkerReport.objects.create(worker_id=worker_id, hall=hall_no, worker_name=worker_name, month=month, year=year, absent=absent, total_day=working_days, remark="none")
-#         new_report.save()    

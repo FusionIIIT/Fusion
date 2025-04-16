@@ -33,9 +33,16 @@ class SpiSerializer(serializers.ModelSerializer):
         fields = ('__all__')
         
 class StudentSerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField(source='id.user.first_name', read_only=True)
+    last_name = serializers.CharField(source='id.user.last_name', read_only=True)
+
     class Meta:
-        model = Student  
-        fields = ('__all__')
+        model = Student
+        fields = [
+            'id', 'programme', 'batch', 'specialization', 
+            'cpi', 'category', 'hall_no', 'room_no',
+            'first_name', 'last_name'  # ✅ Add these fields
+        ]
         
 class DesignationSerializer(serializers.ModelSerializer):
     class Meta:
