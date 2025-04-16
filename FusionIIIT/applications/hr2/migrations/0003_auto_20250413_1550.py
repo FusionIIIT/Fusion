@@ -214,7 +214,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='empdependents',
             name='date_of_birth',
-            field=models.DateField(default='26-11-2000'),
+            field=models.DateField(default=datetime.date.today),
             preserve_default=False,
         ),
         migrations.AddField(
@@ -238,7 +238,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='employee',
             name='date_of_birth',
-            field=models.DateField(default='23-11-2000'),
+            field=models.DateField(default=datetime.date.today),
             preserve_default=False,
         ),
         migrations.AddField(
@@ -250,7 +250,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='employee',
             name='emergency_contact_number',
-            field=models.CharField(default='27-10-2009', max_length=15),
+            field=models.CharField(default='2009-10-27', max_length=15),
             preserve_default=False,
         ),
         migrations.AddField(
@@ -496,7 +496,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='employee',
             name='date_of_joining',
-            field=models.DateField(default='23-10-2005'),
+            field=models.DateField(default=datetime.date.today),
             preserve_default=False,
         ),
         migrations.AlterField(

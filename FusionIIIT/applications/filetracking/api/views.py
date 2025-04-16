@@ -68,7 +68,7 @@ class CreateFileView(APIView):
 class ViewFileView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
-
+    
     def get(self, request, file_id):
         try:
             file_details = view_file(int(file_id))

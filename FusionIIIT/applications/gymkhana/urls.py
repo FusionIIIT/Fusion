@@ -16,6 +16,7 @@ from applications.gymkhana.api.views import (
     EventDeleteAPIView,
     EventUpdateAPIView,
     FreeMembersForClubAPIView,
+    ListAllClubPositionAPIView,
     SessionUpdateAPIView,
     UpdateClubBudgetAPIView,
     UpdateClubNameAPIView,
@@ -285,6 +286,11 @@ urlpatterns = [
         r"^api/add_club_position/$",
         AddClubPositionAPIView.as_view(),
         name="add club position",
+    ),
+    url(
+        r"^api/list_all_club_position/$",
+        ListAllClubPositionAPIView.as_view(),
+        name="list club position",
     ),
     url(
         r"^api/list_club_position/$",
