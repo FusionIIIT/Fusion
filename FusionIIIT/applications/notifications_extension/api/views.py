@@ -147,7 +147,7 @@ class ScholarshipPortalNotificationAPIView(APIView):
         recipient_id = request.data.get('recipient')
         type = request.data.get('type')
         User = get_user_model()
-        recipient = User.objects.get(pk=recipient_id)
+        recipient = User.objects.get(username=recipient_id)
         # Trigger the notification function
         scholarship_portal_notif(sender, recipient, type)
 

@@ -25,6 +25,27 @@ class ReleaseCreateView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class CheckApplicationWindowView(APIView):
+    def post(self, request):
+        award_name = request.data.get('award')
+        current_date = datetime.date.today()
+
+        if not award_name:
+            return Response({'result': 'Failure', 'error': 'Award is a required field'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            #Get all the rows with the award name
+            releases = Release.objects.filter(award=award_name)
+        except Release.DoesNotExist:
+            return Response({'result': 'Failure', 'error': 'No release found for the specified award'}, status=status.HTTP_404_NOT_FOUND)
+        for release in releases:
+            # Check if the current date is within the start and end dates of the release
+            if release.startdate <= current_date <= release.enddate:
+                return Response({'result': 'Success', 'message': 'Application window is open.'}, status=status.HTTP_200_OK)
+            
+        # If the current date is outside the start and end dates
+        return Response({'result': 'Failure', 'error': 'Application window is closed.'}, status=status.HTTP_400_BAD_REQUEST)
+
 #This API is for editing the catalogue by convenor and assistant and saving in the database
 class AwardAndScholarshipCreateView(APIView):
     def post(self, request, pk=None):
@@ -417,47 +438,6 @@ class DirectorSilverListView(APIView):
         director_silver_entries = Director_silver.objects.all()
         serializer = DirectorSilverSerializer(director_silver_entries, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-class GetReleaseByAwardView(APIView):
-
-    def post(self, request, *args, **kwargs):
-        # Get the award name from the request
-        award_name = request.data.get('award')
-
-        # Check if the award variable is provided
-        if not award_name:
-            return Response(
-                {'result': 'Failure', 'error': 'Award is a required field'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Fetch records from the Release table where the award matches
-        releases = Release.objects.filter(award=award_name)
-
-        # Check if any records were found
-        if releases.exists():
-            # Build the response data
-            data = []
-            for release in releases:
-                data.append({
-                    'id': release.id,
-                    'date_time': release.date_time,
-                    'programme': release.programme,
-                    'startdate': release.startdate,
-                    'enddate': release.enddate,
-                    'award': release.award,
-                    'remarks': release.remarks,
-                    'batch': release.batch,
-                    'notif_visible': release.notif_visible,
-                })
-
-            return Response({'result': 'Success', 'data': data}, status=status.HTTP_200_OK)
-
-        # If no records found
-        return Response(
-            {'result': 'Failure', 'error': 'No releases found for the specified award'},
-            status=status.HTTP_404_NOT_FOUND
-        )
 
 class McmDocumentsRetrieveView(APIView):
     permission_classes = [IsAuthenticated]
