@@ -223,7 +223,7 @@ def homepage(request):
     
     if request.method == "POST":
         if 'check_allocation' in request.POST : 
-            return  check_for_registration_complete(request)
+            return  JsonResponse(check_for_registration_complete(request.POST.get('batch'), request.POST.get('sem'), request.POST.get('year')))
         if 'start_allocation' in request.POST :
             return allocate(request)
         if 'view_allocation' in request.POST :

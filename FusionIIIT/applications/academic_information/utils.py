@@ -1,59 +1,43 @@
-import datetime
-import random
-
-from applications.academic_information.models import (Calendar, Curriculum,
-                                                      Curriculum_Instructor,
-                                                      Student,
+from applications.academic_information.models import (Calendar, Student,Curriculum_Instructor, Curriculum,
                                                       Student_attendance)
-from applications.programme_curriculum.models import (Batch, Course,
-                                                      CourseSlot, Semester)
-from django.core import serializers
-from django.db import transaction
-from django.db.models import Q
+from ..academic_procedures.models import (BranchChange, CoursesMtech, FinalRegistrations, InitialRegistration, StudentRegistrationChecks,
+                     Register, Thesis, FinalRegistration, ThesisTopicProcess,
+                     Constants, FeePayments, TeachingCreditRegistration, SemesterMarks, 
+                     MarkSubmissionCheck, Dues,AssistantshipClaim, MTechGraduateSeminarReport,
+                     PhDProgressExamination,CourseRequested, course_registration, MessDue, Assistantship_status , backlog_course,)
+
+from applications.programme_curriculum.models import(Course,CourseSlot,Batch,Semester)
 from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
-
-from ..academic_procedures.models import (Assistantship_status,
-                                          AssistantshipClaim, BranchChange,
-                                          Constants, CourseRequested,
-                                          CoursesMtech, Dues, FeePayments,
-                                          FinalRegistration,
-                                          InitialRegistration,
-                                          MarkSubmissionCheck, MessDue,
-                                          MTechGraduateSeminarReport,
-                                          PhDProgressExamination, Register,
-                                          SemesterMarks,
-                                          StudentRegistrationChecks,
-                                          TeachingCreditRegistration, Thesis,
-                                          ThesisTopicProcess, backlog_course,
-                                          course_registration)
-
+from django.core import serializers
+from django.db.models import Q
+import datetime
+import random
+from django.db import transaction
 time = timezone.now()
-def check_for_registration_complete (request):
-    batch = int(request.POST.get('batch'))
-    sem = int(request.POST.get('sem'))
-    year = request.POST.get('year')
-
-
-    date = time.date()
-
+def check_for_registration_complete(batch, sem, year):
+    date = datetime.date.today()
     try:
-
-        pre_registration_date = Calendar.objects.all().filter(description=f"Pre Registration {sem} {year}").first()
+        pre_registration_date = Calendar.objects.filter(description=f"Pre Registration {sem} {year}").first()
+        if not pre_registration_date:
+            return {"status": -3, "message": "No such registration found"}
+        
         prd_start_date = pre_registration_date.from_date
         prd_end_date = pre_registration_date.to_date
 
-        if date<prd_start_date : 
-            return JsonResponse({'status':-2 , 'message': "registration didn't start"})
-        if date>=prd_start_date and date<=prd_end_date:
-            return JsonResponse({'status':-1 , "message":"registration is under process"})
-        
-        if FinalRegistration.objects.filter(Q(semester_id__semester_no = sem) & Q(student_id__batch = batch)).exists() : 
-            return JsonResponse({'status':2,"message":"courses already allocated"})
-        
-        return JsonResponse({"status":1 , "message" : "courses not yet allocated"})
-    except :
-        return JsonResponse({"status":-3, "message" : "No such registration found"})
+        if date < prd_start_date:
+            return {"status": -2, "message": "Registration didn't start"}
+
+        if prd_start_date <= date <= prd_end_date:
+            return {"status": -1, "message": "Registration is under process"}
+
+        if FinalRegistration.objects.filter(Q(semester_id__semester_no = sem) & Q(student_id__batch = batch)).exists() :
+            return {"status": 2, "message": "Courses already allocated"}
+
+        return {"status": 1, "message": "Courses not yet allocated"}
+    
+    except Exception as e:
+        return {"status": -3, "message": f"Internal Server Error: {str(e)}"}
 
 @transaction.atomic
 def random_algo(batch,sem,year,course_slot) :
@@ -115,46 +99,42 @@ def allocate(request):
     batch = request.POST.get('batch')
     sem = request.POST.get('sem')
     year = request.POST.get('year')
-    unique_course_slot = InitialRegistration.objects.filter(Q(semester_id_semester_no=sem) & Q(
-        student_id_batch=batch)).values('course_slot_id').distinct()
+
+    unique_course_slot = InitialRegistration.objects.filter(
+        Q(semester_id__semester_no=sem) & Q(student_id__batch=batch)
+    ).values('course_slot_id').distinct()
+
     unique_course_name = []
 
     try:
         with transaction.atomic():
             for entry in unique_course_slot:
-                course_slot_object = CourseSlot.objects.get(
-                    id=entry['course_slot_id'])
+                course_slot_object = CourseSlot.objects.get(id=entry['course_slot_id'])
+
                 if course_slot_object.type != "Open Elective":
-                    # Fetch students registered in this course slot
                     students = InitialRegistration.objects.filter(
                         Q(semester_id__semester_no=sem) &
                         Q(course_slot_id=course_slot_object) &
                         Q(student_id__batch=batch)
                     ).values_list('student_id', flat=True)
 
-                    # Allocate each student directly to FinalRegistration
                     for student_id in students:
                         student = Student.objects.get(id=student_id)
                         semester = Semester.objects.get(
-                            semester_no=sem, curriculum=student.batch_id.curriculum)
+                            semester_no=sem, curriculum=student.batch_id.curriculum
+                        )
+
                         regis = InitialRegistration.objects.filter(
                             course_slot_id_id=course_slot_object,
                             student_id_id=student_id
                         ).values_list('registration_type', flat=True).first()
-                        # course = Course.objects.get(id=course_slot_object.courses.id)
-                        # course_id = course_slot_object.courses.values_list('id', flat=True).first()
+
                         course_id = InitialRegistration.objects.filter(
                             course_slot_id_id=course_slot_object,
                             student_id_id=student_id
                         ).values_list('course_id', flat=True).first()
 
-                        # Retrieve the Course instance
                         course = Course.objects.get(id=course_id)
-
-                        # Insert directly into FinalRegistration
-                        # if course_slot_object.name in unique_course_name:
-                        #     print("skip")
-                        #     continue
 
                         FinalRegistration.objects.create(
                             student_id=student,
@@ -166,18 +146,19 @@ def allocate(request):
                         )
 
                     unique_course_name.append(course_slot_object.name)
-                elif course_slot_object.type == "Open Elective":  # Runs only for open elective course slots
+
+                elif course_slot_object.type == "Open Elective":
                     if course_slot_object.name not in unique_course_name:
                         stat = random_algo(batch, sem, year, course_slot_object.name)
                         unique_course_name.append(course_slot_object.name)
-                        if (stat == -1):
-                            print("Seats not enough for course_slot", str(course_slot_object.name), "terminating process...")
-                            raise Exception("seats not enough for course_slot "+str(course_slot_object.name))
+                        if stat == -1:
+                            raise Exception(f"Seats not enough for course_slot {course_slot_object.name}")
 
-        return JsonResponse({'status': 1, 'message': "course allocation successful"})
+        return JsonResponse({'status': 1, 'message': "Course allocation successful"})
+
     except:
-        return JsonResponse({'status': -1, 'message': "seats not enough for some course_slot"})
-    
+        return JsonResponse({'status': -1, 'message': "Seats not enough for some course_slot"})
+
 def view_alloted_course(request) : 
     batch = request.POST.get('batch')
     sem = request.POST.get('sem')
