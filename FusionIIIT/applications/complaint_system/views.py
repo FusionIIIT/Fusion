@@ -982,50 +982,53 @@ class GenerateReportView(APIView):
         Generates a report of complaints for the caretaker's area, warden's area, or service_provider's type.
         """
         user = request.user
-        complaint_admin_user = 'anil'
-        if user.username == complaint_admin_user:  #hardcoding data for now as complaint_admin role dont exist in database for now 
+        try:
+            complaint_admin_user = Complaint_Admin.objects.get(sup_id=user.extrainfo)
             complaints = StudentComplain.objects.all()
-        else:
+        except Complaint_Admin.DoesNotExist:
+            complaint_admin_user = None
+
+        if not complaint_admin_user:
             is_caretaker = hasattr(user, 'caretaker')
             is_service_provider = False
             is_complaint_admin = hasattr(user, 'complaint_admin')  # Check if the user has the 'complaintadmin' attribute
 
-        # Check if user is a service_provider
+            # Check if user is a service_provider
             try:
-               service_provider = ServiceProvider.objects.get(ser_pro_id=user.extrainfo)
-               is_service_provider = True
+                service_provider = ServiceProvider.objects.get(ser_pro_id=user.extrainfo)
+                is_service_provider = True
             except ServiceProvider.DoesNotExist:
-               is_service_provider = False
+                is_service_provider = False
 
             try:
-               is_service_authority = ServiceAuthority.objects.get(ser_pro_id=user.extrainfo)
-               is_service_authority = True
+                is_service_authority = ServiceAuthority.objects.get(ser_pro_id=user.extrainfo)
+                is_service_authority = True
             except ServiceAuthority.DoesNotExist:
-               is_service_authority = False
+                is_service_authority = False
 
             try:
-               warden = Warden.objects.get(staff_id=user.extrainfo)
-               is_warden = True
+                warden = Warden.objects.get(staff_id=user.extrainfo)
+                is_warden = True
             except Warden.DoesNotExist:
-               is_warden = False
+                is_warden = False
 
             if not is_caretaker and not is_service_provider and not is_complaint_admin and not is_service_provider and not is_service_provider and not is_service_authority and not is_warden:
                 return Response({"detail": "Not authorized to generate report."}, status=403)
 
             complaints = None
 
-        # Generate report for service_provider
+            # Generate report for service_provider
             if is_service_provider:
                 print(f"Generating report for ServiceProvider {service_provider}")
-                complaints = StudentComplain.objects.filter(complaint_type=service_provider.type)
+                complaints = StudentComplain.objects.filter(complaint_type=service_provider.type, status__in=[1, 2, 3])  # Include resolved complaints
 
-        # Generate report for caretaker
+            # Generate report for caretaker
             if is_caretaker and not is_service_provider and not is_warden:
                 caretaker = get_object_or_404(Caretaker, staff_id=user.extrainfo)
                 complaints = StudentComplain.objects.filter(location=caretaker.area)
 
             if is_warden:
-                warden=get_object_or_404(Warden, staff_id=user.extrainfo)
+                warden = get_object_or_404(Warden, staff_id=user.extrainfo)
                 complaints = StudentComplain.objects.filter(location=warden.area)
 
             # Generate report for complaint admin
