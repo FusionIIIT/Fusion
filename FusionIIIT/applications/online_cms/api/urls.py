@@ -28,4 +28,7 @@ urlpatterns = [
 
     url(r'^slides/$', views.get_slides, name='get_slides'),
 
+    url(r'^slides/$', views.get_slides, name='get_slides'),
+
+    url(r'^submit-assignment/$', views.submit_assignment, name='submit_assignment'),
 ]
