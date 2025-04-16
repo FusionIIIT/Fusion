@@ -37,14 +37,14 @@ class CheckApplicationWindowView(APIView):
             #Get all the rows with the award name
             releases = Release.objects.filter(award=award_name)
         except Release.DoesNotExist:
-            return Response({'result': 'Failure', 'error': 'No release found for the specified award'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'result': 'Failure', 'message': 'No release found for the specified award'}, status=status.HTTP_200_OK)
         for release in releases:
             # Check if the current date is within the start and end dates of the release
             if release.startdate <= current_date <= release.enddate:
                 return Response({'result': 'Success', 'message': 'Application window is open.'}, status=status.HTTP_200_OK)
             
         # If the current date is outside the start and end dates
-        return Response({'result': 'Failure', 'error': 'Application window is closed.'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'result': 'Failure', 'message': 'Application window is closed.'}, status=status.HTTP_200_OK)
 
 #This API is for editing the catalogue by convenor and assistant and saving in the database
 class AwardAndScholarshipCreateView(APIView):
