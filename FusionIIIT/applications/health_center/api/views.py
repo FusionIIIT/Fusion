@@ -170,16 +170,16 @@ def compounder_api_handler(request):
     elif 'get_file' in request_body:
         file_id = request_body['file_id']
         file_id_int = int(file_id)
-        filepath = os.path.join(os.path.dirname(os.path.dirname(__file__)),'health_center/static/health_center/add_stock_example.xlsx')
+        filepath = os.path.join(os.path.dirname(os.path.dirname(__file__)),'static/health_center/add_stock_example.xlsx')
         
         if(file_id_int == -2):
             return FileResponse(open(filepath, 'rb'), as_attachment=True, filename="example_add_stock.xlsx")
         
         if(file_id_int == -1):
-            filepath = os.path.join(os.path.dirname(os.path.dirname(__file__)),'health_center/static/health_center/add_medicine_example.xlsx')
+            filepath = os.path.join(os.path.dirname(os.path.dirname(__file__)),'static/health_center/add_medicine_example.xlsx')
             return FileResponse(open(filepath , 'rb'), as_attachment=True, filename="example_add_medicine.xlsx")
         
-        filepath = os.path.join(os.path.dirname(os.path.dirname(__file__)),'health_center/static/health_center/generated.pdf')
+        filepath = os.path.join(os.path.dirname(os.path.dirname(__file__)),'static/health_center/generated.pdf')
 
         file=files.objects.get(id=file_id_int)
         f=file.file_data
