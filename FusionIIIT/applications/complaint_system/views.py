@@ -389,12 +389,43 @@ class FeedbackCareView(APIView):
 class ResolvePendingView(APIView):
     permission_classes = [IsAuthenticated]
 
+    # def post(self, request, cid):
+    #     """
+    #     Allows the caretaker to resolve a pending complaint.
+    #     """
+    #     serializer = ResolvePendingSerializer(data=request.data)
+    #     print("Incoming data:", request.data)
+    #     if serializer.is_valid():
+    #         newstatus = serializer.validated_data['yesorno']
+    #         comment = serializer.validated_data.get('comment', '')
+    #         intstatus = 2 if newstatus == 'Yes' else 3
+    #         StudentComplain.objects.filter(id=cid).update(status=intstatus, comment=comment)
+
+    #         # Send notification to the complainer
+    #         try:
+    #             complainer_details = StudentComplain.objects.select_related('complainer').get(id=cid)
+    #             student = 0
+    #             if newstatus == 'Yes':
+    #                 message = "Congrats! Your complaint has been resolved"
+    #                 notification_type = 'comp_resolved_alert'
+    #             else:
+    #                 message = "Your complaint has been declined"
+    #                 notification_type = 'comp_declined_alert'
+
+    #             complaint_system_notif(request.user, complainer_details.complainer.user, notification_type, complainer_details.id, student, message)
+    #             return Response({'success': 'Complaint status updated'})
+    #         except StudentComplain.DoesNotExist:
+    #             return Response({'error': 'Complaint not found'}, status=status.HTTP_404_NOT_FOUND)
+    #     else:
+    #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     def post(self, request, cid):
         """
         Allows the caretaker to resolve a pending complaint.
         """
         serializer = ResolvePendingSerializer(data=request.data)
         print("Incoming data:", request.data)
+        print("Incoming files:", request.FILES)  # ✅ Debugging log
+
         if serializer.is_valid():
             newstatus = serializer.validated_data['yesorno']
             comment = serializer.validated_data.get('comment', '')
@@ -402,7 +433,20 @@ class ResolvePendingView(APIView):
             StudentComplain.objects.filter(id=cid).update(status=intstatus, comment=comment)
 
             # Send notification to the complainer
+            # ✅ Get the complaint record
             try:
+                complaint = StudentComplain.objects.get(id=cid)
+                complaint.status = intstatus
+                complaint.comment = comment
+
+                # ✅ Save the uploaded image if it exists
+                if 'upload_resolved' in request.FILES:
+                    complaint.upload_resolved = request.FILES['upload_resolved']
+                    print("✅ Image Saved:", complaint.upload_resolved)
+
+                complaint.save()
+
+                # ✅ Send notification
                 complainer_details = StudentComplain.objects.select_related('complainer').get(id=cid)
                 student = 0
                 if newstatus == 'Yes':
@@ -411,8 +455,10 @@ class ResolvePendingView(APIView):
                 else:
                     message = "Your complaint has been declined"
                     notification_type = 'comp_declined_alert'
-                
-                complaint_system_notif(request.user, complainer_details.complainer.user, notification_type, complainer_details.id, student, message)
+
+                complaint_system_notif(request.user, complainer_details.complainer.user, notification_type,
+                                       complainer_details.id, student, message)
+
                 return Response({'success': 'Complaint status updated'})
             except StudentComplain.DoesNotExist:
                 return Response({'error': 'Complaint not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -424,11 +470,13 @@ class ResolvePendingView(APIView):
         Returns the details of the complaint to be resolved.
         """
         try:
-            complaint = StudentComplain.objects.select_related('complainer', 'complainer_user', 'complainer_department').get(id=cid)
+            complaint = StudentComplain.objects.select_related('complainer', 'complainer_user',
+                                                               'complainer_department').get(id=cid)
             serializer = StudentComplainSerializer(complaint)
             return Response(serializer.data)
         except StudentComplain.DoesNotExist:
             return Response({'error': 'Complaint not found'}, status=status.HTTP_404_NOT_FOUND)
+
 
 # Converted to DRF APIView
 class ComplaintDetailView(APIView):
