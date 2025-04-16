@@ -26,7 +26,7 @@ urlpatterns = [
     path("director/application/accept", views.director_accept, name="director_accept"),
     path("director/reviewedapplications", views.director_reviewed_applications, name="director_reviewed_applications"),
     path("director/active", views.active_applications, name="active_applications"),
-    # path("director/final-review/details", views.director_status_view, name="director_status_view"),
+    path("director/application/details", views.director_application_view, name="director_application_view"),
     path("director/notifications/", views.director_notifications, name="director_notifications"),
 
     # Attorney management URLs
