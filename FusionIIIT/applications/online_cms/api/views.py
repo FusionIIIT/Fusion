@@ -360,6 +360,47 @@ def delete_slide(request, slide_id):
     except CourseDocuments.DoesNotExist:
         return Response({"error": "Slide not found"}, status=status.HTTP_404_NOT_FOUND)
 
+@api_view(['POST'])
+def submit_assignment(request):
+    student_id = request.data.get('student_id')
+    assignment_id = request.data.get('assignment_id')
+    upload_url = request.data.get('upload_url')
+    assign_name = request.data.get('assign_name')
+
+    if not all([student_id, assignment_id, upload_url, assign_name]):
+        return Response(
+            {"error": "Missing one or more required fields: student_id, assignment_id, upload_url, assign_name"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Validate foreign keys manually
+    try:
+        student = Student.objects.get(pk=student_id)
+    except Student.DoesNotExist:
+        return Response({"error": f"Student with ID {student_id} not found."}, status=404)
+
+    try:
+        assignment = Assignment.objects.get(pk=assignment_id)
+    except Assignment.DoesNotExist:
+        return Response({"error": f"Assignment with ID {assignment_id} not found."}, status=404)
+
+    # Prevent duplicate
+    if StudentAssignment.objects.filter(student_id=student, assignment_id=assignment).exists():
+        return Response(
+            {"error": "You have already submitted this assignment."},
+            status=400
+        )
+
+    student_assignment = StudentAssignment.objects.create(
+        student_id=student,
+        assignment_id=assignment,
+        upload_url=upload_url,
+        assign_name=assign_name
+    )
+
+    serializer = StudentAssignmentSerializer(student_assignment)
+    return Response(serializer.data, status=201)
+
 
 @api_view(['GET'])
 def courseview(request):
