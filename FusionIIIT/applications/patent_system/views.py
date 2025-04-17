@@ -74,7 +74,7 @@ def submit_application(request):
         form_iii_file = request.FILES.get("form_iii")
 
         required_fields = [
-            "title", "inventors", "area_of_invention", "problem_statement", "objective", "ip_types",
+            "title", "inventors", "area_of_invention", "problem_statement", "objective", "ip_type",
             "novelty", "advantages", "tested_experimentally", "applications",
             "funding_details", "funding_source", "publication_details", "mou_details",
             "research_details", "company_details",
@@ -133,7 +133,7 @@ def submit_application(request):
 
         ApplicationSectionI.objects.create(
             application=application,
-            type_of_ip=data["ip_types"],
+            type_of_ip=data["ip_type"],
             area=data["area_of_invention"],
             problem=data["problem_statement"],
             objective=data["objective"],
@@ -992,12 +992,12 @@ def director_reviewed_applications(request):
         assigned_attorney = app.attorney.name if app.attorney else "Not Assigned"
 
         # Unique key for dictionary
-        key = str(app.token_no) if app.token_no else f"app_{app.id}"
+        key = app.id
 
         # Build the application summary
         application_dict[key] = {
             "token_no": app.token_no if app.token_no else "Token not generated",
-            "title": app.title,
+            "title": app.title, 
             "submitted_by": applicant.name if applicant else "Unknown",
             "department": department_name,
             "arrival_date": app.forwarded_to_director_date if app.submitted_date else "Unknown",
