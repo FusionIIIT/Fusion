@@ -94,8 +94,8 @@ def submit_application(request):
             defaults={
                 "email": user.email,  # Assuming User model has email
                 "name": user.get_full_name() or user.username,  # Use full name or username
-                "mobile": "",  # Set to empty initially
-                "address": "",  # Set to empty initially
+                "mobile": "",
+                "address": "",
             }
         )
 
@@ -188,7 +188,7 @@ def submit_application(request):
 
             try:
                 user = User.objects.get(email=email)
-                applicant, created = Applicant.objects.get_or_create(
+                applicant, created = Applicant.objects.update_or_create(
                     user=user,
                     defaults={
                         "email": personal_mail,
