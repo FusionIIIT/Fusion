@@ -338,11 +338,17 @@ def view_application_details_for_applicant(request, application_id):
         "token_no": application.token_no,
         "attorney_name": attorney_name,
         "dates": {
-            "patentability_check_date": application.patentability_check_date,
-            "patentability_file_date": application.patentability_file_date,
-            "assigned_date": application.assigned_date,
-            "decision_date": application.decision_date,
-            "submitted_date": application.submitted_date if application.submitted_date else None
+            "submitted_date": application.submitted_date if application.submitted_date else None,
+            "reviewed_by_pcc_date": application.reviewed_by_pcc_date,
+            "forwarded_to_director_date": application.forwarded_to_director_date,
+            "director_approval_date": application.director_approval_date,
+            "patentability_check_start_date": application.patentability_check_start_date,
+            "patentability_check_completed_date": application.patentability_check_completed_date,
+            "search_report_generated_date": application.search_report_generated_date,
+            "patent_filed_date": application.patent_filed_date,
+            "patent_published_date": application.patent_published_date,
+            "final_decision_date": application.final_decision_date,
+            "decision_date": application.decision_date
         },
         "decision_status": application.decision_status,
         "comments": application.comments if application.comments else None,
@@ -840,7 +846,7 @@ def view_application_details_for_pccAdmin(request, application_id):
             "patent_filed_date": application.patent_filed_date,
             "patent_published_date": application.patent_published_date,
             "final_decision_date": application.final_decision_date,
-            "decision_date": application.decision_date,
+            "decision_date": application.decision_date
         },
         "decision_status": application.decision_status,
         "comments": application.comments if application.comments else None,
