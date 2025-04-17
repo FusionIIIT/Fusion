@@ -367,9 +367,6 @@ def new_applications(request):
     REVIEW_STATUSES = ["Submitted", "Reviewed by PCC Admin"]
 
     applications = Application.objects.filter(status__in=REVIEW_STATUSES).select_related("primary_applicant")
-    REVIEW_STATUSES = ["Submitted", "Reviewed by PCC Admin"]
-
-    applications = Application.objects.filter(status__in=REVIEW_STATUSES).select_related("primary_applicant")
 
     application_dict = {}  # Using a dictionary instead of a list
 
@@ -426,14 +423,14 @@ def review_application(request, application_id):
             # Parse JSON body
             try:
                 data = json.loads(request.body)
-                attorney_name = data.get("attorney_name", "").strip()
-                comments = data.get("comments")
+                comments = data.get("comments", "")
             except json.JSONDecodeError:
                 return JsonResponse({"error": "Invalid JSON body."}, status=400)
 
             # Update application status and review date
             application.status = "Reviewed by PCC Admin"
-            application.comments = comments
+            if comments != "":
+                application.comments = comments
             application.reviewed_by_pcc_date = now()
             application.save()
 
@@ -475,7 +472,7 @@ def forward_application(request, application_id):
             try:
                 data = json.loads(request.body)
                 attorney_name = data.get("attorney_name", "").strip()
-                comments = data.get("comments")
+                comments = data.get("comments", "")
             except json.JSONDecodeError:
                 return JsonResponse({"error": "Invalid JSON body."}, status=400)
 
@@ -495,7 +492,8 @@ def forward_application(request, application_id):
             application.status = "Forwarded for Director's Review"
             application.forwarded_to_director_date = now()
             application.attorney = attorney
-            application.comments = comments
+            if comments != "":
+                application.comments = comments
             application.save()
 
             return JsonResponse({
@@ -570,7 +568,6 @@ def request_application_modification(request, application_id):
     return JsonResponse({"error": "Only POST requests are allowed."}, status=405)
 
 # For ongoing applications tab
-# For ongoing applications tab
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
@@ -612,7 +609,6 @@ def ongoing_applications(request):
 
         # Format response as a dictionary
         application_dict[app.id] = {
-            # "application_no": app.id,
             "token_no": app.token_no if app.token_no else "Token not generated yet",
             "title": app.title,
             "submitted_by": applicant.name if applicant else "Unknown",
@@ -717,7 +713,7 @@ def change_application_status(request, application_id):
 @authentication_classes([TokenAuthentication])
 def past_applications(request):
     DECISION_STATUSES = [
-        "Accepted", 
+        "Approved", 
         "Rejected",
     ]
 
@@ -746,11 +742,10 @@ def past_applications(request):
             "token_no": app.token_no if app.token_no else "Token not generated yet",
             "title": app.title,
             "submitted_by": applicant.name if applicant else "Unknown",
-            "submitted_by": applicant.name if applicant else "Unknown",
             "designation": designation_name,
             "department": department_name,
             "submitted_on": app.submitted_date.strftime("%Y-%m-%d") if app.submitted_date else "Unknown",
-            "status": app.status,
+            "decision_status": app.decision_status,
         }
 
     return JsonResponse({"applications": application_dict}, safe=False)
