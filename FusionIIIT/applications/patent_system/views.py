@@ -65,6 +65,8 @@ def submit_application(request):
         
         data = json.loads(json_data)
 
+        print("Parsed data keys:", data)
+
         # Required file fields
         poc_file = request.FILES.get("poc_details")
         source_file = request.FILES.get("source_file")
@@ -72,7 +74,7 @@ def submit_application(request):
         form_iii_file = request.FILES.get("form_iii")
 
         required_fields = [
-            "title", "inventors", "area_of_invention", "problem_statement", "objective", "ip_type",
+            "title", "inventors", "area_of_invention", "problem_statement", "objective", "ip_types",
             "novelty", "advantages", "tested_experimentally", "applications",
             "funding_details", "funding_source", "publication_details", "mou_details",
             "research_details", "company_details",
@@ -131,7 +133,7 @@ def submit_application(request):
 
         ApplicationSectionI.objects.create(
             application=application,
-            type_of_ip=data["ip_type"],
+            type_of_ip=data["ip_types"],
             area=data["area_of_invention"],
             problem=data["problem_statement"],
             objective=data["objective"],
