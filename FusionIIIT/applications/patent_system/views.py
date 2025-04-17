@@ -208,14 +208,13 @@ def submit_application(request):
 
         # Generate token
         application_id = application.id
-        token = f"IIITDMJ/AGR/{application_id:06d}/AAS/104"
-        application.token_no = token
+        # token = f"IIITDMJ/AGR/{application_id:06d}/AAS/104"
+        # application.token_no = token
         application.save()
 
         return JsonResponse({
             "message": "Application submitted successfully",
             "application_id": application_id,
-            "token": token
         })
     
     except json.JSONDecodeError:
@@ -335,7 +334,7 @@ def view_application_details_for_applicant(request, application_id):
         "application_id": application.id,
         "title": application.title,
         "status": application.status,
-        "token_no": application.token_no,
+        "token_no": application.token_no if application.token_no else "Token not generated",
         "attorney_name": attorney_name,
         "dates": {
             "submitted_date": application.submitted_date if application.submitted_date else None,
@@ -672,11 +671,11 @@ def change_application_status(request, application_id):
             current_status_index = REVIEW_STATUSES.index(application.status) if application.status in REVIEW_STATUSES else -1
             next_status_index = REVIEW_STATUSES.index(next_status)
 
-            if next_status_index != current_status_index + 1:
-                return JsonResponse({
-                    "error": f"Invalid status transition. Current status: '{application.status}', "
-                             f"allowed next status: '{REVIEW_STATUSES[current_status_index + 1]}'" if current_status_index + 1 < len(REVIEW_STATUSES) else "None"
-                }, status=400)
+            # if next_status_index != current_status_index + 1:
+            #     return JsonResponse({
+            #         "error": f"Invalid status transition. Current status: '{application.status}', "
+            #                  f"allowed next status: '{REVIEW_STATUSES[current_status_index + 1]}'" if current_status_index + 1 < len(REVIEW_STATUSES) else "None"
+            #     }, status=400)
 
             # Update application status and save
             application.status = next_status
@@ -800,7 +799,7 @@ def view_application_details_for_pccAdmin(request, application_id):
         "novelty": section_i.novelty if section_i else None,
         "advantages": section_i.advantages if section_i else None,
         "is_tested": section_i.is_tested if section_i else None,
-        "poc_details": section_i.poc_details.url if section_i else None,
+        "poc_details": section_i.poc_details.url if section_i and section_i.poc_details else None,
         "applications": section_i.applications if section_i else None,
     }
 
@@ -884,7 +883,7 @@ def director_new_applications(request):
         assigned_attorney = app.attorney.name if app.attorney else "Not Assigned"
 
         # Unique key for dictionary
-        key = str(app.token_no) if app.token_no else f"app_{app.id}"
+        key = app.id
 
         # Build the application summary
         application_dict[key] = {
