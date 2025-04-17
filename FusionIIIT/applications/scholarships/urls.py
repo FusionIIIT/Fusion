@@ -1,10 +1,12 @@
 from django.conf.urls import url
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 
 from . import views
 from applications.scholarships.api.views import GetWinnersView
-from applications.scholarships.api.views import create_award,McmUpdateView, McmRetrieveView, DirectorSilverRetrieveView,DirectorSilverUpdateView,DirectorGoldRetrieveView,DirectorGoldUpdateView,ProficiencyDmRetrieveView,ProficiencyDmUpdateView,AwardAndScholarshipCreateView,DirectorSilverMarksheetView,DirectorGoldMarksheetView
+from applications.scholarships.api.views import create_award,McmUpdateView, McmRetrieveView, DirectorSilverRetrieveView,DirectorSilverUpdateView,DirectorGoldRetrieveView,DirectorGoldUpdateView,ProficiencyDmRetrieveView,ProficiencyDmUpdateView,AwardAndScholarshipCreateView,DirectorSilverMarksheetView,DirectorGoldMarksheetView, CheckApplicationWindowView
 from applications.scholarships.api.views import ScholarshipDetailView,StudentDetailView,DirectorSilverDetailView,DirectorGoldDetailView,DirectorGoldListView,DMProficiencyListView,ReleaseCreateView,McmStatusUpdateView,DirectorSilverDecisionView,DMProficiencyDecisionView,DirectorGoldAcceptRejectView,DirectorSilverListView,GetReleaseByAwardView,McmDocumentsRetrieveView
 # ,DirectorSilverAcceptRejectView
 
@@ -83,5 +85,6 @@ urlpatterns = [
     path('medals/marksheet/', DirectorSilverMarksheetView.as_view(), name='director_silver_marksheet'),
     path('medals/marksheet/gold/', DirectorGoldMarksheetView.as_view(), name='director_gold_marksheet'),
     path('dm-proficiency-list/', DMProficiencyListView.as_view(), name='proficiency-dm'),
+    path('check-application-window/', CheckApplicationWindowView.as_view(), name='check-application-window'),
 
 ]
