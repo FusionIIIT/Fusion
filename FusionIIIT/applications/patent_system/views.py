@@ -1062,6 +1062,121 @@ def active_applications(request):
 def director_notifications(request):
     return JsonResponse({"notifications": ["New submission", "Pending review"]})
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def director_application_view(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Only POST method is allowed.'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        application_id = data.get('application_id')
+
+        if not application_id:
+            return JsonResponse({'error': 'application_id is required in the request body.'}, status=400)
+
+        # Fetch application details
+        application = get_object_or_404(Application, id=application_id)
+
+        # Fetch primary applicant details
+        primary_applicant_name = None
+        if application.primary_applicant_id:
+            primary_applicant = Applicant.objects.filter(id=application.primary_applicant_id).first()
+            primary_applicant_name = primary_applicant.name if primary_applicant else None
+
+        # Fetch attorney details
+        attorney_name = None
+        if application.attorney_id:
+            attorney = Attorney.objects.filter(id=application.attorney_id).first()
+            attorney_name = attorney.name if attorney else None
+
+        # Fetch associated applicants
+        associated_applicants = AssociatedWith.objects.filter(application=application)
+        applicants_data = [
+            {
+                "name": app.applicant.name,
+                "email": app.applicant.email,
+                "mobile": app.applicant.mobile,
+                "address": app.applicant.address,
+                "percentage_share": app.percentage_share 
+            }
+            for app in associated_applicants
+        ]
+
+        # Fetch Section I
+        section_i = ApplicationSectionI.objects.filter(application=application).first()
+        section_i_data = {
+            "type_of_ip": section_i.type_of_ip if section_i else None,
+            "area": section_i.area if section_i else None,
+            "problem": section_i.problem if section_i else None,
+            "objective": section_i.objective if section_i else None,
+            "novelty": section_i.novelty if section_i else None,
+            "advantages": section_i.advantages if section_i else None,
+            "is_tested": section_i.is_tested if section_i else None,
+            "poc_details": section_i.poc_details.url if section_i and section_i.poc_details else None,
+            "applications": section_i.applications if section_i else None,
+        }
+
+        # Fetch Section II
+        section_ii = ApplicationSectionII.objects.filter(application=application).first()
+        section_ii_data = {
+            "funding_details": section_ii.funding_details if section_ii else None,
+            "funding_source": section_ii.funding_source if section_ii else None,
+            "source_agreement": section_ii.source_agreement.url if section_ii and section_ii.source_agreement else None,
+            "publication_details": section_ii.publication_details if section_ii else None,
+            "mou_details": section_ii.mou_details if section_ii else None,
+            "mou_file": section_ii.mou_file.url if section_ii and section_ii.mou_file else None,
+            "research_details": section_ii.research_details if section_ii else None
+        }
+
+        # Fetch Section III
+        section_iii = ApplicationSectionIII.objects.filter(application=application).first()
+        section_iii_data = {
+            "company_name": section_iii.company_name if section_iii else None,
+            "contact_person": section_iii.contact_person if section_iii else None,
+            "contact_no": section_iii.contact_no if section_iii else None,
+            "development_stage": section_iii.development_stage if section_iii else None,
+            "form_iii": section_iii.form_iii.url if section_iii and section_iii.form_iii else None
+        }
+
+        # Prepare response
+        response_data = {
+            "application_id": application.id,
+            "last_updated_at": application.last_updated_at,
+            "token_no": application.token_no,
+            "primary_applicant_name": primary_applicant_name,
+            "title": application.title,
+            "status": application.status,
+            "attorney_name": attorney_name,
+            "dates": {
+                "submitted_date": application.submitted_date,
+                "reviewed_by_pcc_date": application.reviewed_by_pcc_date,
+                "forwarded_to_director_date": application.forwarded_to_director_date,
+                "director_approval_date": application.director_approval_date,
+                "patentability_check_start_date": application.patentability_check_start_date,
+                "patentability_check_completed_date": application.patentability_check_completed_date,
+                "search_report_generated_date": application.search_report_generated_date,
+                "patent_filed_date": application.patent_filed_date,
+                "patent_published_date": application.patent_published_date,
+                "final_decision_date": application.final_decision_date,
+                "decision_date": application.decision_date,
+            },
+            "decision_status": application.decision_status,
+            "comments": application.comments,
+            "applicants": applicants_data,
+            "section_I": section_i_data,
+            "section_II": section_ii_data,
+            "section_III": section_iii_data
+        }
+
+        return JsonResponse(response_data, safe=False)
+
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON in request body.'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
 # -----------------------------------------
 # 🔹 PCC Admin Attorney Management Views
 # -----------------------------------------
