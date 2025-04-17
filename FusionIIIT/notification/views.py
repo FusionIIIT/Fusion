@@ -560,20 +560,70 @@ def RSPC_notif(sender, recipient, type):
     sender = sender
     recipient = recipient
     verb = ""
-
-    if type == "Approved":
-        verb = "Your request has been approved."
-    elif type == "Rejected":
-        verb = "Your request has been rejected."
-    elif type == "Processing":
-        verb = "You have a new request to process."
-    elif type == "Created":
-        verb = "Your project has been added to RSPC."
-    elif type == "Forwording":
-        verb = f"Your request has been forworded to {sender.username}. Kindly wait for decision"
-
-    notify.send(sender=sender, recipient=recipient,
-                     url=url, module=module, verb=verb)
+ 
+    if type == "Proposal Created":
+        verb = f"A new project proposal has been added by {sender.first_name}."
+    elif type == "Co-PI":
+        verb = f"You have been added as a Co-Principal Investigator in {sender.first_name}'s project."
+    elif type == "Proposal Forwarded":
+        verb = "There is a new project proposal for you to approve."
+    elif type == "Submitted":
+        verb = "Your project proposal has been approved by RSPC."
+ 
+    elif type == "Registration Created":
+        verb = f"A new project has been registered by {sender.first_name}."
+    elif type == "Registration Forwarded":
+        verb = "There is a project registration request for you to approve. Make sure to have the hard copy of the New Project Registration Form for the same."
+    elif type == "Registered":
+        verb = "Your project has been registered at RSPC."
+ 
+    elif type == "Project Commenced":
+        verb = "Your project has commenced. Funding for project has been received and you may start working on your project now."
+    elif type == "Proposal Rejected":
+        verb = f"Your project proposal has been rejected by {sender.first_name}. It has been deleted from records. You may submit a new project proposal."
+    elif type == "Registration Rejected":
+        verb = f"Your project registration request has been rejected by {sender.first_name}. Project proposal submission still exists. You may query the issues from rejector and try to register the project again."
+ 
+    elif type == "Ad Created":
+        verb = "A new request has been made for an advertisement to hire project staff. You may forward it to RSPC."
+    elif type == "Selection Committee":
+        verb = f"You are a member of the Selection Committee for hiring a project staff in {sender.first_name}'s project."
+    elif type == "Ad Forwarded":
+        verb = "There is a new advertisement request for you to approve."
+    elif type == "Hiring":
+        verb = "Your advertisement request has been approved by RSPC. You may start with the hiring process."
+ 
+    elif type == "Report Created":
+        verb = f"Selection Committee report for hiring project staff needs your approval."
+    elif type == "Committee Approved":
+        verb = f"Your Selection Committee report has been approved by {sender.first_name}. Other Selection Committee members need to approve it as well."
+    elif type == "Committee Complete":
+        verb = "There is a Selection Committee report for you to forward to RSPC."
+    elif type == "Report Forwarded":
+        verb = "There is a new Selection Committee report for you to approve."
+    elif type == "Approved":
+        verb = "Your Selection Committee report has been approved by RSPC. You may start with the staff onboarding process."
+ 
+    elif type == "Ad Rejected":
+        verb = f"Your request for an advertisement to hire project staff has been rejected by {sender.first_name}. It has been deleted from records. You may submit a new request for the project staff and its advertisement."
+    elif type == "Report Rejected":
+        verb = f"Your Selection Committee report has been rejected by {sender.first_name}. The report has been deleted from records and the staff position remains unfilled. You may submit a new report."
+ 
+    elif type == "Doc Created":
+        verb = "Your project staff's document has been approved by RSPC."
+    elif type == "Doc Approved":
+        verb = "Your project staff's document has been approved by RSPC."
+    elif type == "Doc Rejected":
+        verb = f"Your project staff's document has been rejected by {sender.first_name}. The document has been deleted from records. You may upload a new document."
+ 
+    elif type == "UC/SE Created":
+        verb = "There is a UC/SE upload and project closure request for you to approve."
+    elif type == "Completed":
+        verb = "Your project closure request has been approved by RSPC. The project is now marked as completed."
+    elif type == "UC/SE Rejected":
+        verb = "Your project closure request has been rejected by RSPC. The UC/SE uploaded has been deleted from records. You may submit a new UC/SE and try for project closure again."
+ 
+    notify.send(sender=sender,recipient=recipient,url=url,module=module,verb=verb)
 
 def research_procedures_notif(sender, recipient, type):
     url = 'research_procedures:patent_registration'
