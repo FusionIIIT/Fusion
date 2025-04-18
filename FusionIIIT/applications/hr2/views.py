@@ -56,7 +56,7 @@ def check_hr_access(request):
         extra_info = get_object_or_404(ExtraInfo, user=user)
         last_selected_role=extra_info.last_selected_role
         request.session['currentDesignationSelected'] = last_selected_role
-        print(last_selected_role)
+        ##print(last_selected_role)
         # fetch designation of name last_selected_role
         designation = Designation.objects.filter(name=last_selected_role).first()
         
@@ -73,7 +73,7 @@ def check_hr_access(request):
         
         # Fetch the ModuleAccess for the user's designation
         module_access = ModuleAccess.objects.filter(designation=current_designation.designation.name).first()
-        print(module_access.hr)
+        #print(module_access.hr)
         if not module_access:
             return False
 
@@ -140,13 +140,13 @@ def get_leave_balance(request):
         extra_info = ExtraInfo.objects.get(user=user)
 
         # Fetch the leave balance for the user
-        print("1")
+        #print("1")
         leave_balance = LeaveBalance.objects.filter(empid__id=user.id).first()
         leave_per_year = LeavePerYear.objects.filter(empid__id=user.id).first()
-        print("2")
+        #print("2")
         if not leave_balance or not leave_per_year:
             return JsonResponse({'error': 'Leave balance data not found'}, status=404)
-        print("3")
+        #print("3")
 
         # Prepare the response data
         leave_data = {
@@ -191,7 +191,7 @@ def get_leave_balance(request):
                 'balance': leave_per_year.leave_encashment - leave_balance.leave_encashment_taken,
             }
         }
-        print("4")
+        #print("4")
         # Return the leave balance data
         return JsonResponse({'leave_balance': leave_data}, status=200)
 
@@ -610,7 +610,7 @@ def get_leave_form_by_id(request, form_id):
         return JsonResponse({'error': 'Authentication required'}, status=401)
 
     try:
-        print("0")
+        #print("0")
         # Get the employee associated with the user
         employee = Employee.objects.filter(id=user)
         if not employee.exists():
@@ -626,13 +626,13 @@ def get_leave_form_by_id(request, form_id):
             return JsonResponse({'error': 'Leave per year not found'}, status=404)
         
 
-        print("1")
+        #print("1")
         # Get the leave form by ID
         leave_form = LeaveForm.objects.filter(id=form_id)
         if not leave_form.exists():
             return JsonResponse({'error': 'Leave form not found'}, status=404)
         leave_form = leave_form.first()
-        print("2")
+        #print("2")
         academic_responsibility_employee=None
         academic_responsibility_user=None
         academic_responsibility_name=None
@@ -651,7 +651,7 @@ def get_leave_form_by_id(request, form_id):
             # Access designations of academic_responsibility_user
             academic_responsibility_designation = leave_form.AcademicResponsibility_designation.name
         
-        print("hi")
+        #print("hi")
 
         administrative_responsibility_employee=None
         administrative_responsibility_user=None
@@ -670,7 +670,7 @@ def get_leave_form_by_id(request, form_id):
             # Access designations of administrative_responsibility_user
             administrative_responsibility_designation = leave_form.AdministrativeResponsibility_designation.name
         
-        print("hi2")
+        #print("hi2")
 
         # Access the first_recieved_by (Employee object)
         first_recieved_by_employee = leave_form.first_recieved_by
@@ -685,7 +685,7 @@ def get_leave_form_by_id(request, form_id):
         # Access designations of first_recieved_by_user
         first_recieved_by_designation = leave_form.first_recieved_designation.name
 
-        print("2.5")
+        #print("2.5")
 
 
         # attcahed file name only
@@ -771,7 +771,7 @@ def handle_leave_academic_responsibility(request, form_id):
     API endpoint to handle the academic responsibility of a leave form.
     """
     user = request.user
-    print("0")
+    #print("0")
     if not user.is_authenticated:
         return JsonResponse({'error': 'Authentication required'}, status=401)
 
@@ -805,7 +805,7 @@ def handle_leave_academic_responsibility(request, form_id):
 
         if user != leave_form.AcademicResponsibility_user.id:
             return JsonResponse({'error': 'You do not have access to handle academic responsibility for this leave form'}, status=403)
-        print("2")
+        #print("2")
         #get designation of academic responsibility user
         academic_responsibility_designation = leave_form.AcademicResponsibility_designation
 
@@ -816,7 +816,7 @@ def handle_leave_academic_responsibility(request, form_id):
         # get action
         data = json.loads(request.body)
         action = data.get('action')
-        print(action)
+        #print(action)
         # check if action is valid
         if action not in ['accept', 'reject']:
             return JsonResponse({'error': 'Invalid action'}, status=400)
@@ -919,7 +919,7 @@ def handle_leave_administrative_responsibility(request, form_id):
         # get action
         data = json.loads(request.body)
         action = data.get('action')
-        print(action)
+        #print(action)
 
         # check if action is valid
         if action not in ['accept', 'reject']:
@@ -970,7 +970,7 @@ def handle_leave_administrative_responsibility(request, form_id):
                 file_extra_JSON=file_extra_JSON,
                 attached_file=None  # Attach any file if necessary
             )
-            print(file_id)
+            #print(file_id)
             leave_form.file_id = file_id
             
             leave_form.save()
@@ -1064,11 +1064,11 @@ def get_leave_inbox(request):
         reciever_designation = None
         if designation:
             reciever_designation = designation
-        print("9")
-        print(username,designation)
-
-        inbox = view_inbox(username=username, designation=reciever_designation, src_module="HR")
-        print("inbox")
+        #print("9")
+        #print(username,designation)
+        
+        inbox = view_inbox(username=str(username), designation=reciever_designation, src_module="HR")
+        #print("inbox",inbox)
         
         # type== leave and upload_date> query date
         filtered_inbox = [
@@ -1077,17 +1077,17 @@ def get_leave_inbox(request):
             datetime.strptime(i['upload_date'], "%Y-%m-%dT%H:%M:%S.%f").date() >= query_date ]
 
         # in fileterd_inbox  get designation name by designatetion id and fetch status of each leave form by src_object_id
-        print("x")
+        #print("x")
         for i in filtered_inbox:
             if i['designation']:
                 designation = Designation.objects.get(id=i['designation'])
                 i['designation'] = designation.name
-                print(i['designation'])
+                #print(i['designation'])
             src_object_id = i['src_object_id']
             leave_form = LeaveForm.objects.get(id=src_object_id)
             i['status'] = leave_form.status
         
-        print("10")
+        #print("10")
         
 
         return JsonResponse({
@@ -1144,7 +1144,7 @@ def track_file_react(request, id):
     # Fetching the file history as a list of dictionaries
     user=request.user
     file_history = view_history(file_id=id)
-    print(user.id)
+    #print(user.id)
     # Create a JSON response for React
     response_data = {
         'file_history': file_history
@@ -1207,8 +1207,8 @@ def handle_leave_file(request, form_id):
         current_owner_designation=get_current_file_owner_designation(file_id)
 
         
-        print(current_owner)
-        print(current_owner_designation)
+        #print(current_owner)
+        #print(current_owner_designation)
         # match user's username with current owner
         
 
@@ -1228,8 +1228,8 @@ def handle_leave_file(request, form_id):
             uploader_employee = leave_form.first().employee
             uploader = uploader_employee.id
             uploader_designation=leave_form.first().designation
-            print(uploader)
-            print(uploader_designation)
+            #print(uploader)
+            #print(uploader_designation)
             
             track_id = forward_file(
                 file_id=file_id,
@@ -1239,7 +1239,7 @@ def handle_leave_file(request, form_id):
                 file_extra_JSON=None
             )
             # change status of leave form
-            print(leave_form.first().status)
+            #print(leave_form.first().status)
             leave_instance = leave_form.first()
             leave_instance.status = 'Rejected'
             leave_instance.save()
@@ -1250,7 +1250,7 @@ def handle_leave_file(request, form_id):
             remarks = f"Forwarded by {current_owner} with remarks: {remarks}"
             # get forward to user
             
-            print(forwardtouser)
+            #print(forwardtouser)
             # get username with user id
             forwardtouser = User.objects.get(id=forwardtouser).username
            
@@ -1286,7 +1286,7 @@ def handle_leave_file(request, form_id):
             if not leave_balance:
                 return JsonResponse({'error': 'Leave balance not found'}, status=404)
             # update the leave taken in leave balance
-            print("hi  1 ")
+            #print("hi  1 ")
             
             leave_balance.casual_leave_taken += leave_instance.Noof_CasualLeave
             leave_balance.special_casual_leave_taken += leave_instance.Noof_specialCasualLeave
@@ -1304,7 +1304,7 @@ def handle_leave_file(request, form_id):
             # return JsonResponse({'message': 'File accepted successfully'}, status=200)
             # verify leave form save
             leave_balance.save()
-            print(leave_balance.casual_leave_taken)
+            #print(leave_balance.casual_leave_taken)
             leave_instance.save() 
             track_id = forward_file(
                 file_id=file_id,
