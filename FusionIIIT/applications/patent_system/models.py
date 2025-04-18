@@ -67,9 +67,8 @@ class Application(models.Model):
     search_report_generated_date = models.DateField(blank=True, null=True)
     patent_filed_date = models.DateField(blank=True, null=True)
     patent_published_date = models.DateField(blank=True, null=True)
-    final_decision_date = models.DateField(blank=True, null=True)
-    decision_status = models.CharField(max_length=50, choices=DECISION_STATUS_CHOICES, default = "Pending")
     decision_date = models.DateField(blank=True, null=True)
+    decision_status = models.CharField(max_length=50, choices=DECISION_STATUS_CHOICES, default = "Pending")
     comments = models.TextField(blank=True, null=True)
 
     def __str__(self):
