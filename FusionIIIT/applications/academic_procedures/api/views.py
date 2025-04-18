@@ -1148,7 +1148,7 @@ def verify_course(request):
         k['reg_id'] = z.id
         k['rid'] = roll_no+" - "+course_code
         # Name ID Confusion here , be carefull
-        courseobj2 = Courses.objects.all().filter(code=course_code)
+        courseobj2 = Courses.objects.all().filter(id=z.course_id.id)
         # if(str(z.student_id) == str(idd)):
         for p in courseobj2:
             k['course_id'] = course_code
@@ -2250,7 +2250,7 @@ def get_preregistration_data(request):
         user_details = current_user.extrainfo
         student = Student.objects.get(id=user_details)
         semester_no = student.curr_semester_no
-        next_sem_no = semester_no  
+        next_sem_no = semester_no+1 
         try:
             next_semester = Semester.objects.get(curriculum=student.batch_id.curriculum, semester_no=next_sem_no)
         except Semester.DoesNotExist:
@@ -2321,7 +2321,7 @@ def submit_preregistration(request):
         student = Student.objects.get(id=user_details)
         semester_no = student.curr_semester_no
         # Here you may want to use next_sem_no = semester_no + 1 if that is the logic.
-        next_sem_no = semester_no  
+        next_sem_no = semester_no+1
         try:
             next_semester = Semester.objects.get(curriculum=student.batch_id.curriculum, semester_no=next_sem_no)
         except Semester.DoesNotExist:
@@ -2384,7 +2384,7 @@ def get_swayam_registration_data(request):
         user_details = current_user.extrainfo  # assuming extrainfo holds the student id/reference
         student = Student.objects.get(id=user_details)
         semester_no = student.curr_semester_no
-        next_sem_no = semester_no  # adjust if needed (e.g. semester_no+1)
+        next_sem_no = semester_no + 1  # adjust if needed (e.g. semester_no+1)
         try:
             next_semester = Semester.objects.get(
                 curriculum=student.batch_id.curriculum, 
@@ -2457,10 +2457,11 @@ def submit_swayam_registration(request):
         user_details = current_user.extrainfo
         student = Student.objects.get(id=user_details)
         semester_no = student.curr_semester_no
+        next_sem_no = semester_no + 1
         try:
             semester = Semester.objects.get(
                 curriculum=student.batch_id.curriculum, 
-                semester_no=semester_no
+                semester_no=next_sem_no
             )
         except Semester.DoesNotExist:
             return JsonResponse({"error": "Next semester not found."}, status=404)
