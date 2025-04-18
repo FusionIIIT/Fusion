@@ -28,7 +28,8 @@ urlpatterns = [
     url(r'^api/hr_employees', views.get_hr_employees, name='get_hr_employees'),
 
     url(r'api/get_track_file/(?P<id>\d+)/$', views.track_file_react, name='track_file_react'),
-
+    url(r'^api/offline_leave_form', views.offline_leave_form, name='offline_leave_form'),
+    url(r'^api/get_employee_initials/(?P<empid>\w+)/$', views.get_employee_initials, name='get_employee_initials'),
 
 
 
