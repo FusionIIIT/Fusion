@@ -22,8 +22,8 @@ from applications.programme_curriculum.models import Course as Courses
 from applications.programme_curriculum.models import CourseInstructor
 from applications.academic_procedures.models import course_registration
 from applications.globals.models import ExtraInfo
-
-
+from django.contrib.auth.models import User
+from notifications.signals import notify
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
