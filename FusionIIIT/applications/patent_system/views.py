@@ -940,7 +940,10 @@ def director_accept(request):
         try:
             data = json.loads(request.body)
             application_id = data.get("application_id")
+            attorney_id = data.get("attorney_id")
+            comments = data.get("comments", "")
 
+            # Validate required fields
             if not application_id:
                 return JsonResponse({"error": "Application ID is required."}, status=400)
 
@@ -949,19 +952,85 @@ def director_accept(request):
             except Application.DoesNotExist:
                 return JsonResponse({"error": "Application not found."}, status=404)
 
+            # Status check
+            if application.status != "Forwarded for Director's Review":
+                return JsonResponse({
+                    "error": f"Application must be in 'Forwarded for Director's Review' status. Current status: {application.status}"
+                }, status=400)
+
+            # Process attorney assignment
+            attorney = None
+            if attorney_id:
+                try:
+                    attorney = Attorney.objects.get(id=attorney_id)
+                    if not application.attorney or application.attorney.id != attorney.id:
+                        application.attorney = attorney
+                except Attorney.DoesNotExist:
+                    return JsonResponse({"error": f"Attorney with ID '{attorney_id}' not found."}, status=404)
+
+            # Get department name using your provided logic
+            applicant = application.primary_applicant
+            user = applicant.user if applicant else None
+            extra_info = ExtraInfo.objects.filter(user=user).first() if user else None
+            department_name = (
+                extra_info.department.name[:3].upper() 
+                if extra_info and extra_info.department 
+                else "UNK"
+            )
+            
+            # Retrieving the submission date
+            submitted_date = application.submitted_date
+
+            # Generate reference number components
+            app_id_part = f"{application.id:06d}"  # 6-digit format
+            attorney_initials = (
+                attorney.name.replace(" ", "")[:3].upper() 
+                if attorney 
+                else "XXX"
+            )
+            
+            # Generate serial number (example implementation - adjust as needed)
+            last_serial = Application.objects.filter(
+                token_no__isnull=False
+            ).order_by('-id').first()
+            serial_number = int(last_serial.token_no.split('/')[-1]) + 1 if last_serial else 104
+
+            # Construct the complete reference number
+            token_no = (
+                f"IIITDMJ/"
+                f"{department_name}/"
+                f"{submitted_date}/"
+                f"{app_id_part}/"
+                f"{attorney_initials}/"
+                f"{serial_number:03d}"  # 3-digit serial number
+            )
+
+            # Update application fields
+            if comments:
+                if len(comments) > 1000:
+                    return JsonResponse({"error": "Comments too long. Max 1000 characters allowed."}, status=400)
+                application.comments = comments
+
             application.status = "Director's Approval Received"
             application.decision_date = now()
             application.decision_status = "Director's Approval Received"
+            application.token_no = token_no
             application.save()
 
             return JsonResponse({
                 "message": "Director's Approval Received",
                 "application_id": application.id,
-                "new_status": application.status
+                "new_status": application.status,
+                "token_no": token_no,
+                "attorney_id": application.attorney.id if application.attorney else None,
+                "attorney_name": application.attorney.name if application.attorney else None,
+                "comments": comments
             })
 
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON."}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Only POST requests are allowed."}, status=405)
 
