@@ -348,7 +348,6 @@ def view_application_details_for_applicant(request, application_id):
             "search_report_generated_date": application.search_report_generated_date,
             "patent_filed_date": application.patent_filed_date,
             "patent_published_date": application.patent_published_date,
-            "final_decision_date": application.final_decision_date,
             "decision_date": application.decision_date
         },
         "decision_status": application.decision_status,
@@ -693,7 +692,7 @@ def change_application_status(request, application_id):
                 application.patent_published_date = now()
             elif application.status == "Patent Granted":
                 application.patent_granted_date = now()
-                application.decision_status = "Accepted"
+                application.decision_status = "Approved"
                 application.decision_date = now()
             elif application.status == "Patent Refused":
                 application.patent_refused_date = now()
@@ -846,7 +845,6 @@ def view_application_details_for_pccAdmin(request, application_id):
             "search_report_generated_date": application.search_report_generated_date,
             "patent_filed_date": application.patent_filed_date,
             "patent_published_date": application.patent_published_date,
-            "final_decision_date": application.final_decision_date,
             "decision_date": application.decision_date
         },
         "decision_status": application.decision_status,
@@ -1168,7 +1166,6 @@ def director_application_view(request):
                 "search_report_generated_date": application.search_report_generated_date,
                 "patent_filed_date": application.patent_filed_date,
                 "patent_published_date": application.patent_published_date,
-                "final_decision_date": application.final_decision_date,
                 "decision_date": application.decision_date,
             },
             "decision_status": application.decision_status,
