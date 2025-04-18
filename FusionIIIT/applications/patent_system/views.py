@@ -10,6 +10,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
+from django.db import transaction
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -59,163 +60,164 @@ def submit_application(request):
         return JsonResponse({"error": "Invalid request method"}, status=405)
 
     try:
-        json_data = request.POST.get("json_data")
-        if not json_data:
-            return JsonResponse({"error": "Missing JSON data"}, status=400)
-        
-        data = json.loads(json_data)
+        # Start a transaction
+        with transaction.atomic():
+            json_data = request.POST.get("json_data")
+            if not json_data:
+                return JsonResponse({"error": "Missing JSON data"}, status=400)
+            
+            data = json.loads(json_data)
 
-        print("Parsed data keys:", data)
+            print("Parsed data keys:", data.keys())
 
-        # Required file fields
-        poc_file = request.FILES.get("poc_details")
-        source_file = request.FILES.get("source_file")
-        mou_file = request.FILES.get("mou_file")
-        form_iii_file = request.FILES.get("form_iii")
+            # Required file fields
+            poc_file = request.FILES.get("poc_details")
+            source_file = request.FILES.get("source_file")
+            mou_file = request.FILES.get("mou_file")
+            form_iii_file = request.FILES.get("form_iii")
 
-        required_fields = [
-            "title", "inventors", "area_of_invention", "problem_statement", "objective", "ip_type",
-            "novelty", "advantages", "tested_experimentally", "applications",
-            "funding_details", "funding_source", "publication_details", "mou_details",
-            "research_details", "company_details",
-            "development_stage"
-        ]
-        
-        for field in required_fields:
-            if field not in data:
-                return JsonResponse({"error": f"Missing required field: {field}"}, status=400)
+            required_fields = [
+                "title", "inventors", "area_of_invention", "problem_statement", "objective", "ip_type",
+                "novelty", "advantages", "tested_experimentally", "applications",
+                "funding_details", "funding_source", "publication_details", "mou_details",
+                "research_details", "company_details",
+                "development_stage"
+            ]
+            
+            for field in required_fields:
+                if field not in data:
+                    return JsonResponse({"error": f"Missing required field: {field}"}, status=400)
 
-        # Get the logged-in user
-        user = request.user
+            # Get the logged-in user
+            user = request.user
 
-        # Check if the user has an applicant profile, create one if not
-        applicant, created = Applicant.objects.get_or_create(
-            user=user,
-            defaults={
-                "email": user.email,  # Assuming User model has email
-                "name": user.get_full_name() or user.username,  # Use full name or username
-                "mobile": "",
-                "address": "",
-            }
-        )
-
-        # Create application entry with the logged-in user as the primary applicant
-        application = Application.objects.create(
-            title=data["title"],
-            status="Submitted",
-            decision_status="Pending",
-            submitted_date=now(),
-            primary_applicant=applicant,  # Store the Applicant instance here
-        )
-
-        # Save file uploads and store paths
-        poc_file_path = None
-        source_file_path = None
-        mou_file_path = None
-        form_iii_file_path = None
-
-        if poc_file:
-            poc_file_path = default_storage.save(
-                generate_file_path("Section-I/poc_details", poc_file.name), poc_file
-            )
-        if source_file:
-            source_file_path = default_storage.save(
-                generate_file_path("Section-II/source_details", source_file.name), source_file
-            )
-        if mou_file:
-            mou_file_path = default_storage.save(
-                generate_file_path("Section-II/mou_details", mou_file.name), mou_file
-            )
-        if form_iii_file:
-            form_iii_file_path = default_storage.save(
-                generate_file_path("Section-III/form_iii", form_iii_file.name), form_iii_file
+            # Check if the user has an applicant profile, create one if not
+            applicant, created = Applicant.objects.get_or_create(
+                user=user,
+                defaults={
+                    "email": user.email,
+                    "name": user.get_full_name() or user.username,
+                    "mobile": "",
+                    "address": "",
+                }
             )
 
-        ApplicationSectionI.objects.create(
-            application=application,
-            type_of_ip=data["ip_type"],
-            area=data["area_of_invention"],
-            problem=data["problem_statement"],
-            objective=data["objective"],
-            novelty=data["novelty"],
-            advantages=data["advantages"],
-            is_tested=data["tested_experimentally"],
-            applications=data["applications"],
-            poc_details=poc_file_path
-        )
+            # Create application entry with the logged-in user as the primary applicant
+            application = Application.objects.create(
+                title=data["title"],
+                status="Submitted",
+                decision_status="Pending",
+                submitted_date=now(),
+                primary_applicant=applicant,
+            )
 
-        ApplicationSectionII.objects.create(
-            application=application,
-            funding_details=data["funding_details"],
-            funding_source=data["funding_source"],
-            source_agreement=source_file_path,
-            publication_details=data["publication_details"],
-            mou_details=data["mou_details"],
-            mou_file=mou_file_path,
-            research_details=data["research_details"]
-        )
+            # Save file uploads and store paths
+            poc_file_path = None
+            source_file_path = None
+            mou_file_path = None
+            form_iii_file_path = None
 
-        # Process multiple companies
-        company_details = data.get("company_details", [])
-        if not isinstance(company_details, list):
-            return JsonResponse({"error": "company_details should be a list"}, status=400)
-        
-        for company in company_details:
-            company_name = company.get("company_name")
-            contact_person = company.get("contact_person")
-            contact_no = company.get("contact_no")
+            if poc_file:
+                poc_file_path = default_storage.save(
+                    generate_file_path("Section-I/poc_details", poc_file.name), poc_file
+                )
+            if source_file:
+                source_file_path = default_storage.save(
+                    generate_file_path("Section-II/source_details", source_file.name), source_file
+                )
+            if mou_file:
+                mou_file_path = default_storage.save(
+                    generate_file_path("Section-II/mou_details", mou_file.name), mou_file
+                )
+            if form_iii_file:
+                form_iii_file_path = default_storage.save(
+                    generate_file_path("Section-III/form_iii", form_iii_file.name), form_iii_file
+                )
 
-            if not (company_name and contact_person and contact_no):
-                return JsonResponse({"error": "Each company entry must have company_name, contact_person, and contact_no"}, status=400)
-
-            ApplicationSectionIII.objects.create(
+            ApplicationSectionI.objects.create(
                 application=application,
-                company_name=company_name,
-                contact_person=contact_person,
-                contact_no=contact_no,
-                development_stage=data["development_stage"],
-                form_iii=form_iii_file_path
+                type_of_ip=data["ip_type"],
+                area=data["area_of_invention"],
+                problem=data["problem_statement"],
+                objective=data["objective"],
+                novelty=data["novelty"],
+                advantages=data["advantages"],
+                is_tested=data["tested_experimentally"],
+                applications=data["applications"],
+                poc_details=poc_file_path
             )
 
-        # Associate inventors with the application
-        for inventor in data["inventors"]:
-            email = inventor["institute_mail"]
-            percentage = inventor["percentage"]
-            name = inventor.get("name", "")
-            personal_mail = inventor.get("personal_mail", "")
-            mobile = inventor.get("mobile", "")
-            address = inventor.get("address", "")
+            ApplicationSectionII.objects.create(
+                application=application,
+                funding_details=data["funding_details"],
+                funding_source=data["funding_source"],
+                source_agreement=source_file_path,
+                publication_details=data["publication_details"],
+                mou_details=data["mou_details"],
+                mou_file=mou_file_path,
+                research_details=data["research_details"]
+            )
 
-            try:
-                user = User.objects.get(email=email)
-                applicant, created = Applicant.objects.update_or_create(
-                    user=user,
-                    defaults={
-                        "email": personal_mail,
-                        "name": name,
-                        "mobile": mobile,
-                        "address": address,
-                    }
-                )
+            # Process multiple companies
+            company_details = data.get("company_details", [])
+            if not isinstance(company_details, list):
+                return JsonResponse({"error": "company_details should be a list"}, status=400)
+            
+            for company in company_details:
+                company_name = company.get("company_name")
+                contact_person = company.get("contact_person")
+                contact_no = company.get("contact_no")
 
-                AssociatedWith.objects.create(
+                if not (company_name and contact_person and contact_no):
+                    return JsonResponse({"error": "Each company entry must have company_name, contact_person, and contact_no"}, status=400)
+
+                ApplicationSectionIII.objects.create(
                     application=application,
-                    applicant=applicant,
-                    percentage_share=percentage
+                    company_name=company_name,
+                    contact_person=contact_person,
+                    contact_no=contact_no,
+                    development_stage=data["development_stage"],
+                    form_iii=form_iii_file_path
                 )
-            except User.DoesNotExist:
-                return JsonResponse({"error": f"Inventor {email} not found in auth_user"}, status=404)
 
-        # Generate token
-        application_id = application.id
-        # token = f"IIITDMJ/AGR/{application_id:06d}/AAS/104"
-        # application.token_no = token
-        application.save()
+            # Associate inventors with the application
+            for inventor in data["inventors"]:
+                email = inventor["institute_mail"]
+                percentage = inventor["percentage"]
+                name = inventor.get("name", "")
+                personal_mail = inventor.get("personal_mail", "")
+                mobile = inventor.get("mobile", "")
+                address = inventor.get("address", "")
 
-        return JsonResponse({
-            "message": "Application submitted successfully",
-            "application_id": application_id,
-        })
+                try:
+                    user = User.objects.get(email=email)
+                    applicant, created = Applicant.objects.update_or_create(
+                        user=user,
+                        defaults={
+                            "email": personal_mail,
+                            "name": name,
+                            "mobile": mobile,
+                            "address": address,
+                        }
+                    )
+
+                    AssociatedWith.objects.create(
+                        application=application,
+                        applicant=applicant,
+                        percentage_share=percentage
+                    )
+                except User.DoesNotExist:
+                    # This will rollback all database changes made in this transaction
+                    return JsonResponse({"error": f"Inventor {email} not found in auth_user"}, status=404)
+
+            # Generate token
+            application_id = application.id
+            application.save()
+
+            return JsonResponse({
+                "message": "Application submitted successfully",
+                "application_id": application_id,
+            })
     
     except json.JSONDecodeError:
         return JsonResponse({"error": "Invalid JSON format"}, status=400)
@@ -303,7 +305,7 @@ def view_application_details_for_applicant(request, application_id):
         "novelty": section_i.novelty if section_i else None,
         "advantages": section_i.advantages if section_i else None,
         "is_tested": section_i.is_tested if section_i else None,
-        "poc_details": section_i.poc_details.url if section_i else None,
+        "poc_details": section_i.poc_details.url if section_i and section_i.poc_details else None,
         "applications": section_i.applications if section_i else None,
     }
 
