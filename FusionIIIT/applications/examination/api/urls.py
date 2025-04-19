@@ -27,5 +27,10 @@ urlpatterns = [
     url(r'validate_dean/',views.ValidateDeanView.as_view(),name='validate_dean'),
     url(r'validate_dean_submit/',views.ValidateDeanSubmitView.as_view(),name='validate_dean_submit'),
     url(r'check_result/',views.CheckResultView.as_view(),name='check_result'),
-    
+    url(r'preview_grades/',views.PreviewGradesAPI.as_view(),name='preview_grades'),
+    url(r'result-announcements/', views.ResultAnnouncementListAPI.as_view(), name="result-announcements"),
+    url(r'update-announcement/', views.UpdateAnnouncementAPI.as_view(), name="update-announcement"),
+    url(r'create-announcement/', views.CreateAnnouncementAPI.as_view(), name="create-announcement"),
+    url(r'unique-course-reg-years/', views.UniqueRegistrationYearsView.as_view(), name="unique-course-reg-years"),
+    url(r'unique-stu-grades-years/', views.UniqueStudentGradeYearsView.as_view(), name="unique-stu-grades-years")
 ]

@@ -2,6 +2,7 @@ from django.conf.urls import url, include
 from . import views
 appname = 'procedures'
 urlpatterns = [
+    url(r'^api/', include('applications.academic_procedures.api.urls')),
     url(r'^$', views.academic_procedures_redirect, name='redirect'),
     url(r'^main/', views.academic_procedures, name='procedures'),
     url(r'^register/', views.register, name='register'),
@@ -46,8 +47,6 @@ urlpatterns = [
     url(r'^test/$', views.test),
     url(r'^bonafide_pdf/$', views.Bonafide_form),
     url(r'^test_ret/$', views.test_ret),
-
-    url(r'^api/', include('applications.academic_procedures.api.urls')),
 
 
     url(r'^faculty_data/$', views.facultyData, name='faculty_data'),

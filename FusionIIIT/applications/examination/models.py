@@ -2,7 +2,7 @@ from django.db import models
 from applications.academic_procedures.models import (course_registration)
 from applications.online_cms.models import (Student_grades)
 from applications.academic_information.models import Course
-from applications.programme_curriculum.models import Course as Courses, CourseInstructor
+from applications.programme_curriculum.models import Course as Courses, CourseInstructor, Batch
 # Create your models here.
 
 
@@ -37,3 +37,13 @@ class grade(models.Model):
     curriculum = models.CharField(max_length=50)
     semester_id = models.CharField(max_length=10, default='')
     grade = models.CharField(max_length=5, default="B")
+
+class ResultAnnouncement(models.Model):
+    batch = models.ForeignKey(Batch, on_delete=models.CASCADE)
+    semester = models.PositiveIntegerField()
+    announced = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        status = "Announced" if self.announced else "Not Announced"
+        return f"{self.batch.label} - Sem {self.semester} - {status}"

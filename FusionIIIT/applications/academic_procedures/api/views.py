@@ -1104,32 +1104,16 @@ def verify_registration(request):
 @permission_classes([IsAuthenticated])
 def verify_course(request):
     current_user = get_object_or_404(User, username=request.user.username)
-    user_details = ExtraInfo.objects.all().select_related(
-        'user', 'department').filter(user=current_user).first()
-    desig_id = Designation.objects.all().filter(name='adminstrator').first()
-    temp = HoldsDesignation.objects.all().select_related().filter(
-        designation=desig_id).first()
-    # acadadmin = temp.working
-    k = str(user_details).split()
-    final_user = k[2]
-
-    # if (str(acadadmin) != str(final_user)):
-    #     return Response()
-    
     roll_no = request.data["rollno"]
-    obj = ExtraInfo.objects.all().select_related(
-        'user', 'department').filter(id=roll_no).first()
-    firstname = obj.user.first_name
-    lastname = obj.user.last_name
-    dict2 = {'roll_no': roll_no,
-                'firstname': firstname, 'lastname': lastname}
-    obj2 = Student.objects.all().select_related(
-        'id', 'id__user', 'id__department').filter(id=roll_no).first()
-    
+    roll_no_user = get_object_or_404(User, username=roll_no)
+    user_details = ExtraInfo.objects.get(user=roll_no_user)
+    firstname = user_details.user.first_name
+    lastname = user_details.user.last_name
+    dict2 = {'roll_no': roll_no, 'firstname': firstname, 'lastname': lastname}
+    obj2 = Student.objects.filter(id=roll_no).first()
     batch = obj2.batch_id
     curr_id = batch.curriculum
     curr_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = obj2.curr_semester_no)
-    # curr_sem_id = obj2.curr_semester_no
     details = []
 
     current_sem_courses = get_currently_registered_course(
@@ -1137,20 +1121,23 @@ def verify_course(request):
 
     idd = obj2
     for z in current_sem_courses:
-        print(z)
         course_code = z.course_id.code
         course_name = z.course_id.name
         replaced_by = course_replacement.objects.all().filter(old_course_registration=z).first()
-        # course_code, course_name = str(z).split(" - ")
         k = {}
-        # reg_ig has course registration id appended with the the roll number
-        # so that when we have removed the registration we can be redirected to this view
         k['reg_id'] = z.id
         k['rid'] = roll_no+" - "+course_code
         # Name ID Confusion here , be carefull
         courseobj2 = Courses.objects.all().filter(id=z.course_id.id)
         # if(str(z.student_id) == str(idd)):
-        for p in courseobj2:
+        for p in courseobj2: # return JsonResponse(
+    #                 {'details': details,
+    #                     # 'dict2': dict2,
+    #                     'course_list': serializers.CourseSerializer(course_list, many=True).data,
+    #                     # 'semester_list': semester_list,
+    #                     'date': date}
+    #                 )
+    
             k['course_id'] = course_code
             k['course_name'] = course_name
             k['sem'] = z.semester_id.semester_no
@@ -1175,14 +1162,6 @@ def verify_course(request):
     courseslot_list = CourseSlot.objects.filter(semester__in=semester_list)
     for i in semester_list:
         semester_no_list.append(int(i.semester_no))
-    # return JsonResponse(
-    #                 {'details': details,
-    #                     # 'dict2': dict2,
-    #                     'course_list': serializers.CourseSerializer(course_list, many=True).data,
-    #                     # 'semester_list': semester_list,
-    #                     'date': date}
-    #                 )
-    
     return JsonResponse({
         'details': details,
         'dict2': dict2,
@@ -1648,31 +1627,31 @@ def student_next_sem_courses(request):
 
     return Response({"courses_list": courses_list_data}, status=status.HTTP_200_OK)
 
-@api_view(['GET'])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
-def current_courseregistration(request):
-    try:
-        current_user = request.user
-        user_details = current_user.extrainfo
+# @api_view(['GET'])
+# @authentication_classes([TokenAuthentication])
+# @permission_classes([IsAuthenticated])
+# def current_courseregistration(request):
+#     try:
+#         current_user = request.user
+#         user_details = current_user.extrainfo
 
-        student = Student.objects.get(id=user_details)
+#         student = Student.objects.get(id=user_details)
 
-        current_semester = student.curr_semester_no
+#         current_semester = student.curr_semester_no
 
-        current_courses = course_registration.objects.filter(
-            student_id=student, semester_id__semester_no=current_semester
-        )
-        print(current_courses)
+#         current_courses = course_registration.objects.filter(
+#             student_id=student, semester_id__semester_no=current_semester
+#         )
+#         print(current_courses)
 
-        serializer = serializers.CourseRegistrationSerializer(current_courses, many=True)
-        print(serializer.data)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+#         serializer = serializers.CourseRegistrationSerializer(current_courses, many=True)
+#         print(serializer.data)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    except Student.DoesNotExist:
-        return Response({"error": "Student profile not found"}, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+#     except Student.DoesNotExist:
+#         return Response({"error": "Student profile not found"}, status=status.HTTP_404_NOT_FOUND)
+#     except Exception as e:
+#         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
@@ -2199,32 +2178,57 @@ def student_next_sem_courses(request):
 
     return Response({"courses_list": courses_list_data}, status=status.HTTP_200_OK)
 
+# @api_view(['GET'])
+# @authentication_classes([TokenAuthentication])
+# @permission_classes([IsAuthenticated])
+# def current_courseregistration(request):
+#     try:
+#         current_user = request.user
+#         user_details = current_user.extrainfo
+
+#         student = Student.objects.get(id=user_details)
+
+#         current_semester = student.curr_semester_no
+#         print(current_semester)
+
+#         try:
+#             semester = Semester.objects.get(curriculum=student.batch_id.curriculum, semester_no=current_semester)
+#         except Semester.DoesNotExist:
+#             return JsonResponse({"error": "semester not found."}, status=404)
+
+#         print(student)
+#         current_courses = course_registration.objects.filter(
+#             student_id=student, semester_id=semester
+#         )
+#         print(current_courses)
+
+#         serializer = serializers.CourseRegistrationSerializer(current_courses, many=True)
+#         print(serializer.data)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+
+#     except Student.DoesNotExist:
+#         return Response({"error": "Student profile not found"}, status=status.HTTP_404_NOT_FOUND)
+#     except Exception as e:
+#         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-def current_courseregistration(request):
+def course_registration_view(request):
     try:
         current_user = request.user
         user_details = current_user.extrainfo
-
         student = Student.objects.get(id=user_details)
 
-        current_semester = student.curr_semester_no
-        print(current_semester)
-
+        # Get the semester number from query parameters or default to current semester
+        semester_no = request.query_params.get('semester', student.curr_semester_no)
         try:
-            semester = Semester.objects.get(curriculum=student.batch_id.curriculum, semester_no=current_semester)
+            semester = Semester.objects.get(curriculum=student.batch_id.curriculum, semester_no=semester_no)
         except Semester.DoesNotExist:
-            return JsonResponse({"error": "semester not found."}, status=404)
+            return JsonResponse({"error": "Semester not found."}, status=404)
 
-        print(student)
-        current_courses = course_registration.objects.filter(
-            student_id=student, semester_id=semester
-        )
-        print(current_courses)
-
-        serializer = serializers.CourseRegistrationSerializer(current_courses, many=True)
-        print(serializer.data)
+        courses = course_registration.objects.filter(student_id=student, semester_id=semester)
+        serializer = serializers.CourseRegistrationSerializer(courses, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     except Student.DoesNotExist:
@@ -2232,8 +2236,25 @@ def current_courseregistration(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 def get_student_registrtion_check(student, sem):
     return StudentRegistrationChecks.objects.filter(student_id=student, semester_id=sem).first()
+
+
+
+def get_student_registrations(student, semester):
+    """
+    Returns a QuerySet of InitialRegistration entries for the given student and semester.
+    
+    Args:
+        student (Student): The student instance.
+        semester (Semester): The semester instance.
+        
+    Returns:
+        QuerySet: Registrations for the student in the given semester.
+    """
+    return InitialRegistration.objects.filter(student_id=student, semester_id=semester)
+
 
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
@@ -2242,8 +2263,8 @@ def get_preregistration_data(request):
     """
     Returns the list of course slots available for the student's next semester,
     along with the list of courses available in each slot.
-    If the student has already completed pre-registration for that semester,
-    returns a message "Already registered".
+    If the student has already completed pre-registration, returns the registered
+    courses with their priorities.
     """
     try:
         current_user = request.user
@@ -2256,37 +2277,65 @@ def get_preregistration_data(request):
         except Semester.DoesNotExist:
             return JsonResponse({"error": "Next semester not found."}, status=404)
 
-        # Check if the student has already completed pre-registration for the semester.
+        # Check if the student has already completed pre-registration.
         registration_check = get_student_registrtion_check(student, next_semester)
-        # if registration_check:
-        #     return JsonResponse({"message": "Already registered"}, status=200)
-
-        # Otherwise, fetch course slots excluding those with names that contain 'SW' or 'BL'.
         course_slots = CourseSlot.objects.filter(semester=next_semester)\
             .exclude(name__icontains='SW')\
             .exclude(name__icontains='BL')
+        
         data = []
-        for slot in course_slots:
-            courses = slot.courses.all()
-            course_choices = [
-                {
-                    "id": course.id,
-                    "code": course.code,
-                    "name": course.name,
-                    "credits": course.credit
-                }
-                for course in courses
-            ]
-            data.append({
-                "sno": slot.id,
-                "slot_name": slot.name,
-                "slot_type": slot.type,
-                "semester": next_sem_no,
-                "course_choices": course_choices,
-            })
-
+        if registration_check:
+            # Assume get_student_registrations returns a queryset or list of registration objects,
+            # each having: slot_id, course_id, and priority.
+            registrations = get_student_registrations(student, next_semester)
+            # Build a lookup dictionary: {(slot_id, course_id): priority}
+            reg_lookup = {
+                (reg.course_slot_id.id if reg.course_slot_id else None, reg.course_id.id): reg.priority 
+                for reg in registrations
+            }
+            for slot in course_slots:
+                courses = slot.courses.all()
+                # print(slot.id)
+                course_choices = [
+                    {
+                        "id": course.id,
+                        "code": course.code,
+                        "name": course.name,
+                        "credits": course.credit,
+                        "priority": reg_lookup.get((slot.id, course.id), "")
+                    }
+                    for course in courses
+                ]
+                data.append({
+                    "sno": slot.id,
+                    "slot_name": slot.name,
+                    "slot_type": slot.type,
+                    "semester": next_sem_no,
+                    "course_choices": course_choices,
+                })
             print(data)
-        return JsonResponse(data, safe=False)
+            return JsonResponse({"message": "Already registered", "data": data}, safe=False)
+        else:
+            # If not already registered, return slots without pre-set priorities.
+            for slot in course_slots:
+                courses = slot.courses.all()
+                course_choices = [
+                    {
+                        "id": course.id,
+                        "code": course.code,
+                        "name": course.name,
+                        "credits": course.credit
+                    }
+                    for course in courses
+                ]
+                data.append({
+                    "sno": slot.id,
+                    "slot_name": slot.name,
+                    "slot_type": slot.type,
+                    "semester": next_sem_no,
+                    "course_choices": course_choices,
+                })
+            return JsonResponse(data, safe=False)
     except Student.DoesNotExist:
         return Response({"error": "Student profile not found"}, status=404)
     except Exception as e:

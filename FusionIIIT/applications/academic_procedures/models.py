@@ -720,6 +720,19 @@ class course_registration(models.Model):
         choices=REGISTRATION_TYPE_CHOICES,
         default='Regular',
     )
+    session = models.CharField(max_length=9, null=True)
+    
+    SEMESTER_TYPE_CHOICES = [
+        ("Odd Semester", "Odd Semester"),
+        ("Even Semester", "Even Semester"),
+        ("Summer Semester", "Summer Semester"),
+    ]
+    semester_type = models.CharField(
+        max_length=20,
+        choices=SEMESTER_TYPE_CHOICES,
+        null=True
+    )
+
     # grade = models.CharField(max_length=10)
     #course_registration_year = models.IntegerField()
     def __str__(self):
