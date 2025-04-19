@@ -101,8 +101,8 @@ def allocate(request):
     batch = request.POST.get('batch')
     sem = request.POST.get('sem')
     year = request.POST.get('year')
-    unique_course_slot = InitialRegistration.objects.filter(Q(semester_id_semester_no=sem) & Q(
-        student_id_batch=batch)).values('course_slot_id').distinct()
+    unique_course_slot = InitialRegistration.objects.filter(Q(semester_id__semester_no=sem) & Q(
+        student_id__batch=batch)).values('course_slot_id').distinct()
     unique_course_name = []
 
     try:
