@@ -1104,32 +1104,16 @@ def verify_registration(request):
 @permission_classes([IsAuthenticated])
 def verify_course(request):
     current_user = get_object_or_404(User, username=request.user.username)
-    user_details = ExtraInfo.objects.all().select_related(
-        'user', 'department').filter(user=current_user).first()
-    desig_id = Designation.objects.all().filter(name='adminstrator').first()
-    temp = HoldsDesignation.objects.all().select_related().filter(
-        designation=desig_id).first()
-    # acadadmin = temp.working
-    k = str(user_details).split()
-    final_user = k[2]
-
-    # if (str(acadadmin) != str(final_user)):
-    #     return Response()
-    
     roll_no = request.data["rollno"]
-    obj = ExtraInfo.objects.all().select_related(
-        'user', 'department').filter(id=roll_no).first()
-    firstname = obj.user.first_name
-    lastname = obj.user.last_name
-    dict2 = {'roll_no': roll_no,
-                'firstname': firstname, 'lastname': lastname}
-    obj2 = Student.objects.all().select_related(
-        'id', 'id__user', 'id__department').filter(id=roll_no).first()
-    
+    roll_no_user = get_object_or_404(User, username=roll_no)
+    user_details = ExtraInfo.objects.get(user=roll_no_user)
+    firstname = user_details.user.first_name
+    lastname = user_details.user.last_name
+    dict2 = {'roll_no': roll_no, 'firstname': firstname, 'lastname': lastname}
+    obj2 = Student.objects.filter(id=roll_no).first()
     batch = obj2.batch_id
     curr_id = batch.curriculum
     curr_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = obj2.curr_semester_no)
-    # curr_sem_id = obj2.curr_semester_no
     details = []
 
     current_sem_courses = get_currently_registered_course(
@@ -1137,20 +1121,23 @@ def verify_course(request):
 
     idd = obj2
     for z in current_sem_courses:
-        print(z)
         course_code = z.course_id.code
         course_name = z.course_id.name
         replaced_by = course_replacement.objects.all().filter(old_course_registration=z).first()
-        # course_code, course_name = str(z).split(" - ")
         k = {}
-        # reg_ig has course registration id appended with the the roll number
-        # so that when we have removed the registration we can be redirected to this view
         k['reg_id'] = z.id
         k['rid'] = roll_no+" - "+course_code
         # Name ID Confusion here , be carefull
         courseobj2 = Courses.objects.all().filter(id=z.course_id.id)
         # if(str(z.student_id) == str(idd)):
-        for p in courseobj2:
+        for p in courseobj2: # return JsonResponse(
+    #                 {'details': details,
+    #                     # 'dict2': dict2,
+    #                     'course_list': serializers.CourseSerializer(course_list, many=True).data,
+    #                     # 'semester_list': semester_list,
+    #                     'date': date}
+    #                 )
+    
             k['course_id'] = course_code
             k['course_name'] = course_name
             k['sem'] = z.semester_id.semester_no
@@ -1175,14 +1162,6 @@ def verify_course(request):
     courseslot_list = CourseSlot.objects.filter(semester__in=semester_list)
     for i in semester_list:
         semester_no_list.append(int(i.semester_no))
-    # return JsonResponse(
-    #                 {'details': details,
-    #                     # 'dict2': dict2,
-    #                     'course_list': serializers.CourseSerializer(course_list, many=True).data,
-    #                     # 'semester_list': semester_list,
-    #                     'date': date}
-    #                 )
-    
     return JsonResponse({
         'details': details,
         'dict2': dict2,
