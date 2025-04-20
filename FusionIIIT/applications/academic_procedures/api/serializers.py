@@ -95,6 +95,7 @@ class CourseSlotSerializer(serializers.ModelSerializer):
 class FinalRegistrationSerializer(serializers.ModelSerializer):
     course_id = CourseSerializer(read_only=True)
     semester_id= SemesterSerializer(read_only=True)
+    old_course_registration = CourseRegistrationSerializer(read_only=True)
     class Meta:
         model = FinalRegistration
         fields = ('__all__')
