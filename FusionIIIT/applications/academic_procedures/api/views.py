@@ -2290,7 +2290,7 @@ def get_preregistration_data(request):
         course_slots = CourseSlot.objects.filter(semester=next_semester)\
             .exclude(name__icontains='SW')
         data = []
-        if registration_check:
+        if registration_check and registration_check.pre_registration_flag:
             # Assume get_student_registrations returns a queryset or list of registration objects,
             # each having: slot_id, course_id, and priority.
             registrations = get_student_registrations(student, next_semester)
