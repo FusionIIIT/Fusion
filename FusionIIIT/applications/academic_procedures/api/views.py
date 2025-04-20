@@ -1068,10 +1068,14 @@ def verify_registration(request):
                     semester_id=obj.semester_id,
                     course_slot_id = obj.course_slot_id,
                     working_year = datetime.datetime.now().year,
+                    registration_type=obj.registration_type
                     )
-                ver_reg.append(p)
+                # ver_reg.append(p)
+                p.save()
+                if (obj.old_course_registration):
+                    course_replacement.objects.create(new_course_registration=p, old_course_registration=obj.old_course_registration)
                 o = FinalRegistration.objects.filter(id= obj.id).update(verified = True)
-            course_registration.objects.bulk_create(ver_reg)
+            # course_registration.objects.bulk_create(ver_reg)
             academics_module_notif(request.user, student.id.user, 'registration_approved')
             
             Student.objects.filter(id = student_id).update(curr_semester_no = sem_no)
@@ -2279,12 +2283,14 @@ def get_preregistration_data(request):
 
         # Check if the student has already completed pre-registration.
         registration_check = get_student_registrtion_check(student, next_semester)
+        # if registration_check:
+        #     return JsonResponse({"message": "Already registered"}, status=200)
+
+        # Otherwise, fetch course slots excluding those with names that contain 'SW' or 'BL'.
         course_slots = CourseSlot.objects.filter(semester=next_semester)\
-            .exclude(name__icontains='SW')\
-            .exclude(name__icontains='BL')
-        
+            .exclude(name__icontains='SW')
         data = []
-        if registration_check:
+        if registration_check and registration_check.pre_registration_flag:
             # Assume get_student_registrations returns a queryset or list of registration objects,
             # each having: slot_id, course_id, and priority.
             registrations = get_student_registrations(student, next_semester)
@@ -2313,10 +2319,11 @@ def get_preregistration_data(request):
                     "semester": next_sem_no,
                     "course_choices": course_choices,
                 })
-            print(data)
+                print(data)
             return JsonResponse({"message": "Already registered", "data": data}, safe=False)
         else:
             # If not already registered, return slots without pre-set priorities.
+            prev_registrations = serializers.CourseRegistrationSerializer(course_registration.objects.filter(student_id=student), many=True).data
             for slot in course_slots:
                 courses = slot.courses.all()
                 course_choices = [
@@ -2334,6 +2341,7 @@ def get_preregistration_data(request):
                     "slot_type": slot.type,
                     "semester": next_sem_no,
                     "course_choices": course_choices,
+                    "prev_registrations": prev_registrations
                 })
             return JsonResponse(data, safe=False)
     except Student.DoesNotExist:
@@ -2363,6 +2371,7 @@ def submit_preregistration(request):
         return Response({"Invalid JSON"})
 
     registrations = data.get("registrations", [])
+    backlog_registrations = data.get("backlog_registrations", [])
     try:
         current_user = request.user
         print(current_user)
@@ -2389,6 +2398,23 @@ def submit_preregistration(request):
             student_id=student,
             course_slot_id_id=slot_id,
             priority=priority,
+            timestamp=timezone.now()
+        )
+
+    for reg in backlog_registrations:
+        slot_id = reg.get("slot_id")
+        course_id = reg.get("course_id")
+        priority = reg.get("priority")
+        prev_registration_id = reg.get("prev_registration_id")
+
+        InitialRegistration.objects.create(
+            course_id_id=course_id,
+            semester_id_id=next_semester.id,
+            student_id=student,
+            course_slot_id_id=slot_id,
+            priority=priority,
+            registration_type='Backlog',
+            old_course_registration_id = prev_registration_id,
             timestamp=timezone.now()
         )
     

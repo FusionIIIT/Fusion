@@ -136,14 +136,23 @@ def allocate(request):
 
                         course = Course.objects.get(id=course_id)
 
+                        prev_registration_id = InitialRegistration.objects.filter(
+                            course_slot_id_id=course_slot_object,
+                            student_id_id=student_id
+                        ).values_list('old_course_registration', flat=True).first()
+                        if (prev_registration_id):
+                            prev_registration_id = course_registration.objects.get(id=prev_registration_id)
+
                         FinalRegistration.objects.create(
                             student_id=student,
                             verified=False,
                             semester_id=semester,
                             course_id=course,
                             course_slot_id=course_slot_object,
-                            registration_type=regis
+                            registration_type=regis,
+                            old_course_registration=prev_registration_id
                         )
+                        print(f"{course}")
 
                     unique_course_name.append(course_slot_object.name)
 
