@@ -70,6 +70,7 @@ urlpatterns = [
     url(r'^recruitment/', include('applications.recruitment.urls')),
     url(r'^examination/', include('applications.examination.urls')),
     url(r'^otheracademic/', include('applications.otheracademic.urls')),
+    url(r'^patentsystem/', include('applications.patent_system.urls')),
     url(r'^media/(?P<path>.*)$', serve, {"document_root": settings.MEDIA_ROOT},),
     
     # Password Reset URLs
