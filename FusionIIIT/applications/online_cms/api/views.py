@@ -264,6 +264,17 @@ def delete_slide(request, slide_id):
         return Response(status=status.HTTP_204_NO_CONTENT)  # No content after deletion
     except CourseDocuments.DoesNotExist:
         return Response({"error": "Slide not found"}, status=status.HTTP_404_NOT_FOUND)
+ 
+@api_view(['GET'])
+def get_assignments_by_course(request, course_id):
+     try:
+         course = Courses.objects.get(pk=course_id)
+     except Courses.DoesNotExist:
+         return Response({"error": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
+ 
+     assignments = Assignment.objects.filter(course_id=course)
+     serializer = AssignmentSerializer(assignments, many=True)
+     return Response(serializer.data)
 
 @api_view(['POST'])
 def submit_assignment(request):
