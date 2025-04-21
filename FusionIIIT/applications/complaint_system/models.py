@@ -45,6 +45,15 @@ class Caretaker(models.Model):
 
     def __str__(self):
         return str(self.id) + '-' + str(self.area)
+    
+class Warden(models.Model):
+    staff_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
+    area = models.CharField(choices=Constants.AREA, max_length=20, default='hall-1')
+    rating = models.IntegerField(default=0)
+    myfeedback = models.CharField(max_length=400, default="No feedback yet")
+
+    def __str__(self):
+        return str(self.staff_id) + '-' + str(self.area)
 
 class SectionIncharge(models.Model):
     staff_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
@@ -84,14 +93,46 @@ class StudentComplain(models.Model):
     upload_complaint = models.FileField(blank=True)
     comment = models.CharField(max_length=100,  default="None")
     #upload_resolved = models.FileField(blank=True,null=True)
+    upload_resolved = models.FileField(upload_to='resolved_complaints/', blank=True, null=True)
+    
+    class meta:
+        db_table = "complaint_system_student_complain"
 
     def __str__(self):
         return str(self.complainer.user.username)
 
 
-class Supervisor(models.Model):
-    sup_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
+class ServiceProvider(models.Model):
+    ser_pro_id = models.ForeignKey(
+        ExtraInfo,
+        on_delete=models.CASCADE,
+        db_column="ser_pro_id_id"  # Map to the existing column
+    )
     type = models.CharField(choices=Constants.COMPLAINT_TYPE, max_length=30,default='Electricity')
 
+    class Meta:
+        db_table = "complaint_system_service_provider"
+
     def __str__(self):
-        return str(self.sup_id) + '-' + str(self.type)
+        return str(self.ser_pro_id) + '-' + str(self.type)
+    
+class Complaint_Admin(models.Model):
+    sup_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.sup_id)
+
+
+class ServiceAuthority(models.Model):
+    ser_pro_id = models.ForeignKey(
+        ExtraInfo,
+        on_delete=models.CASCADE,
+        db_column="ser_auth_id_id"  # Map to the existing column
+    )
+    type = models.CharField(choices=Constants.COMPLAINT_TYPE, max_length=30,default='Electricity')
+
+    class Meta:
+        db_table = "complaint_system_service_authority"
+
+    def __str__(self):
+        return str(self.ser_pro_id) + '-' + str(self.type)

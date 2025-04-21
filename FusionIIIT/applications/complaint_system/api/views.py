@@ -10,7 +10,7 @@ from rest_framework.decorators import api_view, permission_classes,authenticatio
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from applications.globals.models import User,ExtraInfo
-from applications.complaint_system.models import Caretaker, StudentComplain, Supervisor, Workers
+from applications.complaint_system.models import Caretaker, StudentComplain, ServiceProvider, Workers
 from . import serializers
 
 
@@ -51,7 +51,7 @@ def student_complain_api(request):
         complain = StudentComplain.objects.filter(location = staff.area)
     elif user.user_type == 'faculty':
         faculty = ExtraInfo.objects.get(id=user.id)
-        faculty = Supervisor.objects.get(sup_id=faculty)
+        faculty = ServiceProvider.objects.get(ser_pro_id=faculty)
         complain = StudentComplain.objects.filter(location = faculty.area)
     complains = serializers.StudentComplainSerializers(complain,many=True).data
     resp = {
@@ -154,8 +154,8 @@ def caretaker_api(request):
         user = get_object_or_404(User ,username=request.user.username)
         user = ExtraInfo.objects.all().filter(user = user).first()
         try :
-            supervisor = Supervisor.objects.get(staff_id=user)
-        except Supervisor.DoesNotExist:
+            service_provider = ServiceProvider.objects.get(staff_id=user)
+        except ServiceProvider.DoesNotExist:
             return Response({'message':'Logged in user does not have the permissions'},status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
         serializer = serializers.CaretakerSerializers(data=request.data)
         if serializer.is_valid():
@@ -170,8 +170,8 @@ def edit_caretaker_api(request,c_id):
     user = get_object_or_404(User ,username=request.user.username)
     user = ExtraInfo.objects.all().filter(user = user).first()
     try :
-        supervisor = Supervisor.objects.get(staff_id=user)
-    except Supervisor.DoesNotExist:
+        service_provider = ServiceProvider.objects.get(staff_id=user)
+    except ServiceProvider.DoesNotExist:
         return Response({'message':'Logged in user does not have the permissions'},status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
     try: 
         caretaker = Caretaker.objects.get(id = c_id) 
@@ -190,13 +190,13 @@ def edit_caretaker_api(request,c_id):
 @api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-def supervisor_api(request):
+def service_provider_api(request):
 
     if request.method == 'GET':
-        supervisor = Supervisor.objects.all()
-        supervisors = serializers.SupervisorSerializers(supervisor,many=True).data
+        service_provider = ServiceProvider.objects.all()
+        service_providers = serializers.ServiceProviderSerializers(service_provider,many=True).data
         resp = {
-            'supervisors' : supervisors,
+            'service_providers' : service_providers,
         }
         return Response(data=resp,status=status.HTTP_200_OK)
     
@@ -204,7 +204,7 @@ def supervisor_api(request):
         user = get_object_or_404(User,username=request.user.username)
         if user.is_superuser == False:
             return Response({'message':'Logged in user does not have permission'},status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
-        serializer = serializers.SupervisorSerializers(data=request.data)
+        serializer = serializers.ServiceProviderSerializers(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data,status=status.HTTP_201_CREATED)
@@ -213,19 +213,19 @@ def supervisor_api(request):
 @api_view(['DELETE','PUT'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-def edit_supervisor_api(request,s_id):
+def edit_service_provider_api(request,s_id):
     user = get_object_or_404(User,username=request.user.username)
     if user.is_superuser == False:
         return Response({'message':'Logged in user does not have permission'},status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
     try: 
-        supervisor = Supervisor.objects.get(id = s_id) 
-    except Supervisor.DoesNotExist: 
+        service_provider = ServiceProvider.objects.get(id = s_id) 
+    except ServiceProvider.DoesNotExist: 
         return Response({'message': 'The Caretaker does not exist'}, status=status.HTTP_404_NOT_FOUND)
     if request.method == 'DELETE':
-        supervisor.delete()
+        service_provider.delete()
         return Response({'message': 'Caretaker deleted'},status=status.HTTP_404_NOT_FOUND)
     elif request.method == 'PUT':
-        serializer = serializers.SupervisorSerializers(supervisor,data=request.data)
+        serializer = serializers.ServiceProviderSerializers(service_provider,data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data,status=status.HTTP_200_OK)
