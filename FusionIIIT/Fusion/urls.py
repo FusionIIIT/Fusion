@@ -101,5 +101,4 @@ urlpatterns = [
         ),
         name='password_reset_complete',
     ),
-    url(r'^patentsystem/', include('applications.patent_system.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,7 +1,6 @@
 import datetime
 from django.db import models
 from applications.academic_information.models import (Student, Holiday)
-from django.utils.timezone import now
 
 # Create your models here.
 LEAVE_TYPE = (
