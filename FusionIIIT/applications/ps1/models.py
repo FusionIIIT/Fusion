@@ -14,6 +14,7 @@ class IndentFile(models.Model):
     director_approval = models.BooleanField(default=False)
     financial_approval = models.BooleanField(default=False)
     purchased = models.BooleanField(default=False)
+    approved_by = models.TextField(blank=True, default="")
     class Meta:
         db_table = 'IndentFile'
 

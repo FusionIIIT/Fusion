@@ -1,3 +1,4 @@
+import json
 from django.contrib import messages
 from rest_framework.permissions import IsAuthenticated #type:ignore
 from rest_framework.response import Response #type:ignore
@@ -1061,7 +1062,8 @@ def createProposal(request):
                 src_module="ps1",
                 src_object_id="",
                 file_extra_JSON={"value": 2},
-                attached_file=upload_file
+                attached_file=upload_file,
+                subject=subject
             )
             
             # Create IndentFile object
@@ -1193,3 +1195,50 @@ def my_indents_view(request, username):
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+@api_view(['POST']) 
+def approve_indent(request):
+    print("yaha to aaye")
+    if request.method != "POST":
+        return JsonResponse({'error': 'Only POST method allowed'}, status=405)
+
+    try:
+        # Parse the incoming request body
+        data = json.loads(request.body)
+
+        # Get the indent_id and approval_data from the request
+        indent_id = data.get("indent_id")
+        approval_data = data.get("approval_data", "").strip()
+
+        # Make sure the approval data is in the format "username-role"
+        if not approval_data or "-" not in approval_data:
+            return JsonResponse({'error': 'Invalid approval data format'}, status=400)
+
+        # Split approval_data into username and role
+        username, role = approval_data.split("-", 1)
+
+        # Ensure indent_id and approval data are provided
+        if not indent_id:
+            return JsonResponse({'error': 'Missing indent ID'}, status=400)
+
+    except Exception as e:
+        return JsonResponse({'error': f'Invalid request: {str(e)}'}, status=400)
+
+    # Get the indent from the database using the indent_id
+    indent = get_object_or_404(IndentFile, file_info_id=indent_id)
+
+    # Split the current approvals into a list and clean any extra spaces
+    approved_list = [a.strip() for a in indent.approved_by.split(',') if a.strip()]
+
+    # Avoid duplicate approvals
+    if approval_data in approved_list:
+        return JsonResponse({'message': 'Already approved'}, status=400)
+
+    # Append the new approval (username-role) to the list
+    approved_list.append(approval_data)
+
+    # Join the list into a string and update the approved_by field
+    indent.approved_by = ', '.join(approved_list)
+    indent.save()
+
+    return JsonResponse({'message': f'{approval_data} approved successfully'})
