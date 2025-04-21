@@ -1,0 +1,606 @@
+<!-- Current File -->
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+	Feeds
+{% endblock %}
+
+{% block extra %}
+	{{form_answer.media}}
+{% endblock %}
+
+
+{% block body %}
+
+	<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.1.7/semantic.min.js"></script>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.1.7/semantic.min.css" rel="stylesheet"/> -->
+	{% block navBar %}
+		{% include 'dashboard/navbar.html' %}
+	{% endblock %}
+
+	<div class='ui stackable doubling grid'>
+
+		{% comment %} <div class="sixteen wide column">
+			<!-- Search Bar Section -->
+			{% include 'feeds/search_section.html' %}
+			<!-- Search Bar Section ends here-->
+		</div> {% endcomment %}
+
+		<div class="column"></div>
+		<!-- First section of the page starts here -->
+		<div class="three wide column">
+			{% comment %} {% include 'feeds/first_section.html' %} {% endcomment %}
+			{% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+			<div class="ui divider"></div>
+			{% include 'feeds/first_section.html' %}
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            {% comment %} <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+
+                <a class="item" href="{% url 'globals:profile' %}">
+                    View Profile
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+            </div> {% endcomment %}
+		</div>
+		<!-- First section of the page ends here -->
+
+
+		<!-- Middle section of the page -->
+		<div class="eight wide column">
+			{% include 'feeds/single_middle_section.html' %}
+		</div>
+		<!-- First section of the page ends here -->
+
+		<!-- Third section of the page starts here -->
+		<div class="three wide column">
+			{% include 'feeds/third_section.html' %}
+		</div>
+		<!-- Third section of the page ends here -->
+
+		<div class="column"></div>
+	</div>
+
+{% endblock %}
+
+{% block javascript %}
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+
+	<!-- Tags based question -->
+	<script type="text/javascript">
+		function tags_based(id){
+			console.log('first');
+			$("a.active item").removeClass('active');
+			// $(this).addClass('active');
+			// var id = $(this).attr('id');
+			console.log(id);
+			if(id == 'Top-Stories'){
+				location.href = '/feeds/';
+			}
+			else{
+				console.log('script');
+				location.href = '/feeds/' + id + '/';
+			}
+			return false;
+		}
+
+	</script>
+
+	<!-- This section is to avoid the refreshing of anchor tag with the class name 'link1' -->
+	<!-- 	<script>
+		$(function(){
+			$("a.link1").click(function()
+			{
+				console.log('coming here');
+				$("#{{ question.id }}").show();
+			     // $.get("WebForm2.aspx" );
+			     return false;
+			});
+		});
+	</script> -->
+
+
+	<!-- to toggle the view comments -->
+    <script type="text/javascript">
+    	function toggle_to_div(id){
+    		console.log('coming');
+    		var div = document.getElementById("main_comments"+id);
+    		console.log(id);
+
+    		if (div.style.display !== "none") {
+    			div.style.display = "none";
+			}
+			else {
+    			div.style.display = "block";
+			}
+    	}
+    </script>
+
+    <!-- Remove Tag -- >
+    <script type="text/javascript">
+    	function removeTag(id){
+    		console.log('Remove Tag');
+    		$.ajax({
+    			type: 'POST',
+    			url: 'feeds/remove_tag',
+    			data:{
+    				id: id,
+    				'csrfmiddlewaretoken': '{{ csrf_token }}'
+    			},
+    			success: function(response){
+
+    			}
+    		});
+    	}
+    </script>
+
+    <script type="text/javascript">
+    	function readURL(input){
+    		if(input.files && input.files[0]){
+    			var reader = new FileReader();
+
+    			reader.onload = function(e){
+    				$('#image1')
+    					.attr('src', e.target.result)
+    					.width(150)
+    					.height(200);
+    			};
+    			reader.readAsDataURL(input.files[0]);
+    		}
+    	}
+    </script>
+
+    <!-- js for requests -->
+ 	<script type="text/javascript">
+ 		$(document).ready(function(event){
+ 			$(document).on('click', '#request', function(event){
+ 				console.log('submitted');
+ 				event.preventDefault();
+ 				var pk = $(this).attr('value');
+ 				$.ajax({
+ 					type: 'POST',
+ 					url: '/feeds/request/',
+ 					data: {
+ 						id: pk,
+ 						'csrfmiddlewaretoken': '{{ csrf_token }}'
+ 					},
+ 					success: function(response){
+ 						console.log('ajax successful');
+						var ans = response['form'] + `<button class="ui positive button" id="answer">answer</button>`;
+ 						$('#request-section'+ pk).html(ans);
+ 					}
+ 				});
+ 			});
+ 		});
+ 	</script>
+
+
+    <!-- Comments Section Ajax -->
+    <script type="text/javascript">
+    	$(document).on('submit','.comment-form', function(event){
+    		console.log("Hey there");
+    		event.preventDefault();
+    		var pk = $(this).attr('id');
+    		var string = $('#chat-msg'+pk).val();
+    		console.log(string);
+    		console.log($(this).serialize());
+
+			if(string!==""){
+				$.ajax({
+					type: 'POST',
+					url: '/feeds/comment_text/',
+					data: {
+						id: pk,
+						comment_box: string,
+						'csrfmiddlewaretoken': '{{csrf_token}}',
+					},
+
+					success:function(result){
+						alert("Comment posted successfully")
+						$('#main_comments'+pk).html(result['form']);
+						document.getElementById('chat-msg'+pk).value = '';
+						var count = document.getElementById("link1").text.split(" ")[0];
+						count = parseInt(count)+1;
+						count = count+" comments | view comments";
+						 document.getElementById("link1").text = count;
+					}
+
+				});
+			}else{
+				alert("Write something before commenting");
+			}
+    	});
+    </script>
+    <!-- Comments Section Ajax ends here -->
+
+
+    <!-- Ajax for Comment like button -->
+ 	<script type="text/javascript">
+ 		$(document).ready(function(event){
+ 			$(document).on('click', '#like_comment_id', function(event){
+ 				event.preventDefault();
+ 				var pk = $(this).attr('value');
+ 				console.log('yeah');
+ 				console.log(pk);
+ 				$.ajax({
+ 					type: 'POST',
+ 					url: '/feeds/like_comment/',
+ 					data: {id:pk, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+ 					dataType: 'json',
+ 					success: function(response){
+ 						// var qus = JSON.parse(response)
+ 						// document.getElementById('like-section').innerHTML = response['form'];
+ 						$('#like-section-comment' + pk).html(response['form']);
+ 						console.log("ajax successful");
+ 						console.log(pk)
+ 					},
+ 					error: function(rs, e){
+ 						console.log("rs.responseText");
+ 					},
+ 				});
+ 			});
+ 		});
+ 	</script>
+ 	<!-- Ajax for Comment like button -->
+
+	 <!-- Js for Answer Modal  -->
+	 <script>
+	 	$(document).ready(()=>{
+	 	    $('#answer').on('click', function(){
+				console.log("give answer")
+				$('#answer_modal')
+				.modal('show');
+			});
+		});
+	 </script>
+
+	<!-- Js for Edit Answer  -->
+	 <script>
+	 	const edit_answer =(id)=>{
+			console.log("edit answer"+id)
+			$('#edit_answer_modal'+id)
+			.modal('show');
+		}
+
+	 	$(document).on('submit','.edit_answer_form', function(event){
+		event.preventDefault();
+		console.log("updating answer on post")
+		var pk = $(this).attr('id');
+		var string = $('#edit_id_content'+pk).val();
+		ids = pk.split("-");
+
+		$.ajax({
+			type: 'POST',
+			url: '/feeds/update_answer/',
+			data: {
+				ques_id: ids[0],
+				answer_id: ids[1],
+				comment_box: string,
+				'csrfmiddlewaretoken': '{{csrf_token}}',
+			},
+			success:function(result){
+				console.log("yup");
+				$('#answer_text'+pk).text(string)
+				$('#edit_answer_modal'+pk)
+				.modal('hide');
+			}
+
+		});
+	});
+	 </script>
+
+	 <!-- Js for Delete answer-->
+	 <script>
+	 const delete_answer =(id)=>{
+			console.log("delete answer"+id)
+			$('#delete_answer_modal'+id)
+			.modal('show');
+		}
+
+	 	$(document).on('submit','.delete_answer_form', function(event){
+		event.preventDefault();
+		console.log("deleting answer on post")
+		var pk = $(this).attr('id');
+		ids = pk.split("-");
+		aid = ids[1]
+		$.ajax({
+			type: 'POST',
+			url: '/feeds/delete_answer/',
+			data: {
+				ques_id: ids[0],
+				answer_id: ids[1],
+				'csrfmiddlewaretoken': '{{csrf_token}}'
+			},
+			success:function(result){
+				console.log("yup");
+				$('#answer'+pk).hide()
+				var count = $("#answerCount").text().split(" ")[0];
+				count = parseInt(count)-1;
+				count = count+" Answers";
+				$("#answerCount").text(count);
+				$('#delete_answer_modal'+pk)
+				.modal('hide');
+			}
+
+		});
+	});
+	</script>
+
+	<!-- Js for reply on comment  -->
+<script type="text/javascript">
+	function reply_btn(id){
+		var div = document.getElementById('reply'+id);
+		if (div.style.display !== "none") {
+			div.style.display = "none";
+		}
+		else {
+			div.style.display = "block";
+		}
+	}
+</script>
+
+<!-- Js for edit reply on comment  -->
+<script type="text/javascript">
+	function edit_reply_btn(qid,cid){
+		console.log("good")
+		$("#edit_comment_modal"+qid+"-"+cid).modal('show')
+
+		$(document).on('submit','.edit_comment_form', function(event){
+		event.preventDefault();
+		console.log("updating comment on post")
+		var pk = $(this).attr('id');
+		var string = $('#edit_comment_content'+pk).val();
+		ids = pk.split("-");
+
+		$.ajax({
+			type: 'POST',
+			url: '/feeds/update_comment/',
+			data: {
+				ques_id: ids[0],
+				comment_id: ids[1],
+				comment_box: string,
+				'csrfmiddlewaretoken': '{{csrf_token}}',
+			},
+			success:function(result){
+				console.log("yup");
+				$('#comment'+pk).text(string)
+				$('#edit_comment_modal'+pk)
+				.modal('hide');
+			}
+
+		});
+	});
+
+	}
+</script>
+
+<script type="text/javascript">
+	function delete_reply_btn(qid,cid){
+		console.log("deleting")
+		$("#delete_comment_modal"+qid+"-"+cid).modal('show')
+
+		$(document).on('submit','.delete_comment', function(event){
+		event.preventDefault();
+		console.log("deleting comment on post")
+		var pk = $(this).attr('id');
+		ids = pk.split("-");
+
+		$.ajax({
+			type: 'POST',
+			url: '/feeds/delete_comment/',
+			data: {
+				ques_id: ids[0],
+				comment_id: ids[1],
+				'csrfmiddlewaretoken': '{{csrf_token}}'
+			},
+			success:function(result){
+				console.log("yup");
+				$('#comment'+cid).hide()
+				var count = document.getElementById("link1").text.split(" ")[0];
+				count = parseInt(count)-1;
+				count = count+" comments | view comments";
+				document.getElementById("link1").text = count;
+				$('#delete_comment_modal'+pk)
+				.modal('hide');
+			}
+
+		});
+	});
+
+	}
+</script>
+
+
+<!-- Reply Section Ajax -->
+<script type="text/javascript">
+	$(document).on('submit','.reply-form', function(event){
+		event.preventDefault();
+		console.log("replying on comment")
+		var pk = $(this).attr('id');
+		var string = $('#reply_text'+pk).val();
+		ques_id = document.getElementById('unique_'+pk).innerHTML;
+
+		$.ajax({
+			type: 'POST',
+			url: '/feeds/reply_text/',
+			data: {
+				ques_id: ques_id,
+				id: pk,
+				comment_box: string,
+				'csrfmiddlewaretoken': '{{csrf_token}}',
+			},
+			success:function(result){
+				console.log("yup");
+				$('#main_comments'+ques_id).html(result['form']);
+				var div = document.getElementById('reply'+pk);
+
+				if (div.style.display !== "none") {
+					div.style.display = "none";
+				}
+				else {
+					div.style.display = "block";
+				}
+				document.getElementById('reply_text'+pk).value = ''
+			}
+
+		});
+	});
+</script>
+<!-- Reply Section Ajax ends here -->
+
+
+	<!-- Question upvote Ajax-->
+	<script type="text/javascript">
+ 		upvote_post = (id)=>{
+			console.log("upvoting ques");
+			var pk = id;
+			$.ajax({
+				type: 'POST',
+				url: '/feeds/upvote_ques/'+pk,
+				data: {id:pk, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+				dataType: 'json',
+				success: function(response){
+					if(response.done==1){
+						$('#upvoteCount' + pk).text(response.votes);
+						$('#upcaret'+pk).removeClass("outline");
+						$('#downcaret'+pk).addClass("outline");
+					}
+					console.log("upvoted successful");
+				},
+				error: function(rs, e){
+					console.log(rs.responseText);
+				},
+			});
+		}
+ 	</script>
+	<!-- Question upvote Ajax-->
+
+	<!-- Question downvote Ajax-->
+	<script type="text/javascript">
+ 		downvote_post = (id)=>{
+			console.log("downvoting ques");
+			var pk = id;
+			$.ajax({
+				type: 'POST',
+				url: '/feeds/downvote_ques/'+pk,
+				data: {id:pk, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+				dataType: 'json',
+				success: function(response){
+					if(response.done==1){
+						$('#upvoteCount' + pk).text(response.votes);
+						$('#downcaret'+pk).removeClass("outline");
+						$('#upcaret'+pk).addClass("outline");
+					}
+					console.log("downvoted successful");
+				},
+				error: function(rs, e){
+					console.log(rs.responseText);
+				},
+			});
+		}
+ 	</script>
+	<!-- Question downvote Ajax-->
+
+	<!-- Tags based question -->
+	<script type="text/javascript">
+		function tags_based(id){
+			console.log('first');
+			$("a.active item").removeClass('active');
+			// $(this).addClass('active');
+			// var id = $(this).attr('id');
+			console.log(id);
+			if(id == 'Top-Stories'){
+				location.href = '/feeds/';
+			}
+			else{
+				console.log('script');
+				document.location.href = '/feeds/' + id + '/';
+			}
+			return false;
+		}
+
+		function removeTag(id){
+			console.log('Remove Tag');
+			$.ajax({
+				type: 'POST',
+				url: '/feeds/remove_tag/',
+				data:{
+					id: id,
+					'csrfmiddlewaretoken': '{{ csrf_token }}'
+				},
+				success: function(response){
+					$(`#${id}`).parent().hide();
+					if(response.done==1){
+						alert("tag removed successfully")
+					}else{
+						alert("Sorry tag not removed")
+					}
+				}
+			});
+			return false;
+		}
+	</script>
+
+
+		<!-- Question upvote Ajax-->
+	<script type="text/javascript">
+ 		upvote_answer = (id)=>{
+			console.log("upvoting answer");
+			var pk = id;
+			$.ajax({
+				type: 'POST',
+				url: '/feeds/upvote_answer/'+pk,
+				data: {id:pk, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+				dataType: 'json',
+				success: function(response){
+					if(response.done==1){
+						$('#answerupvoteCount' + pk).text(response.votes);
+						$('#answerupcaret'+pk).removeClass("outline");
+						$('#answerdowncaret'+pk).addClass("outline");
+					}
+					console.log("upvoted successful");
+				},
+				error: function(rs, e){
+					console.log(rs.responseText);
+				},
+			});
+		}
+ 	</script>
+	<!-- Question upvote Ajax-->
+
+	<!-- Question downvote Ajax-->
+	<script type="text/javascript">
+ 		downvote_answer = (id)=>{
+			console.log("downvoting answer");
+			var pk = id;
+			$.ajax({
+				type: 'POST',
+				url: '/feeds/downvote_answer/'+pk,
+				data: {id:pk, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+				dataType: 'json',
+				success: function(response){
+					if(response.done==1){
+						$('#answerupvoteCount' + pk).text(response.votes);
+						$('#answerdowncaret'+pk).removeClass("outline");
+						$('#answerupcaret'+pk).addClass("outline");
+					}
+					console.log("downvoted successful");
+				},
+				error: function(rs, e){
+					console.log(rs.responseText);
+				},
+			});
+		}
+ 	</script>
+	<!-- Question downvote Ajax-->
+
+{% endblock %}

@@ -1,0 +1,239 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Module
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+   {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+         {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+                {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+             {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+
+                {% comment %}
+                TODO: Instead of Name write the position like "Office Of Dean Students!"
+                {% endcomment %}
+
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+
+            <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+                {% if "Dean_s" in all_designation %}
+                    <a {% if page == 0 %} class="active item" {% else %} class="item" {% endif %} data-tab="zero">
+                         Budgets
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a {% if page == 1 %} class="active item" {% else %} class="item" {% endif %} data-tab="first">
+
+                        Meetings
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a {% if page == 2 %} class="active item" {% else %} class="item" {% endif %} data-tab="second">
+                        Budget Approvals
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a {% if page == 5 %} class="active item" {% else %} class="item" {% endif %} data-tab="fifth">
+                        New Club Approvals
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                {% endif %}
+            </div>
+            <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+                {% if "Junior Superintendent" in all_designation %}
+                    <a {% if page == 6 %} class="active item" {% else %} class="item" {% endif %} data-tab="sixth">
+                        Meeting minutes
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a {% if page == 7 %} class="active item" {% else %} class="item" {% endif %} data-tab="seventh">
+                        Hostel Room Allotment
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a {% if page == 11 %} class="active item" {% else %} class="item" {% endif %} data-tab="eleventh">
+                        Club Session
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a {% if page == 10 %} class="active item" {% else %} class="item" {% endif %} data-tab="tenth">
+                        Budget allotment
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                {% endif %}
+            </div>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+    </div>
+        <!--
+            The left-rail segment ends here!
+        -->
+
+
+        <!--
+            The central-rail segment starts here!
+        -->
+
+        <div class="eight wide column">
+            <!--The Details start here!-->
+
+            <!--The Holding meetings start here!-->
+            <div {% if page == 0 %} class="ui tab segment active" {% else %} class="ui tab segment" {% endif %} data-tab="zero">
+                {% block form0 %}
+                    {% include 'officeModule/officeOfDeanStudents/budgets.html' %}
+                     {{ all_designations }}
+                {% endblock %}
+            </div>
+            <!--The Holding meetings end here!-->
+
+            <!--The Holding meetings start here!-->
+            <div {% if page == 1 %} class="ui tab segment active" {% else %} class="ui tab segment" {% endif %} data-tab="first">
+                {% block form1 %}
+                    {% include 'officeModule/officeOfDeanStudents/holdingMeetings.html' %}
+                {% endblock %}
+            </div>
+            <!--The Holding meetings end here!-->
+
+
+            <!--The budget approvals starts here!-->
+            <div {% if page == 2 %} class="ui tab segment active" {% else %} class="ui tab segment" {% endif %} data-tab="second">
+                {% block form2 %}
+                    {% include 'officeModule/officeOfDeanStudents/budgetApproval.html' %}
+                {% endblock %}
+            </div>
+            <!--The budget approvals ends here!-->
+
+
+            <!--The New Club Approvals starts here!-->
+            <div {% if page == 5 %} class="ui tab segment active" {% else %} class="ui tab segment" {% endif %} data-tab="fifth">
+                {% block form5 %}
+                    {% include 'officeModule/officeOfDeanStudents/newClubApprovals.html' %}
+                {% endblock %}
+            </div>
+            <!--The New CLub Approvals ends here!-->
+
+            <!--The Meeting minutes starts here!-->
+            <div {% if page == 6 %} class="ui tab segment active" {% else %} class="ui tab segment" {% endif %} data-tab="sixth">
+                {% block form6 %}
+                    {% include 'officeModule/officeOfDeanStudents/meetingMinutes.html' %}
+                {% endblock %}
+
+            </div>
+            <!--The Meeting minutes ends here!-->
+
+            <!--The Hostel Room Allotment starts here!-->
+            <div {% if page == 7 %} class="ui tab segment active" {% else %} class="ui tab segment" {% endif %} data-tab="seventh">
+                {% block form7 %}
+                    {% include 'officeModule/officeOfDeanStudents/hostelRoomAllotment.html' %}
+                {% endblock %}
+            </div>
+            <!--The Hostel Room Allotment ends here!-->
+
+            <!--Club budget allotment starts  here!-->
+            <div {% if page == 10 %} class="ui tab segment active" {% else %} class="ui tab segment" {% endif %} data-tab="tenth">
+                {% block form10 %}
+                    {% include 'officeModule/officeOfDeanStudents/budgetAllotment.html' %}
+                {% endblock %}
+            </div>
+            <!--Club budget allotment ends here!-->
+
+             <!--Club session room allotment starts  here!-->
+            <div {% if page == 11 %} class="ui tab segment active" {% else %} class="ui tab segment" {% endif %} data-tab="eleventh">
+                {% block form11 %}
+                    {% include 'officeModule/officeOfDeanStudents/sessionRoomAllotment.html' %}
+                {% endblock %}
+            </div>
+            <!--Club session room allotment ends here!-->
+
+        </div>
+        <!--The central-rail segment ends here!-->
+
+        <!--The right-rail segment starts here!-->
+        <div class="three wide column">
+            <div class="row">
+                <div class="ui row">
+                    <h3 class="ui header" style="padding-left: 16px;">
+                        Office Of Dean Students
+                    </h3>
+                </div>
+            </div>
+
+            <div class="ui divider"></div>
+
+            <div class="row">
+                <div class="ui row">
+                    <div id="textSegmentDiv">
+
+                        <div id="textLoader" style="max-height: 87.5vh; overflow-y: auto; overflow-x: hidden;">
+                            {% block alerts %}
+                                {% include 'officeModule/officeOfDeanStudents/alerts.html' %}
+                            {% endblock %}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--The right-rail segment ends here!-->
+
+        <!--The right-margin segment!-->
+        <div class="column"></div>
+
+    </div>
+    <!--The grid ends here!-->
+
+
+
+{% endblock %}
+
+{% block javascript %}
+    <script>
+        $(document).ready(function(){
+            $("#textLoader").toggle();
+            $("#replacement-card").toggle();
+            setTimeout(loader, 175);
+
+        function loader() {
+            $("#textLoader").toggle();
+            $("#replacement-card").toggle();
+            $("#loader").removeClass("active");
+            $("#loader").addClass("disabled");
+        }
+
+    </script>
+    <script>
+        $('.message .close')
+        .on('click', function() {
+        $(this)
+        .closest('.message')
+        .transition('fade');
+        });
+    </script>
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/modal.js' %}"></script>
+    <script type="text/javascript" src="{% static 'visitor_hostel/visitor-hostel.js' %}"></script>
+    <script>
+    if ( window.history.replaceState ) {
+        window.history.replaceState( null, null, window.location.href );
+    }
+    </script>
+{% endblock %}
+

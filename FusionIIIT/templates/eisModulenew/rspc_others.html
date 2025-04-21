@@ -1,0 +1,265 @@
+{% load static %}
+
+{% block others %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="research projects">
+            Achievements
+        </a>
+
+        <a class="item" data-tab="Consultancy project">
+            Experts Lectures/Invited Talks
+        </a>
+
+        <a class="item" data-tab="patents">
+            Session Chaired
+        </a>
+        <a class="item" data-tab="technology transfer">
+            Keynote/Planery Address
+        </a>
+    </div>
+
+
+    {% comment %}The  Achievement segment starts here!{% endcomment %}
+    <div class="ui active tab segment" data-tab="research projects">
+
+        <h4 class="ui dividing header">Report:</h4>
+        <div class="ui pointing pagination menu">
+                {% for award in awards %}
+                {% if forloop.counter0|divisibleby:30 %}
+                    <span align="right>"><a class="{% if forloop.counter0 == 0 %}active {% endif %}item" data-tab="ach-{{ forloop.counter0 }}">
+                        {% widthratio forloop.counter|add:30 30 1 %}
+            </a></span>
+                {% endif %}
+                {% endfor %}
+
+            </div>
+        {% for award in awards %}
+
+            {% if forloop.counter0|divisibleby:30 %}
+            <div class="ui {% if forloop.counter0 == 0 %}active {% endif %} tab segment" data-tab="ach-{{ forloop.counter0 }}">
+        <table class="ui fixed sortable celled table" id="ach">
+            <thead>
+            <tr>
+               <!-- <th class="sorted ascending">Sr.</th>
+                <th class="">Achievement</th>
+                <th class="" colspan="3">Details</th>
+                                <th class="">Year/Month/Day</th>
+                <th class="">Action</th>-->
+
+                  <th class="sorted ascending" style="width: 7%;">Sr.</th>
+                <th class="" style="width: 15%;" >Achievement</th>
+                <th class="" style="width: 53%;">Title </th>
+                <th class="" style="width: 15%;">Day/Month/Year</th>
+
+            </tr>
+            </thead>
+
+            <tbody>
+            {% endif %}
+            <tr>
+                <td id="ach{{ forloop.counter }}Z"><div style="display: none;">{{ award.id }}</div>{{ forloop.counter }}.</td>
+                <td id="ach{{ forloop.counter }}A">{{ award.a_type }}</td>
+                <td id="ach{{ forloop.counter }}B">{{ award.details }}</td>
+                <td id="ach{{ forloop.counter }}C">{% if award.a_day %}{{ award.a_day }} / {% endif %}{% if award.a_month %}{{ award.a_month }} / {% endif %}{% if award.a_year %}{{ award.a_year }}{% endif %}</td>
+
+            </tr>
+            {% if forloop.counter0|add:1|divisibleby:30 %}
+            </tbody>
+
+
+        </table>
+                 </div>
+            {% endif %}
+            {% endfor %}
+     {% if not awards.all.count|divisibleby:30 %}
+     </tbody>
+        </table>
+            </div>
+ {% endif %}
+    </div>
+
+    {% comment %}The Achievements segment ends here!{% endcomment %}
+
+
+
+    {% comment %}The Expert Lectures segment starts here!{% endcomment %}
+    <div class="ui tab segment" data-tab="Consultancy project">
+
+        <h4 class="ui dividing header">Report:</h4>
+        <div class="ui pointing pagination menu">
+                {% for talk in talks %}
+                {% if forloop.counter0|divisibleby:30 %}
+                    <span align="right>"><a class="{% if forloop.counter0 == 0 %}active {% endif %}item" data-tab="talk-{{ forloop.counter0 }}">
+                        {% widthratio forloop.counter|add:30 30 1 %}
+            </a></span>
+                {% endif %}
+                {% endfor %}
+
+            </div>
+        {% for talk in talks %}
+
+            {% if forloop.counter0|divisibleby:30 %}
+            <div class="ui {% if forloop.counter0 == 0 %}active {% endif %} tab segment" data-tab="talk-{{ forloop.counter0 }}">
+        <table class="ui fixed sortable celled table" id="talk">
+            <thead>
+            <tr>
+
+
+                <th class="sorted ascending" style="width: 7%;">Sr.</th>
+                <th class="" style="width: 15%;" >Presented</th>
+                <th class="" style="width: 30%;">Title </th>
+                <th class="" style="width: 20%;">Place</th>
+                  <th style="width:18%">Date</th>
+            </tr>
+            </thead>
+
+            <tbody>
+             {% endif %}
+            <tr id="r1">
+                <td id="lec{{ forloop.counter }}Z"><div style="display: none;">{{ talk.id }}</div>{{ forloop.counter }}.</td>
+                <td id="lec{{ forloop.counter }}A">{{ talk.l_type }}</td>
+                <td id="lec{{ forloop.counter }}B">{{ talk.title }}</td>
+                <td id="lec{{ forloop.counter }}C">{{ talk.place }}</td>
+                <td id="lec{{ forloop.counter }}D">{{ talk.l_date }}</td>
+
+            </tr>
+                        {% if forloop.counter0|add:1|divisibleby:30 %}
+            </tbody>
+
+
+        </table>
+    </div>
+          {% endif %}
+            {% endfor %}
+     {% if not talks.all.count|divisibleby:30 %}
+     </tbody>
+        </table>
+            </div>
+ {% endif %}
+    </div>
+    {% comment %}The Expert Lecture ends here!{% endcomment %}
+
+
+    {% comment %}The Session chaired starts here!{% endcomment %}
+    <div class="ui tab segment" data-tab="patents">
+
+        <h4 class="ui dividing header">Report:</h4>
+        <div class="ui pointing pagination menu">
+                {% for chair in chairs %}
+                {% if forloop.counter0|divisibleby:20 %}
+                    <span align="right>"><a class="{% if forloop.counter0 == 0 %}active {% endif %}item" data-tab="chair-{{ forloop.counter0 }}">
+                        {% widthratio forloop.counter|add:20 20 1 %}
+            </a></span>
+                {% endif %}
+                {% endfor %}
+
+            </div>
+        {% for chair in chairs %}
+
+            {% if forloop.counter0|divisibleby:20 %}
+            <div class="ui {% if forloop.counter0 == 0 %}active {% endif %} tab segment" data-tab="chair-{{ forloop.counter0 }}">
+        <table class="ui fixed sortable celled table" id="chair">
+            <thead>
+            <tr>
+               <!-- <th class="sorted ascending">Sr.</th>
+                <th class="" colspan=2>Name</th>
+                <th class="" colspan=3>Event</th>
+                <th class="">Duration</th>
+                <th class="">Action</th>-->
+
+
+                   <th class="sorted ascending" style="width: 7%;">Sr.</th>
+                <th class="" style="width: 20%;" >Name</th>
+                <th class="" style="width: 38%;">Event </th>
+                <th class="" style="width: 25%;">Duration</th>
+
+            </tr>
+            </thead>
+
+            <tbody>
+             {% endif %}
+            <tr>
+                <td id="session{{ forloop.counter }}Z"><div style="display: none;">{{ chair.id }}</div>{{ forloop.counter }}.</td>
+                <td class=""  id="session{{ forloop.counter }}A">{{ chair.name }}</td>
+                <td class="" id="session{{ forloop.counter }}B">{{ chair.event }}</td>
+                <td id="session{{ forloop.counter }}C">{{ chair.start_date }} - {{ chair.end_date }}</td>
+
+            </tr>
+                        {% if forloop.counter0|add:1|divisibleby:20 %}
+            </tbody>
+        </table>
+    </div>
+          {% endif %}
+            {% endfor %}
+     {% if not chairs.all.count|divisibleby:20 %}
+     </tbody>
+        </table>
+            </div>
+ {% endif %}
+    </div>
+
+    {% comment %}The Session chaired segment ends here!{% endcomment %}
+
+
+    {% comment %}The Keynote/Planery Address segment starts here!{% endcomment %}
+
+    <div class="ui tab segment" data-tab="technology transfer">
+
+         <h4 class="ui dividing header">Report:</h4>
+<div class="ui pointing pagination menu">
+                {% for keynote in keynotes %}
+                {% if forloop.counter0|divisibleby:20 %}
+                    <span align="right>"><a class="{% if forloop.counter0 == 0 %}active {% endif %}item" data-tab="keynote-{{ forloop.counter0 }}">
+                        {% widthratio forloop.counter|add:20 20 1 %}
+            </a></span>
+                {% endif %}
+                {% endfor %}
+
+            </div>
+        {% for keynote in keynotes %}
+
+            {% if forloop.counter0|divisibleby:20 %}
+            <div class="ui {% if forloop.counter0 == 0 %}active {% endif %} tab segment" data-tab="keynote-{{ forloop.counter0 }}">
+        <table class="ui fixed sortable celled table" id="keynote">
+            <thead>
+            <tr>
+                <!--<th class="sorted ascending">Sr.</th>
+                <th class="" >Type</th>
+                <th class="" colspan="2">Title</th>
+                <th class="" colspan="3">Conference Details</th>
+                <th class="" >Date</th>
+                <th class="">Action</th>-->
+
+                <th class="sorted ascending" style="width: 7%;">Sr.</th>
+                <th class="" style="width: 15%;" >Type</th>
+                <th class="" style="width: 23%;">Title </th>
+                <th class="" style="width: 30%;">Conference Details</th>
+                <th style="width:15%">Date</th>
+            </tr>
+            </thead>
+
+            <tbody>
+             {% endif %}
+            <tr>
+                <td id="key{{ forloop.counter }}Z"><div style="display: none;">{{ keynote.id }}</div>{{ forloop.counter }}.</td>
+                <td id="key{{ forloop.counter }}A" >{{ keynote.type }}</td>
+                <td id="key{{ forloop.counter }}B" >{{ keynote.title }}</td>
+                <td id="key{{ forloop.counter }}C" ><b>Name:</b>{{ keynote.name }}<br/><b>Venue:</b>{{ keynote.venue }}<br/><b>Page No:</b>{{ keynote.page_no }}<br/><b>ISBN No.:</b>{{ keynote.isbn_no }}</td>
+                <td id="key{{ forloop.counter }}D" >{{ keynote.start_date }}</td>
+
+            </tr>
+                        {% if forloop.counter0|add:1|divisibleby:20 %}
+            </tbody>
+       </table>
+    </div>
+          {% endif %}
+            {% endfor %}
+     {% if not keynotes.all.count|divisibleby:20 %}
+     </tbody>
+        </table>
+            </div>
+ {% endif %}
+    </div>
+    {% comment %}The Technology segment ends here!{% endcomment %}
+{% endblock %}

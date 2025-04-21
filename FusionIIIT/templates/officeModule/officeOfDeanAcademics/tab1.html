@@ -1,0 +1,29 @@
+{% block form1 %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="tab1content1">
+            Similar Form #1
+        </a>
+
+        <a class="item" data-tab="tab1content2">
+            Similar Form #2
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="tab1content1">
+        <div class="ui vertical segment">
+            {% block tab1content1 %}
+                {% include 'officeModule/officeOfDeanPnD/tab1content1.html' %}
+            {% endblock %}
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="tab1content2">
+        <div class="ui vertical segment">
+            {% block tab1content2 %}
+                {% include 'officeModule/officeOfDeanPnD/tab1content2.html' %}
+            {% endblock %}
+        </div>
+    </div>
+{% endblock form1%}

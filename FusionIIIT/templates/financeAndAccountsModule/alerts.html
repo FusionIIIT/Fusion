@@ -1,0 +1,47 @@
+{% load static %}
+
+{% block alerts %}
+    <div class="ui centered cards" style="padding: 2px">
+
+        {% comment %}A single card starts here!{% endcomment %}
+        <div class="ui card">
+            <div class="content">
+                <img class="right floated circular ui image" src="{% static 'globals/img/zlatan.jpg' %}" style="width: 50px; height: auto;">
+                <div class="header">
+                    Zlatan Ibrahimovic
+                </div>
+                <div class="meta">
+                    Registrar
+                </div>
+
+                <div class="ui divider"></div>
+
+                <div class="description">
+
+                    <span>Number of Mistakes</span>
+                    <span class="right floated">...</span>
+
+                    <br>
+
+                    <span>Number of Corrections</span>
+                    <span class="right floated">...</span>
+
+                    <br>
+
+                </div>
+            </div>
+
+            <div class="extra content">
+                <span style="color: #000;">
+                    Info_submission
+                </span>
+
+{% comment %}
+                <span class="right floated" style="color: #000;">...</span>
+{% endcomment %}
+            </div>
+        </div>
+        {% comment %}A single card starts here!{% endcomment %}
+
+    </div>
+{% endblock %}

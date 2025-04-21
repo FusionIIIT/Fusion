@@ -1,0 +1,100 @@
+{% block updateinventory %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="updateinventory">
+            Update Inventory
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="updateinventory">
+        <div class="ui vertical segment">
+            <form class="ui form">
+                <div class="two fields">
+                    <div class="field">
+                        <label>Bill Number</label>
+
+                        <div class="ui fluid search selection large dropdown">
+                            <input name="Leave Type" type="hidden">
+                            <i class="dropdown icon"></i>
+
+                            <div class="default text">Select Leave</div>
+
+                            <div class="menu">
+                                <div class="item" data-value="bill1">
+                                    #1
+                                </div>
+
+                                <div class="item" data-value="bill2">
+                                    #2
+                                </div>
+
+                                <div class="item" data-value="bill3">
+                                    #3
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Bill</label>
+                        <div class="ui input">
+                            <input type="file" placeholder="Bill">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="four fields">
+                    <div class="field">
+                        <label>Item</label>
+                        <div class="ui large input">
+                            <input placeholder="Item">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Type</label>
+
+                        <div class="ui fluid search selection large dropdown">
+                            <input name="Leave Type" type="hidden">
+                            <i class="dropdown icon"></i>
+
+                            <div class="default text">Select Leave</div>
+
+                            <div class="menu">
+                                <div class="item" data-value="consumable">
+                                    Consumable
+                                </div>
+
+                                <div class="item" data-value="nonconsumable">
+                                    Non - Consumable
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Quantity</label>
+                        <div class="ui large input">
+                            <input placeholder="Quantity">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Amount</label>
+                        <div class="ui large input">
+                            <input placeholder="Amount">
+                        </div>
+                    </div>
+                </div>
+
+                <button class="ui submit button primary right floated">
+                    Update
+                </button>
+            </form>
+
+            <br>
+            <br>
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+{% endblock %}

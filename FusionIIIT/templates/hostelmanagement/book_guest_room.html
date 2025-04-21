@@ -1,0 +1,227 @@
+{% block book_guest_room %}
+<form method="POST" class="ui form" action="{% url 'hostelmanagement:book_guest_room' %}" role="form"
+    enctype="multipart/form-data" id='book_guest_room'>
+    <div class="ui active accordion field">
+        <div class="title">
+            <i class="icon dropdown"></i>
+            Book a Guest Room!
+        </div>
+        {{ form.non_field_errors }}
+        <div class="active content">
+            <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                {% csrf_token %}
+                <div class="field">
+                    <label for="{{ form.hall.id_for_label }}">
+                        Hall
+                    </label>
+                    <select class="ui dropdown" name="hall" id="id_hall" required>
+                        <option selected disabled value="">Select Hall No</option>
+                        {% for hall in all_hall %}
+                        <option value={{hall.pk}}>{{hall.hall_id}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="two fields">
+                    <div class="field">
+                        <label>Arrival Date</label>
+                        <input type="date" name="arrival_date" id="arrival_date" min="" required value="">
+                    </div>
+                    <div class="field">
+                        <label>Departure Date</label>
+                        <input type="date" name="departure_date" id="departure_date" min="" required value="">
+                    </div>
+                </div>
+                <div class="two fields">
+                    <div class="field">
+                        <label>Arrival Time</label>
+                        <input type="Time" name="arrival_time">
+                    </div>
+                    <div class="field">
+                        <label>Departure Time</label>
+                        <input type="Time" name="departure_time">
+                    </div>
+                </div>
+                {% comment %} <div class="field">
+                    <label>Roll no.</label>
+                    <input value="" class="ui large input" name="roll_no" required
+                        onkeypress="return isNumberKey(event)">
+                    <select class="ui search fluid dropdown" name="roll_no" required>
+                        <option value="">Select</option>
+                        {% for i, students in halls_student.items %}
+                        {% for st in students %}
+                        <option value="{{st.id.user.username}}">{{st.id.user.username}}</option>
+                        {% endfor %}
+                        {%endfor%}
+                    </select>
+                </div> {% endcomment %}
+
+                <div class="two fields">
+                    <div class="field">
+                        {{ form.guests.errors }}
+                        <label for="{{ form.guests.id_for_label }}">
+                            Number of Guests</label>
+                        <input type='Number' name='total_guest' value={{ form.total_guest }}>
+                    </div>
+                    <div class="field">
+                        {{ form.nationality.errors }}
+                        <label for="{{ form.nationality.id_for_label }}">Nationality</label>
+                        <input type="text" name="nationality" value={{form.nationality}}>
+                    </div>
+                </div>
+                <div class="two fields">
+                    <div class="field">
+                        {{ form.rooms_required.errors }}
+                        <label for="{{ form.rooms_required.id_for_label }}">
+                            Number of rooms</label>
+                        <input type='Number' name='rooms_required' value={{ form.rooms_required }}>
+                    </div>
+                    <div class="field">
+                        <label for="{{ form.room_type.id_for_label }}">
+                            Room Type
+                        </label>
+                        <select class="ui dropdown" name="room_type" id="id_room_type" required>
+                            <option selected disabled value="">Select Room Type</option>
+                            <option value="single">Single</option>
+                            <option value="double">Double</option>
+                            <option value="triple">Triple</option>
+                        </select>
+                    </div>
+
+
+                </div>
+                <div class="two fields">
+                    <!-- Other form fields here -->
+                    <div class="field">
+                        <label>Available Rooms</label>
+                        <div id="available_rooms_count" class="ui label"></div>
+                    </div>
+                </div>
+                <!-- <span id="available_rooms_count"></span> -->
+
+
+                <div class="two fields">
+
+                    <div class="field">
+                        {{ form.guest_name.errors }}
+                        <label for="{{ form.guest_name.id_for_label }}">
+                            Name of guest</label>
+                        <input type='text' name='guest_name' value={{ form.guest_name }}>
+                    </div>
+                    <div class="field">
+                        {{ form.guest_address.errors }}
+                        <label for="{{ form.guest_address.id_for_label }}">
+                            Guest Address</label>
+                        <input type='text' name='guest_address' value={{ form.guest_address }}>
+                    </div>
+
+                </div>
+
+                <div class="two fields">
+                    <div class="field">
+                        {{ form.guest_email.errors }}
+                        <label for="{{ form.guest_email.id_for_label }}">
+                            Guest Email</label>
+                        <input type='Email' name='guest_email' value={{ form.guest_email }}>
+                    </div>
+                    <div class="field">
+                        {{ form.guest_phone.errors }}
+                        <label for="{{ form.guest_phone.id_for_label }}">
+                            Guest Phone Number</label>
+                        <input type='number' name='guest_phone' id="guest_phone_input" value={{ form.guest_phone }}>
+                        <span id="phone_error" style="color: red;"></span>
+                    </div>
+                </div>
+
+
+                <div class="field">
+                    {{ form.purpose.errors }}
+                    <label for="{{ form.purpose.id_for_label }}">
+                        Purpose
+                    </label>
+                    <textarea name="purpose">{{ form.purpose }}</textarea>
+                </div>
+
+
+
+
+                <div class="two fields">
+                    <div class="four wide field">
+                        <label><br></label>
+                        <button class="ui fluid large primary button" type="submit"
+                            onclick="checkInputs('book_guest_room')">
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+
+    // Function to fetch available rooms count via AJAX
+    function fetchAvailableRoomsCount() {
+        console.log('Fetching available rooms count...');
+        var hallId = document.getElementById('id_hall').value;
+        var roomType = document.getElementById('id_room_type').value;
+        console.log('Selected Hall ID:', hallId);
+        console.log('Selected Room Type:', roomType);
+
+        // Check if both hall and room type are selected
+        if (hallId && roomType) {
+            // AJAX request to fetch available rooms count
+            fetch(`/hostelmanagement/available_guest_rooms/?hall_id=${hallId}&room_type=${roomType}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Received response:', data);
+                    document.getElementById('available_rooms_count').innerText = data.available_rooms_count;
+                })
+                .catch(error => {
+                    console.error('Error fetching available rooms count:', error);
+                });
+        }
+    }
+
+    // Event listener for change in room type selection
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('DOMContentLoaded event fired.');
+        document.getElementById('id_room_type').addEventListener('change', fetchAvailableRoomsCount);
+    });
+    // // Get today's date in YYYY-MM-DD format
+    var today = new Date().toISOString().split('T')[0];
+    document.getElementById("arrival_date").value = "";
+    document.getElementById("departure_date").value = "";
+    document.getElementById("arrival_date").min = today;
+    document.getElementById("arrival_date").addEventListener("change", function () {
+        document.getElementById("departure_date").min = document.getElementById("arrival_date").value;
+    });
+
+    // Function to validate phone number
+    function validatePhoneNumber() {
+        var phoneNumber = document.getElementById('guest_phone_input').value;
+        var phoneError = document.getElementById('phone_error');
+
+        // Check if phone number is exactly 10 digits
+        if (phoneNumber.length !== 10) {
+            phoneError.innerText = 'Phone number must be exactly 10 digits.';
+            return false; // Prevent form submission
+        } else {
+            phoneError.innerText = ''; // Clear error message
+            return true; // Allow form submission
+        }
+    }
+
+    // Event listener for input change in phone number field
+    document.getElementById('guest_phone_input').addEventListener('input', function () {
+        validatePhoneNumber();
+    });
+
+    // Event listener for form submission
+    document.getElementById('book_guest_room').addEventListener('submit', function (event) {
+        if (!validatePhoneNumber()) {
+            event.preventDefault(); // Prevent form submission if phone number is invalid
+        }
+    });
+</script>
+{% endblock %}

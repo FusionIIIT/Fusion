@@ -1,0 +1,185 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+Academic
+{% endblock %}
+
+
+{% block body %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
+
+<script>
+    $('.message .close')
+        .on('click', function() {
+            $(this)
+                .closest('.message')
+                .transition('fade')
+            ;
+        });
+</script>
+
+<div class="ui stackable doubling grid">
+
+    {% comment %}The left-margin segment!{% endcomment %}
+    <div class="column"></div>
+
+    {% comment %}The left-rail segment starts here!{% endcomment %}
+    <div class="three wide column">
+        {% comment %}The user image card starts here!{% endcomment %}
+        {% block usercard %}
+        {% include 'globals/usercard.html' %}
+        {% endblock %}
+        {% comment %}The user image card ends here!{% endcomment %}
+
+        <div class="ui divider"></div>
+
+        {% comment %}The Tab-Menu ends here!{% endcomment %}
+    </div>
+    {% comment %}
+    The left-rail segment ends here!
+    {% endcomment %}
+
+    {% comment %}
+    The central-rail segment starts here!
+    {% endcomment %}
+    <div class="eight wide column">
+
+
+
+        {% load static %}
+        {% comment %}the main tab starts here {% endcomment %}
+        <div>
+            <a href="{% url 'iwdModuleV2:IWD Dashboard' %}"><button class="ui button back-button">Go to Dashboard</button></a>
+        </div>
+        <div class="ui header">
+            Work Order
+        </div>
+        <form class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;", method="post" action="{% url 'iwdModuleV2:Work Order' %}">{% csrf_token %}
+                <div class="field">
+                    <label for="id">Request Id</i></sup></label>
+                    <div class="ui fluid input">
+                        <!-- {{ req.id }} -->
+                        <input type="number" name = "id" required = "true" disabled="true" value="{{req.id}}">
+                    </div>
+                </div>
+
+                <input type="hidden" name="id" value="{{req.id}}">
+                <input type="hidden" name="name" value="{{req.name}}">
+
+                
+                <br>
+                
+                <div class="field">
+                    <label for="name">Request</i></sup></label>
+                    <div class="ui fluid input">
+                        <!-- {{ req.name }} -->
+                        <input type="text" name = "name" required = "true" disabled="true" value="{{req.name}}">
+                    </div>
+                </div>
+                
+                <br>
+        
+                <div class="field">
+                    <label for="date">Date</i></sup></label>
+                    <div class="ui fluid input">
+                        <input type="date" name = "date" required = "true">
+                    </div>
+                </div>
+        
+                <br>
+        
+                <div class="field">
+                    <label for="agency">Agency</i></sup></label>
+                    <div class="ui fluid input">
+                        <input type="text" name="agency" required="true">
+                    </div>
+                </div>
+        
+                <br>
+
+                <div class="field">
+                    <label for="amount">Amount</i></sup></label>
+                    <div class="ui fluid input">
+                        <input type="number" name="amount" required="true">
+                    </div>
+                </div>
+
+                <br>
+
+                <div class="field">
+                    <label for="deposit">Deposit</i></sup></label>
+                    <div class="ui fluid input">
+                        <input type="number" name="deposit" required="true">
+                    </div>
+                </div>
+
+                <br>
+
+                <div class="field">
+                    <label for="time">Alloted Time</i></sup></label>
+                    <div class="ui fluid input">
+                        <input type="text" name="time" required="true">
+                    </div>
+                </div>
+
+                <br>
+
+                <div class="field">
+                    <label for="startDate">Start Date</i></sup></label>
+                    <div class="ui fluid input">
+                        <input type="date" name="startDate" required="true">
+                    </div>
+                </div>
+
+                <br>
+
+                <div class="field">
+                    <label for="completionDate">Completion Date</i></sup></label>
+                    <div class="ui fluid input">
+                        <input type="date" name="completionDate" required="true">
+                    </div>
+                </div>
+        
+                <div class="field">
+                    <label><br></label>
+                        <div>
+                          <input type="submit" name="Submit" value="Submit" class="ui small right floated primary button" />
+                        </div>
+                </div>
+        </form>
+    </div>
+    {% comment %}The central-rail segment ends here!{% endcomment %}
+
+    {% comment %}The right-rail segment starts here!{% endcomment %}
+    <div class="three wide column">
+        <div class="row">
+            {% comment %}
+            TODO: the right rail!
+            {% endcomment %}
+        </div>
+    </div>
+    {% comment %}The right-rail segment ends here!{% endcomment %}
+
+    {% comment %}The right-margin segment!{% endcomment %}
+    <div class="column"></div>
+
+</div>
+{% comment %}The grid ends here!{% endcomment %}
+
+{% endblock %}
+
+{% block javascript %}
+<script
+    src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+<script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+<script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+<!-- </script> -->
+{% endblock %}
+
+
+
+

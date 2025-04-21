@@ -1,0 +1,167 @@
+{#{% extends 'globals/base.html'%}#}
+{% load static %}
+{#{% block body %}#}
+{% block appoint_student_guide %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="guide">
+            Appoint Student Guide
+        </a>
+
+        <a class="item" data-tab="viewguide">
+
+            Appointed Student Guide
+        </a>
+
+       
+    </div>
+
+    <div class="ui active tab" data-tab="guide" id="counsellor">
+
+        <div class="ui vertical segment">
+
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form method="POST">
+                {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="ui header">
+                        Select Student Guide from Second Year /Third Year Batch:
+                    </div>
+
+                    <br>
+
+                    <div class="two fields">
+
+                        <div class="two fields">
+                            <div class="twelve wide field">
+                                <select class="ui dropdown" name="student" id="student_guide">
+                                    {% for student in second_year_students %}
+                                    <option value={{student.id.user.username}}>{{student.id.user.username}}          {{student.id.user.first_name}} </option>
+                                    {% endfor %}
+                                    {% for student in third_year_students %}
+                                    <option value={{student.id.user.username}}>{{student.id.user.username}}     {{student.id.user.first_name}}     {{student.id.user.last_name}} </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                        </div>
+                    </div>
+                
+                    <div class="field">
+                        <label><br></label>
+                            <button class="ui primary fluid button" type="submit" onclick="return studentGuide()">
+                            Submit
+                            </button>
+                    </div>
+
+                </div>
+            </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="viewguide">
+        
+        
+        <div id="coordinator_history" class="ui very relaxed fluid selection list" style="padding-left: 24px; padding-top: 16px; padding-bottom: 16px; max-height: 70vh; overflow-y: auto;">
+        <a class="header" id="user_name" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{{info.user.username}}</a>
+        <div class="ui header ">
+            List of Appointed Student Guide  :
+        </div>  
+            {% for counsellor in student_guide %}
+                <!--<img class="ui mini circular image" src="{% static 'globals/img/zlatan.jpg' %}"> --->
+            <div class="item">
+              
+                <div class="description">
+                    <div class="header">{{counsellor.student.id.user.username}} {{counsellor.student.id.user.first_name}} {{counsellor.student.id.user.last_name}}</div>
+                    <h2 class="ui header">{{counsellor.student.hall_no}} {{counsellor.student.room_no}}</h1>
+                    <!-- <div class="header">Answer {{forloop.counter}} :</div>
+                    <h3 class="ui header">{{faq.counselling_answer}}</h3> -->
+                    <!-- <div class="field">
+                        <label><br></label>
+                            <button class="ui red button"  onclick="return removestudentGuide(`${counsellor.student.id.user.username}`)">
+                            Remove
+                            </button>
+                    </div> -->
+
+                </div> 
+                
+            </div>
+            {% endfor %}
+        </div>
+
+    <div class="ui divider"></div>
+    </div>
+
+{% endblock %}
+{#{% endblock %}#}
+
+{% block javascript %}
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+
+ <script>
+        const required_check_faq_form = () => {
+            if ($("#student").val()) {
+                check = 0;
+                return check;
+            }
+            else {
+                check = 1;
+            }
+        }
+        const counsellor=()=>{
+            check = 1;
+            console.log($("#student").val() )
+                $.ajax({
+                    type: 'POST',
+                    url: 'appoint_student_counsellors/',
+                    dataType: 'json',
+                    data: {
+                        'csrfmiddlewaretoken': '{{ csrf_token }}',
+                        'username': $("#student").val(),
+                        'position': "student_coordinator",
+                    },
+                    success: function (data) {
+                        if (data.status) {
+
+                            // var monthNames = ["January", "February", "March", "April", "May", "June",
+                            //                   "July", "August", "September", "October", "November", "December"];
+                            // var name = $("#user_name").text();
+                            // var today_date = new Date();
+                            // var t_date = monthNames[today_date.getMonth()] + " " + today_date.getDate() + ", " + today_date.getFullYear();
+                            // $("#coordinator_history").prepend("<div class='item'><div class='left floated content'>" +
+                            //         "<a class='header'>" + name + "</a>" +
+                            //     "<a class='meta'>" + $("#coordinator_type").val() +"</a><div class='description'>"
+                            //     + $("#description").val() + "</div></div><div class='right floated content'>" +
+                            //     "<span class='meta'>" + t_date + "</span></div></div>");
+
+                            alert("Data Inserted Successfully");
+
+                            // document.getElementById('student ').value = "";
+                            // $("#coordinator").load(location.href + " #coordinator>*", "");
+
+                        }
+                    },
+                    error: function (data, err) {
+                        console.log(err.message)
+                        alert(err.message);
+                        // $("#coordinator").load(location.href + " #coordinator>*", "");
+                    }
+                });
+            
+        return false;
+    }
+    
+
+
+</script>
+{% endblock %}
+
+
+

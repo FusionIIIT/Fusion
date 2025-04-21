@@ -1,0 +1,36 @@
+{% block tab3 %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="tab1content1">
+            Book Search
+        </a>
+
+    </div>
+    <div class="ui two item menu">
+        <a class="{% if officer_statistics_past_pbi_search or officer_statistics_past_pbi_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add %}item{% else %}active item{% endif %}" data-tab="bookname">
+          Book Name
+        </a>
+
+        <a class="{% if officer_statistics_past_pbi_search or officer_statistics_past_pbi_add %}active item{% else %}item{% endif %}" data-tab="authorname">
+          Author Name
+        </a>
+    </div>
+
+    <div class="ui active tab segment" data-tab="bookname">
+        <div class="ui vertical segment">
+            {% block bookname %}
+                {% include 'libraryModule/booknamesearch.html' %}
+            {% endblock %}
+        </div>
+    </div>
+
+    <div class="ui tab segment" data-tab="authorname">
+      <div class="ui vertical segment">
+          {% block authorname %}
+              {% include 'libraryModule/authornamesearch.html' %}
+          {% endblock %}
+      </div>
+    </div>
+
+{% endblock tab3%}

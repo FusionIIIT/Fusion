@@ -1,0 +1,86 @@
+<form method='POST' id='add_vendors' >
+    {% csrf_token %}
+    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+    <div class="ui form" style="padding: 8px; padding-left: 56px; padding-right: 36px;">
+
+        <div class="ui two fields">
+
+            <div class="ui eight wide field">
+                <label>
+                    Vendor Name
+                </label>
+                <input class="ui large input" name="vendor_name" placeholder="Vendor Name" type="text">
+            </div>
+
+            <div class="ui eight wide field">
+                <label>
+                    Item
+                </label>
+                <input class="ui large input" name="vendor_item" placeholder="Item" type="text">
+            </div>
+        </div>
+
+        <div class="ui field">
+            <label>
+                Address
+            </label>
+            <textarea rows="2" name="vendor_address"></textarea>
+        </div>
+
+        <label>
+            <br>
+        </label>
+        <button type="submit" name="submit" id = "submit" class="ui right floated primary button">Submit</button>
+
+    </div>
+</form>
+
+<br>
+<br>
+
+<div class="ui divider"></div>
+<!--
+<script>
+    $("#vendor2").submit(function(e) {
+        e.preventDefault();
+        $.ajax({
+            type:'POST',
+            url:'/office/vendor/',
+            data:{
+                "csrfmiddlewaretoken":"{{ csrf_token }}",
+                "vendor_name":$('#vendor_name').val(),
+                "vendor_address":$('#vendor_address').val(),
+                "vendor_item":$('#vendor_item').val()
+            },
+            success:function(data){
+                console.log("success"+data);
+            },
+            error: function(data){
+                console.log("error"+data);
+            }
+        });
+    });
+</script>-->
+<!--<script>
+$(document).on('submit','#add_vendors',function(e) {
+    e.preventDefault();
+    $.ajax({
+        type:'POST',
+        url:'/office/vendor/',
+        data:{
+            csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val(),
+            vendor_name:$('#vendor_name').val(),
+            vendor_address:$('#vendor_address').val(),
+            vendor_item:$('#vendor_item').val()
+        },
+        success:function(data){
+            alert("Added successfully");
+        }
+    });
+});
+</script>-->
+
+
+
+
+

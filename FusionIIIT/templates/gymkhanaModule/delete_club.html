@@ -1,0 +1,140 @@
+{% load static %}
+{% block deleteclub %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    
+    {% comment %} {% for i in Club_info%}
+    {% if i.status == "confirmed" %}
+        <div class="ui small modal {{ i.member.id.id }}{{ i.club.club_name}}" >
+            <i class="close icon"></i>
+            <div class="header">
+                Applicant's Info
+            </div>
+            <div class="image content">
+                <div class="ui medium image">
+                  <img src="{% static 'globals/img/zlatan.jpg' %}">
+                </div>
+                <div class="description">
+                    <div class="ui header">
+                    <p>{{ i.member.id.user.username }}&nbsp;&nbsp;&nbsp;&nbsp;{{ i.member.id.id }}</p>
+                    </div>
+                    <p>{{ i.club.club_name}} &nbsp; Club</p>
+                    <p>{{ i.description }}</p>
+                </div>
+            </div>
+            <div class="actions">
+                <div class="ui black deny button">
+                    Close
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endfor %} {% endcomment %}
+
+    
+    <!-- modal script enable -->
+    {% comment %} <script type="text/javascript">
+        function view(a,b) {
+            // body...
+            //$('.ui.modal').find("input").val({'name':id}); 
+            var id = '.ui.small.modal.'+a+b;
+            $(id).modal('show');
+        }
+    </script> {% endcomment %}
+
+    
+
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="memberrequests">
+            Delete Club
+        </a>
+    </div>
+    <div class="ui active tab" data-tab="memberrequests">
+        <div class="ui vertical segment">
+        <form method="post" action="" id="memberrequest">
+        {% csrf_token %}
+            <table id="mytable" class="ui very basic collapsing celled sortable table"
+                   style="padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th>
+                    </th>
+
+                    <th>
+                        Club
+                    </th>
+
+                    <th>
+                        Category
+                    </th>
+                    <th>
+                        Co-ordinator
+                    </th>
+                    <th>
+                        co co-ordinator
+                    </th>
+                    <th>
+                        Faculty incharge
+                    </th>
+
+                    
+                </tr>
+                </thead>
+                {% comment %} <tr>{{club_details}}</tr> {% endcomment %}
+                {% for i in Club_name %}
+                    {% comment %} <tr>{{i.club.club_id}}</tr> {% endcomment %}
+                    {% if i.status == "confirmed" %}
+                    <tr >
+                        <td class="collapsing">
+                            <div class="ui fitted checkbox">
+                                <input type="checkbox" id="{{ i.club_name }}" value="{{ i.club_name }}" name="check" > <label></label>
+                            </div>
+                        </td>
+                        <td>
+                            {{ i.club_name}}
+                        </td>
+
+                        <td>
+                            {{ i.category }}
+                        </td>
+                        <td>
+                            {{ i.co_ordinator_id }}
+                        </td>
+                        <td>
+                            {{ i.co_coordinator_id }}
+                        </td>
+                        <td>
+                            {{ i.faculty_incharge_id }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+                </tr>
+
+                </tbody>
+            </table>
+
+
+            <br>
+
+            {% comment %} <div class="field">
+                <button class="ui primary button right floated" type="submit" formaction="/gymkhana/approve/">
+                    Approve Selected
+                </button>
+            </div> {% endcomment %}
+            <div class="field">
+                <button class="ui red button right floated" type="submit" formaction="/gymkhana/del_club/">
+                    Delete
+                </button>
+            </div> 
+            <br>
+            <br>
+        </form>
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+    
+{% endblock %}

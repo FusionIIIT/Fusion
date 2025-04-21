@@ -1,0 +1,160 @@
+{% load static %}
+
+<style>
+ .resultBatch{
+  background-color: #f1f1f1;
+  color: #444;
+  cursor: pointer;
+  padding: 10px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+  transition: 0.4s;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  border-radius: 3px; 
+}
+
+
+.resultBatch:hover {
+  background-color: #ddd; 
+}
+
+
+</style>
+
+
+{% for i in batch_grade_data.batch_grade_data %}
+		<div class="resultBatch" data = "{{forloop.counter}}" style="width: 100%">
+			<p><center><b>B.Tech. {{i.batch_list_year}}</b></center></p>
+			<div class="batch_data" id="batch_data{{forloop.counter}}" hidden="true" style="width: 100%" data="hid">
+				<hr>
+				<p><b>Computer Science Engineering :</b></p>
+				
+				<center>
+				<table style="width: 90%">
+					<tr>
+						<th style="width: 20%">Course ID</th>
+						<th style="width: 60%">Course Name</th>
+						<th style="width: 20%">Verified</th>
+					</tr>
+					{% for obj in i.batch_list_CSE %}
+					<tr>
+					<td style="width: 20%"><center> {{obj.course_code}}</center></td>
+					<td style="width: 60%"><center>{{obj.course_id.course_name}}</center></td>
+						{% for o in batch_grade_data.batch_sub_check %}
+						{% if o.curr_id == obj %}
+							{% if o.verified == True %}
+							<td style="width: 20%"><center><i class="ui green checkmark icon " ></i></center></td>
+							{% else %}
+							<td style="width: 20%"><center><i class="ui red x icon"></i></center></td>
+							{% endif %}
+						{% endif %}
+						{% endfor %}
+					</tr>
+					{% endfor %}
+				</table>
+				</center>
+				
+				<p><b>Electronics and Communication Engineering :</b></p>
+				<center>
+				<table style="width: 90%">
+					<tr>
+						<th style="width: 20%">Course ID</th>
+						<th style="width: 60%">Course Name</th>
+						<th style="width: 20%">Verified</th>
+					</tr>
+					{% for obj in i.batch_list_ECE %}
+					<tr>
+					<td style="width: 20%"><center> {{obj.course_code}}</center></td>
+					<td style="width: 60%"><center>{{obj.course_id.course_name}}</center></td>
+						{% for o in batch_grade_data.batch_sub_check %}
+						{% if o.curr_id == obj %}
+							{% if o.verified == True %}
+							<td style="width: 20%"><center><i class="ui green checkmark icon " ></i></center></td>
+							{% else %}
+							<td style="width: 20%"><center><i class="ui red x icon"></i></center></td>
+							{% endif %}
+						{% endif %}
+						{% endfor %}
+					</tr>
+					{% endfor %}
+				</table>
+				</center>
+				<p><b>Mechanical Engineering :</b></p>
+				<center>
+				<table style="width: 90%">
+					<tr>
+						<th style="width: 20%">Course ID</th>
+						<th style="width: 60%">Course Name</th>
+						<th style="width: 20%">Verified</th>
+					</tr>
+					{% for obj in i.batch_list_ME %}
+					<tr>
+					<td style="width: 20%"><center> {{obj.course_code}}</center></td>
+					<td style="width: 60%"><center>{{obj.course_id.course_name}}</center></td>
+						{% for o in batch_grade_data.batch_sub_check %}
+						{% if o.curr_id == obj %}
+							{% if o.verified == True %}
+							<td style="width: 20%"><center><i class="ui green checkmark icon " ></i></center></td>
+							{% else %}
+							<td style="width: 20%"><center><i class="ui red x icon"></i></center></td>
+							{% endif %}
+						{% endif %}
+						{% endfor %}
+					</tr>
+					{% endfor %}
+				</table>
+				</center>
+				<br>
+				<center><div  data="{{forloop.counter}}" class="res-announce ui basic green button">Announce Results</div></center>
+			</div>
+		</div>
+		{% endfor %}
+
+
+
+
+
+
+
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+	$(document).ready(function(){
+		$('.resultBatch').on('click',function(e){
+			var id = $(this).attr("data");
+			$('.batch_data').hide(200);
+			var dat = $('#batch_data'+id).attr('data');
+			if(dat == "hid")
+			{
+				$('#batch_data'+id).show(200);
+				$('#batch_data'+id).attr("data", "sh");
+			}
+			else if(dat == "sh")
+			{
+				$('#batch_data'+id).hide(200);
+				$('#batch_data'+id).attr("data", "hid");
+			}
+		});
+		$('.res-announce').on('click',function(e){
+			var id = $(this).attr("data");
+/*			alert(id);*/
+			$.ajax({
+				type:"POST",
+		        url: "/academic-procedures/announce_results/",
+		        data:{
+		        		id : id,
+		                csrfmiddlewaretoken: '{{ csrf_token }}'
+		        },
+		        success: function( data ) 
+		        {
+		        	alert('Results Announced for this Batch');
+		        }
+			});
+		});
+	});
+
+</script>

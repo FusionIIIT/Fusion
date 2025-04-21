@@ -1,0 +1,39 @@
+{% block tab1 %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="tab7content1">
+            Faculty
+        </a>
+        <a class="item" data-tab="tab7content2">
+            Students
+        </a>
+        <a class="item" data-tab="tab7content3">
+            Staff
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="tab7content1">
+        <div class="ui vertical segment">
+            {% block tab7content1 %}
+                {% include 'officeModule/directorOffice/viewProfile_faculty.html' %}
+            {% endblock %}
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="tab7content2">
+        <div class="ui vertical segment">
+            {% block tab7content2 %}
+                {% include 'officeModule/directorOffice/viewProfile_students.html' %}
+            {% endblock %}
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="tab7content3">
+        <div class="ui vertical segment">
+            {% block tab7content3 %}
+                {% include 'officeModule/directorOffice/viewProfile_staff.html' %}
+            {% endblock %}
+        </div>
+    </div>
+{% endblock tab1%}

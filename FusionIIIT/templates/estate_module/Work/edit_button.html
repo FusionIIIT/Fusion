@@ -1,0 +1,73 @@
+<button class="ui red button edit_{{ menuitem|slugify }}_{{ work.id }}">Edit</button>
+<script type='module'>
+    $('.coupled_{{ menuitem|slugify }}.modal')
+        .modal({
+            allowMultiple: true
+        });
+
+    $('.delete_{{ menuitem|slugify }}.modal')
+        .modal('attach events',
+            '.edit_{{ menuitem|slugify }}.modal .delete_{{ menuitem|slugify }}.button');
+
+    $('.edit_{{ menuitem|slugify }}_{{ work.id }}.button').on('click', function () {
+        $('.edit_{{ menuitem|slugify }}.modal')
+            .modal({
+                centered: false
+            })
+            .modal({
+                onShow: function () {
+                    // change edit modal header
+                    $('.edit_{{ menuitem|slugify }}.modal .header').first()
+                        .text("{{ work.name }}");
+                    // change modal form action url
+                    $('.edit_{{ menuitem|slugify }}.modal form')
+                        .attr("action", "{% url 'edit_work' work.id %}");
+                    // change delete modal message
+                    $('.delete_{{ menuitem|slugify }}.modal .content p')
+                        .text("Are you sure you want to delete {{ work.name }}?");
+                    // change delete form action url
+                    $('.delete_{{ menuitem|slugify }}.modal form')
+                        .attr("action", "{% url 'delete_work' work.id %}");
+                    // prefill form
+                    $('.edit_{{ menuitem|slugify }}.modal form')
+                        .form('set values', {
+                            name: '{% if work.name %}{{ work.name }}{% endif %}',
+                            workType: '{% if work.workType %}{{ work.workType }}{% endif %}',
+                            building: '{% if work.building %}{{ work.building.id }}{% endif %}',
+                            contractorName: '{% if work.contractorName %}{{ work.contractorName }}{% endif %}',
+                            dateIssued: '{% if work.dateIssued %}{{ work.dateIssued }}{% endif %}',
+                            dateStarted: '{% if work.dateStarted %}{{ work.dateStarted }}{% endif %}',
+                            dateCompleted: '{% if work.dateCompleted %}{{ work.dateCompleted }}{% endif %}',
+                            costEstimated: '{% if work.costEstimated %}{{ work.costEstimated }}{% endif %}',
+                            costActual: '{% if work.costActual %}{{ work.costActual }}{% endif %}',
+                            status: '{{ work.status }}',
+                            verified: '{{ work.verified }}',
+                            remarks: '{% if work.remarks %}{{ work.remarks }}{% endif %}',
+                        });
+                    /*$('.edit_{{ menuitem|slugify }}.modal #id_name')
+                        .val("{{ work.name }}");
+                    $('.edit_{{ menuitem|slugify }}.modal #id_workType')
+                        .val("{{ work.workType }}");
+                    $(".edit_{{ menuitem|slugify }}.modal #id_estate option[value='{{ work.estate.id }}']")
+                        .attr(
+                            'selected', 'selected');
+                    $('.edit_{{ menuitem|slugify }}.modal #id_contractorName')
+                        .val("{{ work.contractorName }}");
+                    $('.edit_{{ menuitem|slugify }}.modal #id_dateIssued')
+                        .val("{{ work.dateIssued|date:'Y-m-d' }}");
+                    $('.edit_{{ menuitem|slugify }}.modal #id_dateStarted')
+                        .val("{{ work.dateStarted|date:'Y-m-d' }}");
+                    $('.edit_{{ menuitem|slugify }}.modal #id_dateCompleted')
+                        .val("{{ work.dateCompleted|date:'Y-m-d' }}");
+                    $('.edit_{{ menuitem|slugify }}.modal #id_costEstimated')
+                        .val("{{ work.costEstimated }}");
+                    $('.edit_{{ menuitem|slugify }}.modal #id_costActual')
+                        .val("{{ work.costActual }}");
+                    $('.edit_{{ menuitem|slugify }}.modal #id_remarks')
+                        .val("{{ work.remarks }}");*/
+                }
+            })
+            .modal('setting', 'closable', false)
+            .modal('show');
+    });
+</script>

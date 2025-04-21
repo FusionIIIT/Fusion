@@ -1,0 +1,52 @@
+{% csrf_token %}
+<div class="ui error message"></div>
+
+<div class="required field">
+    {{ menuitem_data.form.name.label_tag }}
+    {{ menuitem_data.form.name }}
+</div>
+
+<div class="three fields">
+    <div class="required field">
+        {{ menuitem_data.form.rate.label_tag }}
+        {{ menuitem_data.form.rate }}
+    </div>
+
+    <div class="field">
+        {{ menuitem_data.form.manufacturer.label_tag }}
+        {{ menuitem_data.form.manufacturer }}
+    </div>
+
+    <div class="field">
+        {{ menuitem_data.form.model.label_tag }}
+        {{ menuitem_data.form.model }}
+    </div>
+</div>
+
+<div class="field">
+    {{ menuitem_data.form.remarks.label_tag }}
+    {{ menuitem_data.form.remarks }}
+</div>
+
+<script type='module'>
+    $('#{{ form_id }}')
+        .form({
+            fields: {
+                name: {
+                    identifier: 'name',
+                    rules: [{
+                        type: 'empty',
+                        prompt: 'Name of Inventory Type cannot be blank'
+                    }]
+                },
+                rate: {
+                    identifier: 'rate',
+                    rules: [{
+                        type: 'empty',
+                        prompt: 'Rate cannot be blank'
+                    }]
+                }
+            }
+        });
+</script>
+<p></p>

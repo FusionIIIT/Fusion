@@ -1,0 +1,92 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Feeds Admin
+{% endblock %}
+
+{% block css %}
+
+ <link href="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.css" rel="stylesheet" type="text/css" />
+
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            {% comment %} <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+
+                <a class="item" href="{% url 'globals:profile' %}">
+                    View Profile
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+            </div> {% endcomment %}
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+
+        <div class="eight wide column">
+            {% if administrativeRole %}
+                <div class="ui success message">
+                    <h3 class="ui header"> You are assigned {{role_user}} role. You can start posting updates from right side panel.</h3>
+                </div>
+            {% else %}
+                <div class="ui success message">
+                    <h3 class="ui header"> You are not assigned to any role.</h3>
+                </div>
+            {% endif %}
+
+            {% with isBreak=False %}
+            {% for r in role %}
+            {% if isBreak %}
+            <!-- do nothing  -->
+            {% elif r.role == 'FeedsAdmin' and r.user == request.user %}
+                {% include 'feeds/admin_middle.html'%}
+
+            {% with isBreak=True %}
+            {% endwith %}
+
+            {% endif %}
+
+            {% endfor %}
+            {% endwith %}
+
+
+
+        </div>
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            {% include 'feeds/third_section.html' %}
+        </div>
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+
+
+{% endblock %}

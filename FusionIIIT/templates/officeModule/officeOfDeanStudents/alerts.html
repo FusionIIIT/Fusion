@@ -1,0 +1,122 @@
+{% load static %}
+
+{% block alerts %}
+    <div class="ui centered cards" style="padding: 2px">
+
+
+        {% if flag_dean_s %}
+        {% for i in budget_app %}
+        <div class="ui card">
+            <div class="content">
+                <img class="right floated circular ui image" src="{% static 'globals/img/zlatan.jpg' %}" style="width: 50px; height: auto;">
+                <div class="header">
+                    {{ i.club }}
+                </div>
+                <div class="meta">
+                    Amount: {{i.budget_amt}}
+                </div>
+
+                <div class="ui divider"></div>
+
+                <div class="description">
+                    Budget for {{i.budget_for}}
+                </div>
+            </div>
+            <div class="extra content">
+                <form method="post" action="">
+                    {% csrf_token %}
+                    <input type="text" name="amount {{i.id}}" value="{{i.budget_amt}}" hidden="true">
+
+                    {% for j in budgets %}
+                    {% if j.club_name == i.club_id %}
+                    <input type="text" name="avail_budget" value="{{j.avail_budget}}" hidden="true">
+                    {% endif %}
+                    {% endfor %}
+                    <input type="checkbox" hidden="true" name="check" value="{{i.id}}" checked>
+                    <textarea rows="2" name="{{i.id}}" placeholder="Remarks"></textarea>
+                    </br>
+                    <button class="ui tiny primary right floated button" type="submit" name="submit" id="approve" value="{{i.id}}" formaction="budget_approval" {% if not budget_app %} disabled {% endif %}>Approve</button>
+                    <button class="ui tiny red right floated button" type="submit" name="submit" id="reject" value="{{i.id}}" formaction="budget_rejection" {% if not budget_app %} disabled {% endif %} >Reject</button>
+
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        {% if flag_dean_s %}
+        {% for i in clubNew %}
+        <div class="ui card">
+            <div class="content">
+                <img class="right floated circular ui image" src="{% static 'globals/img/zlatan.jpg' %}" style="width: 50px; height: auto;">
+                <div class="header">
+                    {{i.club_name}}
+                </div>
+                <div class="meta">
+                    New {{i.category}} Club
+                </div>
+
+                <div class="ui divider"></div>
+
+                <div class="description">
+                    Coordinator: {{i.co_ordinator}}
+                    <br>
+                    Co-Coordinator: {{i.co_coordinator}}
+                    <br>
+                    Faculty Incharge: {{i.faculty_incharge}}
+                </div>
+            </div>
+            <div class="extra content">
+                <form method="post" action="" >
+                    {% csrf_token %}
+                    <input type="checkbox" name="check" hidden="true" value="{{i.pk}}" checked>
+                    <button class="ui tiny primary right floated button" type="submit" name="submit" id="approve" value="{{i.pk}}" formaction="club_approval" {% if not clubNew %} disabled {% endif %}>Approve</button>
+                    <button class="ui tiny red right floated button" type="submit" name="submit" id="reject" value="{{i.pk}}" formaction="club_rejection" {% if not clubNew %} disabled {% endif %}>Reject</button>
+
+                </form>
+            </div>
+        </div>
+
+
+        {% endfor %}
+        {% endif %}
+
+        {% if flag_superintendent %}
+        {% for i in session_requests_new %}
+        <div class="ui card">
+            <div class="content">
+                <img class="right floated circular ui image" src="{% static 'globals/img/zlatan.jpg' %}" style="width: 50px; height: auto;">
+                <div class="header">
+                    {{i.club}}
+                </div>
+                <div class="meta">
+                    Club Session at {{i.venue}}
+                </div>
+
+                <div class="ui divider"></div>
+
+                <div class="description">
+                    Date: <b>{{i.date}}</b>
+                    Start Time: <b>{{i.start_time}}</b>
+                    End Time: <b>{{i.end_time}}</b>
+                    Details: <b>{{i.details}}</b>
+                </div>
+            </div>
+            <div class="extra content">
+                <form method="post" action="">
+                    {% csrf_token %}
+                    <input type="checkbox" hidden="true" name="check" value="{{i.pk}}" checked>
+
+                    <button tiny class="ui primary right floated button" type="submit" name="submit" id="approve" formaction="session_approval" {% if not session_requests_new %} disabled {% endif %}>Approve</button>
+                    <button tiny class="ui red right floated button" type="submit" name="submit" id="reject" formaction="session_rejection"  {% if not session_requests_new %} disabled {% endif %}>Reject</button>
+
+                </form>
+            </div>
+        </div>
+            {% endfor %}
+        {% endif %}
+
+
+    </div>
+
+{% endblock %}

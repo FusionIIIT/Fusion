@@ -1,0 +1,330 @@
+{% load static %} {% block registeredstudent %}
+
+<div class="ui pointing secondary menu">
+  <!-- <a class="active item" data-tab="searchOrRemove"> Search/Remove Student </a> -->
+  <!-- <a class="item" data-tab="addMess1"> Register for Mess1 </a> -->
+  <!-- <a class="item" data-tab="addMess2"> Register for Mess2 </a> -->
+  {% for d in desig %}
+  {% if d.designation.name == 'mess_manager' %}
+  <a class="{% for d in desig %} {% if d.designation.name == 'mess_manager' %} active {% endif %} {% endfor %} item" data-tab="add_remove">Add/Remove from mess</a>
+  {% endif %}
+  {% endfor %}
+  <a class="{% for d in desig %} {% if d.designation.name == 'mess_warden' %} active {% endif %} {% endfor %}item" data-tab="regList"> View Registration List</a>
+</div>
+<!-- <div class="ui active tab" data-tab="searchOrRemove">
+  <div class="ui vertical segment">
+    <div class="ui form">
+      <form id="#myform1">
+        {% csrf_token %}
+        <div class="field">
+          <label>Roll Number*</label>
+          <input
+            type="text"
+            id="roll_number"
+            name="roll_number"
+            placeholder="Student Roll Number Here"
+          />
+        </div>
+        <div class="field row" style="display: flex">
+          <button
+            style="max-width: 10rem"
+            class="ui primary fluid button"
+            type="submit"
+            id="searchStudent"
+          >
+            Search
+          </button>
+          <button
+            style="max-width: 10rem"
+            class="ui primary fluid button"
+            type="submit"
+            id="removeStudent"
+          >
+            Remove
+          </button>
+          <button
+            style="max-width: 15rem"
+            class="ui primary fluid button"
+            type="submit"
+            id="removeAllStudent1"
+          >
+            Remove All from Mess1
+          </button>
+          <button
+            style="max-width: 15rem"
+            class="ui primary fluid button"
+            type="submit"
+            id="removeAllStudent2"
+          >
+            Remove All from Mess2
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<div class="ui tab" data-tab="addMess1">
+  <div class="ui vertical segment">
+    <div class="ui form">
+      <form id="#myform2">
+        {% csrf_token %}
+        <div class="field">
+          <label>Roll Number*</label>
+          <input
+            type="text"
+            id="roll_number"
+            name="roll_number"
+            placeholder="Student Roll Number Here"
+          />
+        </div>
+        <div class="field row" style="display: flex">
+          <button
+            style="max-width: 10rem"
+            class="ui primary fluid button"
+            type="submit"
+            id="addStudent1"
+          >
+            Add
+          </button>
+        </div>
+      </form>
+      <br />
+      <form
+        method="POST"
+        id="#form22"
+        action="/mess/registeredstudent"
+        enctype="multipart/form-data"
+      >
+        {% csrf_token %}
+        <div class="field">
+          <label>Add by uploading Excel</label>
+          <input
+            type="file"
+            title="Upload excel file"
+            name="excel_file1"
+            accept=".xlsx,.xls"
+            style="max-width: 15rem; margin-bottom: 1rem"
+            required
+          />
+          <br />
+        </div>
+        <div class="field">
+          <button
+            class="ui primary fluid button"
+            style="max-width: 10rem"
+            type="submit"
+            name="excelUpload1"
+          >
+            <i class="upload icon"></i>
+            Register all
+          </button>
+          <ul>
+            <li>
+              The excel sheet should only contain one column with the roll
+              number of all the Students those should be registered or present
+              in Mess1.
+            </li>
+            <li>File should be in .xlsx or .xls format.</li>
+            <li>This registration will add the Students to mess1.</li>
+          </ul>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<div class="ui tab" data-tab="addMess2">
+  <div class="ui vertical segment">
+    <div class="ui form">
+      <form id="#myform3">
+        {% csrf_token %}
+        <div class="field">
+          <label>Roll Number*</label>
+          <input
+            type="text"
+            id="roll_number"
+            name="roll_number"
+            placeholder="Student Roll Number Here"
+          />
+        </div>
+        <div class="field row" style="display: flex">
+          <button
+            style="max-width: 10rem"
+            class="ui primary fluid button"
+            type="submit"
+            id="addStudent2"
+          >
+            Add
+          </button>
+        </div>
+      </form>
+      <br />
+      <form
+        method="POST"
+        id="#form32"
+        action="/mess/registeredstudent"
+        enctype="multipart/form-data"
+      >
+        {% csrf_token %}
+        <div class="field">
+          <label>Add by uploading Excel</label>
+          <input
+            type="file"
+            title="Upload excel file"
+            name="excel_file2"
+            accept=".xlsx,.xls"
+            style="max-width: 15rem; margin-bottom: 1rem"
+            required
+          />
+          <br />
+        </div>
+        <div class="field">
+          <button
+            class="ui primary fluid button"
+            style="max-width: 10rem"
+            type="submit"
+            name="excelUpload2"
+          >
+            <i class="upload icon"></i>
+            Register all
+          </button>
+          <ul>
+            <li>
+              The excel sheet should only contain one column with the roll
+              number of all the Students which should be registered or present
+              in Mess2.
+            </li>
+            <li>File should be in .xlsx or .xls format.</li>
+            <li>This registration will add the Students to mess2.</li>
+          </ul>
+        </div>
+      </form>
+    </div>
+  </div>
+</div> -->
+
+
+
+
+
+
+<div class="ui {% for d in desig %} {% if d.designation.name == 'mess_warden' %} active {% endif %} {% endfor %} tab" data-tab="regList">
+  {% block reg_list %}
+    {% include 'messModule/reg_list.html' %}
+    {% endblock %}
+</div>
+<br />
+
+
+<div class="ui {% for d in desig %} {% if d.designation.name == 'mess_manager' %} active {% endif %} {% endfor %} tab" data-tab="add_remove">
+  {% block add_remove %}
+  {% include 'messModule/add_remove.html' %}
+  {% endblock %}
+</div>
+
+{% block javascript %}
+<script
+  type="text/javascript"
+  src="{% static 'globals/js/jquery.min.js' %}"
+></script>
+
+<script type="text/javascript">
+
+
+  // document.getElementById("#myform1").addEventListener("submit", searchOrRemove);
+  // document.getElementById("#myform2").addEventListener("submit", addMess1);
+  // document.getElementById("#myform3").addEventListener("submit", addMess2);
+
+  function searchOrRemove(event){
+        event.preventDefault();
+        var my_Form = $(this);
+        var S_id=(my_Form[0][1].value)
+
+        submitType=event.submitter.id;
+        if(submitType==='searchStudent'||(submitType==='removeStudent'&&window.confirm("Do you want to remove "+S_id+"?"))){
+            $.ajax({
+                    type: 'GET',
+                    url: 'registeredstudent',
+                    dataType: 'json',
+                    data:{
+                    'roll_number': S_id,
+                    'type':submitType
+                },
+                success: function(data) {
+                    alert(data.message)
+                },
+                error: function(data, err) {
+                    alert(err)
+                }
+            });
+        }
+        else if((submitType==='removeAllStudent1'&&window.confirm("Do you really want to remove all Students from mess1?"))||(submitType==='removeAllStudent2'&&window.confirm("Do you really want to remove all Students from mess2?")))
+        {
+            var messNo='mess1';
+            if(submitType==='removeAllStudent2')messNo='mess2';
+            $.ajax({
+                    type: 'GET',
+                    url: 'registeredstudent',
+                    dataType: 'json',
+                    data:{
+                    'type':submitType,
+                    'mess':messNo
+                },
+                success: function(data) {
+                    alert(data.message)
+                },
+                error: function(data, err) {
+                    alert(err)
+                }
+            });
+        }
+
+    }
+
+    function addMess1(event){
+            event.preventDefault();
+            var my_Form = $(this);
+            var S_id=(my_Form[0][1].value)
+            submitType=event.submitter.id;
+            $.ajax({
+                    type: 'GET',
+                    url: 'registeredstudent',
+                    dataType: 'json',
+                    data:{
+                        'roll_number': S_id,
+                        'type':submitType,
+                        'messNo':'mess1'
+                    },
+                    success: function(data) {
+                        alert(data.message)
+                    },
+                    error: function(data, err) {
+                        alert(err)
+                    }
+                });
+    }
+    function addMess2(event){
+            event.preventDefault();
+            var my_Form = $(this);
+            var S_id=(my_Form[0][1].value)
+
+            submitType=event.submitter.id;
+
+            $.ajax({
+                    type: 'GET',
+                    url: 'registeredstudent',
+                    dataType: 'json',
+                    data:{
+                        'roll_number': S_id,
+                        'type':submitType,
+                        'messNo':'mess2'
+                    },
+                    success: function(data) {
+                        alert(data.message)
+                    },
+                    error: function(data, err) {
+                        alert(err)
+                    }
+                });
+    }
+</script>
+{% endblock %} {% endblock %}

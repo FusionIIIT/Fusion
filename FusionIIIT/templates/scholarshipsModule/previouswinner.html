@@ -1,0 +1,35 @@
+{% load static %}
+{% block previouswinner %}
+{% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="previouswinner">
+           Previous Winner
+        </a>
+    </div>
+
+<div class="ui active tab" data-tab="previouswinner">
+        <div class="ui vertical segment">
+            <table class="ui very basic collapsing celled table" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                <thead>
+                <tr>
+
+                    <th>Year</th>
+                    <th>Roll No.</th>
+                    <th>Name</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr>
+
+                    <td>2015</td>
+                    <td>98782</td>
+                    <td>Zlatan</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+</div>
+
+{% comment %}The tab menu starts here!{% endcomment %}
+{% endblock %}

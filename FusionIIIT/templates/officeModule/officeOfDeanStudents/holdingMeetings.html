@@ -1,0 +1,39 @@
+{% load static %}
+{% block form1 %}
+    <h3>Meetings</h3>
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="meeting_m">
+            New Meeting
+        </a>
+         <a class="item" data-tab="old_m">
+            Meetings
+        </a>
+    </div>
+    
+    <div class="ui active tab" data-tab="meeting_m">
+    <div class="ui vertical segment">
+    {% block tab1 %}
+        {% include 'officeModule/officeOfDeanStudents/holding_form.html' %}
+    
+    {% endblock %}  
+</div>
+</div>
+
+
+<div class="ui tab" data-tab="old_m">
+    <div class="ui vertical segment">
+        {% block tab2 %}
+        {% include 'officeModule/officeOfDeanStudents/view_meetings.html' %}
+        {% endblock %}
+
+</div>
+</div>
+</script>
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/modal.js' %}"></script>
+    <script type="text/javascript" src="{% static 'visitor_hostel/visitor-hostel.js' %}"></script>
+  
+{% endblock form1%}

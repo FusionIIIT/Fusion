@@ -1,0 +1,53 @@
+<head>
+    <title>
+        ERP!
+    </title>
+
+    {% load staticfiles %}
+    <link rel="stylesheet" type="text/css" href="{% static 'Fusion/bootstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'Fusion/css/cover.css' %}">
+
+</head>
+
+<body>
+    <div class="site-wrapper">
+        <div class="site-wrapper-inner">
+            <div class="cover-container">
+                <div class="masthead clearfix">
+                    <div class="inner">
+                        <h3 class="masthead-brand">
+                            Fusion!
+                        </h3>
+
+                        <nav>
+                            <ul class="nav masthead-nav">
+                                <li class="active"><a href="{% url 'Fusion:index' %}">Home</a></li>
+                                <li>
+                                    <a href="{% url 'Fusion:login' %}">Log in</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+
+                <div class="inner cover">
+                    <h1 class="cover-heading">Fusion!</h1>
+                    <p class="lead">
+                        An Intranet Institute <br> Enterprise Resource Planning Web Application!
+                    </p>
+                    <p class="lead">
+                        <a href="{% url 'Fusion:login' %}" class="btn btn-lg btn-default">Log in</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% block carousel %}
+        {% include 'root/Desktop/ProjectFusion/FusionIIIT/FusionIIIT/templates/Fusion/globals/carousel.html' %}
+    {% endblock %}
+
+</body>
+
+<script type="text/javascript" src="{% static 'Fusion/js/jquery.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'Fusion/bootstrap/js/bootstrap.min.js' %}"></script>

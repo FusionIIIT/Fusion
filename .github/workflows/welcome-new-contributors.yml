@@ -1,0 +1,18 @@
+name: 'Welcome new contributors'
+
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+
+jobs:
+  greet-the-contributor:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: garg3133/welcome-new-contributors@v1.1
+      with:
+        token: ${{ secrets.BOT_ACCESS_TOKEN }}
+        is-oauth-token: true
+        issue-message: 'Hi! Thanks for opening your first issue at Fusion. We really appreciate it. :raised_hands:'
+        pr-message: 'Congratulations for making your first Pull Request at Fusion!! :tada: Someone from our team will review it soon.'

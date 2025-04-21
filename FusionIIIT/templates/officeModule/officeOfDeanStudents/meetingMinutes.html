@@ -1,0 +1,92 @@
+{% block form6 %}
+<h3>Meeting Minutes</h3>
+
+
+    {% if success_msg != 'none'  and page == 6 %}
+    <div class="ui success message">
+        <i class="close icon"></i>
+        <div class="header">
+          {{ success_msg }}
+        </div>
+    </div>
+    {% endif %}
+    {% if err_msg != 'none'  and page == 6 %}
+    <div class="ui error message">
+            <i class="close icon"></i>
+            <div class="header">
+              There were some errors with your submission
+            </div>
+            <p>{{ err_msg }}</p>
+    </div>
+    {% endif %}
+
+<div class="ui pointing secondary menu">
+                                <a class=" active item" data-tab="pending">
+                                Pending
+                               </a>
+                                <a class="item" data-tab="submitted">
+                                 Submitted
+                                </a>
+</div>
+<!--Pending minutes starts here-->
+                 <div class="ui tab active segment" data-tab="pending">
+                     <table class="ui very basic celled table">
+                         <thead>
+                                            <tr>
+                                                <th class="two wide column">Agenda</th>
+                                                <th class="two wide column">Time</th>
+                                                <th class="two wide column">Venue</th>
+                                                <th class="two wide column">Date</th>
+                                                <th class="two wide column">File upload</th>
+                                                <th class="two wide column">YES</th>
+                                            </tr>
+                        </thead>
+                        <tr>
+
+                                    {% for details in meetingMinutes%}
+                            <form class="ui  form" action="meeting_Minutes/" method="post" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                <td>{{  details.agenda }}</td>
+                                <td >{{  details.time }}</td>
+                                <td >{{  details.venue }}</td>
+                                <td >{{  details.date }}
+                                    <input type="text" name="id" hidden="true" value="{{details.pk}}">
+                                </td>
+                                    <td ><div class="ui mini input"><input type="file" name="minutes_file" accept=".pdf, .doc, .docx"  placeholder="meeting minutes" required></div></td>
+                                <td > <button class="mini ui button" type="submit">Submit</button></td>
+                            </form>
+                        </tr>
+                                {% endfor %}
+
+
+
+                     </table>
+
+                </div>
+
+                <!-- Pending minutes ends here-->
+                <div class="ui tab segment" data-tab="submitted">
+                    <table class="ui very basic  celled table">
+                        <thead>
+                                            <tr>
+                                                <th class="two wide column">Agenda</th>
+                                                <th class="two wide column">Time</th>
+                                                <th class="two wide column">Date</th>
+                                                <th class="two wide column">Venue</th>
+                                                <th class="two wide column">File</th>
+                                            </tr>
+                        </thead>
+                        <tr>
+                            {% for details in final_minutes%}
+                                <td>{{  details.agenda }}</td>
+                                <td>{{  details.time }}</td>
+                                <td>{{  details.date }}</td>
+                                <td>{{  details.venue }}</td>
+                                <td><a class="ui inverted circular icon button" style="margin: auto;"  href="/media/{{  details.minutes_file }}" target="blank">
+                            <i class="large attach black icon"></i>
+                        </a>
+                        </tr>
+                         {% endfor %}
+                    </table>
+                </div>
+{% endblock form6 %} 

@@ -1,0 +1,347 @@
+
+{% load static %}
+{% block attendance%}
+
+
+<style type="text/css">
+  .switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+
+</style>
+
+<script type="text/javascript">
+
+ var showForm = function(id,bid){
+  var var_course = document.getElementById(bid).value;
+  // document.getElementById("mytext").value = var_course;
+  //var cid = bid;
+  document.getElementById("mytext").innerHTML = var_course;
+  document.getElementById(id).style.display = '';
+
+  var cid = bid;
+  window.value= cid;  
+  
+}
+
+var viewAttendance = function(id){
+  document.getElementById(id).style.display = '';
+}
+
+var submitAttendance = function(id){
+  document.getElementById(id).style.display = '';
+
+  document.getElementById("myAttendance").value = window.value;
+}
+
+
+</script>
+
+ <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="cse">
+          CSE
+        </a>
+        <a class=" item" data-tab="ece">
+            ECE
+        </a>
+         <a class=" item" data-tab="mech">
+           MECHANICAL
+        </a>
+         <a class=" item" data-tab="design">
+           DESIGN
+        </a>
+        <a class=" item" data-tab="other">
+           OTHER
+        </a>
+
+       
+    </div>
+
+
+       <div class="ui active tab segment" data-tab="cse">
+
+         <h4 class="ui dividing header">Courses</h4> 
+
+              
+                  
+                <div class="ui grid" id="cse_courses">
+                      {% for c in this_sem_course %}
+
+                          {% if c.course_id|make_list|slice:':2'|join:'' == 'CS' %}
+                            <div class="three wide column ">
+                              <!-- <button class="ui primary button" data-course={{c.course_id}} id={{c.course_id}} value={{c.course_id}} onclick="showForm('p')"> -->
+                                <button class="ui primary button" data-course={{c.course_id}} id={{c.course_id}} value={{c.course_id}}  onclick="showForm('p',this.id)">
+
+                               <!-- id visualize likhne se end sem time table khul raha -- refer acadCurriculum  -->
+                              <a id='visualize88' style="color:white;">{{c.course_id}}</a>
+                              </button>
+                              <br>
+                              <br>
+                            </div>
+                          {% endif %}
+                      {% endfor %}
+
+                </div>
+
+                  
+        <div class="ui divider"></div>
+  </div>
+
+
+   <div class="ui tab segment" data-tab="ece">
+             <h4 class="ui dividing header">Courses</h4> 
+                  
+                <div class="ui grid" id="ece_courses">
+                      {% for c in this_sem_course %}
+
+                          {% if c.course_id|make_list|slice:':2'|join:'' == 'ES' %}
+                            <div class="three wide column ">
+                              <button class="ui primary button" data-course={{c.course_id}} id={{c.course_id}} value={{c.course_id}}  onclick="showForm('p',this.id)">
+                              <a id='visualize' style="color:white;">{{c.course_id}}</a>
+                              </button>
+                              <br>
+                              <br>
+                            </div>
+                          {% endif %}
+                      {% endfor %}
+
+                </div>
+
+        <div class="ui divider"></div>
+  </div>
+
+   <div class="ui  tab segment" data-tab="mech">
+
+         <h4 class="ui dividing header">Courses</h4> 
+                  
+                <div class="ui grid" id="mech_courses">
+                      {% for c in this_sem_course %}
+
+                          {% if c.course_id|make_list|slice:':2'|join:'' == 'ME' %}
+                            <div class="three wide column ">
+                              <button class="ui primary button" data-course={{c.course_id}} id={{c.course_id}} value={{c.course_id}}  onclick="showForm('p',this.id)">
+                              <a id='visualize90' style="color:white;">{{c.course_id}}</a>
+                              </button>
+                              <br>
+                              <br>
+                            </div>
+                          {% endif %}
+                      {% endfor %}
+
+                </div>
+
+                  
+
+        <div class="ui divider"></div>
+  </div>
+
+
+   <div class="ui tab segment" data-tab="design">
+
+               
+           <h4 class="ui dividing header">Courses</h4> 
+                  
+                <div class="ui grid" id="design_courses">
+                      {% for c in this_sem_course %}
+
+                          {% if c.course_id|make_list|slice:':2'|join:'' == 'DS' %}
+                            <div class="three wide column ">
+                              <button class="ui primary button" data-course={{c.course_id}} id={{c.course_id}} value={{c.course_id}}  onclick="showForm('p',this.id)">
+                              <a id='visualize' style="color:white;">{{c.course_id}}</a>
+                              </button>
+                              <br>
+                              <br>
+                            </div>
+                          {% endif %}
+                      {% endfor %}
+
+                </div>
+
+
+  </div>
+
+  <div class="ui tab segment" data-tab="other">
+           <h4 class="ui dividing header">Courses</h4> 
+                  
+                <div class="ui grid" id="other_courses">
+                      {% for c in this_sem_course %}
+
+                          {% if c.course_id|make_list|slice:':2'|join:'' != 'CS' and c.course_id|make_list|slice:':2'|join:'' != 'ES' and c.course_id|make_list|slice:':2'|join:'' != 'ME' and c.course_id|make_list|slice:':2'|join:'' != 'DS'%}
+                            <div class="three wide column ">
+                              <button class="ui primary button" data-course={{c.course_id}} id={{c.course_id}} value={{c.course_id}}  onclick="showForm('p',this.id)">
+                              <a id='visualize' style="color:white;">{{c.course_id}}</a>
+                              </button>
+                              <br>
+                              <br>
+                            </div>
+                          {% endif %}
+                      {% endfor %}
+
+                </div>
+
+                   
+  </div>
+
+    <h4 class="ui dividing header"></h4> 
+                <div>
+                      <div id="p" style="display:none">
+                       <h4>Options<span id="mytext"></span></h4>
+                        
+                   
+                        <input class="ui primary button" type="submit" value="View Attendance" onclick="viewAttendance('attendanceTable')">
+                        <input class="ui primary button" type="submit" value="Submit Attendance" onclick="submitAttendance('attendanceTableSubmit')">
+                      </div>
+                </div>
+
+ <h4 class="ui dividing header"></h4> 
+ <div>
+
+    <div class="card-body" >
+      <div class="table-responsive">
+                  <table class="ui fixed  sortable celled table" style="display: none" id="attendanceTable" >
+          <thead>
+            <tr>
+              <th>Roll no.</th>
+              <th>Present</th>
+              <th>Total Days</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+                <tr> 
+                  <td>{{ x.id }}</td>
+                  <td>{{x.present}}</td>
+                  <td>{{ x.total }}</td>
+               
+                </tr>
+           
+          </tbody>
+
+        </table>
+</div>
+</div>
+</div> 
+
+
+ <h4 class="ui dividing header"></h4> 
+  <div>
+
+    <div class="card-body" >
+      <div class="table-responsive" id="attendanceTableSubmit" style="display: none">
+        <form class="ui form" method="" action="" >
+          <div class="field">
+
+          <label>Faculty</label>
+                           <div class="ui fluid search selection dropdown">
+                                    <input type="hidden" name="faculty">
+                                    <i class="dropdown icon"></i>
+                                    <div class="default text">Faculty</div>
+                                    <div class="menu">
+                                      {% for x in Faculty %}
+                                        <div class="item" data-value={{x.user}}>{{x.user}}</div>
+                                      {% endfor %}
+                                        
+                                  </div>
+        </div>
+      </div>
+        <div class="field">
+
+          <input type="input" name="Course" id="myAttendance" disabled="disabled">
+        </div>
+                  <table class="ui fixed  sortable celled table">
+          <thead>
+            <tr>
+              <th>Roll no.</th>
+              <th>Present/Absent</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+                <tr> 
+                  <td></td>
+                  <td>
+                    <label class="switch">
+                        <input type="checkbox">
+                        <span class="slider round"></span>
+                    </label>
+                  </td>
+                </tr>
+           
+          </tbody>
+
+        </table>
+       <div class="fields">
+        <div class="one wide field">
+            <label><br></label>
+                <input type="submit" value="Save" />
+        </div>
+        </div>
+      
+      </form>
+</div>
+</div>
+</div>  
+
+
+
+ {% endblock %}
+

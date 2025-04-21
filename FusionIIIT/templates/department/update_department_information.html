@@ -1,0 +1,69 @@
+{% load static %}
+
+{% block update_department_info %}
+
+    {% comment %} The tab menu starts here! {% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="dep">
+            Update Department Information
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="dep">
+        <div class="ui vertical segment">
+            <!-- Fill the form details -->
+            <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST" enctype="multipart/form-data" 
+                  action ="" > <!-- Specify your form action URL -->
+                  <input type="hidden" name = "form_type" value = "form2">
+                {% csrf_token %}
+
+                <div class="ui header">
+                    Update Department Information:
+                </div>
+
+                <br>
+
+                <div class="field">
+                    <label>Email:</label>
+                    <input type="email" name="email" placeholder="Enter email" required>
+                </div>
+
+                <div class="field">
+                    <label>Contact Number:</label>
+                    <input type="tel" name="contact_number" placeholder="Enter contact number" required>
+                </div>
+
+                <div class="field">
+                    <label>Facilities</label>
+                    <textarea name="facilities" placeholder="Enter facilities offered by the department" required></textarea>
+                </div>
+
+                <div class="field">
+                    <label>Labs</label>
+                    <textarea name="labs" placeholder="Enter Facility information of the department" required></textarea>
+                </div>
+
+                <br>
+
+                <button class="ui large primary button right floated" type="submit" onclick="updateDepartment()">
+                    Update Information
+                </button>
+
+                <br>
+                <br>
+
+            </form>
+
+            <br>
+            <div class="ui divider"></div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <script type="text/javascript" src="{% static 'department/js/function.js' %}"></script>
+{% endblock %}

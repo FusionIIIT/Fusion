@@ -1,0 +1,30 @@
+{% block tab2 %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="tab2content1">
+            Create Payments
+        </a>
+
+        <a class="item" data-tab="tab2content2">
+            View Previous Payments
+        </a>
+    </div>
+
+
+    <div class="ui active tab" data-tab="tab2content1">
+        <div class="ui vertical segment">
+            {% block tab2content1 %}
+                {% include 'financeAndAccountsModule/paymentAndReceipts_content5.html' %}
+            {% endblock %}
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="tab2content2">
+        <div class="ui vertical segment">
+            {% block tab2content2 %}
+                {% include 'financeAndAccountsModule/paymentAndReceipts_content4.html' %}
+            {% endblock %}
+        </div>
+    </div>
+{% endblock tab2 %}

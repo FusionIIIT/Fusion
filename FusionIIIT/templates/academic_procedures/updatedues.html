@@ -1,0 +1,574 @@
+{% load static %}
+<style>
+.dues {
+  background-color: #f1f1f1;
+  color: #444;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+  transition: 0.4s;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  border-radius: 3px; 
+}
+
+.thesis:hover {
+  background-color: #ddd; 
+}
+.pthesis {
+  background-color: #f1f1f1;
+  color: #444;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+  transition: 0.4s;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  border-radius: 3px; 
+}
+
+.pthesis:hover {
+  background-color: #ddd; 
+}
+
+.panel {
+  padding: 0 18px;
+  background-color: #f1f1f1;
+  border-radius: 5px;
+}
+
+table{
+    border: 1px;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+
+.td1{
+    width: 28%;
+    padding-bottom:15px;    
+    padding-top: 15px;
+}
+.td2{
+    width: 30%;
+        padding-bottom:15px;    
+    padding-top: 15px;
+}
+.td3{
+    width: 18%;
+    padding-bottom:15px;    
+    padding-top: 15px;
+}
+.td4{
+    width: 30%;
+    padding-bottom:15px;    
+    padding-top: 15px;
+}
+.td5{
+    width: 2%;
+    padding-bottom:15px;    
+    padding-top: 15px;
+}
+.previous {
+  background-color: #f1f1f1;
+  color: black;
+}
+.previous:hover {
+      background-color: #ddd;
+  color: black;
+}
+.bn button{
+    float: right;
+}
+.approve{
+    background-color: #55DB86;
+    color: white;
+}
+.approve:hover{
+    background-color: #2CC764;
+    color:white;
+}
+.disapprove{
+    background-color: #F54D69;
+    color: white;
+}
+.disapprove:hover{
+    background-color: #C54257;
+    color:white;
+}
+
+
+</style>
+
+
+
+{% block phdform %}
+<div class="ui pointing secondary menu">
+    <a class=" active item" data-tab="btech2016">
+        UG-2016
+    </a>
+    <a class="item" data-tab="btech2017" >
+        UG-2017
+    </a>
+    <a class=" item" data-tab="btech2018" >
+        UG-2018
+    </a>
+    <a class="item" data-tab="btech2019">
+        UG-2019
+    </a>
+    <a class="item" data-tab="mtech2018">
+        MTECH-2018
+    </a>
+    <a class="item" data-tab="mtech2019">
+        MTECH-2019
+    </a>
+</div>
+<div class="ui active tab segment" data-tab="btech2016">
+    <div id="p1" class="ui vertical segment">
+        {% if dues %}
+            {% for obj1 in dues %}
+            {% if obj1.student_id.batch == 2016 %}
+                    <div  class="dues b2016" id_b="btech2016{{forloop.counter}}" id_dobject="{{obj.id}}">{{obj1.student_id}}</div>
+                <div class="panel" id="btech2016{{forloop.counter}}" hidden>
+                    
+                    <table class="ui celled table"
+                                        style="padding-left: 2.5%;
+                                        padding-right: 2.5%;
+                                        padding-top: 1%;
+                                        padding-bottom: 1.5%;
+                                        width: 100%">
+                        <thead>
+                            <tr style="border-radius: 3px;">
+                                
+                                <th rowspan="2">Month</th>
+                                <th rowspan="2">Year</th>
+                                <th rowspan="2">Description</th>
+                                <th rowspan="2">Amount</th>
+                                <th rowspan="2">Remaining amount</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                        {% for obj in Mess_due %}
+                            {% if obj1.student_id == obj.student %}
+                            <tr>                
+                                
+                                <td>{{obj.month}}</td>
+                                <td>{{ obj.year }}</td>
+                                <td>{{ obj.description }}</td>
+                                <td>{{ obj.amount }}</td>
+                                <td>{{ obj.remaining_amount }}</td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                        </tbody>
+                        
+                    </table>
+                    <div class="ui divider"></div><br>
+                    <div class="bn"><div href="" class="dueprevious16" style="text-decoration: none;
+                                                                                display: inline-block;
+                                                                                padding: 8px 16px;
+                                                                                cursor: pointer;">&laquo; Back</div>
+                    </div>
+                    
+                </div>
+            {% endif %}
+            {% endfor %}
+        
+        
+        {% else %}
+       <h3>no requests</h3>
+       {% endif %}
+
+    </div>
+</div>
+<div class="ui tab segment" data-tab="btech2017">
+    <div id="p2" class="ui vertical segment">
+        {% if dues %}
+            {% for obj1 in dues %}
+            {% if obj1.student_id.batch == 2017 %}
+                    <div  class="dues b2017" id_b="btech2017{{forloop.counter}}" id_dobject="{{obj.id}}">{{obj1.student_id}}</div>
+                <div class="panel" id="btech2017{{forloop.counter}}" hidden>
+                    
+                    <table class="ui celled table"
+                                        style="padding-left: 2.5%;
+                                        padding-right: 2.5%;
+                                        padding-top: 1%;
+                                        padding-bottom: 1.5%;
+                                        width: 100%">
+                        <thead>
+                            <tr style="border-radius: 3px;">
+                                
+                                <th rowspan="2">Month</th>
+                                <th rowspan="2">Year</th>
+                                <th rowspan="2">Description</th>
+                                <th rowspan="2">Amount</th>
+                                <th rowspan="2">Remaining amount</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                        {% for obj in Mess_due %}
+                            {% if obj1.student_id == obj.student %}
+                            <tr>                
+                                
+                                <td>{{obj.month}}</td>
+                                <td>{{ obj.year }}</td>
+                                <td>{{ obj.description }}</td>
+                                <td>{{ obj.amount }}</td>
+                                <td>{{ obj.remaining_amount }}</td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                        </tbody>
+                        
+                    </table>
+                    <div class="ui divider"></div><br>
+                    <div class="bn"><div href="" class="dueprevious17" style="text-decoration: none;
+                                                                                display: inline-block;
+                                                                                padding: 8px 16px;
+                                                                                cursor: pointer;">&laquo; Back</div>
+                    </div>
+                    
+                </div>
+            {% endif %}
+            {% endfor %}
+        
+        
+        {% else %}
+       <h3>no requests</h3>
+       {% endif %}
+
+    </div>
+</div>
+<div class="ui tab segment" data-tab="btech2018">
+    <div id="p3" class="ui vertical segment">
+        {% if dues %}
+            {% for obj1 in dues %}
+            {% if obj1.student_id.batch == 2018 %}
+                    <div  class="dues b2018" id_b="btech2018{{forloop.counter}}" id_dobject="{{obj.id}}">{{obj1.student_id}}</div>
+                <div class="panel" id="btech2018{{forloop.counter}}" hidden>
+                    
+                    <table class="ui celled table"
+                                        style="padding-left: 2.5%;
+                                        padding-right: 2.5%;
+                                        padding-top: 1%;
+                                        padding-bottom: 1.5%;
+                                        width: 100%">
+                        <thead>
+                            <tr style="border-radius: 3px;">
+                                
+                                <th rowspan="2">Month</th>
+                                <th rowspan="2">Year</th>
+                                <th rowspan="2">Description</th>
+                                <th rowspan="2">Amount</th>
+                                <th rowspan="2">Remaining amount</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                        {% for obj in Mess_due %}
+                            {% if obj1.student_id == obj.student %}
+                            <tr>                
+                                
+                                <td>{{obj.month}}</td>
+                                <td>{{ obj.year }}</td>
+                                <td>{{ obj.description }}</td>
+                                <td>{{ obj.amount }}</td>
+                                <td>{{ obj.remaining_amount }}</td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                        </tbody>
+                        
+                    </table>
+                    <div class="ui divider"></div><br>
+                    <div class="bn"><div href="" class="dueprevious18" style="text-decoration: none;
+                                                                                display: inline-block;
+                                                                                padding: 8px 16px;
+                                                                                cursor: pointer;">&laquo; Back</div>
+                    </div>
+                    
+                </div>
+            {% endif %}
+            {% endfor %}
+        
+        
+        {% else %}
+       <h3>no requests</h3>
+       {% endif %}
+
+    </div>
+</div>
+<div class="ui tab segment" data-tab="btech2019">
+    <div id="p4" class="ui vertical segment">
+        {% if dues %}
+            {% for obj1 in dues %}
+            {% if obj1.student_id.batch == 2019 %}
+                    <div  class="dues b2019" id_b="btech2019{{forloop.counter}}" id_dobject="{{obj.id}}">{{obj1.student_id}}</div>
+                <div class="panel" id="btech2019{{forloop.counter}}" hidden>
+                    
+                    <table class="ui celled table"
+                                        style="padding-left: 2.5%;
+                                        padding-right: 2.5%;
+                                        padding-top: 1%;
+                                        padding-bottom: 1.5%;
+                                        width: 100%">
+                        <thead>
+                            <tr style="border-radius: 3px;">
+                                
+                                <th rowspan="2">Month</th>
+                                <th rowspan="2">Year</th>
+                                <th rowspan="2">Description</th>
+                                <th rowspan="2">Amount</th>
+                                <th rowspan="2">Remaining amount</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                        {% for obj in Mess_due %}
+                            {% if obj1.student_id == obj.student %}
+                            <tr>                
+                                
+                                <td>{{obj.month}}</td>
+                                <td>{{ obj.year }}</td>
+                                <td>{{ obj.description }}</td>
+                                <td>{{ obj.amount }}</td>
+                                <td>{{ obj.remaining_amount }}</td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                        </tbody>
+                        
+                    </table>
+                    <div class="ui divider"></div><br>
+                    <div class="bn"><div href="" class="dueprevious19" style="text-decoration: none;
+                                                                                display: inline-block;
+                                                                                padding: 8px 16px;
+                                                                                cursor: pointer;">&laquo; Back</div>
+                    </div>
+                    
+                </div>
+            {% endif %}
+            {% endfor %}
+        
+        
+        {% else %}
+       <h3>no requests</h3>
+       {% endif %}
+
+    </div>
+</div>
+<div class="ui tab segment" data-tab="mtech2018">
+    <div id="p5" class="ui vertical segment">
+        {% if dues %}
+            {% for obj1 in dues %}
+            {% if obj1.student_id.batch == 1814 %}
+                    <div  class="dues m2018" id_b="mtech2018{{forloop.counter}}" id_dobject="{{obj.id}}">{{obj1.student_id}}</div>
+                <div class="panel" id="mtech2018{{forloop.counter}}" hidden>
+                    
+                    <table class="ui celled table"
+                                        style="padding-left: 2.5%;
+                                        padding-right: 2.5%;
+                                        padding-top: 1%;
+                                        padding-bottom: 1.5%;
+                                        width: 100%">
+                        <thead>
+                            <tr style="border-radius: 3px;">
+                                
+                                <th rowspan="2">Month</th>
+                                <th rowspan="2">Year</th>
+                                <th rowspan="2">Description</th>
+                                <th rowspan="2">Amount</th>
+                                <th rowspan="2">Remaining amount</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                        {% for obj in Mess_due %}
+                            {% if obj1.student_id == obj.student %}
+                            <tr>                
+                                
+                                <td>{{obj.month}}</td>
+                                <td>{{ obj.year }}</td>
+                                <td>{{ obj.description }}</td>
+                                <td>{{ obj.amount }}</td>
+                                <td>{{ obj.remaining_amount }}</td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                        </tbody>
+                        
+                    </table>
+                    <div class="ui divider"></div><br>
+                    <div class="bn"><div href="" class="duepreviousm18" style="text-decoration: none;
+                                                                                display: inline-block;
+                                                                                padding: 8px 16px;
+                                                                                cursor: pointer;">&laquo; Back</div>
+                    </div>
+                    
+                </div>
+            {% endif %}
+            {% endfor %}
+        
+        
+        {% else %}
+       <h3>no requests</h3>
+       {% endif %}
+
+    </div>
+</div>
+<div class="ui tab segment" data-tab="mtech2019">
+    <div id="p6" class="ui vertical segment">
+        {% if dues %}
+            {% for obj1 in dues %}
+            {% if obj1.student_id.batch == 1914 %}
+                    <div  class="dues m2019" id_b="mtech2019{{forloop.counter}}" id_dobject="{{obj.id}}">{{obj1.student_id}}</div>
+                <div class="panel" id="mtech2019{{forloop.counter}}" hidden>
+                    
+                    <table class="ui celled table"
+                                        style="padding-left: 2.5%;
+                                        padding-right: 2.5%;
+                                        padding-top: 1%;
+                                        padding-bottom: 1.5%;
+                                        width: 100%">
+                        <thead>
+                            <tr style="border-radius: 3px;">
+                                
+                                <th rowspan="2">Month</th>
+                                <th rowspan="2">Year</th>
+                                <th rowspan="2">Description</th>
+                                <th rowspan="2">Amount</th>
+                                <th rowspan="2">Remaining amount</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                        {% for obj in Mess_due %}
+                            {% if obj1.student_id == obj.student %}
+                            <tr>                
+                                
+                                <td>{{obj.month}}</td>
+                                <td>{{ obj.year }}</td>
+                                <td>{{ obj.description }}</td>
+                                <td>{{ obj.amount }}</td>
+                                <td>{{ obj.remaining_amount }}</td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                        </tbody>
+                        
+                    </table>
+                    <div class="ui divider"></div><br>
+                    <div class="bn"><div href="" class="duepreviousm19" style="text-decoration: none;
+                                                                                display: inline-block;
+                                                                                padding: 8px 16px;
+                                                                                cursor: pointer;">&laquo; Back</div>
+                    </div>
+                    
+                </div>
+            {% endif %}
+            {% endfor %}
+        
+        
+        {% else %}
+       <h3>no requests</h3>
+       {% endif %}
+
+    </div>
+</div>
+{% endblock %}
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+
+
+
+
+$(function() {
+    
+    $(".b2016").click(function(){
+        id16 = $(this).attr("id_b");
+        $("#"+id16).show();
+        $(".b2016").hide();
+        obj_id = $(this).attr("id_dobject");
+        
+    });
+    $(".dueprevious16").click(function(){
+        $("#"+id16).hide();
+        $(".b2016").show();
+    });
+    $(".b2017").click(function(){
+        id17 = $(this).attr("id_b");
+        $("#"+id17).show();
+        $(".b2017").hide();
+        obj_id = $(this).attr("id_dobject");
+        
+    });
+    $(".dueprevious17").click(function(){
+        $("#"+id17).hide();
+        $(".b2017").show();
+    });
+    $(".b2018").click(function(){
+        id18 = $(this).attr("id_b");
+        $("#"+id18).show();
+        $(".b2018").hide();
+        obj_id = $(this).attr("id_dobject");
+        
+    });
+    $(".dueprevious18").click(function(){
+        $("#"+id18).hide();
+        $(".b2018").show();
+    });
+    $(".b2019").click(function(){
+        id19 = $(this).attr("id_b");
+        $("#"+id19).show();
+        $(".b2019").hide();
+        obj_id = $(this).attr("id_dobject");
+        
+    });
+    $(".dueprevious19").click(function(){
+        $("#"+id19).hide();
+        $(".b2019").show();
+    });
+    $(".m2018").click(function(){
+        idm18 = $(this).attr("id_b");
+        $("#"+idm18).show();
+        $(".m2018").hide();
+        obj_id = $(this).attr("id_dobject");
+        
+    });
+    $(".duepreviousm18").click(function(){
+        $("#"+idm18).hide();
+        $(".m2018").show();
+    });
+    $(".m2019").click(function(){
+        idm19 = $(this).attr("id_b");
+        $("#"+idm19).show();
+        $(".m2019").hide();
+        obj_id = $(this).attr("id_dobject");
+        
+    });
+    $(".duepreviousm19").click(function(){
+        $("#"+idm19).hide();
+        $(".m2019").show();
+    });
+
+// function b1()
+// {
+//     document.getElementById('p1').style="display:block";
+//     document.getElementById('p2').style="display:none";
+// }
+// function b2()
+// {
+//     document.getElementById('p1').style="display:none";
+//     document.getElementById('p2').style="display:block";
+// }
+    
+
+});
+
+
+</script>

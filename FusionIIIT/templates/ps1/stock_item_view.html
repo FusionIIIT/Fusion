@@ -1,0 +1,142 @@
+{% extends 'ps1/ps2.html' %}
+{% load static %}
+
+{% block filetracking_tab %} 
+
+<form method="POST" enctype="multipart/form-data" id="form" action="/purchase-and-store/update_stock_item_inUse/">
+
+    <div class="ui active tab" data-tab="composefile">
+        <div class="ui vertical stripe team segment" style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+   <div class="ui grid">
+    <div class="sixteen wide column">
+        <div class="ui pointing secondary menu flex">
+            <h3>
+                <a class="active item" data-tab="inward">
+                    Stock Items View
+                </a>
+            </h3>
+            {% if request.session.currentDesignationSelected != "ps_admin" %}
+            <div class="right menu">
+                <button class="ui primary button compact" style="padding-top: 8px; padding-bottom: 8px;">Save</button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+
+    
+    <div class="ui divider"></div>
+    {% if stocks %}
+
+    <div class="table-container" style="overflow-x: scroll;max-height: 500px;  overflow-y: scroll;">
+
+    <table class="ui very basic celled sortable table">
+        <thead>
+        <tr>
+                <th>Nomenclature</th>
+                <th>Item Name</th>
+                <th>Current Department/Section</th>
+                <th >Current Location</th>
+                <th >Transferred</th>
+                <th >InUse</th>
+                <!-- <th >Transfer History</th> -->
+            
+        </tr>
+        </thead>
+        <!-- -->
+        <tbody>
+            {% for s in stocks %}
+                {% if s.StockEntryId.item_id.purchased %}
+            <tr>
+                <td>
+                    <a href="/purchase-and-store/item_detail/{{ s.id }}/">{{ s.nomenclature }}</a>
+                </td>
+                <!-- <td> {{s.nomenclature}} </td> -->
+                <td> {{s.StockEntryId.item_id.item_name}} </td>
+                <td>{{s.department.name}}</td>
+                <td>{{s.location}}</td>
+                <td>{{s.isTransferred}}</td>
+
+                    <td>
+                        {% if request.session.currentDesignationSelected == "ps_admin" %}
+                            <input type="checkbox" value="{{s.id}}" name="selected_stock_item" {% if s.inUse %}checked{% endif %} disabled>
+                        {% else %}
+                            <input type="checkbox" value="{{s.id}}" name="selected_stock_item" {% if s.inUse %}checked{% endif %}>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                            <!-- {% if s.isTransferred %}
+                            <Button type="submit" class="ui primary button" value="{{s.id}}" name="selected_stock_item_for_history" >Track History</Button>
+                            {% else %}
+                                <Button type="submit" class="ui primary button" value="{{s.id}}" name="selected_stock_item_for_history" disabled>Track History</Button>
+                            {% endif %} -->
+
+                    </td>
+            
+            </tr>
+            {% endif %}
+
+                {% endfor %}
+        </tbody>
+    </table>
+
+
+</div>
+</form>
+
+
+    <br>
+    {% else %}
+        <h4 >No Records present in database</h4>
+     {% endif %}
+
+
+       
+   
+
+    </div>  
+
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#form').on('submit', function (event) {
+                event.preventDefault(); // Prevent default form submission
+                var selectedItems = []; // Array to store selected item IDs
+
+                // Iterate over each checked checkbox and add its value to the array
+                $('input[name="selected_stock_item"]').each(function () {
+                    var itemId = $(this).val();
+                    var isChecked = $(this).prop('checked');
+                    selectedItems.push({ id: itemId, checked: isChecked });
+                });
+
+                // Send the selected item IDs to the view using AJAX
+                $.ajax({
+                    type: 'POST',
+                    url: $(this).attr('action'), // Form action URL
+                    dataType: 'json',
+                    data: {
+                        'selected_stock_items':  JSON.stringify(selectedItems),
+                        'csrfmiddlewaretoken': '{{csrf_token}}'
+                    },
+                    success: function (response) {
+                        console.log("success in sending stock items information");
+                        if (response.success) {
+                            window.location.href = '../current_stock_view'; 
+                        } else {
+                            console.log("Request was successful, but response indicates failure.");
+                        }
+                    },
+                    error: function (xhr, errmsg, err) {
+                        // Handle error response
+                        console.log("failure in sending stock items information");
+                    }
+                });
+            });
+        });
+    </script>
+
+    {% endblock %}

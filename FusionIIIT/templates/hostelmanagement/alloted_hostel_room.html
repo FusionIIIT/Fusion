@@ -1,0 +1,67 @@
+{% block alloted_hostel_room %}
+<div class="ui secondary menu">
+
+    <div class="ui floating dropdown labeled icon button">
+    <i class="home icon"></i>
+    <span class="text">Select Hall</span>
+        <div class="menu">
+        {% for hall in all_hall %}
+            <a class="{% if hall.hall_id == current_hall %}item active{% else %}item{% endif %}" data-tab={{hall.hall_id}}>
+                Hall {{hall.hall_id.4}}
+            </a>
+        {% endfor %}
+        </div>
+    </div>
+
+{% if user in hall_caretaker %}
+<div class="right menu">
+    <a class="item" data-tab="add_student">
+        <i class="edit icon"></i>Edit Student
+    </a>
+</div>
+{% endif %}
+
+<div class="center menu">
+    {% if user in hall_caretaker%}
+      <a class="item" data-tab="edit_by_sheet">
+          <i class="edit icon"></i>Upload Sheet
+      </a>
+    {% endif %}
+</div>
+
+</div>
+
+
+{% for hall in all_hall %}
+    <div class="{% if hall.hall_id == current_hall %}ui active tab{% else %}ui tab{% endif %}" data-tab={{hall.hall_id}}>
+        <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: hidden;">
+            {% block {{hall.hall_id}} %}
+                {% include 'hostelmanagement/halls.html' with hall_id=hall.hall_id %}
+            {% endblock %}
+        </div>
+    </div>
+{% endfor %}
+
+
+ <div class="ui tab" data-tab="add_student">
+    <div class="ui vertical segment">
+        {% block add_student %}
+            {% include 'hostelmanagement/add_student.html' %}
+        {% endblock %}
+    </div>
+</div> 
+
+<div class="ui tab" data-tab="edit_by_sheet">
+    <div class="ui vertical segment">
+        {% block room_upload %}
+            {% include 'hostelmanagement/upload_student_rooms.html' %}
+        {% endblock %}
+    </div>
+</div>
+
+<br>
+<br>
+
+<div class="ui divider"></div>
+
+{% endblock %}

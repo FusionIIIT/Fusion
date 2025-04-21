@@ -1,0 +1,179 @@
+
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+  Module name
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+<div class="ui stackable doubling grid">
+<div class="column"></div>
+  <div class="three wide column">
+
+      {% comment %}The user image card starts here!{% endcomment %}
+      {% block usercard %}
+          {% include 'globals/usercard.html' %}
+      {% endblock %}
+      {% comment %}The user image card ends here!{% endcomment %}
+
+      <div class="ui divider"></div>
+
+      {% comment %}The Tab-Menu starts here!{% endcomment %}
+
+      {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+  </div>
+<div class="ui divider"></div>
+ <div class="eight wide column">
+<table class="ui very basic collapsing celled sortable table"
+       style="padding-left: 5%;
+                                                          padding-right: 5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+    <thead>
+    <tr>
+
+        <th class="one wide column">
+            File.#
+        </th>
+        <th class="one wide column">
+            item
+        </th>
+        <th class="four wide column">
+          Expected purchase date
+        </th>
+
+        <th class="four wide colum">
+          Current Status
+        </th>
+
+        <th class="four wide column">
+            Purchase Amount
+        </th>
+    </tr>
+    </thead>
+    {% if alldata %}
+    {% for j in alldata %}
+    <tbody>
+    <tr>
+        <td>
+            {{ j.id }}
+        </td>
+        <td>
+            {{ j.item_name }}
+        </td>
+        <td>
+            {{ j.expected_purchase_date}}
+        </td>
+
+        <td>
+          {% if  j.HOD_approve_tag == 0 %}
+            Office Of Department HOD
+            {% endif %}
+
+          {% if  j.HOD_approve_tag == 1 %}
+          {% if  j.registrar_approve_tag == 0 %}
+            Office Of registrar
+            {% endif %}
+            {% endif %}
+
+            {% if  j.HOD_approve_tag == 1 %}
+            {% if  j.registrar_approve_tag == 1 %}
+            {% if j.expected_cost >= 50001 %}
+            {% if  j.director_approve_tag == 0 %}
+            Office of director
+            {% endif %}
+            {% endif %}
+            {% endif %}
+            {% endif %}
+
+            {% if  j.HOD_approve_tag == 1 %}
+            {% if  j.registrar_approve_tag == 1 %}
+            {% if  j.director_approve_tag == 1 %}
+            Office of purchase officer
+            {% endif %}
+            {% endif %}
+            {% endif %}
+
+
+        </td>
+
+        <td>
+            {{ j.expected_cost }}
+        </td>
+
+    </tr>
+    </tbody>
+    {% endfor %}
+
+    {% endif %}
+
+
+
+
+    {% for j in ph %}
+    <tbody>
+    <tr>
+        <td>
+            {{ j.id }}
+        </td>
+
+        <td>
+            {{ j.indentor_name_id }}
+        </td>
+
+        <td>
+            {{ j.purchase_date}}
+        </td>
+
+        <td>
+            {{ j.amount }}
+        </td>
+
+    </tr>
+    </tbody>
+    {% endfor %}
+</table>
+
+<br>
+<br>
+</div>
+<div class="ui divider"></div>
+<div class="three wide column">
+    <div class="row">
+        <div class="ui row">
+            <h3 class="ui header" style="padding-left: 16px;">
+                Office Of Purchase Officer
+            </h3>
+        </div>
+    </div>
+
+    <div class="ui divider"></div>
+
+    <!-- <div class="row">
+        <div class="ui row">
+            <div id="textSegmentDiv">
+                <div class="ui active large text loader"
+                     id="loader">
+                    Loading ...
+                </div>
+
+                <div id="textLoader" style="max-height: 87.5vh; overflow-y: auto; overflow-x: hidden;">
+                    {% block alerts %}
+                        {% include 'officeModule/officeOfPurchaseOfficer/alerts.html' %}
+                    {% endblock %}
+                </div>
+
+            </div>
+        </div>
+    </div> -->
+</div>
+</div>
+{% endblock %}

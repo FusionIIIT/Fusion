@@ -1,0 +1,79 @@
+ <script type="text/javascript">
+ $('.message .close')
+  .on('click', function() {
+    $(this)
+      .closest('.message')
+      .transition('fade')
+    ;
+  })
+;
+
+
+        function setDate(){
+        var today = new Date();
+        var dd = today.getDate();
+        var mm = today.getMonth()+1; //January is 0!
+        var yyyy = today.getFullYear();
+         if(dd<10){
+                dd='0'+dd
+            }
+            if(mm<10){
+                mm='0'+mm
+            }
+
+        today = dd+'/'+mm+'/'+yyyy;
+        // document.getElementById("datefield").setAttribute("min", today);
+        var dateControl = document.querySelector('input[type="date"]');
+        dateControl.value = today;
+        }
+
+    </script>
+
+    {% if success_msg != 'none' and page == 1 %}
+    <div class="ui message success">
+        <i class="close icon"></i>
+        <div class="header">
+          {{ success_msg }}
+        </div>
+    </div>
+    {% endif %}
+    {% if err_msg != 'none' and page == 1 %}
+    <div class="ui message error">
+            <i class="close icon"></i>
+            <div class="header">
+              There were some errors with your submission
+            </div>
+            <p>{{ err_msg }}</p>
+    </div>
+    {% endif %}
+
+<form class="ui  form"  id="meeting_form" action="holding_meetings" enctype="multipart/form-data" method="post">
+        {% csrf_token %}
+
+        <div class="field">
+            <label>Agenda<text style="color: red;">  *</text></label>
+            <input type="text" name="agenda" placeholder="Agenda" autocomplete="off" required>
+        </div>
+
+
+        <div class="fields">
+             
+            <div class="eight wide field">
+            <label>Date<text style="color: red;">  *</text></label>
+            <input class="ui input date" type="date" data-date-format="DD/MM/YYYY" name="date" id="datefield" min="01/04/2018"  required>
+            </div>
+             <script type="text/javascript">
+                $("#datefield").validate();
+             </script>
+            <div class="eight wide field">
+            <label>Time<text style="color: red;">  *</text></label>
+            <input type="time" name="time" placeholder="time" required>
+            </div>
+        </div>
+        <div class="field">
+            <label>Venue<text style="color: red;">  *</text></label>
+            <input type="text" name="venue" placeholder="venue" autocomplete="off" required>
+        </div>
+        <input type="submit" class="ui button" value="submit" >
+</form>  
+

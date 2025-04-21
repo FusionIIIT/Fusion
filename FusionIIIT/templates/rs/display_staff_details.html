@@ -1,0 +1,198 @@
+<!-- {% extends 'globals/base.html' %} -->
+
+{% load static %}
+
+{% block title %}
+
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'semantic/semantic.min.css' %}">
+<style>
+    body {
+        padding: 0px;
+        max-width: 60%;
+    }
+
+    .positive.message {
+        background-color: #D4EDDA;
+        color: #155724;
+    }
+
+    .negative.message {
+        background-color: #F8D7DA;
+        color: #721C24;
+    }
+
+    .ui.pointing.secondary.menu .item.active {
+        font-weight: bold;
+        color: #2185D0;
+    }
+
+    .ui.celled.table thead th {
+        background-color: #2185D0;
+        color: white;
+        font-weight: bold;
+    }
+
+    .ui.celled.table tbody td {
+        font-weight: bold;
+    }
+
+    /* Custom coloring for table rows and cells */
+    .ui.celled.table tbody tr:nth-child(odd) {
+        background-color: #f2f2f2;
+    }
+
+    .ui.celled.table tbody tr:nth-child(even) {
+        background-color: #e6f7ff;
+    }
+
+    .ui.celled.table tbody td {
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+</style>
+
+{% comment %}
+<style>
+    /* Additional custom styles can be added here */
+    /* Adjust as needed */
+    body {
+        padding: 21px;
+        max-width: 60%;
+    }
+
+    .positive.message {
+        background-color: #D4EDDA;
+        color: #155724;
+    }
+
+    .negative.message {
+        background-color: #F8D7DA;
+        color: #721C24;
+    }
+
+    .ui.pointing.secondary.menu .item.active {
+        font-weight: bold;
+        color: #2185D0;
+    }
+
+    .ui.celled.table thead th {
+        background-color: #2185D0;
+        color: white;
+        font-weight: bold;
+    }
+
+    .ui.celled.table tbody td {
+        font-weight: bold;
+    }
+
+    .custom-row-width {
+        width: 90%;
+        /* You can adjust the percentage as needed */
+        margin: 0 auto;
+        /* This centers the row */
+    }
+</style> {% endcomment %}
+{% endblock %}
+
+{% block body %}
+{% if messages %}
+{% for message in messages %}
+<div class="ui {% if message.tags == 'success' %}positive{% else %}negative{% endif %} message">
+    <i class="close icon"></i>
+    <div class="header">
+        {{ message.message }}
+    </div>
+</div>
+{% endfor %}
+{% endif %}
+
+<script src="{% static 'semantic/semantic.min.js' %}"></script>
+<script>
+    $(document).ready(function () {
+        $('.message .close').on('click', function () {
+            $(this).closest('.message').transition('fade');
+        });
+    });
+    // remove h3 tag from the page "No Staff dummy" by dom manipulation if staff details is present
+    
+
+</script>
+
+<!--if condition for staff details is zero  -->
+
+
+
+
+<!--if condition for staff details is zero  -->
+
+{% if data_by_year|length == 0  %}
+<div>
+    <div class="ui pointing secondary menu" style="font-size: 20px; max-width:60%;">
+        <label style="text-transform: uppercase;"
+            class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
+            Staff Details for Project : &nbsp;<span class="ui blue text header">{{ project_name }}</span>
+        </label>
+    </div>
+    <h2>NO STAFF</h2>
+</div>
+{% else %}
+
+<div class="ui active tab" style=" width:100%" >
+    <div class="ui pointing secondary menu" style="font-size: 20px; max-width:60%;">
+        <label style="text-transform: uppercase;" class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
+            Staff Details for Project : &nbsp;<span class="ui blue text header">{{ project_name }}</span>
+        </label>
+    </div>
+<div class="ui ten wide grid container" >
+        {% for year, staff_details_list in data_by_year.items %}
+        <div class="row">
+            <div class="twelwe wide column">
+                <h2 class="ui header">YEAR - {{ year }}</h2>
+                <table class="ui celled table" style="width:900px">
+                    <thead>
+                        <tr>
+                            <th>STAFF ID</th>
+                            <th>NAME</th>
+                            <th>QUALIFICATION</th>
+                            <th >STIPEND</th>
+                            <th style="width: 120px">JOINING  DATE</th>
+                            <th style="width: 120px">END DATE</th>
+                            {% if global_var == "rspc_admin" %}
+                            <th>CHANGE END DATE</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for staff_detail in staff_details_list %}
+                        <tr>
+                            <td>{{ staff_detail.staff_id }}</td>
+                            <td>{{ staff_detail.staff_name }}</td>
+                            <td>{{ staff_detail.qualification }}</td>
+                            <td>{{ staff_detail.stipend }}</td>
+                            <td>{{ staff_detail.start_date }}</td>
+                            <td>{{ staff_detail.end_date }}</td>
+                            <td>
+                            {% if global_var == "rspc_admin" %}
+                            <form class="ui form" action="{% url 'research_procedures:change_end_date' staff_detail.staff_allocation_id %}"  method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div style="display:flex;flex-direction:row;">
+                                <input  required type="date" name="end_date">
+                                <button class="ui small grey equal-size-button button" style="margin-left:10px" type="submit">CHANGE</button>
+                                </div>
+                            </form>
+                            {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

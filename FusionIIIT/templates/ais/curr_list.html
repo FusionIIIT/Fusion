@@ -1,0 +1,209 @@
+{% if curriculum %}
+        <h3 class="ui center aligned header"> {{curriculum.0.programme}} Curriculum</h3>
+        <h4 class="ui center aligned header"> Batch : {{curriculum.0.batch}} | Branch : {{curriculum.0.branch}} </h4>
+        <table class="ui celled table" id="table">
+            <thead>
+                <tr>
+                    <th id="sem">Semester</th>
+                    <th>Course Name</th>
+                    <th>Course Type</th>
+                    <th>Credits</th>
+                    <th>Edit</th>
+
+                </tr>
+            </thead>
+
+
+            <tbody>
+
+                {% for curriculum_ in curriculum %}
+                <tr>
+                    <td>{{ curriculum_.sem }} </td>
+                    <td>{{curriculum_.course_code}} - {{curriculum_.course_id}} </td>
+                    <td>{{curriculum_.course_type}}</td>
+                    <td>{{curriculum_.credits}}</td>
+                    <td><button class="ui icon button red" id="_{{ forloop.counter }}"><i class="edit icon"></i></button>
+                        <div class="ui modal _{{forloop.counter}}">
+                            <i class="close icon"></i>
+                            <div class="header">
+                                Edit Curriculum Entry
+                            </div>
+                            <div class="image content">
+                                <form class="ui form" id='edit_curriculum' name='edit_curriculum'>
+                                    {% csrf_token %}
+                                    <div class="field">
+                                        <input type="text" name="id" value="{{curriculum_.curriculum_id}}" hidden="true" id="id_{{ forloop.counter }}">
+                                        <label>Programme :</label>
+                                        <select name="programme" id="programme_{{ forloop.counter }}">
+                                            <option value="{{curriculum_.programme}}">{{curriculum_.programme}}</option>
+                                            <option value="B.Tech">B.Tech</option>
+                                            <option value="B.Des">B.Des</option>
+                                            <option value="M.Des">M.Des</option>
+                                            <option value="M.Tech">M.Tech</option>
+                                            <option value="Phd">PhD</option>
+                                        </select>
+                                    </div>
+                                    <div class="field">
+                                        <label>Batch :</label><br>
+                                        <input type="number" name="batch" value="{{curriculum_.batch}}" id="batch_{{ forloop.counter }}">
+                                    </div>
+                                    <div class="field">
+                                        <label>Branch :</label>
+                                        <select name="branch" id="branch_{{ forloop.counter }}">
+                                            <option value="{{curriculum_.branch}}">{{curriculum_.branch}}</option>
+                                            <option value="CSE">CSE</option>
+                                            <option value="ECE">ECE</option>
+                                            <option value="ME">ME</option>
+                                            <option value="Design">Design</option>
+                                            <option value="Common">Common</option>
+                                        </select>
+                                    </div>
+                                    <table class="ui celled table">
+                                        <thead>
+                                            <tr>
+                                                <th>Semester</th>
+                                                <th>Course Code</th>
+                                                <th>Course Name</th>
+                                                <th>Course Type</th>
+                                                <th>Credits</th>
+                                                <th>Optional</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><input type="number" name="semester" required value={{curriculum_.sem}} id="semester_{{ forloop.counter }}">
+                                                </td>
+                                                <td><input name="course_code" required value={{curriculum_.course_code}} id="course_code_{{ forloop.counter }}"></td>
+                                                <td><select name="course_name" required id="course_name_{{ forloop.counter }}">
+                                                        <option value="{{curriculum_.course_id}}">{{curriculum_.course_id}}
+                                                        </option>
+                                                        {% for i in courses %}
+                                                        <option value="{{ i.course_name }}">{{i.course_name}}</option>
+                                                        {% endfor%}
+                                                    </select>
+                                                </td>
+                                                <td><select name="course_type" required id="course_type_{{ forloop.counter }}">
+                                                        <option value="{{curriculum_.course_type}}">{{curriculum_.course_type}}
+                                                        </option>
+                                                        {% for i in course_type %}
+                                                        <option value="{{ i.0 }}">{{i.0}}</option>>
+                                                        {% endfor%}
+                                                    </select>
+                                                </td>
+                                                <td><input type="number" name="credits" required value={{curriculum_.credits}} id="credits_{{ forloop.counter }}">
+                                                </td>
+                                                <td><input type="checkbox" name="optional" class="ui checkbox" id="optional_{{ forloop.counter }}"
+                                                        {% if curriculum_.optional is True %}checked{% endif %}></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <hr>
+                                    <button class="ui button black create_btn" type="submit" name="submit" value="submit" id="id_sub_{{ forloop.counter }}" >Submit</button>
+                                    <button class="ui button red create_btn" type="submit" name="submit" value="delete" id="id_del_{{ forloop.counter }}" >Delete</button>
+
+                                        {% csrf_token %}
+                                    <script type="text/javascript">
+                                    // using jQuery
+                                    var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
+                                    </script>
+
+                                    <script type="text/javascript">
+                                        function csrfSafeMethod(method) {
+                                            // these HTTP methods do not require CSRF protection
+                                            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+                                        }
+                                        $.ajaxSetup({
+                                            beforeSend: function(xhr, settings) {
+                                                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                                                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                                                }
+                                            }
+                                        });
+
+                                        $(function () {
+                                            $("#id_sub_{{ forloop.counter }}").on('click', function (event) {
+                                                console.log('coming');
+                                                event.preventDefault();
+                                                var url_ = '/aims/edit_curriculum';
+                                                if ($('#optional_{{ forloop.counter }}').is(':checked')) {
+                                                    var opt="on";
+                                                }
+                                                else {
+                                                    var opt="off";
+                                                }
+                                                $.ajax({
+                                                    type: 'POST',
+                                                    url: url_,
+                                                    data: {
+                                                        csrfmiddlewaretoken: '{{csrf_token}}',
+                                                        id: $('#id_{{ forloop.counter }}').val() ,
+                                                        programme: $('#programme_{{ forloop.counter }}').val() ,
+                                                        batch: $('#batch_{{ forloop.counter }}').val() ,
+                                                        branch: $('#branch_{{ forloop.counter }}').val() ,
+                                                        sem: $('#semester_{{ forloop.counter }}').val() ,
+                                                        course_code: $('#course_code_{{ forloop.counter }}').val(),
+                                                        course_id: $('#course_name_{{ forloop.counter }}').val(),
+                                                        course_type: $('#course_type_{{ forloop.counter }}').val(),
+                                                        credits: $('#credits_{{ forloop.counter }}').val(),
+                                                        optional: opt,
+                                                    },
+                                                    success: function (data) {
+                                                        alert("Done");
+                                                        location.reload();
+                                                    },
+                                                    error: function (data) {
+                                                        alert("Some Error Occured");
+                                                    }
+                                                });
+                                            });
+                                        });
+                                        $(function () {
+                                            $("#id_del_{{ forloop.counter }}").on('click', function (event) {
+                                                console.log('coming del');
+                                                event.preventDefault();
+                                                var url_ = '/aims/delete_curriculum';
+                                                $.ajax({
+                                                    type: 'POST',
+                                                    url: url_,
+                                                    data: {
+                                                        csrfmiddlewaretoken: '{{csrf_token}}',
+                                                        id: $('#id_{{ forloop.counter }}').val() ,
+                                                        programme: $('#programme_{{ forloop.counter }}').val() ,
+                                                        batch: $('#batch_{{ forloop.counter }}').val() ,
+                                                        branch: $('#branch_{{ forloop.counter }}').val() ,
+                                                    },
+                                                    success: function (data) {
+                                                        alert("Done");
+                                                        location.reload();
+
+                                                    },
+                                                    error: function (data) {
+                                                        alert("Some Error Occured");
+                                                        location.reload();
+                                                    }
+                                                });
+                                            });
+                                        });
+                                    </script>
+                                </form>
+                            </div>
+                        </div>
+                        <script type="text/javascript">
+                            $(function () {
+                                $("#_{{forloop.counter}}").click(function () {
+                                    console.log("asas");
+                                    $("._{{forloop.counter}}").modal('show');
+                                });
+                                $("._{{forloop.counter}}").modal({
+                                    closable: true
+                                });
+                            });
+                        </script>
+                    </td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+    {% endif %}

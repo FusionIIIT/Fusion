@@ -1,0 +1,46 @@
+<div class="ui inverted segment">
+    <div class="ui inverted secondary pointing menu">
+        <a class="item" href="/recruitment">
+            Home
+        </a>
+        <a class="item" href="/recruitment/teaching">
+            Teaching
+        </a>
+        <a class="item" href="/recruitment/non-teaching">
+            Non-Teaching
+        </a>
+        {% if user.is_superuser %}
+        <a class="item" href = "/recruitment/post">
+            Post Job
+        </a>
+        <a class="item" href = "/recruitment/create">
+            Create Form
+        </a>
+        {% endif %}
+        {% if user.is_authenticated %}
+
+        <a class="item right floated" href="/recruitment/logout">
+            Logout
+        </a>
+        {% else %}
+
+        <div class="item right floated">
+        <a href="/accounts/login">
+            Login
+        </a>
+        &nbsp;
+        &nbsp;
+        &nbsp;
+         <a href="/accounts/register">
+            Register
+        </a> 
+        </div>
+        
+
+
+        {% endif %}
+
+    </div>
+
+
+</div>

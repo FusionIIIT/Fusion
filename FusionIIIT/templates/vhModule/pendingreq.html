@@ -1,0 +1,138 @@
+{% load static %}
+{% block complainthistory %}
+
+{% comment %}The tab menu starts here!{% endcomment %}
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="pendingrequests">
+        Requests
+    </a>
+</div>
+
+<div class="ui active tab" data-tab="pendingrequests">
+    <div class="ui vertical segment">
+        <table class="ui very basic collapsing celled sortable table"
+               style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+            <thead>
+            <tr>
+                <th>
+                    Approve
+                </th>
+
+                <th>
+                    Student
+                </th>
+
+                <th>
+                    Room No.
+                </th>
+
+                <th>
+                    Type
+                </th>
+
+                <th class="three wide column">
+                    Details
+                </th>
+
+                <th class="one wide column">
+                    Status
+                </th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr>
+
+                <td class="collapsing">
+                    <div class="ui fitted slider checkbox">
+                        <input type="checkbox"> <label></label>
+                    </div>
+                </td>
+
+                <td>
+                    <h4 class="ui image header">
+                        <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                        <div class="content">
+                            Zlatan Ibrahimovic
+                            <div class="sub header">
+                            gmail@zlatan.com
+                            </div>
+                        </div>
+                    </h4>
+                </td>
+
+                <td>
+                    E-417
+                </td>
+
+                <td>
+                    Type #1
+                </td>
+
+                <td>
+                    ...
+                </td>
+
+                <td>
+                    <i class="large green checkmark icon"></i>
+                </td>
+            </tr>
+
+            <tr>
+                <td class="collapsing">
+                    <div class="ui fitted slider checkbox">
+                        <input type="checkbox"> <label></label>
+                    </div>
+                </td>
+
+                <td>
+                    <h4 class="ui image header">
+                        <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                        <div class="content">
+                            Zlatan Ibrahimovic
+                            <div class="sub header">
+                                gmail@zlatan.com
+                            </div>
+                        </div>
+                    </h4>
+                </td>
+
+                <td>
+                    13 Oct'17
+                </td>
+
+                <td>
+                    Type #2
+                </td>
+
+                <td>
+                    ...
+                </td>
+
+                <td>
+                    <i class="large green checkmark icon"></i>
+                </td>
+            </tr>
+
+            </tbody>
+        </table>
+
+        <br>
+        <div class="ui divider"></div>
+
+        <div class="extra content">
+            <div class="" style="text-align: center;">
+                <i class="large green checkmark icon"></i> : Approved &ensp;&ensp;&ensp;&ensp;&ensp;
+                <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
+                <i class="large red x icon"></i> : Declined
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

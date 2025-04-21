@@ -1,0 +1,2482 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+{% load static semanticui %}
+
+
+
+{% block title %}
+    Dashboard
+{% endblock %}
+
+{% block css %}
+
+ <link href="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.css" rel="stylesheet" type="text/css" />
+ <link rel="stylesheet" type="text/css" href="semantic/dist/semantic.min.css">
+
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        <!-- {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+
+                <a class="item" href="{% url 'globals:profile' %}">
+                    View Profile
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" href="{% url 'office_module:directorOffice' %}">
+                    Director Office
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+            </div>
+
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %} -->
+
+
+
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;
+                        font-size: 16px;">
+             
+                <div class="item" id="faculty_profile" >
+                   View Faculty Details
+                    <i class="right floated chevron right icon"></i>
+                </div>
+                <div id="staff_profile2" class="item"  >
+                    View Staff Department Wise 
+                     <i class="right floated chevron right icon"></i>
+                </div>
+                
+
+                 <div  id="student_profile" class="item">
+                    View Student Details
+                     <i class="right floated chevron right icon"></i>
+                </div>
+
+
+                <div  id="meeting" class="item" >
+                    Schedule Meeting
+                    <i class="right floated chevron right icon"></i>
+                </div>
+
+                <div  id="view_meetings" class="item" >
+                    Cancel Meetings
+                    <i class="right floated chevron right icon"></i>
+                </div>
+
+                <a class="item" data-tab="tab1content1" onclick="pnd()">
+                   Office of Dean P & D 
+                   <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="tab1content2" onclick="rspc()">
+                   Office of Dean RSPC
+                   <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="tab1content3" onclick="stud()">
+                    Office of Dean Students
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="tab1content4" onclick="acad()">
+                    Office of Dean Acad
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="tab1content5" onclick="purchase()">
+                    Puchase Office
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="tab1content6" onclick="registrar()">
+                    Registrar Office
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a class="item" href="/hr2/administrativeProfile/">
+                    Administrative Profile
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+
+        </div>            
+
+            <br/><br/><br/>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+    </div>
+
+
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+
+        
+        <div class="ui tab" data-tab="tab1content1" id="pnd">
+            <div class="ui vertical segment">
+                {% block tab1content1 %}
+                    {% include 'officeModule/directorOffice/deanP&D.html' %}
+                {% endblock %}
+            </div>
+        </div>
+
+
+        <div class="ui tab" data-tab="tab1content2" id="rspc">
+            <div class="ui vertical segment">
+                {% block tab1content2 %}
+                    {% include 'officeModule/directorOffice/deanRSPC.html' %}
+                {% endblock %}
+            </div>
+        </div>
+
+
+        <div class="ui tab" data-tab="tab1content3" id="stud">
+            <div class="ui vertical segment">
+                {% block tab1content3 %}
+                    {% include 'officeModule/directorOffice/deanStudents.html' %}
+                {% endblock %}
+            </div>
+        </div>
+
+        <div class="ui tab" data-tab="tab1content4" id="acad">
+            <div class="ui vertical segment">
+                {% block tab1content4 %}
+                    {% include 'officeModule/directorOffice/deanAcademics.html' %}
+                {% endblock %}
+            </div>
+        </div>
+
+        <div class="ui tab" data-tab="tab1content5" id="purchase">
+            <div class="ui vertical segment">
+                {% block tab1content5 %}
+                    {% include 'officeModule/directorOffice/purchaseOffice.html' %}
+                {% endblock %}
+            </div>
+        </div>
+
+        <div class="ui tab" data-tab="tab1content6" id="registrar">
+            <div class="ui vertical segment">
+                {% block tab1content6 %}
+                    {% include 'officeModule/directorOffice/registrar.html' %}
+                {% endblock %}
+            </div>
+        </div>
+
+
+<!-- Faculty info -->
+
+        <div id="staff2" style="display: none;"> 
+
+            {% comment %}The tab menu starts here!{% endcomment %}
+            <div>
+                <div class="ui divider"></div>
+                <h2>Department wise staff</h2>
+                <div class="ui divider"></div>
+            <div class="ui pointing secondary menu" style="border: 1px solid lightgray">
+                
+                <a class="active item" data-tab="tab9content1">
+                    Academic
+                </a>
+                <a class="item" data-tab="tab9content2">
+                    Administration
+                </a>
+                <a class="item" data-tab="tab9content3">
+                    Office
+                </a>
+                <a class="item" data-tab="tab9content4">
+                    Placement
+                </a>
+                <a class="item" data-tab="tab9content5">
+                    Others
+                </a>
+            </div>
+    
+            <div class="ui active tab" data-tab="tab9content1">
+                <div class="ui vertical segment">
+                    {% block tab9content1 %}
+                    <table id="academic" class="ui very basic collapsing celled sortable table"
+                    style='border: 1px solid lightgray'
+                    style="padding-left: 5%;
+                                                               padding-right: 5%;
+                                                               padding-top: 1%;
+                                                               padding-bottom: 1.5%;
+                                                               margin: auto;">
+                    <thead>
+                    <tr>
+    
+                        <th class="one wide column">
+                            Staff ID
+                        </th>
+    
+                        <th class="six wide column">
+                            Name
+                        </th>
+                        <th class="four wide column">
+                            Department
+                        </th>
+    
+                        </tr>
+                        </thead>
+         
+                        <tbody>
+                        
+                        </tbody>
+    
+                        </table>
+    
+                        
+                   
+                    {% endblock %}
+                </div>
+            </div>
+    
+            <div class="ui tab" data-tab="tab9content2">
+                <div class="ui vertical segment">
+                    {% block tab9content2 %}
+                    <table id="admin" class="ui very basic collapsing celled sortable table"
+                    style='border: 1px solid lightgray'
+                    style="padding-left: 5%;
+                                                               padding-right: 5%;
+                                                               padding-top: 1%;
+                                                               padding-bottom: 1.5%;
+                                                               margin: auto;">
+                    <thead>
+                    <tr>
+    
+                        <th class="one wide column">
+                            Staff ID
+                        </th>
+    
+                        <th class="six wide column">
+                            Name
+                        </th>
+    
+    
+                        <th class="four wide column">
+                            Department
+                        </th>
+    
+                        
+                    </tr>
+                    </thead>
+    
+                    <tbody>
+                    
+                    </tbody>
+                </table>
+    
+               
+                    {% endblock %}
+                </div>
+            </div>
+    
+            <div class="ui tab" data-tab="tab9content3">
+                <div class="ui vertical segment">
+                    {% block tab9content3 %}
+                    <table id="office" class="ui very basic collapsing celled sortable table"
+                    style='border: 1px solid lightgray'
+                    style="padding-left: 5%;
+                                                               padding-right: 5%;
+                                                               padding-top: 1%;
+                                                               padding-bottom: 1.5%;
+                                                               margin: auto;">
+                    <thead>
+                    <tr>
+    
+                        <th class="one wide column">
+                            Staff ID
+                        </th>
+    
+                        <th class="six wide column">
+                            Name
+                        </th>
+    
+                        <th class="four wide column">
+                            Department
+                        </th>
+    
+                       
+                    </tr>
+                    </thead>
+    
+                    <tbody>
+                    
+                    </tbody>
+                </table>
+    
+               
+                    {% endblock %}
+                </div>
+            </div>
+    
+            <div class="ui tab" data-tab="tab9content4">
+                <div class="ui vertical segment">
+                    {% block tab9content4 %}
+                    <table id="placement" class="ui very basic collapsing celled sortable table"
+                    style='border: 1px solid lightgray'
+                    style="padding-left: 5%;
+                                                               padding-right: 5%;
+                                                               padding-top: 1%;
+                                                               padding-bottom: 1.5%;
+                                                               margin: auto;">
+                    <thead>
+                    <tr>
+    
+                        <th class="one wide column">
+                            Staff ID
+                        </th>
+    
+                        <th class="six wide column">
+                            Name
+                        </th>
+    
+    
+                        <th class="four wide column">
+                            Department
+                        </th>
+    
+                    </tr>
+                    </thead>
+    
+                    <tbody>
+                    
+                    </tbody>
+                </table>
+    
+               
+                    {% endblock %}
+                </div>
+            </div>
+    
+            <div class="ui tab" data-tab="tab9content5">
+                <div class="ui vertical segment">
+                    {% block tab9content5 %}
+                    <table id="others" class="ui very basic collapsing celled sortable table"
+                    style='border: 1px solid lightgray'
+                    style="padding-left: 5%;
+                                                               padding-right: 5%;
+                                                               padding-top: 1%;
+                                                               padding-bottom: 1.5%;
+                                                               margin: auto;">
+                    <thead>
+                    <tr>
+    
+                        <th class="one wide column">
+                            Staff ID
+                        </th>
+    
+                        <th class="six wide column">
+                            Name
+                        </th>
+    
+                        <th class="four wide column">
+                            Department
+                        </th>
+    
+                    </tr>
+                    </thead>
+    
+                    <tbody>
+                    
+                    </tbody>
+                </table>
+    
+               
+                    {% endblock %}
+                </div>
+            </div>
+    
+            </div>
+           </div>
+
+           <!-- End of faculty info div -->
+
+
+
+
+
+           <!-- Div for student search form -->
+    <div id="student_form" style="display:none;">
+        
+        <form method="GET" id="stud_form">
+            {% csrf_token %}
+        <div class="ui form" style="padding: 8px; padding-left: 56px; padding-right: 12px;">
+        <div class="two fields"> 
+
+     
+          <label><b>Programme: </b></label> &nbsp;
+            <select class="ui search fluid dropdown selection" name="programme" id="programme">
+            <option value=""> Select </option>
+            <option value="B.Tech"> B.Tech </option>
+            <option value="B.Des"> B.Des </option>
+            <option value="M.Tech"> M.Tech </option>
+            <option value="M.Des"> M.Des </option>
+            <option value="PhD"> PhD </option>
+            </select>
+
+      &nbsp;
+    
+        <label><b>Year: </b></label> &nbsp;
+       <select class="ui search fluid dropdown selection" name="year" id="year">
+        <option value=""> Select </option>
+        <option value="2015"> 2015 </option>
+        <option value="2016"> 2016 </option>
+        <option value="2017"> 2017 </option>
+      </select>
+
+      &nbsp;
+
+      <label><b>Department: </b></label> &nbsp; 
+        <select class="ui search fluid dropdown selection" name="department" id="department">
+        <option value=""> Select </option>
+         <option value="CSE"> Computer Science & Engineering </option>
+         <option value="ECE"> Electronics & Communication Engineering </option>
+         <option value="ME"> Mechanical Engineering </option>
+         <option value="DESIGN"> Design </option>
+         <option value="NATURAL SCIENCES"> Natural Science </option>
+        </select>
+
+    <button class="ui primary submit button" type="submit" name="stud" value="stud"> Search</button>
+    </div>
+    </div>
+    
+    </form>
+    
+    </div>
+
+
+ <!-- <div class="ui divider"></div> -->
+<br>
+
+
+<div id="error_div"><h4></h4></div>
+
+<!-- Div for student info -->
+<div id="student" style="display: none;">
+
+   <div id="heading">    </div>
+    <!-- Result table--> 
+
+                <table id="student_table" class="ui very basic collapsing celled sortable table"
+                                        style="padding-left: 5%;
+                                                                  padding-right: 5%;
+                                                                  padding-top: 1%;
+                                                                  padding-bottom: 1.5%;
+                                                                  margin: auto;
+                                                                  ">
+                    <thead>
+                    <tr>
+        
+                        <th class="one wide column">
+                            Roll Number
+                        </th>
+        
+                        <th class="two wide column">
+                            Name
+                        </th>
+        
+                        <th class="one wide column">
+                            Department
+                        </th>
+        
+                        <th class="one wide column">
+                            CPI
+                        </th>
+        
+                     
+                    </tr>
+                    </thead>
+
+                     <tbody>
+                
+                    </tbody>
+        
+                    </table>
+        
+              
+                <div class="ui divider"></div>
+</div>
+<!-- End -->
+
+<!-- Div for meeting form -->
+<div id="meeting_form"  style="display:none;">
+
+    <div class="ui vertical segment">
+    <form id="meet_form" method="POST" action="/office/directorOffice/meeting">
+         {% csrf_token %}
+        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+            <div class="field">
+                <label>Meeting Agenda</label>
+                <textarea required="required" rows="2" name="agenda" id="agenda"></textarea>
+            </div>
+            <div class="three fields">
+                <div class="field">
+                    <label>Venue</label>
+                    <select required="required" class="ui search fluid dropdown" placeholder="Venue" class="ui large input" id="venue" name="venue">
+                        <option value="" selected="selected"> Select </option>
+                        <option value="Directorate Conference Room"> Directorate Conference Room </option>
+                        <option value="VH Conference Room "> VH Conference Room </option>
+                        <option value="Placement Cell Conference Room"> Placement Cell Conference Room </option>
+                        <option value="Directorate"> Directorate </option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Date</label>
+                    <div class="ui calendar" id="rangestart">
+                        <div class="ui input left icon ">
+                            <i class="calendar icon"> </i>
+                            <input required="required" type="date" placeholder="Date" name="adate" id="adate" >
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Time</label>
+                    <input required="required" type="time" class="ui large input" placeholder="Meeting Time" name="meeting_time" id="meeting_time">
+                </div>
+            </div>
+
+            <div class="two fields">
+                <div class="field"> 
+                    <div>
+                    <label>Member Name</label>
+                    <select required="required" class="ui search fluid dropdown" placeholder="Name" class="ui large input" id="member" name="member">
+                        <option value=""> Select </option>
+                    </select>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <br>
+                    <input type="button" value="Add More" name="addmore" style="margin-top: 5px" id="add_button" onclick="addmember()" />  
+                </div>
+
+
+
+            </div>
+
+            <div id="moremem"></div>
+            
+            <br>
+
+            <div class="field">
+                <button class="ui primary button right floated" type="submit">
+                    Submit
+                </button>
+            </div>
+             {% csrf_token %}
+        </div>
+    </form>
+    <br>
+    <br>
+</div> 
+<!-- End of meeting form --> 
+<br>
+</div>
+
+<!-- div for viewing meetings --> 
+<div id="allmeetings" style="display: none;">
+        
+    <h3>Scheduled Meetings</h3>
+    <form id="myform" method="POST" action="/office/directorOffice/planMeetings">
+            <table id="meeting_table" style='border: 1px solid lightgray' class="ui very basic collapsing celled sortable table" style="padding-left: 5%;
+                                                   padding-right: 5%;
+                                                   padding-top: 1%;
+                                                   padding-bottom: 1.5%;
+                                                   margin: auto;">
+
+                <thead>
+                <tr>
+                    <th></th>
+                    <th class="two wide column">
+                        Agenda 
+                    </th>
+
+                    <th class="two wide column">
+                        Date
+                    </th>
+
+                    <th class="one wide column">
+                        Time
+                    </th>
+
+                    <th class="one wide column">
+                        Venue
+                    </th>
+
+                    <th class="one wide column">
+                        Member
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+                    
+                </tbody>
+
+            </table>
+
+            <button class="ui primary button right floated" type="submit" value="Cancel" name="Cancel">Cancel</button>
+        </form>
+    </div>
+<!-- End of div for meetings -->
+
+
+
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+
+        <div class="eight wide column" id = "centre-rail">
+            {% comment %} <div class="ui top attached tabular large menu">
+                <a class="active item" data-tab="first">Notifications</a>
+                <a class="item" data-tab="second">News</a>
+            </div> {% endcomment %}
+            {% comment %} <div class="ui bottom attached active tab segment" data-tab="first">
+                <div id="textSegmentDiv"> {% endcomment %}
+
+                    {% comment %}
+                    TODO: Loader required?
+                    <div class="ui active large text loader"
+                             id="loader">
+                        Loading ...
+                    </div>
+                    {% endcomment %}
+
+                    {% comment %} <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+                        {% block alerts %}
+                            {% include 'dashboard/alerts.html' %}
+                        {% endblock %}
+                    </div>
+                </div>
+
+            </div>
+            <div class="ui bottom attached tab segment" data-tab="second">
+                Work in Progress, coming soon!
+            </div> {% endcomment %}
+           
+            
+        
+            <div class="ui two column stackable doubling grid">
+                {% comment %}A single modules row starts here!{% endcomment %}
+
+                {% comment %}A single modules row ends here!{% endcomment %}
+
+                {% comment %}A single modules row starts here!{% endcomment %}
+                <div class="row">
+
+                <div class="column">
+                    <div class="ui special cards">
+                        <div class="card">
+                          <div class="blurring dimmable image">
+                            <div class="ui dimmer">
+                              <div class="content">
+                                <div class="center">
+                                  <div class="ui inverted button">More Info</div>
+                                </div>
+                              </div>
+                            </div>
+                            <img src="{% static 'globals/img/publications.jpg' %}">
+                          </div>
+                          <div class="content">
+                            <a class="header">Paper Publications</a>
+                          </div>
+                          <div class="extra content">
+                            <a>
+                              <i class="book icon"></i>
+                              Recent paper publications
+                            </a>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+
+                    <div class="column">
+                    <div class="ui special cards">
+                        <div class="card">
+                          <div class="blurring dimmable image">
+                            <div class="ui dimmer">
+                              <div class="content">
+                                <div class="center">
+                                  <div class="ui inverted button">More Info</div>
+                                </div>
+                              </div>
+                            </div>
+                            <img src="{% static 'globals/img/projects.jpg' %}">
+                          </div>
+                          <div class="content">
+                            <a class="header">Projects</a>
+                          </div>
+                          <div class="extra content">
+                            <a>
+                              <i class="laptop icon"></i>
+                              Projects and Consultation
+                            </a>
+                          </div>
+                        </div>
+                    </div>
+                    </div>
+
+                    <!-- <div class="column">
+                        <div class="ui large label" id="faculty_info" style="height:100px; width:150px;">
+                            <div class="ui centered grid"  style ="background-color:#34eb9e;">
+                                <div class="row" style = "color: teal">
+                                    <i class="ui users icon big"></i>
+                                </div>
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Estabilishment info</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+                    
+                    <!-- <div class="column">
+                        <div class="ui large label" id="Student_info" style="height:100px; width:150px;">
+                            <div class="ui centered grid" style ="background-color:#34eb9e;">
+                                <div class="row" style = "color: teal">
+                                    <i class="ui student icon big"></i>
+                                </div>
+
+                                <div class="row" style = "color: teal">
+                                    <span class="ui sub header centered">Students</span>
+                                </div>
+                            </div>
+                        </div>
+                   </div> -->
+
+                   {% comment %} <div class="column">
+                         <div id="PnD" class="ui large label" style="height:100px; width:150px;"> 
+                            <div class="ui centered grid" style ="background-color:lightcyan;">
+                                <div class="row" style = "color: teal">
+                                    <i class="ui road icon big"></i>
+                                </div>
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Planning & Dev</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div> {% endcomment %}
+                </div>  
+
+                <div class="row">
+
+                    <div class="column">
+                        <div class="ui special cards">
+                            <div class="card">
+                              <div class="blurring dimmable image">
+                                <div class="ui dimmer">
+                                  <div class="content">
+                                    <div class="center">
+                                      <div class="ui inverted button">More Info</div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <img src="{% static 'globals/img/leave.jpg' %}">
+                              </div>
+                              <div class="content">
+                                <a class="header">Upcoming Leaves</a>
+                              </div>
+                              <div class="extra content">
+                                <a>
+                                  <i class="bed icon"></i>
+                                  Upcoming leaves by Faculty
+                                </a>
+                              </div>
+                            </div>
+                        </div>
+                        </div>
+
+
+                        <div class="column">
+                            <div class="ui special cards">
+                                <div class="card">
+                                  <div class="blurring dimmable image">
+                                    <div class="ui dimmer">
+                                      <div class="content">
+                                        <div class="center">
+                                          <div class="ui inverted button">More Info</div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <img src="{% static 'globals/img/events.jpg' %}">
+                                  </div>
+                                  <div class="content">
+                                    <a class="header">News and Events</a>
+                                  </div>
+                                  <div class="extra content">
+                                    <a>
+                                      <i class="newspaper icon"></i>
+                                      News and Upcoming Events
+                                    </a>
+                                  </div>
+                                </div>
+                            </div>
+                            </div>
+
+
+                    <!-- <div class="column">
+                        <div id="HOD" class="ui large label" href="" style="height:100px; width:150px;">
+                            <div class="ui centered grid" style ="background-color:#34eb9e;">
+                                <div class="row" style = "color: teal">
+                                    <i class="ui book icon big"></i>
+                                </div>
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Placement Statistics</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+
+
+                    <!-- <div class="column">
+                        <div id="gymkhana_info" class="ui large label" style="height:100px; width:150px;">
+                            <div class="ui centered grid" style ="background-color:#34eb9e;">
+                                <div class="row" style = "color: teal">
+                                    <i class="ui tasks icon big"></i>
+                                </div>
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Results</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+
+                    {% comment %} <div class="column">
+                        <div id="meetings" class="ui large label" style="height:100px; width:150px;">
+                            <div class="ui centered grid" style ="background-color:lightcyan;">
+                                <div class="row"style = "color: teal">
+                                    <i class="ui briefcase icon big"></i>
+                                </div>
+
+                                <div class="row" style = "color: teal">
+                                    <span class="ui sub header centered">Scheduled Meetings</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div> {% endcomment %}
+
+                </div>
+
+
+            </div>
+
+
+            <br/><br/>
+
+
+            <div id="particular_stats">
+                
+                <!-- list showing faculty in each department --> 
+                <!-- <div id="faculty_stats" style="display: none">
+                
+                <h3>Dept Wise Faculty Statistics</h3>
+
+                <table id="faculty_stats_table" style='border: 1px solid lightblue' class="ui very basic collapsing celled sortable table" style="padding-left: 5%; padding-right: 5%; padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+
+                    <thead style='background-color: lightblue'>
+                    <tr>
+                        <th class="one wide column">
+                            CSE
+                        </th>
+
+                        <th class="one wide column">
+                            ECE
+                        </th>
+
+                        <th class="one wide column">
+                            ME
+                        </th>
+
+                        <th class="one wide column">
+                            DESIGN
+                        </th>
+
+                        <th class="one wide column">
+                            NS
+                        </th>
+
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr>
+                        {% for fac in cse %}
+                            <td>{{ fac.user.first_name }} {{ fac.user.last_name }}</td>
+                        {% endfor %}
+                    </tr>
+                    </tbody>
+
+                </table>
+                
+                </div> -->
+
+
+                <div id="faculty_stats" style="display: none">
+                
+                    <h3>Dept Wise Faculty</h3>
+                    <div class="ui top attached tabular menu">
+                        <a class="item active" data-tab="first">CSE</a>
+                        <a class="item" data-tab="second">ECE</a>
+                        <a class="item" data-tab="third">ME</a>
+                        <a class="item" data-tab="fourth">DESIGN</a>
+                        <a class="item" data-tab="fifth">NS</a>
+                      </div>
+                      <div class="ui bottom attached tab segment active" data-tab="first">
+                        <div class="ui middle aligned divided list">
+                            {% for cse_fac in cse %}
+                            <div class="item">
+                                <i class="user icon"></i>
+                              <div class="content">
+                                <a class="header" href="{% url 'globals:profile' %}">{{ cse_fac.user.first_name }} {{ cse_fac.user.last_name }}</a>
+                              </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                      </div>
+                      <div class="ui bottom attached tab segment" data-tab="second">
+                        <div class="ui middle aligned divided list">
+                            {% for ece_fac in ece %}
+                            <div class="item">
+                                <i class="user icon"></i>
+                              <div class="content">
+                                <a class="header">{{ ece_fac.user.first_name }} {{ ece_fac.user.last_name }}</a>
+                              </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                      </div>
+                      <div class="ui bottom attached tab segment" data-tab="third">
+                        <div class="ui middle aligned divided list">
+                            {% for me_fac in me %}
+                            <div class="item">
+                                <i class="user icon"></i>
+                              <div class="content">
+                                <a class="header">{{ me_fac.user.first_name }} {{ me_fac.user.last_name }}</a>
+                              </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                      </div>
+                      <div class="ui bottom attached tab segment" data-tab="fourth">
+                        <div class="ui middle aligned divided list">
+                            {% for des_fac in des %}
+                            <div class="item">
+                                <i class="user icon"></i>
+                              <div class="content">
+                                <a class="header">{{ des_fac.user.first_name }} {{ des_fac.user.last_name }}</a>
+                              </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                      </div>
+                      <div class="ui bottom attached tab segment" data-tab="fifth">
+                        <div class="ui middle aligned divided list">
+                            {% for ns_fac in ns %}
+                            <div class="item">
+                                <i class="user icon"></i>
+                              <div class="content">
+                                <a class="header">{{ ns_fac.user.first_name }} {{ ns_fac.user.last_name }}</a>
+                              </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                      </div>
+
+                </div>
+
+
+
+                <br>
+                
+                <div id="faculty_stats_graph" style="height: 260px; width: 90%;"> </div>
+
+                <!-- div for showing top scorers among students   -->
+                <!-- <div id="student_stats" style="display: none;">
+
+                    <table style="border: 1px solid lightblue" class="ui very basic collapsing celled sortable table" style="padding-left: 5%;
+                                                       padding-right: 5%;
+                                                       padding-top: 1%;
+                                                       padding-bottom: 1.5%;
+                                                       margin: auto;">
+
+                        <thead style="background-color:lightblue"> 
+                            <tr><th class="three wide column">Students </th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                <h5>B.Tech 2015 - CSE</h5>
+                                    <ol id="cse_15">
+                                            
+                                    </ol>
+                                <h5>B.Tech 2015 - ECE</h5>
+                                    <ol id="ece_15">
+                                            
+                                    </ol>
+                                     
+                                <h5>B.Tech 2015 - ME</h5>
+                                    <ol id="me_15">
+                                            
+                                    </ol>
+
+                                <h5>B.Des 2015</h5>
+                                    <ol id="design_15">
+                                            
+                                    </ol>
+                                </td>  
+                            </tr>
+
+                            <tr><td>
+                                <h5>B.Tech 2016 - CSE</h5>
+                                    <ol id="cse_16">
+                                        
+                                    </ol>
+                                <h5>B.Tech 2016 - ECE</h5>
+                                    <ol id="ece_16">
+                                        
+                                    </ol>
+                                 
+                                 <h5>B.Tech 2016 - ME</h5>
+                                    <ol id="me_16"></ol>
+
+                                 <h5>B.Tech 2016 - DESIGN</h5>
+                                    <ol id="design_16"></ol>   
+
+                                  <div class="ui divider"></div>
+
+                                  <h5>B.Tech 2017 - CSE</h5>
+                                    <ol id="cse_17">
+                                        
+                                    </ol>
+                                <h5>B.Tech 2017 - ECE</h5>
+                                    <ol id="ece_17"></ol>
+                                 
+                                 <h5>B.Tech 2017 - ME</h5>
+                                    <ol id="me_17"></ol>
+
+                                 <h5>B.Tech 2017 - DESIGN</h5>
+                                    <ol id="design_17"> 
+                                    </ol>
+                                </td>
+                            </tr>
+                        </tbody>
+                        
+                    </table> 
+                </div> -->
+
+                <div id="student_stats" style="display: none;">
+                
+                    <!-- <div class="ui pointing secondary menu">
+                        <a class="item active" data-tab="first">2017</a>
+                        <a class="item" data-tab="second">2016</a>
+                        <a class="item" data-tab="third">2015</a>
+                      </div>
+                      <div class="ui tab segment active" data-tab="first">
+                        <div class="ui top attached tabular menu">
+                          <a class="item active" data-tab="first/a">CSE</a>
+                          <a class="item" data-tab="first/b">ECE</a>
+                          <a class="item" data-tab="first/c">ME</a>
+                          <a class="item" data-tab="first/d">DESIGN</a>
+                          <a class="item" data-tab="first/e">NS</a>
+                        </div>
+                        <div class="ui bottom attached tab segment active" data-tab="first/a">cse_2017</div>
+                        <div class="ui bottom attached tab segment" data-tab="first/b">ece_2017</div>
+                        <div class="ui bottom attached tab segment" data-tab="first/c">me_2017</div>
+                        <div class="ui bottom attached tab segment" data-tab="first/d">des_2017</div>
+                        <div class="ui bottom attached tab segment" data-tab="first/e">ns_2017</div>
+                      </div>
+                      <div class="ui tab segment" data-tab="second">
+                        <div class="ui top attached tabular menu">
+                          <a class="item active" data-tab="second/a">CSE</a>
+                          <a class="item" data-tab="second/b">ECE</a>
+                          <a class="item" data-tab="second/c">ME</a>
+                          <a class="item" data-tab="second/d">DESIGN</a>
+                          <a class="item" data-tab="second/e">NS</a>
+                        </div>
+                        <div class="ui bottom attached tab segment active" data-tab="second/a">cse_2016</div>
+                        <div class="ui bottom attached tab segment" data-tab="second/b">ece_2016</div>
+                        <div class="ui bottom attached tab segment" data-tab="second/c">me_2016</div>
+                        <div class="ui bottom attached tab segment" data-tab="second/d">des_2016</div>
+                        <div class="ui bottom attached tab segment" data-tab="second/e">ns_2016</div>
+                      </div>
+                      <div class="ui tab segment" data-tab="third">
+                        <div class="ui top attached tabular menu">
+                          <a class="item active" data-tab="third/a">CSE</a>
+                          <a class="item" data-tab="third/b">ECE</a>
+                          <a class="item" data-tab="third/c">ME</a>
+                          <a class="item" data-tab="third/d">DESIGN</a>
+                          <a class="item" data-tab="third/e">NS</a>
+                        </div>
+                        <div class="ui bottom attached tab segment active" data-tab="third/a">cse_2015</div>
+                        <div class="ui bottom attached tab segment" data-tab="third/b">ece_2015</div>
+                        <div class="ui bottom attached tab segment" data-tab="third/c">me_2015</div>
+                        <div class="ui bottom attached tab segment" data-tab="third/d">des_2015</div>
+                        <div class="ui bottom attached tab segment" data-tab="third/e">ns_2015</div>
+                      </div> -->
+
+                      <h3>Students</h3>
+
+                      <div class="ui top attached tabular menu">
+                        <a class="item active" data-tab="first">2019</a>
+                        <a class="item" data-tab="second">2018</a>
+                        <a class="item" data-tab="third">2017</a>
+                        <a class="item" data-tab="fourth">2016</a>
+                        <a class="item" data-tab="fifth">2015</a>
+                      </div>
+                      <div class="ui bottom attached tab segment active" data-tab="first">
+                        <div style="width:620px;height:300px;overflow-x: scroll;">
+                            <table class="ui celled table">
+                                <thead>
+                                  <tr><th>Roll no.</th>
+                                </tr></thead>
+                                <tbody>
+                                  {% for student in students_2019 %}
+                                  <tr>
+                                    <td data-label="Name">{{ student }}</td>
+                                  </tr>
+                                  {% endfor %}
+                                </tbody>
+                              </table>
+                        </div>
+                      </div>
+                      <div class="ui bottom attached tab segment" data-tab="second">
+                        <div style="width:620px;height:300px;overflow-x: scroll;">
+                            <table class="ui celled table">
+                                <thead>
+                                  <tr><th>Roll no.</th>
+                                </tr></thead>
+                                <tbody>
+                                  {% for student in students_2018 %}
+                                  <tr>
+                                    <td data-label="Name">{{ student }}</td>
+                                  </tr>
+                                  {% endfor %}
+                                </tbody>
+                              </table>
+                        </div>
+                      </div>
+                      <div class="ui bottom attached tab segment" data-tab="third">
+                        <div style="width:620px;height:300px;overflow-x: scroll;">
+                            <table class="ui celled table">
+                                <thead>
+                                  <tr><th>Roll no.</th>
+                                </tr></thead>
+                                <tbody>
+                                  {% for student in students_2017 %}
+                                  <tr>
+                                    <td data-label="Name">{{ student }}</td>
+                                  </tr>
+                                  {% endfor %}
+                                </tbody>
+                              </table>
+                        </div>
+                      </div>
+                      <div class="ui bottom attached tab segment" data-tab="fourth">
+                        <div style="width:620px;height:300px;overflow-x: scroll;">
+                            <table class="ui celled table">
+                                <thead>
+                                  <tr><th>Roll no.</th>
+                                </tr></thead>
+                                <tbody>
+                                  {% for student in students_2016 %}
+                                  <tr>
+                                    <td data-label="Name">{{ student }}</td>
+                                  </tr>
+                                  {% endfor %}
+                                </tbody>
+                              </table>
+                        </div>
+                      </div>
+                      <div class="ui bottom attached tab segment" data-tab="fifth">
+                        <div style="width:620px;height:300px;overflow-x: scroll;">
+                            <table class="ui celled table">
+                                <thead>
+                                  <tr><th>Roll no.</th>
+                                </tr></thead>
+                                <tbody>
+                                  {% for student in students_2015 %}
+                                  <tr>
+                                    <td data-label="Name">{{ student }}</td>
+                                  </tr>
+                                  {% endfor %}
+                                </tbody>
+                              </table>
+                        </div>
+                      </div>
+                
+                </div>
+
+
+                
+
+                <div id="project_stats" style="display: none;">
+
+                    <h3>Ongoing Project Details </h3>
+
+                    <table id="project_stats_table" style='border: 1px solid lightblue' class="ui very basic collapsing celled sortable table" style="padding-left: 5%;
+                                                       padding-right: 5%;
+                                                       padding-top: 1%;
+                                                       padding-bottom: 1.5%;
+                                                       margin: auto;">
+
+                        <thead style='background-color: lightblue'>
+                        <tr>
+                            <th class="one wide column">
+                                Project Title 
+                            </th>
+
+                            <th class="one wide column">
+                                Project Type
+                            </th>
+
+                            <th class="one wide column">
+                                Duration
+                            </th>
+
+                            <th class="one wide column">
+                                Sponsored Agency
+                            </th>
+
+                            <th class="one wide column">
+                                HOD Response 
+                            </th>
+
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>CC cum Library</td>
+                                <td>Consultancy</td>
+                                <td>2 year</td>
+                                <td>ABC ltd</td>
+                                <td>Pending</td>
+                            </tr>
+                            <tr>
+                                <td>SAC</td>
+                                <td>Consultancy</td>
+                                <td>4 year</td>
+                                <td>MNL pvt ltd</td>
+                                <td>Pending</td>
+                            </tr>
+                        </tbody>
+
+                    </table>
+
+
+
+                </div>
+
+
+                <!-- div for gymkhana -->
+                <div id="gymkhana_stats" style="display: none">
+                
+                    <h3>Results</h3>
+
+                    {% comment %} <table id="gymkhana_stats_table" style='border: 1px solid lightblue' class="ui very basic collapsing celled sortable table" style="padding-left: 5%;padding-right: 5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
+
+                        <thead style='background-color: lightblue'>
+                        <tr>
+                            <th class="one wide column">
+                                Club name 
+                            </th>
+
+                            <th class="one wide column">
+                                Co-ordinator
+                            </th>
+
+                            <th class="one wide column">
+                                Co-coordinator
+                            </th>
+
+                            <th class="one wide column">
+                                Faculty incharge 
+                            </th>
+
+                        </tr>
+                        </thead>
+
+                        <tbody></tbody>
+
+                    </table> {% endcomment %}
+
+                    <div class="ui top attached tabular menu">
+                        <a class="item active" data-tab="first">2019</a>
+                        <a class="item" data-tab="second">2018</a>
+                        <a class="item" data-tab="third">2017</a>
+                        <a class="item" data-tab="fourth">2016</a>
+                        <a class="item" data-tab="fifth">2015</a>
+                      </div>
+                      <div class="ui bottom attached tab segment active" data-tab="first">
+                        <div style="width:620px;height:300px;overflow-x: scroll;">
+                            <table class="ui celled table">
+                                <thead>
+                                  <tr><th>Roll no.</th>
+                                  <th>CPI</th>
+                                </tr></thead>
+                                <tbody>
+                                  {% for student in students_2019 %}
+                                  <tr>
+                                    <td data-label="Name">{{ student }}</td>
+                                    <td data-label="CPI">{{ student.cpi }}</td>
+                                  </tr>
+                                  {% endfor %}
+                                </tbody>
+                              </table>
+                        </div>
+                      </div>
+                      <div class="ui bottom attached tab segment" data-tab="second">
+                        <div style="width:620px;height:300px;overflow-x: scroll;">
+                            <table class="ui celled table">
+                                <thead>
+                                  <tr><th>Roll no.</th>
+                                  <th>CPI</th>
+                                </tr></thead>
+                                <tbody>
+                                  {% for student in students_2018 %}
+                                  <tr>
+                                    <td data-label="Name">{{ student }}</td>
+                                    <td data-label="CPI">{{ student.cpi }}</td>
+                                  </tr>
+                                  {% endfor %}
+                                </tbody>
+                              </table>
+                        </div>
+                      </div>
+                      <div class="ui bottom attached tab segment" data-tab="third">
+                        <div style="width:620px;height:300px;overflow-x: scroll;">
+                            <table class="ui celled table">
+                                <thead>
+                                  <tr><th>Roll no.</th>
+                                  <th>CPI</th>
+                                </tr></thead>
+                                <tbody>
+                                  {% for student in students_2017 %}
+                                  <tr>
+                                    <td data-label="Name">{{ student }}</td>
+                                    <td data-label="CPI">{{ student.cpi }}</td>
+                                  </tr>
+                                  {% endfor %}
+                                </tbody>
+                              </table>
+                        </div>
+                      </div>
+                      <div class="ui bottom attached tab segment" data-tab="fourth">
+                        <div style="width:620px;height:300px;overflow-x: scroll;">
+                            <table class="ui celled table">
+                                <thead>
+                                  <tr><th>Roll no.</th>
+                                  <th>CPI</th>
+                                </tr></thead>
+                                <tbody>
+                                  {% for student in students_2016 %}
+                                  <tr>
+                                    <td data-label="Name">{{ student }}</td>
+                                    <td data-label="CPI">{{ student.cpi }}</td>
+                                  </tr>
+                                  {% endfor %}
+                                </tbody>
+                              </table>
+                        </div>
+                      </div>
+                      <div class="ui bottom attached tab segment" data-tab="fifth">
+                        <div style="width:620px;height:300px;overflow-x: scroll;">
+                            <table class="ui celled table">
+                                <thead>
+                                  <tr><th>Roll no.</th>
+                                  <th>CPI</th>
+                                </tr></thead>
+                                <tbody>
+                                  {% for student in students_2015 %}
+                                  <tr>
+                                    <td data-label="Name">{{ student }}</td>
+                                    <td data-label="CPI">{{ student.cpi }}</td>
+                                  </tr>
+                                  {% endfor %}
+                                </tbody>
+                              </table>
+                        </div>
+                      </div>
+                </div>
+
+
+
+                <!-- div section for display of HOD data -->
+                <div id="HOD_info" style="display: none;">
+                    <table style="border: 1px solid lightblue" class="ui very basic collapsing celled sortable table" style="padding-left: 5%;
+                                                       padding-right: 5%;
+                                                       padding-top: 1%;
+                                                       padding-bottom: 1.5%;
+                                                       margin: auto;">
+
+                        <thead style="background-color:lightblue"> 
+                            <tr><th class="three wide column"> Placement Statistics </th></tr>
+                        </thead>
+                    
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <ol id="HOD_list">
+                                        
+                                    </ol>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                      
+                </div>
+
+
+
+
+<!--  end of HOD section -->
+
+
+                <!-- div for meetings --> 
+                <div id="meeting_div" style="display: none">
+                
+                    <h3>Scheduled Meetings</h3>
+
+                    <table id="meeting_table" style='border: 1px solid lightblue' class="ui very basic collapsing celled sortable table" style="padding-left: 5%;
+                                                           padding-right: 5%;
+                                                           padding-top: 1%;
+                                                           padding-bottom: 1.5%;
+                                                           margin: auto;">
+
+                        <thead style="background-color: lightblue;">
+                        <tr>
+                            <th class="two wide column">
+                                Agenda 
+                            </th>
+
+                            <th class="one wide column">
+                                Date
+                            </th>
+
+                            <th class="one wide column">
+                                Time
+                            </th>
+
+                            <th class="one wide column">
+                                Venue
+                            </th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                            
+                        </tbody>
+
+                    </table>
+                </div>
+
+
+
+            </div>
+
+            <br> <br> <br> <br> 
+            </div>
+        
+
+
+       <br/><br/>
+       
+      
+<br/><br/>
+
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column" id="right-rail">
+            <div class="row">
+                {% comment %}The Modules:{% endcomment %}
+                {% block modules %}
+                    {% include 'dashboard/modules.html' %}
+                {% endblock %}
+            </div>
+
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+
+
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script>
+        //----------------------calender--------------------------------
+        $('#rangestart').calendar({
+            monthFirst: false,
+            type: 'date',
+            minDate: new Date(getToday().getFullYear(), getToday().getMonth(), getToday().getDate()),
+            formatter: {
+              date: function (date, settings) {
+                if (!date) return '';
+                var day = date.getDate();
+                var month = date.getMonth() + 1;
+                var year = date.getFullYear();
+                return year + '-' + month + '-' + day;
+              }
+            }
+        });
+        /*$(document).ready(function(){
+            $("#textLoader").toggle();
+            $("#replacement-card").toggle();
+            setTimeout(loader, 1750);
+        });
+        function loader() {
+            $("#textLoader").toggle();
+            $("#replacement-card").toggle();
+            $("#loader").removeClass("active");
+            $("#loader").addClass("disabled");
+        }*/
+    </script>
+
+    <script>
+        $('.special.cards .image').dimmer({
+          on: 'hover'
+        });
+    </script>
+
+<!-- Script for faculty count -->
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script> 
+    <script type="text/javascript">
+
+        $('#faculty_info').click(function(){
+            $("#faculty_stats").css("display", "block");
+            $("#student_stats").css("display", "none");
+            $("#project_stats").css("display", "none");
+            $("#gymkhana_stats").css("display", "none");
+            $("#HOD_info").css("display", "none");
+            $("#meeting_div").css("display", "none");
+            //alert("hey")
+            $.ajax({
+                type: 'POST',
+                url: '/office_module/directorOffice/viewProfile',
+                data: {},
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                success: function(response){
+                    console.log(response)
+                    $('#faculty_stats_table').children('tbody').html('')
+                    $('#faculty_stats_table').children('tbody').append('<tr>');
+                    for(var i=0;i<response.all_counts.length;i++){
+                        $('#faculty_stats_table').children('tbody').append('<td>' + response.all_counts[i] + '</td>');
+                  
+                    }
+                    $('#faculty_stats_table').children('tbody').append('</tr>')
+                    $('#faculty_stats_graph').css("display","block")
+                    var chart = new CanvasJS.Chart("faculty_stats_graph", {
+                    animationEnabled: true,
+                    theme: "light1", // "light1", "light2", "dark1", "dark2"
+                    title:{
+                        text: ""
+                    },
+                    axisY: {
+                        title: "Count of faculties"
+                    },
+                    data: [{        
+                        type: "column",  
+                        showInLegend: true, 
+                        legendMarkerColor: "black",
+                        legendText: "Departments",
+                        dataPoints: [      
+                            { y: response.all_counts[0], label: "CSE" },
+                            { y: response.all_counts[1],  label: "ECE" },
+                            { y: response.all_counts[2],  label: "ME" },
+                            { y: response.all_counts[3],  label: "DESIGN" },
+                            { y: response.all_counts[4],  label: "NATURAL SCIENCES" }
+                        ]
+                    }]
+                });
+                chart.render();
+                $('#faculty_stats_graph').append('<br><br>')
+              },
+                error: function(rs, e){
+                console.log('error');
+                },
+            });
+        });
+    </script>
+
+
+<!-- top students department and year wise -->
+    <script type="text/javascript">
+        $('#Student_info').click(function(){
+        $("#student_stats").css("display", "block");
+        $("#faculty_stats").css("display", "none");
+        $("#faculty_stats_graph").css("display", "none");
+        $("#project_stats").css("display", "none");
+        $("#gymkhana_stats").css("display", "none");
+        $("#HOD_info").css("display", "none");
+        $("#meeting_div").css("display", "none");
+
+        $.ajax({
+                type: 'POST',
+                url: '/office_module/directorOffice/viewProfile',
+                data: {},
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                success: function(response){
+                    console.log(response)
+                    $('#student_stats table tbody ol').html('')
+                    $('#cse_15').append('<li>' + response.top_15_cse[0] + '&nbsp; &nbsp; -- &nbsp;' + 
+                        response.top_15_cse[1] +'</li>'+'<li>' + response.top_15_cse[2] + '&nbsp; &nbsp; -- &nbsp;' + response.top_15_cse[3] +'</li>' + '<li>' + response.top_15_cse[4] + '&nbsp; &nbsp; -- &nbsp;' + response.top_15_cse[5] + '</li>');
+
+                    $('#ece_15').append('<li>' + response.top_15_ece[0] + '&nbsp; &nbsp; -- &nbsp;' + 
+                        response.top_15_ece[1] +'</li>'+'<li>' + response.top_15_ece[2] +  '&nbsp; &nbsp; -- &nbsp;' + response.top_15_ece[3]+ '</li>' + '<li>' + response.top_15_ece[4] +  '&nbsp; &nbsp; -- &nbsp;' + response.top_15_ece[5]+ '</li>');
+
+
+                    $('#me_15').append('<li>' + response.top_15_me[0] +  '&nbsp; &nbsp; -- &nbsp;' + 
+                        response.top_15_me[1]+  '</li>'+'<li>' + response.top_15_me[2] + '&nbsp; &nbsp; -- &nbsp;' + response.top_15_me[3]+  '</li>' + '<li>' + response.top_15_me[4] +  '&nbsp; &nbsp; -- &nbsp;' + response.top_15_me[5]+ '</li>');
+
+                    $('#design_15').append('<li>' + response.top_15_design[0] +  '&nbsp; &nbsp; -- &nbsp;' + response.top_15_design[1] +  '</li>'+'<li>' + response.top_15_design[2] +  '&nbsp; &nbsp; -- &nbsp;' + response.top_15_design[3] + '</li>' + '<li>' + response.top_15_design[4] +  '&nbsp; &nbsp; -- &nbsp;' + response.top_15_design[5]  + '</li>');
+
+                    $('#cse_16').append('<li>' + response.top_16_cse[0] +  '&nbsp; &nbsp; -- &nbsp;' + 
+                        response.top_16_cse[1]  + '</li>'+'<li>' + response.top_16_cse[2] +   '&nbsp; &nbsp; -- &nbsp;' + response.top_16_cse[3]  +'</li>' + '<li>' + response.top_16_cse[4] +   '&nbsp; &nbsp; -- &nbsp;' + response.top_16_cse[5]  +'</li>');
+
+                    $('#ece_16').append('<li>' + response.top_16_ece[0] +   '&nbsp; &nbsp; -- &nbsp;' + 
+                        response.top_16_ece[1]  +'</li>'+'<li>' + response.top_16_ece[2] +   '&nbsp; &nbsp; -- &nbsp;' + response.top_16_ece[3]  +'</li>' + '<li>' + response.top_16_ece[4] +   '&nbsp; &nbsp; -- &nbsp;' + response.top_16_ece[5]  +'</li>');
+
+                    $('#me_16').append('<li>' + response.top_16_me[0] +   '&nbsp; &nbsp; -- &nbsp;' + 
+                        response.top_16_me[1]  + '</li>'+'<li>' + response.top_16_me[2] +    '&nbsp; &nbsp; -- &nbsp;' + response.top_16_me[3]  +'</li>' + '<li>' + response.top_16_me[4] +    '&nbsp; &nbsp; -- &nbsp;' + response.top_16_me[5]  +'</li>');
+
+                    $('#design_16').append('<li>' + response.top_16_design[0] +    '&nbsp; &nbsp; -- &nbsp;' + response.top_16_design[1]  + '</li>'+'<li>' + response.top_16_design[2] +   '&nbsp; &nbsp; -- &nbsp;' + response.top_16_design[3]  + '</li>' + '<li>' + response.top_16_design[4] +   '&nbsp; &nbsp; -- &nbsp;' + response.top_16_design[5]  +  '</li>');
+
+                    $('#cse_17').append('<li>' + response
+                    .top_17_cse[0] + '&nbsp; &nbsp; -- &nbsp;' + response.top_17_cse[1] + '</li>' + '<li>' + response.top_17_cse[2] + '&nbsp; &nbsp; -- &nbsp;' +response.top_17_cse[3] + '</li>' + '<li>' + response.top_17_cse[4] + '&nbsp; &nbsp; -- &nbsp;' + response.top_17_cse[5] + '</li>');
+
+                    $('#ece_17').append('<li>' + response.top_17_ece[0] + '&nbsp; &nbsp; -- &nbsp;' + response.top_17_ece[1] + '</li>' + '<li>' + response.top_17_ece[2] + '&nbsp; &nbsp; -- &nbsp;' +response.top_17_ece[3] + '</li>' + '<li>' + response.top_17_ece[4] + '&nbsp; &nbsp; -- &nbsp;' + response.top_17_ece[5] + '</li>');
+
+                    $('#me_17').append('<li>' + response.top_17_me[0] + '&nbsp; &nbsp; -- &nbsp;' + response.top_17_me[1] + '</li>' + '<li>' + response.top_17_me[2] + '&nbsp; &nbsp; -- &nbsp;' +response.top_17_me[3] + '</li>' + '<li>' + response.top_17_me[4] + '&nbsp; &nbsp; -- &nbsp;' + response.top_17_me[5] + '</li>');
+
+                    $('#design_17').append('<li>' + response.top_17_design[0] + '&nbsp; &nbsp; -- &nbsp;' + response.top_17_design[1] + '</li>' + '<li>' + response.top_17_design[2] + '&nbsp; &nbsp; -- &nbsp;' +response.top_17_design[3] + '</li>' + '<li>' + response.top_17_design[4] + '&nbsp; &nbsp; -- &nbsp;' + response.top_17_design[5] + '</li>');
+
+
+
+                },
+                error: function(rs, e){
+                console.log('error');
+                },
+            });
+        });
+    </script>
+
+<!-- Script for ongoing projects -->
+    <script type="text/javascript">
+
+        $('#PnD').click(function(){
+            //alert("hey")
+            $("#project_stats").css("display", "block");
+            $("#student_stats").css("display", "none");
+            $("#faculty_stats").css("display", "none");
+            $("#faculty_stats_graph").css("display", "none");
+            $("#gymkhana_stats").css("display", "none");
+             $("#HOD_info").css("display", "none");
+             $("#meeting_div").css("display", "none");
+            
+            $.ajax({
+                type: 'POST',
+                url: '/office_module/directorOffice/viewOngoingProjects',
+                data: {},
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                success: function(response){
+                    console.log(response)
+                    //var response=JSON.parse(response);
+                    $("#project_stats").css("display", "block");
+
+                    //if data of projects from database
+                    /*
+                    $('#project_stats_table').children('tbody').html('')
+                    //$('#particular_stats').html('');
+                    $('#project_stats_table').children('tbody').append('<tr>');
+                    for(var i=0;i<response.project_details.length;i++){
+                        $('#project_stats_table').children('tbody').append('<td>' + response.project_details[i] + '</td>');
+                  
+                    }
+                    $('#project_stats_table').children('tbody').append('</tr>'); */
+    
+                    
+                },
+                error: function(rs, e){
+                console.log('error');
+                },
+            });
+
+
+        });
+    </script>
+
+<!-- Script for gymkhana info -->
+    <script type="text/javascript">
+        $('#gymkhana_info').click(function(){
+            $("#gymkhana_stats").css("display", "block");
+            $("#faculty_stats").css("display", "none");
+            $("#student_stats").css("display", "none");
+            $("#project_stats").css("display", "none");
+            $("#faculty_stats_graph").css("display", "none");
+            $("#meeting_div").css("display", "none");
+            $("#HOD_info").css("display", "none");
+            //alert("hey")
+            $.ajax({
+                type: 'POST',
+                url: '/office_module/directorOffice/viewOfficeBearers',
+                data: {},
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                success: function(response){
+                    console.log(response)
+                    $('#gymkhana_stats_table').children('tbody').html('')
+                    //$('#particular_stats').html('');
+                    for(var i=0;i<response.club_details.length;i=i+4){
+                        $('#gymkhana_stats_table').children('tbody').append('<tr>');
+                        $('#gymkhana_stats_table').children('tbody').append('<td>' + response.club_details[i] + '</td> <td>' + response.club_details[i+1] + '</td> <td>' + response.club_details[i+2] + '</td> <td>' + response.club_details[i+3] + '</td>');
+                        $('#gymkhana_stats_table').children('tbody').append('</tr>')
+                    }
+                   
+                },
+                error: function(rs, e){
+                console.log('error');
+                },
+            });
+        });
+    </script>
+
+<!-- Script to view Scheduled meetings -->
+    <script type="text/javascript">
+
+        $('#meetings').click(function(){
+            //alert("hey")
+            $("#gymkhana_stats").css("display", "none");
+            $("#faculty_stats").css("display", "none");
+            $("#faculty_stats_graph").css("display", "none");
+            $("#student_stats").css("display", "none");
+            $("#project_stats").css("display", "none");
+            $("#HOD_info").css("display", "none");
+            $("#meeting_div").css("display", "block");
+
+            $.ajax({
+                type: 'POST',
+                url: '/office_module/directorOffice/viewMeetings',
+                data: {},
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                success: function(response){
+                    console.log(response)
+                    var k=0; 
+                    $('#meeting_table').children('tbody').html('')
+                    for(var i=0;i<response.meeting.length;i=i+4){
+                        console.log(k);
+                        $('#meeting_table').children('tbody').append('<tr>')
+                        $('#meeting_table').children('tbody').append('<td>' + response.meeting[i] + '</td> <td>' + response.meeting[i+1] + '</td> <td>' + response.meeting[i+2] + '</td> <td>' + response.meeting[i+3] + '</td>');
+                        $('#meeting_table').children('tbody').append('</tr>')
+                  
+                    }
+                    
+                },
+                error: function(rs, e){
+                console.log('error');
+                },
+            });
+        });
+    </script>
+
+
+<!--   Script for list of HODs -->
+    <script type="text/javascript">
+        $('#HOD').click(function(){
+        $("#HOD_info").css("display", "block");
+        $("#student_stats").css("display", "none");
+        $("#gymkhana_stats").css("display", "none");
+        $("#faculty_stats").css("display", "none");
+        $("#faculty_stats_graph").css("display", "none");
+        $("#project_stats").css("display", "none");
+        $("#meeting_div").css("display", "none");
+        
+        $.ajax({
+                type: 'POST',
+                url: '/office_module/directorOffice/viewHOD',
+                data: {},
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                success: function(response){
+                    console.log(response)
+                    //$('#HOD_info').children('ol').html('')
+                    $('#HOD_info table tbody ol').html('')
+                    $('#HOD_list').append('<li> <h5>HOD (CSE) </h5>&nbsp;&nbsp -- &nbsp;' + response.csehod[0] + '</li><li> <h5>HOD (ECE) </h5>&nbsp;&nbsp -- &nbsp;' + response.ecehod[0] + '</li><li> <h5>HOD (ME) </h5>&nbsp;&nbsp -- &nbsp;'+ response.mehod[0] + '</li><li> <h5>HOD (NS) </h5>&nbsp;&nbsp -- &nbsp;'+ response.nshod[0] + '</li><li> <h5>HOD (DESIGN) </h5>&nbsp;&nbsp -- &nbsp;'+ response.deshod[0] + '</li>');
+       
+                },
+                error: function(rs, e){
+                console.log('error');
+                },
+            });
+        });
+    </script>
+<!--   End  of HOD script -->
+
+<!-- Script for faculty information -->
+<script type="text/javascript">
+
+    $('#faculty_profile').click(function(){
+        //$('#particular_stats').html('');
+        $("#faculty").css("display","block");
+        $("#imp_links").css("display", "none");
+        $("#staff2").css("display","none");
+        $("#student_form").css("display","none");
+        $("#meeting_form").css("display","none");
+        $("#student").css("display", "none");
+        $("#error_div").css("display", "none");
+        $("#allmeetings").css("display", "none");
+        $("#pnd").css("display", "none");
+        $("#rspc").css("display", "none");
+        $("#acad").css("display", "none");
+        $("#stud").css("display", "none");
+        $("#purchase").css("display", "none");
+        $("#registrar").css("display", "none");
+        $("#gymkhana_stats").css("display", "none");
+        $("#faculty_stats").css("display", "none");
+        $("#student_stats").css("display", "none");
+        $("#project_stats").css("display", "none");
+        $("#faculty_stats_graph").css("display", "none");
+        $("#meeting_div").css("display", "none");
+        $("#HOD_info").css("display", "none");
+        $("#centre-rail").css("display", "none");
+        $("#right-rail").css("display", "none");
+        
+
+    
+        
+        //alert("hey")
+        $.ajax({
+            type: 'POST',
+            url: '/office/directorOffice/viewFacProfile',
+            data: {},
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            success: function(response){
+                console.log(response)
+                $('#cse_table').children('tbody').html('')
+                //$('#particular_stats').html('');
+                //$('#cse_table').children('tbody').append('<tr>');
+                for(var i=0;i<response.cse_faculty.length;i=i+3){
+                    $('#cse_table').children('tbody').append('<tr>');
+                    $('#cse_table').children('tbody').append('<td>' + response.cse_faculty[i] + '</td> <td>' + response.cse_faculty[i+1] + '</td> <td>' + response.cse_faculty[i+2] + '</td>');
+                    $('#cse_table').children('tbody').append('</tr>');
+              
+                }
+                //$('#cse_table').children('tbody').append('</tr>')
+
+
+
+
+                $('#ece_table').children('tbody').html('')
+                //$('#particular_stats').html('');
+                
+                for(var i=0;i<response.ece_faculty.length;i=i+3){
+                    $('#ece_table').children('tbody').append('<tr>');
+                    $('#ece_table').children('tbody').append('<td>' + response.ece_faculty[i] + '</td> <td>' + response.ece_faculty[i+1] + '</td> <td>' + response.ece_faculty[i+2] + '</td>');
+                    $('#ece_table').children('tbody').append('</tr>')
+              
+                }
+                
+
+
+
+
+
+                $('#me_table').children('tbody').html('')
+                //$('#particular_stats').html('');
+                
+                for(var i=0;i<response.me_faculty.length;i=i+3){
+                    $('#me_table').children('tbody').append('<tr>');
+                    $('#me_table').children('tbody').append('<td>' + response.me_faculty[i] + '</td> <td>' + response.me_faculty[i+1] + '</td> <td>' + response.me_faculty[i+2] + '</td>');
+                    $('#me_table').children('tbody').append('</tr>')
+              
+                }
+                
+
+
+
+
+
+                $('#ns_table').children('tbody').html('')
+                //$('#particular_stats').html('');
+                
+                for(var i=0;i<response.ns_faculty.length;i=i+3){
+                    $('#ns_table').children('tbody').append('<tr>');
+                    $('#ns_table').children('tbody').append('<td>' + response.ns_faculty[i] + '</td> <td>' + response.ns_faculty[i+1] + '</td> <td>' + response.ns_faculty[i+2] + '</td>');
+                    $('#ns_table').children('tbody').append('</tr>')
+                }
+                
+
+
+
+
+
+                $('#des_table').children('tbody').html('')
+                //$('#particular_stats').html('');
+                
+                for(var i=0;i<response.des_faculty.length;i=i+3){
+                    $('#des_table').children('tbody').append('<tr>');
+                    $('#des_table').children('tbody').append('<td>' + response.des_faculty[i] + '</td> <td>' + response.des_faculty[i+1] + '</td> <td>' + response.des_faculty[i+2] + '</td>');
+                    $('#des_table').children('tbody').append('</tr>')
+                }
+                
+
+            },
+            error: function(rs, e){
+            console.log('error');
+            },
+        });
+    });
+</script>
+<!-- End of script for faculty --> 
+
+
+<!-- Script for showing Staff Department wise -->
+<script type="text/javascript">
+
+    $('#staff_profile2').click(function(){
+        //$('#particular_stats').html('');
+        //alert("hey");
+
+        $("#staff2").css("display","block");
+        $("#faculty").css("display","none");
+        $("#imp_links").css("display", "none");
+        $("#student_form").css("display","none");
+        $("#meeting_form").css("display","none");
+        $("#student").css("display", "none");
+        $("#error_div").css("display", "none");
+        $("#allmeetings").css("display", "none");
+        $("#pnd").css("display", "none");
+        $("#rspc").css("display", "none");
+        $("#acad").css("display", "none");
+        $("#stud").css("display", "none");
+        $("#purchase").css("display", "none");
+        $("#registrar").css("display", "none");
+        $("#gymkhana_stats").css("display", "none");
+        $("#faculty_stats").css("display", "none");
+        $("#student_stats").css("display", "none");
+        $("#project_stats").css("display", "none");
+        $("#faculty_stats_graph").css("display", "none");
+        $("#meeting_div").css("display", "none");
+        $("#HOD_info").css("display", "none");
+        $("#centre-rail").css("display", "none");
+        $("#right-rail").css("display", "none");
+
+        
+        $.ajax({
+            type: 'POST',
+            url: '/office/directorOffice/viewStaffProfile',
+            data: {},
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            success: function(response){
+                console.log(response)
+                //var response=JSON.parse(response);
+                //tr open
+                //$('#faculty_stats_table > tbody').html('')
+                //alert("inside success")
+                console.log(response.academic)
+                $('#academic').children('tbody').html('')
+                //$('#particular_stats').html('');
+                //$('#cse_table').children('tbody').append('<tr>');
+                for(var i=0;i<response.academic.length;i=i+3){
+                    $('#academic').children('tbody').append('<tr>');
+                    $('#academic').children('tbody').append('<td>' + response.academic[i] + '</td> <td>' + response.academic[i+1] + '</td> <td>' + response.academic[i+2] + '</td>');
+                    $('#academic').children('tbody').append('</tr>');
+              
+                }
+                
+
+
+                $('#admin').children('tbody').html('')
+                //$('#particular_stats').html('');
+                
+                for(var i=0;i<response.administration.length;i=i+3){
+                    $('#admin').children('tbody').append('<tr>');
+                    $('#admin').children('tbody').append('<td>' + response.administration[i] + '</td> <td>' + response.administration[i+1] + '</td> <td>' + response.administration[i+2] + '</td>');
+                    $('#admin').children('tbody').append('</tr>')
+              
+                }
+                
+
+
+
+
+
+                $('#office').children('tbody').html('')
+                //$('#particular_stats').html('');
+                
+                for(var i=0;i<response.office.length;i=i+3){
+                    $('#office').children('tbody').append('<tr>');
+                    $('#office').children('tbody').append('<td>' + response.office[i] + '</td> <td>' + response.office[i+1] + '</td> <td>' + response.office[i+2] + '</td>');
+                    $('#office').children('tbody').append('</tr>')
+              
+                }
+                
+
+
+
+
+
+                $('#placement').children('tbody').html('')
+                //$('#particular_stats').html('');
+                
+                for(var i=0;i<response.placement.length;i=i+3){
+                    $('#placement').children('tbody').append('<tr>');
+                    $('#placement').children('tbody').append('<td>' + response.placement[i] + '</td> <td>' + response.placement[i+1] + '</td> <td>' + response.placement[i+2] + '</td>');
+                    $('#placement').children('tbody').append('</tr>')
+                }
+                
+
+
+
+
+
+                $('#others').children('tbody').html('')
+                //$('#particular_stats').html('');
+                
+                for(var i=0;i<response.others.length;i=i+3){
+                    $('#others').children('tbody').append('<tr>');
+                    $('#others').children('tbody').append('<td>' + response.others[i] + '</td> <td>' + response.others[i+1] + '</td> <td>' + response.others[i+2] + '</td>');
+                    $('#others').children('tbody').append('</tr>')
+                }
+                
+
+            },
+            error: function(rs, e){
+            console.log('error');
+            },
+        });
+    });
+</script>
+<!-- End of staff script --> 
+
+
+<!-- script to show student form -->
+<script type="text/javascript">
+
+    $('#student_profile').click(function(){
+        //$('#particular_stats').html('');
+         //alert("hey")
+        $("#imp_links").css("display", "none");
+        $("#faculty").css("display", "none");
+        $("#staff2").css("display","none");
+        $("#meeting_form").css("display","none");
+        $("#student_form").css("display","block");
+        $("#student").css("display","none");
+        $("#allmeetings").css("display", "none");
+        $("#pnd").css("display", "none");
+        $("#rspc").css("display", "none");
+        $("#acad").css("display", "none");
+        $("#stud").css("display", "none");
+        $("#purchase").css("display", "none");
+        $("#registrar").css("display", "none");
+        $("#gymkhana_stats").css("display", "none");
+        $("#faculty_stats").css("display", "none");
+        $("#student_stats").css("display", "none");
+        $("#project_stats").css("display", "none");
+        $("#faculty_stats_graph").css("display", "none");
+        $("#meeting_div").css("display", "none");
+        $("#HOD_info").css("display", "none");
+        $("#centre-rail").css("display", "none");
+        $("#right-rail").css("display", "none");
+
+   
+        
+    });
+
+</script>
+<!-- End of student form script --> 
+
+
+<!-- script for submitting student form -->
+<script type="text/javascript">
+
+    $(document).on('submit','#stud_form',function(e){
+
+        e.preventDefault();
+        //$('#particular_stats').html('');
+        var $form_data=$('#stud_form').serialize();
+      //  alert("hey")
+        $("#imp_links").css("display", "none");
+        $("#faculty").css("display", "none");
+        $("#staff2").css("display","none");
+        $("#allmeetings").css("display", "none");
+        //$("#student_form").css("display","none");
+        $("#meeting_form").css("display","none");
+        $("#student").css("display","block");
+        $("#pnd").css("display", "none");
+        $("#rspc").css("display", "none");
+        $("#acad").css("display", "none");
+        $("#stud").css("display", "none");
+        $("#purchase").css("display", "none");
+        $("#registrar").css("display", "none");
+        $("#centre-rail").css("display", "none");
+        $("#right-rail").css("display", "none");
+
+     
+        
+        $.ajax({
+            type: 'GET',
+            url: '/office/directorOffice/viewStudentProfile',
+            data: {
+                csrfmiddlewaretoken: '{{csrf_token}}',
+                programme : $('#programme').val(),
+                year : $('#year').val(),
+                department:$('#department').val(),
+                
+            },
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            success: function(response){
+                //
+                if(response.student_detail.length == 0){
+                    $("#student").css("display","none");
+                    //alert("hey")
+                    $("#error_div").css("display","block");
+                    $('#error_div').children('h4').html('');
+                    $('#error_div').children('h4').append('<center> Invalid Request. Please try again. </center>');
+                    
+                }
+
+                else{
+                $('#error_div').children('h4').html('');
+               // alert("inside success")
+                console.log(response)
+                $('#student_table').children('tbody').html('')
+                for(var i=0;i<response.student_detail.length;i=i+4){
+                   // console.log("inside for loop")
+                    $('#student_table').children('tbody').append('<tr>');
+                    $('#student_table').children('tbody').append('<td>' + response.student_detail[i] + '</td> <td>' + response.student_detail[i+1] + '</td> <td>' + response.student_detail[i+2] + '</td><td>' + response.student_detail[i+3] + '</td> ' );
+                    $('#student_table').children('tbody').append('</tr>')
+              
+                }
+                $('#heading').children('center').html('');
+                $('#heading').append(' <center> <h3>' + response.info[0] + '&nbsp;&nbsp' + response.info[1]  + '&nbsp;&nbsp'+ response.info[2] + '&nbsp;&nbsp' +'  </h3> </center>');
+            }
+                
+            },
+            error: function(rs, e){
+            console.log('error');
+            },
+        });
+    });
+</script>
+<!-- End of script for student form submit -->
+
+
+<!-- Script for showing meeting form and fetching options in dropdown -->
+<script type="text/javascript">
+
+    $('#meeting').click(function(){
+        //alert("hey")
+        $("#imp_links").css("display", "none");
+        $("#faculty").css("display", "none");
+        $("#staff2").css("display","none");
+        $("#student_form").css("display","none");
+        $("#allmeetings").css("display","none");
+        $("#student").css("display","none");
+        $("#meeting_form").css("display","block");
+        $("#error_div").css("display", "none");
+        $("#pnd").css("display", "none");
+        $("#rspc").css("display", "none");
+        $("#acad").css("display", "none");
+        $("#stud").css("display", "none");
+        $("#purchase").css("display", "none");
+        $("#registrar").css("display", "none");
+        $("#gymkhana_stats").css("display", "none");
+        $("#faculty_stats").css("display", "none");
+        $("#student_stats").css("display", "none");
+        $("#project_stats").css("display", "none");
+        $("#faculty_stats_graph").css("display", "none");
+        $("#meeting_div").css("display", "none");
+        $("#HOD_info").css("display", "none");
+        $("#centre-rail").css("display", "none");
+        $("#right-rail").css("display", "none");
+
+     
+        $.ajax({
+            type: 'GET',
+            url: '/office/directorOffice/meeting_dropdown',
+            data: {
+            },
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            success: function(response){
+                console.log(response);
+                for(i=0;i<response.faculty.length;i++){
+                    $("#member").append('<option >' + response.faculty[i] + '</option>') 
+                }
+
+            },
+            error: function(rs, e){
+            console.log('error');
+            },
+        });
+
+
+                    
+    });
+
+</script>
+<!-- End of meeting form script -->
+
+
+<!-- Script for submitting meeting form -->
+    
+<script type="text/javascript">
+
+    $(function() {
+        $("#meet_form").submit(function(event) {
+                event.preventDefault();
+                var meet_Form = $(this);
+                var date_entered = $("#adate").val();
+                console.log(date_entered)
+                var today = new Date();
+                var dd = String(today.getDate()).padStart(2, '0');
+                var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+                var yyyy = today.getFullYear();
+
+                todays_date = yyyy + '-' + mm + '-' + dd;
+                console.log(today);
+                console.log(todays_date);
+                //check if the date entered is less than current date
+                if(date_entered < todays_date){
+                    alert("Please enter a valid date")
+                }
+                else{
+                    var posting = $.post( meet_Form.attr('action'), meet_Form.serialize() );
+                    // if success:
+                    posting.done(function(data) {
+                        alert('Meeting has been scheduled');
+                        document.getElementById("meet_form").reset();
+                    });
+                }
+                // if failure
+                posting.fail(function(data) {
+                    alert('Failed. Please try again!');
+                    document.getElementById("meet_form").reset();
+
+                });
+        });
+    });
+
+</script> 
+<!-- End of script for meeting form script --> 
+
+
+<!-- Script for add member --> 
+<script type="text/javascript">
+    function addmember(){
+        $("#moremem").append('<select  class="field ui search fluid dropdown" type="text" name="member" style="width: 301px" placeholder="Name" /></select> ' );
+
+        $.ajax({
+            type: 'GET',
+            url: '/office/directorOffice/meeting_dropdown',
+            data: {
+            },
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            success: function(response){
+                console.log(response);
+                $("select[name=member]").append('<option value=""> Select </option>')
+                for(i=0;i<response.faculty.length;i++){
+                    $("select[name=member]").append('<option>' + response.faculty[i] + '</option>') 
+                }
+
+            },
+            error: function(rs, e){
+            console.log('error');
+            },
+        });
+
+
+         //$("#moremem").append('<br>');
+
+                 
+    }
+</script>
+<!-- End of script -->
+
+
+<!-- Script to view Scheduled meetings -->
+
+
+<script type="text/javascript">
+
+    $('#view_meetings').click(function(){
+        //alert("hey")
+        $("#allmeetings").css("display", "block");
+        $("#faculty").css("display","none");
+        $("#imp_links").css("display", "none");
+        $("#staff2").css("display", "none");
+        $("#student_form").css("display","none");
+        $("#meeting_form").css("display","none");
+        $("#student").css("display", "none");
+        $("#error_div").css("display", "none");
+        $("#pnd").css("display", "none");
+        $("#rspc").css("display", "none");
+        $("#acad").css("display", "none");
+        $("#stud").css("display", "none");
+        $("#purchase").css("display", "none");
+        $("#registrar").css("display", "none");
+        $("#gymkhana_stats").css("display", "none");
+        $("#faculty_stats").css("display", "none");
+        $("#student_stats").css("display", "none");
+        $("#project_stats").css("display", "none");
+        $("#faculty_stats_graph").css("display", "none");
+        $("#meeting_div").css("display", "none");
+        $("#HOD_info").css("display", "none");
+        $("#centre-rail").css("display", "none");
+        $("#right-rail").css("display", "none");
+
+        
+
+        $.ajax({
+            type: 'POST',
+            url: '/office/directorOffice/planMeetings',
+            data: {},
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            success: function(response){
+                console.log(response) 
+                $('#meeting_table').children('tbody').html('')
+                for(var i=0;i<response.meeting.length;i=i+6){
+                    //alert("hey")
+                    $('#meeting_table').children('tbody').append('<tr>')
+                    $('#meeting_table').children('tbody').append('<td><input type="checkbox" name="list" value=' + response.meeting[i] + '> </td>')
+                    console.log(response.meeting[i]);
+                    //$("#input[name=list]").val(response.meeting[i]);
+                    $('#meeting_table').children('tbody').append('<td>' + response.meeting[i+1] + '</td> <td>' + response.meeting[i+2] + '</td> <td>' + response.meeting[i+3] + '</td> <td>' + response.meeting[i+4] + '</td>' );
+                    $('#meeting_table').children('tbody').append('<td>')
+                    $('#meeting_table').children('tbody').append('<ol>')
+                    //console.log(response.meeting[i+5])
+                    for(var j=0;j<response.meeting[i+5].length;j++){
+                       // console.log(i);
+                        console.log(response.meeting[i+5][j]);
+                        $('#meeting_table').children('tbody').append('<li>'+response.meeting[i+5][j]+'</li>')
+                    }
+                    $('#meeting_table').children('tbody').append('</ol>')
+                    $('#meeting_table').children('tbody').append('</td>')
+                    $('#meeting_table').children('tbody').append('</tr>')
+              
+                }
+                
+            },
+            error: function(rs, e){
+            console.log('error');
+            },
+        });
+    });
+</script>
+<!--End of script to view Scheduled meetings -->    
+
+<!-- Plan Meeting (Cancelling ) -->
+    
+<script type="text/javascript">
+
+    $(function() {
+        $("#myform").submit(function(event) {
+                event.preventDefault();
+                var my_Form = $(this);
+
+                var deleting = $.post( my_Form.attr('action'), my_Form.serialize() );
+                // if success:
+                deleting.done(function(response) {
+                    alert('Meeting has been cancelled');
+                    $('#meeting_table').children('tbody').html('')
+                    for(var i=0;i<response.meeting.length;i=i+6){
+                        $('#meeting_table').children('tbody').append('<tr>')
+                        $('#meeting_table').children('tbody').append('<td><input type="checkbox" name="list" value=' + response.meeting[i] + '> </td>')
+                        console.log(response.meeting[i]);
+                        //$("#input[name=list]").val(response.meeting[i]);
+                        $('#meeting_table').children('tbody').append('<td>' + response.meeting[i+1] + '</td> <td>' + response.meeting[i+2] + '</td> <td>' + response.meeting[i+3] + '</td> <td>' + response.meeting[i+4] + '</td>' );
+                        $('#meeting_table').children('tbody').append('<td>')
+                        $('#meeting_table').children('tbody').append('<ol>')
+                        //console.log(response.meeting[i+5])
+                        for(var j=0;j<response.meeting[i+5].length;j++){
+                           // console.log(i);
+                            console.log(response.meeting[i+5][j]);
+                            $('#meeting_table').children('tbody').append('<li>'+response.meeting[i+5][j]+'</li>')
+                        }
+                        $('#meeting_table').children('tbody').append('</ol>')
+                        $('#meeting_table').children('tbody').append('</td>')
+                        $('#meeting_table').children('tbody').append('</tr>')
+                }
+                });
+                // if failure
+                deleting.fail(function(response) {
+                    alert('Failed');
+                });
+        });
+    });
+
+</script> 
+<!-- End of script of plan meetings -->
+
+
+
+
+
+
+
+
+{% endblock %}

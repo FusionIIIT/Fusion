@@ -1,0 +1,1027 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+Teaching Vacancy
+{% endblock %}
+
+
+{% block body %}
+{% block navBar %}
+{% include 'recruitment/navbar.html' %}
+{% endblock %}
+
+{% comment %}The grid starts here!{% endcomment %}
+
+<h1 class="ui header" style="margin-left: 38%;">
+    <img class="ui image" src="https://semantic-ui.com/images/icons/school.png">
+    <div class="content">
+        Teaching Job Form
+    </div>
+</h1>
+
+<div class="ui grid">
+    <div class="twelve wide column" style="margin: auto;">
+
+        <div class="ui active tab" data-tab="teaching">
+            <div class="ui vertical segment" style="padding:0px">
+                <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST" action="">
+                    {% csrf_token %}
+
+                    <br>
+
+                    <div class="center aligned ui header">
+                        Personal Details
+                    </div>
+
+                    <div class="fields">
+
+                        <div class="eight wide field">
+                            <label>Register Date :</label>
+                            {{ a.date }}
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Advertisement Number : </label>
+                            {{ a.advertisement_number }}
+                        </div>
+
+
+                    </div>
+
+                    <div class="fields">
+                        <div class="two wide field">
+                            <label>Title : </label>
+                            <input name="title" required />
+                        </div>
+                        <div class="eight wide field">
+                            <label>First Name :</label>
+                            <input name="first_name" required />
+                        </div>
+                        <div class="eight wide field">
+                            <label>Last Name :</label>
+                            <input name="last_name" required />
+                        </div>
+
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Father's Name :</label>
+                            <input name="fathers_name" required />
+                        </div>
+
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Gender :</label>
+                            <input name="gender" required />
+                        </div>
+
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Marital Status :</label>
+                            <input name="marital_status" required />
+                        </div>
+
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Discipline :</label>
+                            <input name="discipline" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Specialization :</label>
+                            <input name="specialization" required />
+                        </div>
+
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Category :</label>
+                            <input name="category" required />
+                        </div>
+
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Correspondence Address:</label>
+                            <input name="correspondence_address" required />
+                        </div>
+
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Permanent Address:</label>
+                            <input name="permanent_address" required />
+                        </div>
+
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Alternate Email:</label>
+                            <input name="alternate_email" required />
+                        </div>
+
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Phone Number:</label>
+                            <input name="phone_number" required />
+                        </div>
+
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Mobile number:</label>
+                            <input name="mobile_number" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Alternate mobile number:</label>
+                            <input name="alternate_mobile_number" required />
+                        </div>
+
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Date of Birth:</label>
+                            <input name="dob" required />
+                        </div>
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Nationality :</label>
+                            <input name="nationality" required />
+                        </div>
+                    </div>
+
+
+                    <div class="center aligned ui header">
+                        Payment Details
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Payment reference number :</label>
+                            <input name="payment_reference_number" required />
+                        </div>
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Payment Date :</label>
+                            <input name="payment_date" required />
+                        </div>
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Bank Name :</label>
+                            <input name="bank_name" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Bank Branch :</label>
+                            <input name="bank_branch" required />
+                        </div>
+                    </div>
+
+
+                    <div class="center aligned ui header">
+                        Academic Details
+                    </div>
+
+                    <div class="ui header">High-School</div>
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>University Name :</label>
+                            <input name="university_name" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Board :</label>
+                            <input name="board" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Year of passing :</label>
+                            <input name="year_of_passing" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Division :</label>
+                            <input name="division" required />
+                        </div>
+                    </div>
+
+
+
+                    <div class="ui header">Intermediate</div>
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>University Name :</label>
+                            <input name="university_name" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Board :</label>
+                            <input name="board" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Year of passing :</label>
+                            <input name="year_of_passing" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Division :</label>
+                            <input name="division" required />
+                        </div>
+                    </div>
+
+                    <div class="ui header">Graduation</div>
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>University Name :</label>
+                            <input name="university_name" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Board :</label>
+                            <input name="board" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Year of passing :</label>
+                            <input name="year_of_passing" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Division :</label>
+                            <input name="division" required />
+                        </div>
+                    </div>
+
+                    <div class="ui header">Post-Graduation</div>
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>University Name :</label>
+                            <input name="university_name" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Board :</label>
+                            <input name="board" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Year of passing :</label>
+                            <input name="year_of_passing" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Division :</label>
+                            <input name="division" required />
+                        </div>
+                    </div>
+
+                    <div class="ui header">PhD</div>
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>University Name :</label>
+                            <input name="university_name" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Board :</label>
+                            <input name="board" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Year of passing :</label>
+                            <input name="year_of_passing" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Division :</label>
+                            <input name="division" required />
+                        </div>
+                    </div>
+
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Area of Specialization :</label>
+                            <input name="area_of_specialization" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Current area of research :</label>
+                            <input name="current_area_of_research" required />
+                        </div>
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Date of enrollment in Phd :</label>
+                            <input name="date_of_enrollment_in_phd" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Date of Phd defence :</label>
+                            <input name="date_of_phd_defence" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Date of award of Phd :</label>
+                            <input name="date_of_award_of_phd" required />
+                        </div>
+                    </div>
+
+
+                    <div class="center aligned ui header">
+                        Experience Details
+                    </div>
+
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Total experience in months :</label>
+                            <input name="experience_in_months" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Member of Professional body :</label>
+                            <input name="member_of_professional_body" required />
+                        </div>
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Employer :</label>
+                            <input name="employer" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Position held :</label>
+                            <input name="position_held" required />
+                        </div>
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Pay in pay band :</label>
+                            <input name="pay_in_pay_band" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Pay Band :</label>
+                            <input name="pay_band" required />
+                        </div>
+                    </div>
+
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>AGP :</label>
+                            <input name="agp" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Reasons for Leaving:</label>
+                            <input name="reasons_for_leaving" required />
+                        </div>
+                    </div>
+
+
+                    <div class="center aligned ui header">
+                        References
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Name :</label>
+                            <input name="name" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Address:</label>
+                            <input name="address" required />
+                        </div>
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Mobile Number :</label>
+                            <input name="mobile_number" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Email ID:</label>
+                            <input name="email" required />
+                        </div>
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Department :</label>
+                            <input name="department" required />
+                        </div>
+                    </div>
+
+                    <div class="center aligned ui header">
+                        Other Information
+                    </div>
+
+                    <div class=" ui header">
+                        Publication
+                    </div>
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Referred Journal :</label>
+                            <input name="referred_journal" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>SCI index journal:</label>
+                            <input name="sci_index_journal" required />
+                        </div>
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>International Conferences :</label>
+                            <input name="international_conferences" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>National Conferences:</label>
+                            <input name="national_conferences" required />
+                        </div>
+                    </div>
+
+                    <div class=" ui header">
+                        Research Experience
+                    </div>
+                    <br>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Duration :</label>
+                            <input name="duration" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Organization:</label>
+                            <input name="organization" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Area:</label>
+                            <input name="area" required />
+                        </div>
+                    </div>
+
+
+                    <div class=" ui header">
+                        Teaching Experience
+                    </div>
+                    <br>
+
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Duration :</label>
+                            <input name="duration" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Organization:</label>
+                            <input name="organization" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Area:</label>
+                            <input name="area" required />
+                        </div>
+                    </div>
+
+
+                    <div class=" ui header">
+                        Administrative Experience
+                    </div>
+                    <br>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Duration :</label>
+                            <input name="duration" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Organization:</label>
+                            <input name="organization" required />
+                        </div>
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Title of Post :</label>
+                            <input name="title_of_post" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Nature of Work:</label>
+                            <input name="nature_of_work" required />
+                        </div>
+                    </div>
+
+
+                    <div class=" ui header">
+                        Industrial Experience
+                    </div>
+                    <br>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Duration :</label>
+                            <input name="duration" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Organization:</label>
+                            <input name="organization" required />
+                        </div>
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Title of Post :</label>
+                            <input name="title_of_post" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Nature of Work:</label>
+                            <input name="nature_of_work" required />
+                        </div>
+                    </div>
+
+                    <div class=" ui header">
+                        Courses Taught
+                    </div>
+                    <br>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Title :</label>
+                            <input name="title" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Level:</label>
+                            <input name="level" required />
+                        </div>
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Number of times :</label>
+                            <input name="number_of_times" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Developed by you:</label>
+                            <input name="developed_by_you" required />
+                        </div>
+                    </div>
+
+
+                    <div class=" ui header">
+                        Thesis Supervision
+                    </div>
+                    <br>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Name of Student :</label>
+                            <input name="name_of_student" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Masters or PhD:</label>
+                            <input name="masters_or_Phd" required />
+                        </div>
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Year of Completion :</label>
+                            <input name="year_of_completion" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Title of Thesis:</label>
+                            <input name="title_of_thesis" required />
+                        </div>
+                    </div>
+
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Co-guides :</label>
+                            <input name="co-guides" required />
+                        </div>
+                    </div>
+
+                    <div class=" ui header">
+                        Sponsored Projects
+                    </div>
+                    <br>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Duration :</label>
+                            <input name="duration" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Sponsoring organization:</label>
+                            <input name="sponsoring_organization" required />
+                        </div>
+                    </div>
+
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Title of project :</label>
+                            <input name="title_of_project" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Grant Amount:</label>
+                            <input name="grant_amount" required />
+                        </div>
+                    </div>
+
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Co-investigators :</label>
+                            <input name="co-investigators" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Status:</label>
+                            <input name="status" required />
+                        </div>
+                    </div>
+
+
+                    <div class=" ui header">
+                        Consultancy
+                    </div>
+                    <br>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Duration :</label>
+                            <input name="duration" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Sponsoring organization:</label>
+                            <input name="sponsoring_organization" required />
+                        </div>
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Title of project :</label>
+                            <input name="title_of_project" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Grant Amount:</label>
+                            <input name="grant_amount" required />
+                        </div>
+                    </div>
+
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Co-investigators :</label>
+                            <input name="co-investigators" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Status:</label>
+                            <input name="status" required />
+                        </div>
+                    </div>
+
+
+
+                    <div class=" ui header">
+                        Qualified Exams
+                    </div>
+                    <br>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>NET :</label>
+                            <input type="checkbox" name="net" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>GATE:</label>
+                            <input type="checkbox" name="gate" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>JRF:</label>
+                            <input type="checkbox" name="JRF" required />
+                        </div>
+                    </div>
+
+
+                    <div class=" ui header">
+                        Patent
+                    </div>
+                    <br>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Filed National :</label>
+                            <input name="filed_national" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Filed International:</label>
+                            <input name="filed_internation" required />
+                        </div>
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Award National :</label>
+                            <input name="award_national" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Award International:</label>
+                            <input name="award_internation" required />
+                        </div>
+                    </div>
+
+
+                    <div class=" ui header">
+                        Books
+                    </div>
+                    <br>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Name of book :</label>
+                            <input name="name_of_book" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Year:</label>
+                            <input name="year" required />
+                        </div>
+
+
+                    </div>
+
+                    <div class="fields">
+
+                        <div class="eight wide field">
+                            <label>Title :</label>
+                            <input name="title" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Co-author:</label>
+                            <input name="co-author" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Publisher:</label>
+                            <input name="publisher" required />
+                        </div>
+
+                    </div>
+
+                    <div class="fields">
+
+                        <div class="eight wide field">
+                            <label>Published:</label>
+                            <input type="checkbox" name="published" required />
+                        </div>
+
+
+                    </div>
+
+
+                    <div class=" ui header">
+                        National Conference
+                    </div>
+                    <br>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Author :</label>
+                            <input name="author" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Year:</label>
+                            <input name="year" required />
+                        </div>
+
+
+                    </div>
+
+                    <div class="fields">
+
+                        <div class="eight wide field">
+                            <label>Title :</label>
+                            <input name="title" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Name and Place of conference:</label>
+                            <input name="name_and_place_of_conference" required />
+                        </div>
+
+
+                    </div>
+
+                    <div class="fields">
+
+                        <div class="eight wide field">
+                            <label>Published:</label>
+                            <input type="checkbox" name="published" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Presented:</label>
+                            <input type="checkbox" name="presented" required />
+                        </div>
+                    </div>
+
+
+
+                    <div class=" ui header">
+                        International Conference
+                    </div>
+                    <br>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Author :</label>
+                            <input name="author" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Year:</label>
+                            <input name="year" required />
+                        </div>
+
+
+                    </div>
+
+                    <div class="fields">
+
+                        <div class="eight wide field">
+                            <label>Title :</label>
+                            <input name="title" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Name and Place of conference:</label>
+                            <input name="name_and_place_of_conference" required />
+                        </div>
+
+                    </div>
+
+
+                    <div class="fields">
+
+                        <div class="eight wide field">
+                            <label>Published:</label>
+                            <input type="checkbox" name="published" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Presented:</label>
+                            <input type="checkbox" name="presented" required />
+                        </div>
+                    </div>
+
+                    <div class=" ui header">
+                        Papers In Referred Journal
+                    </div>
+                    <br>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Author :</label>
+                            <input name="author" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Year:</label>
+                            <input name="year" required />
+                        </div>
+                    </div>
+
+                    <div class="fields">
+                        <div class="eight wide field">
+                            <label>Title :</label>
+                            <input name="title" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Reference of Journal:</label>
+                            <input name="reference_of_journal" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Impact Factor:</label>
+                            <input name="impact_factor" required />
+                        </div>
+                    </div>
+
+                    <div class="fields">
+
+                        <div class="eight wide field">
+                            <label>Accepted:</label>
+                            <input type="checkbox" name="accepted" required />
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Published:</label>
+                            <input type="checkbox" name="published" required />
+                        </div>
+                    </div>
+
+
+
+
+
+
+
+
+
+
+                    Feedback Will be Register with your <b>User ID : </b>
+                    {{ a.complainer.user.username }}
+                    <input type="text" name="comp_id" style="visibility: hidden;" value="{{ comp_id }}">
+
+                    <br>
+
+                    <button class="ui large primary button right floated" onclick="feedsubmit()">
+                        Submit
+                    </button>
+
+                </form>
+                <a href="javascript:history.go(-1)">
+                    <button class="ui large primary button right floated">Back</button>
+                </a><br><br>
+                <br>
+                <div class="ui divider"></div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+
+
+{% endblock %}
+
+{% block javascript %}
+<script
+    src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+<script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+<script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+<script type="text/javascript" src="{% static 'complaint_system/js/rating.js' %}"></script>
+
+{% endblock %}

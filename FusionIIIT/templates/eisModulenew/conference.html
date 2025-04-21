@@ -1,0 +1,233 @@
+{% load static %}
+{% block conference %}
+
+ <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="Conference/Symposium">
+            Conference/Symposium
+        </a>
+
+       
+    </div>
+
+ <div class="ui active tab segment" data-tab="Conference/Symposium">
+    {% if request.user == user %}
+       <h4 class="ui dividing header">Add a Conference/Symposium</h4>
+        <form class="ui form" id="conferenceform2" name="conferenceform2" method="POST" action="{% url 'eis:consym_insert' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="field">
+                 <div class="three fields">
+                    <div class="field">
+                        <label>Role </label>
+                         <!--  <input placeholder="Published" type="text"> -->
+                        <!-- code change starts --> 
+                              <div class="ui fluid search selection dropdown">
+                                <input type="hidden" id="conference_role" name="conference_role">
+                                <i class="dropdown icon"></i>
+                                <div class="default text">Role</div>
+                                <div class="menu">
+                                     <div class="item" data-value="Organised" onclick="myFunction3(); myFunction4();">Organised</div>
+                                    <div class="item" data-value="Conference Chair" onclick="myFunction3(); myFunction5();">Conference Chair</div>
+                                    <div class="item" data-value="Advisory Committee" onclick="myFunction3(); myFunction5();">Advisory Committee</div>
+                                    <div class="item" data-value="Program Committee" onclick="myFunction3(); myFunction5();">Program Committee</div> 
+                                    <div class="item" data-value="Any other" onclick="myFunction2(); myFunction5();">Any other</div>
+                                   
+                                </div>
+                        </div>
+                    </div>
+                      <div class=" field">
+                               <label><br></label>
+                             <input placeholder="please specify"  type="text" id="myDIV1" name="myDIV1" style="display:none;">
+                        </div>
+                     
+                           <div class="field">
+                            <label><br> </label>
+                             <!--  <input placeholder="Published" type="text"> -->
+                            <!-- code change starts --> 
+                                  <div class="ui fluid search selection dropdown" id="myDIV2" name="myDIV2"  style="display:none;">
+                                <input type="hidden" id="conference_organised" name="conference_organised">
+                                <i class="dropdown icon"></i>
+                                <div class="default text">Organised</div>
+                                <div class="menu">
+                                    <div class="item" data-value="Chairman/Chairperson" onclick="myFunction3();">Chairman/Chairperson</div>
+                                    <div class="item" data-value="Convener"onclick="myFunction3();">Convener</div>
+                                    <div class="item" data-value="Co-ordinator" onclick="myFunction3();">Co-ordinator</div>
+                                    <div class="item" data-value="Secretary"onclick="myFunction3();" >Secretary</div>
+                                    <div class="item" data-value="Joint-Secretary" onclick="myFunction3();">Joint-Secretary</div>
+                                    <div class="item" data-value="Joint Secretary-Cum Treasurer" onclick="myFunction3();">Joint Secretary-Cum Treasurer </div>
+                                    <div class="item" data-value="Treasure" onclick="myFunction3();">Treasurer</div>
+                                     <div class="item" data-value="Any other" onclick="myFunction2();">Any other</div>
+
+                                   
+                                </div>
+                            </div>
+                        </div>
+                     <!-- code change ends --> 
+                   
+                </div>
+            </div>
+
+            <div class="field">
+                
+                
+                    <div class=" three fields">
+                          
+                            <div class="field">
+                                     <label>Venue</label>
+                                     <input placeholder="" type="text" id="conference_venue" name="conference_venue">
+                                </div>
+                        
+                       
+                            <div class="field">
+                                    <label>Start Date</label>
+                                     <!--  <input placeholder="" type="text"> -->
+                                        <!-- code change starts --> 
+                                 <div class="ui calendar" id="rangestart5">
+                                      <div class="ui input left icon">
+                                        <i class="calendar icon"></i>
+                                        <input type="text" placeholder="Start" name="conference_start_date" id="conference_start_date">
+                                      </div>
+                                </div>
+                                <!-- code change ends -->
+                             </div>
+                      
+                       
+                            <div class="field">
+                                    <label>End Date</label>
+                                     <!-- <input placeholder="" type="text"> -->
+                                        <!-- code change starts --> 
+                                         <div class="ui calendar" id="rangestart6">
+                                              <div class="ui input left icon">
+                                                <i class="calendar icon"></i>
+                                                <input type="text" placeholder="End" id="conference_end_date" name="conference_end_date">
+                                              </div>
+                                        </div>
+                                <!-- code change ends -->
+                                </div>
+            </div>
+
+
+                <div class="fields">
+               <!-- code change starts --> 
+                 <div class="fourteen wide field">
+                        <label>Conference Name</label>
+                        <input placeholder="Co-author" type="text" id="conference_name" name="conference_name">
+                    </div>
+            <!-- code change ends-->    
+
+                    <div class="two wide field">
+                        <label><br></label>
+                        <button class="ui right floated primary button" id="saveconference2" name="saveconference2"  style="display: block;">
+                            Save
+                            <i class="ui save icon right floated"></i>
+                        </button>
+                        <button class="ui right floated primary button" id="editconference2" name="editconference2" style="display: none;">
+                            Update
+                            <i class="ui edit icon right floated"></i>
+                        </button>
+                        <input type="text" id="conferencepk2" name="conferencepk2" hidden>
+                        <input type="text" id="index13" name="index13" hidden>
+                    </div> 
+                </div>
+
+                 
+            </div>
+        </form>
+        <br>{% endif %}
+        <h4 class="ui dividing header">Report:</h4>
+        <div class="pagination">
+                <h4> <span class="step-links" >
+                    {% if confs.has_previous %}
+                        <a href="?page13=1" >&laquo; first</a>
+                        <a href="?page13={{ confs.previous_page_number }}">previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ confs.number }} of {{ confs.paginator.num_pages }}.
+                    </span>
+
+                    {% if confs.has_next %}
+                        <a href="?page13={{ confs.next_page_number }}">next</a>
+                        <a href="?page13={{ confs.paginator.num_pages }}">last &raquo;</a>
+                    {% endif %}
+                </span></h4>
+            </div>
+    <!-- scrollbar -->
+    <div style="width: 45vw; height: 500px; overflow-y: scroll">
+        <table class="ui celled table">
+            <thead>
+            <tr>
+                <th class="sorted ascending">Sr.</th>
+                <th class="">Role</th>
+                <th class="">Conference Name</th>
+                <th class="">Venue</th>
+                <th class="">Start Date & End Date</th>
+                <th class="">Action</th>
+            </tr>
+            </thead>
+
+            <tbody>
+                {% for e in consymps %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            {% if e.role1 == "Organised" %}
+                                {{ e.role1 }} - {{ e.role2 }}
+                            {% else %}
+                                {{ e.role1 }}
+                            {% endif %}
+                            
+                        </td>
+                        <td>{{ e.name }}</td>
+                        <td>{{ e.venue }}</td>
+                        <td>{{ e.start_date }} - {{ e.end_date }}</td>
+                        {% if request.user == user %}
+                            <td>
+                                <button type="button"
+                                   id="editButton13"
+                                   class="ui button left floated" onclick="editconference2(
+                                    '{{ forloop.counter }}','{{ e.pk }}', {% if e.role1 == 'Organised' %}
+                                    '{{e.role1}}', '{{e.role2}}', 
+                                    {% else %} '{{e.role1}}', 'None', 
+                                    {% endif %}
+                                    '{{e.name}}', '{{e.venue}}',
+                                    '{{e.start_date}}', '{{e.end_date}}')"
+                                   >
+                                   <i class="ui black edit icon"></i>
+                                </button>
+                                <a href="{% url 'eis:emp_consymDelete' e.pk forloop.counter 13%}"
+                                   id="editButton"
+                                   class="ui blue button left floated" onclick=""
+                                   value = "Delete">
+                                   <i class="ui red delete icon"></i>
+                                </a>
+                                
+                            </td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+    </div>
+        <div class="pagination">
+                <h4> <span class="step-links" >
+                    {% if confs.has_previous %}
+                        <a href="?page13=1" >&laquo; first</a>
+                        <a href="?page13={{ confs.previous_page_number }}">previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ confs.number }} of {{ confs.paginator.num_pages }}.
+                    </span>
+
+                    {% if confs.has_next %}
+                        <a href="?page13={{ confs.next_page_number }}">next</a>
+                        <a href="?page13={{ confs.paginator.num_pages }}">last &raquo;</a>
+                    {% endif %}
+                </span></h4>
+            </div>
+        
+    </div>
+    {% endblock %}
+    

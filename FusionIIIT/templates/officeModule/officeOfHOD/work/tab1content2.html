@@ -1,0 +1,149 @@
+<form>
+
+    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+	
+    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+         
+        <div class="field">
+            <label>Name of Discipline/Section</label>
+            <input placeholder="name" type="text" class="ui large input">
+        </div>
+		
+		<div class="ui header ">
+             Work                 
+        </div>
+		
+		<div class="two fields">
+                    <div class="field">
+                        <label>From</label>
+                        <div class="ui calendar" id="rangestart">
+                            <div class="ui input left icon">
+                                <i class="calendar icon"></i>
+                                <input type="datetime-local" placeholder="from">
+                            </div>
+                        </div>
+                    </div>
+					
+					<div class="field">
+                        <label>To</label>
+                        <div class="ui calendar" id="rangeend">
+                            <div class="ui input left icon">
+                                <i class="calendar icon"></i>
+                                <input type="datetime-local" placeholder="to">
+                            </div>
+                        </div>
+                    </div>
+		</div>
+         <br></br>
+		<div class="ui header">
+             <center>Approval of Extra Duty for Claiming Compensatory Off</center>               
+        </div>
+		
+        <div class="two fields">
+            <div class="field">
+                <label>Name</label>
+                <input placeholder="name" class="ui large input">
+            </div>
+
+            <div class="field">
+                <label>Designation</label>
+                <input placeholder="designation" type="text" class="ui large input">
+            </div>
+
+        </div>
+		
+        <div class="two fields">
+            <div class="field">
+                <label>Nature of Work</label>
+                <select class="ui search fluid dropdown">
+                    <option value="">work nature</option>
+                    <option value="fest1">regular</option>
+                    <option value="fest2">Others</option>
+                </select>
+            </div>
+			
+			<div class="field">
+                <label>Status of Work</label>
+                <select class="ui search fluid dropdown">
+                    <option value="">status</option>
+                    <option value="fest1">Completed</option>
+                    <option value="fest2">Uncompleted</option>
+                </select>
+            </div>
+        </div>
+		
+        <div class="field">
+            <label>Details of extra work and time needed:</label>
+            <textarea rows="2"></textarea>
+        </div>
+		
+		<div class="field">
+            <label>Justification if any</label>
+            <textarea rows="2"></textarea>
+        </div>
+		<br></br>
+		
+		<div class="ui header">
+             <center>Details of actual days and time of work</center>               
+        </div>
+		
+        <div class="two fields">
+            <div class="field">
+                <label>Name</label>
+                <input placeholder="name" class="ui large input">
+            </div>
+
+            <div class="field">
+                <label>Designation</label>
+                <input placeholder="designation" type="text" class="ui large input">
+            </div>
+
+        </div>
+		
+		<div class="three fields">
+            <div class="field">
+                <label>Date</label>
+                <input value="date" type="date" class="ui large input">
+            </div>
+
+            <div class="field">
+                <label>Total Days</label>
+                <input value="days" type="number" class="ui large input">
+            </div>
+			
+			<div class="field">
+                <label>Status of Work</label>
+                <select class="ui search fluid dropdown">
+                    <option value="">status</option>
+                    <option value="fest1">Completed</option>
+                    <option value="fest2">Uncompleted</option>
+                </select>
+            </div>
+		</div>
+		<div class="ui header">
+             Time to do assigned work            
+        </div>
+		<div class="two fields">
+                    <div class="field">
+                        <label>From</label>
+                         <input type="time" placeholder="from">
+                    </div>
+                   
+					<div class="field">
+                        <label>To</label>
+                        <input type="time" placeholder="to">
+                    </div>
+		</div>
+
+
+        <div class="field">
+            <button class="ui primary button right floated" type="submit">
+                Submit
+            </button>
+        </div>
+    </div>
+</form>
+
+<br>
+<br>
+<div class="ui divider"></div>

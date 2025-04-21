@@ -1,0 +1,147 @@
+{% load static %}
+
+{% block checkout %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="checkout">
+            Checkout
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="checkout">
+        <div class="ui vertical stripe team segment"
+             style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+            <form class="ui large form">
+                <div id="checkout">
+                    <div class="field">
+                        <div class="two fields">
+                            <div class="field">
+                                <label>Name </label>
+                                <input value="Zlatan Ibrahimovic" type="text" readonly>
+                            </div>
+
+                            <div class="field">
+                                <label>email</label>
+                                <input value="gmail@zlatan.com" type="email" readonly>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label>Total Amount</label>
+                            <div class="ui input">
+                                <input value="&#8377; 1000" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ui accordion field">
+                        <div class="title">
+                            <i class="icon dropdown"></i>
+                            View Details
+                        </div>
+
+                        <div class="content fields" style="margin: 24px;">
+                            <div class="four fields">
+                                <div class="field">
+                                    <label>From</label>
+                                    <div class="ui input">
+                                        <input value="From" readonly>
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <label>To</label>
+                                    <div class="ui input">
+                                        <input value="To" readonly>
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <label>Rate</label>
+                                    <div class="ui input">
+                                        <input value="&#8377; 100/day" readonly>
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <label>Total</label>
+                                    <div class="ui input">
+                                        <input value="Amount" readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="ui divider"></div>
+
+                            <table class="ui sortable very basic celled table">
+                                <thead>
+                                <tr>
+                                    <th>
+                                        Date
+                                    </th>
+
+                                    <th>
+                                        Meals
+                                    </th>
+
+                                    <th>
+                                        Amount
+                                    </th>
+                                </tr>
+                                </thead>
+
+                                <tbody>
+                                <tr>
+                                    <td>
+                                        10<sup>th</sup> Aug'17
+                                    </td>
+
+                                    <td>
+                                        Breakfast
+                                    </td>
+
+                                    <td>
+                                        &#8377; 50
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>
+                                        10<sup>th</sup> Aug'17
+                                    </td>
+
+                                    <td>
+                                        Lunch
+                                    </td>
+
+                                    <td>
+                                        &#8377; 50
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="three fields">
+                        <div class="twelve wide field"></div>
+                        <div class="two wide field">
+                            <label><br></label>
+                            <div class="ui large right floated button">
+                                Settle
+                            </div>
+                        </div>
+                        <div class="two wide field">
+                            <label><br></label>
+                            <div class="ui large center floated primary button">
+                                Print
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+

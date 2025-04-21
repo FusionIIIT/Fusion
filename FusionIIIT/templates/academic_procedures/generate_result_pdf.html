@@ -1,0 +1,52 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{programme}}_{{batch}}_{{branch}} Results
+    </title>
+    <style type="text/css">
+    	.student_results td, th{
+    		padding: 5px;
+    	}
+    	th{
+    		background-color: #f1f1f1;
+    	}
+    </style>
+  </head>
+<body>
+   <h1 style="text-decoration: underline;" align="center">{{programme}} {{batch}} - "{{branch}}"</h1>
+  <br>
+<br>
+  <div class="student_results">
+<table  style="border:1px solid gray;" >
+        <thead>
+            <tr>
+            	<th>Roll No.</th>
+            	<th>Name</th>
+            	{% for i in course_list%}
+            	<th>{{i.course_code}}</th>
+            	{% endfor %}
+                <th>SPI</th>
+            </tr>
+        </thead>
+        <tbody >
+            {% for obj in result_list %}
+            <tr>
+            	{% for o in obj %}
+            		<td>{{o}}</td>
+            	{% endfor %}
+        	</tr>
+            {% endfor %}
+        </tbody>
+    </table>
+      </div>
+ 
+</body>
+
+</html>
+
+
+<style type="text/css">
+
+</style>

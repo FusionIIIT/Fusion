@@ -1,0 +1,40 @@
+<form action="/finance/createReceipts/" method = "post">
+    {% csrf_token %}
+<div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+    <div class="five fields">
+        <div class="four wide field">
+            <label>Transaction ID</label>
+            <input type="text" class="ui large input" name = "t_id">>
+        </div>
+
+        <div class="four wide field">
+            <label>To Whom</label>
+            <input type="text" class="ui large input" name = "toWhom">
+        </div>
+
+        <div class="four wide field">
+            <label>From Whom</label>
+            <input type="text" class="ui large input" name = "fromWhom">
+        </div>
+
+        <div class="four wide field">
+            <label>Purpose</label>
+            <input type="text" class="ui large input" name = "purpose">
+        </div>
+
+        <div class="four wide field">
+            <label>Date</label>
+            <input type="date" class="ui large input" name = "date">
+        </div>
+
+    </div>
+    <div class="field">
+        <button class="ui primary button right floated" type="submit">
+            Submit
+        </button>
+    </div>
+</div>
+</form>
+
+<br><br>
+<div class="ui divider"></div>

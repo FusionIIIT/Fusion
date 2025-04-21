@@ -1,0 +1,212 @@
+
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Course Management
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+
+ 
+
+
+
+     {% comment %}The grid starts here!{% endcomment %}
+
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'fusion/general/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+
+                <a class="active item" data-tab="first">
+                    Personal Details
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="second">
+                    Publications
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="third">
+                    Projects
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="fourth">
+                    Thesis Supervision
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="fifth">
+                    Event Organised
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="sixth">
+                    Visits
+                    <i class="right floated chevron right icon"></i>
+                </a>
+              
+
+            </div>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+            {% comment %}The Details start here!{% endcomment %}
+            <div class="ui active tab segment" data-tab="first">
+                {% block personaldetails %}
+                    {% include 'fusion/coursemanagement/viewcourses.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Personal Details end here!{% endcomment %}
+
+
+            {% comment %}The Publications starts here!{% endcomment %}
+
+            <div class="ui tab segment" data-tab="second">
+                {% block publications %}
+                    {% include 'fusion/coursemanagement/submitassignments.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The Publications ends here!{% endcomment %}
+
+
+            {% comment %}The Projects starts here!{% endcomment %}
+
+            <div class="ui tab segment" data-tab="third">
+                {% block projects %}
+                    {% include 'fusion/coursemanagement/viewperformance.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The Projects ends here!{% endcomment %}
+
+
+            {% comment %}The Thesis Supervision starts here!{% endcomment %}
+
+            <div class="ui tab segment" data-tab="fourth">
+                {% block thesis %}
+                    {% include 'fusion/coursemanagement/assessment.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The thesis ends here!{% endcomment %}
+
+            {% comment %}The events organised starts here!{% endcomment %}
+
+            <div class="ui tab segment" data-tab="fifth">
+                {% block eventorganised %}
+                    {% include 'fusion/coursemanagement/addcontent.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The event organised ends here!{% endcomment %}
+
+            {% comment %}The visits starts here!{% endcomment %}
+
+            <div class="ui tab segment" data-tab="sixth">
+                {% block visits %}
+                    {% include 'fusion/coursemanagement/createcontest.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The visits ends here!{% endcomment %}
+
+           
+
+        </div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+                
+            </div>
+
+            <div class="row">
+               
+            </div>
+
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+
+
+{% endblock %}
+
+
+{% block javascript %}
+    <script type="text/javascript" src="{% static 'fusion/js/editProfile.js' %}"></script>
+    <script type="text/javascript" src="{% static 'fusion/js/tablesort.js' %}"></script>
+        <script type="text/javascript" src="{% static 'fusion/js/jquery.min.js' %}"></script>
+
+    <!-- <script src="https://code.jquery.com/jquery-2.1.4.js"></script> -->
+<script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('table').tablesort();
+        });
+    </script>
+
+    <script>
+        function toggleContent() {
+            $('.modulesContent').toggle();
+            if($('.modulesContent').is(':visible')){
+                $('#toggleIcon').removeClass("chevron down");
+                $('#toggleIcon').addClass("chevron up");
+            }
+            else if(!$('.modulesContent').is(':visible')){
+                $('#toggleIcon').removeClass("chevron up");
+                $('#toggleIcon').addClass("chevron down");
+                
+            }
+        }
+         $('#enter').click(function(){
+      alert('Do not close');
+      window.open('/quiz/{{contest.pk}}/live/','myWindow', "width=1500, height=1000");
+    });
+    </script>
+
+{% endblock %}

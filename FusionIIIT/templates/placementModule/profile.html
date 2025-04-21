@@ -1,0 +1,206 @@
+{% load static %}
+
+{% block profile %}
+
+    <div hidden id="editModal" class="ui modal" >
+        <div class="header">
+            Edit Profile
+        </div>
+        <div  class="content" >
+            <p>Are you sure you want to edit your profile</p>
+        </div>
+        <div class="actions">
+            <div class="ui negative button">
+                No
+            </div>
+            <div id ="confirmEdit" class="ui positive right labeled icon button">
+                Yes
+                <i class="checkmark icon"></i>
+            </div>
+        </div>
+    </div>
+    <!--About Me card starts here!-->
+    <div class="ui fluid card">
+        <div class="content">
+            <div class="ui header">
+              <form method="POST" action="/profile/" enctype="multipart/form-data" class="ui form" role="form">
+                About Me
+
+                  {{ form14.non_field_errors }}
+                  {% csrf_token %}
+                <!--  <div class="ui red mini button right floated">
+                    <label  for="{{ form.pic.id_for_label }}">
+                         <i class="file icon"></i>
+                         Change Profile Picture</label>
+                         <input name=pic type="file" id="file" value="{{ profile.profile_picture }}" style="display:none">                         {{ form.pic }}
+                     <button type="submit">Upload</button>
+
+                  </div>
+
+              -->
+                </form>
+
+            </div>
+
+        <form method="POST" action="/profile/" class="ui form" role="form">
+                    {% csrf_token %}
+                    {% if request.user == user %}
+                  <input type="button" value="Edit" class="ui red mini button right floated" id="editButton" onclick='javascript:showModal()'>
+                    {% endif %}
+                <!--$('.ui.modal')
+                  .modal() onclick='javascript:editStudent()
+                ; -->
+                  <input type="submit" value="Save" class="ui red mini button right floated" name="profilesubmit" id="saveButton" style="display: none">
+
+
+
+
+
+            <div class="ui divider"></div>
+
+            <div class="ui large fluid input">
+                <span id="aboutSpan">{{ profile.about_me }}</span>
+                <input name=about
+                          id="aboutTextarea"
+                          rows=5
+                          type="text"
+                          style="width: 100%;"
+                          value="{{ profile.about_me }}" hidden/>
+            </div>
+        </div>
+
+    </div>
+    <!--About Me card ends here!-->
+
+
+    <!--The start of details card!-->
+    <div class="ui fluid card">
+        <div class="content">
+            <div class="ui header">Details</div>
+            <div class="ui divider"></div>
+
+            <span>
+                <table class="ui definition table">
+                    <tbody>
+                        <tr>
+                            <td>
+                                Date Of Birth
+                            </td>
+                            <td>
+                              <div class="ui fluid input">
+                                <span id="ageSpan">{{ profile.date_of_birth }}</span>
+                                  <input name="age"
+                                            id="ageInput"
+                                            rows=5
+                                            type="date"
+                                            style="width:100;"
+                                            value="{{ profile.date_of_birth }}" hidden />
+
+                              </div>
+
+
+
+                            </td>
+
+                        </tr>
+
+                        <!--<tr>
+                            <td>
+                                Desired Future Option:
+                            </td>
+
+                            <td>
+                              {% if student.future_aspect == "HIGHER STUDIES" %}
+                                <label>Higher Studies</label> &ensp;
+                                <div class="ui toggle checkbox"
+                                     style="margin-top: 8px;">
+                                    <label>Placement</label>
+                                    <input name=fut type="checkbox" tabindex="1" value="1">
+                                </div>
+                              {% else %}
+                                <label>Higher Studies</label> &ensp;
+                                <div class="ui toggle checked checkbox"
+                                    style="margin-top: 8px;">
+                                    <label>Placement</label>
+                                    <input name=fut type="checkbox" value="2" tabindex="2" checked="">
+                                </div>
+                              {% endif %}
+                            </td>
+                        </tr>-->
+
+                        <tr>
+                            <td>
+                                Address
+                            </td>
+
+                            <td>
+                              <div class="ui fluid input">
+                                  <span id="addrSpan">{{ profile.address }}</span>
+                                <input name=address
+                                          id="addrInput"
+                                          rows=5
+                                          type="text"
+                                          style="width: 100%;"
+                                          value="{{ profile.address }}" hidden/>
+                              </div>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </span>
+        </div>
+    </div>
+    <!--End of details card!-->
+
+
+    <!--The contact details card starts here!-->
+    <div class="ui fluid card">
+        <div class="content">
+            <div class="ui header">Contact Details</div>
+            <div class="ui divider"></div>
+
+            <span>
+                <table class="ui definition table">
+                    <tbody>
+                        <tr>
+                            <td>
+                                Contact
+                            </td>
+
+                            <td>
+
+                                <div class="ui large fluid input">
+                                    <a><i class="phone icon" id="contactIcon"></i>
+                                    <span id="contactSpan">{{ profile.phone_no }}</span>
+                                    <input name=contact type="text" value="{{ profile.phone_no }}" id="contactInput" pattern="[1-9]{1}[0-9]{9}" oninvalid="alert('Contact must contain 10 digita');" hidden>
+                                    </a>
+                                </div>
+                            </td>
+
+                        </tr>
+
+                        <tr>
+                            <td>
+                                Mail
+                            </td>
+
+                            <td>
+                                <span>
+                                    <a><i class="mail icon" id="mailIcon"></i>
+                                    {{ user.email }}
+                                    </a>
+                                </span>
+
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </span>
+        </div>
+    </div>
+    <!--The contact details card ends here!-->
+
+  </form>
+
+{% endblock %}

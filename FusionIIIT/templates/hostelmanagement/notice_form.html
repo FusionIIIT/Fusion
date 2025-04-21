@@ -1,0 +1,61 @@
+{% block notice_form %}
+<form method="POST" action="{% url 'hostelmanagement:notice_board' %}" class="ui form" role="form" enctype="multipart/form-data" id='notice_form'>
+                <div class="ui active accordion field">
+                    <div class="title">
+                        <i class="icon dropdown"></i>
+                        Create a new Notice!
+                    </div>
+                    {{ form.non_field_errors }}
+                    <div class="active content">
+                        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                          {% csrf_token %}
+                            
+                                <div class="field">
+                                    <label for="{{ form.hall.id_for_label }}">
+                                        Hall
+                                    </label>
+                                    <select class="ui dropdown" name="hall" required>
+                                        <option selected disabled value="">Select Hall No</option>
+                                        {% for hall in all_hall %}
+                                            <option value={{hall.pk}}>{{hall.hall_name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="field">
+                                  {{ form.head_line.errors }}
+                                    <label for="{{ form.head_line.id_for_label }}">
+                                        HeadLine
+                                    </label>
+                                    <input type="text" name="head_line" required="required" value="{{ form.head_line }}"  class="ui large input">
+                                </div>
+                       
+                                <div class="field">
+                                    {{ form.content.errors }}
+                                    <label  for="{{ form.content.id_for_label }}">
+                                    Content</label>
+                                    <input type='file' name='content' value={{ form.content }}>
+                                </div>
+
+                                <div class="field">
+                                    {{ form.description.errors }}
+                                    <label for="{{ form.description.id_for_label }}">
+                                        Description
+                                    </label>                                    
+                                    <textarea name="description">{{ form.description }}</textarea>                                     
+                                </div>
+
+                            
+                            <div class="two fields">
+                              <div class="four wide field">
+                                  <label><br></label>
+                                  <button class="ui fluid large primary button" type="submit" onclick="checkInputs('notice_form')">
+                                      Submit
+                                  </button>
+                              </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% load static %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="current">
+            Create Research Group
+        </a>
+    </div>
+    <style >
+        td{
+           word-break: break-all;
+        }
+    </style>
+    <div class="ui active tab" data-tab="current">
+        <div class="ui vertical segment">
+
+            <div class="content">
+                <div class="description">
+
+                    <form action="{% url 'research_procedures:research_group_create' %}" method="POST" >
+                        {% csrf_token %}
+                        
+                        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                            <div class="ui header">
+                                Research Group form:
+                            </div>
+                            <br>
+                            <div class="field">
+                                <label>Group Name*</label>
+                                {{ research_group_form.name }}
+                            </div>
+                            
+                            <div class="field">
+                                <label>Description*</label>
+                                {{ research_group_form.description }}
+                            </div>
+
+                            <div class="field">
+                                <label>Students under group*</label>
+                                {{ research_group_form.students }}
+                            </div>
+
+                            <div class="field">
+                                <label>Faculty under group*</label>
+                                {{ research_group_form.faculty }}
+                            </div>
+                            
+                            <div class="field">
+                                <label><br></label>
+                                    <button class="ui primary fluid button" type="submit">
+                                    Create
+                                    </button>
+                            </div>
+        
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    

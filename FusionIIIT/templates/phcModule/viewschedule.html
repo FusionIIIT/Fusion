@@ -1,0 +1,72 @@
+{% load static %}
+{% block viewschedule %}
+    {% comment %}the main tab starts here {% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="ambulanceschedule">
+            Ambulance Schedule
+        </a>
+    </div>
+    {% comment %}the ambulance schedule tab starts here {% endcomment %}
+    <div class="ui active tab" data-tab="ambulanceschedule">
+        <form class="ui form">
+            <table class="ui sortable celled table">
+                <thead>
+                <tr>
+                    <th>  </th>
+                    <th>9:00-10:00</th>
+                    <th>10:00-11:00</th>
+                    <th>11:00-12:00</th>
+                    <th>12:00-1:00</th>
+
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>MONDAY</td>
+                    <td>Hall - 1</td>
+                    <td>Hall - 3</td>
+                    <td>Mess</td>
+                    <td>LHTC</td>
+
+
+                </tr>
+                <tr>
+                    <td>TUESDAY</td>
+                    <td>Hall - 1</td>
+                    <td>Hall - 3</td>
+                    <td>Mess</td>
+                    <td>LHTC</td>
+                </tr>
+                <tr>
+                    <td>WEDNESDAY</td>
+                    <td>Hall - 1</td>
+                    <td>Hall - 3</td>
+                    <td>Mess</td>
+                    <td>LHTC</td>
+                <tr>
+                    <td>THURSDAY</td>
+                    <td>Hall - 1</td>
+                    <td>Hall - 3</td>
+                    <td>Mess</td>
+                    <td>LHTC</td>
+                </tr>
+                <tr>
+                    <td>FRIDAY</td>
+                    <td>Hall - 1</td>
+                    <td>Hall - 3</td>
+                    <td>Mess</td>
+                    <td>LHTC</td>
+                </tr>
+                </tbody>
+            </table>
+
+        </form>
+
+        <br>
+
+        <div class="ui divider"></div>
+    </div>
+    {% comment %}the ambulance schedule tab ends here {% endcomment %}
+
+
+{% endblock %}

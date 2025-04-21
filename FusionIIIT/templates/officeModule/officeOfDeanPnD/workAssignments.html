@@ -1,0 +1,43 @@
+{% include 'officeModule/officeOfDeanPnD/assignmentModal.html' %}
+{% block tab4 %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="tab4content1">
+            All Proposals
+        </a>
+
+       <a class="item" data-tab="tab4content2">
+           Incoming Proposals
+         </a>
+
+        <a class="item" data-tab="tab4content3">
+            Outgoing Proposals
+         </a>
+
+    </div>
+
+    <div class="ui active tab" data-tab="tab4content1">
+        <div class="ui vertical segment">
+            {% block tab4content1 %}
+                {% include 'officeModule/officeOfDeanPnD/workAssignments_content1.html' %}
+            {% endblock %}
+        </div>
+     </div>
+     <div class="ui tab" data-tab="tab4content2">
+        <div class="ui vertical segment" >
+            {% block tab4content2 %}
+               {% include 'officeModule/officeOfDeanPnD/incomingAssignments_content1.html' %}
+            {% endblock %}
+        </div>
+    </div>
+    <div class="ui tab" data-tab="tab4content3">
+       <div class="ui vertical segment" >
+           {% block tab4content3 %}
+           {% include 'officeModule/officeOfDeanPnD/outgoingAssignments_content1.html' %}
+           {% endblock %}
+       </div>
+    </div>
+
+
+{% endblock tab4%}

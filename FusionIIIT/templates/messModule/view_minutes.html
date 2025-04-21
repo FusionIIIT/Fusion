@@ -1,0 +1,40 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+{% block body %}
+{% block view_minutes %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="meetinginformation">
+            Meeting Minutes
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="meetinginformation">
+        <div class="ui vertical segment">
+
+            <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+                <thead>
+                <tr>
+                    <th>Meeting Date - Agenda</th>
+                    <th>Minutes</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for item in minutes %}
+                <tr>
+                    <td>{{item.meeting_date}}</td>
+                    <td><a href="{{item.mess_minutes.url}}">{{item.mess_minutes}}</a></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+            <br>
+            <br>
+        </div>
+    </div>
+
+
+{% endblock %}
+{% endblock %}

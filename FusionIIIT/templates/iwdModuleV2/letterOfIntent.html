@@ -1,0 +1,134 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Academic
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}The left-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+
+
+
+
+
+		{% load static %}
+
+<div class="ui header">
+    Letter of Intent:
+</div>
+
+<div class="fields">
+    <div class="eight wide field">
+      <label>Dated:</label>
+        {{x.dateOfOpening}}<br><br>
+     </div>
+
+
+     <div class="eight wide field">
+        <label>NIT/NIQ No:</label>
+        {{x.nitNiqNo}}<br>
+       </div>
+
+    </div>
+
+Agency: {{x.agency}}
+        <br>
+
+
+ Name of work: {{x.name}}
+<br>
+<br>
+I am pleased to inform that your lowest tender for the work mentioned above has been
+accepted, on behalf of the Board of Governors, PDPM-IIITDM, Jabalpur, for a tender value
+of Rs. {{x.tenderValue}}
+<br> <br>
+
+You are supposed to submit performance guarantee for 5% of the tendered amountwith in ten days of
+issue of this letter, as per clause - 1 'Performance Guarantee' of general conditions of contract
+of PDPM IIITDM works 2019.<br><br>
+
+The performance guarantee shall be in the form of Government securities or fixed deposit
+receipt or guarantee bonds issued from any scheduled bank and in favour of PDPM IIITDM,
+Jabalpur.<br><br>
+The award letter for the work shall be issued only after submission of performance guarantee
+by your company / firm.<br>
+You are requested to contact the undersigned regarding clarification if any.
+
+
+                <div class="field">
+                    <label><br></label>
+
+
+
+                </div>
+
+
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra segment"></div>
+
+    </div>
+    {% comment %}the doctor appointment tab ends here {% endcomment %}
+
+
+
+				</div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+                {% comment %}
+                    TODO: the right rail!
+                {% endcomment %}
+            </div>
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+</script>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% load static %}
+
+{% block CompounderMedicalReliefView %}
+
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="inbox">
+        Inbox
+    </a>    
+</div>
+
+<div class="ui active tab" data-tab="inbox">
+    <div class="ui vertical segment" >
+        <table  border=1 class="ui very basic collapsing celled large sortable table"
+              style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;" >
+            <thead>
+            <tr>
+                <td style="font-weight:bold;color:black;" >
+                    Uploader ID
+                </td>
+
+                <td style="font-weight:bold;color:black;">
+                    Upload Date
+                </td>
+
+                <td style="font-weight:bold;color:black;" >
+                    Description
+                </td>             
+                <td style="font-weight:bold;color:black;">
+                      Status
+                </td>
+                <td style="font-weight:bold;color:black;">
+                    view
+                </td>          
+
+            </tr>
+            </thead>
+            <tbody>
+                {% for inbox in inbox_files %}
+                <tr>
+                
+                    <td style="white-space:nowrap;">
+                        {{ inbox.uploader }}
+                    </td>
+                    <td style="white-space:nowrap;">
+                        {{ inbox.upload_date }}
+                    </td>
+                
+                    <td style="white-space:nowrap;">
+                        {{ inbox.desc }}
+                    </td>
+                    <td>
+                        {% if inbox.status1 %}
+                            Approved
+                        {% elif inbox.status %}
+                            Forwarded
+                        {% elif inbox.status2 %}
+                            Rejected             
+                        {% else %}
+                            Pending
+                        {% endif %}
+                    </td>
+                
+                    <td>
+                        <button class="view-followup-btn"><a style="color: white;" href="{% url 'healthcenter:view_relief' relief_id=inbox.id %}">View relief form</a></button>
+                    </td>
+                
+                </tr>
+                {% endfor %}
+                </tbody>
+                
+        </table>
+
+            <script>
+                
+                
+           
+        </script>
+
+    </div>
+</div>
+
+
+
+
+{% endblock %}

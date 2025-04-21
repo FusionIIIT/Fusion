@@ -1,0 +1,82 @@
+<h4> Dues On Non returned Items </h4>
+<table class="ui very basic collapsing celled sortable table"
+       style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; text-align: center; margin: auto;">
+    <thead>
+    <tr>
+        <th class="five wide column">
+            Accession Number
+        </th>
+
+        <th class="five wide column">
+            Due Date
+        </th>
+
+
+        <th>
+            Days * ODC
+        </th>
+        <th>
+            Total ODC
+        </th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for key, values in data2.items %}
+    <tr>
+      <td>{{values.assn}}</td>
+      <td>{{values.due_date}}</td>
+      
+      <td>{{values.tdod}}</td>
+      <td>{{values.tod}}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<br>
+<h4> Dues On returned Items </h4>
+<table class="ui very basic collapsing celled sortable table"
+       style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; text-align: center; margin: auto;">
+    <thead>
+    <tr>
+        <th class="four wide column">
+            Accession Number
+        </th>
+
+        <th class="five wide column">
+            Due Date
+        </th>
+
+        <th class="five wide column">
+            Return Date
+        </th>
+
+        <th>
+            Days * ODC
+        </th>
+        <th>
+            Total ODC
+        </th>
+        <th>
+            Cause
+        </th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for key, values in data3.items %}
+    <tr>
+      <td>{{values.assn}}</td>
+      <td>{{values.due_date}}</td>
+      <td>{{values.return_date}}</td>
+      <td>{{values.tdod}}</td>
+      <td>{{values.tod}}</td>
+      <td>{{values.cause}}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<br>
+<div class="ui divider"></div>
+<h5> ODC : Over Due Charge </h5>

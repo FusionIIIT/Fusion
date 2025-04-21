@@ -1,0 +1,90 @@
+{% block booking_bw_dates %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+
+    <div class="ui active tab" data-tab="booking_bw_dates">
+        <div class="ui vertical segment">
+
+            
+            <b> Number of Bookings: {{ booking_bw_dates_length|length }}</b>
+                
+            <br>
+            
+
+            <table class="ui structured celled sortable table" style="margin-bottom: 16px;">
+                <thead>
+                <tr>
+                    <th rowspan="2">Booking From</th>
+                    <th rowspan="2">Booking To</th>
+                    <th rowspan="2">Intender</th>
+                    <th rowspan="2">Rooms</th>
+                    <th rowspan="2">Mess Bill</th>
+                    <th rowspan="2">Room bill</th>
+                    <th rowspan="2">Total</th>
+
+                </tr>
+                </thead>
+
+                <tbody>
+                    {% for b, i in booking_bw_dates %}
+                    <tr>
+                        <td>
+                            {{ b.booking.booking_from}}
+                        </td>
+                        <td>
+                            {{ b.booking.booking_to}}
+                        </td>
+                        <td>
+                            {{ b.booking.intender}}
+                        </td>
+                        <td>
+                            {{ b.booking.number_of_rooms}}
+                        </td>
+                        <td>
+                            {{ b.meal_bill }}
+                        </td>
+                        <td>
+                            {{ b.room_bill }}
+                        </td>
+                        <td>
+                            {{ i }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    <div class="ui divider"></div> <br>
+                    <tr></tr>
+
+                </tbody>
+            </table>
+
+            <table class="ui structured celled sortable table" style="margin-bottom: 16px;">
+                <thead>
+                <tr>
+                    <th rowspan="2">Total Meal Bill</th>
+                    <th rowspan="2">Total Room Bill</th>
+                    <th rowspan="2">Total bill</th>
+                    <!-- <th rowspan="2">Total</th> -->
+
+                </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+
+                        <td>
+                            {{ meal_total }}
+                        </td>
+                        <td>
+                            {{ room_total }}
+                        </td>
+                        <td>
+                            {{ total_bill }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <br>
+            <br>
+        </div>
+    </div>
+{% endblock %}
+

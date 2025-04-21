@@ -1,0 +1,68 @@
+{% extends 'programme_curriculum/faculty/common.html' %} 
+{% block content %}
+<div class="ui top attached tabular large menu">
+    <a class="item active" data-tab="afirst">Courses</a>
+</div>
+<div class="ui bottom attached tab segment active" data-tab="afirst">
+    <div class="content">
+        <div class="description" style="overflow: auto; max-height: 495px">
+            <table class="ui celled medium table"
+            style="text-align: center;
+                margin: auto;">
+                <thead>
+                    <tr style="font-size: medium;
+                        background-color: whitesmoke;">
+                        <td><h4>index</h4></td>
+                        <td><h4>Course Code</h4></td>
+                        <td><h4>Course Name</h4></td>
+                        <td><h4>Version</h4></td>
+                        <td><h4>Credits</h4></td>
+                        <td></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for course in courses %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td><a href="{% url 'programme_curriculum:faculty_view_a_course' course.id %}">{{ course.code }}</a></td>
+                            <td>{{ course.name }}</td>
+                            <td>{{ course.version }}</td>
+                            <td>{{ course.credit }}</td>
+                            <td class="collapsing"><a class="tiny ui positive animated button"  tabindex="0"
+                                href="{% url 'programme_curriculum:faculty_view_a_course' course.id%}"
+                                type="Submit" name="Submit">
+                                    <div class="visible content">EDIT</div>
+                                    <div class="hidden content">
+                                    <i class="edit icon"></i>
+                                    </div>
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="3">No Courses Avaliable</td><tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block rightcontent %}
+<br>
+<br>
+<div class="ui center aligned segment">
+        <div class="ui horizontal divider">FILTER SEARCH</div>
+        <form class="ui small form"  method="get">
+                {{ coursefilter.form }}
+                <br>
+            <button class="ui tiny basic primary button" type="Submit" name="Submit">
+                <i class="search icon"></i>
+                Search
+            </button>
+        </form>
+    </div>
+</div>
+{% block sidepanel%} 
+    {% include 'notifications/programme_curriculum.html' %} 
+    {% endblock %}
+{% endblock %}

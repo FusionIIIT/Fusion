@@ -1,0 +1,80 @@
+{% load static %}
+{% block modal1 %}
+
+<script type="text/javascript">
+    function view(a){
+        var id= '.ui.modal.club.'+a;
+        id=id.replace(" ",".");
+       // alert(id);
+        $(id).modal('show');
+    }
+
+    function submit(a){
+        if(a=='approve'){
+            document.getElementById("modal_form").setAttribute("action", "session_approval");
+            document.getElementById("modal_form").submit();
+        }
+        else{
+            document.getElementById("modal_form").setAttribute("action", "session_rejection");
+            document.getElementById("modal_form").submit();
+        }
+    }
+
+
+</script>
+
+{% for i in session_requests %}
+
+<div class="ui modal club {{i.pk}} ">
+<div class="header">Session approvals</div>
+  <div class="content">
+<form class="ui large form" action="" method="post" enctype="multipart/form-data" id="modal_form">
+    {% csrf_token %}
+        <input type="text" hidden="true" name="check" value="{{i.pk}}" >
+
+        <div class="fields">
+         <div class="field">
+        <label>Club Name</label>
+        <input type="text" value="{{i.pk}}" readonly="true">
+        </div>
+
+
+
+        <div class="field">
+        <label>Venue</label>
+        <input type="text" value="{{ i.venue }}" readonly="true">
+        </div>
+        </div>
+        <div class="fields">
+        <div class="field">
+        <label>Date</label>
+        <input type="text" value="{{i.date}}" readonly="true">
+        </div>
+        <div class="field">
+        <label>Start Time</label>
+        <input type="text" value="{{i.start_time}}" readonly="true">
+        </div>
+        </div>
+
+         <div class="field">
+        <label>End Time</label>
+        <input type="text" value="{{i.end_time}}" readonly="true">
+        </div>
+
+        <div class="field">
+        <label>Details</label>
+        <input type="text" value="{{i.details}}" readonly="true">
+        </div>
+
+        <div class="field">
+        <label>Session Poster</label>
+        <img src="/media/{{ i.session_poster }}" width="100%" />
+        </div>
+
+        <br> <br>
+    </form>
+  </div>
+</div>  
+{% endfor %}
+
+{% endblock %}

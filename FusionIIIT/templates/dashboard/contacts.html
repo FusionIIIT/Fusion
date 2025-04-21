@@ -1,0 +1,130 @@
+{% load static %}
+
+{% block contacts %}
+    {% comment %}The Modules start here!{% endcomment %}
+    <div class="ui fluid card" style="padding-top: 12px; padding-bottom: 24px;">
+        <a class="ui top attached black label">
+            <span class="ui inverted ui header">Contacts</span>
+            <i class="setting icon right floated"></i>
+            <i class="chevron up icon right floated"></i>
+        </a>
+
+        <div class="content contactContent" style="max-height: 75vh; overflow-y: auto;">
+            <div class="ui middle aligned animated list">
+
+                <div class="ui top attached tabular menu">
+                    <a class="active item" data-tab="first">Faculty</a>
+                    <a class="item" data-tab="second">Staff</a>
+                </div>
+
+                <div class="ui bottom attached active tab segment" data-tab="first">
+                    <div class="ui fluid icon input">
+                        <input placeholder="Search ..." type="text">
+                        <i class="search icon"></i>
+                    </div>
+
+                    <div class="ui divider"></div>
+
+                    <div class="item">
+                        <div class="right floated tiny teal ui button">
+                            <i class="mail icon"></i>Send Mail
+                        </div>
+                        <div class="right floated tiny blue ui button hidden-phone">
+                            <i class="phone icon"></i>773-338-7786
+                        </div>
+                        <div class="content">
+                            <img class="ui avatar image" src="{% static 'Fusion/img/zlatan.jpg' %}">
+                            <a class="ui header">Atul Gupta</a>
+                        </div>
+                        <div class="ui divider"></div>
+                    </div>
+
+
+                    <div class="item">
+                        <div class="right floated tiny teal ui button">
+                            <i class="mail icon"></i>Send Mail
+                        </div>
+                        <div class="right floated tiny blue ui button hidden-phone">
+                            <i class="phone icon"></i>773-338-7786
+                        </div>
+                        <div class="content">
+                            <img class="ui avatar image" src="{% static 'Fusion/img/zlatan.jpg' %}">
+                            <a class="ui header">Atul Gupta</a>
+                        </div>
+                        <div class="ui divider"></div>
+                    </div>
+
+
+                    <div class="item">
+                        <div class="right floated tiny teal ui button">
+                            <i class="mail icon"></i>Send Mail
+                        </div>
+                        <div class="right floated tiny blue ui button hidden-phone">
+                            <i class="phone icon"></i>773-338-7786
+                        </div>
+                        <div class="content">
+                            <img class="ui avatar image" src="{% static 'Fusion/img/zlatan.jpg' %}">
+                            <a class="ui header">Atul Gupta</a>
+                        </div>
+                        <div class="ui divider"></div>
+                    </div>
+
+
+                    <div class="item">
+                        <div class="right floated tiny teal ui button">
+                            <i class="mail icon"></i>Send Mail
+                        </div>
+                        <div class="right floated tiny blue ui button hidden-phone">
+                            <i class="phone icon"></i>773-338-7786
+                        </div>
+                        <div class="content">
+                            <img class="ui avatar image" src="{% static 'Fusion/img/zlatan.jpg' %}">
+                            <a class="ui header">Atul Gupta</a>
+                        </div>
+                        <div class="ui divider"></div>
+                    </div>
+
+
+                    <div class="item">
+                        <div class="right floated tiny teal ui button">
+                            <i class="mail icon"></i>Send Mail
+                        </div>
+                        <div class="right floated tiny blue ui button hidden-phone">
+                            <i class="phone icon"></i>773-338-7786
+                        </div>
+                        <div class="content">
+                            <img class="ui avatar image" src="{% static 'Fusion/img/zlatan.jpg' %}">
+                            <a class="ui header">Atul Gupta</a>
+                        </div>
+                        <div class="ui divider"></div>
+                    </div>
+
+                </div>
+
+                <div class="ui bottom attached tab segment" data-tab="second">
+                    <div class="ui fluid icon input">
+                        <input placeholder="Search ..." type="text">
+                        <i class="search icon"></i>
+                    </div>
+
+                    <div class="ui divider"></div>
+
+                    <div class="item">
+                        <div class="right floated tiny teal ui button">
+                            <i class="mail icon"></i>Send Mail
+                        </div>
+                        <div class="right floated tiny blue ui button hidden-phone">
+                            <i class="phone icon"></i>773-338-7786
+                        </div>
+                        <div class="content">
+                            <img class="ui avatar image" src="{% static 'Fusion/img/zlatan.jpg' %}">
+                            <a class="ui header">Atul Gupta</a>
+                        </div>
+                        <div class="ui divider"></div>
+                    </div>
+                </div>
+
+        </div>
+    </div>
+    {% comment %}The Modules ends here!{% endcomment %}
+{% endblock %}

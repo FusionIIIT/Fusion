@@ -1,0 +1,15 @@
+<form style="display: inline;" method="post" action="{% url 'feeds:like_comment' %}" >
+	{% csrf_token %}
+
+	{% if comment.is_liked %}		
+		<div style="padding-left: 50px; display: inline;" type="submit" id="like_comment_id" value="{{comment.id}}">
+			<a href="" style="text-decoration: none;"><i class="thumbs up icon">({{ comment.total_likes_comment }})</i></a>
+		</div>
+		
+	{% else %}	
+		<div style="padding-left: 50px; display: inline;" type="submit" id="like_comment_id" value="{{comment.id}}">
+			<a href="" style="text-decoration: none;"><i class="thumbs up outline icon">({{ comment.total_likes_comment }})</i></a>
+		</div>
+
+	{% endif %}
+</form>

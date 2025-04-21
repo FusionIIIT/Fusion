@@ -1,0 +1,922 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+Module
+{% endblock %}
+
+
+
+{% block body %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
+
+{% comment %}The grid starts here!{% endcomment %}
+<div class="ui stackable doubling grid">
+
+    {% comment %}The left-margin segment!{% endcomment %}
+    <div class="column"></div>
+
+    {% comment %}
+    The left-rail segment starts here!
+    {% endcomment %}
+    <div class="three wide column">
+
+        {% comment %}The user image card starts here!{% endcomment %}
+        {% block usercard %}
+        {% include 'globals/usercard.html' %}
+        {% endblock %}
+        {% comment %}The user image card ends here!{% endcomment %}
+
+        <div class="ui divider"></div>
+        {% comment %}The Tab-Menu starts here!{% endcomment %}
+        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+
+            <a class="item" href="{% url 'globals:profile' %}">
+                View E-ServiceBook
+                <i class="right floated chevron right icon"></i>
+            </a>
+            {% if user.is_superuser%}
+            <a class="item" href="{% url 'hr2:hradmin' %}">
+                View All Users
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+            {%endif %}
+
+
+        </div>
+
+
+
+
+
+        {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+
+    </div>
+    {% comment %}
+    The left-rail segment ends here!
+    {% endcomment %}
+
+
+
+    {% comment %}
+    The central-rail segment starts here!
+    {% endcomment %}
+
+
+
+    <div class="eight wide column">
+        <div class="ui top attached tabular large menu">
+            <a class="active item" data-tab="first">Lien</a>
+            <a class="item" data-tab="second">Deputation</a>
+            <a class="item" data-tab="third">Other</a>
+            <a class="item" data-tab="fourth">Appraisal form</a>
+            <a class="item" data-tab="fifth">Full E-Service Book</a>
+
+
+        </div>
+        <div class="ui bottom attached active tab segment" data-tab="first">
+            <div id="textSegmentDiv">
+
+                {% comment %}
+                TODO: Loader required?
+                <div class="ui active large text loader" id="loader">
+                    Loading ...
+                </div>
+                {% endcomment %}
+
+                <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+
+                    {% if not lienServiceBooks %}
+                    No entry found
+                    {% endif%}
+
+                    {% for serviceBook in lienServiceBooks%}
+                    <div class="ui one cards" style="padding: 2px;">
+                        <div class="ui blue card" id="noti">
+                            <div class="content">
+
+                                <table class="ui orange table">
+                                    <thead>
+                                        <tr>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+
+
+                                        <tr>
+                                            <!-- <td><a href=""></a></td> -->
+                                            <td>Name</td>
+                                            <td>{{serviceBook.extra_info.user.first_name}}
+                                                {{serviceBook.extra_info.user.last_name}}</td>
+
+                                        </tr>
+
+                                        <tr>
+
+                                            <td>Start Date</td>
+                                            <td>{{serviceBook.start_date}}</td>
+
+                                        </tr>
+
+                                        <tr>
+
+                                            <td>End Date</td>
+                                            <td>{{serviceBook.end_date}}</td>
+
+
+                                        </tr>
+
+                                        <tr>
+
+                                            <td>Job Title</td>
+                                            <td>{{serviceBook.job_title}}</td>
+
+                                        </tr>
+
+                                        <tr>
+
+                                            <td>Organization</td>
+                                            <td>{{serviceBook.organisation}}</td>
+
+                                        </tr>
+
+                                        <tr>
+
+                                            <td>Description</td>
+                                            <td>{{serviceBook.description}}</td>
+
+                                        </tr>
+
+                                        <tr>
+
+                                            <td>Salary Source</td>
+                                            <td>{{serviceBook.salary_source}}</td>
+
+                                        </tr>
+
+
+
+                                        <tr>
+
+                                            <td>Service Type</td>
+                                            <td>{{serviceBook.service_type}}</td>
+
+                                        </tr>
+
+
+                                    </tbody>
+                                </table>
+
+
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+        <div class="ui bottom attached tab segment" data-tab="second">
+
+
+
+            <div id="textSegmentDiv">
+
+                {% comment %}
+                TODO: Loader required?
+                <div class="ui active large text loader" id="loader">
+                    Loading ...
+                </div>
+                {% endcomment %}
+
+                <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+                    {% block alerts %}
+
+
+                    {% if not deputationServiceBooks %}
+                    No entry found
+                    {% endif%}
+
+
+                    {% for serviceBook in deputationServiceBooks%}
+                    <div class="ui one cards" style="padding: 2px;">
+                        <div class="ui blue card" id="noti">
+                            <div class="content">
+
+                                <table class="ui orange table">
+                                    <thead>
+                                        <tr>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+
+
+                                        <tr>
+                                            <!-- <td><a href=""></a></td> -->
+                                            <td>Name</td>
+                                            <td>{{serviceBook.extra_info.user.first_name}}
+                                                {{serviceBook.extra_info.user.last_name}}</td>
+
+                                        </tr>
+
+                                        <tr>
+
+                                            <td>Start Date</td>
+                                            <td>{{serviceBook.start_date}}</td>
+
+                                        </tr>
+
+                                        <tr>
+
+                                            <td>End Date</td>
+                                            <td>{{serviceBook.end_date}}</td>
+
+
+                                        </tr>
+
+                                        <tr>
+
+                                            <td>Job Title</td>
+                                            <td>{{serviceBook.job_title}}</td>
+
+                                        </tr>
+
+                                        <tr>
+
+                                            <td>Organisation</td>
+                                            <td>{{serviceBook.organisation}}</td>
+
+                                        </tr>
+
+                                        <tr>
+
+                                            <td>Description</td>
+                                            <td>{{serviceBook.description}}</td>
+
+                                        </tr>
+
+                                        <tr>
+
+                                            <td>Salary Source</td>
+                                            <td>{{serviceBook.salary_source}}</td>
+
+                                        </tr>
+
+                                        <tr>
+
+                                            <td>Designation</td>
+                                            <td>{{serviceBook.designation}}</td>
+
+                                        </tr>
+
+                                        <tr>
+
+                                            <td>Service Type</td>
+                                            <td>{{serviceBook.service_type}}</td>
+
+                                        </tr>
+
+
+                                    </tbody>
+                                </table>
+
+
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor%}
+
+
+
+                    {% endblock %}
+                </div>
+            </div>
+
+
+
+
+
+
+
+
+
+
+        </div>
+        <div class="ui bottom attached tab segment" data-tab="third">
+
+            <div id="textSegmentDiv">
+
+                {% comment %}
+                TODO: Loader required?
+                <div class="ui active large text loader" id="loader">
+                    Loading ...
+                </div>
+                {% endcomment %}
+
+                <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+
+
+                    {% if not otherServiceBooks %}
+                    No entry found
+                    {% endif%}
+
+
+                    {% for serviceBook in otherServiceBooks%}
+                    <div class="ui one cards" style="padding: 2px;">
+                        <div class="ui blue card" id="noti">
+                            <div class="content">
+
+                                <table class="ui orange table">
+                                    <thead>
+                                        <tr>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+
+
+                                        <tr>
+                                            <!-- <td><a href=""></a></td> -->
+                                            <td>Name</td>
+                                            <td>{{serviceBook.extra_info.user.first_name}}
+                                                {{serviceBook.extra_info.user.last_name}}</td>
+
+                                        </tr>
+
+                                        <tr>
+
+                                            <td>Start Date</td>
+                                            <td>{{serviceBook.start_date}}</td>
+
+                                        </tr>
+
+                                        <tr>
+
+                                            <td>End Date</td>
+                                            <td>{{serviceBook.end_date}}</td>
+
+
+
+                                        </tr>
+
+                                        <tr>
+
+                                            <td>Job Title</td>
+                                            <td>{{serviceBook.job_title}}</td>
+
+                                        </tr>
+
+                                        <tr>
+
+                                            <td>Organisation</td>
+                                            <td>{{serviceBook.organisation}}</td>
+
+                                        </tr>
+
+                                        <tr>
+
+                                            <td>Description</td>
+                                            <td>{{serviceBook.description}}</td>
+
+                                        </tr>
+
+                                        <tr>
+
+                                            <td>Salary Source</td>
+                                            <td>{{serviceBook.salary_source}}</td>
+
+                                        </tr>
+
+                                        <tr>
+
+                                            <td>Designation</td>
+                                            <td>{{serviceBook.designation}}</td>
+
+                                        </tr>
+
+                                        <tr>
+
+                                            <td>Service Type</td>
+                                            <td>{{serviceBook.service_type}}</td>
+
+                                        </tr>
+
+
+                                    </tbody>
+                                </table>
+
+
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor%}
+
+
+
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="ui bottom attached tab segment" data-tab="fourth">
+            <div id="textSegmentDiv">
+
+                {% comment %}
+                TODO: Loader required?
+                <div class="ui active large text loader" id="loader">
+                    Loading ...
+                </div>
+                {% endcomment %}
+
+                <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+
+                    {% if not appraisalForm %}
+                    No entry found
+                    {% endif%}
+
+                    {% for appraisal in appraisalForm %}
+                    <div class="ui one cards" style="padding: 2px;">
+                        <div class="ui blue card" id="noti">
+                            <div class="content">
+
+                                <table class="ui orange table">
+                                    <thead>
+                                        <tr>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+
+
+                                        <tr>
+                                            <!-- <td><a href=""></a></td> -->
+                                            <td>Name</td>
+                                            <td>{{appraisal.extra_info.user.first_name}}
+                                                {{appraisal.extra_info.user.last_name}}</td>
+
+                                        </tr>
+
+                                        <tr>
+
+                                            <td>Year</td>
+                                            <td>{{appraisal.year}}</td>
+
+                                        </tr>
+
+                                        <tr>
+
+                                        </tr>
+
+                                        <tr>
+
+                                            <td>Appraisal Form</td>
+                                            <td>
+                                                <a class="ui inverted circular icon button" style="margin: auto;"
+                                                    target="_blank" href="{{appraisal.appraisal_form.url }}">
+                                                    <i class="large attach black icon"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+
+                                    </tbody>
+                                </table>
+
+
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor%}
+
+
+
+                </div>
+            </div>
+
+        </div>
+
+
+        <div class="ui bottom attached tab segment" data-tab="fifth">
+            <div id="textSegmentDiv">
+
+                {% comment %}
+                TODO: Loader required?
+                <div class="ui active large text loader" id="loader">
+                    Loading ...
+                </div>
+                {% endcomment %}
+
+                <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+
+                    <div>
+                        <div class="ui one cards" style="padding: 2px;">
+                            <div class="ui blue card" id="noti">
+                                <div class="content">
+
+                                    <table class="ui orange table">
+                                        <thead>
+                                            <th>Personal Details:-</th>
+                                        </thead>
+                                        <tbody>
+
+                                            <tr>
+                                                <td>ID</td>
+                                                <td>{{user.id}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Title</td>
+                                                <td>{{user.extrainfo.title}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Type</td>
+                                                <td>{{user.extrainfo.user_type}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Name</td>
+                                                <td>{{user.extrainfo.user.first_name}}
+                                                    {{user.extrainfo.user.last_name}}</td>
+
+                                            </tr>
+                                            <tr>
+                                                <td>email</td>
+                                                <td>{{user.extrainfo.user.email}}</td>
+
+                                            </tr>
+
+                                            <tr>
+                                                <td>Gender</td>
+                                                <td>{{user.extrainfo.sex}}</td>
+
+                                            </tr>
+                                            <tr>
+                                                <td>Date Of Birth</td>
+                                                <td>{{user.extrainfo.date_of_birth}}</td>
+
+                                            </tr>
+                                            <tr>
+                                                <td>address</td>
+                                                <td>{{user.extrainfo.address}}</td>
+
+                                            </tr>
+                                            <tr>
+                                                <td>Phone number</td>
+
+                                                <td>{{user.extrainfo.phone_no}}</td>
+
+                                            </tr>
+
+                                            <tr>
+                                                <td>Date Of joining</td>
+                                                <td>{{user.faculty_about.doj}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>department</td>
+                                                <td>{{user.extrainfo.department}}</td>
+                                            </tr>
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+
+                        <div class="ui one cards" style="padding: 2px;">
+                            <div class="ui blue card" id="noti">
+                                <div class="content">
+
+                                    <table class="ui orange table">
+                                        <thead>
+                                            <th>Projects:-</th>
+                                            <tr>
+                                                <td>Sr.</td>
+                                                <td>PI/CO-PI</td>
+                                                <td>Title of Paper</td>
+                                                <td>Funding Agency</td>
+                                                <td>Financila Outlay</td>
+                                                <td>Status</td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+
+
+
+
+                                            {% if not empproject %}
+
+                                            <h1>No entry found</h1>
+                                            {% endif %}
+
+                                            {% for project in empproject %}
+                                            <tr>
+                                                <td>
+                                                    {{ forloop.counter }}.
+                                                </td>
+                                                <td><b>PI: </b>{{ project.pi }}/ <b>Co-PI: </b>{{ project.co_pi }}
+                                                </td>
+                                                <td>{{ project.title }}</td>
+                                                <td>{{ project.funding_agency }}
+
+                                                </td>
+
+                                                <td>{{ project.financial_outlay}}
+                                                </td>
+                                                <td>{{ project.status }}
+
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+
+
+
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        {% if 'staff' != extrainfo.user_type %}
+                        <!-- visits -->
+                        <div class="ui one cards" style="padding: 2px;">
+                            <div class="ui blue card" id="noti">
+                                <div class="content">
+
+                                    <table class="ui orange table">
+                                        <thead>
+                                            <th>Visits:-</th>
+                                            <tr>
+                                                <td>Sr.</td>
+                                                <td>Country</td>
+                                                <td>Place</td>
+                                                <td>From</td>
+                                                <td>To</td>
+                                                <td>Purpose</td>
+                                            </tr>
+
+                                        </thead>
+                                        <tbody>
+
+
+                                            {% if not visits %}
+
+                                            <h1>No entry found</h1>
+                                            {% endif %}
+
+                                            {% for f_visit in visits %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}</td>
+                                                <td>
+                                                    <i class="{{ f_visit.country|lower }} flag"></i>
+                                                    {{ f_visit.country }}
+                                                </td>
+                                                <td>{{ f_visit.place }}</td>
+                                                <td>{{ f_visit.start_date }}</td>
+                                                <td>{{ f_visit.end_date }}</td>
+                                                <td>{{ f_visit.purpose }}</td>
+
+                                            </tr>
+                                            {% endfor %}
+
+
+
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <!-- conference -->
+                        <div class="ui one cards" style="padding: 2px;">
+                            <div class="ui blue card" id="noti">
+                                <div class="content">
+
+                                    <table class="ui orange table">
+                                        <thead>
+                                            <th>Conference :-</th>
+                                            <tr>
+                                                <td>Sr.</td>
+                                                <td>Role</td>
+                                                <td>Conference Name</td>
+                                                <td>Venue</td>
+                                                <td>Start date</td>
+                                                <td>End Date</td>
+
+                                            </tr>
+
+                                        </thead>
+                                        <tbody>
+
+
+                                            {% if not conferences %}
+
+                                            <h1>No entry found</h1>
+                                            {% endif %}
+
+
+                                            {% for e in conferences %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}</td>
+                                                <td>
+                                                    {% if e.role1 == "Organised" %}
+                                                    {{ e.role1 }} - {{ e.role2 }}
+                                                    {% else %}
+                                                    {{ e.role1 }}
+                                                    {% endif %}
+
+                                                </td>
+                                                <td>{{ e.name }}</td>
+                                                <td>{{ e.venue }}</td>
+                                                <td>{{ e.start_date }}</td>
+                                                <td>{{ e.end_date }}</td>
+
+                                            </tr>
+                                            {% endfor %}
+
+
+
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                        <div class="ui one cards" style="padding: 2px;">
+                            <div class="ui blue card" id="noti">
+                                <div class="content">
+
+                                    <table class="ui orange table">
+                                        <thead>
+                                            <th>Thesis supervision:-</th>
+                                            <tr>
+                                                <td>Sr.</td>
+                                                <td>Student</td>
+                                                <td>Title</td>
+                                                <td>Year</td>
+                                                <td>Supervisor</td>
+                                                <td>Action</td>
+                                            </tr>
+
+                                        </thead>
+                                        <tbody>
+
+
+                                            {% if not thesis %}
+
+                                            <h1>No entry found</h1>
+                                            {% endif %}
+
+                                            {% for mtech in thesis %}
+                                            <tr>
+                                                <td id="s{{ forloop.counter }}Z">
+                                                    {{forloop.counter }}.
+                                                </td>
+                                                <td id="s{{ forloop.counter }}A"><b>Name:
+                                                    </b>{{mtech.s_name}}<br /><b>Roll No.: </b>{{ mtech.rollno }}</td>
+                                                <td id="s{{ forloop.counter }}B">{{ mtech.title }}</td>
+                                                <td id="s{{ forloop.counter }}C">{{ mtech.a_month }}/{{ mtech.s_year }}
+                                                </td>
+                                                <td id="s{{ forloop.counter }}D">{{ mtech.supervisors }}</td>
+
+                                            </tr>
+                                            {% endfor %}
+
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        {%endif%}
+
+
+                        <!-- Achievements -->
+                        <div class="ui one cards" style="padding: 2px;">
+                            <div class="ui blue card" id="noti">
+                                <div class="content">
+
+                                    <table class="ui orange table">
+                                        <thead>
+                                            <th>Achievement :-</th>
+                                            <tr>
+                                                <td>Sr.</td>
+                                                <td>Achievement</td>
+                                                <td>Title</td>
+                                                <td>Date</td>
+
+                                            </tr>
+
+                                        </thead>
+                                        <tbody>
+
+
+
+                                            {% if not awards %}
+
+                                            <h1>No entry found</h1>
+                                            {% endif %}
+
+
+                                            {% for award in awards %}
+
+
+                                            <tr>
+                                                <td>
+                                                    {{forloop.counter }}.
+                                                </td>
+                                                <td id="ach{{ forloop.counter }}A">{{ award.a_type }}</td>
+                                                <td id="ach{{ forloop.counter }}B">{{ award.details }}</td>
+                                                <td id="ach{{ forloop.counter }}C">{% if award.a_day %}{{award.a_day }}
+                                                    / {% endif %}{% if award.a_month %}{{award.a_month }} / {% endif%}
+                                                    {% if award.a_year %}{{award.a_year }}
+                                                    {% endif %}</td>
+
+                                            </tr>
+
+                                            {% endfor %}
+
+
+
+
+
+                                        </tbody>
+
+                                </div>
+                            </div>
+
+
+                        </div>
+
+
+
+
+
+                    </div>
+
+
+                </div>
+
+            </div>
+            <!-- end testing  -->
+
+        </div>
+
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+
+
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+
+
+    {% endblock %}
+
+    {% block javascript %}
+    <script
+        src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script>
+        //----------------------calender--------------------------------
+
+        $('#rangestart').calendar({
+            monthFirst: false,
+            type: 'date',
+            minDate: new Date(getToday().getFullYear(), getToday().getMonth(), getToday().getDate()),
+            formatter: {
+                date: function (date, settings) {
+                    if (!date) return '';
+                    var day = date.getDate();
+                    var month = date.getMonth() + 1;
+                    var year = date.getFullYear();
+                    return year + '-' + month + '-' + day;
+                }
+            }
+        });
+
+    </script>
+    {% endblock %}

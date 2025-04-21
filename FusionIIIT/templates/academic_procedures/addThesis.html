@@ -1,0 +1,86 @@
+{% load static %}
+{% block complainthistory %}
+
+{% comment %}The tab menu starts here!{% endcomment %}
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="complainthistory">
+    Add Thesis Topic
+    </a>
+</div>
+
+<div class="ui active tab" data-tab="complainthistory">
+    <div class="ui vertical segment">
+        {% if sthesis_flag %}
+        <B>You can only have one thesis per semester</B>
+        {% else %}
+        <form id="add_thesis_form" action='/academic-procedures/addThesis/'>{% csrf_token %}
+            <div class="ui form" style="border: black" > 
+                    <div class="field">
+                        <select class="ui dropdown" name="curr_id">
+                            <option value="">Course Code</option>
+                            {% for i in currently_registered %}
+                            <option value="{{ i.curriculum_id }}">{{i.course_code}}</option>>
+                            {% endfor%}
+                        </select>
+                    </div>
+                <div class="two fields">          
+                    <input placeholder="Enter Your Broad Research Area" name='research_area' required="true" type="text"><br>                
+                </div>
+                <div class="two fields">
+                    <textarea rows="4"  placeholder="Theme of Proposed Research Work" name='thesis_topic' required="true" type="text"></textarea>                
+                </div>
+                <div class="two fields">
+                     <div class="field">
+                        <select class="ui dropdown" name="supervisor" required="true">
+                            <option value="">Supervisor</option>
+                            {% for i in faculty_list %}
+                            <option value="{{ i.user.username }}">{{i.user.first_name}} {{i.user.last_name}}</option>>
+                            {% endfor%}
+                        </select>
+
+                    </div>
+                    <div class="field">
+                        <select class="ui dropdown" name="co_supervisor">
+                            <option value="">Co-Supervisor(optional)</option>
+                            {% for i in faculty_list %}
+                            <option value="{{ i.user.username }}">{{i.user.first_name}} {{i.user.last_name}}</option>>
+                            {% endfor%}
+                        </select>
+                    </div>
+                </div>
+                
+                <br>
+
+                <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
+                <input type="text" name='by' value="st" hidden="True">
+
+            </div><br>
+            <div class="ui divider"></div><br>
+            <center> <button class="ui primary button">Add Thesis</button></center>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+$(function() {
+    $("#add_thesis_form").submit(function(event) {
+
+        event.preventDefault();
+        var friendForm = $(this);
+
+        var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+        posting.done(function(data) {
+            alert('Thesis Topic Successfully Submitted');
+            window.location = "/academic-procedures/main/";
+        });
+        posting.fail(function(data) {
+            alert('Failed to add');
+            window.location = "/academic-procedures/main/";
+        });
+    });
+});
+</script>

@@ -1,0 +1,31 @@
+
+    <form method='POST'>
+    {% csrf_token %}
+    <button class="ui red button" type="submit" name="new_orders" align="center">
+          new orders
+    </button>
+    {% if des != "PurchaseOfficer" %}
+    <button class="ui green button" type="submit" name="approved_orders" align="center">
+           approved orders
+    </button>
+    {% endif %}
+      {% if des == "PurchaseOfficer" %}
+      <button class="ui green button" type="submit" name = "checked_orders">
+            Checked orders
+      </button>
+      {% endif %}
+      {% if des == "DeputyRegistrar" %}
+      <button class="ui yellow button" type="submit" name = "forwarded_orders">
+            Forwaded orders
+      </button>
+      {% endif %}
+      {% if des == "Registrar" %}
+      <button class="ui yellow button" type="submit" name = "forwarded_orders">
+            Forwarded orders
+      </button>
+      {% endif %}
+    </form>
+  <!---  <div class="collapsing">
+          {% comment %}  <a href="{% url 'office_module:new_orders' %}" class="ui red right floated button">Delete</a> {% endcomment%}
+    </div>
+--->

@@ -1,0 +1,32 @@
+{% with 'new_inventory_non_consumable_form' as form_id %}
+<div class="ui modal new_inventory_non_consumable">
+    <div class="header">
+        New Non-Consumable Inventory
+    </div>
+    <div class="scrolling content">
+        <form action="{% url 'new_inventory_non_consumable' %}" id="{{ form_id }}" class="ui form" method="POST"
+            novalidate>
+            {% include inventory_data.non_consumable.template_dir|add:'/form.html' %}
+        </form>
+
+    </div>
+    <div class="actions">
+        <button type="submit" form="{{ form_id }}" class="ui large right labeled icon green button">Create
+            <i class="checkmark icon"></i></button>
+        <div class="ui black deny large button">
+            Cancel
+        </div>
+
+
+    </div>
+</div>
+{% endwith %}
+
+<script type='module'>
+    $('.new_inventory_non_consumable.modal')
+        .modal({
+            centered: false
+        })
+        .modal('setting', 'closable', false)
+        .modal('attach events', '.new_inventory_non_consumable.button', 'show');
+</script>

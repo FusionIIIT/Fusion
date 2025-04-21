@@ -1,0 +1,153 @@
+{% load static %}
+{% block hostelRoomAllotment%}
+
+<h3>Hostel Allotment</h3>
+<div class="ui pointing secondary menu">
+    <a class=" active item" data-tab="new_allotment">
+        New Allotment
+    </a>
+    <a class="item" data-tab="Allotment">
+        All Allotment
+    </a>
+</div>
+<div class="ui tab active segment" data-tab="new_allotment">
+
+    {% if success_msg != 'none'  and page == 7  %}
+    <div class="ui success message">
+        <i class="close icon"></i>
+        <div class="header">
+          {{ success_msg }}
+        </div>
+    </div>
+    {% endif %}
+    {% if err_msg != 'none' and page == 7  %}
+    <div class="ui error message">
+            <i class="close icon"></i>
+            <div class="header">
+              There were some errors with your submission
+            </div>
+            <p>{{ err_msg }}</p>
+    </div>
+    {% endif %}
+
+    <form class="ui form"  action="hostelRoomAllotment" name="hostel" id="hostel" enctype="multipart/form-data" method="post">
+        {% csrf_token %}
+        <div class="fields">
+            <div class="eight wide field">
+                <label>Hall No.<text style="color: red;">  *</text></label>
+                <select class="ui fluid search dropdown" name="hall_no" id="hall_no">
+                    <option value="">Hall Number</option>
+                    {% for i in hall %}
+                    <option value="{{ i }}">{{ i }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="eight wide field">
+                <label>Program<text style="color: red;">  *</text></label>
+                <select class="ui fluid search dropdown" name="program" id="program">
+                    <option value="">B.Tech/M.Tech/B.Des/M.Des/PhD</option>
+                    {% for i in program %}
+                    <option value="{{ i }}">{{ i }}</option>
+                    {% endfor %}
+                </select>
+
+            </div>
+        </div>
+
+        <div class="fields"><div class="eight wide field">
+                <label>Year<text style="color: red;">  *</text></label>
+                <input type="number" placeholder="Batch" name="year" id="year">
+            </div>
+
+            <div class="eight wide field">
+                <label>Gender<text style="color: red;">  *</text></label>
+                <select class="ui fluid search dropdown" name="gender" id="gender">
+                    <option value="">Male/Female</option>
+                    {% for i in gender %}
+                    <option value="{{ i }}">{{ i }}</option>
+                    {% endfor %}
+                </select>
+
+            </div>
+        </div>
+        <div class="fields">
+            <div class="eight wide field">
+                <label>No. of Students<text style="color: red;">  *</text></label>
+                <input type="number" placeholder="No. of Students" name="num_students" id="num_students">
+            </div>
+
+            <div class="eight wide field">
+                <label>Remark</label>
+                <textarea name="remarks" id="remarks" cols="12" rows="3" placeholder="Optional description"></textarea>
+
+            </div>
+        </div>
+        <b>Remaining Hall Capacities</b>
+        <div class="ui statistics" id="hall_capacity1">
+            {% for i in capacity %}
+            <div class="blue statistic" >
+                <div class="value">
+                    {{ i.current_capacity }} <h3>/ {{ i.total_capacity }}</h3>
+                </div>
+                <div class="label">
+                    {{ i.name }}
+                </div>
+            </div>
+
+            {% endfor %}
+        </div>
+        <br>
+
+        <button class="ui button" type="submit">Submit</button>
+    </form>
+</div>
+<div class="ui tab segment" data-tab="Allotment">
+    <form action="deleteAllHostelRoomAllotment" method="post">
+                    {% csrf_token %}
+                <button class="ui button" type="submit" name="delete"><a onclick="return confirm('Are you sure you want to delete this?')">Delete All</a>
+ </button>
+                </form>
+    <table class="ui very basic celled table" id="allotment_table">
+        <thead>
+        <tr>
+            <th class= "four wide">Program</th>
+            <th class= "four wide">Year</th>
+            <th class = "four wide">Gender</th>
+            <th class = "four wide">Hall Number</th>
+            <th class = "four wide">Students</th>
+            <th class = "four wide">Remarks</th>
+            <th class = "four wide">Delete</th>
+
+        </tr>
+        </thead>
+        <tr>
+            {% for items in hall_allotment %}
+            <td >{{ items.program }}</td>
+            <td >{{ items.year }}</td>
+            <td >{{ items.gender }}</td>
+            <td >{{ items.hall_no }}</td>
+            <td >{{ items.number_students }}</td>
+            <td >{{ items.remark }}</td>
+            <td>
+                <form action="deleteHostelRoomAllotment" method="post">
+                    {% csrf_token %}
+                <button class="mini ui button" type="submit" value="{{ items.id }}" name="delete"><svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+                                                                  width="20" height="20" viewBox="0 0 24 24" style=" fill:#000;"><path d="M 10 2 L 9 3 L 4 3 L 4 5 L 7 5 L 17 5 L 20 5 L 20 3 L 15 3 L 14 2 L 10 2 z M 5 7 L 5 20 C 5 21.1 5.9 22 7 22 L 17 22 C 18.1 22 19 21.1 19 20 L 19 7 L 5 7 z"></path></svg></button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</div>
+<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.3.1.min.js"></script>
+<script>
+    <a class="confirm-delete" ...>Delete</a>
+$(document).on('click', '.confirm-delete', function(){
+    return confirm('Are you sure you want to delete this?');
+})
+</script>
+
+{% endblock hostelRoomAllotment%}
+<script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>

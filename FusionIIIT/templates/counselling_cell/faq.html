@@ -1,0 +1,317 @@
+{#{% extends 'globals/base.html'%}#}
+{% load static %}
+{#{% block body %}#}
+{% block team_details %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="viewfaq">
+            Read FAQs
+        </a>
+        {% if user_role == 'faculty' or user_role == 'student_coordinator' or user_role == 'faculty_counsellor' or user_role == 'head_counsellor' %}
+        <a class="item" data-tab="faq">
+            Add New FAQ
+        </a>
+        {% endif %}
+
+       
+    </div>
+    <div class="ui active tab" data-tab="viewfaq">
+
+        <div id="feedback_history" class="ui very relaxed fluid selection list" style="padding-left: 24px; padding-top: 16px; padding-bottom: 16px; max-height: 70vh; overflow-y: auto;">
+        <a class="header" id="user_name" style="display: none">{{info.user.username}}</a>
+            {% for faq in faqs %}
+                <!--<img class="ui mini circular image" src="{% static 'globals/img/zlatan.jpg' %}"> --->
+            <div class="item">
+                <div class="right floated content">
+                    <a class="header">{{faq.counselling_category}}</a>
+                </div>
+                <div class="description">
+                    <h2 class="ui header">Question : {{forloop.counter}}</h2>
+                    <div class="ui header">{{faq.counselling_question}}</div>
+                        <br>
+                    <h2 class="ui header">Answer : {{forloop.counter}}</h2>
+                    <div class="ui header">{{faq.counselling_answer}}</div>
+                <br>
+                <br>
+               
+                </div> 
+                
+            </div>
+            {% endfor %}
+        </div>
+
+    <div class="ui divider"></div>
+    </div>
+    <div class="ui tab" data-tab="faq" id="feedback">
+
+        <div class="ui vertical segment">
+
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form method="POST">
+                {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="ui header">
+                        New FAQ form :
+                    </div>
+
+                    <br>
+
+                    <div class="two fields">
+
+                        <div class="two fields">
+                            <div class="twelve wide field">
+                                <label>Category*</label>
+                                <select class="ui dropdown" name="category" id="category">
+                                    {% for category in categories %}
+                                    <option value={{category.category_id}}>{{category.category}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                        </div>
+                    </div>
+                   
+                    <div class="field">
+                        <label>Question*</label>
+                        <textarea rows="2" id="question" name="question" required="true"></textarea>
+                    </div>
+                    
+                    <div class="field">
+                        <label>Answer*</label>
+                        <textarea rows="5" id="answer" name="answer" required="true"></textarea>
+                    </div>
+                    
+                    <div class="field">
+                        <label><br></label>
+                            <button class="ui primary fluid button" type="submit" onclick="return feedback()">
+                            Submit
+                            </button>
+                    </div>
+
+                </div>
+            </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+{% endblock %}
+{#{% endblock %}#}
+
+{% block javascript %}
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+
+ <script>
+        const required_check_faq_form = () => {
+            if ($("#answer").val().length == 0  && $("#question").val().length == 0) {
+                check = 0;
+                return check;
+            }
+            else {
+                check = 1;
+            }
+        }
+       
+        function feedback(){
+            check = required_check_faq_form();
+            if(check == 0){
+                alert("Please fill question and anser both");
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: 'submitfaq/',
+                    dataType: 'json',
+                    data: {
+                        'csrfmiddlewaretoken': '{{ csrf_token }}',
+                        'category': $("#category").val(),
+                        'answer': $("#answer").val(),
+                        'question': $("#question").val()
+                    },
+                    success: function (data) {
+                        if (data.status) {
+                            $("#feedback").load(location.href + " #feedback>*", "");
+
+                            // var monthNames = ["January", "February", "March", "April", "May", "June",
+                            //                   "July", "August", "September", "October", "November", "December"];
+                            // var name = $("#user_name").text();
+                            // var today_date = new Date();
+                            // var t_date = monthNames[today_date.getMonth()] + " " + today_date.getDate() + ", " + today_date.getFullYear();
+                            // $("#feedback_history").prepend("<div class='item'><div class='left floated content'>" +
+                            //         "<a class='header'>" + name + "</a>" +
+                            //     "<a class='meta'>" + $("#feedback_type").val() +"</a><div class='description'>"
+                            //     + $("#description").val() + "</div></div><div class='right floated content'>" +
+                            //     "<span class='meta'>" + t_date + "</span></div></div>");
+
+                            alert("Data Inserted Successfully");
+
+                            document.getElementById('feedback_type').value = "";
+                            document.getElementById('description').value = "";
+
+                        }
+                    },
+                    error: function (data, err) {
+                        console.log(err.message)
+                        alert(err.message);
+                        $("#feedback").load(location.href + " #feedback>*", "");
+                    }
+                });
+            }
+        return false;
+    }
+    const counsellor=()=>{
+            check = 1;
+                $.ajax({
+                    type: 'POST',
+                    url: 'appoint_student_counsellors/',
+                    dataType: 'json',
+                    data: {
+                        'csrfmiddlewaretoken': '{{ csrf_token }}',
+                        'username': $("#student").val(),
+                        'position': "student_coordinator",
+                    },
+                    success: function (data) {
+                        if (data.status) {
+
+                            // var monthNames = ["January", "February", "March", "April", "May", "June",
+                            //                   "July", "August", "September", "October", "November", "December"];
+                            // var name = $("#user_name").text();
+                            // var today_date = new Date();
+                            // var t_date = monthNames[today_date.getMonth()] + " " + today_date.getDate() + ", " + today_date.getFullYear();
+                            // $("#coordinator_history").prepend("<div class='item'><div class='left floated content'>" +
+                            //         "<a class='header'>" + name + "</a>" +
+                            //     "<a class='meta'>" + $("#coordinator_type").val() +"</a><div class='description'>"
+                            //     + $("#description").val() + "</div></div><div class='right floated content'>" +
+                            //     "<span class='meta'>" + t_date + "</span></div></div>");
+
+                            alert("Data Inserted Successfully");
+
+                            // document.getElementById('student ').value = "";
+                            $("#coordinator").load(location.href + " #coordinator>*", "");
+
+                        }
+                    },
+                    error: function (data, err) {
+                        alert(err.message);
+                        $("#coordinator").load(location.href + " #coordinator>*", "");
+                    }
+                });
+            
+        return false;
+    }
+    const studentGuide=()=>{
+            check = 1;
+                $.ajax({
+                    type: 'POST',
+                    url: 'appoint_student_counsellors/',
+                    dataType: 'json',
+                    data: {
+                        'csrfmiddlewaretoken': '{{ csrf_token }}',
+                        'username': $("#student_guide").val(),
+                        'position': "student_guide",
+                    },
+                    success: function (data) {
+                        if (data.status==1) {
+
+                            alert("Data Inserted Successfully");
+
+                            // document.getElementById('student ').value = "";
+                            $("#coordinator").load(location.href + " #coordinator>*", "");
+
+                        }
+                    },
+                    error: function (data, err) {
+                        alert(err.message);
+                        $("#coordinator").load(location.href + " #coordinator>*", "");
+                    }
+                });
+            
+        return false;
+    }
+    const removestudentGuide=(sg_roll_no)=>{
+            check = 1;
+            console.log(sg_roll_no)
+        //         $.ajax({
+        //             type: 'POST',
+        //             url: 'appoint_student_counsellors/',
+        //             dataType: 'json',
+        //             data: {
+        //                 'csrfmiddlewaretoken': '{{ csrf_token }}',
+        //                 'username': $("#student_guide").val(),
+        //                 'position': "student_guide",
+        //             },
+        //             success: function (data) {
+        //                 if (data.status==1) {
+
+        //                     alert("Data Inserted Successfully");
+
+        //                     // document.getElementById('student ').value = "";
+        //                     $("#coordinator").load(location.href + " #coordinator>*", "");
+
+        //                 }
+        //             },
+        //             error: function (data, err) {
+        //                 alert(err.message);
+        //                 $("#coordinator").load(location.href + " #coordinator>*", "");
+        //             }
+        //         });
+            
+        // return false;
+    }
+
+    const assign_student_to_sg=()=>{
+            check = 1;
+            // document.getElementById('mappedStudent').onsubmit((e)=>{
+            //         e.preventDefault();
+            //     console.log(e.target.response)
+            // });
+                var fd = new FormData();
+                var files = $('#mappedStudent')[0].files;
+                fd.append("FILES",files)
+                fd.append('csrfmiddlewaretoken','{{ csrf_token }}')
+                $.ajax({
+                    type: 'POST',
+                    url: 'assign_student_to_sg/',
+                    data: fd,
+                    enctype: 'multipart/form-data',
+                    contentType: false,
+                    processData: false,
+                    dataType: 'jsonp',
+                    // data: {
+                    //     'csrfmiddlewaretoken': '{{ csrf_token }}',
+                    //     'mappedStudent': $("#mappedStudent")[0].files[0],
+                    // },
+                    success: function (data) {
+                        if (data.status) {
+
+                            alert(data.message);
+                            // document.getElementById('student ').value = "";
+                            // $("#coordinator").load(location.href + " #coordinator>*", "");
+                            $("#coordinator").load(location.href + " #coordinator>*", "");
+
+                        }
+                    },
+                    error: function (data, err) {
+                        console.log(err)
+                        // alert(err.message);
+                        $("#coordinator").load(location.href + " #coordinator>*", "");
+                    }
+                });
+            
+        // return false;
+    }
+    
+
+
+
+
+</script>
+{% endblock %}
+
+
+

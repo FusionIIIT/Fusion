@@ -1,0 +1,55 @@
+<html>
+	<head>
+		<title>Student Record</title>
+	  	<style>
+		    body {
+		      background-color: #f7f7f7;
+		    }
+
+			table, th, td {
+			    border: 1px solid black;
+			    border-collapse: collapse;
+			}
+			tr, td{
+				padding: 2px;
+			}
+		</style>
+	</head>
+	<body>
+		<table style="width:100%">
+	            <tr>
+	                <th>Student</th>
+	                <th>CPI</th>
+	                <th>Department</th>
+	                <th>Discipline</th>
+	                <th>Placed</th>
+	                <th>Debarred?</th>
+	            </tr>
+
+	            {% for student in students %}
+		            <tr>
+		                <td>
+		                    <div class="content">
+		                        {{ student.id.user.first_name}} {{ student.id.user.last_name }}
+		                        <div class="sub header">
+		                            {{ student.id.id }}
+		                        </div>
+		                    </div>
+		                </td>
+
+		                <td>
+		                    {{ student.cpi }}
+		                </td>
+
+		                <td>
+		                    {{ student.programme }}
+		                </td>
+
+		                <td>
+		                    {{ student.id.department.name }}
+		                </td>
+		            </tr>
+	          	{% endfor %}
+	    </table>
+	</body>
+</html>

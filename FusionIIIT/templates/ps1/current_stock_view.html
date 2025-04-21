@@ -1,0 +1,110 @@
+{% extends 'ps1/ps2.html' %}
+{% load static %}
+
+{% block filetracking_tab %} 
+
+
+    <div class="ui pointing secondary menu">
+        <h3>
+            <a class="active item" data-tab="composefile">
+            Stocks present in database
+            </a>
+        </h3>
+    </div>
+    <div class="ui divider"></div> 
+
+    <div class="ui active tab" data-tab="composefile">
+        <div class="ui vertical stripe team segment" style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+    <div class="ui pointing secondary menu" >
+        <h3>
+            <a class="active item" data-tab="inward">
+            Stock View
+            </a>
+        </h3>
+    
+    </div> 
+
+    
+    <div class="ui divider"></div>
+    {% if stocks %}
+    <div class="table-container" style="overflow-x: scroll;max-height: 500px;  overflow-y: scroll;">
+
+
+        <table class="ui very basic celled sortable table">
+            <thead>
+            <tr>
+                    <th>Item Type</th>
+                    <!-- <th>Item SubType</th> -->
+                    <th>department/Section</th>
+                    <th>Quantity</th>
+                
+            </tr>
+            </thead>
+            <tbody>
+                {% for s in stocks %}
+                <tr>
+                    
+                    <td> {{s.item_type}} </td>
+                    <!-- <td> {{s.item_subtype}} </td> -->
+                    <td> {{s.department}} </td>
+                    <td>{{s.total_quantity}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+</div>
+
+<!-- for displaying the stocks  -->
+<div class="ui divider"></div>
+    <div class="table-container"  style="overflow-x: scroll;max-height: 300px;  overflow-y: scroll;">
+
+
+        <table class="ui very basic celled sortable table">
+            <thead>
+            <tr>
+                    <th>Nomenclature</th>
+                    <th>Item Name</th>
+                    <th >Current Location</th>
+                    <th >Transferred</th>
+                    <th >Vendor</th>
+                    <th >Bill</th>
+                
+            </tr>
+            </thead>
+            <!-- -->
+            <tbody>
+                {% for s in stockItems %}
+                    {% if s.StockEntryId.item_id.purchased %}
+                <tr>
+                    <td> {{s.nomenclature}} </td>
+                    <td> {{s.StockEntryId.item_id.item_name}} </td>
+                    <td>{{s.location}}</td>
+                    <td>{{s.isTransferred}}</td>
+                    <td>{{s.StockEntryId.vendor}}</td>
+                    <td>
+                        {% if s.StockEntryId.bill %}
+                            <a href="{{ s.StockEntryId.bill.url }}" download>{{ s.StockEntryId.bill }}</a>
+                        {% else %}
+                            No bill available
+                        {% endif %}
+                    </td>
+                
+                  </tr>
+                  {% endif %}
+    
+                    {% endfor %}
+            </tbody>
+        </table>
+
+</div>
+
+    <br>
+    {% else %}
+        <h4 >No Records present in database</h4>
+    {% endif %}
+
+    </div>  
+
+    {% endblock %}

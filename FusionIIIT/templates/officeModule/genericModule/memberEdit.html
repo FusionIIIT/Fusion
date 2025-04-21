@@ -1,0 +1,173 @@
+{% load static %}
+{% block editMessCommittee %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="memberrequests">
+            Member Requests
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="memberrequests">
+        <div class="ui vertical segment">
+
+            <form class="ui form" style="padding-left: 32px; padding-right: 32px;">
+                <div class="three fields">
+                    <div class="field">
+                        <label>Name</label>
+                        <input class="ui large input" value="Zlatan Ibrahimovic">
+                    </div>
+
+                    <div class="field">
+                        <label>Roll Number</label>
+                        <input class="ui large input" value="2015121" readonly>
+                    </div>
+
+                    <div class="field">
+                        <label>Category</label>
+                        <select class="ui fluid dropdown">
+                            <option value="">Select</option>
+                            <option value="category1">Category #1</option>
+                            <option value="category2">Category #2</option>
+                            <option value="category3">Category #3</option>
+                        </select>
+                    </div>
+
+                </div>
+                <div class="ui primary right floated button">Add Member</div>
+
+            </form>
+
+            <br>
+
+            <h4 class="ui dividing header" style="margin-left: 32px; margin-right: 32px;">Members</h4>
+
+
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th>
+                    </th>
+
+                    <th class="four wide column">
+                        Student
+                    </th>
+
+                    <th>
+                        Roll No.
+                    </th>
+
+                    <th>
+                        Category
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr>
+
+                    <td class="collapsing">
+                        <div class="ui fitted checkbox">
+                            <input type="checkbox"> <label></label>
+                        </div>
+                    </td>
+
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                Zlatan Ibrahimovic
+                                <div class="sub header">
+                                    gmail@zlatan.com
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                        2015121
+                    </td>
+
+                    <td>
+                        Category #1
+                    </td>
+                </tr>
+                <tr>
+
+                    <td class="collapsing">
+                        <div class="ui fitted checkbox">
+                            <input type="checkbox"> <label></label>
+                        </div>
+                    </td>
+
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                Zlatan Ibrahimovic
+                                <div class="sub header">
+                                    gmail@zlatan.com
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                        2015121
+                    </td>
+
+                    <td>
+                        Category #1
+                    </td>
+                </tr>
+                <tr>
+
+                    <td class="collapsing">
+                        <div class="ui fitted checkbox">
+                            <input type="checkbox"> <label></label>
+                        </div>
+                    </td>
+
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                Zlatan Ibrahimovic
+                                <div class="sub header">
+                                    gmail@zlatan.com
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                        2015121
+                    </td>
+
+                    <td>
+                        Category #1
+                    </td>
+                </tr>
+
+                </tbody>
+            </table>
+
+
+            <br>
+
+            <div class="ui red right floated button">Remove Selected</div>
+
+            <br>
+            <br>
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+{% endblock %}

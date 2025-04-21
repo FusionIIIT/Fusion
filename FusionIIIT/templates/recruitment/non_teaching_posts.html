@@ -1,0 +1,254 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+Job Posts Non-Teaching
+{% endblock %}
+
+{% block css %}
+
+
+
+<link rel="stylesheet" type="text/css" href="{% static 'semantic/dist/components/site.css' %}">
+<style type="text/css">
+
+    .post{
+        justify-content: center;  
+        align-items: center;
+        display: flex;
+        margin-bottom: 2%;
+    }
+
+    .hidden.menu {
+        display: none;
+    }
+
+    .masthead.segment {
+        min-height: 400px;
+        padding: 1em 0em;
+    }
+
+    .masthead .logo.item img {
+        margin-right: 1em;
+    }
+
+    .masthead .ui.menu .ui.button {
+        margin-left: 0.5em;
+    }
+
+    .masthead h1.ui.header {
+        margin-top: 3em;
+        margin-bottom: 0em;
+        font-size: 4em;
+        font-weight: normal;
+    }
+
+    .masthead h2 {
+        font-size: 1.7em;
+        font-weight: normal;
+    }
+
+    .ui.vertical.stripe {
+        padding: 8em 0em;
+    }
+
+    .ui.vertical.stripe h3 {
+        font-size: 2em;
+    }
+
+    .ui.vertical.stripe .button+h3,
+    .ui.vertical.stripe p+h3 {
+        margin-top: 3em;
+    }
+
+    .ui.vertical.stripe .floated.image {
+        clear: both;
+    }
+
+    .ui.vertical.stripe p {
+        font-size: 1.33em;
+    }
+
+    .ui.vertical.stripe .horizontal.divider {
+        margin: 3em 0em;
+    }
+
+    .team.stripe.segment {
+        padding: 0em;
+    }
+
+    .team.stripe.segment .grid .column {
+        padding-top: 5em;
+        padding-bottom: 5em;
+    }
+
+    .footer.segment {
+        padding: 5em 0em;
+    }
+
+    .secondary.pointing.menu .toc.item {
+        display: none;
+    }
+
+    @media only screen and (max-width: 700px) {
+        .ui.fixed.menu {
+            display: none !important;
+        }
+
+        .secondary.pointing.menu .item,
+        .secondary.pointing.menu .menu {
+            display: none;
+        }
+
+        .secondary.pointing.menu .toc.item {
+            display: block;
+        }
+
+        .masthead.segment {
+            min-height: 350px;
+        }
+
+        .masthead h1.ui.header {
+            font-size: 2em;
+            margin-top: 1.5em;
+        }
+
+        .masthead h2 {
+            margin-top: 0.5em;
+            font-size: 1.5em;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+
+
+{% block navBar %}
+{% include 'recruitment/navbar.html' %}
+{% endblock %}
+
+
+
+<div class="ui vertical stripe segment center aligned" style="background-color: #FFF;">
+    <div class="ui text container">
+        <h3 class="ui header">
+            <b>Available Non-Teaching Posts</b>
+        </h3>
+    </div>
+</div>
+
+<div class="container center aligned" style='margin-right: 10%;margin-left: 10%;margin-bottom: 2%;text-align: center;'>
+    <table class="ui striped very padded table ">
+        <thead>
+            <tr>
+                <th>Advertisement no.</th>
+                <th>Available Job</th>
+                <th>Last Date to apply</th>
+                <th>No. of available posts</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            {% comment %} {{%for items in job_posts%}} {% endcomment %}
+            <tr>
+                <td>1</td>
+                <td>faculty post available here ....................</td>
+                <td>21-April-2021</td>
+                <td>2</td>
+
+            </tr>
+
+            <tr>
+                <td>2</td>
+                <td>faculty post available here ..............</td>
+                <td>22-April-2021</td>
+                <td>2</td>
+
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="post">
+    <a href="/recruitment/non-teaching/apply">
+        <button class="ui secondary button">
+            Apply
+        </button>
+    </a>
+</div>
+
+{% comment %}
+The Second Segment ends here!
+{% endcomment %}
+
+
+<div class="ui inverted vertical footer segment">
+    <div class="ui divider"></div>
+
+    <div class="ui container">
+        <div class="ui stackable inverted divided equal height stackable grid">
+
+            <!--TODO-->
+
+            <div class="eight wide column">
+                <h4 class="ui inverted header">
+                    About
+                </h4>
+
+                <div class="ui inverted link list">
+                    <a href="http://www.iiitdmj.ac.in" target="_blank" class="item">
+                        Sitemap
+                    </a>
+                    <a href="http://web.iiitdmj.ac.in" target="_blank" class="item">
+                        IntraWeb
+                    </a>
+                </div>
+            </div>
+
+            <div class="eight wide column">
+                <h4 class="ui inverted header">
+                    Team
+                </h4>
+
+                <div class="ui inverted link list">
+                    <a class="item">
+                        3rd Year CSE
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript" src="{% static 'globals/js/sidebar.js' %}"></script>
+<script type="text/javascript" src="{% static 'globals/js/transition.js' %}"></script>
+<script type="text/javascript" src="{% static 'globals/js/visibility.js' %}"></script>
+
+<script>
+    $(document)
+        .ready(function () {
+
+            // fix menu when passed
+            $('.masthead')
+                .visibility({
+                    once: false,
+                    onBottomPassed: function () {
+                        $('.fixed.menu').transition('fade in');
+                    },
+                    onBottomPassedReverse: function () {
+                        $('.fixed.menu').transition('fade out');
+                    }
+                });
+
+            // create sidebar and attach to menu open
+            $('.ui.sidebar')
+                .sidebar('attach events', '.toc.item');
+
+        });
+</script>
+{% endblock %}

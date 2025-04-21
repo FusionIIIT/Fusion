@@ -1,0 +1,54 @@
+{% load static %}
+<style type="text/css">
+  .student_list {
+  background-color: #f1f1f1;
+  color: #444;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+  transition: 0.4s;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  border-radius: 3px; 
+}
+
+.verify:hover {
+  background-color: #ddd; 
+}
+</style>
+<div class="ui divider"></div>
+<form class="ui form" action="/aims/generateSheet" method="post" id="form8_8">
+    {% csrf_token %}
+    <input type="number" hidden="true" name = "batch" value= "{{ batch }}">
+    <input type="text" hidden="true" name = "course" value="{{ course }}">
+
+    <div class="field">
+        <button class="ui fluid primary button" type="submit">
+            Generatet Excel Sheet
+        </button>
+    </div>
+</form>
+
+{% if students %}
+
+            {% for stu in students %}
+                {% if stu %}
+                        <div class="student_list" data="{{forloop.counter}}">
+                        <table style="border-width: 0px;width: 100%">
+                            <td style="width: 20%">{{ stu.rollno }}</td>
+                            <td style="width: 40%">{{ stu.name}}</td>
+                            <td style="width: 20%"> {{ stu.department}}</td></td>
+                        </table>
+                        </div>
+                {% endif %}
+            {% endfor %}
+            <CENTER><BR><BR>  <B> NO MORE RECORDS FOUND</B> </center>
+
+{% else %}
+<CENTER><BR><BR>  <B> NO RECORDS FOUND</B> </center>
+{% endif %}
+

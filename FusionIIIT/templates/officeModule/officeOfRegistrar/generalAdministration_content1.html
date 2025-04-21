@@ -1,0 +1,109 @@
+<table class="ui very basic collapsing celled sortable table"
+       style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+    <thead>
+    <tr>
+        <th class="one wide column">
+        </th>
+
+        <th class="three wide column">
+            File Number
+        </th>
+
+        <th class="three wide column">
+            Date
+        </th>
+
+        <th class="eight wide column">
+            Amount
+        </th>
+
+        <th>
+            Attachment
+        </th>
+
+        <th>
+            Status
+        </th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {%for views in general%}
+    <tr>
+        <td class="collapsing">
+            <div class="ui fitted checkbox">
+                <input name="selected" type="checkbox" value="{{ views.id }}"> <label></label>
+            </div>
+        </td>
+
+        <td>
+           {{ views.file_name }}
+        </td>
+
+        <td>
+            {{ current_date }}
+        </td>
+
+        <td>
+            {{ views.amount }}
+        </td>
+
+        <td>
+           <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="{{ views.file.url }}">
+                <i class="large attach black icon">{{ views.file }}</i>
+            </a>
+        </td>
+
+        <td>
+            {% if views.status == 1 %}
+                <i class="large green checkmark icon"></i>
+            {% else %}
+                <i class="large red x icon"></i>
+            {% endif %}
+        </td>
+    </tr>
+    {%endfor%}
+    </tbody>
+</table>
+
+<br>
+
+<div class="ui primary right floated button">Approve Selected</div>
+<div class="ui green right floated button">Forward Selected</div>
+<div id="reject" class="reject ui red right floated button">Reject Selected</div>
+
+
+<br>
+<br>
+<div class="ui divider"></div>
+
+<div class="extra content">
+    <div class="" style="text-align: center;">
+        <i class="large green checkmark icon"></i> : Approved &ensp;&ensp;&ensp;&ensp;&ensp;
+        <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
+        <i class="large red x icon"></i> : Declined
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function(event){
+        $(document).on("click", "div.reject", function(event){
+            var checked = [];
+            $("input[name=selected]:checked").each(function(e){
+                checked.push(parseInt($(this).val()));
+            });
+            console.log("chal gaya");
+            $.ajax({
+                type: "POST",
+                url: "/office/officeOfRegistrar/generalAdminForm/reject/",
+                data: {"csrfmiddlewaretoken": "{{ csrf_token }}", "selected":checked},
+                success: function(data){
+                    console.log("success",data);
+                },
+                error: function(data){
+                    console.log("error", data);
+                },
+            });
+        });
+    });
+</script>

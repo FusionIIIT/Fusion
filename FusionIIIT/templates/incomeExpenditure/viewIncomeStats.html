@@ -1,0 +1,94 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    stats
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+    <div style="display: flex;">
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}The left-rail segment starts here!{% endcomment %}
+        <div class="five wide column">
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="ten wide column">
+        	<div class="ui active tab segment" data-tab="one" style="height: 400px;" >
+
+
+        		<h1>Income stats of Financial Year {{fin_year}}</h1>
+        		 <div id="container" style="width: 100%;">
+        		    	<canvas id="pie-chart"></canvas>
+        		 </div>
+        		  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script><script>
+                    var config = {
+        		      type: 'pie',
+        		      data: {
+        		        datasets: [{
+        		          data: {{income_data|safe}},
+        		          backgroundColor: [
+        		            '#ff0000', '#0000ff', '#ff0080', '#73ffff', '#5c26ff', '#002db3', '#ffff26', '#4cff4c', '#ff00ff'
+        		          ],
+        		          label: 'Population'
+        		        }],
+        		        labels: {{income_labels|safe}}
+        		      },
+        		      options: {
+        		        responsive: true
+        		      }
+        		    };
+        		 
+        		    window.onload = function() {
+        		      var ctx = document.getElementById('pie-chart').getContext('2d');
+        		      window.myPie = new Chart(ctx, config);
+        		    };
+        		  </script>
+
+
+        	</div>
+        </div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+       
+    </div>
+    <div style ="width:33%;text-align: center;">
+      <table>
+        <table border="2px solid gray" width="350px" height="200px" align="center" style="border: 3px solid gray ;border-top: 7px solid gray;">
+          <tr style="font-size: large;background-color: black;color: white;">
+            <th>Income Source</th>
+            <th>Amount</th>
+          </tr>
+          {% for  key, value in income_map.items %}
+          <tr>
+            <td>{{key}}</td>
+            <td>{{value}}</td>
+          </tr>
+          {% endfor %}
+        </table>
+      </table>
+   </div>
+   </div>
+{% endblock %}

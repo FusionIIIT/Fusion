@@ -1,0 +1,108 @@
+{% load static %}
+{% block lodgecomplaint %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="complaint">
+            Complaint
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="complaint">
+        <div class="ui vertical segment">
+            <form class="ui form" style="padding-left: 24px; padding-right: 24px;">
+                <div class="ui header">
+                    Add a new Complaint:
+                </div>
+
+                <br>
+
+                <div class="fields">
+
+                    <div class="eight wide field">
+                        <label>Complaint Type</label>
+                        <div class="ui fluid search selection dropdown">
+                            <input name="Location" type="hidden">
+                            <i class="dropdown icon"></i>
+
+                            <div class="default text">Select Cmplaint Type</div>
+
+                            <div class="menu">
+                                <div class="item" data-value="type1">
+                                    Type #1
+                                </div>
+
+                                <div class="item" data-value="type2">
+                                    Type #2
+                                </div>
+
+                                <div class="item" data-value="type3">
+                                    Type #3
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="eight wide field">
+                        <label>Location</label>
+                        <div class="ui fluid search selection dropdown">
+                            <input name="Location" type="hidden">
+                            <i class="dropdown icon"></i>
+
+                            <div class="default text">Select Location</div>
+
+                            <div class="menu">
+                                <div class="item" data-value="location1">
+                                    Location #1
+                                </div>
+
+                                <div class="item" data-value="location2">
+                                    Location #2
+                                </div>
+
+                                <div class="item" data-value="location3">
+                                    Location #3
+                                </div>
+
+                                <div class="item" data-value="location4">
+                                    Location #4
+                                </div>
+
+                                <div class="item" data-value="location5">
+                                    Location #5
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Specific Location</label>
+                    <div class="ui large input">
+                        <input placeholder="Specific Location">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Complaint Details</label>
+                    <textarea rows="2"></textarea>
+                </div>
+
+                <br>
+
+                <button class="ui large primary button right floated">
+                    Submit
+                </button>
+
+                <br>
+                <br>
+
+            </form>
+
+            <br>
+            <div class="ui divider"></div>
+        </div>
+    </div>
+
+{% endblock %}

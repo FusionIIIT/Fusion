@@ -1,0 +1,48 @@
+{% load static %}
+
+{% comment %}The tab menu starts here!{% endcomment %}
+    
+<div class="field" style="border : 0">
+    <form  method='POST' action='/income-expenditure/updateFixedValues/'>{% csrf_token %}
+        <div class="ui form" style="border: black" > 
+
+            
+            {% for item in fixedDetails %}
+            <div class="field">          
+                {{ item.attribute }}<input  name='{{item.attribute}}' type="number" value={{item.value}} >
+                        
+            </div>
+            {% endfor %}
+
+            
+           
+            
+            
+            <br>
+
+        </div><br>
+        <div class="ui divider"></div><br>
+        <center> <button class="ui primary button" type='submit'>Update</button></center>
+    </form>    
+</div>
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+$(function() {
+    $("#balance_sheet_form").submit(function(event) {
+
+        event.preventDefault();
+        var friendForm = $(this);
+
+        var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+        posting.done(function(data) {
+           
+            window.location = "/income-expenditure/main/";
+        });
+        posting.fail(function(data) {
+           
+            window.location = "/income-expenditure/main/";
+        });
+    });
+});
+</script>

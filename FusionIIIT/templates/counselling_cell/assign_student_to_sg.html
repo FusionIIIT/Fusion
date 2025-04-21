@@ -1,0 +1,58 @@
+
+
+
+
+{#{% extends 'globals/base.html'%}#}
+{% load static %}
+{#{% block body %}#}
+{% block assign_student_to_sg %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="assign_student_to_sg">
+            Assign Student To Student Guide
+        </a>
+
+       
+    </div>
+    <div class="ui active tab" data-tab="assign_student_to_sg">
+        <div class="ui vertical segment">
+
+         <form  method ="POST" action="{% url 'counselling_cell:assign_student_to_sg' %}" enctype="multipart/form-data">
+        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+             {% csrf_token %}
+     
+             <div class="field">
+                 <h4 class="ui blue header">Note : Provide the data in Excel Sheet(xls not xlsx) in following format:</h4>
+                 STUDENT GUIDE ROLL NO. | STUDENT ROLL NO 
+                 <h4 class="ui dividing header"><a href="..\media\assignStudentToSG.xls">Download</a> the sample Excel, fill the data accordingly and then upload the same</h4>
+             </div>
+             
+            <div class="field">
+                 <label>Student Mapped To Student Guide</label>
+                 <input type='file' id='mappedStudent' name='mappedStudent' required accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"> 
+            </div>
+            <div class="field">
+                <label><br></label>
+                <button class="ui primary fluid button" type="submit" onclick="return assign_student_to_sg()">
+                    <!-- <button class="ui primary fluid button" type="submit"> -->
+                        <i class="upload icon"></i> Upload
+                    </button>
+            </div>
+     
+            
+        </div>
+     </form>
+     <div class="ui divider"></div>
+    </div>
+    </div>
+
+{% endblock %}
+{#{% endblock %}#}
+
+{% block javascript %}
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+
+{% endblock %}
+
+
+

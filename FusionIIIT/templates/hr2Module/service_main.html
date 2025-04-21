@@ -1,0 +1,1177 @@
+{%block service%}
+
+
+
+<div class="ui top attached tabular large menu">
+    <a class="active item" data-tab="fifth_serv">E-Service Book</a>
+    <!-- <a class="item" data-tab="fourth_serv">Appraisal form</a> -->
+
+</div>
+
+
+
+
+
+
+<div class="ui bottom attached tab segment" data-tab="fourth_serv">
+    <div id="textSegmentDiv">
+
+        {% comment %}
+        TODO: Loader required?
+        <div class="ui active large text loader" id="loader">
+            Loading ...
+        </div>
+        {% endcomment %}
+
+        <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+
+
+            <!-- active appraisal form -->
+            <div class="description">
+                <div class="ui items">
+                    {% for app in appraisal_active_apps %}
+
+                    <div class="item">
+                        <div class="content">
+                            <div class="header">Status : {{app.status|title}}</div>
+                            {% for app2 in appraisal_requests_active %}
+                            {% if app2.appraisal == app %}
+                            <div class="meta">
+                                <span>HOD Remarks: {{app2.remark_hod}}</span>
+                            </div>
+                            <div class="meta">
+                                <span>Director Remarks: {{app2.remark_director}}</span>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                            <div>
+                                <button class="ui large primary button"
+                                    onclick="$('.ui.modal.view-{{app.id}}').modal('show')">
+                                    View
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ui modal view-{{app.id}}">
+                        <i class="close icon"></i>
+                        <div class="header">
+                            View Appraisal
+                        </div>
+                        <div class="content">
+                            <div class="description">
+
+                                <label>Status : {{ app.status|title }}</label><br>
+                                <label>HOD Remarks: {{app2.remark_hod}}</label><br>
+                                <label>Director Remarks: {{app2.remark_director}}</label><br>
+                                <hr style="height:5px;background-color:#333;">
+
+                                <label><strong>Name: </strong> {{app.applicant.username}} </label><br>
+                                <label><strong>Designation: </strong>{{app.designation}}</label><br>
+                                <label><strong>Discipline: </strong>{{app.discipline}}</label><br>
+                                <label><strong>Specific Field Of Knowledge:
+                                    </strong>{{app.knowledge_field}}</label><br>
+                                <label><strong>Current Research Element:
+                                    </strong>{{app.research_interest}}</label><br>
+                                <hr style="height:5px;background-color:#333;">
+
+                                <h2>&emsp;&emsp;&emsp; 1. &emsp; INSTRUCTION ELEMENT</h2>
+
+                                <h3>1.1 &emsp; Courses Taught at UG/PG Level</h3>
+                                <table>
+                                    <!-- the container to add the TABLE -->
+                                    <tr>
+                                        <th>Semester</th>
+                                        <th>Course-Name</th>
+                                        <th>Course Number</th>
+                                    </tr>
+                                    {% for em in user_courses %}
+                                    <tr>
+                                        <td>{{em.curriculum_id.sem}}</td>
+                                        <td>{{em.curriculum_id.course_id.course_name}}</td>
+                                        <td>{{em.curriculum_id.course_code}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+
+                                <h3>1.2 &emsp; New Courses/Laboratory experiments Introduced and Taught</h3>
+                                <table>
+                                    <!-- the container to add the TABLE -->
+                                    <tr>
+                                        <th>Course-Name</th>
+                                        <th>Course Number</th>
+                                        <th>UG/PG</th>
+                                        <th>YEAR</th>
+                                        <th>Semester</th>
+                                    </tr>
+                                </table>
+
+                                <h3>1.3 &emsp; New Courses/Laboratory experiments Introduced and Taught</h3>
+                                <table>
+                                    <tr>
+                                        <th>Course-Name</th>
+                                        <th>Course Number</th>
+                                        <th>UG/PG</th>
+                                        <th>Type of Activity</th>
+                                        <th>Web/Public</th>
+                                    </tr>
+                                </table>
+                                <hr style="height:5px;background-color:#333;">
+
+
+                                <h2>&emsp;&emsp;&emsp; 2. &emsp; RESEARCH ELEMENT</h2>
+
+                                <h3>2.1 &emsp; Thesis/Research Supervision</h3>
+                                <table>
+                                    <tr>
+                                        <th>Name of Student (MTech/PhD)</th>
+                                        <th>Title Of Thesis / Thesis Topic</th>
+                                        <th>Year</th>
+                                        <th>Semester</th>
+                                        <th>Status(Completed / Submitted / In progress)</th>
+                                    </tr>
+                                    {% for object in thesis %}
+                                    <tr>
+                                        <td>{{object.s_name}}</td>
+                                        <td>{{object.title}}</td>
+                                        <td>{{object.s_year}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+
+                                <h3>2.2 &emsp; Sponsored Research and Consultancy Projects</h3>
+                                <table>
+                                    <tr>
+                                        <th>Title Of Project</th>
+                                        <th>Sponsoring Agency / Organization</th>
+                                        <th>Project Funding (Rs.)</th>
+                                        <th>Project Duration</th>
+                                        <th>Status(Completed / Submitted / In progress)</th>
+                                        <th>Remarks</th>
+                                    </tr>
+                                    {% for object in consultancy_projects %}
+                                    <tr>
+                                        <td>{{object.title}}</td>
+                                        <td>{{object.client}}</td>
+                                        <td>{{object.financial_outlay}}</td>
+                                        <td>{{object.duration}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% for object in research_projects %}
+                                    <tr>
+                                        <td>{{object.title}}</td>
+                                        <td>{{object.funding_agency}}</td>
+                                        <td>{{object.financial_outlay}}</td>
+                                        <td>{{object.finish_date}}</td>
+                                        <td>{{object.status}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+                                <br><br>
+
+                                <label for="other_research_element">
+                                    <h3>2.3 &emsp; Other Research Element:</h3>
+                                </label>
+                                <!-- <textarea name= "other_research_element" rows="2" cols="30" placeholder="such as Development of Research Facilities, Patent(Applied For/Granted), Transfer of Technology, etc"></textarea> -->
+                                <br>
+                                <table>
+                                    {% for object in patents %}
+                                    <tr>
+                                        <td style="background-color:#f1f1c1"><strong>Type</strong></td>
+                                        <td>Patent</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="background-color:#f1f1c1"><strong>Project Number</strong>
+                                        </td>
+                                        <td>{{object.p_no}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="background-color:#f1f1c1"><strong>Title</strong></td>
+                                        <td>{{object.title}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="background-color:#f1f1c1"><strong>Status</strong></td>
+                                        <td>{{object.status}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+                                <br>
+
+                                <table>
+                                    {% for object in tech_transfer %}
+                                    <tr>
+                                        <td style="background-color:#f1f1c1"><strong>Type</strong></td>
+                                        <td>Technology Transfer</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="background-color:#f1f1c1"><strong>Details</strong></td>
+                                        <td>{{object.details}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+                                <br><br>
+
+                                <label for="publications">
+                                    <h3>2.4 &emsp; Publication(s)</h3>
+                                </label>
+                                <br>
+                                <table>
+                                    {% for object in publications %}
+                                    <tr>
+                                        <td style="background-color:#f1f1c1"><strong>Publication Type</strong>
+                                        </td>
+                                        <td>{{object.p_type}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="background-color:#f1f1c1"><strong>Title</strong></td>
+                                        <td>{{object.title}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="background-color:#f1f1c1"><strong>Publisher</strong></td>
+                                        <td>{{object.publisher}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="background-color:#f1f1c1"><strong>Author(s)</strong></td>
+                                        <td>{{object.authors}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="background-color:#f1f1c1"><strong>Publishing Year</strong>
+                                        </td>
+                                        <td>{{object.pyear}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+                                <br><br>
+
+                                <label>
+                                    <h3>2.5 &emsp; Conferences Attended:</h3>
+                                </label>
+                                <label>{{app.conferences_meeting_attended}}</label><br><br>
+
+                                <label>
+                                    <h3>2.6 &emsp; Conferences Organized:</h3>
+                                </label>
+                                <table>
+                                    <tr>
+                                        <th><strong>Name</strong></th>
+                                        <th><strong>Venue</strong></th>
+                                        <th><strong>Role</strong></th>
+                                    </tr>
+                                    {% for object in conferences %}
+                                    <tr>
+                                        <td>{{object.name}}</td>
+                                        <td>{{object.venue}}</td>
+                                        <td>{{object.role1}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+                                <br><br>
+
+                                <label>
+                                    <h3>2.7 &emsp; Professional Recognition</h3>
+                                </label>
+                                <br>
+                                <label>
+                                    <h4>2.7.1 &emsp; Honours/Prizes/Awards/Fellowship etc.</h4>
+                                </label>
+                                <table>
+                                    <tr>
+                                        <th>Award Type</th>
+                                        <th>Details</th>
+                                    </tr>
+                                    {% for object in achievments %}
+                                    <tr>
+                                        <td>{{object.a_type}}</td>
+                                        <td>{{object.details}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+                                <br>
+
+                                <label>
+                                    <h4>2.7.2 &emsp; Expert/Invited Lecture Delivered</h4>
+                                </label>
+                                <table>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Name</th>
+                                        <th>Sponsoring Agency</th>
+                                        <th>Venue</th>
+                                        <th>Role</th>
+                                    </tr>
+                                    {% for object in events %}
+                                    <tr>
+                                        <td>{{object.type}}</td>
+                                        <td>{{object.name}}</td>
+                                        <td>{{object.sponsoring_agency}}</td>
+                                        <td>{{object.venue}}</td>
+                                        <td>{{object.role}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+                                <br>
+
+                                <hr style="height:5px;background-color:#333;">
+
+
+                                <h2>&emsp;&emsp;&emsp; 3. &emsp; ADMINISTRATION ASSIGNMENT</h2>
+                                <br>
+                                <label>
+                                    <h3>3.1 &emsp; Administrative Assignments: </h3>
+                                </label>
+                                <label>{{app.admin_assign}}</label>
+                                <br><br>
+
+                                <label>
+                                    <h3>3.2 &emsp; Service To Institute Community: </h3>
+                                </label>
+                                <label>{{app.sevice_to_ins}}</label>
+                                <br><br>
+
+                                <label>
+                                    <h3>3.3 &emsp; Any Other Contribution: </h3>
+                                </label>
+                                <label>{{app.extra_info}}</label>
+                                <br><br>
+                                <hr style="height:5px;background-color:#333;">
+
+                                <label>
+                                    <h2>&emsp;&emsp;&emsp; 4. &emsp;SELF-APPRAISAL BY FACULTY</h2>
+                                </label>
+                                <label>{{app.faculty_comments}}</label>
+                                <br><br>
+
+                                <hr style="height:5px;background-color:#333;">
+                                <br><br>
+
+
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <div class="ui black deny button">
+                                Cancel
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+
+            <!-- archived appraisal form -->
+
+            <div class="description">
+                <div class="ui items">
+                    {% for app in appraisal_archive_apps %}
+                    <div class="item">
+                        <div class="content">
+                            <div class="header">Status : {{app.status|title }}</div>
+                            {% for app2 in appraisal_requests_archived %}
+                            {% if app2.appraisal == app %}
+                            <div class="meta">
+                                <span>HOD Remarks: {{app2.remark_hod}}</span>
+                            </div>
+                            <div class="meta">
+                                <span>Director Remarks: {{app2.remark_director}}</span>
+                            </div>
+                            <div>
+                                <button class="ui large primary button"
+                                    onclick="$('.ui.modal.view-{{app.id}}').modal('show')">
+                                    View
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ui modal view-{{app.id}}">
+                        <i class="close icon"></i>
+                        <div class="header">
+                            View Appraisal
+                        </div>
+                        <div class="content">
+                            <div class="description">
+
+                                <label>Status : {{ app.status|title }}</label><br>
+                                <label>HOD Remarks: {{app2.remark_hod}}</label><br>
+                                <label>Director Remarks: {{app2.remark_director}}</label><br>
+                                <hr style="height:5px;background-color:#333;">
+
+                                <label><strong>Name: </strong> {{app.applicant.username}} </label><br>
+                                <label><strong>Designation: </strong>{{app.designation}}</label><br>
+                                <label><strong>Discipline: </strong>{{app.discipline}}</label><br>
+                                <label><strong>Specific Field Of Knowledge:
+                                    </strong>{{app.knowledge_field}}</label><br>
+                                <label><strong>Current Research Element:
+                                    </strong>{{app.research_interest}}</label><br>
+                                <hr style="height:5px;background-color:#333;">
+
+                                <h2>&emsp;&emsp;&emsp; 1. &emsp; INSTRUCTION ELEMENT</h2>
+
+                                <h3>1.1 &emsp; Courses Taught at UG/PG Level</h3>
+                                <table>
+                                    <!-- the container to add the TABLE -->
+                                    <tr>
+                                        <th>Semester</th>
+                                        <th>Course-Name</th>
+                                        <th>Course Number</th>
+                                    </tr>
+                                    {% for em in user_courses %}
+                                    <tr>
+                                        <td>{{em.curriculum_id.sem}}</td>
+                                        <td>{{em.curriculum_id.course_id.course_name}}</td>
+                                        <td>{{em.curriculum_id.course_code}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+
+                                <h3>1.2 &emsp; New Courses/Laboratory experiments Introduced and Taught</h3>
+                                <table>
+                                    <!-- the container to add the TABLE -->
+                                    <tr>
+                                        <th>Course-Name</th>
+                                        <th>Course Number</th>
+                                        <th>UG/PG</th>
+                                        <th>YEAR</th>
+                                        <th>Semester</th>
+                                    </tr>
+                                </table>
+
+                                <h3>1.3 &emsp; New Courses/Laboratory experiments Introduced and Taught</h3>
+                                <table>
+                                    <tr>
+                                        <th>Course-Name</th>
+                                        <th>Course Number</th>
+                                        <th>UG/PG</th>
+                                        <th>Type of Activity</th>
+                                        <th>Web/Public</th>
+                                    </tr>
+                                </table>
+                                <hr style="height:5px;background-color:#333;">
+
+
+                                <h2>&emsp;&emsp;&emsp; 2. &emsp; RESEARCH ELEMENT</h2>
+
+                                <h3>2.1 &emsp; Thesis/Research Supervision</h3>
+                                <table>
+                                    <tr>
+                                        <th>Name of Student (MTech/PhD)</th>
+                                        <th>Title Of Thesis / Thesis Topic</th>
+                                        <th>Year</th>
+                                        <th>Semester</th>
+                                        <th>Status(Completed / Submitted / In progress)</th>
+                                    </tr>
+                                    {% for object in thesis %}
+                                    <tr>
+                                        <td>{{object.s_name}}</td>
+                                        <td>{{object.title}}</td>
+                                        <td>{{object.s_year}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+
+                                <h3>2.2 &emsp; Sponsored Research and Consultancy Projects</h3>
+                                <table>
+                                    <tr>
+                                        <th>Title Of Project</th>
+                                        <th>Sponsoring Agency / Organization</th>
+                                        <th>Project Funding (Rs.)</th>
+                                        <th>Project Duration</th>
+                                        <th>Status(Completed / Submitted / In progress)</th>
+                                        <th>Remarks</th>
+                                    </tr>
+                                    {% for object in consultancy_projects %}
+                                    <tr>
+                                        <td>{{object.title}}</td>
+                                        <td>{{object.client}}</td>
+                                        <td>{{object.financial_outlay}}</td>
+                                        <td>{{object.duration}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% for object in research_projects %}
+                                    <tr>
+                                        <td>{{object.title}}</td>
+                                        <td>{{object.funding_agency}}</td>
+                                        <td>{{object.financial_outlay}}</td>
+                                        <td>{{object.finish_date}}</td>
+                                        <td>{{object.status}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+                                <br><br>
+
+                                <label for="other_research_element">
+                                    <h3>2.3 &emsp; Other Research Element:</h3>
+                                </label>
+                                <!-- <textarea name= "other_research_element" rows="2" cols="30" placeholder="such as Development of Research Facilities, Patent(Applied For/Granted), Transfer of Technology, etc"></textarea> -->
+                                <br>
+                                <table>
+                                    {% for object in patents %}
+                                    <tr>
+                                        <td style="background-color:#f1f1c1"><strong>Type</strong></td>
+                                        <td>Patent</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="background-color:#f1f1c1"><strong>Project Number</strong>
+                                        </td>
+                                        <td>{{object.p_no}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="background-color:#f1f1c1"><strong>Title</strong></td>
+                                        <td>{{object.title}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="background-color:#f1f1c1"><strong>Status</strong></td>
+                                        <td>{{object.status}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+                                <br>
+
+                                <table>
+                                    {% for object in tech_transfer %}
+                                    <tr>
+                                        <td style="background-color:#f1f1c1"><strong>Type</strong></td>
+                                        <td>Technology Transfer</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="background-color:#f1f1c1"><strong>Details</strong></td>
+                                        <td>{{object.details}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+                                <br><br>
+
+                                <label for="publications">
+                                    <h3>2.4 &emsp; Publication(s)</h3>
+                                </label>
+                                <br>
+                                <table>
+                                    {% for object in publications %}
+                                    <tr>
+                                        <td style="background-color:#f1f1c1"><strong>Publication Type</strong>
+                                        </td>
+                                        <td>{{object.p_type}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="background-color:#f1f1c1"><strong>Title</strong></td>
+                                        <td>{{object.title}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="background-color:#f1f1c1"><strong>Publisher</strong></td>
+                                        <td>{{object.publisher}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="background-color:#f1f1c1"><strong>Author(s)</strong></td>
+                                        <td>{{object.authors}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="background-color:#f1f1c1"><strong>Publishing Year</strong>
+                                        </td>
+                                        <td>{{object.pyear}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+                                <br><br>
+
+                                <label>
+                                    <h3>2.5 &emsp; Conferences Attended:</h3>
+                                </label>
+                                <label>{{app.conferences_meeting_attended}}</label><br><br>
+
+                                <label>
+                                    <h3>2.6 &emsp; Conferences Organized:</h3>
+                                </label>
+                                <table>
+                                    <tr>
+                                        <th><strong>Name</strong></th>
+                                        <th><strong>Venue</strong></th>
+                                        <th><strong>Role</strong></th>
+                                    </tr>
+                                    {% for object in conferences %}
+                                    <tr>
+                                        <td>{{object.name}}</td>
+                                        <td>{{object.venue}}</td>
+                                        <td>{{object.role1}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+                                <br><br>
+
+                                <label>
+                                    <h3>2.7 &emsp; Professional Recognition</h3>
+                                </label>
+                                <br>
+                                <label>
+                                    <h4>2.7.1 &emsp; Honours/Prizes/Awards/Fellowship etc.</h4>
+                                </label>
+                                <table>
+                                    <tr>
+                                        <th>Award Type</th>
+                                        <th>Details</th>
+                                    </tr>
+                                    {% for object in achievments %}
+                                    <tr>
+                                        <td>{{object.a_type}}</td>
+                                        <td>{{object.details}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+                                <br>
+
+                                <label>
+                                    <h4>2.7.2 &emsp; Expert/Invited Lecture Delivered</h4>
+                                </label>
+                                <table>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Name</th>
+                                        <th>Sponsoring Agency</th>
+                                        <th>Venue</th>
+                                        <th>Role</th>
+                                    </tr>
+                                    {% for object in events %}
+                                    <tr>
+                                        <td>{{object.type}}</td>
+                                        <td>{{object.name}}</td>
+                                        <td>{{object.sponsoring_agency}}</td>
+                                        <td>{{object.venue}}</td>
+                                        <td>{{object.role}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+                                <br>
+
+                                <hr style="height:5px;background-color:#333;">
+
+
+                                <h2>&emsp;&emsp;&emsp; 3. &emsp; ADMINISTRATION ASSIGNMENT</h2>
+                                <br>
+                                <label>
+                                    <h3>3.1 &emsp; Administrative Assignments: </h3>
+                                </label>
+                                <label>{{app.admin_assign}}</label>
+                                <br><br>
+
+                                <label>
+                                    <h3>3.2 &emsp; Service To Institute Community: </h3>
+                                </label>
+                                <label>{{app.sevice_to_ins}}</label>
+                                <br><br>
+
+                                <label>
+                                    <h3>3.3 &emsp; Any Other Contribution: </h3>
+                                </label>
+                                <label>{{app.extra_info}}</label>
+                                <br><br>
+                                <hr style="height:5px;background-color:#333;">
+
+                                <label>
+                                    <h2>&emsp;&emsp;&emsp; 4. &emsp;SELF-APPRAISAL BY FACULTY</h2>
+                                </label>
+                                <label>{{app.faculty_comments}}</label>
+                                <br><br>
+
+                                <hr style="height:5px;background-color:#333;">
+                                <br><br>
+
+
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <div class="ui black deny button">
+                                Cancel
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- archived appraidal form ended -->
+
+        </div>
+    </div>
+
+</div>
+
+
+<div class="ui bottom attached active tab segment service_book" data-tab="fifth_serv" id="service_book">
+
+
+
+    <div id="textSegmentDiv">
+
+        {% comment %}
+
+        <div class="ui active large text loader" id="loader">
+            Loading ...
+        </div>
+        {% endcomment %}
+
+    </div>
+
+
+    <div>
+
+
+
+        <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+
+
+
+
+
+            <div class="ui one cards" style="padding: 2px;">
+                <div class="ui blue card" id="noti">
+                    <div class="content">
+
+                        <table class="ui orange table">
+                            <thead>
+                                <th>Personal Details:-</th>
+                            </thead>
+                            <tbody>
+
+                                <tr>
+                                    <td>ID</td>
+                                    <td>{{user.id}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Title</td>
+                                    <td>{{user.extrainfo.title}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Type</td>
+                                    <td>{{user.extrainfo.user_type}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>{{user.extrainfo.user.first_name}}
+                                        {{user.extrainfo.user.last_name}}</td>
+
+                                </tr>
+                                <tr>
+                                    <td>email</td>
+                                    <td>{{user.extrainfo.user.email}}</td>
+
+                                </tr>
+
+                                <tr>
+                                    <td>Gender</td>
+                                    <td>{{user.extrainfo.sex}}</td>
+
+                                </tr>
+                                <tr>
+                                    <td>date_of_birth</td>
+                                    <td>{{user.extrainfo.date_of_birth}}</td>
+
+                                </tr>
+                                <tr>
+                                    <td>address</td>
+                                    <td>{{user.extrainfo.address}}</td>
+
+                                </tr>
+                                <tr>
+                                    <td>Phone number</td>
+
+                                    <td>{{user.extrainfo.phone_no}}</td>
+
+                                </tr>
+
+                                <tr>
+                                    <td>Date Of joining</td>
+                                    <td>{{user.faculty_about.doj}}</td>
+                                </tr>
+                                <tr>
+                                    <td>department</td>
+                                    <td>{{user.extrainfo.department}}</td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+
+
+
+                    </div>
+                </div>
+            </div>
+
+
+
+
+
+            {% if 'staff' != extrainfo.user_type %}
+
+            {% endif %}
+
+            <!-- work Assignment -->
+
+            <!-- <div class="ui one cards" style="padding: 2px;">
+
+
+                <div class="ui blue card" id="noti">
+                    <div class="content">
+
+                        <table class="ui orange table">
+                            <thead>
+                                <th>workAssignemnt :-</th>
+                                <tr>
+                                    <th>Sr.</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Job Title</th>
+                                    <th>Orders Copy</th>
+                                </tr>
+
+                            </thead>
+                            <tbody>
+
+
+
+
+                                {% if not workAssignment %}
+                                <h1>No entry found</h1>
+                                {% endif%}
+
+                                {% for serviceBook in workAssignment %}
+
+
+                                <tr>
+                                    <td>
+                                        {{forloop.counter }}.
+                                    </td>
+                                    <td id="ach{{ forloop.counter }}A">{{serviceBook.start_date}}</td>
+                                    <td id="ach{{ forloop.counter }}B">{{serviceBook.end_date}}</td>
+                                    <td id="ach{{ forloop.counter }}C">{{serviceBook.job_title}}</td>
+                                    <td id="ach{{ forloop.counter }}C">
+
+                                        <a target="_blank" href="{{serviceBook.orders_copy.url}}"><i
+                                                class="large attach black icon"></i>
+                                        </a>
+
+
+                                    </td>
+
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+
+
+
+
+
+
+            </div> -->
+
+            <!-- workassignemnt end -->
+
+
+            <!-- Lien -->
+            <div class="ui one cards" style="padding: 2px;">
+
+
+                <div class="ui blue card" id="noti">
+                    <div class="content">
+
+                        <table class="ui orange table">
+                            <thead>
+                                {% if lienServiceBooks %}
+                                <th>Lien :-</th>
+                                {% elif not lienServiceBooks %}
+                                <th>No Entries :-</th>
+                                <!-- <h1>Awards</h1> -->
+                                {% endif%}
+                                <tr>
+                                    <!-- <th>Sr.</th> -->
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Job Title</th>
+                                    <th>Organisation</th>
+                                    <th>Description</th>
+                                    <th>Salary Source</th>
+                                    <th>Designation</th>
+
+                                </tr>
+                            <tbody>
+
+                                <h1>Lien :</h1>
+
+                                <!-- {% if not lienServiceBooks %}
+                                <h1>No entry found</h1>
+                                {% endif%} -->
+
+
+                                {% for serviceBook in lienServiceBooks%}
+
+
+                                <tr>
+                                    <td>
+                                        {{forloop.counter }}.
+                                    </td>
+                                    <td id="ach{{ forloop.counter }}A">{{serviceBook.start_date}}</td>
+                                    <td id="ach{{ forloop.counter }}B">{{serviceBook.end_date}}</td>
+                                    <td id="ach{{ forloop.counter }}C">{{serviceBook.job_title}}</td>
+                                    <td id="ach{{ forloop.counter }}C">{{serviceBook.organisation}}</td>
+                                    <td id="ach{{ forloop.counter }}C">{{serviceBook.description}}</td>
+
+
+                                </tr>
+
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+
+
+
+
+
+
+            </div>
+
+            <!-- Deputation -->
+            <div class="ui one cards" style="padding: 2px;">
+
+
+                <div class="ui blue card" id="noti">
+                    <div class="content">
+
+                        <table class="ui orange table">
+                            <thead>
+                                {% if deputationServiceBooks %}
+                                <th>Deputation :-</th>
+                                {% elif not deputationServiceBooks %}
+                                <th>No Entries :-</th>
+                                {% endif%}
+                                <tr>
+                                    <!-- <th>Sr.</th> -->
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Job Title</th>
+                                    <th>Organisation</th>
+                                    <th>Description</th>
+                                    <th>Salary Source</th>
+                                    <th>Designation</th>
+                                </tr>
+
+                            </thead>
+                            <tbody>
+
+                                <h1>Deputations :</h1>
+
+                                <!-- {% if not deputationServiceBooks %}
+                                No entry found
+                                {% endif%} -->
+
+
+                                {% for serviceBook in deputationServiceBooks%}
+
+
+                                <tr>
+                                    <td>
+                                        {{forloop.counter }}.
+                                    </td>
+                                    <td id="ach{{ forloop.counter }}A">{{serviceBook.start_date}}</td>
+                                    <td id="ach{{ forloop.counter }}B">{{serviceBook.end_date}}</td>
+                                    <td id="ach{{ forloop.counter }}C">{{serviceBook.job_title}}</td>
+                                    <td id="ach{{ forloop.counter }}C">{{serviceBook.organisation}}</td>
+                                    <td id="ach{{ forloop.counter }}C">{{serviceBook.description}}</td>
+
+
+                                </tr>
+
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+
+
+
+
+
+
+            </div>
+
+            <div class="ui one cards" style="padding: 2px;">
+                <div class="ui blue card" id="noti">
+                    <div class="content">
+
+                        <table class="ui orange table">
+                            <thead>
+                                {% if awards %}
+                                <th>Awards :-</th>
+                                {% elif not awards %}
+                                <th>No Entries :-</th>
+                                {% endif%}
+                                
+                                <tr>
+                                    <th>Sr.</th>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Achievement Date</th>
+                                </tr>
+
+                            </thead>
+                            <tbody>
+
+                                <h1>Awards</h1>
+
+                                {% for serviceBook in awards %}
+
+
+                                <tr>
+                                    <td>
+                                        {{forloop.counter }}.
+                                    </td>
+                                    <td id="ach{{ forloop.counter }}A">{{serviceBook.award_name}}</td>
+                                    <td id="ach{{ forloop.counter }}B">{{serviceBook.award_type}}</td>
+                                    <td id="ach{{ forloop.counter }}C">{{serviceBook.achievement_date}}</td>
+                                    <!-- <td id="ach{{ forloop.counter }}C">
+
+                                        <a target="_blank" href="{{serviceBook.orders_copy.url}}"><i
+                                                class="large attach black icon"></i>
+                                        </a>
+
+                                    </td> -->
+
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- others -->
+            <div class="ui one cards" style="padding: 2px;">
+
+
+                <div class="ui blue card" id="noti">
+                    <div class="content">
+
+                        <table class="ui orange table">
+                            <thead>
+                                {% if otherServiceBooks %}
+                                <th>Others :-</th>
+                                {% elif not otherServiceBooks %}
+                                <th>No Entries :-</th>
+                                {% endif%}
+                                <tr>
+                                    <!-- <th>Sr.</th> -->
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Job Title</th>
+                                    <th>Organisation</th>
+                                    <th>Description</th>
+                                    <th>Salary Source</th>
+                                    <th>Designation</th>
+                                </tr>
+
+                            </thead>
+                            <tbody>
+
+                                <h1>Others :</h1>
+
+                                <!-- {% if not otherServiceBooks %}
+                                <h1> No entry found</h1>
+                                {% endif%} -->
+
+
+                                {% for serviceBook in otherServiceBooks%}
+
+
+
+                                <tr>
+                                    <td>
+                                        {{forloop.counter }}.
+                                    </td>
+                                    <td id="ach{{ forloop.counter }}A">{{serviceBook.start_date}}</td>
+                                    <td id="ach{{ forloop.counter }}B">{{serviceBook.end_date}}</td>
+                                    <td id="ach{{ forloop.counter }}C">{{serviceBook.job_title}}</td>
+                                    <td id="ach{{ forloop.counter }}C">{{serviceBook.organisation}}</td>
+                                    <td id="ach{{ forloop.counter }}C">{{serviceBook.description}}</td>
+
+
+                                </tr>
+
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+
+
+
+
+
+
+            </div>
+
+
+
+
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+
+
+
+{% comment %}The central-rail segment ends here!{% endcomment %}
+
+
+
+
+
+
+{% endblock %}
+
+{% block javascript %}
+
+<script
+    src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+<script>
+    //----------------------calender--------------------------------
+
+    $('#rangestart').calendar({
+        monthFirst: false,
+        type: 'date',
+        minDate: new Date(getToday().getFullYear(), getToday().getMonth(), getToday().getDate()),
+        formatter: {
+            date: function (date, settings) {
+                if (!date) return '';
+                var day = date.getDate();
+                var month = date.getMonth() + 1;
+                var year = date.getFullYear();
+                return year + '-' + month + '-' + day;
+            }
+        }
+    });
+
+
+
+
+
+
+
+
+</script>
+{% endblock %}

@@ -1,0 +1,627 @@
+{% load static %}
+
+{% block projects %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}" data-tab="research projects">
+            Research Projects
+        </a>
+
+        <a class="{% if mark5 == 1 %}active item{% else %} item {% endif %}" data-tab="Consultancy project">
+            Consultancy Projects
+        </a>
+
+        <a class="{% if mark6 == 1 %}active item{% else %} item {% endif %}" data-tab="patents">
+            Patents
+        </a>
+        <a class="{% if mark7 == 1 %}active item{% else %} item {% endif %}" data-tab="technology transfer">
+            Technology Transfers
+        </a>
+
+    </div>
+
+
+    {% comment %}The  Research Project segment starts here!{% endcomment %}
+    <div class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="research projects">
+        {% if request.user == user %}<h4 class="ui dividing header" id="changes8">Add a Research Project</h4>
+        <form class="ui form"  method="post" action="{% url 'eis:project_insert' %}">
+            {% csrf_token %}
+            <div style="display: none;"> <input type="text" id="researchZ" name="project_id"></div>
+            <div class="field">
+                <div class="two fields">
+                    <div class="field">
+                        <label>Project Incharge(PI)</label>
+                        <input placeholder="(PI)" type="text" id="researchA" name="pi" required>
+                    </div>
+
+                    <div class="field">
+                        <label>Co-Project Incharge(CO-PI)</label>
+                        <input placeholder="(CO-PI)" type="text" name="co_pi" id="researchE" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Funding Agency</label>
+                <div class="fields">
+                    <div class="twelve wide field">
+                        <input placeholder="Publisher" id="researchC" type="text" name="funding_agency" required>
+                    </div>
+
+                    <div class="four wide field">
+                        <div class="ui fluid search selection dropdown">
+                            <input type="hidden" name="status" id="researchF" required>
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Status</div>
+                            <div class="menu">
+                                <div class="item" data-value="Ongoing">Ongoing</div>
+                                <div class="item" data-value="Completed">Completed</div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="fields">
+                    <div class="four wide field">
+                        <div class="field">
+                            <label>Submission Date</label>
+                             <div class="ui calendar" id="rangestart2">
+                                      <div class="ui input left icon">
+                                        <i class="calendar icon"></i>
+                                        <input type="text" placeholder="Submission" id="researchD" name="sub">
+                                      </div>
+                                </div>
+                        </div>
+                    </div>
+                    <div class="four wide field">
+                        <div class="field">
+                            <label>Start Date</label>
+                             <div class="ui calendar" id="rangestart">
+                                      <div class="ui input left icon">
+                                        <i class="calendar icon"></i>
+                                        <input type="text" placeholder="Start" name="start" id="researchG" required>
+                                      </div>
+                                </div>
+                        </div>
+                    </div>
+                    <div class="four wide field">
+                        <div class="field">
+                            <label>Expected Finish Date</label>
+                             <div class="ui calendar" id="rangeend">
+                                      <div class="ui input left icon">
+                                        <i class="calendar icon"></i>
+                                        <input type="text" placeholder="End" name="end" id="researchH">
+                                      </div>
+                                </div>
+                        </div>
+                    </div>
+                    <div class="four wide field">
+                        <div class="field">
+                            <label>Financial Outlay</label>
+                            <input placeholder="" type="text" name="financial_outlay" id="researchI" required>
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <div class="fields">
+                    <div class="fourteen wide field">
+                        <div class="field">
+                            <label>Title of Project</label>
+                            <input placeholder="Title" id="researchB" type="text" name="title" required>
+                        </div>
+                    </div>
+
+                    
+                       
+                    
+                </div>
+
+
+            </div>
+             <button class="ui right floated primary button" type="submit">
+                            Save<i class="ui save icon right floated"></i>
+            </button>
+        </form>
+        <br>
+        {% endif %}
+        <h4 class="ui dividing header">Report:</h4>
+        <div class="pagination">
+            <h4> <span class="step-links" >
+                {% if research_projects.has_previous %}
+                    <a href="?page4=1" >&laquo; first</a>
+                    <a href="?page4={{ research_projects.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ research_projects.number }} of {{ research_projects.paginator.num_pages }}.
+                </span>
+
+                {% if research_projects.has_next %}
+                    <a href="?page4={{  research_projects.next_page_number }}">next</a>
+                    <a href="?page4={{ research_projects.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span></h3>
+        </div>
+       <!--scrollbar -->
+  <div style="width: 45vw; height: 500px; overflow-y: scroll">
+        <table class="ui celled table">
+            <thead>
+            <tr>
+                <th class="sorted ascending" >Sr.</th>
+                <th  >PI/CO-PI</th>
+                <th >Title of Paper</th>
+                <th >Funding Agency</th>
+
+                <th >Other Details</th>
+                {% if request.user == user %}
+                <th >Action</th>
+                {% endif %}
+            </tr>
+            </thead>
+            {% block viewprojectmodal %}
+                        {% include 'eisModulenew/viewprojectmodal.html' %}
+                    {% endblock %}
+
+            <tbody>
+            {% for project in projects %}
+                <tr>
+                    <td id="research{{ forloop.counter }}Z"><div style="display: none;">{{ project.id }}</div>{{ forloop.counter }}.</td>
+                    <td id="research{{ forloop.counter }}A"><b>PI: </b>{{ project.pi }}<br><b>Co-PI: </b>{{ project.co_pi }}</td>
+                    <td id="research{{ forloop.counter }}B">{{ project.title }}</td>
+                    <td id="research{{ forloop.counter }}C">{{ project.funding_agency }}</td>
+                    <td id="research{{ forloop.counter }}D">
+                        <input type="button" id="view"
+                           class="ui red mini button left floated" 
+                           onclick="viewproject('{{ forloop.counter }}', '{{ project.pi }}',
+                            '{{ project.co_pi }}','{{ project.title }}','{{ project.funding_agency }}',
+                            '{{ project.date_submission }}','{{ project.start_date }}','{{ project.finish_date }}',
+                            '{{ project.financial_outlay }}','{{ project.status }}')" value = "View">
+
+                    </td>
+                    {% if request.user == user %}
+                    <td>
+                    <a class="ui button left floated" onclick="updateRESEARCH({{ forloop.counter }})"><i id="bt" class="edit icon" ></i></a>     
+                    <a class="ui blue button left floated " href="{% url 'eis:emp_research_projectsDelete' project.pk forloop.counter 1%}"><i id="bt" class="ui red delete icon"></i>
+                                </a>
+                     </td>
+                     {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        <div class="pagination">
+            <h4> <span class="step-links" >
+                {% if research_projects.has_previous %}
+                    <a href="?page4=1" >&laquo; first</a>
+                    <a href="?page4={{ research_projects.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ research_projects.number }} of {{ research_projects.paginator.num_pages }}.
+                </span>
+
+                {% if research_projects.has_next %}
+                    <a href="?page4={{  research_projects.next_page_number }}">next</a>
+                    <a href="?page4={{ research_projects.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span></h4>
+        </div>
+    </div>
+
+
+    {% comment %}The Research project segment ends here!{% endcomment %}
+
+
+
+    {% comment %}The Consultancy Project segment starts here!{% endcomment %}
+    <div class="{% if mark5 == 1 %}ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="Consultancy project">
+        {% if request.user == user %}<h4 class="ui dividing header"  id="changes9">Add a Consultancy Project</h4>
+        <form class="ui form"  method="post" action="{% url 'eis:consult_insert' %}">
+            {% csrf_token %}
+            <div style="display: none;"> <input type="text" id="consultancyZ" name="consultancy_id"></div>
+            <div class="field">
+                <div class="two fields">
+                    <div class="field">
+                        <label>Consultant</label>
+                        <input placeholder="Consultant" type="text"   name="consultants"  id="consultancyA" required>
+                    </div>
+
+                    <div class="field">
+                        <label>Client</label>
+                        <input placeholder="Client" type="text"  name="client" id="consultancyC" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Financial Outlay</label>
+                <div class="fields">
+                    <div class="six wide field">
+                        <input placeholder="Publisher" type="number"   name="financial_outlay"  id="consultancyD" required>
+                    </div>
+
+                    <div class="four wide field">
+                        <div class="field">
+                             <div class="ui calendar" id="rangestart1">
+                                      <div class="ui input left icon">
+                                        <i class="calendar icon"></i>
+                                        <input type="text" placeholder="Start" name="start" id="consultancyE" required>
+                                      </div>
+                                </div>
+                        </div>
+                    </div>
+
+                    <div class="four wide field">
+
+                           <!--  <label>Period Of Consultancy</label> -->
+                              <div class="ui calendar" id="rangeend1">
+                                 <div class="ui input left icon">
+                                        <i class="calendar icon"></i>
+                                        <input type="text" placeholder="End" name="end" id="consultancyF" required>
+                                      </div>
+                            </div>
+
+
+                    </div>
+                </div>
+
+                <div class="fields">
+                    <div class="fourteen wide field">
+                        <div class="field">
+                            <label>Title</label>
+                            <input placeholder="Title" type="text"   name="title" id="consultancyB" required>
+                        </div>
+                    </div>
+
+                        
+                    
+                </div>
+
+            </div>
+            <button class="ui right floated primary button" type="submit">
+                            Save<i class="ui save icon right floated"></i>
+            </button>
+        </form>
+        <br>
+        {% endif %}
+        <h4 class="ui dividing header">Report:</h4>
+        <div class="pagination">
+            <h4> <span class="step-links" >
+                {% if consultancy_projects.has_previous %}
+                    <a href="?page5=1" >&laquo; first</a>
+                    <a href="?page5={{ consultancy_projects.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ consultancy_projects.number }} of {{ consultancy_projects.paginator.num_pages }}.
+                </span>
+
+                {% if consultancy_projects.has_next %}
+                    <a href="?page5={{  consultancy_projects.next_page_number }}">next</a>
+                    <a href="?page5={{ consultancy_projects.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span></h4>
+        </div>
+       <!--scrollbar -->
+  <div style="width: 45vw; height: 500px; overflow-y: scroll">
+        <table class="ui celled table">
+            <thead>
+            <tr>
+                <th class="sorted ascending" >Sr.</th>
+                <th  >Consultant(s)</th>
+                <th  >Title </th>
+                <th  >Client</th>
+                <th >Financial Outlay</th>
+                <th >Period </th>
+                {% if request.user == user %}
+                <th >Action</th>
+                {% endif %}
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for consult in consultancy %}
+                <tr id="r1">
+                     <td id="consultancy{{ forloop.counter }}Z"><div style="display: none;">{{ consult.id }}</div>{{ forloop.counter }}.</td>
+                     <td id="consultancy{{ forloop.counter }}A">{{ consult.consultants }}</td>
+                     <td id="consultancy{{ forloop.counter }}B">{{ consult.title }}</td>
+                     <td id="consultancy{{ forloop.counter }}C">{{ consult.client }}</td>
+                     <td id="consultancy{{ forloop.counter }}D">{{ consult.financial_outlay }}</td>
+                     <td id="consultancy{{ forloop.counter }}E">From: {{ consult.start_date }}<br/>To: {{ consult.end_date }}</td>
+                     {% if request.user == user %}
+                    <td><a class="ui button left floated" onclick="updateCONSULTANCY({{ forloop.counter }})"><i id="bt" class="edit icon" ></i></a>
+                        <a class="ui blue button left floated" href="{% url 'eis:emp_consultancy_projectsDelete' consult.pk forloop.counter 2 %}"><i id="bt" class="red delete icon" "></i> </a> </td>{% endif %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        <div class="pagination">
+            <h4> <span class="step-links" >
+                {% if consultancy_projects.has_previous %}
+                    <a href="?page5=1" >&laquo; first</a>
+                    <a href="?page5={{ consultancy_projects.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ consultancy_projects.number }} of {{ consultancy_projects.paginator.num_pages }}.
+                </span>
+
+                {% if consultancy_projects.has_next %}
+                    <a href="?page5={{  consultancy_projects.next_page_number }}">next</a>
+                    <a href="?page5={{ consultancy_projects.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span></h4>
+        </div>
+    </div>
+    {% comment %}The Consultancy Project ends here!{% endcomment %}
+
+
+    {% comment %}The Patent segment starts here!{% endcomment %}
+    <div class="{% if mark6 == 1 %}ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="patents">
+        {% if request.user == user %}<h4 class="ui dividing header" id="changes10">Add a  Patent</h4>
+        <form class="ui form"  method="post" action="{% url 'eis:patent_insert' %}"  onsubmit="return validatepatent()">
+            {% csrf_token %}
+            <div style="display: none;"> <input type="text" id="patentZ" name="patent_id"></div>
+            <div class="field">
+                <div class="two fields">
+                    <div class="field">
+                        <label>Patent Number</label>
+                        <input placeholder="Patent Number" id="patentA" type="text" name="p_no" required>
+                    </div>
+
+                    <div class="field">
+                        <label><br></label>
+                        <div class="ui fluid search selection dropdown">
+                            <input type="hidden" name="status"  id="patentC" required>
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Status</div>
+                            <div class="menu">
+                                <div class="item" data-value="Filed">Filed</div>
+                                <div class="item" data-value="Granted">Granted </div>
+                                <div class="item" data-value="Published">Published</div>
+                                <div class="item" data-value="Owned">Owned</div>
+                               
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Earning(in Rs.)</label>
+                <div class="fields">
+                    <div class="seven wide field">
+                        <input placeholder="Publisher" id="patentE" type="number" name="earnings" required>
+                    </div>
+
+                    <div class="four wide field">
+                        <div class="ui fluid search selection dropdown">
+                            <input type="hidden" name="year" id="patentD" required>
+                            <i class="dropdown icon" ></i>
+                            <div class="default text">Year</div>
+                            <div class="menu">
+                                <div class="item" data-value="2019">2019</div>
+                                <div class="item" data-value="2018">2018</div>
+                                <div class="item" data-value="2017">2017</div>
+                                <div class="item" data-value="2016">2016</div>
+                                <div class="item" data-value="2015">2015</div>
+                                <div class="item" data-value="2014">2014</div>
+                                <div class="item" data-value="2013">2013</div>
+                                <div class="item" data-value="2012">2012</div>
+                                <div class="item" data-value="2011">2011</div>
+                                <div class="item" data-value="2010">2010</div>
+                                <div class="item" data-value="2009">2009</div>
+                                <div class="item" data-value="2008">2008</div>
+                                <div class="item" data-value="2007">2007</div>
+                                <div class="item" data-value="2006">2006</div>
+                                <div class="item" data-value="2005">2005</div>
+                                <div class="item" data-value="2004">2004</div>
+                                <div class="item" data-value="2003">2003</div>
+                                <div class="item" data-value="2002">2002</div>
+                                <div class="item" data-value="2001">2001</div>
+                                <div class="item" data-value="2000">2000</div>
+                            </div>
+                        </div>
+                    </div>
+                          <div class="four wide field">
+                              <div class="ui fluid search selection dropdown">
+                            <input type="hidden" name="month"  id="patentX"  required>
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Select Month</div>
+                            <div class="menu">
+                               {% for i in "xxxxxxxxxxxx" %}
+                                <div class="item" data-value="{{ forloop.counter }}">{{ forloop.counter }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fields">
+                    <div class="fourteen wide field">
+                        <div class="field">
+                            <label>Title</label>
+                            <input placeholder="Title" id="patentB" type="text" name="title" required>
+                        </div>
+                    </div>
+
+                    
+                       
+                    
+                </div>
+
+            </div>
+            <button class="ui right floated primary button" type="submit">
+                            Save<i class="ui save icon right floated"></i>
+            </button>
+        </form>
+        <br>
+        {% endif %}
+        <h4 class="ui dividing header">Report:</h4>
+
+        <div class="pagination">
+            <h4> <span class="step-links" >
+                {% if patents.has_previous %}
+                    <a href="?page6=1" >&laquo; first</a>
+                    <a href="?page6={{ patents.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ patents.number }} of {{ patents.paginator.num_pages }}.
+                </span>
+
+                {% if patents.has_next %}
+                    <a href="?page6={{  patents.next_page_number }}">next</a>
+                    <a href="?page6={{ patents.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span></h4>
+        </div>
+          <!--scrollbar -->
+  <div style="width: 45vw; height: 500px; overflow-y: scroll">
+     
+        <table class="ui celled table">
+            <thead>
+            <tr>
+                <th class="sorted ascending" >Sr.</th>
+                <th >Patent No.</th>
+                <th >Title </th>
+                <th >Status</th>
+                <th >Year</th>
+                <th >Earning in (Rs.)</th>
+                {% if request.user == user %}
+                <th >Action</th>
+                {% endif %}
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for patent in patents %}
+                <tr id="r1">
+                     <td id="patent{{ forloop.counter }}Z"><div style="display: none;">{{ patent.id }}</div>{{ forloop.counter}}.</td>
+                     <td id="patent{{ forloop.counter }}A">{{ patent.p_no }}</td>
+                     <td id="patent{{ forloop.counter }}B">{{ patent.title }}</td>
+                     <td id="patent{{ forloop.counter }}C">{{ patent.status }}</td>
+                     <td id="patent{{ forloop.counter }}D">{{ patent.a_month }}/{{ patent.p_year }}</td>
+                     <td id="patent{{ forloop.counter }}E">{{ patent.earnings }}</td>
+                     {% if request.user == user %}
+                    <td><a class="ui  button left floated" onclick="updatePATENT({{ forloop.counter }})"><i id="bt" class="edit icon" ></i></a><a class="ui blue button left floated" href="{% url 'eis:emp_patentsDelete' patent.pk forloop.counter 1 %}"><i id="bt" class="ui red delete icon" ></i> </a> </td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        <div class="pagination">
+            <h4> <span class="step-links" >
+                {% if patents.has_previous %}
+                    <a href="?page6=1" >&laquo; first</a>
+                    <a href="?page6={{ patents.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ patents.number }} of {{ patents.paginator.num_pages }}.
+                </span>
+
+                {% if patents.has_next %}
+                    <a href="?page6={{  patents.next_page_number }}">next</a>
+                    <a href="?page6={{ patents.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span></h4>
+        </div>
+    </div>
+
+    {% comment %}The Books segment ends here!{% endcomment %}
+
+
+    {% comment %}The Technology segment starts here!{% endcomment %}
+
+    <div class="{% if mark7 == 1 %}ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="technology transfer">
+        {% if request.user == user %}<h4 class="ui dividing header" id="changes11">Add a Technology Transfer</h4>
+        <form class="ui form"  method="post" action="{% url 'eis:transfer_insert' %}">
+            {% csrf_token %}
+            <div style="display: none;"> <input type="text" id="techZ" name="tech_id"></div>
+            <div class="field">
+                <div class="fourteen wide field">
+                    <div class="field">
+                        <label>Details</label>
+                        <input placeholder="Details" type="text" id="techA" name="details" required>
+                    </div>
+                </div>
+
+                
+                   
+            </div>
+            <button class="ui right floated primary button" type="submit">
+                            Save<i class="ui save icon right floated"></i>
+            </button>
+        </form>
+        
+        <br>
+        {% endif %}
+
+         <h4 class="ui dividing header">Report:</h4>
+
+        <div class="pagination">
+            <h4> <span class="step-links" >
+                {% if techtransfers.has_previous %}
+                    <a href="?page7=1" >&laquo; first</a>
+                    <a href="?page7={{ techtransfers.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ techtransfers.number }} of {{ techtransfers.paginator.num_pages }}.
+                </span>
+
+                {% if techtransfers.has_next %}
+                    <a href="?page7={{  techtransfers.next_page_number }}">next</a>
+                    <a href="?page7={{ techtransfers.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span></h4>
+        </div>
+          <!--scrollbar -->
+  <div style="width: 45vw; height: 500px; overflow-y: scroll">
+     
+        <table class="ui celled table">
+            <thead>
+            <tr>
+                <th class="sorted ascending" >Sr.</th>
+                <th >Details</th>
+                {% if request.user == user %}<th >Action</th>{% endif %}
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for techtransfer in techtransfers %}
+                <tr>
+                    <td id="tech{{ forloop.counter }}Z"><div style="display: none;">{{ techtransfer.id }}</div>{{ forloop.counter }}.</td>
+                    <td class="" id="tech{{ forloop.counter }}A">{{ techtransfer.details }}</td>
+                {% if request.user == user %}<td><a class="ui button left floated" onclick="updateTECH({{ forloop.counter }})"><i id="bt" class="edit icon" ></i></a><a class="ui blue button left floated " href="{% url 'eis:emp_techtransferDelete' techtransfer.pk forloop.counter 1 %}"><i id="bt" class="red delete icon"></i> </a> </td>{% endif %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        <div class="pagination">
+            <h4> <span class="step-links" >
+                {% if techtransfers.has_previous %}
+                    <a href="?page7=1" >&laquo; first</a>
+                    <a href="?page7={{ techtransfers.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ techtransfers.number }} of {{ techtransfers.paginator.num_pages }}.
+                </span>
+
+                {% if techtransfers.has_next %}
+                    <a href="?page7={{  techtransfers.next_page_number }}">next</a>
+                    <a href="?page7={{ techtransfers.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span></h4>
+        </div>
+    </div>
+    {% comment %}The Technology segment ends here!{% endcomment %}
+{% endblock %}

@@ -1,0 +1,247 @@
+
+{% load static %}
+{#{% block body %}#}
+{% block views %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        
+        <a class="active item" id="billm">
+            Bill
+        </a>
+        
+
+        <a class="item" id="ph">
+            Payment History
+        </a>
+        
+        {% comment %} <a class="item" id="regm">
+            Register for Mess
+        </a> {% endcomment %}
+    </div>
+
+    
+
+    <div class="ui active tab" id="billmtab">
+        <div class="ui vertical segment">
+
+            <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+                <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Monthly Base Amount</th>
+                    <th>Rebate Count</th>
+                    <th>Rebate Amount</th>
+                    <th>Your Monthly Bill</th>
+                </tr></thead>
+                <tbody>
+                {% for stu in monthly_bill %}
+                <tr>
+                    <td>{{stu.month}} - {{ stu.year }}</td>
+                    <td>{{stu.amount}}</td>
+                    <td>{{stu.rebate_count}}</td>
+                    <td>{{stu.rebate_amount}}</td>
+                    <td>{{stu.total_bill}}</td>
+                    {% comment %} <td>
+                        {% if stu.paid %}
+                            <i class="large green checkmark icon"></i>
+                        {% else %}
+                         <i class="large red x icon"></i>
+                        {% endif %}
+                    </td> {% endcomment %}
+                     {% comment %} <td>
+                        {% if stu.paid %}
+                            0
+                        {% else  %}
+                            {{stu.due_amount}}
+                        {% endif %}
+                    </td> {% endcomment %}
+
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+
+            <h2>Total Remaining Balance : {{curr_balance}}</h2>
+            <h2>Current Mess Status: {{curr_status}}</h2>
+            <br>
+            <br>
+
+            <div class="ui divider"></div>
+            
+            <div class="extra content">
+                <!-- TODO add code to direct to a function which renders the template as a pdf file -->
+                <form method="post" target="_blank" action="{% url 'mess:BillPDFStudent' %}">
+                    {% csrf_token %}
+                <button type="submit" class="ui primary button right floated">
+                    <!-- Download -->
+                    <i class="ui download icon right floated"></i>
+                </button>
+                </form>
+                <br>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="ui tab" id="phtab">
+        <table class="ui very basic collapsing celled table sortable" style="margin: auto;">
+            <thead>
+                <tr>
+                    <th>Payment Date</th>
+                    <th>Amount</th>
+                    <th>Month</th>
+                    <th>Year</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in payments %}
+                <tr>
+                    <td>{{student.payment_date}}</td>
+                    <td>{{student.amount_paid}}</td>
+                    <td>{{student.payment_month}}</td>
+                    <td>{{student.payment_year}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+
+        <br>
+
+        <div class="ui divider"></div>
+
+    </div>
+
+    <div class="ui tab" id="regmtab">
+    <div class="ui vertical segment">
+
+        {% comment %}Form Tag starts here!{% endcomment %}
+        <form method="post" action="{% url 'mess:regsubmit' %}">
+            {% csrf_token %}
+            <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                <div class="ui header">
+                    Request for change of Central Mess:
+                </div>
+                {{current_date}}
+                <br>
+
+                <div class="two fields">
+                    <div class="field">
+                        <strong> Currently registered in {{ messinfo.mess_option | capfirst }}</strong>
+                        <br>
+                        <input type="date" id="date" name="date" value="{{mess_reg.end_reg}}" hidden>
+                        <br>
+                        {% if current_date <= mess_reg.end_reg %}
+                            <label>Choose Mess*</label>
+                            <select class="ui search fluid dropdown" name="mess_type" id="mess_type">
+                                <option value="mess1">Mess 1</option>
+                                <option value="mess2">Mess 2</option>
+                            </select>
+                            <div class="field">
+                                <button class="ui primary button right floated" type="submit" name="submit">
+                                Submit
+                                </button>
+                            </div>
+                        {% else %}
+                            Registration time period has ended.
+                        {% endif %}
+                    </div>
+                </div>
+    </form>    
+
+
+        </div>
+    </form>
+    {% comment %}Form Tag ends here!{% endcomment %}
+        <br>
+        <br>
+        <div class="ui divider"></div>
+
+    </div>
+</div>
+
+{% endblock %}
+{#{% endblock %}#}
+
+{% block javascript %}
+<script>
+  $(document).ready(function() {
+        $('#menu1').on('click', function () {
+            $(this).addClass('active');
+            $('#ph').removeClass('active');
+            $('#regm').removeClass('active');
+               $('#billm').removeClass('active');
+             $('#menu1tab').show();
+               $('#billmtab').hide();
+                 $('#regmtab').hide();
+                   $('#phtab').hide();
+
+
+        });
+    });
+    $(document).ready(function() {
+        $('#ph').on('click', function () {
+            $(this).addClass('active');
+            $('#menu1').removeClass('active');
+            $('#billm').removeClass('active');
+               $('#regm').removeClass('active');
+             $('#phtab').show();
+               $('#menu1tab').hide();
+                 $('#regmtab').hide();
+                   $('#billmtab').hide();
+
+
+        });
+    });
+      $(document).ready(function() {
+        $('#billm').on('click', function () {
+            $(this).addClass('active');
+            $('#regm').removeClass('active');
+            $('#ph').removeClass('active');
+               $('#menu1').removeClass('active');
+             $('#billmtab').show();
+               $('#regmtab').hide();
+                 $('#menu1tab').hide();
+                   $('#phtab').hide();
+
+
+        });
+    });
+        $(document).ready(function() {
+        $('#regm').on('click', function () {
+            $(this).addClass('active');
+            $('#billm').removeClass('active');
+            $('#ph').removeClass('active');
+               $('#menu1').removeClass('active');
+             $('#regmtab').show();
+               $('#billmtab').hide();
+                 $('#menu1tab').hide();
+                   $('#phtab').hide();
+
+
+        });
+    });
+</script>
+
+ <script>
+  {% comment %} function download(){
+            $.ajax({
+                type: 'POST',
+                url: 'menudownload/',
+                dataType: 'json',
+
+                success: function(data) {
+
+                },
+                error: function(data, err) {
+
+                }
+            });
+        return false;
+    } {% endcomment %}
+
+</script>
+{% endblock %}

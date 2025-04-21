@@ -1,0 +1,55 @@
+{% load static %}
+{% comment %}The tab menu starts here!{% endcomment %}
+
+<div class="ui vertical segment">
+    
+        <table class="ui celled table"
+                style="padding-left: 2.5%;
+                        padding-right: 2.5%;
+                        padding-top: 1%;
+                        padding-bottom: 1.5%;
+                        width: 100%">
+            <thead>
+                <tr style="border-radius: 3px;">
+                    <th rowspan="2">#</th>
+                    <th rowspan="2">Course</th>
+                    <th rowspan="2">Thesis Topic</th>
+                    <th rowspan="2">Supervisor</th>
+                    <th class="tht" colspan="2" ><center>Status</center></th>
+                </tr>
+                <tr>
+                    <th>supervisor</th>
+                    <th>hod</th>
+                </tr>
+            </thead>
+            <tbody >
+                {% for obj in thesis_request_list%}
+                <tr >                
+                    <td>{{forloop.counter}} .</td>
+                    <td>{{obj.course_id.course_id}}</td>
+                    <td>{{ obj.thesis_topic }}</td>
+                    <td>{{obj.supervisor_id.id.user.first_name}} {{obj.supervisor_id.id.user.last_name}}</td>
+                    <td>
+                        {% if obj.approval_supervisor == True %}
+                            <center><i class="ui green checkmark icon " ></i></center>
+                        {% elif obj.pending_supervisor == True %}
+                            <center><i class="ui orange hourglass half icon"></i></center>
+                        {% elif obj.approval_supervisor == False and obj.pending_supervisor == False %}
+                            <center><i class="ui red x icon"></i></center>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if obj.approval_by_hod == True %}
+                            <center><i class="ui green checkmark icon " ></i></center>
+                        {% elif obj.pending_hod == True %}
+                            <center><i class="ui orange hourglass half icon"></i></center>
+                        {% elif obj.approval_by_hod == False and obj.pending_hod == False %}
+                            <center><i class="ui red x icon"></i></center>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+

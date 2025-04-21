@@ -1,0 +1,29 @@
+{% block tab1 %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="tab8content1">
+            Appointment
+        </a>
+        <a class="item" data-tab="tab8content2">
+            Meeting
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="tab8content1">
+        <div class="ui vertical segment">
+            {% block tab8content1 %}
+                {% include 'officeModule/directorOffice/createAppointment_appointment.html' %}
+            {% endblock %}
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="tab8content2">
+        <div class="ui vertical segment">
+            {% block tab8content2 %}
+                {% include 'officeModule/directorOffice/createAppointment_meeting.html' %}
+            {% endblock %}
+        </div>
+    </div>
+
+{% endblock tab1%}

@@ -1,0 +1,286 @@
+{% load static %} {% block eventorganised %} {% comment %}The tab menu starts
+here!{% endcomment %}
+<div class="ui pointing secondary menu">
+  <a class="ui active item" data-tab="Workshop"> Workshop </a>
+</div>
+
+{% comment %}The Workshop segment starts here!{% endcomment %}
+
+<div class="ui active tab segment" data-tab="Workshop">
+  {% if request.user == user %}
+  <h4 class="ui dividing header">Add a Workshop /Training Program</h4>
+  <form
+    class="ui form"
+    id="eventsform"
+    name="eventsform"
+    method="POST"
+    action="{% url 'eis:event_insert' %}"
+    enctype="multipart/form-data"
+  >
+    {% csrf_token %}
+    <div class="field">
+      <div class="two fields">
+        <div class="field">
+          <label>Role </label>
+          <!--  <input placeholder="Published" type="text"> -->
+          <div class="ui fluid search selection dropdown">
+            <input type="hidden" id="event_role" name="event_role" />
+            <i class="dropdown icon"></i>
+            <div class="default text">Role</div>
+            <div class="menu">
+              <div class="item" data-value="Convener">Convener</div>
+              <div class="item" data-value="Co-Convener">Co-Convener</div>
+              <div class="item" data-value="Co-ordinator">Co-ordinator</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Sponsoring Agency</label>
+          <input
+            placeholder="Co-author"
+            type="text"
+            id="sponsoring_agency"
+            name="sponsoring_agency"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="two fields">
+        <div class="field">
+          <label>Start Date</label>
+          <div class="ui calendar" id="rangestart8">
+            <div class="ui input left icon">
+              <i class="calendar icon"></i>
+              <input
+                type="text"
+                placeholder="Start"
+                id="event_start_date"
+                name="event_start_date"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>End Date</label>
+          <div class="ui calendar" id="rangeend8">
+            <div class="ui input left icon">
+              <i class="calendar icon"></i>
+              <input
+                type="text"
+                placeholder="End"
+                id="event_end_date"
+                name="event_end_date"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fields">
+        <div class="six wide field">
+          <div class="field">
+            <label>Venue</label>
+            <input
+              placeholder=""
+              type="text"
+              id="event_venue"
+              name="event_venue"
+            />
+          </div>
+        </div>
+
+        <div class="four wide field">
+          <label>Event Type</label>
+          <div class="ui fluid search selection dropdown">
+            <input type="hidden" id="event_type" name="event_type" />
+            <i class="dropdown icon"></i>
+            <div class="default text">Event Type</div>
+            <div class="menu">
+              <div class="item" data-value="Organised" onclick="myFunction1()">
+                Organised
+              </div>
+              <div class="item" data-value="Workshop" onclick="myFunction1()">
+                Workshop
+              </div>
+              <div
+                class="item"
+                data-value="Short-Term Program"
+                onclick="myFunction1()"
+              >
+                Short-Term Program
+              </div>
+              <div
+                class="item"
+                data-value="Training Program"
+                onclick="myFunction1()"
+              >
+                Training Program
+              </div>
+              <div class="item" data-value="Any Other" onclick="myFunction()">
+                Any Other
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="four wide field">
+          <label><br /></label>
+          <input
+            placeholder="please specify"
+            type="text"
+            id="myDIV"
+            name="myDIV"
+            style="display: none"
+          />
+        </div>
+      </div>
+
+      <div class="fields">
+        <div class="fourteen wide field">
+          <div class="field">
+            <label>Name</label>
+            <input
+              placeholder="Title"
+              type="text"
+              id="event_name"
+              name="event_name"
+            />
+          </div>
+        </div>
+
+        <div class="two wide field">
+          <label><br /></label>
+          <button
+            class="ui right floated primary button"
+            id="saveevent"
+            name="saveevent"
+            style="display: block"
+          >
+            Save
+            <i class="ui save icon right floated"></i>
+          </button>
+          <button
+            class="ui right floated primary button"
+            id="editevent"
+            name="editevent"
+            style="display: none"
+          >
+            Update
+            <i class="ui edit icon right floated"></i>
+          </button>
+          <input type="text" id="eventpk" name="eventpk" hidden />
+          <input type="text" id="index12" name="index12" hidden />
+        </div>
+      </div>
+    </div>
+  </form>
+  <br />{% endif %}
+  <h4 class="ui dividing header">Report:</h4>
+  <div class="pagination">
+    <h4>
+      <span class="step-links">
+        {% if events.has_previous %}
+        <a href="?page12=1">&laquo; first</a>
+        <a href="?page12={{ events.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+          Page {{ events.number }} of {{ events.paginator.num_pages }}.
+        </span>
+
+        {% if events.has_next %}
+        <a href="?page12={{ events.next_page_number }}">next</a>
+        <a href="?page12={{ events.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+      </span>
+    </h4>
+  </div>
+
+  <!--scrollbar -->
+  <div style="width: 45vw; height: 500px; overflow-y: scroll">
+    <table class="ui celled table">
+      <thead>
+        <tr>
+          <th class="sorted ascending">Sr.</th>
+          <th class="">Role</th>
+          <th class="">Sponsoring Agency</th>
+          <th class="">Venue</th>
+          <th class="">Start Date && End-Date</th>
+          <th class="">Type</th>
+          {% if request.user == user %}
+          <th class="">Action</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in events %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ e.role }}</td>
+          <td>{{ e.sponsoring_agency }}</td>
+          <td>{{ e.venue }}</td>
+          <td>{{ e.start_date }} - {{ e.end_date }}</td>
+          <td>{{ e.type }}</td>
+          {% if request.user == user %}
+          <td>
+            <button
+              type="button"
+              id="editButton10"
+              class="ui button left floated"
+              onclick="editevent(
+                                            '{{ forloop.counter }}','{{e.pk}}','{{e.role}}',
+                                            '{{e.sponsoring_agency}}', '{{e.venue}}',
+                                            '{{e.start_date}}', '{{e.end_date}}', '{{e.type}}', '{{e.name}}')"
+            >
+              <i class="ui black edit icon"></i>
+            </button>
+            <a
+              href="{% url 'eis:emp_event_organizedDelete' e.pk forloop.counter 12%}"
+              id="editButton"
+              class="ui blue button left floated"
+              onclick=""
+              value="Delete"
+            >
+              <i class="ui red delete icon"></i>
+            </a>
+          </td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination">
+    <h4>
+      <span class="step-links">
+        {% if events.has_previous %}
+        <a href="?page12=1">&laquo; first</a>
+        <a href="?page12={{ events.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+          Page {{ events.number }} of {{ events.paginator.num_pages }}.
+        </span>
+
+        {% if events.has_next %}
+        <a href="?page12={{ events.next_page_number }}">next</a>
+        <a href="?page12={{ events.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+      </span>
+    </h4>
+  </div>
+</div>
+{% comment %}The Workshop segment ends here!{% endcomment %} {% endblock %}
+
+<!-- code change starts -->
+
+{% block javascript %}
+<script type="text/javascript"></script>
+
+{% endblock %}
+
+<!-- code change ends -->

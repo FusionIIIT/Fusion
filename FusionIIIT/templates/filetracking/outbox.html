@@ -1,0 +1,135 @@
+{% extends 'filetracking/filetracking.html' %}
+{% load static %}
+
+{% block extrahead %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui-calendar/0.0.8/calendar.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui-calendar/0.0.8/calendar.min.js"></script>
+{% endblock %}
+
+{% block filetracking_tab %}
+{% if viewer_designation != global_var %}
+  <script>window.location.href = "{% url 'filetracking:outward' %}";</script>
+{% endif %}
+
+<div class="ui pointing secondary menu">
+  <h3>
+    <a class="active item" data-tab="outward">
+      Outbox <i>&nbsp;for&nbsp;{{request.user.extrainfo.user}} - {{viewer_designation}}</i>
+    </a>
+  </h3>
+</div>
+
+<div class="ui divider"></div>
+
+<!-- Toggle Button -->
+<div class="ui styled fluid accordion">
+    <div class="title">
+        <i class="dropdown icon"></i>
+        Filter Search
+    </div>
+    <div class="content">
+        <!-- Search form -->
+        <form method="get" action="" class="ui form">
+            <div class="field">
+                <label for="subjectQuery">Search by subject</label>
+                <input type="text" name="subject" id="subjectQuery" placeholder="Search by subject..." value="{{ request.GET.subject }}">
+            </div>
+            <div class="field">
+                <label for="sentToQuery">Search by sent to</label>
+                <input type="text" name="sent_to" id="sentToQuery" placeholder="Search by sent to..." value="{{ request.GET.sent_to }}">
+            </div>
+            <div class="field">
+                <label for="dateQuery">Search by date</label>
+                <div class="ui calendar" id="datePicker">
+                    <div class="ui input left icon">
+                        <i class="calendar icon"></i>
+                        <input type="text" name="date" id="dateQuery" placeholder="Search by date" value="{{ request.GET.date }}">
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="ui primary button">Search</button>
+        </form>
+    </div>
+</div>
+
+<div class="ui divider"></div>
+
+<table class="ui sortable very basic celled table">
+  <thead>
+    <tr>
+      <th>File ID</th>
+      <th>Sent To</th>
+      <th>Subject</th>
+      <th data-sort-type="date">Last Sent</th>
+      <th>View File</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for f in page_obj %}
+      <tr>
+        <td>{{ f.uploader_department }}-{{ f.upload_date.year }}-{{ f.upload_date.month }}-#{{ f.id }}</td>
+        <td>{{ f.sent_to_user }}-{{ f.sent_to_design }}</td>
+        <td>{{ f.subject|default:"None" }}</td>
+        <td data-sort-value="{{ f.last_sent_date|date:'Y-m-d H:i:s' }}">{{ f.last_sent_date|date:"d M Y, H:i" }}</td>
+        <td>
+          <a href="{% url 'filetracking:view_file_view' f.id %}">
+            <button class="ui primary button">View</button>
+          </a>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="pagination">
+  <span class="step-links">
+    {% if page_obj.has_previous %}
+      <a href="?page=1">&laquo; first</a>
+      <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+    {% endif %}
+
+    <span class="current">
+      Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+    </span>
+
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}">next</a>
+      <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+    {% endif %}
+  </span>
+</div>
+
+<br>
+
+<script>
+$(document).ready(function() {
+  // Initialize Semantic UI calendar
+  $('#datePicker').calendar({
+    type: 'date',
+    formatter: {
+      date: function (date, settings) {
+        if (!date) return '';
+        var day = date.getDate();
+        var month = date.getMonth() + 1;
+        var year = date.getFullYear();
+        return year + '-' + (month < 10 ? '0' + month : month) + '-' + (day < 10 ? '0' + day : day);
+      }
+    }
+  });
+
+  // Initialize Semantic UI accordion
+  $('.ui.accordion').accordion({
+    exclusive: false
+  });
+
+  // Toggle the accordion content
+  $('#toggleButton').on('click', function() {
+    $('.ui.accordion .title').click();
+  });
+});
+</script>
+
+{% endblock %}
+

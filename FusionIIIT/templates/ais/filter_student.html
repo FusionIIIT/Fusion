@@ -1,0 +1,14 @@
+
+{% block filter_stu %}
+<div class="ui center aligned segment">
+    <div class="ui horizontal divider">FILTER SEARCH</div>
+    <form class="ui small form"  method="get">
+            {{ coursefilter.form }}
+            <br>
+        <button class="ui tiny basic primary button" type="Submit" name="Submit">
+            <i class="search icon"></i>
+            Search
+        </button>
+    </form>
+</div>
+{% endblock %}

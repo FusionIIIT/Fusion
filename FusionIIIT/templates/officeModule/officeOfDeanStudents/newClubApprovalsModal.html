@@ -1,0 +1,80 @@
+{% load static %}
+{% block modal1 %}
+
+<script type="text/javascript">
+    function view(a){
+        var id= '.ui.modal.club.'+a;
+        id=id.replace(" ",".");
+       // alert(id);
+        $(id).modal('show');
+    }
+
+    function submit(a){
+        if(a=='approve'){
+            document.getElementById("modal_form").setAttribute("action", "club_approval");
+            document.getElementById("modal_form").submit();
+        }
+        else{
+            document.getElementById("modal_form").setAttribute("action", "club_rejection");
+            document.getElementById("modal_form").submit();
+        }
+    }
+
+
+</script>
+
+{% for i in clubNew %}
+
+<div class="ui modal club {{i.pk}} ">
+<div class="header">Club approvals</div>
+  <div class="content">
+<form class="ui large form" action="" method="post" enctype="multipart/form-data" id="modal_form">
+    {% csrf_token %}
+        <input type="text" hidden="true" name="check" value="{{i.pk}}" >
+
+        <div class="fields">
+         <div class="field">
+        <label>Club Name</label>
+        <input type="text" value="{{i.pk}}" readonly="true">
+        </div>
+
+       
+
+        <div class="field">
+        <label>Club category</label>
+        <input type="text" value="{{ i.category }}" readonly="true">
+        </div>
+        </div>
+        <div class="fields">
+        <div class="field">
+        <label>Co-ordinator</label>
+        <input type="text" value="{{i.co_ordinator}}" readonly="true">
+        </div>
+        <div class="field">
+        <label>Co Co-ordinator</label>
+        <input type="text" value="{{i.co_coordinator}}" readonly="true">
+        </div>
+        </div>
+
+         <div class="field">
+        <label>Faculty Incharge</label>
+        <input type="text" value="{{i.faculty_incharge}}" readonly="true">
+        </div>
+
+         <div class="field">
+            <label>File</label>
+        <a class="ui inverted circular icon button" style="margin: auto;"  href="/media/{{ i.budget_file }}">
+                            <i class="large attach black icon"></i>
+                        </a>
+        </div>
+                                    
+        <button onclick="submit('approve')" class="ui positive right floated button" type="submit" name="submit" id="approve" formaction="club_approval">Approve</button>
+        <button onclick="submit('approve')" class="ui red right floated button" type="submit" name="submit" id="reject" formaction="club_rejection">Reject</button>
+
+        <br> <br>
+    </form>
+  </div>
+</div>
+{% endfor %}
+
+{% endblock %}

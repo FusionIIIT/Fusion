@@ -1,0 +1,187 @@
+{% extends 'globals/base.html'%}
+{% load static %}
+{% block body %}
+{% block feedback %}
+{{ details.user_sem }}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="feedback">
+            Registration
+        </a>
+
+        <a class="item" data-tab="viewfeedback">
+            Status
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="feedback">
+        <div class="ui vertical segment">
+
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form method="POST">
+                {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="ui header">
+                        pre registration for teaching credit
+                    </div>
+
+                    <br>
+
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Roll no.</label>
+                            <input value={{ request.user.username}} class="ui large input" >
+                        </div>
+
+                        <div class="two fields">
+                            <div class="twelve wide field">
+                                <label>Name</label>
+                                <input value={{ request.user.first_name}} class="ui large input" >
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Discipline</label>
+                            <input value={{ request.user.extrainfo.department.name}} class="ui large input" >
+                        </div>
+
+                                            </div>
+
+
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Course 1</label>
+                                <select class="ui search fluid dropdown" name="feedback_type" id="feedback_type">
+                                    <option value="Cleanliness">Cleanliness</option>
+                                </select>
+                        </div>
+
+                        <div class="two fields">
+                            <div class="twelve wide field">
+                                <label>Course 2</label>
+                                <select class="ui search fluid dropdown" name="feedback_type" id="feedback_type">
+                                    <option value="Cleanliness">Cleanliness</option>
+                                    <option value="Food">Food</option>
+                                    <option value="Maintainence">Maintainence</option>
+                                    <option value="Others">Others</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Course 3</label>
+                                <select class="ui search fluid dropdown" name="feedback_type" id="feedback_type">
+                                    <option value="Cleanliness">Cleanliness</option>
+                                    <option value="Food">Food</option>
+                                    <option value="Maintainence">Maintainence</option>
+                                    <option value="Others">Others</option>
+                                </select>
+                        </div>
+
+                        <div class="two fields">
+                            <div class="twelve wide field">
+                                <label>Course 4</label>
+                                <select class="ui search fluid dropdown" name="feedback_type" id="feedback_type">
+                                    <option value="Cleanliness">Cleanliness</option>
+                                    <option value="Food">Food</option>
+                                    <option value="Maintainence">Maintainence</option>
+                                    <option value="Others">Others</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="field">
+                        <label><br></label>
+                            <button class="ui primary fluid button" onclick="return feedback()">
+                            Submit
+                            </button>
+                    </div>
+
+                </div>
+            </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="viewfeedback">
+        {% for app in feedback %}
+        <div class="ui very relaxed fluid selection list" style="padding-left: 24px; padding-top: 16px; padding-bottom: 16px; max-height: 70vh; overflow-y: auto;">
+
+            <div class="item">
+                <img class="ui mini circular image" src="{% static 'globals/img/zlatan.jpg' %}">
+                <div class="content">
+                    <a class="header">{{info.user.username}}</a>
+                    <span class="meta">{{app.feedback_type}}</span>
+
+                    <div class="description">
+                        {{app.description}}
+                    </div>
+                </div>
+
+                <div class="right floated content">
+                    <span class="meta">{{app.fdate}}</span>
+                </div>
+
+            </div>
+
+        </div>
+        {% endfor %}
+    <div class="ui divider"></div>
+    </div>
+
+{% endblock %}
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+
+ <script>
+        function feedback(){
+            $.ajax({
+                type: 'POST',
+                url: 'submit/',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                    'feedback_type':$("#feedback_type").val(),
+                    'description':$("#description").val(),
+                },
+                success: function(data) {
+                    if(data.status){
+                        alert("Data Inserted Successfully");
+
+                        // $('#ls_table').prepend("<tr><td>"+ $("#leave_type").val()+ "</td><td>"+
+                        //     $("#start_date").val() + "</td><td>" + $("end_date").val()+
+                        //     "</td><td>"+ $("#purpose").val()+ "</td></tr>")
+
+                        document.getElementById('feedback_type').value="";
+                        document.getElementById('description').value="";
+
+                    }
+                },
+                error: function(data, err) {
+                    alert(err.message);
+                }
+            });
+        return false;
+    }
+
+
+
+</script>
+{% endblock %}
+
+
+

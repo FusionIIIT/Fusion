@@ -1,0 +1,210 @@
+{% load static %}
+
+{% block viewstatus %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="current">
+            Current
+        </a>
+
+        <a class="item" data-tab="history">
+            History
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="current">
+        <div class="ui vertical segment">
+            <div class="ui header">
+                Current Applications
+            </div>
+
+            <div class="content">
+                <div class="description">
+
+                    <table class="ui very basic collapsing celled large sortable table"
+                           style="padding-left: 2.5%;
+                                                              padding-right: 2.5%;
+                                                              padding-top: 1%;
+                                                              padding-bottom: 1.5%;
+                                                              margin: auto;">
+                        <thead>
+                        <tr>
+                            <th>
+                                Name
+                            </th>
+
+                            <th>
+                                Application ID
+                            </th>
+
+                            <th>
+                                Applied Date
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        
+                            {% for winner in mcm %}
+                                {% if winner.student.id == request.user.extrainfo.student.id %}
+                                    
+                        <tr>
+                            {% if winner.status != 'ACCEPT' %}
+                            <td>
+                                {{winner.award_id}}
+                            </td>
+                                
+                            <td>
+                                {{request.user.extrainfo.student.id}}
+                            </td>
+
+                            <td>
+                                {{winner.date}}
+                            </td>
+
+                            <td>
+                                {{winner.status}}
+                            </td>
+                            {% endif %}
+                        </tr>
+                                {% endif %}
+                            
+                        {% endfor %}
+
+                             {% for winner in dandm %}
+                                {% if winner.student.id == request.user.extrainfo.student.id %}
+                        <tr>
+                            {% if winner.status != 'ACCEPT' %}
+                            <td>
+                                {{winner.award_id}}
+                            </td>
+                                
+                            <td>
+                                {{request.user.extrainfo.student.id}}
+                            </td>
+
+                            <td>
+                                {{winner.date}}
+                            </td>
+
+                            <td>
+                                {{winner.status}}
+                            </td>
+                            {% endif %} 
+                        </tr>
+                                {% endif %}
+                            {% endfor %}
+                             {% for winner in gold %}
+                                {% if winner.student.id == request.user.extrainfo.student.id %}
+                        <tr>
+                            {% if winner.status != 'ACCEPT' %}
+                            <td>
+                                {{winner.award_id}}
+                            </td>
+                                
+                            <td>
+                                {{request.user.extrainfo.student.id}}
+                            </td>
+
+                            <td>
+                                {{winner.date}}
+                            </td>
+
+                            <td>
+                                {{winner.status}}
+                            </td>
+                            {% endif %}
+                        </tr>
+                                {% endif %}
+                            {% endfor %}
+                             {% for winner in silver %}
+                                {% if winner.student.id == request.user.extrainfo.student.id %}
+                        <tr>
+                            {% if winner.status != 'ACCEPT' %}
+                            <td>
+                                {{winner.award_id}}
+                            </td>
+                                
+                            <td>
+                                {{request.user.extrainfo.student.id}}
+                            </td>
+
+                            <td>
+                                {{winner.date}}
+                            </td>
+
+                            <td>
+                                {{winner.status}}
+                            </td>
+                            {% endif %}
+                        </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="history">
+        <div class="ui vertical segment">
+            <div class="ui header">
+                Previous Applications
+            </div>
+
+            <div class="content">
+                <div class="description">
+
+                    <table class="ui very basic collapsing celled large sortable table"
+                           style="padding-left: 2.5%;
+                                                              padding-right: 2.5%;
+                                                              padding-top: 1%;
+                                                              padding-bottom: 1.5%;
+                                                              margin: auto;">
+                        <thead>
+                        <tr>
+                            <th>
+                                Name
+                            </th>
+
+                            <th>
+                                Application ID
+                            </th>
+
+                            <th>
+                                Applied Date
+                            </th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        {% for winner in winners %}
+                            {% if winner.student.id == request.user.extrainfo.student.id %}
+                        <tr>
+                            <td>
+                                {{winner.award_id.award_name}}
+                            </td>
+
+                            <td>
+                                {{winner.student}}
+                            </td>
+
+                            <td>
+                                {{winner.year}}
+                            </td>
+                        </tr>
+                            {% endif %}
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{%  endblock %}

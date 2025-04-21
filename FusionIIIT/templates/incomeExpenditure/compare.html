@@ -1,0 +1,72 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    stats
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+  
+<div style="display: flex;">
+    <div class="ui stackable doubling grid" style="width:90%;">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}The left-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+    <div style ="width:33%;text-align: center;" class="five wide column">
+        <table>
+          <table border="2px solid gray" width="350px" height="200px" align="center" style="border: 3px solid gray ;border-top: 7px solid gray;">
+            <tr style="font-size: large;background-color: black;color: white;">
+              <th>Income Source</th>
+              <th>Amount</th>
+            </tr>
+            {% for  key, value in income_map.items %}
+            <tr>
+              <td>{{key}}</td>
+              <td>{{value}}</td>
+            </tr>
+            {% endfor %}
+          </table>
+        </table>
+     </div>
+    <div style ="width:33%;text-align: center;" class="five wide column">
+    <table>
+      <table border="2px solid gray" width="450px" height="200px" align="center" style="border: 3px solid gray ;border-top: 7px solid gray;">
+        <tr style="font-size: large;background-color: black;color: white;">
+          <th>Expenditure Type</th>
+          <th>Amount</th>
+        </tr>
+        {% for  key, value in expenditure_map.items %}
+        <tr>
+          <td>{{key}}</td>
+          <td>{{value}}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </table>
+ </div>
+</div>
+</div>
+{% endblock %}

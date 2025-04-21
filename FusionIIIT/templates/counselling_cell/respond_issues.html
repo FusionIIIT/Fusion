@@ -1,0 +1,82 @@
+{#{% extends 'globals/base.html'%}#}
+{% load static %}
+{#{% block body %}#}
+{% block Respond_Issue %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="respondissue">
+            Raised Issues
+        </a>
+
+       
+    </div>
+
+    <div class="ui active tab" data-tab="respondissue">
+        <div class="ui active tab" data-tab="History">
+            <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                {% comment %} <div class="ui header">
+                    Status of issues :
+                </div> {% endcomment %}
+    
+                <div class="content">
+                    <div class="description">
+    
+                        <div class="ui styled fluid accordion">
+
+                    {% for issue in issues %}
+                        <div class="title ">
+                        <i class="dropdown icon"></i>
+                        Issue {{forloop.counter}}<br/>
+                        Issue {{issue.issue_category}}<br/>
+                        Raised on {{issue.issue_raised_date}} <br/>
+                        Raised by {{issue.student.id.user.username}} 
+                        </div>
+                        <div class="content ">
+                            <div class="ui header">
+                                Issue Description :
+                            </div>
+                          <p class="transition" >{{issue.issue}}</p>
+                          <form method="POST" action="../counselling/respond_issue/">
+                            {% csrf_token %}
+                            {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                            <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                                <div class="ui header">
+                                    Give Remarks :
+                                </div>
+                                <br>
+                                <div class="field">
+                                    <textarea rows="3" id="remarks" name="remark" required="true"></textarea>
+                                </div>
+
+                                <div class="field">
+                                    <input rows="3" style="visibility: hidden;" id="id" name="id" required="true" value={{issue.id}}></textarea>
+                                </div>
+                                <div class="field">
+                                    <label><br></label>
+                                        <button class="ui primary fluid button" type="submit">
+                                        Submit
+                                        </button>
+                                </div>
+            
+                            </div>
+                        </form>
+                        </div>
+                        
+                      
+                    {% endfor %}
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+{#{% endblock %}#}
+
+{% block javascript %}
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+{% endblock %}
+
+
+

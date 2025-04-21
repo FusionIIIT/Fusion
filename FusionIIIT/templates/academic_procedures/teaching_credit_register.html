@@ -1,0 +1,142 @@
+{% extends 'globals/base.html'%}
+{% load static %}
+{% block body %}
+{% block feedback %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="feedback">
+            Registration
+        </a>
+
+        <a class="item" data-tab="viewfeedback">
+            Status
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="feedback">
+        <div class="ui vertical segment">
+
+            {% comment %}Form Tag starts here!{% endcomment %}
+        <form id="teachcredit" method="POST" action="/academic-procedures/teaching_credit/">
+                {% csrf_token %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Roll no.</label>
+                            <input type="text" name="roll" required="required" value="{{ details.current_user }}"  class="ui large input" readonly  >
+                        </div>
+
+                        <div class="two fields">
+                            <div class="twelve wide field">
+                                <label>Name</label>
+                                <input type="text" name="name"  required="required" 
+                                 value="{{ user.first_name }} {{user.last_name }}" class="ui large input" readonly />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Discipline</label>
+                            <input name="discipline" value="{{ request.user.extrainfo.department.name}}" class="ui large input" readonly />
+                        </div>
+
+                        </div>
+
+
+                    <div class="two fields">
+                        <div class="field">
+                        <label>Course 1</label>
+                        <select class="ui dropdown" name="course1" required>
+                            <option selected disabled value="">Select Course 1</option>
+                            {% for i in teaching_credit_registration_course %}
+                            <option value="{{ i.curriculum_id }}">{{i.course_code}} - {{i.course_id.course_name}}</option>
+                            {% endfor%}
+                        </select>
+                        </div>
+
+                        
+                        <div class="field">
+                        <label>Course 2</label>
+                        <select class="ui dropdown" name="course2" required>
+                            <option selected disabled value="">Select Course 2</option>
+                            {% for i in teaching_credit_registration_course %}
+                            <option value="{{ i.curriculum_id }}">{{i.course_code}} - {{i.course_id.course_name}}</option>
+                            {% endfor%}
+                        </select>
+                        </div>
+                    </div>
+
+                    <div class="two fields">
+                        <div class="field">
+                        <label>Course 3</label>
+                        <select class="ui dropdown" name="course3" required>
+                            <option selected disabled value="">Select Course 3</option>
+                            {% for i in teaching_credit_registration_course %}
+                            <option value="{{ i.curriculum_id }}">{{i.course_code}} - {{i.course_id.course_name}}</option>
+                            {% endfor%}
+                        </select>
+                        </div>
+
+                        <div class="field">
+                        <label>Course 4</label>
+                        <select class="ui dropdown" name="course4" required>
+                            <option selected disabled value="">Select Course 4</option>
+                            {% for i in teaching_credit_registration_course %}
+                            <option value="{{ i.curriculum_id }}">{{i.course_code}} - {{i.course_id.course_name}}</option>
+                            {% endfor%}
+                        </select>
+                        </div>
+                    </div>
+
+
+                    <div class="field">
+                        <label><br></label>
+                        <button class="ui primary button" type="submit">Submit</button>
+                    </div>
+
+                </div>
+            </form>
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+$(function() {
+    $("#teachcredit").submit(function(event) {
+
+        event.preventDefault();
+        var friendForm = $(this);
+
+        var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+        posting.done(function(data) {
+            alert('Registered Successful');
+            window.location = "/academic-procedures/main/";
+        });
+        posting.fail(function(data) {
+            alert('Registration Failed');
+            window.location = "/academic-procedures/main/";
+        });
+    });
+});
+</script>
+
+{% comment %}Form Tag ends here!{% endcomment %}
+
+
+
+
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="viewfeedback">
+        
+    <div class="ui divider"></div>
+    </div>
+
+{% endblock %}
+{% endblock %}
+

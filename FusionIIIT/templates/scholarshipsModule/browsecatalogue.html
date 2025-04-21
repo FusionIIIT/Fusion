@@ -1,0 +1,124 @@
+{% load static %}
+{% block catalog %}
+
+    <div class="ui pointing secondary menu">
+        <a class="{% if last_clicked == '' or last_clicked == 'get_MCM_Flag' or last_clicked == 'getConvocationFlag' or last_clicked == 'Submit_MCM' or last_clicked == 'Submit_Silver' or last_clicked == 'Submit_Gold' or last_clicked == 'Submit_dm' or last_clicked == 'studentApproveSubmit_MCM' or last_clicked == 'studentApproveSubmit_Con' %} active item {% else %} item {% endif %}" data-tab="catalog">
+            Catalogue
+        </a>
+
+        <a class="item" data-tab="smd">
+          SPACS Members Details
+        </a>
+
+        <a class="{% if last_clicked == 'SubmitPreviousWinner' %} active item {% else %} item {% endif %}" data-tab="paw">
+            Previous Winners
+        </a>
+    </div>
+
+
+
+
+<!--  We changed the UI for the catalog before it appeared at the bottom of every page-->
+    <div class="{% if last_clicked == '' or last_clicked == 'get_MCM_Flag' or last_clicked == 'getConvocationFlag' or last_clicked == 'Submit_MCM' or last_clicked == 'Submit_Silver' or last_clicked == 'Submit_Gold' or last_clicked == 'Submit_dm' or last_clicked == 'studentApproveSubmit_MCM' or last_clicked == 'studentApproveSubmit_Con' %} ui active tab {% else %} ui tab {% endif %}" data-tab="catalog">
+        <div class="ui vertical segment">
+            <div class="ui floating dropdown labeled icon dropdown button" id="select_award_content">
+                <i class="search icon"></i>
+                <span class="text">Select Scholarship/Award </span>
+                <div class="menu">
+                    {% for award in awards %}
+                        <div class="item" data-value="{{ award.award_name }}">{{ award.award_name }}</div>
+                    {% endfor %}
+                </div>
+              </div>
+
+            <div class="ui grid row">
+                <div class="twelve wide column centered">  <label class="ui header" id="content_heading">   </label> </div>
+            </div>
+            <div class="ui grid row">
+                <div class="two wide column"></div>
+                <div class="twelve wide column centered">
+                    <div class="content" id="fill_content"> </div>
+                </div>
+
+            </div>
+            </div>
+        </div>
+
+        <div class="ui tab " data-tab="smd">
+          <div class="ui vertical segment">
+                {% block aboutspacs %}
+                    {% include 'scholarshipsModule/aboutspacs.html' with hd=hd hd1=hd1 %}
+                {% endblock %}
+                </div>
+        </div>
+
+        <div class="{% if last_clicked == 'SubmitPreviousWinner' %} ui active tab {% else %} ui tab {% endif %}" data-tab="paw">
+            <div class="ui vertical segment">
+              {% block winners %}
+                  {% include 'scholarshipsModule/winners.html' with winners_list=winners_list awards=awards %}
+              {% endblock %}
+            </div>
+        </div>
+
+
+
+
+{% endblock %}
+
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+
+    <script>
+
+    $('#select_award_content').on('click','.item',function(){
+
+        event.preventDefault();
+        var award_name=$(this).data('value');
+
+
+        $.ajax({
+
+                url: '/spacs/getContent/',
+                type: 'GET',
+                data: {
+                    award_name:award_name
+                },
+                success: function (response) {
+                    if(response.result==='Success'){
+                        $('#content_heading').text(award_name);
+                        data = response.content
+                        response.content = ""
+                        data = data.split('4.')
+                        for (let i = 1; i < data.length; i++) {
+                            response.content += '4.' + data[i] + '<br>';
+                        }
+                        data.forEach(element => {
+                            if (element !== "") {
+                                console.log(element);
+                            }
+                        });
+                        $('#fill_content').empty();
+                        $('#fill_content').append(response.content);
+                        // $('#fill_content').text(response.content);
+                        console.log(response.result)
+                    }
+                    else{
+                        console.log(response.result);
+                    }
+
+                }
+        });
+
+
+
+    });
+
+
+
+    </script>
+
+
+
+{% endblock javascript %}

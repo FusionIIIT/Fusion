@@ -1,0 +1,233 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+{% load semanticui %}
+{% block title %}
+Fusion - Feedback
+{% endblock %}
+
+{% block css %}
+    <style type="text/css">
+        label{
+            font-size: 1.2em !important;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+	{% block navBar %}
+		{% include 'dashboard/navbar.html' %}
+	{% endblock %}
+
+	<div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+
+                <a class="item" href="{% url 'globals:feedback' %}">
+                    Feedback
+                    <i class="right floated chevron right icon"></i>
+                    <i class="left floated write icon"></i>
+                </a>
+
+                <a class="active item" href="{% url 'globals:issue' %}">
+                    Issues
+                    <i class="right floated chevron right icon"></i>
+                    <i class="left floated bug icon"></i>
+                </a>
+            </div>
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+
+            <div class="ui active tab segment" data-tab="first"> 
+            	<div class="ui huge header">
+            		<i class="bug icon"></i>
+            		Issue
+            	</div>	
+            	<div class="ui horizontal divider"><button id="new-issue" class="ui green large button"><i class="plus icon"></i>New</button></div>
+            	<form class="ui form" method="post" action="{% url 'globals:issue' %}" id="issue-form" style="display: none;" enctype= multipart/form-data>
+            		<!-- <div class="ui warning message" id="issue-warning" style="display: none;">
+						<div class="header">
+							Fields
+						</div>
+					</div> -->
+            		<center>
+            			{% csrf_token %}
+            		</center>
+                    <div class="two fields">
+                    {% for field in form %}
+                        {% if field.name == "module" or field.name == "report_type" %}
+                            {% render_field field %}
+                        {% endif %} 
+                    {% endfor %}
+                    </div>
+                    {% for field in form %}
+                        {% if field.name == "module" or field.name == "report_type" %}
+                        {% else %}
+                            {% render_field field %} 
+                        {% endif %}
+                    {% endfor %}
+                    <label id="image-input-label"><b>Images&emsp;&emsp;&emsp;&emsp;</b></label>
+                    <div class="ui action input">
+                        <input class="image-button" id="image-button" type="text" placeholder="Add images" readonly>
+                        <input id="image-input" type="file" name="images" style="display: none;" multiple="">
+                        <div class="image-button ui icon button">
+                            <i class="attach icon"></i>
+                        </div>
+                    </div><br><br>
+
+            		<button type="submit" class="ui right floated large primary button">submit</button><br><br>
+                    <div class="ui divider"></div>
+                    <div class="ui container">
+                        <p><b>Note:</b> The Title can have atmost 255 letters and exceeding the limit might give unwanted results so keep it short.</p>
+                    </div>
+            	</form>
+            	<br>
+            	<div class="ui pointing secondary menu">
+                    <a class="active item" data-tab="open">
+                        Open Issues
+                    </a>
+                    <a class=" item" data-tab="closed">
+                        Closed Issues
+                    </a>        
+                </div>
+                <div class="ui active tab" data-tab="open">
+                    {% for issue in openissue %}
+                    <a href="{% url 'globals:view_issue' issue.id %}">
+                        <div class="ui segment">
+                            <h2 class="ui left floated header">{{ issue.title }}</h2>
+                            <h3 class="ui right floated large purple label">{{ issue.get_module_display }}</h3>
+                            <h3 class="ui right floated large blue label">{{ issue.get_report_type_display }}</h3>
+                            <h3 class="ui right floated large green label">Open</h3>
+                        </div>
+                    </a>
+                    <br>
+                    {% endfor %}
+                </div>
+                <div class="ui tab" data-tab="closed">
+                    {% for issue in closedissue %}
+                    <a href="{% url 'globals:view_issue' id=issue.id %}">
+                        <div class="ui segment">
+                            <h2 class="ui left floated header">{{ issue.title }}</h2>
+                            <h3 class="ui right floated large purple label">{{ issue.get_module_display }}</h3>
+                            <h3 class="ui right floated large blue label">{{ issue.get_report_type_display }}</h3>
+                            <h3 class="ui right floated large red label">Closed</h3>
+                        </div>
+                    </a>
+                    <br>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="ui segment" id="image-preview" style="display: none;">
+                
+                {% comment %}
+                    TODO: the right rail!
+                {% endcomment %}
+            </div>
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div> 	
+
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript">
+    $("#new-issue").click(function(e){
+        $("#issue-form").slideDown();
+    });
+
+    $(".image-button").click(function(e){
+        $("#image-input").trigger("click");
+    });
+
+    var ValidImageTypes = ["image/gif", "image/jpeg", "image/png"];
+    var Images;
+    $('#image-input').change(function(e){
+        var boolsize = true, booltype = true;
+        for(i=0; i < e.target.files.length; i++){
+            var fl = e.target.files[i];
+            if ((fl.size/(1024*1024)) > 10)
+                boolsize = false;
+
+            if($.inArray(fl["type"], ValidImageTypes) < 0)
+                booltype = false
+        }
+        if(!boolsize)
+        {
+            $('#image-input').val("");
+            $('#image-button').val("");
+            alert("Upload image size should be below 10 Mb");
+        }
+        else if(!booltype)
+        {
+            $('#image-input').val("");
+            $('#image-button').val("");
+            alert("Uploaded image should be among "+ValidImageTypes);
+        }
+        if(e.target.files.length>0)
+        {
+            $('#image-button').val(e.target.files.length);
+            $("#image-preview").slideDown();
+            $("#image-preview").html("<div class='ui image-loader active inverted dimmer'><div class='ui text loader'>Loading</div></div>");
+            for(i=0; i < e.target.files.length; i++){
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    if(i==0)
+                    {
+                        $("#image-preview").append("<div class='ui large header'>Image Preview</div>")
+                        $(".prev-image").remove();
+                    }
+                    $("#image-preview").append("<div id='" + i + "-image-div' class='ui container'><img id='" + i + "-image' class='ui prev-image responsive image' src='"+ e.target.result +"' /></div><br>");
+                }
+                reader.readAsDataURL(this.files[i]);
+                 
+                
+                
+            }
+            $(".image-loader").remove();
+        }
+        else{
+            $('#image-button').val("");
+            $("#image-preview").slideUp();
+        }
+    });
+    function removeimg(e){
+        var id = $(this).attr("data");
+        $(id+"-image-div").remove();
+      }
+</script>
+{% endblock %}

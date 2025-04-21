@@ -1,0 +1,365 @@
+{% load static %}
+<style>
+.mtech {
+  background-color: #f1f1f1;
+  color: #444;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+  transition: 0.4s;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  border-radius: 3px; 
+}
+
+.thesis:hover {
+  background-color: #ddd; 
+}
+.pthesis {
+  background-color: #f1f1f1;
+  color: #444;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+  transition: 0.4s;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  border-radius: 3px; 
+}
+
+.pthesis:hover {
+  background-color: #ddd; 
+}
+
+.panel {
+  padding: 0 18px;
+  background-color: #f1f1f1;
+  border-radius: 5px;
+}
+
+table{
+    border: 1px;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+
+.td1{
+    width: 18%;
+    padding-bottom:15px;    
+    padding-top: 15px;
+}
+.td2{
+    width: 30%;
+        padding-bottom:15px;    
+    padding-top: 15px;
+}
+.td3{
+    width: 18%;
+    padding-bottom:15px;    
+    padding-top: 15px;
+}
+.td4{
+    width: 30%;
+    padding-bottom:15px;    
+    padding-top: 15px;
+}
+.td5{
+    width: 2%;
+    padding-bottom:15px;    
+    padding-top: 15px;
+}
+.previous {
+  background-color: #f1f1f1;
+  color: black;
+}
+.previous:hover {
+      background-color: #ddd;
+  color: black;
+}
+.bn button{
+    float: right;
+}
+.approve{
+    background-color: #55DB86;
+    color: white;
+}
+.approve:hover{
+    background-color: #2CC764;
+    color:white;
+}
+.disapprove{
+    background-color: #F54D69;
+    color: white;
+}
+.disapprove:hover{
+    background-color: #C54257;
+    color:white;
+}
+
+
+</style>
+
+
+{% block mtechsg %}
+
+<div class="ui pointing secondary menu">
+    <a class=" item active" data-tab="pending_mtech" onclick="myfui1()" style="width: 30%;">
+       <p style="margin-left: 15%;">Pending</p>
+    </a>
+</div>
+
+
+<!--  pending requests -->
+<div class="ui active tab segment" data-tab="pending_mtech">
+    <div id="m1" class="ui vertical segment">
+        {% if mtechseminar_request_list %}
+            {% for obj in mtechseminar_request_list %}
+            
+                    <div  class="mtech" id_mtech="mtech{{forloop.counter}}" id_mobject="{{obj.id}}">{{obj.student.id.user.username}}</div>
+                <div class="panel" id="mtech{{forloop.counter}}" hidden>
+                    
+                    <table>
+                        <tr>
+                            <td class="td1">Roll No.</td>
+                            <td class="td5">:</td>
+                            <td class="td2" style="font-weight: bold;">{{obj.student.id.user.username}}</td>
+                            <td class="td3">Programme</td>
+                            <td class="td5">:</td>
+                            <td class="td4" style="font-weight: bold;">{{obj.student.programme}}</td>
+                        </tr>
+                        <tr>
+                            <td class="td1">Theme of Work</td>
+                            <td class="td5">:</td>
+                            <td colspan="4" style="font-weight: bold;">{{obj.theme_of_work}}</td>
+                        </tr>
+                        <tr>
+                            <td class="td1">Date</td>
+                            <td class="td5">:</td>
+                            <td class="td2" style="font-weight: bold;">{{obj.date}}</td>
+                            <td class="td3">Time</td>
+                            <td class="td5">:</td>
+                            <td class="td4" style="font-weight: bold;">{{obj.time}}</td>
+                        </tr>
+                        <tr>
+                            <td class="td1">Place</td>
+                            <td class="td5">:</td>
+                            <td colspan="4" style="font-weight: bold;">{{obj.place}}</td>
+                        </tr>
+                        <tr>
+                            <td class="td1">Work done till previous semester</td>
+                            <td class="td5">:</td>
+                            <td colspan="4" style="font-weight: bold;">{{obj.work_done_till_previous_sem}}</td>
+                        </tr>
+                        <tr>
+                            <td class="td1">Specific contribution in current semester</td>
+                            <td class="td5">:</td>
+                            <td colspan="4" style="font-weight: bold;">{{obj.specific_contri_in_cur_sem}}</td>
+                        </tr>
+                        <tr>
+                            <td class="td1">Future Plan</td>
+                            <td class="td5">:</td>
+                            <td colspan="4" style="font-weight: bold;">{{obj.future_plan}}</td>
+                        </tr>
+                        <tr>
+                            <td class="td1">Brief Report</td>
+                            <td class="td5">:</td>
+                            <td colspan="4" style="font-weight: bold;">{{obj.brief_report}}</td>
+                        </tr>
+                        <tr>
+                            <td class="td1">No. of Publication Submitted</td>
+                            <td class="td5">:</td>
+                            <td colspan="4" style="font-weight: bold;">{{obj.publication_submitted}}</td>
+                        </tr>
+                        <tr>
+                            <td class="td1">No. of Publication accepted</td>
+                            <td class="td5">:</td>
+                            <td colspan="4" style="font-weight: bold;">{{obj.publication_accepted}}</td>
+                        </tr>
+                        <tr>
+                            <td class="td1">No. of Paper Presented</td>
+                            <td class="td5">:</td>
+                            <td colspan="4" style="font-weight: bold;">{{obj.paper_presented}}</td>
+                        </tr>
+                        <tr>
+                            <td class="td1">No. of papers under review</td>
+                            <td class="td5">:</td>
+                            <td colspan="4" style="font-weight: bold;">{{obj.papers_under_review}}</td>
+                        </tr>
+                        
+
+
+
+                    </table>
+                </div>
+            
+            {% endfor %}
+        <div class="mform_class" hidden>
+        <form id="mtech_form" >{% csrf_token %}
+            <div class="ui form" style="border: black" >
+                <div class="field">
+                    <select class="ui dropdown" name="quality_of_work" >
+                        <option selected disabled value="">Quality of work</option>
+                        <option value="Excellent">Excellent</option>
+                        <option value="Good">Good</option>
+                        <option value="Unsatisfactory">Unsatisfactory</option>
+                        <option value="Satisfactory">Satisfatory</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <select class="ui dropdown" name="quantity_of_work" >
+                        <option selected disabled value="">Quantity of work</option>
+                        <option value="Enough">Enough</option>
+                        <option value="Just Sufficient ">Just Sufficient</option>
+                        <option value="Unsatisfactory">Insufficient</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <select class="ui dropdown" name="grade" >
+                        <option selected disabled value="">Grade</option>
+                        <option value="A+">A+</option>
+                        <option value="A">A</option>
+                        <option value="B+">B+</option>
+                        <option value="B">B</option>
+                        <option value="C+">C+</option>
+                        <option value="C">C</option>
+                        <option value="D+">D+</option>
+                        <option value="D">D</option>
+                        <option value="F">F</option>
+                        
+                    </select>
+                </div>
+                <div class="field">
+                    <select class="ui dropdown" name="panel" >
+                        <option selected disabled value="">Panel Report</option>
+                        <option value="Give again">Give again</option>
+                        <option value="Not applicable">Not Applicable</option>
+                        <option value="Approved">Approved</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Suggestion</label>
+                    <textarea rows="2" name="Suggestion" /></textarea>
+                </div>
+                <br>
+                <div class="ui divider"></div><br>
+                <div class="bn"><div href="" class="mprevious" style="text-decoration: none;
+                                                                                display: inline-block;
+                                                                                padding: 8px 16px;
+                                                                                cursor: pointer;">&laquo; Back</div>
+                <button class="ui primary button" style="background-color: green" name="approve" value="yes">Submit</button> 
+                </div>
+            </div>
+        </form>
+        </div>
+        {% else %}
+       <h3>no requests</h3>
+       {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+
+// function myfun(){
+    
+//     document.getElementById('a1').style="display:none";
+//     document.getElementById('a2').style="display:block";
+//     document.getElementById('a3').style="display:none";
+
+// }
+function myfui1(){
+    
+    document.getElementById('m1').style="display:block";
+    document.getElementById('p1').style="display:block";
+    document.getElementById('a2').style="display:block";
+
+
+}
+
+// function myfun2(){
+    
+//     document.getElementById('a1').style="display:none";
+//     document.getElementById('a2').style="display:none";
+//         document.getElementById('a3').style="display:block";
+
+
+// }
+
+
+$(function() {
+    
+    var obj_id;
+    $(".mtech").click(function(){
+        id = $(this).attr("id_mtech");
+        $("#"+id).show();
+        $(".mtech").hide();
+        $(".mform_class").show();
+        obj_id = $(this).attr("id_mobject");
+        console.log(obj_id);
+    });
+    $(".mprevious").click(function(){
+        $("#"+id).hide();
+        $(".mtech").show();
+        $(".mform_class").hide();
+    });
+
+
+    $("#mtech_form").submit(function(event) {
+
+    event.preventDefault();
+    var form = document.getElementById("mtech_form");
+    var quality = $('[name=quality_of_work]').val();
+    var quantity = $('[name=quantity_of_work').val();
+    var grade = $('[name=grade]').val();
+    var panel_report = $('[name=panel]').val();
+    var suggestion = $('[name=Suggestion]').val();
+
+    var message="";
+    for(var i=0;i<form.length;i++){
+        if( form.elements[i].value==="")
+        message = message + "<p><b>Please fill the " + form.elements[i].name + " field.</b></p>" ;
+    }
+
+    if(message != "")
+    {   console.log(message);
+        $("#errorContent").html(message);
+        $(".formErrors").modal("show") ;
+    }
+    else{
+    $.ajax({
+    type:"POST",
+    url: "/academic-procedures/update_mtechsg/",
+    data:{
+         obj_id : obj_id,
+         quality :quality,
+         quantity : quantity,
+         grade : grade,
+         panel_report : panel_report,
+         suggestion : suggestion,
+         csrfmiddlewaretoken: '{{ csrf_token }}'
+    },
+    success: function( data ) 
+    {
+        $(".succ").modal("show");
+        window.location = "/academic-procedures/fac/";
+    }
+    });
+    }
+  });
+
+});
+
+
+</script>

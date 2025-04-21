@@ -1,0 +1,89 @@
+{% block tab2 %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="tab2content1" id="cse" onclick="changingThis(this.id)">
+           CSE
+        </a>
+
+        <a class="item" id="ece" data-tab="tab2content2" onclick="changingThis(this.id)">
+            ECE
+        </a>
+		
+		<a class="item" id="me" data-tab="tab2content3" onclick="changingThis(this.id)">
+            ME
+        </a>
+		 
+    </div>
+
+    <div class="ui active tab" id="tab2content1" data-tab="tab2content1">
+        <div class="ui vertical segment">
+            {% block tab2content1 %}
+                {% include 'officeModule/officeOfHOD/tab2content1.html' %}
+            {% endblock %}
+        </div>
+    </div>
+
+    <div class="ui tab" id="tab2content2" data-tab="tab2content2">
+        <div class="ui vertical segment">
+            {% block tab2content2 %}
+                {% include 'officeModule/officeOfHOD/tab2content2.html' %}
+            {% endblock %}
+        </div>
+    </div>
+
+    <div class="ui tab" id="tab2content3" data-tab="tab2content3">
+        <div class="ui vertical segment">
+            {% block tab2content3 %}
+                {% include 'officeModule/officeOfHOD/tab2content3.html' %}
+            {% endblock %}
+        </div>
+    </div>
+
+    
+{% endblock tab2 %}
+
+<script>
+    var nowClass = "ui tab";
+
+    console.log("wow");
+    function changingThis(id){
+
+        let curr = document.getElementById(id).getAttribute("data-tab");
+
+        let currId = document.getElementById(curr);
+        currId.removeAttribute("class");
+        currId.setAttribute("class",nowClass+" active");
+
+        currId = document.getElementById(curr);
+        // console.log(currId);
+
+        let other1,other2;
+
+        if(curr == "tab2content1"){
+            other1 = "tab2content2";
+            other2 = "tab2content3";
+        }
+        else if(curr == "tab2content2"){
+            other1 = "tab2content1";
+            other2 = "tab2content3";
+        }
+        else{
+            other1 = "tab2content1";
+            other2 = "tab2content2";
+        }
+        
+        // console.log(other1,other2);
+
+        let nextId1 = document.getElementById(other1);
+        nextId1.removeAttribute("class");
+        nextId1.setAttribute("class",nowClass);
+        console.log(nextId1);
+
+        let nextId2 = document.getElementById(other2);
+        nextId2.removeAttribute("class");
+        nextId2.setAttribute("class",nowClass);
+        console.log(nextId2);
+
+    }
+</script>

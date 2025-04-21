@@ -1,0 +1,80 @@
+<table class="ui very basic collapsing celled sortable table"
+       style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+    <thead>
+    <tr>
+        <th class="one wide column">
+        </th>
+
+        <th class="three wide column">
+            Application Name
+        </th>
+
+        <th class="three wide column">
+            Date
+        </th>
+
+        <th class="eight wide column">
+            Purpose
+        </th>
+
+        <th>
+            Attachment
+        </th>
+
+        <th>
+            Status
+        </th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr>
+        <!--{% for views in view %}-->
+        <td class="collapsing">
+            <div class="ui fitted checkbox">
+                <input type="checkbox"> <label></label>
+            </div>
+        </td>
+
+        <td>
+            <!--{{ views.file_name }}-->
+        </td>
+
+        <td>
+            <!--{{ views.date }}-->
+        </td>
+
+        <td>
+            <!--{{ views.purpose }}-->
+        </td>
+
+        <td>
+            <!--{{ views.file }}-->
+        </td>
+
+        <td>
+            <i class="large green checkmark icon"></i>
+        </td>
+        <!--{% endfor %}-->
+    </tr>
+
+    </tbody>
+</table>
+
+<br>
+
+<div class="ui primary right floated button">Approve Selected</div>
+<div class="ui red right floated button">Reject Selected</div>
+
+
+<br>
+<br>
+<div class="ui divider"></div>
+
+<div class="extra content">
+    <div class="" style="text-align: center;">
+        <i class="large green checkmark icon"></i> : Approved &ensp;&ensp;&ensp;&ensp;&ensp;
+        <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
+        <i class="large red x icon"></i> : Declined
+    </div>
+</div>

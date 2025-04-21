@@ -1,0 +1,45 @@
+<button class="ui red button edit_{{ menuitem|slugify }}_{{ inventoryType.id }}">Edit</button>
+<script type='module'>
+    $('.coupled_{{ menuitem|slugify }}.modal')
+        .modal({
+            allowMultiple: true
+        });
+
+    $('.delete_{{ menuitem|slugify }}.modal')
+        .modal('attach events',
+            '.edit_{{ menuitem|slugify }}.modal .delete_{{ menuitem|slugify }}.button');
+
+    $('.edit_{{ menuitem|slugify }}_{{ inventoryType.id }}.button').on('click', function () {
+        $('.edit_{{ menuitem|slugify }}.modal')
+            .modal({
+                centered: false,
+            })
+            .modal({
+                onShow: function () {
+                    // change edit modal header
+                    $('.edit_{{ menuitem|slugify }}.modal .header').first()
+                        .text("{{ inventoryType.name }}");
+                    // change modal form action url
+                    $('.edit_{{ menuitem|slugify }}.modal form')
+                        .attr("action", "{% url 'edit_inventoryType' inventoryType.id %}");
+                    // change delete modal message
+                    $('.delete_{{ menuitem|slugify }}.modal .content p')
+                        .text("Are you sure you want to delete {{ inventoryType.name }}?");
+                    // change delete form action url
+                    $('.delete_{{ menuitem|slugify }}.modal form')
+                        .attr("action", "{% url 'delete_inventoryType' inventoryType.id %}");
+                    // prefill form
+                    $('.edit_{{ menuitem|slugify }}.modal form')
+                        .form('set values', {
+                            name: '{% if inventoryType.name %}{{ inventoryType.name }}{% endif %}',
+                            rate: '{% if inventoryType.rate %}{{ inventoryType.rate }}{% endif %}',
+                            manufacturer: '{% if inventoryType.manufacturer %}{{ inventoryType.manufacturer }}{% endif %}',
+                            model: '{% if inventoryType.model %}{{ inventoryType.model }}{% endif %}',
+                            remarks: '{% if inventoryType.remarks %}{{ inventoryType.remarks }}{% endif %}',
+                        });
+                }
+            })
+            .modal('setting', 'closable', false)
+            .modal('show');
+    });
+</script>

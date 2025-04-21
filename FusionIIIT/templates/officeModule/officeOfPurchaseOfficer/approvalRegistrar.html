@@ -1,0 +1,221 @@
+
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+  Module name
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+
+       <div class="eight wide column">
+         {% include 'officeModule/officeOfPurchaseOfficer/approvalHOD.html' %}
+         <br></br>
+          <div style="overflow-x:auto;">
+          <table class="ui very basic collapsing celled sortable table "
+            style="padding-left: 2.5%;overflow-x:scroll;
+                                                               padding-right: 2.5%;
+                                                               padding-top: 1%;
+                                                               padding-bottom: 1.5%;
+                                                               margin: auto;">
+         <thead>
+         <tr>
+             <th>
+              id
+             </th>
+             <th>
+                Indentor name
+             </th>
+             <th>
+                Item name
+             </th>
+             <th>
+                Expected cost
+             </th>
+             <th>
+                 quantity
+             </th>
+             <th>
+                  Purpose
+             </th>
+             <th>
+                  Intended purchase date
+             </th>
+
+             <th class="three wide column">
+                Amount
+             </th>
+             <th class="three wide column">
+                Nature
+             </th>
+             <th class="four wide column">
+                Approval
+             </th>
+         </tr>
+         </thead>
+         <tbody>
+           {% csrf_token %}
+       {% for data in alldata  %}
+       <tr>
+         <td>
+           {{ data.id}}
+         </td>
+         <td>
+           {{data.indentor_name}}
+         </td>
+          <td>
+             {{data.item_name}}
+          </td>
+          <td>
+              {{data.expected_cost}}
+          </td>
+          <td>
+              {{data.quantity}}
+          </td>
+          <td>
+              {{data.purpose}}
+          </td>
+          <td>
+              {{data.expected_purchase_date}}
+          </td>
+          <td>
+              {{data.expected_cost}}
+          </td>
+          <td>
+            {% if data.nature_of_item1 == 1 %}
+              consumable
+              {% endif %}
+            {% if data.nature_of_item2 == 0 %}
+              non consumable
+              {% endif %}
+          </td>
+
+          <td>
+            {% if data.expected_cost <= 50000 %}
+             <button  class="approveme" m_id="{{data.id}}" >approve</button>
+             {% endif %}
+
+             {% if data.expected_cost >= 50001 %}
+              <button  class="approveme2" m_id="{{data.id}}" >Fwd to Director</button>
+              {% endif %}
+
+
+          </td>
+         </tr>
+         {% endfor %}
+           </tbody>
+         </table>
+            </div>
+          </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+
+<script>
+
+console.log("Hello world!");
+
+</script>
+
+
+<script >
+console.log("hellow")
+$(document).ready(function(){
+var objid;
+console.log("entered the script")
+$(".approveme").click(function(event){
+ objid = $(this).attr("m_id");
+
+ //console.log($('#approveme').val())
+//objid = $(this).val();
+//console.log(String(objid))
+console.log(objid)
+alert("File with id " + objid + " has been approved by you")
+$.ajax({
+    type: 'post',
+    url: '/office/newordersregistrar/',
+    data: {id: objid},
+    success: function(data) {
+         console.log("success")
+    },
+    error: function(data, err) {
+        console.log("fail")
+    }
+});
+window.location.reload();
+  });
+
+
+  $(".approveme2").click(function(event){
+   objid = $(this).attr("m_id");
+
+   //console.log($('#approveme').val())
+  //objid = $(this).val();
+  //console.log(String(objid))
+  console.log(objid)
+  alert("File with id " + objid + " has been approved by you")
+  $.ajax({
+      type: 'post',
+      url: '/office/newordersregistrar2/',
+      data: {id: objid},
+      success: function(data) {
+           console.log("success")
+      },
+      error: function(data, err) {
+          console.log("fail")
+      }
+  });
+  window.location.reload();
+    });
+});
+
+  </script>
+{% endblock %}

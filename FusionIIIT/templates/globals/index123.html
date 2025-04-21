@@ -1,0 +1,398 @@
+{% extends 'root/Desktop/ProjectFusion/FusionIIIT/FusionIIIT/templates/Fusion/../..//general/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Login
+{% endblock %}
+
+{% block navBar %}
+    <div class="ui stackable massive inverted menu">
+        <a class="item" href="{% url 'Fusion:index' %}">
+            <i class="ui active inverted large home icon"></i>
+        </a>
+
+        <a class="item" href="{% url 'Fusion:index' %}">
+            <span>
+                Employee Leave Module
+            </span>
+        </a>
+    </div>
+
+    <div class="ui divider"></div>
+{% endblock %}
+
+{% block body %}
+    <div class="ui stackable doubling grid">
+        <div class="ui row">
+
+            <div class="ui column"></div>
+
+            <div class="ui eight wide column">
+
+                {% comment %}The Employee Leave Status/Balance Menu starts here!{% endcomment %}
+                <div class="ui fluid two item menu"
+                     style="margin-top: 10%;">
+
+                    <a class="active item"
+                       id="leave-item"
+                       data-tab="first">
+                        <h4 class="header">
+                            Leave Status
+                        </h4>
+                    </a>
+                    <a class="item"
+                       data-tab="second">
+                        <h4 class="header">
+                            Leave Balance
+                        </h4>
+                    </a>
+                </div>
+                {% comment %}The Employee Leave Status/Balance Menu ends here!{% endcomment %}
+
+
+                {% comment %}The Results Container starts here!{% endcomment %}
+                <div class="ui container">
+                    <div class="ui divider"></div>
+
+                    <div class="ui active tab segment"
+                         data-tab="first">
+
+                        <div class="ui fluid card"
+                             style="max-height: 64vh;
+                                    min-height: 45vh;
+                                    overflow-y: auto;">
+
+                            <div class="content">
+                                <div class="ui header">
+                                    Leave Status
+                                </div>
+
+                                <div class="ui divider"></div>
+
+                                <div class="description">
+                                    <br>
+                                    <div class="ui stackable doubling grid">
+                                        <div class="row">
+
+                                            <div class="ui column"></div>
+
+                                            {% comment %}The Username column starts here!{% endcomment %}
+                                            <div class="ui six wide column">
+                                                <label>Enter your Username:</label>
+
+                                                <div class="ui fluid input"
+                                                     style="min-width: 240px">
+                                                    <input placeholder="Username..." type="text">
+                                                </div>
+                                            </div>
+                                            {% comment %}The Username column ends here!{% endcomment %}
+
+
+                                            {% comment %}The Dropdown column starts here!{% endcomment %}
+                                            <div class="ui five wide column">
+                                                <label>Select Leave Type</label>
+                                                <div class="ui fluid search selection dropdown">
+                                                    <input name="country" type="hidden">
+                                                    <i class="dropdown icon"></i>
+
+                                                    <div class="default text">Select Leave</div>
+
+                                                    <div class="menu">
+                                                        <div class="item" data-value="CL">
+                                                            Casual Leave
+                                                        </div>
+
+                                                        <div class="item" data-value="COL">
+                                                            Commuted Leave
+                                                        </div>
+
+                                                        <div class="item" data-value="EL">
+                                                            Earned Leave
+                                                        </div>
+
+                                                        <div class="item" data-value="RH">
+                                                            Restricted Holiday
+                                                        </div>
+
+                                                        <div class="item" data-value="SCL">
+                                                            Sp. Casual Leave
+                                                        </div>
+
+                                                        <div class="item" data-value="VL">
+                                                            Vacation Leave
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% comment %}The Dropdown column ends here!{% endcomment %}
+
+                                            {% comment %}The Search Button column ends here!{% endcomment %}
+                                            <div class="ui four wide column">
+                                                <br>
+                                                <div class="ui large primary button">
+                                                    Search
+                                                    <i class="search icon right floated"></i>
+                                                </div>
+                                            </div>
+                                            {% comment %}The Dropdown column ends here!{% endcomment %}
+
+                                        </div>
+
+                                        <div class="row">
+                                            <br>
+                                            <br>
+                                        </div>
+
+                                        <div class="row">
+
+                                            <table class="ui very basic collapsing celled large table"
+                                                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                                                <thead>
+                                                <tr>
+                                                    <th>
+                                                        Employee
+                                                    </th>
+
+                                                    <th>
+                                                        Type
+                                                    </th>
+
+                                                    <th>
+                                                        From
+                                                    </th>
+
+                                                    <th>
+                                                        To
+                                                    </th>
+
+                                                    <th>
+                                                        Duration
+                                                    </th>
+
+                                                    <th>
+                                                        Status
+                                                    </th>
+                                                </tr>
+                                                </thead>
+
+                                                <tbody>
+                                                <tr>
+                                                    <td>
+                                                        <h4 class="ui image header">
+                                                            <img src="{% static 'Fusion/img/user.png' %}" class="ui mini rounded image">
+                                                            <div class="content">
+                                                                Dr. Atul Gupta
+                                                                <div class="sub header">
+                                                                    Associate Proffessor
+                                                                </div>
+                                                            </div>
+                                                        </h4>
+                                                    </td>
+
+                                                    <td>
+                                                        Casual Leave
+                                                    </td>
+
+                                                    <td>
+                                                        22 Sept'17
+                                                    </td>
+
+                                                    <td>
+                                                        22 Sept'17
+                                                    </td>
+
+                                                    <td>
+                                                        1
+                                                    </td>
+
+                                                    <td>
+                                                        <i class="large green checkmark icon"></i>
+                                                    </td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% comment %}The Second Tab Segment starts here!{% endcomment %}
+                    <div class="ui tab segment"
+                         data-tab="second">
+
+
+                        <div class="ui fluid card"
+                             style="max-height: 64vh;
+                                    min-height: 45vh;
+                                    overflow-y: auto;">
+
+                            <div class="content">
+                                <div class="ui header">
+                                    Leave Balance
+                                </div>
+
+                                <div class="ui divider"></div>
+
+                                <div class="description">
+                                    <br>
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <div class="ui stackable doubling grid">
+                                            <div class="row">
+                                                <div class="ui three wide column"></div>
+
+                                                <div class="ui eight wide column">
+                                                    {% block leavebalance %}
+                                                        {% include 'root/Desktop/ProjectFusion/FusionIIIT/FusionIIIT/templates/Fusion/leaveModule/leavebalance.html' %}
+                                                    {% endblock %}
+                                                </div>
+
+                                                <div class="ui four wide column">
+                                                    <br>
+                                                    <button class="ui primary button"
+                                                            type="submit">
+                                                        Search
+                                                        <i class="search icon right floated"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <br>
+                                                <br>
+                                                <br>
+                                            </div>
+
+                                            {% comment %}The Leave Balance Statstics start here!{% endcomment %}
+                                            <div class="row">
+                                                {% if user_name %}
+                                                    <div class="">
+                                                        <div class="avatar image">
+                                                            <img src="{% static 'Fusion/img/faculty.png' %}">
+                                                            {{ user_name }}
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="ui three equal width blue stackable statistics right floated"
+                                                     style="margin: auto;">
+
+                                                    <div class="ui statistic">
+                                                        <div class="value">
+                                                            60
+                                                        </div>
+
+                                                        <div class="label">
+                                                            Vacation Leaves &ensp;
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="ui statistic">
+                                                        <div class="value">
+                                                            30
+                                                        </div>
+
+                                                        <div class="label">
+                                                            Earned Leaves &ensp;
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="ui statistic">
+                                                        <div class="value">
+                                                            20
+                                                        </div>
+
+                                                        <div class="label">
+                                                            Commuted Leaves &ensp;
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="ui statistic">
+                                                        <div class="value">
+                                                            8
+                                                        </div>
+
+                                                        <div class="label">
+                                                            Casual Leaves &ensp;
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="ui statistic">
+                                                        <div class="value">
+                                                            2
+                                                        </div>
+
+                                                        <div class="label">
+                                                            Sp. Casual Leave &ensp;
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="ui statistic">
+                                                        <div class="value">
+                                                            2
+                                                        </div>
+
+                                                        <div class="label">
+                                                            Restricted Holiday
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    {% comment %}The Second Tab Segment ends here!{% endcomment %}
+
+                </div>
+                {% comment %}The Container ends here!{% endcomment %}
+            </div>
+
+            {% comment %}The Employee Login conatainer starts here!{% endcomment %}
+            <div class="ui six wide column">
+
+                {% comment %}Login module starts here! {% endcomment %}
+
+                {% comment %}Login module ends here! {% endcomment %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+    <script type="text/javascript" src="{% static 'Fusion/js/tab.js' %}"></script>
+    <script type="text/javascript" src="{% static 'Fusion/js/dropdown.js' %}"></script>
+
+    <script>
+        $(document).ready(function(){
+            setTimeout(loader, 1500);
+        });
+
+        function loader() {
+            $("#tab").removeClass("active");
+            $("#tab").addClass("disabled");
+        }
+    </script>
+
+    <script>
+        $(document).ready(function(){
+            function addLeave() {
+                
+            }
+        });
+    </script>
+{% endblock %}

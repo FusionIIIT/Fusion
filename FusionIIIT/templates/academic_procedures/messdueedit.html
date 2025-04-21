@@ -1,0 +1,193 @@
+<div>
+    <h3>
+        <strong>&ensp; <u>Mess Due</u></strong>
+    </h3>
+</div>
+    <div class="ui vertical segment">
+        <form method="post" id="form_mdue" enctype="multipart/form-data">
+        {% csrf_token %}
+
+            <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                <div class="one fields">
+                    <div class="four wide field">
+                        
+                        <label for="bank">Student Roll No.</label>
+                        <input type="text" name="rollno" id="bank"  maxlength="7"  />
+                    </div>
+                </div>
+                <div class="two fields">
+                    <div class="three wide field">
+                        <label>Year</label>
+                        <div class="ui selection dropdown">
+                            <input type="hidden" name="year" required/>
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Select</div>
+                            <div class="menu" required>
+                                <div class="item" id = "1" ></div>
+                                <div class="item" id = "2" ></div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="three wide field" style="margin-left:300px">
+                        <label>Month</label>
+                        <div class="ui selection dropdown" >
+                            <input type="hidden" name="month" required>
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Select</div>
+                            <div class="menu">
+                                    <div class="item" data-value="January">January</div>
+                                    <div class="item" data-value="Febuary">Febuary</div>
+                                    <div class="item" data-value="March">March</div>
+                                    <div class="item" data-value="April">April</div>
+                                    <div class="item" data-value="May">May</div>
+                                    <div class="item" data-value="June">June</div>
+                                    <div class="item" data-value="July">July</div>
+                                    <div class="item" data-value="August">August</div>
+                                    <div class="item" data-value="September">September</div>
+                                    <div class="item" data-value="October">October</div>
+                                    <div class="item" data-value="November">November</div>
+                                    <div class="item" data-value="December">December</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="two fields">
+                    <div class="three wide field">    
+                        <label for="amount">Amount</label>
+                        <input type="number" name="amount" >
+                    </div>
+
+                    <div class="three wide field" style="margin-left:300px">
+                        <label>Description</label>
+                        <div class="ui selection dropdown">
+                            <input type="hidden" name="desc" required/>
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Select</div>
+                            <div class="menu" required>
+                                <div class="item" id = "1" >Paid</div>
+                                <div class="item" id = "2" >Due</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+            <div class="field">
+                <button class="ui primary button right floated" type="submit" onclick="validatemessdue('form_mdue',event)" style="margin-right:80px">
+                        Submit
+                </button>
+            </div>
+        </form>
+        <br>
+        <br>
+    </div>
+    <br>
+    <div class="extra content"></div>
+
+
+
+
+<div class="ui basic modal succ">
+    <div class="ui icon header">
+      <i class="bell icon"></i>
+      <a class="ui green label">Success</a>
+    </div>
+    <div class="content" id="modalBody">
+      <p><center><b>Successfully Submitted</b></center></p>
+    </div>
+    <div class="actions">
+      <div class="ui red basic cancel inverted button">
+        <i class="remove icon"></i>
+        Cancel
+      </div>
+    </div>
+</div>
+
+<div class="ui basic modal formErrors">
+    <div class="ui icon header">
+      <i class="bell icon"></i>
+      <a class="ui red label">Error</a>
+    </div>
+    <div class="content">
+      <center>
+          <div id="errorContent">
+              <p><b>All the fields are required except session poster</b></p>
+          </div>
+      </center>
+    </div>
+    <div class="actions">
+      <div class="ui red basic cancel inverted button">
+        <i class="remove icon"></i>
+        Cancel
+      </div>
+    </div>
+</div>
+{% block javascript %}
+<script>
+    var d =new Date();
+        document.getElementById("1").innerHTML = d.getFullYear()-1;
+        var a = d.getFullYear()-1;
+        document.getElementById("1").value=a;
+
+        document.getElementById("2").innerHTML = d.getFullYear();
+        var b = d.getFullYear() - 1;
+        document.getElementById("2").value=b;
+
+
+function validatemessdue(form,event){
+    console.log("adv");
+    event.preventDefault();
+    var form = document.getElementById("form_mdue");
+    var i ;
+    var message = "" ;
+    for(i=0 ; i<form.length ; i++){
+        if(form.elements[i].name != "" && form.elements[i].value==="")
+        {
+            message = message + "<p><b>Please fill the " + form.elements[i].name + " field.</b></p>" ;
+        }
+       
+    }
+    var ret = 0 ;
+    if (message != ""){
+        ret = 1 ;
+        $("#errorContent").html(message);
+        $(".formErrors").modal("show") ;
+    }
+
+    if(ret == 0)
+    {
+        var formData = new FormData(form);
+        console.log(formData);
+        form.reset();
+        $.ajax({
+            url: '/academic-procedures/mdue/',
+            data: formData,
+            enctype: "multipart/form-data",
+            type: 'POST',
+            contentType: false, // NEEDED, DON'T OMIT THIS (requires jQuery 1.6+)
+            processData: false, // NEEDED, DON'T OMIT THIS
+            // ... Other options like success and etc
+            success: function(response) {
+                response = JSON.parse(response);
+                console.log(response);
+                console.log("here") ;
+                // $("#modalHeader").html(response.status);
+                if (response == "success"){
+                    $(".succ").modal("show");
+                }
+                else
+                {
+                    $("#errorContent").html('<p><b>'+response.message+'</p></b>');
+                    $(".formErrors").modal('show');
+                }
+                form.reset();
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

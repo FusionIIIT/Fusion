@@ -1,0 +1,224 @@
+
+{% extends 'ps1/ps2.html' %}
+{% load static %}
+
+{% block filetracking_tab %} 
+<style>
+    /* Style for the container */
+    .row-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border: 1px solid #ccc; /* Add a border around each row */
+        border-radius: 5px; /* Add some border radius */
+        padding: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Add a border shadow */
+        margin-bottom: 10px; /* Add space between rows */
+    }
+
+    /* Style for the label */
+    label {
+        margin: 0;
+    }
+
+    /* Style for the left and right elements */
+    .left-element, .right-element {
+        flex: 1;
+        padding: 0 10px; /* Add some space around the elements */
+    }
+
+    /* Style for the line between elements */
+    .line {
+        height: 100%;
+        border-left: 1px solid #ccc; /* Add a border to the left of the line */
+        margin: 0 10px; /* Add some space between the line and the elements */
+    }
+
+    /* Style for Grade, Semicolon, and API Value */
+    .label,
+    .semicolon,
+    .api-value {
+        padding: 0 5px; /* Add padding */
+    }
+
+    /* Additional styling for the semicolon */
+    .semicolon {
+        color: #666; /* Change color */
+    }
+</style>
+
+    <div class="ui pointing secondary menu">
+        <h3>
+            <a class="active item" data-tab="composefile">
+            Detailed Stock Item View
+            </a>
+        </h3>
+    </div>
+    <div class="ui divider"></div> 
+
+    <div class="ui active tab" data-tab="composefile">
+        <div class="ui vertical stripe team segment" style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+    <div class="ui pointing secondary menu" >
+        <h3>
+            <a class="active item" data-tab="inward">
+          Stock Item Details 
+            </a>
+        </h3>
+    
+    </div> 
+
+    
+    <div class="ui divider"></div>
+    {% if item %}
+    <div class="table-container"  style="overflow-x: scroll;max-height: 500px;  overflow-y: scroll;">
+    
+        <div class="row-container">
+            <div class="left-element">
+                <div class="field">
+                    <div style="display: flex;">
+                        <div style="flex: 1.5;"><b>Item Name</b></div>
+                        <div style="flex: 0.1;"><b>:</b></div>
+                        <div style="flex: 2;">{{item.StockEntryId.item_id.item_name}}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="line"></div>
+            <div class="right-element">
+                <div class="field">
+                    <div style="display: flex;">
+                        <div style="flex: 1.5;"><b>Item Type</b></div>
+                        <div style="flex: 0.1;"><b>:</b></div>
+                        <div style="flex: 2;">{{item.StockEntryId.item_id.item_type}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row-container">
+            <div class="left-element">
+                <div class="field">
+                    <div style="display: flex;">
+                        <div style="flex: 1.5;"><b>Item SubType</b></div>
+                        <div style="flex: 0.1;"><b>:</b></div>
+                        <div style="flex: 2;">{{item.StockEntryId.item_id.item_subtype}}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="line"></div>
+            <div class="right-element">
+                <div class="field">
+                    <div style="display: flex;">
+                        <div style="flex: 1.5;"><b>Dealing Assistant</b></div>
+                        <div style="flex: 0.1;"><b>:</b></div>
+                        <div style="flex: 2;">{{item.StockEntryId.dealing_assistant_id}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row-container">
+            <div class="left-element">
+                <div class="field">
+                    <div style="display: flex;">
+                        <div style="flex: 1.5;"><b>Vendor Name</b></div>
+                        <div style="flex: 0.1;"><b>:</b></div>
+                        <div style="flex: 2;">{{item.StockEntryId.vendor}}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="line"></div>
+            <div class="right-element">
+                <div class="field">
+                    <div style="display: flex;">
+                        <div style="flex: 1.5;"><b> Initially Transferred to </b></div>
+                        <div style="flex: 0.1;"><b>:</b></div>
+                        <div style="flex: 2;">{{item.StockEntryId.item_id.file_info.uploader.department.name}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row-container">
+            <div class="left-element">
+                <div class="field">
+                    <div style="display: flex;">
+                        <div style="flex: 1.5;"><b>Bill</b></div>
+                        <div style="flex: 0.1;"><b>:</b></div>
+                        <div style="flex: 2;">
+                            <!-- {{s.bill}} -->
+                                {% if item.StockEntryId.bill %}
+                                <a href="{{ item.StockEntryId.bill.url }}" download>{{ item.StockEntryId.bill }}</a>
+                            {% else %}
+                                No bill available
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="line"></div>
+            <div class="right-element">
+                <div class="field">
+                    <div style="display: flex;">
+                        <div style="flex: 1.5;"><b>Received Date</b></div>
+                        <div style="flex: 0.1;"><b>:</b></div>
+                        <div style="flex: 2;">{{item.StockEntryId.recieved_date}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <div class="ui pointing secondary menu" >
+        <h3>
+            <a class="active item" data-tab="inward">
+            Stock Item Transfer History 
+            </a>
+        </h3>
+    
+    </div> 
+    
+        
+    <table class="ui very basic celled sortable table">
+        <thead>
+        <tr>
+                <th>File Id</th>
+                <th>Src Department </th>
+                <th >Dest Department </th>
+                <th >Src Location </th>
+                <th >Dest Location </th>
+                <th >Date Time</th>
+            
+        </tr>
+        </thead>
+        <!-- -->
+        <tbody>
+            {% for s in transfers %}
+            <tr>
+                <td> {{s.indent_file.file_info.id}} </td>
+                <td>{{s.src_dept.name}}</td>
+                <td>{{s.dest_dept.name}}</td>
+                <td>{{s.src_location}}</td>
+                <td>{{s.dest_location}}</td>
+                <td>{{s.dateTime}}</td>
+            
+              </tr>
+
+                {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+
+    <br>
+    {% else %}
+        <h4 >No Records present in database</h4>
+     {% endif %}
+
+
+       
+   
+
+    </div>  
+
+    {% endblock %}

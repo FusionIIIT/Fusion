@@ -1,0 +1,56 @@
+{% load static %}
+{% block buildings %}
+{% load humanize %}
+
+<div class="ui pointing secondary menu">
+    {% comment %} <a class="blue active item" data-tab="{{ menuitem|slugify }}_All">
+        All
+    </a> {% endcomment %}
+    {% for tabname, works in menuitem_data.tabs.items %}
+    <a class="blue {% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} item"
+        data-tab="{{ menuitem|slugify }}_{{ tabname|slugify }}">
+        {{ tabname }}
+    </a>
+    {% endfor %}
+</div>
+
+{% include menuitem_data.template_dir|add:'/new.html' %}
+{% include menuitem_data.template_dir|add:'/edit.html' %}
+
+{% comment %} <div class="ui active tab" data-tab="{{ menuitem|slugify }}_All">
+    {% if works|length > 0 %}
+    <button class="ui right labeled icon blue new_{{ menuitem|slugify }} button">
+        <i class="plus icon"></i>
+        New
+    </button>
+    {% endif %}
+    {% include 'estate_module/Work/tab.html'%}
+</div> {% endcomment %}
+
+{% for tabname, works in menuitem_data.tabs.items %}
+<div class="ui {% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} tab"
+    data-tab="{{ menuitem|slugify }}_{{ tabname|slugify }}">
+    {% if works|length > 0 %}
+    <button class="ui right labeled icon blue new_{{ menuitem|slugify }} button">
+        <i class="plus icon"></i>
+        New
+    </button>
+    {% endif %}
+    {% include menuitem_data.template_dir|add:'/tab.html' %}
+</div>
+{% endfor %}
+
+{% for work in menuitem_data.tabs.All %}
+{% include menuitem_data.template_dir|add:'/detail_modal.html' %}
+{% endfor %}
+
+<script type='module'>
+    $('.new_{{ menuitem|slugify }}.button').on('click', function () {
+        $('.new_{{ menuitem|slugify }}.modal form')
+            .form('set values', {
+                workType: '{{ menuitem_data.workType }}',
+            });
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,28 @@
+<!-- a fork from notifications/sidepanel.html that uses our module name -->
+{% load static %} 
+{% block sidepanel %} 
+{% load notifications_tags %}
+{% for notice in notifications %}
+{% if notice.unread %}
+<!-- module name File Tracking-->
+{% if notice.data.module == 'File Tracking' %}
+          <div class="ui icon message">
+      <i class="inbox icon"></i>
+      <div class="content">
+          <div class="header">
+              <a href="{% url 'notifications:mark_as_read_and_redirect' notice.slug %}">
+                  {{ notice.data.module }}
+              </a>
+          </div>
+          <p>{{ notice.verb }}</p>
+      </div>
+      <div class="ui right floated">
+          <a href="{% url 'notifications:delete' notice.slug %}">
+              <i class="close icon"></i>
+          </a>
+          </div>
+      </div>
+        {% endif%} 
+    {% endif %}
+  {% endfor %}
+{% endblock %}

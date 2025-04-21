@@ -1,0 +1,270 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+    Home
+{% endblock %}
+
+{% block body %}
+    <link href="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.css" rel="stylesheet" type="text/css" />
+
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <script>
+        $('.message .close')
+            .on('click', function() {
+                $(this)
+                    .closest('.message')
+                    .transition('fade')
+                ;
+            });
+    </script>
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}The left-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}ROW #1 starts here!{% endcomment %}
+            <div class="row">
+                {% comment %}The Employee Image Card starts here!{% endcomment %}
+                {% block userCard %}
+                    {% include 'globals/usercard.html' %}
+                {% endblock %}
+                {% comment %}The Employee Image Card ends here!{% endcomment %}
+            </div>
+            {% comment %}ROW #1 ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}ROW #2 starts here!{% endcomment %}
+            {% if eligible == "Junior Engineer" or eligible == "Executive Engineer (Civil)" or eligible == "Electrical_AE" or eligible == "Electrical_JE" or eligible == "EE" or eligible == "Civil_AE" or eligible == "Civil_AE" %}
+            <div class="row">
+                {% comment %}The Tab-Menu starts here!{% endcomment %}
+                <div class="ui large fluid vertical pointing menu">
+                    <a class="active item" href="{% url 'iwdModuleV2:Fetch-Designations' %}">
+                        Create Request
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="active item"  href="{% url 'iwdModuleV2:Created Requests view' %}">
+                        Created Requests
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="active item"  href="{% url 'iwdModuleV2:Rejected Requests view' %}">
+                        Rejected Requests
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="active item"  href="{% url 'iwdModuleV2:Issue Work Order' %}">
+                        Issue Work Order
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="active item"  href="{% url 'iwdModuleV2:Requests In Progress' %}">
+                        Requests In Progress
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="active item"  href="{% url 'iwdModuleV2:Generated-Bills-View' %}">
+                        Generated Bills
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="active item" href="{% url 'iwdModuleV2:Requests-Status' %}">
+                        Requests Status
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                </div>
+                {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+            </div>
+            {% comment %}ROW #2 ends here!{% endcomment %}
+
+        </div>
+        {% endif %}
+        {% if eligible == "Dean (P&D)" %}
+            <div class="row">
+                {% comment %}The Tab-Menu starts here!{% endcomment %}
+                <div class="ui large fluid vertical pointing menu">
+                    <a class="active item" href="{% url 'iwdModuleV2:Engineer-Processed-Requests view' %}">
+                        Process Requests
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="active item" href="{% url 'iwdModuleV2:View-Budget' %}">
+                        View Budget
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="active item" href="{% url 'iwdModuleV2:Requests-Status' %}">
+                        Requests Status
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                </div>
+                {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+            </div>
+            {% comment %}ROW #2 ends here!{% endcomment %}
+
+        </div>
+        {% comment %}The left-rail segment ends here!{% endcomment %}
+
+        {% comment %}The central-rail segment starts here!{% endcomment %}
+        {% endif %}
+        {% if eligible == "Director" %}
+            <div class="row">
+                {% comment %}The Tab-Menu starts here!{% endcomment %}
+                <div class="ui large fluid vertical pointing menu">
+                    <a class="active item" href="{% url 'iwdModuleV2:Dean-Processed-Requests view' %}">
+                        Approve/Reject Requests
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="active item" href="{% url 'iwdModuleV2:View-Budget' %}">
+                        View Budget
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="active item" href="{% url 'iwdModuleV2:Requests-Status' %}">
+                        Requests Status
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                </div>
+                {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+            </div>
+            {% comment %}ROW #2 ends here!{% endcomment %}
+
+        </div>
+        {% comment %}The left-rail segment ends here!{% endcomment %}
+
+        {% comment %}The central-rail segment starts here!{% endcomment %}
+        {% endif %}
+        {% if eligible == "Admin IWD" %}
+            <div class="row">
+                {% comment %}The Tab-Menu starts here!{% endcomment %}
+                <div class="ui large fluid vertical pointing menu">
+
+                    <a class="active item" href="{% url 'iwdModuleV2:Budget' %}">
+                        Manage Budget
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                </div>
+                {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+            </div>
+            {% comment %}ROW #2 ends here!{% endcomment %}
+
+        </div>
+        {% comment %}The left-rail segment ends here!{% endcomment %}
+
+        {% comment %}The central-rail segment starts here!{% endcomment %}
+        {% endif %}
+        {% if eligible == "Accounts Admin" %}
+            <div class="row">
+                {% comment %}The Tab-Menu starts here!{% endcomment %}
+                <div class="ui large fluid vertical pointing menu">
+
+                    <a class="active item" href="{% url 'iwdModuleV2:Settle-Bills-View' %}">
+                        Settle Bills
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="active item" href="{% url 'iwdModuleV2:View-Budget' %}">
+                        View Budget
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                </div>
+                {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+            </div>
+            {% comment %}ROW #2 ends here!{% endcomment %}
+
+        </div>
+        {% comment %}The left-rail segment ends here!{% endcomment %}
+
+        {% comment %}The central-rail segment starts here!{% endcomment %}
+        {% endif %}
+        {% if eligible == "Auditor" %}
+            <div class="row">
+                {% comment %}The Tab-Menu starts here!{% endcomment %}
+                <div class="ui large fluid vertical pointing menu">
+
+                    <a class="active item" href="{% url 'iwdModuleV2:Audit-Document-View' %}">
+                        Audit Documents
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="active item" href="{% url 'iwdModuleV2:View-Budget' %}">
+                        View Budget
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                </div>
+                {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+            </div>
+            {% comment %}ROW #2 ends here!{% endcomment %}
+
+        </div>
+        {% comment %}The left-rail segment ends here!{% endcomment %}
+
+        {% comment %}The central-rail segment starts here!{% endcomment %}
+        {% endif %}
+        {% if eligible != "Junior Engineer" and eligible != "Executive Engineer (Civil)" and eligible != "Electrical_AE" and eligible != "Electrical_JE" and eligible != "EE" and eligible != "Civil_AE" and eligible != "Civil_JE" and eligible != "Dean (P&D)" and eligible != "Director" and eligible != "Accounts Admin" and eligible != "Admin IWD" and eligible != "Auditor" and eligible != "student" %}
+            <div class="row">
+                {% comment %}The Tab-Menu starts here!{% endcomment %}
+                <div class="ui large fluid vertical pointing menu">
+
+                    <a class="active item" href="{% url 'iwdModuleV2:Fetch-Designations' %}">
+                        Create Request
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                </div>
+                {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+            </div>
+            {% comment %}ROW #2 ends here!{% endcomment %}
+
+        </div>
+        {% comment %}The left-rail segment ends here!{% endcomment %}
+
+        {% comment %}The central-rail segment starts here!{% endcomment %}
+        {% endif %}
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+    </div>
+    <div class="ui stackable doubling grid">
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+{% endblock %}
+
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+{% endblock %}

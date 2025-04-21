@@ -1,0 +1,155 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Academic
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+<div class="ui stackable doubling grid" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html"
+     xmlns="http://www.w3.org/1999/html">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}The left-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+
+
+
+
+
+		{% load static %}
+
+<div class="ui header">
+    Work Order Form:
+</div>
+
+
+<div class="fields">
+    <form method="POST" action="">{% csrf_token %}
+    <div class="eight wide field">
+      <label>Dated:</label>
+      <input type="date" placeholder="Select" id="issue_date" name="issueDate"  /><br><br>
+     </div>
+
+
+     <div class="eight wide field">
+        <label>NIT/NIQ No:</label>
+        <textarea id="nit_niq_no" class="ui textarea" rows="1" name="nitNiqNo" type="text"  ></textarea><br>
+       </div>
+
+
+
+Agency: <textarea id="agency_name" class="ui textarea" rows="1" name="agency" type="text"  ></textarea>
+        <br>
+
+
+ Name of work: <textarea id="name" class="ui textarea" rows="1" name="name" type="text"  ></textarea>
+<br>
+<br>
+
+Your lowest tender for the work mentioned above has been accepted, on behalf of the Board of
+Governor, PDPMIIITDM, Jabalpur, for an amount of Rs. <textarea id="amount" class="ui textarea" rows="1" name="amount" type="text"  ></textarea>
+<br> <br>
+
+
+You are directed to start the work at once. Please note that the time allowed for carrying out the
+work is <textarea id="days" class="ui textarea" rows="1" name="time" type="text"  >40</textarea>
+<br> Days including rainy season as entered in the tender and shall be reckoned
+from <textarea id="start_date1" class="ui textarea" rows="1" name="monthDay" type="text"  >10th</textarea>
+<br> day after the date of this order to commence the work.<br> Accordingly the time schedule
+for completion of work shall be as follows:<br><br>
+
+<div class="fields">
+    <div class="eight wide field">
+        Date of start :
+        <input type="date" placeholder="Select" id="startDate" name="startDate"/><br>
+    </div>
+    <div class="eight wide field">
+        Date of Completion :
+        <input type="date" placeholder="Select" id="completionDate" name="completionDate"/>
+    </div>
+</div>
+<br>
+You are requested to contact the Executive Engineer (C), PDPM IIITDM, Jabalpur for taking
+possession of the site for starting the work.<br>
+
+You are required to deposit a Rs.  <textarea id="deposit_amount" class="ui textarea" rows="1" name="deposit" type="text"  >500/-</textarea>
+<br> Non judicial stamp paper for preparation of Contract
+Agreement and to sign the Contract Agreement within <textarea id="start_date2" class="ui textarea" rows="1" name="contractDay" type="text"  >10</textarea>
+<br>  days from the receipt of this work
+order. Stamp duty as per provisions of notification of M. P. Government may also be deposited.<br><br>
+
+<br>
+
+                <div class="field">
+                    <label><br></label>
+
+                    <div >
+                      <input type="submit" name="Submit" value="Next" class="ui small right floated primary button" />
+                    </div>
+                    <a href="http://172.27.16.216/iwdModuleV2/agreement/">Next</a>
+                </div>
+</form>
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra segment"></div>
+
+    </div>
+
+    {% comment %}the doctor appointment tab ends here {% endcomment %}
+
+
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+                {% comment %}
+                    TODO: the right rail!
+                {% endcomment %}
+            </div>
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+</script>
+{% endblock %}

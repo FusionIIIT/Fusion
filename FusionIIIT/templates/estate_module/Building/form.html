@@ -1,0 +1,197 @@
+{% csrf_token %}
+<div class="ui error message"></div>
+
+{% with menuitem_data.form as buildingForm %}
+<div class="required field">
+    {{ buildingForm.name.label_tag }}
+    {{ buildingForm.name }}
+</div>
+
+<div class="four fields">
+    <div class="required field">
+        {{ buildingForm.dateIssued.label_tag }}
+
+        <div class="ui calendar">
+            <div class="ui input left icon">
+                <i class="calendar icon"></i>
+                {{ buildingForm.dateIssued }}
+            </div>
+        </div>
+    </div>
+
+    <div class="field">
+        {{ buildingForm.dateConstructionStarted.label_tag }}
+
+        <div class="ui calendar">
+            <div class="ui input left icon">
+                <i class="calendar icon"></i>
+                {{ buildingForm.dateConstructionStarted }}
+            </div>
+        </div>
+    </div>
+
+    <div class="field">
+        {{ buildingForm.dateConstructionCompleted.label_tag }}
+
+        <div class="ui calendar">
+            <div class="ui input left icon">
+                <i class="calendar icon"></i>
+                {{ buildingForm.dateConstructionCompleted }}
+            </div>
+        </div>
+    </div>
+
+    <div class="field">
+        {{ buildingForm.dateOperational.label_tag }}
+
+        <div class="ui calendar">
+            <div class="ui input left icon">
+                <i class="calendar icon"></i>
+                {{ buildingForm.dateOperational }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="four fields">
+    <div class="field">
+        {{buildingForm.verified.label_tag}}
+
+        <div class="ui calendar">
+            <div class="ui input left icon">
+                <!-- <i class="calendar icon"></i> -->
+                {{ buildingForm.verified }}
+            </div>
+        </div>
+    </div>
+    <div class="field">
+        {{ buildingForm.constructionCostEstimated.label_tag }}
+
+        <div class="ui left icon input">
+            {{ buildingForm.constructionCostEstimated }}
+            <i class="rupee sign icon"></i>
+        </div>
+
+    </div>
+
+    <div class="field">
+        {{ buildingForm.constructionCostActual.label_tag }}
+
+        <div class="ui left icon input">
+            {{ buildingForm.constructionCostActual }}
+            <i class="rupee sign icon"></i>
+        </div>
+    </div>
+
+    <div class="field">
+        {{ buildingForm.status.label_tag }}
+        {{ buildingForm.status }}
+    </div>
+</div>
+
+<h4 class="ui horizontal divider header">
+    <i class="info circle icon"></i>
+    Extra Information
+</h4>
+
+<div class="three fields">
+    <div class="field">
+        {{ buildingForm.area.label_tag }}
+
+        <div class="ui right labeled input">
+            {{ buildingForm.area }}
+            <div class="ui basic label">
+                acres
+            </div>
+        </div>
+
+    </div>
+    <div class="field">
+        {{ buildingForm.numRooms.label_tag }}
+        {{ buildingForm.numRooms }}
+
+    </div>
+
+    <div class="field">
+        {{ buildingForm.numWashrooms.label_tag }}
+        {{ buildingForm.numWashrooms }}
+    </div>
+</div>
+
+<div class="field">
+    {{ buildingForm.remarks.label_tag }}
+    {{ buildingForm.remarks }}
+</div>
+{% endwith %}
+
+<script type='module'>
+    $('#{{ form_id }}')
+        .form({
+            fields: {
+                name: {
+                    identifier: 'name',
+                    rules: [{
+                        type: 'empty',
+                        prompt: 'Building name cannot be blank'
+                    }]
+                },
+                dateIssued: {
+                    identifier: 'dateIssued',
+                    rules: [{
+                        type: 'empty',
+                        prompt: 'Date Issued cannot be blank'
+                    }]
+                },
+                constructionCostEstimated: {
+                    identifier: 'constructionCostEstimated',
+                    optional: true,
+                    rules: [{
+                        type: 'integer',
+                        prompt: 'Estimated Construction Cost must be an integer'
+                    }]
+                },
+                constructionCostActual: {
+                    identifier: 'constructionCostActual',
+                    optional: true,
+                    rules: [{
+                        type: 'integer',
+                        prompt: 'Actual Construction Cost must be an integer'
+                    }]
+                },
+                area: {
+                    identifier: 'area',
+                    optional: true,
+                    rules: [{
+                        type: 'integer',
+                        prompt: 'Area must be an integer'
+                    }]
+                },
+                verified: {
+                    identifier: 'verified',
+                    optional: true,
+                    rules: [{
+                        type: 'boolean',
+                        prompt: 'Verified must be either true or false'
+                    }]
+                },
+                numRooms: {
+                    identifier: 'numRooms',
+                    optional: true,
+                    rules: [{
+                        type: 'integer',
+                        prompt: 'Number of rooms must be an integer'
+                    }]
+                },
+                numWashrooms: {
+                    identifier: 'numWashrooms',
+                    optional: true,
+                    rules: [{
+                        type: 'integer',
+                        prompt: 'Number of washrooms must be an integer'
+                    }]
+                },
+
+            }
+        });
+</script>
+<p></p>

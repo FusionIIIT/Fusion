@@ -1,0 +1,929 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Dashboard
+{% endblock %}
+
+{% block css %}
+
+ <link href="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.css" rel="stylesheet" type="text/css" />
+
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        <!-- {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+
+                <a class="item" href="{% url 'globals:profile' %}">
+                    View Profile
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" href="{% url 'office_module:directorOffice' %}">
+                    Director Office
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+            </div>
+
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %} -->
+
+
+
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+             
+                <div class="item" id="faculty_profile" >
+                   View Faculty Details
+                    <i class="right floated chevron right icon"></i>
+                </div>
+                <div id="staff_profile2" class="item"  >
+                    View Staff Department Wise 
+                     <i class="right floated chevron right icon"></i>
+                </div>
+                
+
+                 <div  id="student_profile" class="item">
+                    View Student Details
+                     <i class="right floated chevron right icon"></i>
+                </div>
+
+
+                <div  id="meeting" class="item" >
+                    Schedule Meeting
+                    <i class="right floated chevron right icon"></i>
+                </div>
+
+                <div  id="view_meetings" class="item" >
+                    Cancel Meetings
+                    <i class="right floated chevron right icon"></i>
+                </div>
+
+                <a class="item" data-tab="tab1content1" onclick="pnd()">
+                   Office of Dean P & D 
+                   <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="tab1content2" onclick="rspc()">
+                   Office of Dean RSPC
+                   <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="tab1content3" onclick="stud()">
+                    Office of Dean Students
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="tab1content4" onclick="acad()">
+                    Office of Dean Acad
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="tab1content5" onclick="purchase()">
+                    Puchase Office
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="tab1content6" onclick="registrar()">
+                    Registrar Office
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+
+        </div>            
+
+            <br/><br/><br/>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+    </div>
+
+
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+
+
+
+
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+
+        <div class="eight wide column">
+            <div class="ui top attached tabular large menu">
+                <a class="active item" data-tab="first">Notifications</a>
+                <a class="item" data-tab="second">News</a>
+            </div>
+            <div class="ui bottom attached active tab segment" data-tab="first">
+                <div id="textSegmentDiv">
+
+                    {% comment %}
+                    TODO: Loader required?
+                    <div class="ui active large text loader"
+                             id="loader">
+                        Loading ...
+                    </div>
+                    {% endcomment %}
+
+                    <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+                        {% block alerts %}
+                            {% include 'dashboard/alerts.html' %}
+                        {% endblock %}
+                    </div>
+                </div>
+
+            </div>
+            <div class="ui bottom attached tab segment" data-tab="second">
+                Work in Progress, coming soon!
+            </div>
+           
+        
+<br/><br/>
+        
+            <div class="ui three column stackable doubling grid">
+                {% comment %}A single modules row starts here!{% endcomment %}
+
+                {% comment %}A single modules row ends here!{% endcomment %}
+
+                {% comment %}A single modules row starts here!{% endcomment %}
+                <div class="row">
+                    <div class="column">
+                        <div class="ui large label" id="faculty_info" style="height:100px; width:150px;">
+                            <div class="ui centered grid"  style ="background-color:lightcyan;">
+                                <div class="row" style = "color: teal">
+                                    <i class="ui user icon big"></i>
+                                </div>
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Faculty Statistics</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="column">
+                        <div class="ui large label" id="Student_info" style="height:100px; width:150px;">
+                            <div class="ui centered grid" style ="background-color:lightcyan;">
+                                <div class="row" style = "color: teal">
+                                    <i class="ui student icon big"></i>
+                                </div>
+
+                                <div class="row" style = "color: teal">
+                                    <span class="ui sub header centered">Top Scorers (UG)</span>
+                                </div>
+                            </div>
+                        </div>
+                   </div>
+
+                   <div class="column">
+                         <div id="PnD" class="ui large label" style="height:100px; width:150px;"> 
+                            <div class="ui centered grid" style ="background-color:lightcyan;">
+                                <div class="row" style = "color: teal">
+                                    <i class="ui road icon big"></i>
+                                </div>
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Planning & Dev</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>  
+
+                <div class="row">
+                    <!-- HOD Info -->
+                    <div class="column">
+                        <div id="HOD" class="ui large label" href="" style="height:100px; width:150px;">
+                            <div class="ui centered grid" style ="background-color:lightcyan;">
+                                <div class="row" style = "color: teal">
+                                    <i class="ui book icon big"></i>
+                                </div>
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Heads of Department</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End of HOD Info -->
+
+
+                    <div class="column">
+                        <div id="gymkhana_info" class="ui large label" style="height:100px; width:150px;">
+                            <div class="ui centered grid" style ="background-color:lightcyan;">
+                                <div class="row" style = "color: teal">
+                                    <i class="ui tasks icon big"></i>
+                                </div>
+
+                                <div class="row">
+                                    <span class="ui sub header centered">Office Bearers</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="column">
+                        <div id="meetings" class="ui large label" style="height:100px; width:150px;">
+                            <div class="ui centered grid" style ="background-color:lightcyan;">
+                                <div class="row"style = "color: teal">
+                                    <i class="ui briefcase icon big"></i>
+                                </div>
+
+                                <div class="row" style = "color: teal">
+                                    <span class="ui sub header centered">Scheduled Meetings</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+            <br/><br/>
+
+
+            <div id="particular_stats">
+                
+                <!-- Table showing count of faculty in each department --> 
+                <div id="faculty_stats" style="display: none">
+                
+                <h3>Dept Wise Faculty Statistics</h3>
+
+                <table id="faculty_stats_table" style='border: 1px solid lightblue' class="ui very basic collapsing celled sortable table" style="padding-left: 5%; padding-right: 5%; padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+
+                    <thead style='background-color: lightblue'>
+                    <tr>
+                        <th class="one wide column">
+                            CSE
+                        </th>
+
+                        <th class="one wide column">
+                            ECE
+                        </th>
+
+                        <th class="one wide column">
+                            ME
+                        </th>
+
+                        <th class="one wide column">
+                            DESIGN
+                        </th>
+
+                        <th class="one wide column">
+                            NS
+                        </th>
+
+                    </tr>
+                    </thead>
+
+                    <tbody></tbody>
+
+                </table>
+                
+                </div>
+                <br>
+                
+                <div id="faculty_stats_graph" style="height: 260px; width: 90%;"> </div>
+
+                <!-- div for showing top scorers among students   -->
+                <div id="student_stats" style="display: none;">
+
+                    <table style="border: 1px solid lightblue" class="ui very basic collapsing celled sortable table" style="padding-left: 5%;
+                                                       padding-right: 5%;
+                                                       padding-top: 1%;
+                                                       padding-bottom: 1.5%;
+                                                       margin: auto;">
+
+                        <thead style="background-color:lightblue"> 
+                            <tr><th class="three wide column">Top Scorers </th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                <h5>B.Tech 2015 - CSE</h5>
+                                    <ol id="cse_15">
+                                            
+                                    </ol>
+                                <h5>B.Tech 2015 - ECE</h5>
+                                    <ol id="ece_15">
+                                            
+                                    </ol>
+                                     
+                                <h5>B.Tech 2015 - ME</h5>
+                                    <ol id="me_15">
+                                            
+                                    </ol>
+
+                                <h5>B.Des 2015</h5>
+                                    <ol id="design_15">
+                                            
+                                    </ol>
+                                </td>  
+                            </tr>
+
+                            <!-- <div class="ui divider"></div> -->
+                            <tr><td>
+                                <h5>B.Tech 2016 - CSE</h5>
+                                    <ol id="cse_16">
+                                        
+                                    </ol>
+                                <h5>B.Tech 2016 - ECE</h5>
+                                    <ol id="ece_16">
+                                        
+                                    </ol>
+                                 
+                                 <h5>B.Tech 2016 - ME</h5>
+                                    <ol id="me_16"></ol>
+
+                                 <h5>B.Tech 2016 - DESIGN</h5>
+                                    <ol id="design_16"></ol>   
+
+                                  <div class="ui divider"></div>
+
+                                  <h5>B.Tech 2017 - CSE</h5>
+                                    <ol id="cse_17">
+                                        
+                                    </ol>
+                                <h5>B.Tech 2017 - ECE</h5>
+                                    <ol id="ece_17"></ol>
+                                 
+                                 <h5>B.Tech 2017 - ME</h5>
+                                    <ol id="me_17"></ol>
+
+                                 <h5>B.Tech 2017 - DESIGN</h5>
+                                    <ol id="design_17"> 
+                                    </ol>
+                                </td>
+                            </tr>
+                        </tbody>
+                        
+                    </table> 
+                      <!-- <div class="ui divider"></div>  
+                       -->
+                </div>
+
+                <div id="project_stats" style="display: none;">
+
+                    <h3>Ongoing Project Details </h3>
+
+                    <table id="project_stats_table" style='border: 1px solid lightblue' class="ui very basic collapsing celled sortable table" style="padding-left: 5%;
+                                                       padding-right: 5%;
+                                                       padding-top: 1%;
+                                                       padding-bottom: 1.5%;
+                                                       margin: auto;">
+
+                        <thead style='background-color: lightblue'>
+                        <tr>
+                            <th class="one wide column">
+                                Project Title 
+                            </th>
+
+                            <th class="one wide column">
+                                Project Type
+                            </th>
+
+                            <th class="one wide column">
+                                Duration
+                            </th>
+
+                            <th class="one wide column">
+                                Sponsored Agency
+                            </th>
+
+                            <th class="one wide column">
+                                HOD Response 
+                            </th>
+
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>CC cum Library</td>
+                                <td>Consultancy</td>
+                                <td>2 year</td>
+                                <td>ABC ltd</td>
+                                <td>Pending</td>
+                            </tr>
+                            <tr>
+                                <td>SAC</td>
+                                <td>Consultancy</td>
+                                <td>4 year</td>
+                                <td>MNL pvt ltd</td>
+                                <td>Pending</td>
+                            </tr>
+                        </tbody>
+
+                    </table>
+
+
+
+                </div>
+
+
+                <!-- div for gymkhana -->
+                <div id="gymkhana_stats" style="display: none">
+                
+                    <h3>Gymkhana Office Bearers</h3>
+
+                    <table id="gymkhana_stats_table" style='border: 1px solid lightblue' class="ui very basic collapsing celled sortable table" style="padding-left: 5%;padding-right: 5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
+
+                        <thead style='background-color: lightblue'>
+                        <tr>
+                            <th class="one wide column">
+                                Club name 
+                            </th>
+
+                            <th class="one wide column">
+                                Co-ordinator
+                            </th>
+
+                            <th class="one wide column">
+                                Co-coordinator
+                            </th>
+
+                            <th class="one wide column">
+                                Faculty incharge 
+                            </th>
+
+                        </tr>
+                        </thead>
+
+                        <tbody></tbody>
+
+                    </table>
+                </div>
+
+
+
+                <!-- div section for display of HOD data -->
+                <div id="HOD_info" style="display: none;">
+                    <table style="border: 1px solid lightblue" class="ui very basic collapsing celled sortable table" style="padding-left: 5%;
+                                                       padding-right: 5%;
+                                                       padding-top: 1%;
+                                                       padding-bottom: 1.5%;
+                                                       margin: auto;">
+
+                        <thead style="background-color:lightblue"> 
+                            <tr><th class="three wide column"> HODs of Respective Departments </th></tr>
+                        </thead>
+                    
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <ol id="HOD_list">
+                                        
+                                    </ol>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                      
+                </div>
+
+
+
+
+<!--  end of HOD section -->
+
+
+                <!-- div for meetings --> 
+                <div id="meeting_div" style="display: none">
+                
+                    <h3>Scheduled Meetings</h3>
+
+                    <table id="meeting_table" style='border: 1px solid lightblue' class="ui very basic collapsing celled sortable table" style="padding-left: 5%;
+                                                           padding-right: 5%;
+                                                           padding-top: 1%;
+                                                           padding-bottom: 1.5%;
+                                                           margin: auto;">
+
+                        <thead style="background-color: lightblue;">
+                        <tr>
+                            <th class="two wide column">
+                                Agenda 
+                            </th>
+
+                            <th class="one wide column">
+                                Date
+                            </th>
+
+                            <th class="one wide column">
+                                Time
+                            </th>
+
+                            <th class="one wide column">
+                                Venue
+                            </th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                            
+                        </tbody>
+
+                    </table>
+                </div>
+
+
+
+            </div>
+
+            <br> <br> <br> <br> 
+            </div>
+        
+
+
+       <br/><br/>
+       
+      
+<br/><br/>
+
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+                {% comment %}The Modules:{% endcomment %}
+                {% block modules %}
+                    {% include 'dashboard/modules.html' %}
+                {% endblock %}
+            </div>
+
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+
+
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script>
+        //----------------------calender--------------------------------
+        $('#rangestart').calendar({
+            monthFirst: false,
+            type: 'date',
+            minDate: new Date(getToday().getFullYear(), getToday().getMonth(), getToday().getDate()),
+            formatter: {
+              date: function (date, settings) {
+                if (!date) return '';
+                var day = date.getDate();
+                var month = date.getMonth() + 1;
+                var year = date.getFullYear();
+                return year + '-' + month + '-' + day;
+              }
+            }
+        });
+        /*$(document).ready(function(){
+            $("#textLoader").toggle();
+            $("#replacement-card").toggle();
+            setTimeout(loader, 1750);
+        });
+        function loader() {
+            $("#textLoader").toggle();
+            $("#replacement-card").toggle();
+            $("#loader").removeClass("active");
+            $("#loader").addClass("disabled");
+        }*/
+    </script>
+
+<!-- Script for faculty count -->
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script> 
+    <script type="text/javascript">
+
+        $('#faculty_info').click(function(){
+            $("#faculty_stats").css("display", "block");
+            $("#student_stats").css("display", "none");
+            $("#project_stats").css("display", "none");
+            $("#gymkhana_stats").css("display", "none");
+            $("#HOD_info").css("display", "none");
+            $("#meeting_div").css("display", "none");
+            //alert("hey")
+            $.ajax({
+                type: 'POST',
+                url: '/office_module/directorOffice/viewProfile',
+                data: {},
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                success: function(response){
+                    console.log(response)
+                    $('#faculty_stats_table').children('tbody').html('')
+                    $('#faculty_stats_table').children('tbody').append('<tr>');
+                    for(var i=0;i<response.all_counts.length;i++){
+                        $('#faculty_stats_table').children('tbody').append('<td>' + response.all_counts[i] + '</td>');
+                  
+                    }
+                    $('#faculty_stats_table').children('tbody').append('</tr>')
+                    $('#faculty_stats_graph').css("display","block")
+                    var chart = new CanvasJS.Chart("faculty_stats_graph", {
+                    animationEnabled: true,
+                    theme: "light1", // "light1", "light2", "dark1", "dark2"
+                    title:{
+                        text: ""
+                    },
+                    axisY: {
+                        title: "Count of faculties"
+                    },
+                    data: [{        
+                        type: "column",  
+                        showInLegend: true, 
+                        legendMarkerColor: "black",
+                        legendText: "Departments",
+                        dataPoints: [      
+                            { y: response.all_counts[0], label: "CSE" },
+                            { y: response.all_counts[1],  label: "ECE" },
+                            { y: response.all_counts[2],  label: "ME" },
+                            { y: response.all_counts[3],  label: "DESIGN" },
+                            { y: response.all_counts[4],  label: "NATURAL SCIENCES" }
+                        ]
+                    }]
+                });
+                chart.render();
+                $('#faculty_stats_graph').append('<br><br>')
+              },
+                error: function(rs, e){
+                console.log('error');
+                },
+            });
+        });
+    </script>
+
+
+<!-- top students department and year wise -->
+    <script type="text/javascript">
+        $('#Student_info').click(function(){
+        $("#student_stats").css("display", "block");
+        $("#faculty_stats").css("display", "none");
+        $("#faculty_stats_graph").css("display", "none");
+        $("#project_stats").css("display", "none");
+        $("#gymkhana_stats").css("display", "none");
+        $("#HOD_info").css("display", "none");
+        $("#meeting_div").css("display", "none");
+
+        $.ajax({
+                type: 'POST',
+                url: '/office_module/directorOffice/viewProfile',
+                data: {},
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                success: function(response){
+                    console.log(response)
+                    $('#student_stats table tbody ol').html('')
+                    $('#cse_15').append('<li>' + response.top_15_cse[0] + '&nbsp; &nbsp; -- &nbsp;' + 
+                        response.top_15_cse[1] +'</li>'+'<li>' + response.top_15_cse[2] + '&nbsp; &nbsp; -- &nbsp;' + response.top_15_cse[3] +'</li>' + '<li>' + response.top_15_cse[4] + '&nbsp; &nbsp; -- &nbsp;' + response.top_15_cse[5] + '</li>');
+
+                    $('#ece_15').append('<li>' + response.top_15_ece[0] + '&nbsp; &nbsp; -- &nbsp;' + 
+                        response.top_15_ece[1] +'</li>'+'<li>' + response.top_15_ece[2] +  '&nbsp; &nbsp; -- &nbsp;' + response.top_15_ece[3]+ '</li>' + '<li>' + response.top_15_ece[4] +  '&nbsp; &nbsp; -- &nbsp;' + response.top_15_ece[5]+ '</li>');
+
+
+                    $('#me_15').append('<li>' + response.top_15_me[0] +  '&nbsp; &nbsp; -- &nbsp;' + 
+                        response.top_15_me[1]+  '</li>'+'<li>' + response.top_15_me[2] + '&nbsp; &nbsp; -- &nbsp;' + response.top_15_me[3]+  '</li>' + '<li>' + response.top_15_me[4] +  '&nbsp; &nbsp; -- &nbsp;' + response.top_15_me[5]+ '</li>');
+
+                    $('#design_15').append('<li>' + response.top_15_design[0] +  '&nbsp; &nbsp; -- &nbsp;' + response.top_15_design[1] +  '</li>'+'<li>' + response.top_15_design[2] +  '&nbsp; &nbsp; -- &nbsp;' + response.top_15_design[3] + '</li>' + '<li>' + response.top_15_design[4] +  '&nbsp; &nbsp; -- &nbsp;' + response.top_15_design[5]  + '</li>');
+
+                    $('#cse_16').append('<li>' + response.top_16_cse[0] +  '&nbsp; &nbsp; -- &nbsp;' + 
+                        response.top_16_cse[1]  + '</li>'+'<li>' + response.top_16_cse[2] +   '&nbsp; &nbsp; -- &nbsp;' + response.top_16_cse[3]  +'</li>' + '<li>' + response.top_16_cse[4] +   '&nbsp; &nbsp; -- &nbsp;' + response.top_16_cse[5]  +'</li>');
+
+                    $('#ece_16').append('<li>' + response.top_16_ece[0] +   '&nbsp; &nbsp; -- &nbsp;' + 
+                        response.top_16_ece[1]  +'</li>'+'<li>' + response.top_16_ece[2] +   '&nbsp; &nbsp; -- &nbsp;' + response.top_16_ece[3]  +'</li>' + '<li>' + response.top_16_ece[4] +   '&nbsp; &nbsp; -- &nbsp;' + response.top_16_ece[5]  +'</li>');
+
+                    $('#me_16').append('<li>' + response.top_16_me[0] +   '&nbsp; &nbsp; -- &nbsp;' + 
+                        response.top_16_me[1]  + '</li>'+'<li>' + response.top_16_me[2] +    '&nbsp; &nbsp; -- &nbsp;' + response.top_16_me[3]  +'</li>' + '<li>' + response.top_16_me[4] +    '&nbsp; &nbsp; -- &nbsp;' + response.top_16_me[5]  +'</li>');
+
+                    $('#design_16').append('<li>' + response.top_16_design[0] +    '&nbsp; &nbsp; -- &nbsp;' + response.top_16_design[1]  + '</li>'+'<li>' + response.top_16_design[2] +   '&nbsp; &nbsp; -- &nbsp;' + response.top_16_design[3]  + '</li>' + '<li>' + response.top_16_design[4] +   '&nbsp; &nbsp; -- &nbsp;' + response.top_16_design[5]  +  '</li>');
+
+                    $('#cse_17').append('<li>' + response.top_17_cse[0] + '&nbsp; &nbsp; -- &nbsp;' + response.top_17_cse[1] + '</li>' + '<li>' + response.top_17_cse[2] + '&nbsp; &nbsp; -- &nbsp;' +response.top_17_cse[3] + '</li>' + '<li>' + response.top_17_cse[4] + '&nbsp; &nbsp; -- &nbsp;' + response.top_17_cse[5] + '</li>');
+
+                    $('#ece_17').append('<li>' + response.top_17_ece[0] + '&nbsp; &nbsp; -- &nbsp;' + response.top_17_ece[1] + '</li>' + '<li>' + response.top_17_ece[2] + '&nbsp; &nbsp; -- &nbsp;' +response.top_17_ece[3] + '</li>' + '<li>' + response.top_17_ece[4] + '&nbsp; &nbsp; -- &nbsp;' + response.top_17_ece[5] + '</li>');
+
+                    $('#me_17').append('<li>' + response.top_17_me[0] + '&nbsp; &nbsp; -- &nbsp;' + response.top_17_me[1] + '</li>' + '<li>' + response.top_17_me[2] + '&nbsp; &nbsp; -- &nbsp;' +response.top_17_me[3] + '</li>' + '<li>' + response.top_17_me[4] + '&nbsp; &nbsp; -- &nbsp;' + response.top_17_me[5] + '</li>');
+
+                    $('#design_17').append('<li>' + response.top_17_design[0] + '&nbsp; &nbsp; -- &nbsp;' + response.top_17_design[1] + '</li>' + '<li>' + response.top_17_design[2] + '&nbsp; &nbsp; -- &nbsp;' +response.top_17_design[3] + '</li>' + '<li>' + response.top_17_design[4] + '&nbsp; &nbsp; -- &nbsp;' + response.top_17_design[5] + '</li>');
+
+
+
+                },
+                error: function(rs, e){
+                console.log('error');
+                },
+            });
+        });
+    </script>
+
+<!-- Script for ongoing projects -->
+    <script type="text/javascript">
+
+        $('#PnD').click(function(){
+            //alert("hey")
+            $("#project_stats").css("display", "block");
+            $("#student_stats").css("display", "none");
+            $("#faculty_stats").css("display", "none");
+            $("#faculty_stats_graph").css("display", "none");
+            $("#gymkhana_stats").css("display", "none");
+             $("#HOD_info").css("display", "none");
+             $("#meeting_div").css("display", "none");
+            
+            $.ajax({
+                type: 'POST',
+                url: '/office_module/directorOffice/viewOngoingProjects',
+                data: {},
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                success: function(response){
+                    console.log(response)
+                    //var response=JSON.parse(response);
+                    $("#project_stats").css("display", "block");
+
+                    //if data of projects from database
+                    /*
+                    $('#project_stats_table').children('tbody').html('')
+                    //$('#particular_stats').html('');
+                    $('#project_stats_table').children('tbody').append('<tr>');
+                    for(var i=0;i<response.project_details.length;i++){
+                        $('#project_stats_table').children('tbody').append('<td>' + response.project_details[i] + '</td>');
+                  
+                    }
+                    $('#project_stats_table').children('tbody').append('</tr>'); */
+    
+                    
+                },
+                error: function(rs, e){
+                console.log('error');
+                },
+            });
+
+
+        });
+    </script>
+
+<!-- Script for gymkhana info -->
+    <script type="text/javascript">
+        $('#gymkhana_info').click(function(){
+            $("#gymkhana_stats").css("display", "block");
+            $("#faculty_stats").css("display", "none");
+            $("#student_stats").css("display", "none");
+            $("#project_stats").css("display", "none");
+            $("#faculty_stats_graph").css("display", "none");
+            $("#meeting_div").css("display", "none");
+            $("#HOD_info").css("display", "none");
+            //alert("hey")
+            $.ajax({
+                type: 'POST',
+                url: '/office_module/directorOffice/viewOfficeBearers',
+                data: {},
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                success: function(response){
+                    console.log(response)
+                    $('#gymkhana_stats_table').children('tbody').html('')
+                    //$('#particular_stats').html('');
+                    for(var i=0;i<response.club_details.length;i=i+4){
+                        $('#gymkhana_stats_table').children('tbody').append('<tr>');
+                        $('#gymkhana_stats_table').children('tbody').append('<td>' + response.club_details[i] + '</td> <td>' + response.club_details[i+1] + '</td> <td>' + response.club_details[i+2] + '</td> <td>' + response.club_details[i+3] + '</td>');
+                        $('#gymkhana_stats_table').children('tbody').append('</tr>')
+                    }
+                   
+                },
+                error: function(rs, e){
+                console.log('error');
+                },
+            });
+        });
+    </script>
+
+<!-- Script to view Scheduled meetings -->
+    <script type="text/javascript">
+
+        $('#meetings').click(function(){
+            //alert("hey")
+            $("#gymkhana_stats").css("display", "none");
+            $("#faculty_stats").css("display", "none");
+            $("#faculty_stats_graph").css("display", "none");
+            $("#student_stats").css("display", "none");
+            $("#project_stats").css("display", "none");
+            $("#HOD_info").css("display", "none");
+            $("#meeting_div").css("display", "block");
+
+            $.ajax({
+                type: 'POST',
+                url: '/office_module/directorOffice/viewMeetings',
+                data: {},
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                success: function(response){
+                    console.log(response)
+                    var k=0; 
+                    $('#meeting_table').children('tbody').html('')
+                    for(var i=0;i<response.meeting.length;i=i+4){
+                        console.log(k);
+                        $('#meeting_table').children('tbody').append('<tr>')
+                        $('#meeting_table').children('tbody').append('<td>' + response.meeting[i] + '</td> <td>' + response.meeting[i+1] + '</td> <td>' + response.meeting[i+2] + '</td> <td>' + response.meeting[i+3] + '</td>');
+                        $('#meeting_table').children('tbody').append('</tr>')
+                  
+                    }
+                    
+                },
+                error: function(rs, e){
+                console.log('error');
+                },
+            });
+        });
+    </script>
+
+
+<!--   Script for lost of HODs -->
+    <script type="text/javascript">
+        $('#HOD').click(function(){
+        $("#HOD_info").css("display", "block");
+        $("#student_stats").css("display", "none");
+        $("#gymkhana_stats").css("display", "none");
+        $("#faculty_stats").css("display", "none");
+        $("#faculty_stats_graph").css("display", "none");
+        $("#project_stats").css("display", "none");
+        $("#meeting_div").css("display", "none");
+        
+        $.ajax({
+                type: 'POST',
+                url: '/office_module/directorOffice/viewHOD',
+                data: {},
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                success: function(response){
+                    console.log(response)
+                    //$('#HOD_info').children('ol').html('')
+                    $('#HOD_info table tbody ol').html('')
+                    $('#HOD_list').append('<li> <h5>HOD (CSE) </h5>&nbsp;&nbsp -- &nbsp;' + response.csehod[0] + '</li><li> <h5>HOD (ECE) </h5>&nbsp;&nbsp -- &nbsp;' + response.ecehod[0] + '</li><li> <h5>HOD (ME) </h5>&nbsp;&nbsp -- &nbsp;'+ response.mehod[0] + '</li><li> <h5>HOD (NS) </h5>&nbsp;&nbsp -- &nbsp;'+ response.nshod[0] + '</li><li> <h5>HOD (DESIGN) </h5>&nbsp;&nbsp -- &nbsp;'+ response.deshod[0] + '</li>');
+       
+                },
+                error: function(rs, e){
+                console.log('error');
+                },
+            });
+        });
+    </script>
+<!--   End  of HOD script -->
+
+
+
+
+
+
+
+
+
+{% endblock %}

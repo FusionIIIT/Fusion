@@ -1,0 +1,382 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+Home
+{% endblock %}
+
+{% block css %}
+
+
+
+<link rel="stylesheet" type="text/css" href="{% static 'semantic/dist/components/site.css' %}">
+<style type="text/css">
+
+    .post{
+        justify-content: center;  
+        align-items: center;
+        display: flex;
+    }
+    .hidden.menu {
+        display: none;
+    }
+
+    .masthead.segment {
+        min-height: 700px;
+        padding: 1em 0em;
+    }
+
+    .masthead .logo.item img {
+        margin-right: 1em;
+    }
+
+    .masthead .ui.menu .ui.button {
+        margin-left: 0.5em;
+    }
+
+    .masthead h1.ui.header {
+        margin-top: 3em;
+        margin-bottom: 0em;
+        font-size: 4em;
+        font-weight: normal;
+    }
+
+    .masthead h2 {
+        font-size: 1.7em;
+        font-weight: normal;
+    }
+
+    .ui.vertical.stripe {
+        padding: 8em 0em;
+    }
+
+    .ui.vertical.stripe h3 {
+        font-size: 2em;
+    }
+
+    .ui.vertical.stripe .button+h3,
+    .ui.vertical.stripe p+h3 {
+        margin-top: 3em;
+    }
+
+    .ui.vertical.stripe .floated.image {
+        clear: both;
+    }
+
+    .ui.vertical.stripe p {
+        font-size: 1.33em;
+    }
+
+    .ui.vertical.stripe .horizontal.divider {
+        margin: 3em 0em;
+    }
+
+    .team.stripe.segment {
+        padding: 0em;
+    }
+
+    .team.stripe.segment .grid .column {
+        padding-top: 5em;
+        padding-bottom: 5em;
+    }
+
+    .footer.segment {
+        padding: 5em 0em;
+    }
+
+    .secondary.pointing.menu .toc.item {
+        display: none;
+    }
+
+    @media only screen and (max-width: 700px) {
+        .ui.fixed.menu {
+            display: none !important;
+        }
+
+        .secondary.pointing.menu .item,
+        .secondary.pointing.menu .menu {
+            display: none;
+        }
+
+        .secondary.pointing.menu .toc.item {
+            display: block;
+        }
+
+        .masthead.segment {
+            min-height: 350px;
+        }
+
+        .masthead h1.ui.header {
+            font-size: 2em;
+            margin-top: 1.5em;
+        }
+
+        .masthead h2 {
+            margin-top: 0.5em;
+            font-size: 1.5em;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<!-- Following Menu -->
+<div class="ui massive top fixed menu transition hidden">
+    <div class="ui container">
+        <a class="active item">Home</a>
+        
+        <div class="right menu">
+        {% if user.is_authenticated %}
+            <div class="item">
+                <a class="ui button" href="/recruitment/logout">
+                    Logout
+                </a>
+            </div>
+            {% else %}
+            
+            <div class="item">
+                <a class="ui button" href="/recruitment/login">
+                    Log in
+                </a>
+            </div>
+
+            <div class="item">
+                <a class="ui button" href="/recruitment/register">
+                    Register
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Page Contents -->
+<div class="pusher">
+    <div class="ui inverted vertical masthead center aligned segment">
+
+        <div class="ui container">
+            <div class="ui large secondary inverted pointing menu">
+
+                <a class="active item">Home</a>
+
+                <div class="right item">
+                {% if user.is_authenticated %}
+                     <a class="ui inverted button" href='/recruitment/logout'>
+                        Logout
+                    </a>
+                {% else %}
+                    <a class="ui inverted button" href='/recruitment/login'>
+                        Log in
+                    </a>
+
+                    <a class="ui inverted button" href='/recruitment/register'>
+                        Register
+                    </a>
+                {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="ui text container">
+            <h1 class="ui inverted header">
+                IIITDM Jabalpur
+            </h1>
+
+            <h3>
+                Staff Recruitment
+                <br>
+                Teaching and Non Teaching
+            </h3>
+
+            <!--TODO-->
+            <br>
+            {% if user.is_authenticated %}
+            <a class="ui primary large button" href="/recruitment/logout">
+                Logout
+                <i class="right arrow icon"></i>
+            </a>
+            {% else %}
+            <a class="ui primary large button" href="/recruitment/login">
+                Log in
+                <i class="right arrow icon"></i>
+            </a>
+            <a class="ui primary large button" href="/recruitment/login">
+                Register
+                <i class="right arrow icon"></i>
+            </a>
+            {% endif %}
+        </div>
+
+    </div>
+
+    {% comment %}
+    The Second segment starts here!
+    {% endcomment %}
+    <div class="ui vertical stripe segment" style="background-color: #FFF;">
+        <div class="ui text container">
+            <h3 class="ui header">
+                Welcome to IIITDM Jabalpur's Recruitment
+            </h3>
+            <p>
+                IIITDM Jabalpur provides a unique opportunity to work alongside brilliant students,
+                academicians and outstanding researchers. We are on the lookout for young individuals
+                to help IIITDM Jabalpur grow by efficiently handling its administrative processes.
+                The opportunities available at IIITDMJ are given in the links below.
+            </p>
+            <p>
+                - If you are the faculty member of IIITDMJ then use your institue's gmail account to Sign In.<BR>
+                - If Not then click on the register button to Register. <BR>
+            </p>
+
+            <h4 class="ui horizontal header divider">
+                <span>Gmail Sign In</span>
+            </h4>
+
+
+            <div class="ui grid">
+                <div class="eight wide column">
+                    <div class="ui card">
+                        <a class="image" href="teaching">
+                            <img src="https://semantic-ui.com/images/avatar/large/elliot.jpg">
+                        </a>
+                        <div class="content">
+                            <a class="header" href="teaching">Teaching</a>
+                            <div class="meta">
+                                <a>Last Updated 2 days ago</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="eight wide column">
+                    <div class="ui card">
+                        <a class="image" href="non-teaching">
+                            <img src="https://semantic-ui.com/images/avatar2/large/elyse.png">
+                        </a>
+                        <div class="content">
+                            <a class="header" href="non-teaching">Non Teaching</a>
+                            <div class="meta">
+                                <a>Last Updated 2 days ago</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h4 class="ui horizontal header divider">
+                <span>Jobs</span>
+            </h4>
+
+            {% if request.user.is_superuser %}
+            <div class="post">
+            <a href="post">
+            <button class="ui secondary button" >
+                Post Job
+            </button>
+            </a>
+            <a href="create">
+            <button class="ui secondary button" >
+                Create Form
+            </button>
+            </a>
+
+            </div>
+            <h4 class="ui horizontal header divider">
+                <span>Admin - Post Job</span>
+            </h4>
+            {% endif %}
+
+            <h3 class="ui header">
+                What if you can't Sign In using your Institute's Gmail Account
+            </h3>
+
+            <p>
+                <br> Drop a mail at <B>erp@iiitdmj.ac.in</B> or <B> anuraagsingh@iiitdmj.ac.in</B>
+                It will be fixed.</p>
+
+            <h4 class="ui horizontal header divider">
+                <span>Feedback/Bug report</span>
+            </h4>
+            <h3 class="ui header">
+                What if something doesn't work?
+            </h3>
+
+            <p>
+                Yes we know, you probably feel disappointed.
+                <BR>Again you can drop a mail at <B>erp@iiitdmj.ac.in</B>. <BR>You can always give your feedback by
+                clicking the top left corner of the top navigation bar.
+
+            </p>
+        </div>
+    </div>
+    {% comment %}
+    The Second Segment ends here!
+    {% endcomment %}
+
+
+    <div class="ui inverted vertical footer segment">
+        <div class="ui divider"></div>
+
+        <div class="ui container">
+            <div class="ui stackable inverted divided equal height stackable grid">
+
+                <!--TODO-->
+
+                <div class="eight wide column">
+                    <h4 class="ui inverted header">
+                        About
+                    </h4>
+
+                    <div class="ui inverted link list">
+                        <a href="http://www.iiitdmj.ac.in" target="_blank" class="item">
+                            Sitemap
+                        </a>
+                        <a href="http://web.iiitdmj.ac.in" target="_blank" class="item">
+                            IntraWeb
+                        </a>
+                    </div>
+                </div>
+
+                <div class="eight wide column">
+                    <h4 class="ui inverted header">
+                        Team
+                    </h4>
+
+                    <div class="ui inverted link list">
+                        <a class="item">
+                            3rd Year CSE
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+
+    {% block javascript %}
+    <script type="text/javascript" src="{% static 'globals/js/sidebar.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/transition.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/visibility.js' %}"></script>
+
+    <script>
+        $(document)
+            .ready(function () {
+
+                // fix menu when passed
+                $('.masthead')
+                    .visibility({
+                        once: false,
+                        onBottomPassed: function () {
+                            $('.fixed.menu').transition('fade in');
+                        },
+                        onBottomPassedReverse: function () {
+                            $('.fixed.menu').transition('fade out');
+                        }
+                    });
+
+                // create sidebar and attach to menu open
+                $('.ui.sidebar')
+                    .sidebar('attach events', '.toc.item');
+
+            });
+    </script>
+    {% endblock %}

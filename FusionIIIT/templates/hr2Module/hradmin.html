@@ -1,0 +1,389 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+Module
+{% endblock %}
+
+
+
+{% block body %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
+
+{% comment %}The grid starts here!{% endcomment %}
+<div class="ui stackable doubling grid">
+
+    {% comment %}The left-margin segment!{% endcomment %}
+    <div class="column"></div>
+
+    {% comment %}
+    The left-rail segment starts here!
+    {% endcomment %}
+    <div class="three wide column">
+
+        {% comment %}The user image card starts here!{% endcomment %}
+        {% block usercard %}
+        {% include 'globals/usercard.html' %}
+        {% endblock %}
+        {% comment %}The user image card ends here!{% endcomment %}
+
+        <div class="ui divider"></div>
+
+        {% comment %}The Tab-Menu starts here!{% endcomment %}
+        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+
+            <a class="item" href="{% url 'globals:profile' %}">
+                View Profile
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+
+        </div>
+
+        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+
+            <a class="item" href="{% url 'hr2:addnew'%}">
+                Add new Employee
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+        </div>
+        <!-- <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+
+            <a class="item" href="/establishment/cpda/">
+                CPDA
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+        </div>
+
+        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+
+            <a class="item" href="/establishment/ltc/">
+                LTC
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+        </div>
+        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+
+            <a class="item" href="/establishment/appraisal/">
+                Appraisal
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+        </div>
+        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+
+            <a class="item" href="/leave/">
+                Leave
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+        </div> -->
+
+
+        {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+    </div>
+    {% comment %}
+    The left-rail segment ends here!
+    {% endcomment %}
+
+
+
+    {% comment %}
+    The central-rail segment starts here!
+    {% endcomment %}
+
+    <div class="eight wide column">
+        <div class="ui top attached tabular large menu">
+
+            <a class="active item" data-tab="first">Present Employees</a>
+
+
+            <!-- <a class="item" data-tab="third">New Employees</a> -->
+
+
+
+        </div>
+
+
+
+        <div class="ui bottom attached active tab segment" data-tab="first">
+            <div id="textSegmentDiv">
+
+                {% comment %}
+                TODO: Loader required?
+                <div class="ui active large text loader" id="loader">
+                    Loading ...
+                </div>
+                {% endcomment %}
+
+                <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+                    {% block alerts %}
+
+
+
+
+
+
+                    <div class="item"
+                        style="margin-top: 10px ;margin-bottom: 10px ;margin-right: 10px;display: flex;justify-content: flex-end; ">
+                        <form method="GET" action="">
+
+                            <div class="ui search">
+                                <div class="ui action input">
+                                    <input type="text" name="search" placeholder="Search...">
+                                    <button type="submit" class="ui button"><i class="search icon"></i></button>
+                                    <button onclick="history.back()" class="ui button">✕</button>
+                                </div>
+                                <div class="results"></div>
+                            </div>
+
+                        </form>
+                    </div>
+
+                    {%for emp in empPresent%}
+
+                    <div class="ui one cards" style="padding: 2px;">
+                        <div class="ui blue card" id="noti">
+
+
+
+
+                            <div class="content">
+
+
+
+
+                                <div class="header">
+                                    <a href="{%url 'hr2:viewEmployeeDetails' emp.user.id %}"> {{emp.user.first_name}} {{emp.user.last_name}}
+                                    </a>
+                                </div>
+                                <div class="meta">
+                                    <!-- This will need to be added to models and then migrated -->
+                                    <!-- date_modified = models.DateTimeField(auto_now=True) -->
+                                    Last updated on {{emp.user.extrainfo.date_modified}}
+                                </div>
+
+                                <!-- <div class="description">
+                                    status
+                                </div> -->
+                                <br>
+                                <div class="two wide column">
+                                    <!-- <a href="{%url 'hr2:viewEmployeeDetails' emp.user.id %}">
+                                        <div class="ui right floated blue button notif-status" id="notif-status">
+                                            <div id="notif-sp">View</div>
+                                        </div>
+                                    </a> -->
+
+                                    <a href="{%url 'hr2:editServiceBook' emp.user.id %}">
+                                        <div class="ui right floated blue button notif-status" id="notif-status">
+                                            <div id="notif-sp">Add E-ServiceBook</div>
+                                        </div>
+                                    </a>
+                                    
+                                    <a href="{%url 'hr2:editEmployeeDetails' emp.user.id %}">
+                                        <div class="ui right floated blue button notif-status" id="notif-status">
+                                            <div id="notif-sp">Edit User Details</div>
+                                        </div>
+                                    </a>
+                                </div>
+
+                                <!-- <div class="ui right floated button notif-status" id="notif-status">
+                                    <div id="notif-sp">Mark as Unread</div>
+                                </div> -->
+
+                            </div>
+
+
+
+
+
+                        </div>
+
+
+
+
+
+                    </div>
+
+                    {% endfor %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    <!-- temp -->
+
+
+                    {% endblock %}
+                </div>
+            </div>
+
+        </div>
+
+
+
+        <div class="ui bottom attached  tab segment" data-tab="third">
+            <div id="textSegmentDiv">
+
+                {% comment %}
+                TODO: Loader required?
+                <div class="ui active large text loader" id="loader">
+                    Loading ...
+                </div>
+                {% endcomment %}
+
+                <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+
+
+                    <div class="item"
+                        style="margin-top: 10px ;margin-bottom: 10px ;margin-right: 10px;display: flex;justify-content: flex-end; ">
+                        <form method="GET" action="">
+
+                            <div class="ui search">
+                                <div class="ui action input">
+                                    <input type="text" name="search" placeholder="Search...">
+                                    <button type="submit" class="ui button"><i class="search icon"></i></button>
+                                    <button onclick="history.back()" class="ui button">✕</button>
+                                </div>
+                                <div class="results"></div>
+                            </div>
+
+                        </form>
+                    </div>
+
+                    {%for emp in empNew%}
+
+                    <div class="ui one cards" style="padding: 2px;">
+                        <div class="ui blue card" id="noti">
+
+
+                            <div class="content">
+                                <div class="header">
+                                    <a href="#"> {{emp.user.first_name}} {{emp.user.last_name}}
+                                    </a>
+                                </div>
+                                <div class="meta">
+                                    Last updated on {{emp.user.extrainfo.date_modified}}
+                                </div>
+                                <br>
+                                <div class="two wide column">
+                                    <a href="{%url 'hr2:editEmployeeDetails' emp.user.id %}">
+                                        <div class="ui right floated blue button notif-status" id="notif-status">
+                                            <div id="notif-sp">Edit User Details</div>
+                                        </div>
+                                    </a>
+
+                                    <a href="{%url 'hr2:editServiceBook' emp.user.id %}">
+                                        <div class="ui right floated blue button notif-status" id="notif-status">
+                                            <div id="notif-sp">Add E-ServiceBook</div>
+                                        </div>
+                                    </a>
+
+                                    <a href="{%url 'hr2:viewEmployeeDetails' emp.user.id %}">
+                                        <div class="ui right floated blue button notif-status" id="notif-status">
+                                            <div id="notif-sp">View</div>
+                                        </div>
+                                    </a>
+
+                                </div>
+
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+            </div>
+
+        </div>
+
+
+    </div>
+
+    {% comment %}The central-rail segment ends here!{% endcomment %}
+
+
+
+    <div class="three wide column">
+        <div class="row">
+            {% comment %}The Modules:{% endcomment %}
+            {% block modules %}
+            {% include 'dashboard/modules.html' %}
+            {% endblock %}
+        </div>
+
+    </div>
+
+
+
+
+
+
+</div>
+{% comment %}The grid ends here!{% endcomment %}
+
+
+
+{% endblock %}
+
+{% block javascript %}
+<script
+    src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+<script>
+    //----------------------calender--------------------------------
+
+    $('#rangestart').calendar({
+        monthFirst: false,
+        type: 'date',
+        minDate: new Date(getToday().getFullYear(), getToday().getMonth(), getToday().getDate()),
+        formatter: {
+            date: function (date, settings) {
+                if (!date) return '';
+                var day = date.getDate();
+                var month = date.getMonth() + 1;
+                var year = date.getFullYear();
+                return year + '-' + month + '-' + day;
+            }
+        }
+    });
+
+    /*$(document).ready(function(){
+        $("#textLoader").toggle();
+        $("#replacement-card").toggle();
+        setTimeout(loader, 1750);
+    });
+    function loader() {
+        $("#textLoader").toggle();
+        $("#replacement-card").toggle();
+        $("#loader").removeClass("active");
+        $("#loader").addClass("disabled");
+    }*/
+</script>
+{% endblock %}

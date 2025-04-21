@@ -1,0 +1,140 @@
+{% load static %}
+
+{% block viewstatus %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    {% comment %} <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="History">
+            Current Status
+        </a>
+    </div> {% endcomment %}
+
+    <div class="ui active tab" data-tab="History">
+        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+            {% comment %} <div class="ui header">
+                Status of issues :
+            </div> {% endcomment %}
+
+
+            <div class="content">
+                <div class="description">
+
+                    <table class="ui very basic collapsing celled large sortable table"
+                           style="padding-left: 2.5%;
+                                                              padding-right: 2.5%;
+                                                              padding-top: 1%;
+                                                              padding-bottom: 1.5%;
+                                                              margin: auto;">
+                        <thead>
+                        <tr>
+                            <th>
+                                Issues Raised On
+                            </th>
+
+                            <th>
+                                Category
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Remarks
+                            </th> 
+                            <th>
+                                Resolved by
+                            </th> 
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                {% for  status in statuses %}
+                <tr>
+                    <td>
+                        {{ status.issue_raised_date}}
+                    </td>
+
+                    <td>
+                        {{ status.issue_category.category}}
+                    </td>
+
+                    <td >
+
+                        {{ status.issue_status}}
+                    </td>
+
+                    <td default="-">
+                        {{ status.response_remark}}
+                    </td> 
+                    <td default="-">
+                        {{ status.resolved_by.user.first_name }} {{status.resolved_by.user.username}}
+                    </td> 
+                </tr>
+                {% endfor %}
+                </tbody>
+
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% comment %} <div class="ui tab" data-tab="history">
+
+        <div class="ui vertical segment">
+            <div class="ui header">
+                Previous details of issues
+            </div>
+
+            <div class="content">
+                <div class="description">
+
+                    <table class="ui very basic collapsing celled large sortable table"
+                           style="padding-left: 2.5%;
+                                                              padding-right: 2.5%;
+                                                              padding-top: 1%;
+                                                              padding-bottom: 1.5%;
+                                                              margin: auto;">
+                        <thead>
+                        <tr>
+                            <th>
+                                issue opened on
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                issue closed on
+                            </th>
+                        </tr>
+                        </thead>
+
+                        {% comment %} <tbody>
+                        {% for winner in winners %}
+                            {% if winner.student.id == request.user.extrainfo.student.id %}
+                        <tr>
+                            <td>
+                                {{winner.award_id.award_name}}
+                            </td>
+
+                            <td>
+                                {{winner.student}}
+                            </td>
+
+                            <td>
+                                {{winner.year}}
+                            </td>
+                        </tr>
+                            {% endif %}
+                        {% endfor %}
+                        </tbody>{% endcomment %}
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% comment %} </div> {% endcomment %} 
+
+
+{%  endblock %} 

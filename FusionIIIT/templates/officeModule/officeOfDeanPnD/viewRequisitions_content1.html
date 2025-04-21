@@ -1,0 +1,130 @@
+{% load static %}
+{% include 'officeModule/officeOfDeanPnD/requisitionModal.html' %}
+{% block tab3content1 %}
+{% comment %}
+<form>
+    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+        <div class="three fields">
+            <div class="field">
+                <label>From</label>
+                <div class="ui calendar" id="rangestart">
+                    <div class="ui input left icon">
+                        <i class="calendar icon"></i>
+                        <input type="text" placeholder="From">
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>To</label>
+                <div class="ui calendar" id="rangeend">
+                    <div class="ui input left icon">
+                        <i class="calendar icon"></i>
+                        <input type="text" placeholder="To">
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Department</label>
+
+                <div class="ui fluid search selection dropdown">
+                    <input name="department" type="hidden">
+                    <i class="dropdown icon"></i>
+
+                    <div class="default text">Select Department</div>
+
+                    <div class="menu">
+                        <div class="item" data-value="civil">
+                            Civil
+                        </div>
+
+                        <div class="item" data-value="electrical">
+                            Electrical
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="field">
+            <button class="ui primary button right floated" type="submit">
+                Search
+            </button>
+        </div>
+    </div>
+</form>
+<br>
+<br>
+<div class="ui divider"></div>
+{% endcomment %}
+
+<table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
+    <thead>
+    <tr>
+        <th>
+            Date
+        </th>
+
+        <th class="four wide column">
+            Requester
+        </th>
+
+        <th>
+            Title
+        </th>
+
+        <th>
+            Department
+        </th>
+
+        <th>
+            Work Proposal
+        </th>
+    </tr>
+    </thead>
+
+    <tbody>
+
+    {% for object in req%}
+    <tr>
+        <td>
+            {{object.req_date}}
+        </td>
+        <td>
+        <h4 class="ui image header">
+                <img src="
+                {% if object.userid.user.extrainfo.profile_picture %}
+                    {{ object.userid.user.extrainfo.profile_picture.url }}
+                {% else %}
+                    {% static 'globals/img/zlatan.jpg' %}
+                {% endif %}" class="ui mini circular image">
+                <div class="content">
+                    {{object.userid.user.first_name}} {{object.userid.user.last_name}}
+                    <div class="sub header">
+                        {{object.userid.user.email}}
+                    </div>
+                </div>
+            </h4>
+        </td>
+        <td>
+            {{object.title}}
+        </td>
+
+        <td>
+            {{object.department}}
+        </td>
+        <td>
+            <button class="ui button" type="button" onclick="openRequisition({{object.id}})">Open</button>
+        </td>
+</tr>
+    {% endfor %}
+    </tbody>
+    
+</table>
+<br>
+<div class="ui divider"></div>
+
+
+
+{% endblock %}

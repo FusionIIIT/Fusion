@@ -1,0 +1,78 @@
+{% load static %}
+
+<div class="container">
+  <div class="slider">
+    <div class="track"></div>
+  </div>
+  <div class="thumb t0"></div>
+
+  <div class="thumb t1"></div>
+</div>
+
+
+<style type="text/css">
+
+
+.slider {
+  pointer-events: none;
+  cursor: pointer;
+  
+  width: 100%;
+  background-color: #17694f;
+  box-sizing: border-box;
+}
+
+
+.thumb {
+  cursor: pointer;
+  border-color: #333;
+  border-style: solid;
+  
+  width: 4px;
+  height: 4px;
+  background-color: #0f4534;
+  background-color: rgba(100, 100, 100, 1);
+  border-radius: 50%;
+}
+
+.track {
+  pointer-events: none;
+  background-color: #4ac4ac;
+}
+
+.container {
+  height: 30px;
+  width: 220px;
+}
+
+</style>
+
+
+
+<!-- <div id="test_div">
+	<p id="test_p">hello</p>
+	<button id="test_btn">hi touch me</button>
+</div>
+<div id="t"></div>
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+$(function() {
+
+    $("#test_btn").on('click', function(e) {
+        $.ajax({
+        type:"POST",
+        url: "/academic-procedures/test_ret/",
+        data:{
+        		by : "something",
+                 csrfmiddlewaretoken: '{{ csrf_token }}'
+        },
+        success: function( data ) 
+        {
+        	$("#t").html(data.d);
+            alert('done');
+        }
+    });
+    });
+    
+});
+</script> -->

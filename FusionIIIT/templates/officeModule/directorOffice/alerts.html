@@ -1,0 +1,33 @@
+{% load static %}
+
+{% block alerts %}
+    <div class="ui centered cards" style="padding: 2px">
+
+        {% comment %}A single card starts here!{% endcomment %}
+        <div class="ui card">
+            <div class="content">
+                <img class="right floated circular ui image" src="{% static 'globals/img/zlatan.jpg' %}" style="width: 50px; height: auto;">
+                <div class="header">
+                    Dr. Vinod Kumar Jain
+                </div>
+                <div class="meta">
+                    Associate Professor
+                </div>
+
+                <div class="ui divider"></div>
+
+                <div class="description">
+                    Notification and/or alerts for this module goes here!
+                </div>
+            </div>
+            <div class="extra content">
+                <div class="ui two buttons">
+                    <div class="ui basic green button">Approve</div>
+                    <div class="ui basic red button">Decline</div>
+                </div>
+            </div>
+        </div>
+        {% comment %}A single card starts here!{% endcomment %}
+
+    </div>
+{% endblock %}

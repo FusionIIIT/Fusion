@@ -1,0 +1,238 @@
+<div style="margin: 2rem;">
+    <div class="ui vertical segment">
+
+
+
+        <form method="post" id="editDetail" enctype="multipart/form-data">
+            {% csrf_token %}
+            <!-- <input type="hidden" name="csrfmiddlewaretoken"
+                value="LCHk0Tkz2dhkiSthRRBbPQTHzgcPFsWYhI8ML3ZkYE4lbETMrdXy9JCdyy4d3ca1"> -->
+
+            <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                <div class="three fields">
+
+                    <div class="eight wide field">
+                        <label for="post_title">User</label>
+                        <select>
+                            <option value="" selected disabled>{{employee}}</option>
+                        </select>
+                    </div>
+
+                    <div class="eight wide field" style="display: none;">
+                        <label for="post_title">Select user</label>
+
+                        <select name="extra_info" required id="id_extra_info">
+                            <option value="{{employee.id}}" selected>{{employee}}</option>
+                        </select>
+
+                    </div>
+                    <div class="eight wide field">
+                        <label for="post_title">Father name</label>
+
+                        <input type="text" name="father_name" maxlength="40" required id="id_father_name">
+
+
+                    </div>
+                    <div class="eight wide field">
+
+
+                        <label for="post_title">Mother name</label>
+
+                        <input type="text" name="mother_name" maxlength="40" required id="id_mother_name">
+
+
+
+
+                    </div>
+
+                </div>
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label for="post_title">Religion</label>
+
+                        <input type="text" name="religion" maxlength="40" required id="id_religion">
+
+
+
+
+
+                    </div>
+                    <div class="eight wide field">
+                        <label for="post_title">Select category</label>
+
+                        <select name="category" required id="id_category">
+                            <option value="" selected="">---------</option>
+
+                            <option value="SC">SC</option>
+
+                            <option value="ST">ST</option>
+
+                            <option value="OBC">OBC</option>
+
+                            <option value="GENERAL">GENERAL</option>
+
+                            <option value="PWD">PWD</option>
+
+                        </select>
+
+
+
+                    </div>
+
+
+                </div>
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label for="post_title">Caste</label>
+
+                        <input type="text" name="cast" maxlength="40" required="" id="id_cast">
+
+                    </div>
+                    <div class="eight wide field">
+
+
+                        <label for="post_title">Designation</label>
+
+                        <input type="text" name="designation" maxlength="40" required id="id_designation">
+
+
+                    </div>
+                </div>
+
+                <div class="two fields">
+                    <div class="eight wide field">
+
+                        <label for="post_title">Home state</label>
+
+                        <input type="text" name="home_state" maxlength="40" required id="id_home_state">
+
+                    </div>
+                    <div class="eight wide field">
+                        <label for="post_title">Home disctrict</label>
+
+                        <input type="text" name="home_district" maxlength="40" required id="id_home_district">
+
+                    </div>
+                </div>
+
+                <div class="two fields">
+
+                    <div class="eight wide field">
+                        <label for="post_title">Blood group</label>
+
+                        <select name="blood_group" required id="id_blood_group">
+                            <option value="" selected="">---------</option>
+
+                            <option value="AB+">AB+</option>
+
+                            <option value="O+">O+</option>
+
+                            <option value="AB-">AB-</option>
+
+                            <option value="B+">B+</option>
+
+                            <option value="B-">B-</option>
+
+                            <option value="O-">O-</option>
+
+                            <option value="A+">A+</option>
+
+                            <option value="A-">A-</option>
+
+                        </select>
+                    </div>
+                </div>
+
+                <div class="eight wide field">
+                    <label for="post_title">Date of joining</label>
+
+                    <input type="date" name="date_of_joining" id="id_date_of_joining">
+                </div>
+
+
+                <hr>
+
+                <h4>Personal Details</h4>
+
+                <div class="two fields">
+
+
+                    <div class="eight wide field" style="display: none;">
+                        <label>Employee</label>
+
+                        <select name="extra_info" required id="id_extra_info">
+                            <option value="{{employee.id}}" selected>{{employee}}</option>
+                        </select>
+
+
+                    </div>
+
+
+                    <div class="eight wide field">
+                        <label>Aadhar Card Number</label>
+                        <input type="number" name="aadhar_no" value="0" required id="id_aadhar_no">
+
+                    </div>
+
+                </div>
+
+
+
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label>Salary</label>
+                        <input type="number" name="salary" value="0" required id="id_salary">
+
+                    </div>
+                    <div class="eight wide field">
+                        <label>Bank account No.</label>
+                        <input type="number" name="bank_account_no" value="0" required id="id_bank_account_no">
+
+                    </div>
+                </div>
+
+
+
+                <div class="two fields">
+
+                    <div class="eight wide field">
+                        <label>Marital Status</label>
+                        <select name="maritial_status" required id="id_maritial_status">
+                            <option value="" selected="">---------</option>
+
+                            <option value="MARRIED">MARRIED</option>
+
+                            <option value="UN-MARRIED">UN-MARRIED</option>
+
+                            <option value="WIDOW">WIDOW</option>
+
+                        </select>
+
+                    </div>
+                </div>
+
+
+
+                <div class="field">
+                    <button class="ui primary button right floated" type="submit" value="Submit">
+                        Submit
+                    </button>
+                </div>
+            </div>
+        </form>
+
+
+
+
+        <br>
+        <br>
+
+
+    </div>
+    <br>
+    <div class="extra content"></div>
+</div>

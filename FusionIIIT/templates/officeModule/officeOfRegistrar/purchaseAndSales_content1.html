@@ -1,0 +1,130 @@
+{% load static %}
+
+<table class="ui very basic collapsing celled sortable table"
+       style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+    <thead>
+    <tr>
+        <th class="one wide column">
+        </th>
+
+        <th class="three wide column">
+            File Number
+        </th>
+
+        <th class="three wide column">
+            Date
+        </th>
+
+        <th class="seven wide column">
+            Purpose
+        </th>
+
+        <th class="one wide column">
+            Status
+        </th>
+
+        <th class="one wide column">
+            Attachment
+        </th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for views in view4  %}
+    {% for views in view5  %}
+    <tr>
+
+        <td class="collapsing">
+            <div class="ui fitted checkbox">
+                <input type="checkbox"> <label></label>
+            </div>
+        </td>
+
+        <td>
+            {{ views.item_name }}
+        </td>
+
+        <td>
+            {{ views.purchase_date }}
+        </td>
+
+        <td>
+            {{ views.purpose }}
+        </td>
+
+        <td>
+            <i class="large green checkmark icon"></i>
+        </td>
+
+        <td>
+            {% comment %}
+                TODO: Add the attachment here!
+            {% endcomment %}
+            <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="{{ views.quotation1.url }}">
+                <i class="large attach black icon">{{ views.quotation1 }}</i>
+            </a>
+        </td>
+    </tr>
+
+     <tr>
+
+        <td class="collapsing">
+            <div class="ui fitted checkbox">
+                <input type="checkbox"> <label></label>
+            </div>
+        </td>
+
+        <td>
+            6478
+        </td>
+
+        <td>
+            08/04/18
+        </td>
+
+        <td>
+            Purchase 3 Fans
+        </td>
+
+        <td>
+            <i class="large red remove icon"></i>
+        </td>
+
+        <td>
+            {% comment %}
+                TODO: Add the attachment here!
+            {% endcomment %}
+            <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="">
+                <i class="large attach black icon"></i>
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+    {% endfor %}
+    </tbody>
+</table>
+
+
+<br>
+
+<div class="ui primary right floated button">Approve Selected</div>
+<div class="ui green right floated button">Forward Selected</div>
+<div class="ui red right floated button">Reject Selected</div>
+
+
+<br>
+<br>
+<div class="ui divider"></div>
+
+<div class="extra content">
+    <div class="" style="text-align: center;">
+        <i class="large green checkmark icon"></i> : Approved &ensp;&ensp;&ensp;&ensp;&ensp;
+        <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
+        <i class="large red x icon"></i> : Declined
+    </div>
+</div>
+

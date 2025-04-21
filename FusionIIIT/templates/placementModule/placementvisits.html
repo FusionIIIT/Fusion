@@ -1,0 +1,148 @@
+{% block placementvisits %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="{% if chairman_visit_add %}item{% else %}active item{% endif %}" data-tab="addvisit">
+            Add a new Visit
+        </a>
+
+        <a class="{% if chairman_visit_add %}active item{% else %}item{% endif %}" data-tab="managevisit">
+            Manage Visits
+        </a>
+    </div>
+    {% comment %}The tab menu ends here!{% endcomment %}
+
+    <div class="{% if chairman_visit_add %}ui tab{% else %}ui active tab{% endif %}" data-tab="addvisit">
+        <div class="ui vertical segment">
+            {% comment %}Form Tag starts here!{% endcomment %}
+              <form method="post" class="ui form" role="form">
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui active accordion field">
+                    <div class="title">
+                        <i class="icon dropdown"></i>
+                        Add a new Placement Visit!
+                    </div>
+
+                    {{ form.non_field_errors }}
+                    <div class="active content">
+                        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                            {% csrf_token %}
+                            <div class="two fields">
+                                <div class="field">
+                                  {{ form.company_name.errors }}
+                                    <label for="{{ form.company_name.id_for_label }}">
+                                        Company Name
+                                    </label>
+
+                                    <div class="ui large input">
+                                        {{ form.company_name }}
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                  {{ form.visiting_date.errors }}
+                                    <label for="{{ form.visiting_date.id_for_label }}">
+                                        Date (yyyy-mm-dd):
+                                    </label>
+                                    <div class="ui calendar" id="rangestart">
+                                        <div class="ui input large left icon">
+                                            <i class="calendar icon"></i>
+                                            {{ form.visiting_date }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% comment %} A new row starts here!{% endcomment %}
+                            <div class="field">
+                                {{ form.description.errors }}
+                                <label>Description:</label>
+                                <div class="ui fluid large input">
+                                    <!--textarea rows="2"></textarea-->
+                                    {{ form.description }}
+                                </div>
+                            </div>
+
+                            {% comment %} A new row starts here!{% endcomment %}
+                            <div class="two fields">
+                                <div class="field">
+                                  {{ form.location.errors }}
+                                    <label for="{{ form.location.id_for_label }}">
+                                        Location
+                                    </label>
+
+                                    <div class="ui fluid large input">
+                                        {{ form.location }}
+                                    </div>
+                                </div>
+
+                                {% comment %}A new row starts here!{% endcomment %}
+                                <div class="field" style="margin-top: 25px">
+                                    <button name="visitsubmit" value="visitsubmit" class="ui large primary button right floated" type="submit">
+                                        Submit
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                {% comment %}The add a new skill Accordian ends here!{% endcomment %}
+            </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+        </div>
+    </div>
+
+    <div class="{% if chairman_visit_add %}ui active tab{% else %}ui tab{% endif %}" data-tab="managevisit">
+        <div class="ui vertical segment">
+            {% comment %}
+                TODO: can add a list also instead like mess module!
+            {% endcomment %}
+
+            <table class="ui fixed sortable very basic celled table">
+                <thead>
+                    <tr>
+                        <th class="two wide">Date</th>
+                        <th class="three wide">Company Name</th>
+                        {% comment %}
+                            TODO: Concatinate city and location here!
+                        {% endcomment %}
+                        <th class="three wide">Location</th>
+                        <th class="five wide">Description</th>
+                        <th class="two wide">Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                  {% for chairmanvisit in chairmanvisits %}
+                    <tr>
+                        <td>
+                            {{ chairmanvisit.visiting_date }}
+                        </td>
+
+                        <td>
+                            {{ chairmanvisit.company_name }}
+                        </td>
+
+                        <td>
+                            {{ chairmanvisit.location }}
+                        </td>
+
+                        <td>
+                            {{ chairmanvisit.description }}
+                        </td>
+
+                        <td>
+                          <form method="post" class="ui form" role="form">
+                            {% csrf_token %}
+                            <button name="deletevisit" value="{{ chairmanvisit.pk }}" class="ui inverted circular icon button" style="margin: auto;">
+                                  Delete<i class="delete red icon"></i>
+                            </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+{% endblock %}

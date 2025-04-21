@@ -1,0 +1,38 @@
+{% load static %}
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+
+<form id='result_generation_form' action='/academic-procedures/generate_result_pdf/' method="POST" class="ui form">
+    {% csrf_token %}
+<h3 class="ui blue header">Generate Results as PDF :</h3>
+<div class="ui form" style="border: black" > 
+<div class="two fields">
+	<div class="field">
+        <select class="ui dropdown" name="programme">
+            <option value="">Programme</option>
+            <option value="B.Tech">B.Tech</option>
+            <option value="B.Des">B.Des</option>
+        </select>
+	</div>
+	<div class="field">
+        <select class="ui dropdown" name="batch">
+            <option value="">Batch</option>
+            {% for i in batch_grade_data.batch_grade_data %}
+            <option value="{{i.batch_list_year}}">{{i.batch_list_year}}</option>
+            {% endfor%}
+        </select>
+	</div>
+	<div class="field">
+        <select class="ui dropdown" name="branch">
+            <option value="">Branch</option>
+            <option value="CSE">CSE</option>
+            <option value="ME">ME</option>
+            <option value="ECE">ECE</option>
+            <option value="DESIGN">DESIGN</option>
+        </select>
+	</div>
+
+</div>
+</div>
+	<center><button class="ui primary button" type="submit" id="res_generate"> Generate PDF </button></center>
+</form>
+

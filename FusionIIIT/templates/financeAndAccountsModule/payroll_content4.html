@@ -1,0 +1,197 @@
+
+{% block payroll_content4 %}
+
+    <div class="ui active tab" data-tab="memberrequests">
+    <div class="ui vertical segment">
+    <div>
+        <h3>*** Salary Details ***</h3>
+    </div>
+
+    <table class="ui celled table" style="width: 50%;">
+        <thead>
+        <tr>
+            <th style="width: 100px;">
+                PF
+            </th>
+
+            <th style="width: 160px;">
+                Name
+            </th>
+
+            <th style="width: 200px;">
+                Designation
+            </th>
+
+            <th style="width: 120px;">
+                Pay
+            </th>
+
+            <th style="width: 100px;">
+                Gr. pay
+            </th>
+
+            <th style="width: 100px;" >
+                DA
+            </th>
+
+            <th style="width: 100px;">
+                TA
+            </th>
+
+            <th style="width: 100px;">
+                HRA
+            </th>
+
+            <th style="width: 120px;">
+                FPA
+            </th>
+
+            <th style="width: 140px;">
+                Sp. Allowances
+            </th>
+
+            <th style="width: 120px;">
+                NPS
+            </th>
+
+            <th style="width: 120px;">
+                GPF
+            </th>
+
+            <th style="width: 140px;">
+                INCOME TAX
+            </th>
+
+            <th style="width: 140px;">
+                P-TAX
+            </th>
+
+            <th style="width: 100px;">
+                GSLIS
+            </th>
+
+            <th style="width: 100px;">
+                GIS
+            </th>
+
+            <th style="width: 100px;">
+                LIC. FEE
+            </th>
+
+            <th style="width: 270px;">
+                ELECRICITY
+            </th>
+
+            <th style="width: 120px;">
+                OTHERS
+            </th>
+
+            <th style="width: 120px;">
+                Gr. Red.
+            </th>
+
+            <th style="width: 120px;">
+                Net Payment
+            </th>
+        </tr>
+        </thead>
+
+        <tbody>
+        
+        <form action = "/finance/printSalary/" method="post">
+        {% csrf_token %}
+                {% for info in c %}
+                <tr style="text-align: center;">
+
+                    <td>
+                        {{ info.pf }}
+                    </td>
+
+                    <td>
+                        {{ info.name }}
+                    </td>
+
+                    <td>
+                        {{ info.designation }}
+                    </td>
+
+                    <td>
+                        {{ info.pay }}
+                    </td>
+
+                    <td>
+                        {{ info.gr_pay }}
+                    </td>
+
+                    <td>
+                        {{ info.da }}
+                    </td>
+
+                    <td>
+                        {{ info.ta }}
+                    </td>
+
+                    <td>
+                        {{ info.hra }}
+                    </td>
+
+                    <td>
+                        {{ info.fpa }}
+                    </td>
+
+                    <td>
+                        {{ info.special_allow }}
+                    </td>
+
+                    <td>
+                        {{ info.nps }}
+                    </td>
+
+                    <td>
+                        {{ info.gpf }}
+                    </td>
+
+                    <td>
+                        {{ info.income_tax }}
+                    </td>
+
+                    <td>
+                        {{ info.p_tax }}
+                    </td>
+
+                    <td>
+                        {{ info.gslis }}
+                    </td>
+
+                    <td>
+                        {{ info.gis }}
+                    </td>
+
+                    <td>
+                        {{ info.license_fee }}
+                    </td>
+
+                    <td>
+                        {{ info.electricity_charges }}
+                    </td>
+
+                    <td>
+                        {{ info.others }}
+                    </td>
+
+                    <td>
+                        {{ info.gr_reduction }}
+                    </td>
+
+                    <td>
+                        {{ info.net_payment }}
+                    </td>    
+                </tr>
+                {% endfor %}
+            </form>
+        </tbody>
+    </table>
+    </div>
+    </div>
+</html>
+{% endblock %}

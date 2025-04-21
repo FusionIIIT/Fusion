@@ -1,0 +1,1406 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Module
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            <!-- {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+
+                {% comment %}
+                TODO: Instead of Name write the position like "Office Of Dean Students!"
+                {% endcomment %}
+
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div> -->
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+             
+                <div class="item" id="faculty_profile" >
+                   View Faculty Details
+                    <i class="right floated chevron right icon"></i>
+                </div>
+                <div id="staff_profile2" class="item"  >
+                    View Staff Department Wise 
+                     <i class="right floated chevron right icon"></i>
+                </div>
+                
+
+                 <div  id="student_profile" class="item">
+                    View Student Details
+                     <i class="right floated chevron right icon"></i>
+                </div>
+
+
+                <div  id="meeting" class="item" >
+                    Schedule Meeting
+                    <i class="right floated chevron right icon"></i>
+                </div>
+
+                <div  id="view_meetings" class="item" >
+                    Cancel Meetings
+                    <i class="right floated chevron right icon"></i>
+                </div>
+
+                <a class="item" data-tab="tab1content1" onclick="pnd()">
+                   Office of Dean P & D 
+                   <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="tab1content2" onclick="rspc()">
+                   Office of Dean RSPC
+                   <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="tab1content3" onclick="stud()">
+                    Office of Dean Students
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="tab1content4" onclick="acad()">
+                    Office of Dean Acad
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="tab1content5" onclick="purchase()">
+                    Puchase Office
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="tab1content6" onclick="registrar()">
+                    Registrar Office
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+
+        </div>            
+
+            <br/><br/><br/>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+    </div>
+
+
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+
+      
+
+
+
+        <div class="ten wide column">
+             
+            <div class="ui tab" data-tab="tab1content1" id="pnd">
+                <div class="ui vertical segment">
+                    {% block tab1content1 %}
+                        {% include 'officeModule/directorOffice/deanP&D.html' %}
+                    {% endblock %}
+                </div>
+            </div>
+
+
+            <div class="ui tab" data-tab="tab1content2" id="rspc">
+                <div class="ui vertical segment">
+                    {% block tab1content2 %}
+                        {% include 'officeModule/directorOffice/deanRSPC.html' %}
+                    {% endblock %}
+                </div>
+            </div>
+
+
+            <div class="ui tab" data-tab="tab1content3" id="stud">
+                <div class="ui vertical segment">
+                    {% block tab1content3 %}
+                        {% include 'officeModule/directorOffice/deanStudents.html' %}
+                    {% endblock %}
+                </div>
+            </div>
+
+            <div class="ui tab" data-tab="tab1content4" id="acad">
+                <div class="ui vertical segment">
+                    {% block tab1content4 %}
+                        {% include 'officeModule/directorOffice/deanAcademics.html' %}
+                    {% endblock %}
+                </div>
+            </div>
+
+            <div class="ui tab" data-tab="tab1content5" id="purchase">
+                <div class="ui vertical segment">
+                    {% block tab1content5 %}
+                        {% include 'officeModule/directorOffice/purchaseOffice.html' %}
+                    {% endblock %}
+                </div>
+            </div>
+
+            <div class="ui tab" data-tab="tab1content6" id="registrar">
+                <div class="ui vertical segment">
+                    {% block tab1content6 %}
+                        {% include 'officeModule/directorOffice/registrar.html' %}
+                    {% endblock %}
+                </div>
+            </div>
+
+    
+
+        <!-- Div for important links -->
+        <div id="imp_links">
+           <h3>IMPORTANT LINKS:</h3> <br>
+               <div style="width: 600px; padding: 10px; margin: 0; border-radius: 5px; background: #f0f0f0;">
+                    <a class = "item" href="http://www.iiitdmj.ac.in/academics/calendar.php#acad_cal" target="_blank">
+                        Academic Calendar
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+               </div>
+
+               <br><br>     
+               <div style="width: 600px; padding: 10px; margin: 0; border-radius: 5px; background: #f0f0f0;">
+                    <a class = "item" href="http://www.iiitdmj.ac.in/annual_report.php" target="_blank">
+                        Annual Report
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+               </div>
+
+               <br><br>     
+               <div style="width: 600px; padding: 10px; margin: 0; border-radius: 5px; background: #f0f0f0;">
+                    <a class = "item" href="http://www.iiitdmj.ac.in/downloads/IIITDMJ%20Telephone%20Directory.pdf" target="_blank">
+                        Phone Directory
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+               </div>
+
+               <br><br>     
+               <div style="width: 600px; padding: 10px; margin: 0; border-radius: 5px; background: #f0f0f0;">
+                    <a class = "item" href="http://www.iiitdmj.ac.in/annual_account.php" target="_blank">
+                        Annual Account
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+               </div>
+
+               <br><br>     
+               <div style="width: 600px; padding: 10px; margin: 0; border-radius: 5px; background: #f0f0f0;">
+                    <a class = "item" href="http://www.iiitdmj.ac.in/downloads/Closed%20Holiday%202019.pdf" target="_blank">
+                        Closed Holidays
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+               </div>
+        </div>
+        <!-- End of important links section -->
+
+    <!-- Faculty info -->
+     
+     
+
+
+    
+
+     <div id="staff2" style="display: none;"> 
+
+        {% comment %}The tab menu starts here!{% endcomment %}
+        <div>
+            <div class="ui divider"></div>
+            <h2>Department wise staff</h2>
+            <div class="ui divider"></div>
+        <div class="ui pointing secondary menu" style="border: 1px solid lightgray">
+            
+            <a class="active item" data-tab="tab9content1">
+                Academic
+            </a>
+            <a class="item" data-tab="tab9content2">
+                Administration
+            </a>
+            <a class="item" data-tab="tab9content3">
+                Office
+            </a>
+            <a class="item" data-tab="tab9content4">
+                Placement
+            </a>
+            <a class="item" data-tab="tab9content5">
+                Others
+            </a>
+        </div>
+
+        <div class="ui active tab" data-tab="tab9content1">
+            <div class="ui vertical segment">
+                {% block tab9content1 %}
+                <table id="academic" class="ui very basic collapsing celled sortable table"
+                style='border: 1px solid lightgray'
+                style="padding-left: 5%;
+                                                           padding-right: 5%;
+                                                           padding-top: 1%;
+                                                           padding-bottom: 1.5%;
+                                                           margin: auto;">
+                <thead>
+                <tr>
+
+                    <th class="one wide column">
+                        Staff ID
+                    </th>
+
+                    <th class="six wide column">
+                        Name
+                    </th>
+                    <th class="four wide column">
+                        Department
+                    </th>
+
+                    </tr>
+                    </thead>
+     
+                    <tbody>
+                    
+                    </tbody>
+
+                    </table>
+
+                    
+               
+                {% endblock %}
+            </div>
+        </div>
+
+        <div class="ui tab" data-tab="tab9content2">
+            <div class="ui vertical segment">
+                {% block tab9content2 %}
+                <table id="admin" class="ui very basic collapsing celled sortable table"
+                style='border: 1px solid lightgray'
+                style="padding-left: 5%;
+                                                           padding-right: 5%;
+                                                           padding-top: 1%;
+                                                           padding-bottom: 1.5%;
+                                                           margin: auto;">
+                <thead>
+                <tr>
+
+                    <th class="one wide column">
+                        Staff ID
+                    </th>
+
+                    <th class="six wide column">
+                        Name
+                    </th>
+
+
+                    <th class="four wide column">
+                        Department
+                    </th>
+
+                    
+                </tr>
+                </thead>
+
+                <tbody>
+                
+                </tbody>
+            </table>
+
+           
+                {% endblock %}
+            </div>
+        </div>
+
+        <div class="ui tab" data-tab="tab9content3">
+            <div class="ui vertical segment">
+                {% block tab9content3 %}
+                <table id="office" class="ui very basic collapsing celled sortable table"
+                style='border: 1px solid lightgray'
+                style="padding-left: 5%;
+                                                           padding-right: 5%;
+                                                           padding-top: 1%;
+                                                           padding-bottom: 1.5%;
+                                                           margin: auto;">
+                <thead>
+                <tr>
+
+                    <th class="one wide column">
+                        Staff ID
+                    </th>
+
+                    <th class="six wide column">
+                        Name
+                    </th>
+
+                    <th class="four wide column">
+                        Department
+                    </th>
+
+                   
+                </tr>
+                </thead>
+
+                <tbody>
+                
+                </tbody>
+            </table>
+
+           
+                {% endblock %}
+            </div>
+        </div>
+
+        <div class="ui tab" data-tab="tab9content4">
+            <div class="ui vertical segment">
+                {% block tab9content4 %}
+                <table id="placement" class="ui very basic collapsing celled sortable table"
+                style='border: 1px solid lightgray'
+                style="padding-left: 5%;
+                                                           padding-right: 5%;
+                                                           padding-top: 1%;
+                                                           padding-bottom: 1.5%;
+                                                           margin: auto;">
+                <thead>
+                <tr>
+
+                    <th class="one wide column">
+                        Staff ID
+                    </th>
+
+                    <th class="six wide column">
+                        Name
+                    </th>
+
+
+                    <th class="four wide column">
+                        Department
+                    </th>
+
+                </tr>
+                </thead>
+
+                <tbody>
+                
+                </tbody>
+            </table>
+
+           
+                {% endblock %}
+            </div>
+        </div>
+
+        <div class="ui tab" data-tab="tab9content5">
+            <div class="ui vertical segment">
+                {% block tab9content5 %}
+                <table id="others" class="ui very basic collapsing celled sortable table"
+                style='border: 1px solid lightgray'
+                style="padding-left: 5%;
+                                                           padding-right: 5%;
+                                                           padding-top: 1%;
+                                                           padding-bottom: 1.5%;
+                                                           margin: auto;">
+                <thead>
+                <tr>
+
+                    <th class="one wide column">
+                        Staff ID
+                    </th>
+
+                    <th class="six wide column">
+                        Name
+                    </th>
+
+                    <th class="four wide column">
+                        Department
+                    </th>
+
+                </tr>
+                </thead>
+
+                <tbody>
+                
+                </tbody>
+            </table>
+
+           
+                {% endblock %}
+            </div>
+        </div>
+
+        </div>
+       </div>
+    <!-- End of faculty info div -->
+
+    <!-- Div for student search form -->
+    <div id="student_form" style="display:none;">
+        
+        <form method="GET" id="stud_form">
+            {% csrf_token %}
+        <div class="ui form" style="padding: 8px; padding-left: 56px; padding-right: 12px;">
+        <div class="two fields"> 
+
+     
+          <label><b>Programme: </b></label> &nbsp;
+            <select class="ui search fluid dropdown selection" name="programme" id="programme">
+            <option value=""> Select </option>
+            <option value="B.Tech"> B.Tech </option>
+            <option value="B.Des"> B.Des </option>
+            <option value="M.Tech"> M.Tech </option>
+            <option value="M.Des"> M.Des </option>
+            <option value="PhD"> PhD </option>
+            </select>
+
+      &nbsp;
+    
+        <label><b>Year: </b></label> &nbsp;
+       <select class="ui search fluid dropdown selection" name="year" id="year">
+        <option value=""> Select </option>
+        <option value="2015"> 2015 </option>
+        <option value="2016"> 2016 </option>
+        <option value="2017"> 2017 </option>
+      </select>
+
+      &nbsp;
+
+      <label><b>Department: </b></label> &nbsp; 
+        <select class="ui search fluid dropdown selection" name="department" id="department">
+        <option value=""> Select </option>
+         <option value="CSE"> Computer Science & Engineering </option>
+         <option value="ECE"> Electronics & Communication Engineering </option>
+         <option value="ME"> Mechanical Engineering </option>
+         <option value="DESIGN"> Design </option>
+         <option value="NATURAL SCIENCES"> Natural Science </option>
+        </select>
+
+    <button class="ui primary submit button" type="submit" name="stud" value="stud"> Search</button>
+    </div>
+    </div>
+    
+    </form>
+    
+    </div>
+
+
+ <div class="ui divider"></div>
+<br>
+
+
+<div id="error_div"><h4></h4></div>
+
+<!-- Div for student info -->
+<div id="student" style="display: none;">
+
+   <div id="heading">    </div>
+    <!-- Result table--> 
+
+                <table id="student_table" class="ui very basic collapsing celled sortable table"
+                                        style="padding-left: 5%;
+                                                                  padding-right: 5%;
+                                                                  padding-top: 1%;
+                                                                  padding-bottom: 1.5%;
+                                                                  margin: auto;
+                                                                  ">
+                    <thead>
+                    <tr>
+        
+                        <th class="one wide column">
+                            Roll Number
+                        </th>
+        
+                        <th class="two wide column">
+                            Name
+                        </th>
+        
+                        <th class="one wide column">
+                            Department
+                        </th>
+        
+                        <th class="one wide column">
+                            CPI
+                        </th>
+        
+                     
+                    </tr>
+                    </thead>
+
+                     <tbody>
+                
+                    </tbody>
+        
+                    </table>
+        
+              
+                <div class="ui divider"></div>
+</div>
+<!-- End -->
+  
+<!-- Div for meeting form -->
+<div id="meeting_form"  style="display:none;">
+
+    <div class="ui vertical segment">
+    <form id="meet_form" method="POST" action="/office/directorOffice/meeting">
+         {% csrf_token %}
+        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+            <div class="field">
+                <label>Meeting Agenda</label>
+                <textarea required="required" rows="2" name="agenda" id="agenda"></textarea>
+            </div>
+            <div class="three fields">
+                <div class="field">
+                    <label>Venue</label>
+                    <select required="required" class="ui search fluid dropdown" placeholder="Venue" class="ui large input" id="venue" name="venue">
+                        <option value="" selected="selected"> Select </option>
+                        <option value="Directorate Conference Room"> Directorate Conference Room </option>
+                        <option value="VH Conference Room "> VH Conference Room </option>
+                        <option value="Placement Cell Conference Room"> Placement Cell Conference Room </option>
+                        <option value="Directorate"> Directorate </option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Date</label>
+                    <div class="ui calendar" id="rangestart">
+                        <div class="ui input left icon ">
+                            <i class="calendar icon"> </i>
+                            <input required="required" type="date" placeholder="Date" name="adate" id="adate" >
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Time</label>
+                    <input required="required" type="time" class="ui large input" placeholder="Meeting Time" name="meeting_time" id="meeting_time">
+                </div>
+            </div>
+
+            <div class="two fields">
+                <div class="field"> 
+                    <div>
+                    <label>Member Name</label>
+                    <select required="required" class="ui search fluid dropdown" placeholder="Name" class="ui large input" id="member" name="member">
+                        <option value=""> Select </option>
+                    </select>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <br>
+                    <input type="button" value="Add More" name="addmore" style="margin-top: 5px" id="add_button" onclick="addmember()" />  
+                </div>
+
+
+
+            </div>
+
+            <div id="moremem"></div>
+            
+            <br>
+
+            <div class="field">
+                <button class="ui primary button right floated" type="submit">
+                    Submit
+                </button>
+            </div>
+             {% csrf_token %}
+        </div>
+    </form>
+    <br>
+    <br>
+</div> 
+<!-- End of meeting form --> 
+<br>
+</div>
+
+<!-- div for viewing meetings --> 
+<div id="allmeetings" style="display: none;">
+        
+    <h3>Scheduled Meetings</h3>
+    <form id="myform" method="POST" action="/office/directorOffice/planMeetings">
+            <table id="meeting_table" style='border: 1px solid lightgray' class="ui very basic collapsing celled sortable table" style="padding-left: 5%;
+                                                   padding-right: 5%;
+                                                   padding-top: 1%;
+                                                   padding-bottom: 1.5%;
+                                                   margin: auto;">
+
+                <thead>
+                <tr>
+                    <th></th>
+                    <th class="two wide column">
+                        Agenda 
+                    </th>
+
+                    <th class="two wide column">
+                        Date
+                    </th>
+
+                    <th class="one wide column">
+                        Time
+                    </th>
+
+                    <th class="one wide column">
+                        Venue
+                    </th>
+
+                    <th class="one wide column">
+                        Member
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+                    
+                </tbody>
+
+            </table>
+
+            <button class="ui primary button right floated" type="submit" value="Cancel" name="Cancel">Cancel</button>
+        </form>
+    </div>
+<!-- End of div for meetings -->
+
+<div class="extra content"></div>
+
+</div>
+
+</div>
+</div>
+
+
+
+    <div class="column"></div>
+
+
+{% comment %}The grid ends here!{% endcomment %}
+
+
+{% endblock %}
+
+
+{% comment %}The central-rail segment ends here!{% endcomment %}
+
+
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <!--<script type="text/javascript" src="{% static 'globals/js/jquery.autocomplete.min.js' %}"> </script>-->
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <!-- <script src="http://code.jquery.com/ui/1.10.2/jquery-ui.js" ></script> --> 
+
+    <script>
+        $(document).ready(function(){
+            $("#textLoader").toggle();
+            $("#replacement-card").toggle();
+            setTimeout(loader, 1750);
+        });
+
+        function loader() {
+            $("#textLoader").toggle();
+            $("#replacement-card").toggle();
+            $("#loader").removeClass("active");
+            $("#loader").addClass("disabled");
+        }
+    </script>
+
+    <script type="text/javascript">
+        function pnd(){
+            $("#faculty").css("display","none");
+            $("#imp_links").css("display", "none");
+            $("#student_form").css("display","none");
+            $("#meeting_form").css("display","none");
+            $("#student").css("display", "none");
+            $("#error_div").css("display", "none");
+            $("#staff2").css("display","none");
+            $("#allmeetings").css("display", "none");
+
+             $("#pnd").css("display", "block");
+            $("#rspc").css("display", "none");
+            $("#acad").css("display", "none");
+            $("#stud").css("display", "none");
+            $("#purchase").css("display", "none");
+            $("#registrar").css("display", "none");
+        
+        }
+    </script>
+
+<script type="text/javascript">
+    function rspc(){
+        $("#faculty").css("display","none");
+        $("#imp_links").css("display", "none");
+        $("#student_form").css("display","none");
+        $("#meeting_form").css("display","none");
+        $("#student").css("display", "none");
+        $("#error_div").css("display", "none");
+        $("#staff2").css("display","none");
+        $("#allmeetings").css("display", "none");
+
+         $("#pnd").css("display", "none");
+        $("#rspc").css("display", "block");
+        $("#acad").css("display", "none");
+        $("#stud").css("display", "none");
+        $("#purchase").css("display", "none");
+        $("#registrar").css("display", "none");
+    
+    }
+</script>
+
+
+
+<script type="text/javascript">
+    function acad(){
+        $("#faculty").css("display","none");
+        $("#imp_links").css("display", "none");
+        $("#student_form").css("display","none");
+        $("#meeting_form").css("display","none");
+        $("#student").css("display", "none");
+        $("#error_div").css("display", "none");
+        $("#staff2").css("display","none");
+        $("#allmeetings").css("display", "none");
+
+         $("#pnd").css("display", "none");
+        $("#rspc").css("display", "none");
+        $("#acad").css("display", "block");
+        $("#stud").css("display", "none");
+        $("#purchase").css("display", "none");
+        $("#registrar").css("display", "none");
+    
+    }
+</script>
+    <script type="text/javascript">
+        function stud(){
+            $("#faculty").css("display","none");
+            $("#imp_links").css("display", "none");
+            $("#student_form").css("display","none");
+            $("#meeting_form").css("display","none");
+            $("#student").css("display", "none");
+            $("#error_div").css("display", "none");
+            $("#staff2").css("display","none");
+            $("#allmeetings").css("display", "none");
+
+             $("#pnd").css("display", "none");
+            $("#rspc").css("display", "none");
+            $("#acad").css("display", "none");
+            $("#stud").css("display", "block");
+            $("#purchase").css("display", "none");
+            $("#registrar").css("display", "none");
+        
+        }
+    </script>
+
+
+<script type="text/javascript">
+    function purchase(){
+        $("#faculty").css("display","none");
+        $("#imp_links").css("display", "none");
+        $("#student_form").css("display","none");
+        $("#meeting_form").css("display","none");
+        $("#student").css("display", "none");
+        $("#error_div").css("display", "none");
+        $("#staff2").css("display","none");
+        $("#allmeetings").css("display", "none");
+
+         $("#pnd").css("display", "none");
+        $("#rspc").css("display", "none");
+        $("#acad").css("display", "none");
+        $("#stud").css("display", "none");
+        $("#purchase").css("display", "block");
+        $("#registrar").css("display", "none");
+    
+    }
+</script>
+
+
+<script type="text/javascript">
+    function registrar(){
+        $("#faculty").css("display","none");
+        $("#imp_links").css("display", "none");
+        $("#student_form").css("display","none");
+        $("#meeting_form").css("display","none");
+        $("#student").css("display", "none");
+        $("#error_div").css("display", "none");
+        $("#staff2").css("display","none");
+        $("#allmeetings").css("display", "none");
+
+         $("#pnd").css("display", "none");
+        $("#rspc").css("display", "none");
+        $("#acad").css("display", "none");
+        $("#stud").css("display", "none");
+        $("#purchase").css("display", "none");
+        $("#registrar").css("display", "block");
+    
+    }
+</script>
+
+    <!-- Script for faculty information -->
+    <script type="text/javascript">
+
+        $('#faculty_profile').click(function(){
+            //$('#particular_stats').html('');
+            $("#faculty").css("display","block");
+            $("#imp_links").css("display", "none");
+            $("#staff2").css("display","none");
+            $("#student_form").css("display","none");
+            $("#meeting_form").css("display","none");
+            $("#student").css("display", "none");
+            $("#error_div").css("display", "none");
+            $("#allmeetings").css("display", "none");
+            $("#pnd").css("display", "none");
+            $("#rspc").css("display", "none");
+            $("#acad").css("display", "none");
+            $("#stud").css("display", "none");
+            $("#purchase").css("display", "none");
+            $("#registrar").css("display", "none");
+
+        
+            
+            //alert("hey")
+            $.ajax({
+                type: 'POST',
+                url: '/office/directorOffice/viewFacProfile',
+                data: {},
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                success: function(response){
+                    console.log(response)
+                    $('#cse_table').children('tbody').html('')
+                    //$('#particular_stats').html('');
+                    //$('#cse_table').children('tbody').append('<tr>');
+                    for(var i=0;i<response.cse_faculty.length;i=i+3){
+                        $('#cse_table').children('tbody').append('<tr>');
+                        $('#cse_table').children('tbody').append('<td>' + response.cse_faculty[i] + '</td> <td>' + response.cse_faculty[i+1] + '</td> <td>' + response.cse_faculty[i+2] + '</td>');
+                        $('#cse_table').children('tbody').append('</tr>');
+                  
+                    }
+                    //$('#cse_table').children('tbody').append('</tr>')
+
+
+
+
+                    $('#ece_table').children('tbody').html('')
+                    //$('#particular_stats').html('');
+                    
+                    for(var i=0;i<response.ece_faculty.length;i=i+3){
+                        $('#ece_table').children('tbody').append('<tr>');
+                        $('#ece_table').children('tbody').append('<td>' + response.ece_faculty[i] + '</td> <td>' + response.ece_faculty[i+1] + '</td> <td>' + response.ece_faculty[i+2] + '</td>');
+                        $('#ece_table').children('tbody').append('</tr>')
+                  
+                    }
+                    
+
+
+
+
+
+                    $('#me_table').children('tbody').html('')
+                    //$('#particular_stats').html('');
+                    
+                    for(var i=0;i<response.me_faculty.length;i=i+3){
+                        $('#me_table').children('tbody').append('<tr>');
+                        $('#me_table').children('tbody').append('<td>' + response.me_faculty[i] + '</td> <td>' + response.me_faculty[i+1] + '</td> <td>' + response.me_faculty[i+2] + '</td>');
+                        $('#me_table').children('tbody').append('</tr>')
+                  
+                    }
+                    
+
+
+
+
+
+                    $('#ns_table').children('tbody').html('')
+                    //$('#particular_stats').html('');
+                    
+                    for(var i=0;i<response.ns_faculty.length;i=i+3){
+                        $('#ns_table').children('tbody').append('<tr>');
+                        $('#ns_table').children('tbody').append('<td>' + response.ns_faculty[i] + '</td> <td>' + response.ns_faculty[i+1] + '</td> <td>' + response.ns_faculty[i+2] + '</td>');
+                        $('#ns_table').children('tbody').append('</tr>')
+                    }
+                    
+
+
+
+
+
+                    $('#des_table').children('tbody').html('')
+                    //$('#particular_stats').html('');
+                    
+                    for(var i=0;i<response.des_faculty.length;i=i+3){
+                        $('#des_table').children('tbody').append('<tr>');
+                        $('#des_table').children('tbody').append('<td>' + response.des_faculty[i] + '</td> <td>' + response.des_faculty[i+1] + '</td> <td>' + response.des_faculty[i+2] + '</td>');
+                        $('#des_table').children('tbody').append('</tr>')
+                    }
+                    
+
+                },
+                error: function(rs, e){
+                console.log('error');
+                },
+            });
+        });
+    </script>
+    <!-- End of script for faculty --> 
+
+
+    <!-- Script for showing Staff Department wise -->
+    <script type="text/javascript">
+
+        $('#staff_profile2').click(function(){
+            //$('#particular_stats').html('');
+            //alert("hey");
+
+            $("#staff2").css("display","block");
+            $("#faculty").css("display","none");
+            $("#imp_links").css("display", "none");
+            $("#student_form").css("display","none");
+            $("#meeting_form").css("display","none");
+            $("#student").css("display", "none");
+            $("#error_div").css("display", "none");
+            $("#allmeetings").css("display", "none");
+            $("#pnd").css("display", "none");
+            $("#rspc").css("display", "none");
+            $("#acad").css("display", "none");
+            $("#stud").css("display", "none");
+            $("#purchase").css("display", "none");
+            $("#registrar").css("display", "none");
+           
+            
+            
+            $.ajax({
+                type: 'POST',
+                url: '/office/directorOffice/viewStaffProfile',
+                data: {},
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                success: function(response){
+                    console.log(response)
+                    //var response=JSON.parse(response);
+                    //tr open
+                    //$('#faculty_stats_table > tbody').html('')
+                    //alert("inside success")
+                    console.log(response.academic)
+                    $('#academic').children('tbody').html('')
+                    //$('#particular_stats').html('');
+                    //$('#cse_table').children('tbody').append('<tr>');
+                    for(var i=0;i<response.academic.length;i=i+3){
+                        $('#academic').children('tbody').append('<tr>');
+                        $('#academic').children('tbody').append('<td>' + response.academic[i] + '</td> <td>' + response.academic[i+1] + '</td> <td>' + response.academic[i+2] + '</td>');
+                        $('#academic').children('tbody').append('</tr>');
+                  
+                    }
+                    
+
+
+                    $('#admin').children('tbody').html('')
+                    //$('#particular_stats').html('');
+                    
+                    for(var i=0;i<response.administration.length;i=i+3){
+                        $('#admin').children('tbody').append('<tr>');
+                        $('#admin').children('tbody').append('<td>' + response.administration[i] + '</td> <td>' + response.administration[i+1] + '</td> <td>' + response.administration[i+2] + '</td>');
+                        $('#admin').children('tbody').append('</tr>')
+                  
+                    }
+                    
+
+
+
+
+
+                    $('#office').children('tbody').html('')
+                    //$('#particular_stats').html('');
+                    
+                    for(var i=0;i<response.office.length;i=i+3){
+                        $('#office').children('tbody').append('<tr>');
+                        $('#office').children('tbody').append('<td>' + response.office[i] + '</td> <td>' + response.office[i+1] + '</td> <td>' + response.office[i+2] + '</td>');
+                        $('#office').children('tbody').append('</tr>')
+                  
+                    }
+                    
+
+
+
+
+
+                    $('#placement').children('tbody').html('')
+                    //$('#particular_stats').html('');
+                    
+                    for(var i=0;i<response.placement.length;i=i+3){
+                        $('#placement').children('tbody').append('<tr>');
+                        $('#placement').children('tbody').append('<td>' + response.placement[i] + '</td> <td>' + response.placement[i+1] + '</td> <td>' + response.placement[i+2] + '</td>');
+                        $('#placement').children('tbody').append('</tr>')
+                    }
+                    
+
+
+
+
+
+                    $('#others').children('tbody').html('')
+                    //$('#particular_stats').html('');
+                    
+                    for(var i=0;i<response.others.length;i=i+3){
+                        $('#others').children('tbody').append('<tr>');
+                        $('#others').children('tbody').append('<td>' + response.others[i] + '</td> <td>' + response.others[i+1] + '</td> <td>' + response.others[i+2] + '</td>');
+                        $('#others').children('tbody').append('</tr>')
+                    }
+                    
+
+                },
+                error: function(rs, e){
+                console.log('error');
+                },
+            });
+        });
+    </script>
+    <!-- End of staff script --> 
+
+    <!-- script to show student form -->
+    <script type="text/javascript">
+
+        $('#student_profile').click(function(){
+            //$('#particular_stats').html('');
+             //alert("hey")
+            $("#imp_links").css("display", "none");
+            $("#faculty").css("display", "none");
+            $("#staff2").css("display","none");
+            $("#meeting_form").css("display","none");
+            $("#student_form").css("display","block");
+            $("#student").css("display","none");
+            $("#allmeetings").css("display", "none");
+            $("#pnd").css("display", "none");
+            $("#rspc").css("display", "none");
+            $("#acad").css("display", "none");
+            $("#stud").css("display", "none");
+            $("#purchase").css("display", "none");
+            $("#registrar").css("display", "none");
+       
+            
+        });
+
+    </script>
+    <!-- End of student form script --> 
+
+
+    <!-- script for submitting student form -->
+    <script type="text/javascript">
+
+        $(document).on('submit','#stud_form',function(e){
+
+            e.preventDefault();
+            //$('#particular_stats').html('');
+            var $form_data=$('#stud_form').serialize();
+          //  alert("hey")
+            $("#imp_links").css("display", "none");
+            $("#faculty").css("display", "none");
+            $("#staff2").css("display","none");
+            $("#allmeetings").css("display", "none");
+            //$("#student_form").css("display","none");
+            $("#meeting_form").css("display","none");
+            $("#student").css("display","block");
+            $("#pnd").css("display", "none");
+            $("#rspc").css("display", "none");
+            $("#acad").css("display", "none");
+            $("#stud").css("display", "none");
+            $("#purchase").css("display", "none");
+            $("#registrar").css("display", "none");
+         
+            
+            $.ajax({
+                type: 'GET',
+                url: '/office/directorOffice/viewStudentProfile',
+                data: {
+                    csrfmiddlewaretoken: '{{csrf_token}}',
+                    programme : $('#programme').val(),
+                    year : $('#year').val(),
+                    department:$('#department').val(),
+                    
+                },
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                success: function(response){
+                    //
+                    if(response.student_detail.length == 0){
+                        $("#student").css("display","none");
+                        //alert("hey")
+                        $("#error_div").css("display","block");
+                        $('#error_div').children('h4').html('');
+                        $('#error_div').children('h4').append('<center> Invalid Request. Please try again. </center>');
+                        
+                    }
+
+                    else{
+                    $('#error_div').children('h4').html('');
+                   // alert("inside success")
+                    console.log(response)
+                    $('#student_table').children('tbody').html('')
+                    for(var i=0;i<response.student_detail.length;i=i+4){
+                       // console.log("inside for loop")
+                        $('#student_table').children('tbody').append('<tr>');
+                        $('#student_table').children('tbody').append('<td>' + response.student_detail[i] + '</td> <td>' + response.student_detail[i+1] + '</td> <td>' + response.student_detail[i+2] + '</td><td>' + response.student_detail[i+3] + '</td> ' );
+                        $('#student_table').children('tbody').append('</tr>')
+                  
+                    }
+                    $('#heading').children('center').html('');
+                    $('#heading').append(' <center> <h3>' + response.info[0] + '&nbsp;&nbsp' + response.info[1]  + '&nbsp;&nbsp'+ response.info[2] + '&nbsp;&nbsp' +'  </h3> </center>');
+                }
+                    
+                },
+                error: function(rs, e){
+                console.log('error');
+                },
+            });
+        });
+    </script>
+    <!-- End of script for student form submit -->
+
+
+    <!-- Script for showing meeting form and fetching options in dropdown -->
+    <script type="text/javascript">
+
+        $('#meeting').click(function(){
+            //alert("hey")
+            $("#imp_links").css("display", "none");
+            $("#faculty").css("display", "none");
+            $("#staff2").css("display","none");
+            $("#student_form").css("display","none");
+            $("#allmeetings").css("display","none");
+            $("#student").css("display","none");
+            $("#meeting_form").css("display","block");
+            $("#error_div").css("display", "none");
+            $("#pnd").css("display", "none");
+            $("#rspc").css("display", "none");
+            $("#acad").css("display", "none");
+            $("#stud").css("display", "none");
+            $("#purchase").css("display", "none");
+            $("#registrar").css("display", "none");
+         
+            $.ajax({
+                type: 'GET',
+                url: '/office/directorOffice/meeting_dropdown',
+                data: {
+                },
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                success: function(response){
+                    console.log(response);
+                    for(i=0;i<response.faculty.length;i++){
+                        $("#member").append('<option >' + response.faculty[i] + '</option>') 
+                    }
+
+                },
+                error: function(rs, e){
+                console.log('error');
+                },
+            });
+
+
+                        
+        });
+
+    </script>
+    <!-- End of meeting form script -->
+
+
+    <!-- Script for submitting meeting form -->
+        
+    <script type="text/javascript">
+
+        $(function() {
+            $("#meet_form").submit(function(event) {
+                    event.preventDefault();
+                    var meet_Form = $(this);
+                    var date_entered = $("#adate").val();
+                    console.log(date_entered)
+                    var today = new Date();
+                    var dd = String(today.getDate()).padStart(2, '0');
+                    var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+                    var yyyy = today.getFullYear();
+
+                    todays_date = yyyy + '-' + mm + '-' + dd;
+                    console.log(today);
+                    console.log(todays_date);
+                    //check if the date entered is less than current date
+                    if(date_entered < todays_date){
+                        alert("Please enter a valid date")
+                    }
+                    else{
+                        var posting = $.post( meet_Form.attr('action'), meet_Form.serialize() );
+                        // if success:
+                        posting.done(function(data) {
+                            alert('Meeting has been scheduled');
+                            document.getElementById("meet_form").reset();
+                        });
+                    }
+                    // if failure
+                    posting.fail(function(data) {
+                        alert('Failed. Please try again!');
+                        document.getElementById("meet_form").reset();
+
+                    });
+            });
+        });
+
+    </script> 
+    <!-- End of script for meeting form script --> 
+
+
+    <!-- Script for add member --> 
+    <script type="text/javascript">
+        function addmember(){
+            $("#moremem").append('<select  class="field ui search fluid dropdown" type="text" name="member" style="width: 301px" placeholder="Name" /></select> ' );
+
+            $.ajax({
+                type: 'GET',
+                url: '/office/directorOffice/meeting_dropdown',
+                data: {
+                },
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                success: function(response){
+                    console.log(response);
+                    $("select[name=member]").append('<option value=""> Select </option>')
+                    for(i=0;i<response.faculty.length;i++){
+                        $("select[name=member]").append('<option>' + response.faculty[i] + '</option>') 
+                    }
+
+                },
+                error: function(rs, e){
+                console.log('error');
+                },
+            });
+
+
+             //$("#moremem").append('<br>');
+
+                     
+        }
+    </script>
+    <!-- End of script -->
+
+   
+   <!-- Script to view Scheduled meetings -->
+
+
+    <script type="text/javascript">
+
+        $('#view_meetings').click(function(){
+            //alert("hey")
+            $("#allmeetings").css("display", "block");
+            $("#faculty").css("display","none");
+            $("#imp_links").css("display", "none");
+            $("#staff2").css("display", "none");
+            $("#student_form").css("display","none");
+            $("#meeting_form").css("display","none");
+            $("#student").css("display", "none");
+            $("#error_div").css("display", "none");
+            $("#pnd").css("display", "none");
+            $("#rspc").css("display", "none");
+            $("#acad").css("display", "none");
+            $("#stud").css("display", "none");
+            $("#purchase").css("display", "none");
+            $("#registrar").css("display", "none");
+        
+            
+
+            $.ajax({
+                type: 'POST',
+                url: '/office/directorOffice/planMeetings',
+                data: {},
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                success: function(response){
+                    console.log(response) 
+                    $('#meeting_table').children('tbody').html('')
+                    for(var i=0;i<response.meeting.length;i=i+6){
+                        //alert("hey")
+                        $('#meeting_table').children('tbody').append('<tr>')
+                        $('#meeting_table').children('tbody').append('<td><input type="checkbox" name="list" value=' + response.meeting[i] + '> </td>')
+                        console.log(response.meeting[i]);
+                        //$("#input[name=list]").val(response.meeting[i]);
+                        $('#meeting_table').children('tbody').append('<td>' + response.meeting[i+1] + '</td> <td>' + response.meeting[i+2] + '</td> <td>' + response.meeting[i+3] + '</td> <td>' + response.meeting[i+4] + '</td>' );
+                        $('#meeting_table').children('tbody').append('<td>')
+                        $('#meeting_table').children('tbody').append('<ol>')
+                        //console.log(response.meeting[i+5])
+                        for(var j=0;j<response.meeting[i+5].length;j++){
+                           // console.log(i);
+                            console.log(response.meeting[i+5][j]);
+                            $('#meeting_table').children('tbody').append('<li>'+response.meeting[i+5][j]+'</li>')
+                        }
+                        $('#meeting_table').children('tbody').append('</ol>')
+                        $('#meeting_table').children('tbody').append('</td>')
+                        $('#meeting_table').children('tbody').append('</tr>')
+                  
+                    }
+                    
+                },
+                error: function(rs, e){
+                console.log('error');
+                },
+            });
+        });
+    </script>
+    <!--End of script to view Scheduled meetings -->    
+
+    <!-- Plan Meeting (Cancelling ) -->
+        
+    <script type="text/javascript">
+
+        $(function() {
+            $("#myform").submit(function(event) {
+                    event.preventDefault();
+                    var my_Form = $(this);
+
+                    var deleting = $.post( my_Form.attr('action'), my_Form.serialize() );
+                    // if success:
+                    deleting.done(function(response) {
+                        alert('Meeting has been cancelled');
+                        $('#meeting_table').children('tbody').html('')
+                        for(var i=0;i<response.meeting.length;i=i+6){
+                            $('#meeting_table').children('tbody').append('<tr>')
+                            $('#meeting_table').children('tbody').append('<td><input type="checkbox" name="list" value=' + response.meeting[i] + '> </td>')
+                            console.log(response.meeting[i]);
+                            //$("#input[name=list]").val(response.meeting[i]);
+                            $('#meeting_table').children('tbody').append('<td>' + response.meeting[i+1] + '</td> <td>' + response.meeting[i+2] + '</td> <td>' + response.meeting[i+3] + '</td> <td>' + response.meeting[i+4] + '</td>' );
+                            $('#meeting_table').children('tbody').append('<td>')
+                            $('#meeting_table').children('tbody').append('<ol>')
+                            //console.log(response.meeting[i+5])
+                            for(var j=0;j<response.meeting[i+5].length;j++){
+                               // console.log(i);
+                                console.log(response.meeting[i+5][j]);
+                                $('#meeting_table').children('tbody').append('<li>'+response.meeting[i+5][j]+'</li>')
+                            }
+                            $('#meeting_table').children('tbody').append('</ol>')
+                            $('#meeting_table').children('tbody').append('</td>')
+                            $('#meeting_table').children('tbody').append('</tr>')
+                    }
+                    });
+                    // if failure
+                    deleting.fail(function(response) {
+                        alert('Failed');
+                    });
+            });
+        });
+
+    </script> 
+    <!-- End of script of plan meetings -->
+
+
+
+
+
+
+{% endblock %}

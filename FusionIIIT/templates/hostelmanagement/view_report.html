@@ -1,0 +1,78 @@
+{% block view_report %}
+<form method="GET" action="{% url 'hostelmanagement:pdf' %}" class="ui form" role="form" enctype="multipart/form-data">
+  <div class = "field">
+  
+        <label>Total Months</label>
+        <input type="number"  class="ui input"  name="months" placeholder="Months"required style="width: 20%">
+
+        <button class="ui primary basic button" type="submit">
+            Download as PDF
+        </a></button>
+        
+  </div>
+  </form>
+ <table class="ui very basic collapsing celled sortable table"
+       style="padding-left: 2%;
+            padding-right: 5%;
+            padding-top: 1%;
+            padding-bottom: 1.5%;
+            margin: auto;">
+    <thead>
+    <tr>
+
+        <th class="one wide column">
+           Worker ID
+        </th>
+
+        <th class="six wide column">
+            Name
+        </th>
+
+        <th class="four wide column">
+            Month/Year
+        </th>
+
+        <th class="four wide column">
+            Today Working Days
+        </th>
+        <th class="two wide column">
+           Total Absent
+        </th>
+        <th class="four wide column">
+           Remark
+        </th>
+
+
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for worker in worker_report %}
+    <tr>
+        <td>
+            {{worker.worker_id}}
+        </td>
+
+        <td>
+            {{worker.worker_name}}
+        </td>
+
+        <td>
+            {{worker.month}}/{{worker.year}}
+        </td>
+
+        <td>
+            {{worker.total_day}}
+        </td>
+        <td>
+            {{worker.absent}}
+        </td>
+        <td>
+            {{worker.remark}}
+        </td>
+
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

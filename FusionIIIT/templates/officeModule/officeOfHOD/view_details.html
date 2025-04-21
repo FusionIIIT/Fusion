@@ -1,0 +1,150 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Module
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid" style="background-color:">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+         
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+
+                <a class="active item" data-tab="first">
+                    Application Details
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+            </div>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+
+<h1 align="center"> Application Details </h1><br><br>
+
+            {% block tab1content1 %}
+<form>
+    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+         
+         
+        <div class="three fields">
+            <div class="six wide field">
+                <label>Roll no</label>
+                <input value={{obj.roll_no}} class="ui large input" name="roll_no" readonly>
+            </div>
+
+            <div class="six wide field">
+                <label>Name</label>
+                <input value={{obj.name}} class="ui large input" name="name" readonly>
+            </div>
+            
+            <div class="four wide field">
+                <label>Programme</label>
+                <input value={{obj.programme}} class="ui large input"  name="programme" readonly>
+            </div>
+
+            <div class="four wide field">
+                <label>Branch</label>
+                <input value={{obj.branch}} class="ui large input" name="branch" readonly>
+            </div>
+        </div>
+        
+        <div class="three fields">
+            <div class="six wide field">
+                <label>Course 1</label>
+                <input value={{obj.course1}} class="ui large input"  name="course1" readonly>
+            </div>
+
+            <div class="six wide field">
+                <label>Course 2</label>
+                <input value={{obj.course2}} class="ui large input"  name="course2" readonly>
+            </div>
+            
+            <div class="six wide field">
+                <label>Course 3</label>
+                <input value={{obj.course3}} class="ui large input"  name="course3" readonly>
+            </div>
+        </div>
+        <div class="one fields">
+            <div class="six wide field">
+                <label>Your Application is submitted.</label>
+            </div>
+        </div>
+
+    </div>
+</form>
+
+<br>
+<br>
+<div class="ui divider"></div>
+  {% endblock %}
+           
+
+        </div>
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+
+    <script>
+        $(document).ready(function(){
+            $("#textLoader").toggle();
+            $("#replacement-card").toggle();
+            setTimeout(loader, 1750);
+        });
+
+        function loader() {
+            $("#textLoader").toggle();
+            $("#replacement-card").toggle();
+            $("#loader").removeClass("active");
+            $("#loader").addClass("disabled");
+        }
+    </script>
+
+{% endblock %}
+
+
+
+
+
+ 

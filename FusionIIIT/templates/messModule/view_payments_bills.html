@@ -1,0 +1,319 @@
+{% load static %}
+{% block body %}
+{% block reg_list_bills %}
+
+<div>
+  <div style="display: flex;justify-content: space-evenly;margin-bottom: 4px;">
+    <select class="ui dropdown" id="status-bills" onchange="get_filter_students_bills()">
+      <option value="Registered">Registered</option>
+      <option value="Deregistered">Deregistered</option>
+      <option value="all">All</option>
+    </select>
+    <select class="ui dropdown" id="program-bills" onchange="get_filter_students_bills()">
+      <option value="B.Tech">Btech</option>
+      <option value="M.Tech">Mtech</option>
+      <option value="all">All</option>
+    </select>
+    <select class="ui dropdown" id="mess_dropdown_option-bills" onchange="get_filter_students_bills()">
+      <option value="mess1">Mess 1</option>
+      <option value="mess2">Mess 2</option>
+      <option value="all">All</option>
+    </select>
+  </div>
+
+
+  <div>
+    <div class="ui form" style="display: flex;margin-top: 10px; margin-bottom: 10px;">       
+      <input
+        type="text"
+        id="roll_no_search-bills"
+        name="roll_number"
+        placeholder="Student Roll Number Here"
+        style="max-width: 60%;"
+      />
+      <button
+        class="ui primary fluid button"
+        style="max-width: 8rem; max-height: 3rem; margin-left: 10px;"
+        type="submit"
+        id="searchStudent-bills"
+        onclick="search_student_bills()"
+      >
+        Search
+      </button>
+    </div>
+  </div>
+
+
+  <div style="max-height: 60vh; overflow:scroll"  id="mess_students_table-bills">
+    <table class="ui celled table">
+      <thead>
+        <th>Name</th>
+        <th>Roll No</th>
+        <th>Program</th>
+        <th>Your Balance</th>
+        <th>Mess</th>
+        <th>View Bill</th>
+        <th>View payments</th>
+        
+      </tr></thead>
+      <tbody>
+          {% for entry in reg_main %}
+        <tr id="uniq-bills-{{entry.pk}}">
+          <td data-label="Name">{{entry.student_id.id.user.first_name}}</td>
+          <td data-label="Roll No" id="roll-{{entry.pk}}">{{entry.student_id.id.id}}</td>
+          <td data-label="Program">{{entry.student_id.programme}}</td>
+          <td data-label="Balance">{{entry.balance}}</td>
+          <td data-label="Mess"> {{entry.mess_option}}</td>
+          <td>
+          <button class="ui button" onclick="get_bill_details({{entry.pk}})">View bills</button>
+          </td>
+          <td>
+            <button class="ui button" onclick="get_payment_details({{entry.pk}})">View payment</button>
+          </td>
+        </tr>
+          {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+
+
+{% endblock %}
+{% endblock %}
+
+{% block javascript %}
+
+<script>
+  function get_filter_students_bills(){
+
+    var data={}
+
+    const status=document.getElementById('status-bills').value;
+    const program=document.getElementById('program-bills').value;
+    const mess_option=document.getElementById('mess_dropdown_option-bills').value;
+    const mess_students=document.getElementById('mess_students_table-bills');
+    $.ajax({
+                   type: 'POST',
+                   url: 'api/get_mess_students',
+                   dataType: 'json',
+                   data: {
+                      'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                      'type':'filter',
+                      'status':status,
+                      'program':program,
+                      'mess_option':mess_option
+                   },
+                   success: function(data) {
+                           var students_data=`
+                           <table class="ui celled table">
+                                <thead>
+                                  <th>Name</th>
+                                  <th>Roll No</th>
+                                  <th>Program</th>
+                                  <th>Your Balance</th>
+                                  <th>Mess</th>
+                                  <th>View Bills</th>
+                                  <th>View Payments</th>
+                                </tr></thead>
+                                <tbody>`;
+
+                                  data.payload.forEach(element => {
+
+                                    students_data=students_data+`
+                                    <tr id="uniq-bills-${element.id}">
+                                    <td data-label="Name">${element.first_name+' '+element.last_name}</td>
+                                    <td data-label="Roll No" id="roll-${element.id}">${element.student_id}</td>
+                                    <td data-label="Program">${element.program}</td>
+                                    <td data-label="Balance">${element.balance}</td>
+                                    <td data-label="Mess"> ${element.mess_option}</td>
+                                    <td>
+                                    <button class="ui button" onclick="get_bill_details(${element.id})">View Details</button>
+                                    </td>
+                                    <td>
+                                     <button class="ui button" onclick="get_payment_details(${element.id})">View payment</button> 
+                                     </td>   
+                                  </tr>
+                                    `
+                                    
+                                  });
+
+                                  students_data=students_data+`
+                                              </tbody>
+                                            </table>
+                                        `
+
+                                mess_students.innerHTML=students_data;        
+   
+   
+                   },
+                   error: function(data, err) {
+                       alert(err.message);
+                   }
+               });
+   
+            }
+
+
+
+  function get_bill_details(id){
+    const student = document.getElementById(`uniq-bills-${id}`).querySelector(`#roll-${id}`).textContent
+    const mess_students=document.getElementById('mess_students_table-bills');
+    $.ajax({
+                   type: 'POST',
+                   url: 'api/get_student_bill',
+                   dataType: 'json',
+                   data: {
+                      'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                      'student_id':student,
+                   },
+                   success: function(data) {
+                           var students_data=`
+                           <div>${student}</div>
+                           <table class="ui celled table">
+                                <thead>
+                                  <th>Month</th>
+                                  <th>Year</th>
+                                  <th>Monthly Base Amount</th>
+                                  <th>Rebate Count</th>
+                                  <th>Rebate Amount</th>
+                                  <th>Your Monthly Amount</th>
+                                </tr></thead>
+                                <tbody>`;
+
+                                  data.payload.forEach(element => {
+
+                                    students_data=students_data+`
+                                    <tr>
+                                    <td data-label="Month">${element.month}</td>
+                                    <td data-label="Year">${element.year}</td>
+                                    <td data-label="Initial Amount">${element.amount}</td>
+                                    <td data-label="rebate count">${element.rebate_count}</td>
+                                    <td data-label="rebate amount">${element.rebate_amount}</td>
+                                    <td data-label="Total amount">${element.total_bill}</td>
+                                    </tr>
+                                    `
+                                    
+                                  });
+
+                                  students_data=students_data+`
+                                              </tbody>
+                                            </table>
+                                        `
+
+                                mess_students.innerHTML=students_data;        
+   
+   
+                   },
+                   error: function(data, err) {
+                       alert(err.message);
+                   }
+               });
+  }
+
+  function search_student_bills(){
+    const student = document.getElementById('roll_no_search-bills').value
+    const mess_students=document.getElementById('mess_students_table-bills');
+    $.ajax({
+      type: 'POST',
+      url: 'api/get_mess_students',
+      dataType: 'json',
+      data: {
+        'csrfmiddlewaretoken' : '{{ csrf_token }}',
+        'type': 'search',
+        'student_id':student
+      },
+      success: function(data) {
+        var students_data=`
+        <table class="ui celled table">
+            <thead>
+              <th>Name</th>
+              <th>Roll No</th>
+              <th>Program</th>
+              <th>Your Balance</th>
+              <th>Mess</th>
+              <th>View bills</th>
+              <th>View payments</th>
+            </tr></thead>
+            <tbody>`;
+
+                element=data.payload
+                students_data=students_data+`
+                <tr id="uniq-bills-${element.id}">
+                <td data-label="Name">${element.first_name+' '+element.last_name}</td>
+                <td data-label="Roll No" id="roll-${element.id}">${element.student_id}</td>
+                <td data-label="Program">${element.program}</td>
+                <td data-label="Balance">${element.balance}</td>
+                <td data-label="Mess"> ${element.mess_option}</td>
+                <td>
+                <button class="ui button" onclick="get_bill_details(${element.id})">View bills</button>
+                </td>
+                <td>
+                <button class="ui button" onclick="get_payment_details(${element.id})">View payments</button>
+                </td>
+                </tr>
+                </tbody>
+                </table>`
+
+            mess_students.innerHTML=students_data;
+          },
+           error: function(data, err) {
+                      alert(data.responseJSON.error);
+                  }
+              });
+   
+  }
+  function get_payment_details(id){
+    const student = document.getElementById(`uniq-bills-${id}`).querySelector(`#roll-${id}`).textContent
+    const mess_students=document.getElementById('mess_students_table-bills');
+    $.ajax({
+                   type: 'POST',
+                   url: 'api/get_student_payment',
+                   dataType: 'json',
+                   data: {
+                      'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                      'student_id':student,
+                   },
+                   success: function(data) {
+                           var students_data=`
+                           <div>${student}</div>
+                           <table class="ui celled table">
+                                <thead>
+                                  <th>Month</th>
+                                  <th>Year</th>
+                                  <th>Amount Paid</th>
+                                </tr></thead>
+                                <tbody>`;
+
+                                  data.payload.forEach(element => {
+
+                                    students_data=students_data+`
+                                    <tr>
+                                    <td data-label="Month">${element.payment_month}</td>
+                                    <td data-label="Year">${element.payment_year}</td>
+                                    <td data-label="Initial Amount">${element.amount_paid}</td>
+                                    </tr>
+                                    `
+                                    
+                                  });
+
+                                  students_data=students_data+`
+                                              </tbody>
+                                            </table>
+                                        `
+
+                                mess_students.innerHTML=students_data;        
+   
+   
+                   },
+                   error: function(data, err) {
+                       alert(err.message);
+                   }
+               });
+  }
+</script>
+
+
+
+{% endblock %}

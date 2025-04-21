@@ -1,0 +1,25 @@
+{% block all_complaints %}
+    <h2 class="heading-leave-data" align="center">Complaints Data</h2>
+    <table class="ui table">
+        <thead>
+            <tr>
+                <th>Hall Name</th>
+                <th>Student Name</th>
+                <th>Roll Number</th>
+                <th>Description</th>
+                <th>Contact Number</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for complaint in all_complaints %}
+            <tr>
+                <td>{{ complaint.hall_name }}</td>
+                <td>{{ complaint.student_name }}</td>
+                <td>{{ complaint.roll_number }}</td>
+                <td>{{ complaint.description }}</td>
+                <td>{{ complaint.contact_number }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

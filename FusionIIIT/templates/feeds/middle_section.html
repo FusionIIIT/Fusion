@@ -1,0 +1,470 @@
+{% load static %}
+
+{% block css %}
+    <style>
+        .no-margin{
+            margin:0px !important;
+        }
+        .no-pading{
+            pading:0px !important;
+        }
+        .glowing-border {
+            border: 2px solid #dadada !important;
+            border-radius: 7px !important;
+            outline: none !important;
+            border-color: #d12626 !important;
+            box-shadow: 0 0 10px #d12626 !important;
+        }
+
+    </style>
+{% endblock css %}
+
+<div>
+    {% include 'feeds/pagination.html' %}
+
+    {% if not questions %}
+        <div class="ui clearing segment red center aligned" style="margin-bottom: 30px;">
+            Sorry!! No question available for this query
+        </div>
+    {% endif %}
+
+    {% for question in questions %}
+    {% if question.hidd == 0 %}
+    {% if question.isSpecial == 1 %}
+    <div class="ui segment glowing-border" style="margin-bottom: 30px;">
+    {% else %}
+    <div class="ui clearing segment blue" style="margin-bottom: 30px;">
+    {% endif %}
+        <div class="ui grid header">
+
+            <div class="two wide column no-padding no-margin">
+                {% if question.ques.anonymous_ask is False %}
+                    <a href="{% url 'feeds:profile' question.ques.user.username%}">
+                {% endif %}
+                {% if question.isSpecial == 1 %}
+                    <img class="ui avatar image" style="height: 40px; width: 40px ;" src={% static 'admin-settings-male.png' %}>
+                {% elif question.profile.0.profile_picture and question.ques.anonymous_ask is False%}
+                    <img class="ui avatar image" style="height: 40px; width: 40px ;" src="{{question.profile.0.profile_picture.url}}">
+                {% elif question.ques.anonymous_ask is True%}
+                        <i class = "ui big user circle icon" ></i>
+                {% else %}
+                    <img class="ui avatar image" style="height: 40px; width: 40px ;" src={% static 'globals/img/zlatan.jpg' %}>
+                {% endif %}
+                {% if question.ques.anonymous_ask is False %}
+                    </a>
+                {% endif %}
+            </div>
+
+            <div class="thirteen wide column no-padding no-margin">
+                {% for result in question.ques.select_tag.all %}
+                    <a href="{%url 'feeds:tag_based_view' result.subtag%}" style="color: rgba(0,0,0,.6); font-size: 12px;">
+                        {{ result }}
+                    </a>
+                {% endfor %}
+            </div>
+
+            <div class="one wide column no-padding no-margin">
+                <div class="ui simple dropdown item" style="float: right;">
+                    <i class="ui ellipsis horizontal icon" style="color: grey;"></i>
+                    <div class="ui menu">
+
+                    {% if question.ques.user == request.user %}
+                      <div class="ui item">
+                            <button class="ui button" style="background-color: transparent;" type="submit" name="delete" value="{{question.ques.id}}" id="delete_post">
+                            <i class="trash icon"> </i> Delete Post
+                            </button>
+                      </div>
+
+                      <div class="ui item">
+                          <button class="ui button" style="background-color: transparent;" type="submit" name="update" value="{{question.ques.id}}" id="update_post">
+                              <i class="undo icon"></i> Update Post
+                          </button>
+                      </div>
+
+                      <!-- Are You sure Modal for Delete button -->
+                      <div class="ui modal" id="delete_modal{{question.ques.id}}">
+                          <i class="close icon"></i>
+                          <div class="ui header">
+                              <i class="ui user icon"></i>
+                              {{ username }}
+                          </div>
+
+                          <div class="content">
+                              <div class="ui warning message segment">
+                                  <p> Are you sure you want to delete this question? </p>
+                              </div>
+
+                              <form method="post" action="{% url 'feeds:delete_post' question.ques.id %}">
+                              {% csrf_token %}
+                                  <a class="ui item">
+                                      <button class="ui button" type="submit" name="delete" value="delete">
+                                      <i class="trash icon" id="delete"></i>Delete Post
+                                      </button>
+                                  </a>
+                              </form>
+                          </div>
+                      </div>
+
+                          <!-- Update Modal Starts here...... -->
+                      <div class="ui modal" id="update_modal{{question.ques.id}}">
+                          <i class="close icon"></i>
+                          <div class="ui header"><i class="ui user icon"></i>{{ username }}</div>
+                          <div class="scrolling content">
+                              <div class="ui message">
+                                  <div class="header">
+                                      Check these things
+                                  </div>
+                                  <ul class="list">
+                                      <li>Please try to add How, What, Why in subject.</li>
+                                      <li>Be specific to your problem.</li>
+                                  </ul>
+                              </div>
+
+                              <form method="post" onsubmit="return update_ques_validate({{question.ques.id}})" action="{% url 'feeds:update_post' question.ques.id %}">{% csrf_token %}
+                                  <div class="ui large form">
+                                      <div class="field">
+                                          <label>Subject</label>
+                                          <input id="subject" type="text" name="subject" value="{{question.ques.subject}}" required>
+                                      </div>
+
+                                      <div class="field">
+                                          <label>Description</label>
+                                          <textarea  id="description" name="description" rows="2">{{question.ques.description}}</textarea>
+                                      </div>
+
+                                      <div class="field">
+                                          <label>Add Tag</label>
+                                          <div class='ui multiple search selection dropdown seasons'>
+                                              <input class="update_Add_Tag{{question.ques.id}}" name="Add_Tag" id="Add_Tag" value="Add_Tag" type="hidden">
+                                              <i class="dropdown icon"></i>
+                                              <div class="default text"><i class="tags icon"></i>Select</div>
+                                              <div class="menu">
+                                                  {% for allowed_subtag in subtags %}
+                                                  <div class="item" data-value="{{ allowed_subtag.id }}">{{ allowed_subtag.subtag }}</div>
+                                                  {% endfor %}
+                                              </div>
+
+                                          </div>
+                                      </div>
+
+                                      <div class="ui hidden divider"></div>
+                                      <div class="field">
+                                          <div class="ui black checkbox">
+                                              {% if question.ques.anonymous_ask %}
+                                              <input type="checkbox" id="anonymous_update" name="anonymous_update" checked="checked">
+                                              <label>Ask Anonymously</label>
+                                              {% else %}
+                                              <input type="checkbox" id="anonymous_update" name="anonymous_update" >
+                                              <label>Ask Anonymously</label>
+                                              {% endif %}
+                                          </div>
+                                      </div>
+                                      <input type="text" name="from_url" value={{request.path}} hidden>
+                                      {% if question.isSpecial %}
+                                      <input type="text" id="isSpecial" name="isSpecial" value="isSpecial" hidden>
+                                      <div class="field">
+                                          <div class="ui black checkbox">
+                                              {% if question.access.0.canVote %}
+                                                  <input type="checkbox" id="RestrictVote" name="RestrictVote">
+                                              {% else %}
+                                                  <input type="checkbox" id="RestrictVote" name="RestrictVote" checked>
+                                              {% endif %}
+                                              <label>Restrict Vote?</label>
+                                          </div>
+                                      </div>
+                                      <div class="field">
+                                          <div class="ui black checkbox">
+                                          {% if question.access.0.canAnswer %}
+                                              <input type="checkbox" id="RestrictAnswer" name="RestrictAnswer">
+                                          {% else %}
+                                              <input type="checkbox" id="RestrictAnswer" name="RestrictAnswer" checked>
+                                          {% endif %}
+                                              <label>Restrict Answer?</label>
+                                          </div>
+                                      </div>
+                                      <div class="field">
+                                          <div class="ui black checkbox">
+                                          {% if question.access.0.canComment %}
+                                              <input type="checkbox" id="RestrictComment" name="RestrictComment">
+                                          {% else %}
+                                              <input type="checkbox" id="RestrictComment" name="RestrictComment" checked>
+                                          {% endif %}
+                                              <label>Restrict Comment?</label>
+                                          </div>
+                                      </div>
+                                      {% endif %}
+                                      <div class="ui hidden divider"></div>
+
+                                      <div class="actions">
+                                          <button type="submit" name="update" value="update_qus" class="ui submit positive button" style="float: right;">
+                                              Update
+                                          </button><br>
+                                          <div class="ui hidden divider"></div>
+                                      </div>
+                                  </div>
+                              </form>
+                          </div>
+                      </div>
+                      {% elif True %}
+
+                      {% for r in role %}
+
+                        {% if r.active and r.role == 'FeedsAdmin' and request.user == r.user %}
+
+                            <div class="ui item">
+                                  <button class="ui button" style="background-color: transparent;" type="submit" name="delete" value="{{question.ques.id}}" id="delete_post">
+                                  <i class="trash icon"> </i> Delete Post
+                                  </button>
+                            </div>
+
+                            <div class="ui item">
+                                <button class="ui button" style="background-color: transparent;" type="submit" name="update" value="{{question.ques.id}}" id="update_post">
+                                    <i class="undo icon"></i> Update Post
+                                </button>
+                            </div>
+
+                            <!-- Are You sure Modal for Delete button -->
+                            <div class="ui modal" id="delete_modal{{question.ques.id}}">
+                                <i class="close icon"></i>
+                                <div class="ui header">
+                                    <i class="ui user icon"></i>
+                                    {{ username }}
+                                </div>
+
+                                <div class="content">
+                                    <div class="ui warning message segment">
+                                        <p> Are you sure you want to delete this question? </p>
+                                    </div>
+
+                                    <form method="post" action="{% url 'feeds:delete_post' question.ques.id %}">
+                                    {% csrf_token %}
+                                        <a class="ui item">
+                                            <button class="ui button" type="submit" name="delete" value="delete">
+                                            <i class="trash icon" id="delete"></i>Delete Post
+                                            </button>
+                                        </a>
+                                    </form>
+                                </div>
+                            </div>
+
+                                <!-- Update Modal Starts here...... -->
+                            <div class="ui modal" id="update_modal{{question.ques.id}}">
+                                <i class="close icon"></i>
+                                <div class="ui header"><i class="ui user icon"></i>{{ username }}</div>
+                                <div class="scrolling content">
+                                    <div class="ui message">
+                                        <div class="header">
+                                            Check these things
+                                        </div>
+                                        <ul class="list">
+                                            <li>Please try to add How, What, Why in subject.</li>
+                                            <li>Be specific to your problem.</li>
+                                        </ul>
+                                    </div>
+
+                                    <form method="post" onsubmit="return update_ques_validate({{question.ques.id}})" action="{% url 'feeds:update_post' question.ques.id %}">{% csrf_token %}
+                                        <div class="ui large form">
+                                            <div class="field">
+                                                <label>Subject</label>
+                                                <input id="subject" type="text" name="subject" value="{{question.ques.subject}}" required>
+                                            </div>
+
+                                            <div class="field">
+                                                <label>Description</label>
+                                                <textarea  id="description" name="description" rows="2">{{question.ques.description}}</textarea>
+                                            </div>
+
+                                            <div class="field">
+                                                <label>Add Tag</label>
+                                                <div class='ui multiple search selection dropdown seasons'>
+                                                    <input class="update_Add_Tag{{question.ques.id}}" name="Add_Tag" id="Add_Tag" value="Add_Tag" type="hidden">
+                                                    <i class="dropdown icon"></i>
+                                                    <div class="default text"><i class="tags icon"></i>Select</div>
+                                                    <div class="menu">
+                                                        {% for allowed_subtag in subtags %}
+                                                        <div class="item" data-value="{{ allowed_subtag.id }}">{{ allowed_subtag.subtag }}</div>
+                                                        {% endfor %}
+                                                    </div>
+
+                                                </div>
+                                            </div>
+
+                                            <div class="ui hidden divider"></div>
+                                            <div class="field">
+                                                <div class="ui black checkbox">
+                                                    {% if question.ques.anonymous_ask %}
+                                                    <input type="checkbox" id="anonymous_update" name="anonymous_update" checked="checked">
+                                                    <label>Ask Anonymously</label>
+                                                    {% else %}
+                                                    <input type="checkbox" id="anonymous_update" name="anonymous_update" >
+                                                    <label>Ask Anonymously</label>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <input type="text" name="from_url" value={{request.path}} hidden>
+                                            {% if question.isSpecial %}
+                                            <input type="text" id="isSpecial" name="isSpecial" value="isSpecial" hidden>
+                                            <div class="field">
+                                                <div class="ui black checkbox">
+                                                    {% if question.access.0.canVote %}
+                                                        <input type="checkbox" id="RestrictVote" name="RestrictVote">
+                                                    {% else %}
+                                                        <input type="checkbox" id="RestrictVote" name="RestrictVote" checked>
+                                                    {% endif %}
+                                                    <label>Restrict Vote?</label>
+                                                </div>
+                                            </div>
+                                            <div class="field">
+                                                <div class="ui black checkbox">
+                                                {% if question.access.0.canAnswer %}
+                                                    <input type="checkbox" id="RestrictAnswer" name="RestrictAnswer">
+                                                {% else %}
+                                                    <input type="checkbox" id="RestrictAnswer" name="RestrictAnswer" checked>
+                                                {% endif %}
+                                                    <label>Restrict Answer?</label>
+                                                </div>
+                                            </div>
+                                            <div class="field">
+                                                <div class="ui black checkbox">
+                                                {% if question.access.0.canComment %}
+                                                    <input type="checkbox" id="RestrictComment" name="RestrictComment">
+                                                {% else %}
+                                                    <input type="checkbox" id="RestrictComment" name="RestrictComment" checked>
+                                                {% endif %}
+                                                    <label>Restrict Comment?</label>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                            <div class="ui hidden divider"></div>
+
+                                            <div class="actions">
+                                                <button type="submit" name="update" value="update_qus" class="ui submit positive button" style="float: right;">
+                                                    Update
+                                                </button><br>
+                                                <div class="ui hidden divider"></div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                         {% endif %}
+                            {% endfor %}
+                              {% endif %}
+
+                        <div class="ui item">
+                            <button class="ui button" style="background-color: transparent;" type="submit" name="hide" value="{{question.ques.id}}" id="hide_post">
+                            <i class="eye icon"></i> Hide Post
+                            </button>
+                        </div>
+
+                        <!-- Are You sure Modal for Hide  button -->
+                        <div class="ui modal" id="hide_modal{{question.ques.id}}">
+                            <i class="close icon"></i>
+                            <div class="ui header">
+                                <i class="ui user icon"></i>
+                                {{ username }}
+                            </div>
+
+                            <div class="content">
+                                <div class="ui warning message segment">
+                                    <p> Are you sure you want to hide this question for you? </p>
+                                </div>
+
+                                <form method="post" action="{% url 'feeds:hide_post' question.ques.id %}">
+                                {% csrf_token %}
+                                    <a class="ui item">
+                                        <button class="ui button" type="submit" name="hide" value="hide">
+                                        <i class="trash icon" id="delete"></i>Hide Post for you
+                                        </button>
+                                    </a>
+                                </form>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="ui divider" style="line-height: 0.5;"></div>
+
+        <div class="ui grid">
+            <div class="row grid">
+                <div class="grid one wide column">
+                    <div class="row">
+                    {% if question.isSpecial == 1 and not question.access.0.canVote%}
+                    <i id="upcaret{{question.ques.id}}" class="icon big arrow alternate circle up {% if question.isliked == 1 %}{%else%}outline{% endif %}"
+                            style="cursor:not-allowed"></i>
+                    {% else %}
+                        <i id="upcaret{{question.ques.id}}" class="icon big arrow alternate circle up {% if question.isliked == 1 %}{%else%}outline{% endif %}"
+                            onclick='upvote_post({{question.ques.id}})'
+                            style="cursor:pointer"></i>
+                    {% endif %}
+                    </div>
+                    <div class="row center aligned container ui" id="upvoteCount{{question.ques.id}}">
+                        <i style="margin-left: 10px;">{{question.votes}}</i>
+                    </div>
+                    <div class="row">
+                    {% if question.isSpecial == 1 and not question.access.0.canVote%}
+                    <i id="downcaret{{question.ques.id}}" class="icon big arrow alternate circle down {% if question.disliked == 1 %}{%else%}outline{% endif %}"
+                            style="cursor:not-allowed"></i>
+                    {% else %}
+                        <i id="downcaret{{question.ques.id}}" class="icon big arrow alternate circle down {% if question.disliked == 1 %}{%else%}outline{% endif %}"
+                            onclick='downvote_post({{question.ques.id}})'
+                            style="cursor:pointer"></i>
+                    {% endif %}
+                    </div>
+                </div>
+
+                <div class="grid thirteen wide column">
+                    <h2 class="row">
+                        {{ question.ques.subject }}
+                    </h2>
+                    <div class="row">
+                        <a href="" style="color: rgba(0,0,0,.6);">
+                            {% if question.isSpecial %}
+                                {{question.access.0.posted_by.role}}
+                            {% elif question.ques.anonymous_ask is True %}
+                                <a href="" style="color: rgba(0,0,0,.6);">Anonymous</a><br>
+                            {% else %}
+                                <a href="{% url 'feeds:profile' question.ques.user.username%}">{{ question.ques.user.username }}</a>
+                            {% endif %}
+                            {{extra.department}}- <span style="color: grey;font-size:12px;">{{ question.ques.uploaded_at }}</span>
+                        </a><br>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row grid">
+                <div class="one wide column">
+                </div>
+                <div class="fourteen wide column" >
+                    {{ question.ques.get_markdown|truncatechars:150 }}
+                    <a style="padding: 0px; font-size: 12px; font-family: Georgia;" href="{% url 'feeds:single_question' question.ques.id %}">
+                        <pre>See more...</pre>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="ui clearing segment red center aligned" style="margin-bottom: 30px;">
+        You have choose not to see this post.
+        <a style="padding: 0px; font-size: 12px; font-family: Georgia;" href="{% url 'feeds:single_question' question.ques.id %}">Click here</a> to view.
+        <form method="post" action="{% url 'feeds:unhide_post' question.ques.id %}">
+        {% csrf_token %}
+            <a class="ui item">
+                <button class="ui button" type="submit" name="unhide" value="unhide">
+                <i class="eye icon" id="delete"></i>Click here Unhide
+                </button>
+            </a>
+        </form>
+    </div>
+    {% endif %}
+
+    {% endfor %}
+
+    {% include 'feeds/pagination.html' %}
+</div>

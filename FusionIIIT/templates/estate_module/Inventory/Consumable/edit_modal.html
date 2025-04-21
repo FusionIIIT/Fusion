@@ -1,0 +1,42 @@
+{% with 'edit_inventory_consumable_form' as form_id %}
+<div class="ui modal coupled_inventory_consumable edit_inventory_consumable">
+    <div class="header">
+        Edit Inventory
+    </div>
+
+    <div class="scrolling content">
+        <form action="" id="{{ form_id }}" class="ui form" method="POST" novalidate>
+            {% include inventory_data.consumable.template_dir|add:'/form.html' %}
+        </form>
+    </div>
+
+    <div class="actions">
+
+        <button class="ui large red button delete_inventory_consumable">Delete</button>
+        <button type="submit" form="{{ form_id }}" class="ui large right labeled icon green button">Update
+            <i class="checkmark icon"></i></button>
+        <div class="ui black deny large button">Cancel</div>
+
+    </div>
+</div>
+{% endwith %}
+
+<div class="ui tiny modal coupled_inventory_consumable delete_inventory_consumable">
+    <div class="header">
+        Delete
+    </div>
+
+    <div class="content">
+        <p></p>
+        <form id="delete_inventory_consumable_form" action="" method="POST">
+            {% csrf_token %}
+        </form>
+    </div>
+    <div class="actions">
+
+        <div class="ui submit green deny large button">No</div>
+
+        <button type="submit" form="delete_inventory_consumable_form"
+            class="ui negative right labeled icon large button">Yes<i class="checkmark icon"></i></button>
+    </div>
+</div>

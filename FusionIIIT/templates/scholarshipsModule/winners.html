@@ -1,0 +1,112 @@
+{% load static %}
+{% block winners %}
+    <div class="ui vertical segment">
+        <form class="ui form" method = "POST" id="winners_form">
+          {% csrf_token %}
+            <div class="ui grid row">
+                <div class="one wide column"></div>
+
+                <div class="four wide column">
+                    <label>Programme</label>
+                    <select class="ui fluid search large dropdown" id="programme_name"  name = "PreviousWinnerProgramme" required>
+                        <option value="">Select</option>
+                        <option value="B.Tech"> B.Tech </option>
+                        <option value="B.Des"> B.Des </option>
+                        <option value="M.Tech"> M.Tech </option>
+                        <option value="M.Des"> M.Des </option>
+                        <option value="PhD"> PhD </option>
+                    </select>
+                </div>
+
+                <div class="four wide column">
+                    <label>Academic Year</label>
+                    <select class="ui fluid search large dropdown" id="batch_year" name = "PreviousWinnerAcadYear" required>
+                        <option value="">Select</option>
+                        {% for y in year_range %}
+                            <option value="{{ y }}">{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="six wide column">
+                    <label> Scholarship/Awards </label>
+                    <select class="ui fluid search large dropdown"  name = "PreviousWinnerAward" id="award_name1" required>
+                        <option value="">Select</option>
+                        {% for i in awards %}
+                        <option value="{{i.award_name}}">{{i.award_name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="ui grid row">
+                <div class="twelve wide column"></div>
+                <div class="three wide column">
+                    <button name="SubmitPreviousWinner" type="submit" class="ui primary large right floated button">
+                        Submit
+                    </button>
+                </div>
+            </div>
+
+        </form>
+        
+        <div class="ui divider"></div>
+            <div class="ui vertical segment">
+            {% if winners_list %}
+            <table id="winners_table" class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%; padding-right: 2.5%; padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+                <thead>
+                    <tr >
+                        <th class="three wide"> Roll No </th>
+                        <th class="five wide"> Name </th>
+                        <th class="three wide"> Programme </th>
+                        <th class="three wide"> Scholarship/Award Name </th>
+                    </tr>
+                </thead>
+                <tbody>
+                  {% for winners in winners_list %}
+                    <tr>
+                        <td> {{ winners.student_id }}</td>
+                        <td>
+                          {{ winners.student.id.user.first_name }} {{ winners.student.id.user.last_name }}
+                        </td>
+                        <td> {{ winners.programme}} </td>
+                        <td> {{ winners.award_id.award_name}} </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="pagination">
+              <span class="step-links">
+                  {% if winners_list.has_previous %}
+                      <a href="?page={{ contacts.previous_page_number }}">Previous</a>
+                  {% endif %}
+                  <span class="current">
+                      Page {{ winners_list.number }} of {{ winners_list.paginator.num_pages }}.
+                  </span>
+                  {% if winners_list.has_next %}
+                      <a href="?page={{ winners_list.next_page_number }}">Next</a>
+                  {% endif %}
+              </span>
+            </div>
+          {% else %}
+
+          <div class="pagination">
+            <span class="step-links">
+                {% if winners_list.has_previous %}
+                    <a href="?page={{ contacts.previous_page_number }}">previous</a>
+                {% endif %}
+                <span class="current"> Page 0 of 0 </span>
+                {% if winners_list.has_next %}
+                    <a href="?page={{ winners_list.next_page_number }}">next</a>
+                {% endif %}
+            </span>
+        </div>
+          {% endif %}
+            <br>
+        </div>
+    </div>
+{% endblock %}
+
+

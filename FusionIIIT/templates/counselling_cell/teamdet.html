@@ -1,0 +1,209 @@
+{#{% extends 'globals/base.html'%}#}
+{% load static %}
+{% comment %} this page has details about students, thier student giudes,students co ordinators {% endcomment %}
+{#{% block body %}#}
+{% block team_details %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="feedback">
+            Team Details
+        </a>
+
+       
+    </div>
+
+    <div class="ui active tab" data-tab="feedback" id="feedback">
+        <div class="ui vertical segment">
+
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form method="POST">
+                {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="ui header"  >
+                       <b>Student Coordinators :</b> 
+                    </div>
+                    <table style="border: 2px solid black; width:100%" class="ui header">
+                        <colgroup>
+                            <col span="1" style="width: 2%;">
+                            <col span="1" style="width: 24%;">
+                            <col span="1" style="width: 24%;">
+                            <col span="1" style="width: 23%;">
+                            <col span="1" style="width: 20%;">
+                         </colgroup>                      
+                        <tr>
+                          <td> </td>
+                          <td>Student Name</td>
+                          <td>Roll Number</td>
+                          <td>Room Number</td>
+                          <td>Hall Number</td>
+                        </tr>
+                      </table>
+                    {% for counsellor in student_counsellors %}
+                    <div class="item">
+                    
+                        <div class="description">
+                            <div class="ui header">
+                                <table style="border: 2px solid black; width:100%">
+                                    <colgroup>
+                                        <col span="1" style="width: 5%;">
+                                        <col span="1" style="width: 25%;">
+                                        <col span="1" style="width: 25%;">
+                                        <col span="1" style="width: 26%;">
+                                        <col span="1" style="width: 19%;">
+                                     </colgroup>
+                                    <tr>
+                                      <td> </td>
+                                      <td>{{ counsellor.student.id.user.first_name}}</td>
+                                      <td>{{counsellor.student.id.user.username}}</td>
+                                      <td>{{counsellor.student.room_no}}</td>
+                                      <td>{{counsellor.student.hall_no}}</td>
+                                    </tr>
+                                  </table>
+                            </div>
+                            <!-- <h2 class="header">{{counsellor.student.hall_no}} {{counsellor.student.room_no}}</h1> -->
+                            <!-- <div class="header">Answer {{forloop.counter}} :</div>
+                            <h3 class="ui header">{{faq.counselling_answer}}</h3> -->
+                        </div> 
+                        
+                    </div>
+                    {% endfor %}
+                    <div class="ui header">
+                        <b>Student Guide :</b>
+                    </div>
+                    <table style="border: 2px solid black; width:100%" class="ui header">
+                        <colgroup>
+                            <col span="1" style="width: 2%;">
+                            <col span="1" style="width: 24%;">
+                            <col span="1" style="width: 24%;">
+                            <col span="1" style="width: 23%;">
+                            <col span="1" style="width: 20%;">
+                         </colgroup>
+                        <b><tr>
+                          <td> </td>
+                          <td>Student Name</td>
+                          <td>Roll Number</td>
+                          <td>Room Number</td>
+                          <td>Hall Number</td>
+                        </tr></b>
+                      </table>
+                    
+                    {% for counsellor in student_guide %}
+                    <div class="item">
+                    
+                        <div class="description">
+                            <div class="ui header">
+                                <table style="border: 2px solid black; width:100%">
+                                    <colgroup>
+                                        <col span="1" style="width: 5%;">
+                                        <col span="1" style="width: 25%;">
+                                        <col span="1" style="width: 25%;">
+                                        <col span="1" style="width: 26%;">
+                                        <col span="1" style="width: 19%;">
+                                     </colgroup>
+                                    <tr>
+                                      <td> </td>
+                                      <td>{{ counsellor.student.id.user.first_name}}</td>
+                                      <td>{{counsellor.student.id.user.username}}</td>
+                                      <td>{{counsellor.student.room_no}}</td>
+                                      <td>{{counsellor.student.hall_no}}</td>
+                                    </tr>
+                                  </table>
+
+                            </div>
+                            
+                            
+                            <!-- <h2 class="header">{{counsellor.student.hall_no}} {{counsellor.student.room_no}}</h1> -->
+                            <!-- <div class="header">Answer {{forloop.counter}} :</div>
+                            <h3 class="ui header">{{faq.counselling_answer}}</h3> -->
+                        </div> 
+                        
+                    </div>
+                    {% endfor %}
+                    <br>
+                    <div class="ui header">
+                        Mapping Between Student Guide and Student:
+                    </div>
+
+                    <table style="border: 2px solid black; width:100%">
+                        
+                      </table>
+                    <div class="ui list">
+                    {% for student_guide,students in student_and_student_guide.items %}
+                        
+                    <div class="item">
+                            <div class="content">
+                                <!-- <div class="ui">Student Guide {{forloop.counter}} :</div> -->
+                            <div class="ui header">
+                                <br>
+                                <table style="border: 2px solid black; width:100%; margin-left: auto; margin-right: auto;">
+                                    <colgroup>
+                                        <col span="1" style="width: 34%;">
+                                        <col span="1" style="width: 33%;">
+                                        <col span="1" style="width: 33%;">
+                                        
+                                     </colgroup>
+                                    <tr>
+                                        <th>Student Guide {{forloop.counter}} :</th>
+                                        <th>{{student_guide.student.id.user.first_name}}</th>
+                                        <th>{{student_guide.student.id.user.username}}</th>
+                                      </tr>
+                                  </table>
+                            </div>
+                                <div class="list">
+                                    {% for student in students %}
+                                    <div class="item">
+                                    <div class="header">
+                                        <table style="border: 2px solid black; width:100%; overflow-x:auto;">
+                                            <colgroup>
+                                                <col span="1" style="width: 2%;">
+                                                <col span="1" style="width: 19%;">
+                                                <col span="1" style="width: 19%;">
+                                                <col span="1" style="width: 25%;">
+                                                <col span="1" style="width: 14%;">
+                                                <col span="1" style="width: 19%;">
+                                             </colgroup>
+                                            <tr>
+                                              <td > </td>
+                                              <td >Student {{forloop.counter}} :</td>
+                                              <td>{{student.id.user.username}}</td>
+                                              <td>{{student.id.user.first_name}}</td>
+                                              <td>{{student.hall_no}}</td>
+                                              <td>{{student.room_no}}</td>
+                                            </tr>
+                                          </table>
+
+                                    </div>
+                                    <!-- <div class="content">
+                                        <div class="header">{{student.id.user.username}} {{student.id.user.first_name}}</div>
+                                        <div class="description">{{student.hall_no}} {{student.room_no}}</div>
+                                    </div> -->
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    
+                    {% endfor %}
+                </div>
+
+                   
+                   
+
+                </div>
+            </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+{% endblock %}
+{#{% endblock %}#}
+
+{% comment %} {% block javascript %}
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+
+{% endblock %} {% endcomment %}

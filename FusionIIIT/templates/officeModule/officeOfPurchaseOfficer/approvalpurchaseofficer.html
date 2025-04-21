@@ -1,0 +1,377 @@
+
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+  Module name
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+
+        <style>
+* {
+  margin: 0;
+  padding: 0;
+  text-align:center;
+}
+
+body {
+  background-color: white;
+}
+
+table {
+  color: black;
+  font-size: .9em;
+  font-weight: 300;
+  line-height: 40px;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 2px solid #ed1c40;
+  width: 500px;
+  margin: 50px auto;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,.16);
+  border-radius: 2px;
+}
+
+
+
+tr:hover:not(th) {background-color: rgba(237,28,64,.1);}
+th {
+  background: black;
+  color: black;
+  border: white;
+}
+
+input[type="button"] {
+    transition: all .3s;
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 15px;
+}
+
+input[type="button"]:not(.active) {
+    background-color:transparent;
+}
+
+.active {
+    background-color: black;
+    color :#fff;
+}
+
+input[type="button"]:hover:not(.active) {
+    background-color: #ddd;
+}
+
+</style>
+
+       <div class="eight wide column">
+           {% include 'officeModule/officeOfPurchaseOfficer/approvalHOD.html' %}
+           <br></br>
+
+          <div style="overflow-x:auto;">
+          <table id="myTable" class="ui very basic collapsing celled sortable table "
+            style="padding-left: 2.5%;overflow-x:scroll; color:black;
+                                                               padding-right: 2.5%;
+                                                               padding-top: 1%;
+                                                               padding-bottom: 1.5%;
+                                                               margin: auto;">
+
+         <tbody>
+           {% csrf_token %}
+       {% for data in alldata  %}
+       <tr>
+             <th>
+              id
+             </th>
+         <td>
+           {{ data.id}}
+         </td>
+      </tr>
+
+      <tr>
+             <th>
+                Indentor name
+             </th>
+         <td>
+           {{data.indentor_name}}
+         </td>
+      </tr>
+
+      <tr>
+             <th>
+                Item name
+             </th>
+          <td>
+             {{data.item_name}}
+          </td>
+      </tr>
+
+      <tr>
+        <th>
+           Expected cost
+        </th>
+          <td>
+              {{data.expected_cost}}
+          </td>
+      </tr>
+
+      <tr>
+        <th>
+            quantity
+        </th>
+          <td>
+              {{data.quantity}}
+          </td>
+      </tr>
+
+      <tr>
+        <th>
+             Purpose
+        </th>
+          <td>
+              {{data.purpose}}
+          </td>
+
+      </tr>
+      <tr>
+        <th>
+             Intended purchase date
+        </th>
+          <td>
+              {{data.purchase_date}}
+          </td>
+          </tr>
+
+          <tr>
+            <th class="three wide column">
+               Amount
+            </th>
+          <td>
+              {{data.expected_cost}}
+          </td>
+          </tr>
+
+          <tr>
+            <th class="three wide column">
+               Nature
+            </th>
+          <td>
+            {% if data.nature_of_item1 == 1 %}
+              consumable
+              {% endif %}
+            {% if data.nature_of_item2 == 0 %}
+              non consumable
+              {% endif %}
+          </td>
+          </tr>
+
+          <tr>
+            <th class="four wide column">
+               On gem
+            </th>
+          <td>
+             <button  class="ongem" m_id="{{data.id}}" >available on gem</button>
+          </td>
+          </tr>
+
+          <tr>
+            <th class="four wide column">
+            </th>
+          <td>
+             <button  class="notongem" m_id="{{data.id}}" >Not on gem</button>
+          </td>
+         </tr>
+
+         {% endfor %}
+           </tbody>
+         </table>
+            </div>
+
+          </div>
+
+
+</div>
+<script>
+/*      =================================
+**      ==== Simple Table Controller ====
+**      =================================
+**
+**
+**          With Pure JavaScript ..
+**
+**
+**      No Libraries or Frameworks needed!
+**
+**
+**              fb.com/bastony
+**
+*/
+
+
+
+// get the table element
+var $table = document.getElementById("myTable"),
+// number of rows per page
+$n = 11,
+// number of rows of the table
+$rowCount = $table.rows.length,
+// get the first cell's tag name (in the first row)
+$firstRow = $table.rows[0].firstElementChild.tagName,
+// boolean var to check if table has a head row
+$hasHead = false,
+// an array to hold each row
+$tr = [],
+// loop counters, to start count from rows[1] (2nd row) if the first row has a head tag
+$i,$ii,$j = ($hasHead)?1:0,
+// holds the first row if it has a (<TH>) & nothing if (<TD>)
+$th = ($hasHead?$table.rows[(0)].outerHTML:"");
+// count the number of pages
+var $pageCount = Math.ceil($rowCount / $n);
+// if we had one page only, then we have nothing to do ..
+if ($pageCount > 1) {
+    // assign each row outHTML (tag name & innerHTML) to the array
+    for ($i = $j,$ii = 0; $i < $rowCount; $i++, $ii++)
+        $tr[$ii] = $table.rows[$i].outerHTML;
+    // create a div block to hold the buttons
+    $table.insertAdjacentHTML("afterend","<div id='buttons'></div");
+    // the first sort, default page is the first one
+    sort(1);
+}
+
+// ($p) is the selected page number. it will be generated when a user clicks a button
+function sort($p) {
+    /* create ($rows) a variable to hold the group of rows
+    ** to be displayed on the selected page,
+    ** ($s) the start point .. the first row in each page, Do The Math
+    */
+    var $rows = $th,$s = (($n * $p)-$n);
+    for ($i = $s; $i < ($s+$n) && $i < $tr.length; $i++)
+        $rows += $tr[$i];
+
+    // now the table has a processed group of rows ..
+    $table.innerHTML = $rows;
+    // create the pagination buttons
+    document.getElementById("buttons").innerHTML = pageButtons($pageCount,$p);
+    // CSS Stuff
+    document.getElementById("id"+$p).setAttribute("class","active");
+}
+
+
+// ($pCount) : number of pages,($cur) : current page, the selected one ..
+function pageButtons($pCount,$cur) {
+    /* this variables will disable the "Prev" button on 1st page
+       and "next" button on the last one */
+    var $prevDis = ($cur == 1)?"disabled":"",
+        $nextDis = ($cur == $pCount)?"disabled":"",
+        /* this ($buttons) will hold every single button needed
+        ** it will creates each button and sets the onclick attribute
+        ** to the "sort" function with a special ($p) number..
+        */
+        $buttons = "<input type='button' value='&lt;&lt; Prev' onclick='sort("+($cur - 1)+")' "+$prevDis+">";
+    for ($i=1; $i<=$pCount;$i++)
+        $buttons += "<input type='button' id='id"+$i+"'value='"+$i+"' onclick='sort("+$i+")'>";
+    $buttons += "<input type='button' value='Next &gt;&gt;' onclick='sort("+($cur + 1)+")' "+$nextDis+">";
+    return $buttons;
+}
+
+</script>
+<script>
+
+console.log("Hello world!");
+
+</script>
+
+
+<script >
+console.log("hellow")
+$(document).ready(function(){
+var objid;
+console.log("entered the script")
+$(".ongem").click(function(event){
+ objid = $(this).attr("m_id");
+
+ //console.log($('#approveme').val())
+//objid = $(this).val();
+//console.log(String(objid))
+console.log(objid)
+alert("Item in File with id " + objid + "availabe on gem")
+$.ajax({
+    type: 'post',
+    url: '/office/newordersPOonGem/',
+    data: {id: objid},
+    success: function(data) {
+         console.log("success")
+    },
+    error: function(data, err) {
+        console.log("fail")
+    }
+});
+  window.location.reload();
+  });
+
+  $(".notongem").click(function(event){
+   objid = $(this).attr("m_id");
+
+   //console.log($('#approveme').val())
+  //objid = $(this).val();
+  //console.log(String(objid))
+  console.log(objid)
+  alert("Item in File with id " + objid + "not availabe on gem")
+  $.ajax({
+      type: 'post',
+      url: '/office/newordersPO/',
+      data: {id: objid},
+      success: function(data) {
+           console.log("success")
+      },
+      error: function(data, err) {
+          console.log("fail")
+      }
+  });
+    window.location.reload();
+    });
+
+
+});
+
+  </script>
+{% endblock %}

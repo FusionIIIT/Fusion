@@ -1,0 +1,17 @@
+{% block tab4 %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="tab4content1">
+            Indent Form
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="tab4content1">
+        <div class="ui vertical segment">
+            {% block tab4content1 %}
+                {% include 'officeModule/officeOfPurchaseOfficer/indentForm_content1.html' %}
+            {% endblock %}
+        </div>
+    </div>
+{% endblock %}

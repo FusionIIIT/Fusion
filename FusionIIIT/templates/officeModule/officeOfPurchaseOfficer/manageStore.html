@@ -1,0 +1,16 @@
+
+    <form method='POST'>
+    {% csrf_token %}
+    <button class="ui green button" type="submit" name="manage_store">
+          add items
+    </button>
+
+    <button class="ui green button" type="submit" name="view_store">
+      View items
+    </button>
+
+    </form>
+  <!---  <div class="collapsing">
+          {% comment %}  <a href="{% url 'office_module:new_orders' %}" class="ui red right floated button">Delete</a> {% endcomment%}
+    </div>
+--->

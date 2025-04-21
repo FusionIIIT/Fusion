@@ -1,0 +1,105 @@
+
+{% load static %}
+<table class="ui very basic collapsing celled sortable table"
+       style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+    <thead>
+    <tr>
+        <th class="three wide column">
+            Subject
+        </th>
+
+        <th class="three wide column">
+            Date received
+        </th>
+
+        <th class="seven wide column">
+            Description
+        </th>
+
+        <th class="one wide column">
+            Remark
+        </th>
+
+        <th class="three wide column">
+            Action
+        </th>
+
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for key, views in director_view.items %}
+    <tr id = "row{{ forloop.counter0 }}">
+
+        <td>
+            {{ views.subject }}
+            <br>
+            <a href="view/{{ key }}">View</a>
+        </td>
+
+        <td>
+            {{ views.upload_date }}
+        </td>
+
+        <td>
+            {{ views.description }}
+        </td>
+
+        <td>
+            <div class="ui fitted textbox">
+                <input id = "remark{{forloop.counter0}}" type="textbox"><label></label>
+            </div>
+        </td>
+        <td>
+            <div>
+                <button style="width: 100px" class="ui primary floated button action-button" data-row = "{{ forloop.counter0 }}" data-status = "approve">Approve</button>
+                <form action = "forward/{{ key }}" method = "get"> <button style="width: 100px" class="ui green floated button" data-row = "{{ forloop.counter0 }}" data-status = "forward">Forward</button> </form>
+                <button class="ui red floated button action-button" data-row = "{{ forloop.counter0 }}" data-status = "reject" style="width: 100px">Reject</button>
+            </div>  
+        </td>
+
+        <td id = "trackid{{ forloop.counter0 }}" hidden data-key="{{ key }}">  
+            
+        </td>
+    </tr>
+
+    {% endfor %}
+    </tbody>
+</table>
+
+<script type="text/javascript">
+    $(".action-button").on('click', function(){
+        let row = $(this).attr("data-row");
+        let status = $(this).attr("data-status");
+        let remark = $("#remark"+row).val();
+        let trackid = $("#trackid"+row).attr("data-key");
+        console.log(row);
+        console.log(status);
+        console.log(remark);
+        console.log(trackid);
+        let values = [trackid, remark, status]   
+        $.ajax({
+                type: 'POST',
+                url: '/office/officeOfRegistrar/response/ajax',
+                data: {
+                    'values[]': values,
+                },
+                dataType: 'text',
+                success: function(response){
+                    $("#row"+row).empty();
+                    $("#row"+row).append("<span>"+response+"</span>");    
+                },
+                error: function(rs, e){
+                    console.log('error-------');
+                    $("#row"+row).empty();
+                    $("#row"+row).append("<span>error</span>"); 
+                },
+            });  
+    });
+</script>
+
+

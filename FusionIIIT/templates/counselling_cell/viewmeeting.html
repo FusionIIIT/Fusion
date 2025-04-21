@@ -1,0 +1,77 @@
+{% load static %}
+
+{% block viewmeetings %}
+
+    <div class="ui active tab" data-tab="History">
+    <form  method="POST"  >
+            {% csrf_token %}
+        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+            <div class="content">
+                <div class="description">
+
+                    <table class="ui very basic collapsing celled large sortable table"
+                           style="padding-left: 2.5%;
+                                                              padding-right: 2.5%;
+                                                              padding-top: 5%;
+                                                              padding-bottom: 60%;
+                                                              width:100%;
+                                                              margin: auto;">
+                        <thead>
+                        <tr>
+                            <th>
+                                Date and Time
+                            </th>
+
+                            <th>
+                                venue
+                            </th>
+
+                            <th>
+                                agenda
+                            </th>
+
+                            <th>
+                                Students invited
+                            </th>
+
+                             <th>
+                                host
+                            </th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                {% for  meeting in meetings %}
+                <tr>
+                    <td>
+                      {{ meeting.meeting_date}}  {{ meeting.meeting_time}}
+                    </td>
+
+                    <td>
+                        {{ meeting.venue}}
+                    </td>
+
+                    <td >
+                        {{ meeting.agenda}}
+                    </td>
+
+                    <td >
+                        {% for invitee in meeting.student_invities.split %}
+                            <b>{{ invitee}}</b><br/>
+                        {% endfor %}
+                    </td>
+
+                    <td >
+                        {{ meeting.meeting_host.user.username}}
+                    </td>
+
+                </tr>
+                {% endfor %}
+                </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{%  endblock %} 

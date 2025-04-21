@@ -1,0 +1,208 @@
+{% load static %}
+
+{% block personaldetails %}
+
+    <!--About Me card starts here!-->
+    <div class="ui fluid card">
+        <div class="content">
+            <div class="ui header">
+                About Me
+
+                {% if request.user == user %}
+
+                <input type="button"
+                       id="editButton"
+                       class="ui red mini button right floated" onclick="editFirst()"
+                       value = "Edit">
+                </input>
+                {% endif %}
+            </div>
+
+            <div class="ui divider"></div>
+
+            <span id="aboutSpan">
+                {{detail.about}}
+            </span>
+
+            <div class="textarea">
+                <textarea rows=5
+                          type="text"
+                          style="width: 100%;"
+                          id="aboutTextarea" hidden></textarea>
+            </div>
+        </div>
+    </div>
+    <!--About Me card ends here!-->
+
+
+    <!--The start of details card!-->
+    <div class="ui fluid card">
+        <div class="content">
+            <div class="ui header">Details</div>
+            <div class="ui divider"></div>
+
+            <span>
+                <table class="ui definition table">
+                    <tbody>
+                        <tr>
+                            <td>
+                                Date Of Joining
+                            </td>
+
+                            <td>
+                                <span id="dojSpan">
+                                    {{detail.doj}}
+                                </span>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                Pension Fund #
+                            </td>
+
+                            <td>
+                                <span id="pfSpan">
+                                    PF# XXXXXXXXX
+                                </span>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                Education
+                            </td>
+
+                            <td>
+                                <span id="educationSpan">
+                                    {{detail.education}}
+                                </span>
+
+                                <div class="textarea">
+                                    <textarea rows=3
+                                              type="text"
+                                              style="width: 100%;"
+                                              id="educationTextarea" hidden></textarea>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                Interest Areas
+                            </td>
+
+                            <td>
+                                <span id="interestSpan">
+                                    {{detail.interest}}
+                                </span>
+
+                                <div class="textarea">
+                                    <textarea rows=3
+                                              type="text"
+                                              style="width: 100%;"
+                                              id="interestTextarea" hidden></textarea>
+                                </div>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </span>
+        </div>
+    </div>
+    <!--End of details card!-->
+
+    <!--The contact details card starts here!-->
+    <div class="ui fluid card">
+        <div class="content">
+            <div class="ui header">Contact Details</div>
+            <div class="ui divider"></div>
+
+            <span>
+                <table class="ui definition table">
+                    <tbody>
+                        <tr>
+                            <td>
+                                Contact
+                            </td>
+
+                            <td>
+                                <a>
+                                    <i class="phone icon" id="contactIcon"></i>
+                                        <span id="contactSpan">
+                                            +91 - {{detail.contact}}
+                                        </span>
+                                </a>
+
+                                <div class="ui fluid input">
+                                    <input type="text" id="contactInput" hidden>
+                                </div>
+                            </td>
+
+                        </tr>
+                            <tr>
+                                <td>
+                                    Mail
+                                </td>
+
+                                <td>
+                                    <a>
+                                        <i class="mail icon" id="mailIcon"></i>
+                                            <span id="mailSpan">
+                                                {{ user.email }}
+                                            </span>
+                                    </a>
+
+                                    <div class="ui fluid input">
+                                        <input type="text" id="mailInput" hidden>
+                                    </div>
+
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    LinkedIn
+                                </td>
+
+                                <td>
+                                    <a href=" {{ detail.linkedin }} " target="_blank">
+                                        <i class="blue linkedin icon" id="linkedinIcon"></i>
+                                            <span id="linkedinSpan">
+                                                {{ detail.linkedin }}
+                                            </span>
+                                    </a>
+
+                                    <div class="ui fluid input">
+                                        <input type="text" id="linkedinInput" hidden>
+                                    </div>
+
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    Github ID
+                                </td>
+
+                                <td>
+                                    <a href=" {{ detail.github }} " target="_blank">
+                                        <i class="teal github icon" id="githubIcon"></i>
+                                            <span id="githubSpan">
+                                                {{ detail.github }}
+                                            </span>
+                                    </a>
+
+                                    <div class="ui fluid input">
+                                        <input type="text" id="githubInput" hidden>
+                                    </div>
+                                </td>
+                            </tr>
+
+                    </tbody>
+                </table>
+            </span>
+        </div>
+    </div><!--The contact details card ends here!-->
+{% endblock %}

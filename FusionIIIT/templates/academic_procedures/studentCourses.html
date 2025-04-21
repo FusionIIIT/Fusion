@@ -1,0 +1,248 @@
+{% load static %}
+
+<script>
+    $(document).ready(function() {
+        $('.ui.dropdown').dropdown();
+        let addCourseButton = document.querySelector(".addCourseButton");
+        addCourseButton.addEventListener("click",()=>
+            { 
+                $('.ui.addCourseForm.modal')
+                .modal('show')
+                ;
+            });  
+        let url = "";
+        let rowToDelete;
+        $('.trigger-link-acad').on('click', function (event) {
+            event.preventDefault(); // Prevent the default behavior of the link
+            url = event.target.href
+            rowToDelete = $(this).closest('tr');
+            course_name = $(this).attr('course_name_stu')
+            course_code = $(this).attr('course_code_stu')
+            $('.course_details_stu').html('Are you sure you want to drop '+course_code+'-'+course_name +'?');
+            $('#confirmation-modal-acad').modal('show'); // Show the modal
+        });
+
+        // Handle Cancel button
+        $('#cancel-button-acad-course').on('click', function () {
+            $('#confirmation-modal-acad').modal('hide'); // Hide the modal
+        });
+
+        // Handle OK button
+        $('#confirm-button-acad').on('click', function () {
+            $('#confirmation-modal-acad').modal('hide'); // Hide the modal
+            
+            // Perform AJAX API call
+            $.ajax({
+                url: url,
+                type: 'GET',
+                success: function(data) {
+                    rowToDelete.remove();
+                    alert('course dropped successfully')
+                },
+                error: function(xhr, status, error) {
+                    // Handle errors if needed
+                    console.error(error);
+                }
+            });
+        });
+    });
+</script>
+
+
+<div class="ui active tab" data-tab="complainthistory">
+    <div class="ui vertical segment">
+        {% if dict2 %}
+        <B>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            Name = {{ dict2.firstname }}&nbsp;{{ dict2.lastname }}
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            Roll No = {{ dict2.roll_no }}
+        </B>
+        {% endif %}
+        {% if details %}
+        <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+            <thead>
+                <tr>
+                    <th>
+                        Reg ID#
+                    </th>
+
+                    <th>
+                        Course ID
+                    </th>
+
+                    <th>
+                        Course Name
+                    </th>
+
+                    <th>
+                        Credits
+                    </th>
+                    <th>
+                        Semester
+                    </th>
+                    <th>
+                        Registration Type
+                    </th>
+                    <th>
+                        Replaced By
+                    </th>
+                    <th>
+                        Drop Course
+                    </th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% csrf_token %}
+                {% for items in details %}
+
+                <tr class="{{ items.rid }}">
+                    <td>
+                        {{ items.rid }}
+                    </td>
+                    <td>
+                        {{ items.course_id }}
+                    </td>
+                    <td>
+                        {{ items.course_name }}
+                    </td>
+                    <td>
+                        {{ items.credits }}
+                    </td>
+                    <td>
+                        {{ items.sem }}
+                    </td>
+                    <td>
+                        {{ items.registration_type }}
+                    </td>
+                    <td>
+                        {% if items.replaced_by %}
+                        {{ items.replaced_by.new_course_registration.course_id.code }} - Sem - {{ items.replaced_by.new_course_registration.semester_id.semester_no }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        <A class="trigger-link-acad ui blue label"
+                            href="/academic-procedures/acad_person/verifyCourse/drop/?id={{ items.reg_id|urlencode }}" course_code_stu="{{items.course_id}}" course_name_stu = "{{items.course_name}}" >
+                            DROP </A>
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+                </form>
+            </tbody>
+        </table>
+
+        <br>
+        {% else %}
+        <br>
+        <br> <br> <br>
+        <CENTER>
+            <B> NO RECORDS FOUND </B>
+        </center>
+        {% endif %}
+
+        <div class="ui divider"></div>
+        <button class="ui fluid positive button addCourseButton">Add Course</button>
+        
+        <div class="ui modal addCourseForm">
+            <p>Fill details for the Course you want to add</p>
+            <form class="ui form" action = "/academic-procedures/acad_person/addCourse/" method = "post">
+                {% csrf_token %}
+                <div class="field">
+                    <label>Course Slot </label>
+                    <div class="ui fluid search selection dropdown">
+                        <input type="hidden" name="courseslot_id">
+                        <i class="dropdown icon"></i>
+                        <div class="default text">Select</div>
+                        <div class="menu">
+                            {% for courseslot in courseslot_list %}
+                            <div class="item" data-value="{{ courseslot.id }}">{{ courseslot.name }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Course </label>
+                    <div class="ui fluid search selection dropdown">
+                        <input type="hidden" name="course_id">
+                        <i class="dropdown icon"></i>
+                        <div class="default text">Select</div>
+                        <div class="menu">
+                            {% for course in course_list %}
+                            <div class="item" data-value="{{ course.id }}">{{ course.code }} - {{ course.name }} - {{ course.version }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Semester Id</label>
+                    <select class="ui fluid dropdown" name = "semester_id">
+                        <option value="">Select</option>
+                        {% for sem in semester_list %}
+                            <option value="{{sem.id}}">{{sem.curriculum.name}}, sem - {{sem.semester_no}}</option>
+                        {% endfor%}
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Working Year</label>
+                    <div class="ui input">
+                        <input type="number" name="working_year" placeholder="Enter Working Year">
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Registration Type</label>
+                    <select class="ui fluid dropdown" name = "registration_type">
+                        <option value="Regular">Regular</option>
+                        <option value="Improvement">Improvement</option>
+                        <option value="Backlog">Backlog</option>
+                        <option value="Audit">Audit</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Replace Course </label>
+                    <div class="ui fluid search selection dropdown">
+                        <input type="hidden" name="old_course">
+                        <i class="dropdown icon"></i>
+                        <div class="default text">Select</div>
+                        <div class="menu">
+                            {% for items in details %}
+                            <div class="item" data-value="{{ items.reg_id }}">{{ items.course_id }} - Sem - {{ items.sem }}  - {{ items.registration_type }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <input type = "text" value = {{dict2.roll_no}} name="roll_no" hidden/>
+                <button class="ui fluid positive button" type="submit" name = "AddCourse" value = "submit">Add Course</button>
+                
+            </form>
+          </div>
+
+        
+    </div>
+</div>
+
+<div class="ui warning modal" id="confirmation-modal-acad">
+    <div class="header">Confirmation Required</div>
+    <div class="ui warning content">
+        <ul>
+            <li class="course_details_stu"></li>
+        </ul>
+    </div>
+    <div class="actions">
+        <button class="ui red button" id="cancel-button-acad-course">Cancel</button>
+        <button class="ui green button" id="confirm-button-acad">OK</button>
+    </div>
+</div>

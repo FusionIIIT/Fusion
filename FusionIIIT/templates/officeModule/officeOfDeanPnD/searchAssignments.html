@@ -1,0 +1,20 @@
+{% block tab5 %}
+
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="tab5content1">
+            Search Work Assignments
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="tab5content1">
+        <div class="ui vertical segment">
+            {% block tab5content1 %}
+                {% include 'officeModule/officeOfDeanPnD/searchAssignments_content1.html' %}
+            {% endblock %}
+        </div>
+    </div>
+
+    
+{% endblock tab5%}

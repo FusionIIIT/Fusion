@@ -1,0 +1,207 @@
+{% load static %}
+
+{% block alerts %}
+    <div class="ui centered cards" style="padding: 2px">
+
+        {% comment %}A single card starts here!{% endcomment %}
+
+        <!-- Project Regiatration -->
+        {% for pr in project %}
+        {% if "dean_rspc" in desig %}
+        {% if pr.DRSPC_response == "Pending" %}
+        <div class="ui card">
+            <div class="content">
+                <img class="right floated circular ui image" src="{% static 'globals/img/zlatan.jpg' %}" style="width: 50px; height: auto;">
+                <div class="header">
+                    {{pr.PI_id.user.first_name}} {{pr.PI_id.user.last_name}}
+                </div>
+                <div class="meta">
+                    Associate Professor
+                </div>
+
+                <div class="ui divider"></div>
+
+                <div class="description">
+                    {{pr.project_title}}
+                </div>
+                <div class="description">
+                    <b> Project Registration</b>
+                </div>
+            </div>
+            <div class="extra content">
+                <div class="ui two buttons">
+                    <div class="ui basic green button"><a href="action?a=approve&pk={{pr.id}}">Approve</a></div>
+                    <div class="ui basic red button"><a href="action?a=reject&pk={{pr.id}}">Decline</a></div>
+                </div>
+            </div>
+
+
+        </div>
+        {% endif %}
+        {% endif %}
+        {% endfor %}
+
+
+
+        <!-- Project Extension -->
+        {% if "dean_rspc" in desig %}
+        {% for pr in project1 %}
+         {% for pr1 in project %}
+                {%if pr1 == pr.project_id %}
+            {% if pr.DRSPC_response == "Pending" %}
+        <div class="ui card">
+            <div class="content">
+                <img class="right floated circular ui image" src="{% static 'globals/img/zlatan.jpg' %}" style="width: 50px; height: auto;">
+                <div class="header">
+                    {{pr1.PI_id.user.first_name}} {{pr1.PI_id.user.last_name}}
+                </div>
+                <div class="meta">
+                    Associate Professor
+                </div>
+
+                <div class="ui divider"></div>
+
+                <div class="description">
+                    {{pr1.project_title}}
+                </div>
+                <div class="description">
+                    <b>Project Extension</b>
+                </div>
+
+            </div>
+            <div class="extra content">
+                <div class="ui two buttons">
+                    <div class="ui basic green button"><a href="action?a=approve&pk={{pr1.id}}">Approve</a></div>
+                    <div class="ui basic red button"><a href="action?a=reject&pk={{pr1.id}}">Decline</a></div>
+                </div>
+            </div>
+        </div>
+
+        {% endif %}
+        {% endif %}
+        {% endfor %}
+        {% endfor %}
+        {% endif %}
+
+
+
+        <!-- Project Closure -->
+        {% if "dean_rspc" in desig %}
+        {% for pr in project2 %}
+         {% for pr1 in project %}
+                {%if pr1 == pr.project_id %}
+            {% if pr.DRSPC_response == "Pending" %}
+        <div class="ui card">
+            <div class="content">
+                <img class="right floated circular ui image" src="{% static 'globals/img/zlatan.jpg' %}" style="width: 50px; height: auto;">
+                <div class="header">
+                    {{pr1.PI_id.user.first_name}} {{pr1.PI_id.user.last_name}}
+                </div>
+                <div class="meta">
+                    Associate Professor
+                </div>
+
+                <div class="ui divider"></div>
+
+                <div class="description">
+                    {{pr1.project_title}}
+                </div>
+                <div class="description">
+                    <b>Project Closure</b>
+                </div>
+
+            </div>
+            <div class="extra content">
+                <div class="ui two buttons">
+                    <div class="ui basic green button"><a href="action?a=approve&pk={{pr1.id}}">Approve</a></div>
+                    <div class="ui basic red button"><a href="action?a=reject&pk={{pr1.id}}">Decline</a></div>
+                </div>
+            </div>
+        </div>
+
+        {% endif %}
+        {% endif %}
+        {% endfor %}
+        {% endfor %}
+        {% endif %}
+
+
+
+        <!-- Project Reallocation -->
+        {% if "dean_rspc" in desig %}
+        {% for pr in project3 %}
+         {% for pr1 in project %}
+                {%if pr1 == pr.project_id %}
+            {% if pr.DRSPC_response == "Pending" %}
+        <div class="ui card">
+            <div class="content">
+                <img class="right floated circular ui image" src="{% static 'globals/img/zlatan.jpg' %}" style="width: 50px; height: auto;">
+                <div class="header">
+                    {{pr1.PI_id.user.first_name}} {{pr1.PI_id.user.last_name}}
+                </div>
+                <div class="meta">
+                    Associate Professor
+                </div>
+
+                <div class="ui divider"></div>
+
+                <div class="description">
+                    {{pr1.project_title}}
+                </div>
+                <div class="description">
+                    <b>Fund Reallocation</b>
+                </div>
+
+            </div>
+            <div class="extra content">
+                <div class="ui two buttons">
+                    <div class="ui basic green button"><a href="action?a=approve&pk={{pr1.id}}">Approve</a></div>
+                    <div class="ui basic red button"><a href="action?a=reject&pk={{pr1.id}}">Decline</a></div>
+                </div>
+            </div>
+        </div>
+
+        {% endif %}
+        {% endif %}
+        {% endfor %}
+        {% endfor %}
+        {% endif %}
+
+
+
+
+
+
+
+
+<!--        -->
+<!--        <div class="ui card">-->
+<!--            <div class="content">-->
+<!--                <img class="right floated circular ui image" src="{% static 'globals/img/zlatan.jpg' %}" style="width: 50px; height: auto;">-->
+<!--                <div class="header">-->
+<!--                    Dr. Vinod Kumar Jain-->
+<!--                </div>-->
+<!--                <div class="meta">-->
+<!--                    Associate Professor-->
+<!--                </div>-->
+
+<!--                <div class="ui divider"></div>-->
+
+<!--                <div class="description">-->
+<!--                    Notification and/or alerts for this module goes here!-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="extra content">-->
+<!--                <div class="ui two buttons">-->
+<!--                    <div class="ui basic green button">Approve</div>-->
+<!--                    <div class="ui basic red button">Decline</div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            -->
+<!--            -->
+<!--        </div>-->
+
+
+        {% comment %}A single card starts here!{% endcomment %}
+    </div>
+{% endblock %}

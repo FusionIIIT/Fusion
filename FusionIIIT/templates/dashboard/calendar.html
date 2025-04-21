@@ -1,0 +1,60 @@
+{% load static %}
+
+{% block calendar %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{% static 'Fusion/css/calendar.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'Fusion/css/custom_2.css' %}">
+
+    <div class="ui container grid">
+        <div class="row">
+            <div class="ten wide column">
+                <section class="main left floated">
+                    <div class="custom-calendar-wrap">
+                        <div id="custom-inner" class="custom-inner">
+                            <div class="custom-header clearfix">
+                                <nav>
+                                    <span id="custom-prev" class="custom-prev"></span>
+                                    <span id="custom-next" class="custom-next"></span>
+                                </nav>
+                                <h2 id="custom-month" class="custom-month"></h2>
+                                <h3 id="custom-year" class="custom-year"></h3>
+                            </div>
+                            <div id="calendar" class="fc-calendar-container"></div>
+                        </div>
+                    </div>
+                    <div>
+
+                    </div>
+                </section>
+            </div>
+
+            <div class="six wide column">
+                <div class="sideBar">
+                    <h2 style="padding-bottom: 12px;">
+                        Planner
+                    </h2>
+
+                    <div class="notibox">
+                        Headbutt a Lion!
+                        <div class="cancel">✕</div>
+                    </div>
+
+                    <div class="notibox">
+                        Do Laundry
+                        <div class="cancel">✕</div>
+                    </div>
+
+                    <div class="notibox">
+                        Feed the Cat
+                        <div class="cancel">✕</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="" style="position:absolute; left:350px; top:10px"><div class="" ></div></div>
+
+
+    </div><!-- /container -->
+
+{% endblock %}

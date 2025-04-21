@@ -1,0 +1,84 @@
+{% load static %}
+
+<table class="ui very basic collapsing celled sortable table"
+       style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+    <thead>
+    <tr>
+        <th class="one wide column">
+        </th>
+
+        <th class="four wide column">
+            Name
+        </th>
+
+        <th class="three wide column">
+            To
+        </th>
+
+        <th class="three wide column">
+            From
+        </th>
+
+        <th class="two wide column">
+            Attachment
+        </th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr>
+
+        <td class="collapsing">
+            <div class="ui fitted checkbox">
+                <input type="checkbox"> <label></label>
+            </div>
+        </td>
+
+        <td>
+            <h4 class="ui image header">
+                <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                <div class="content">
+                    Zlatan Ibrahimovic
+                    <div class="sub header">
+                        gmail@zlatan.com
+                    </div>
+                </div>
+            </h4>
+        </td>
+
+        <td>
+            ...
+        </td>
+
+        <td>
+            ...
+        </td>
+
+        <td>
+            {% comment %}
+                            TODO: Add the attachment here!
+                        {% endcomment %}
+            <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="">
+                <i class="large attach black icon"></i>
+            </a>
+        </td>
+    </tr>
+
+    </tbody>
+</table>
+
+
+<br>
+
+<div class="ui primary right floated button">Approve Selected</div>
+<div class="ui red right floated button">Reject Selected</div>
+
+<br>
+<br>
+
+<div class="ui divider"></div>
+

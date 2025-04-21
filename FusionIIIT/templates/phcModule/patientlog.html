@@ -1,0 +1,703 @@
+{% load static %}
+
+{% block comapproval %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="prescribe">
+            Patient log
+        </a>
+       
+        <a class="item" data-tab="prescriptionhistory">
+            History
+        </a>
+
+    </div>
+    <div class="ui active tab" data-tab="prescribe">
+        <div class="ui vertical stripe team segment"
+             style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+            <form class="ui form" method="POST">{% csrf_token %}
+                <p id="usr_b"></p>
+                <div class="two fields">
+                  <div class="field">
+                      <label>Patient</label>
+                      <div class="ui fluid large input">
+                          <input placeholder="Patient Id" id="patient_b" name="patient_b" type="text">
+                      </div>
+                   </div>
+
+                   <div class="field">
+                       <label>Doctor</label>
+                       <select class="ui search fluid dropdown" name="doctor_b" id="doctor_b" required="true">
+                         <option value="" disabled selected>--SELECT--</option>
+                         {% for doctor in doctors %}
+                         <option value="{{doctor.id}}">{{doctor.doctor_name}}</option>
+                         {% endfor %}
+                       </select>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 10px;">
+                    <input type="radio" id="Dependent" name="is_dependent" value="self" checked onchange="handelchange(this)">
+                    <label>Self</label>
+                    <input type="radio" id="Dependent" name="is_dependent" value="dependent" onchange="handelchange(this)">
+                    <label>Dependent</label>
+                </div>
+                <div id="dependent_hide" style="margin-bottom: 10px;">
+                    <div class="field">
+                        <label>Dependent Name</label>
+                        <select placeholder="Name" id="dep_name" name="dep_name" type="text" class="ui search fluid dropdown">
+                            <option value="" selected>--SELECT--</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Dependent Relation</label>
+                        <input placeholder="Relation" id="dep_rel" name="dep_rel" type="text" readonly>
+                    </div>
+                </div>
+
+
+                <div class="field">
+                    <label>Details of Disease</label>
+                    <textarea name="details" id="details_b" rows="2"></textarea>
+                </div>
+
+                <div class="flex flex-col">
+                  <div class="field">
+                        <label>Medicine</label>
+                            <div class="flex" style="gap: 10px;">
+                                <input type="text" class="" id="medicine_id_b" name="medicine_id_b" list="med_list" />
+                                <input type="button" id="medicine_search_b" name="medicine_search_b" value="Search" class="ui small primary button" />
+                            </div>
+                        <datalist id="med_list">
+                        </datalist>
+                  </div>
+
+                  <div class="flex">
+                    <div class="field">
+                        <label>Manufacturer Name</label>
+                        <div>
+                            <input placeholder="Manufacturer Name" id="medicine_manu_name_b" name="medicine_manu_name_b" type="text" style="width: 400px;" readonly>
+                        </div>
+                     </div>
+                     <div class="field">
+                        <label>Pack Size</label>
+                        <div>
+                            <input placeholder="Pack size" id="medicine_pack_size_b" name="medicine_pack_size_b" type="text" style="width: 300px;" readonly>
+                        </div>
+                     </div>
+                  </div>
+
+                   <div class="flex w-full">
+                    <div class="field">
+                        <label>Quantity</label>
+                        <div class="">
+                            <input placeholder="Quantity" id="quantity_b" name="quantity_b" type="number">
+   
+                        </div>
+                     </div>
+                       <div class="field">
+                         <label>No of days</label>
+                         <div class="">
+                             <input placeholder="No of days" id="days_b" name="days_b" type="number">
+   
+                         </div>
+                        </div>
+                        <div class="field">
+                          <label>Times per day</label>
+                          <div class="">
+                              <input placeholder="No of times per day" id="times_b" name="times_b" type="number">
+   
+                          </div>
+                       </div>
+                   </div>
+                    <div class="field">
+                        <label >Stock</label>
+                        <select class="ui search fluid dropdown" name="stock_b" id="stock_b" required="true">
+                            <option value="" selected>--SELECT--</option>
+                          </select>
+                     </div>
+                     <div class="flex">
+                            <div class="field">
+                                <label>Expiry Date</label>
+                                <input id="stock_expiry" placeholder="stock expiery"  style="width: 400px;" readonly >
+                            </div>
+                            <div class="field">
+                                <label>Stock Quantity</label>
+                                <input id="stock_quantity" placeholder="stock quantity"  style="width: 300px;" readonly >
+                            </div>
+                     </div>
+                     <div class="field">
+                         <label><br></label>
+                         <input type="button" id="medicine_b" name="medicine_b" value="Add" class="ui medium right floated primary button" />
+                     </div>
+                </div>
+                <div id="medicine_schedule_table" style="display: none;">
+                    <table  class="ui very basic collapsing celled small fluid sortable table"
+                    style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;">
+                    <thead>
+                    <tr>
+                        <th class="two wide">
+                            Medicine
+                        </th>
+
+                        <th class="two wide" >
+                            Quantity
+                        </th>
+
+                        <th class="wide">
+                            Days
+                        </th>
+                        <th class="wide">
+                            Times
+                        </th>
+                        <th class="wide">
+                            Stock
+                        </th>
+                        <th class="wide" hidden>
+                            extra
+                        </th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="sched_b">
+
+                    </tbody>
+                </table>
+                </div>
+                <div class="field">
+                    <label>Tests Suggested</label>
+                    <textarea rows="2" id="tests_b" name="extra_meds"></textarea>
+                </div>
+                <div class="field">
+                    <label for="file">Report</label>
+                    <div class="ui fluid input">
+                        <input type="file" name="file" id="file">
+                    </div>
+                </div>
+                <div class="field">
+                    <label><br></label>
+                    <input type="button" id="prescribe_b" name="prescribe"  value="Submit"class="ui large right floated primary button" />
+                </div>
+
+
+
+            </form></div></div>
+            <script src="{% static 'globals/js/jquery.min.js' %}"></script>
+            <script type="text/javascript">
+                let dep=document.getElementById("dependent_hide")
+                dep.style.display="none"
+
+                function handelchange(src){
+                    if(src.value=="dependent"){
+                        dep.style.display="block"
+                    }
+                    if(src.value=="self"){
+                        document.getElementById('dep_name').value=""
+                        dep.style.display="none"
+                    }
+                }
+
+                $("#stock_b").change(function(){
+                    console.log($("#stock_b").val())
+                    var stock_val = $("#stock_b").val().split(',')
+                    document.getElementById("stock_expiry").value = stock_val[0]
+                    document.getElementById("stock_quantity").value = stock_val[2]
+                    })
+                
+                $("#patient_b").change(function(){
+                    dependent_select = document.getElementById('dep_name')
+                    dependent_select.options.length = 0
+                    console.log("changed user")
+                    document.getElementById('dep_rel').value=""
+                    $.ajax({
+                        type:"post",
+                        url:'/healthcenter/compounder/',
+                        data:{
+                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                            user_for_dependents : $("#patient_b").val()
+                        },
+                        success : function(data){
+                            console.log(data)
+                            if(data.status == -1){
+                                alert("invalid patient id")
+                                dependent_select.options[dependent_select.options.length] = new Option("No Dependent", dependent_select, true , true );
+                                dependent_select.value =  "dependent_select"
+                            }
+                            else if(data.status == -2){
+                                dependent_select.options[dependent_select.options.length] = new Option("No Dependent", "No Dependent" , false , true );
+                            }
+                            else{
+                                dependent_select.options[dependent_select.options.length] =new Option("","",true , true );
+                                $.each(data.dep,function(key,value){
+                                let dep_name=value.name;
+                                let relation = value.relation
+                                dependent_select.options[dependent_select.options.length] = new Option(dep_name , dep_name+","+relation , false , false );
+                            })
+                        }
+                    }
+                    })
+                })
+                $("#dep_name").change(function(){
+                    dep_value = document.getElementById('dep_name').value.split(',')
+                    console.log(dep_value)
+                    if(dep_value.length > 1){
+                        document.getElementById('dep_rel').value = dep_value[1]
+                    }
+                })
+                  $('#medicine_search_b').click(function(e){
+                    name=document.getElementById('medicine_id_b').value;
+                    if(name.length>2){
+                        $.ajax({
+                        type:'post',
+                        url:'/healthcenter/compounder/',
+                        data:{
+                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                            medicine_name_for_stock:$("#medicine_id_b").val(),
+                            get_stock:1,
+                        },
+                        success: function(data){
+                            var select_stock = document.getElementById("stock_b");
+                            select_stock.options.length=0
+                            select_stock.options[select_stock.options.length] =new Option("","",true , true );
+                            var med_list = document.getElementById("med_list");
+                            med_list.innerHTML="";
+                            $.each(data.sim,function(key,value){
+                                var new_option = document.createElement('option')
+                                new_option.value = value.brand_name +","+value.id
+                                med_list.appendChild(new_option)
+                            })
+                            if(data.val.length == 0){
+                                console.log(document.getElementById('stock_b').value)
+                                document.getElementById('stock_b').value = "N/A at moment"
+                                select_stock.options[select_stock.options.length] = new Option("N/A at moment" ,"N/A at moment", true , true );
+                            }
+                            else{
+                                $.each(data.val,function(key,value){
+                                let id=value.id;
+                                let med_name=value.brand_name;
+                                let expiry=value.expiry;
+                                let supplier = value.supplier;
+                                let qty = value.quantity
+                                select_stock.options[select_stock.options.length] = new Option(med_name +","+id , expiry+","+supplier+","+qty+","+id , false , false );
+                            });
+                            }
+                            
+                            console.log($("#stock_b").val())
+                            if (data.status == 2) {
+                                var manufacturer_name_b =
+                                document.getElementById("medicine_manu_name_b");
+                                if (data.sim[0].manufacturer_name == null)
+                                    manufacturer_name_b.value = "";
+                                else manufacturer_name_b.value = data.sim[0].manufacturer_name;
+                                var pack_size_label_b = document.getElementById("medicine_pack_size_b");
+                                if (data.sim[0].pack_size_label == null)
+                                    pack_size_label_b.value = "";
+                                else pack_size_label_b.value = data.sim[0].pack_size_label;
+                            }
+                        }
+                    });
+                    }
+                  });
+
+                  $('#medicine_b').click(function(e){
+                                                        var user = document.getElementById('patient_b').value;
+                                                        var medicine = document.getElementById('medicine_id_b').value;
+                                                        var quantity = document.getElementById('quantity_b').value;
+                                                        var days = document.getElementById('days_b').value;
+                                                        var times = document.getElementById('times_b').value;
+                                                        var stock = document.getElementById('stock_b').value;
+                                                        console.log(stock)
+                                                        if(user=="" || days=="" || days<0 || times=="" || times<0 || quantity=="" || quantity<0)
+                                                        {
+                                                        $('#usr_b').html("Enter Valid Information");
+                                                        return false;
+                                                        }
+                                                        $.ajax({
+                                                          type:'post',
+                                                          url:'/healthcenter/compounder/',
+                                                          data: {
+                                                          csrfmiddlewaretoken: '{{ csrf_token }}',
+                                                          user:$("#patient_b").val(),
+                                                          quantity:$("#quantity_b").val(),
+                                                          medicine_name_b:$("#medicine_id_b").val(),
+                                                          days:$("#days_b").val(),
+                                                          times:$("#times_b").val(),
+                                                          stock:$("#stock_b").val()
+                                                        },
+                                                          success: function(data){
+                                                              var response=JSON.stringify(data);
+                                                              if(data.status==1){
+                                                                    document.getElementById('medicine_schedule_table').style.display = 'block';
+                                                                    alert("added medicine");
+                                                                    if(  document.getElementById("stock_b").value == "" || document.getElementById("stock_b").value=="N/A at moment"){
+                                                                        $('#sched_b').append("<tr><td>" + data.med_name+","+data.id + "</td><td>" +
+                                                                            document.getElementById("quantity_b").value + "</td><td>" + document.getElementById("days_b").value + "</td><td>" + document.getElementById("times_b").value + "</td><td>"+ document.getElementById("stock_b").value+ "</td><td hidden>"+"</td></tr>");
+                                                                    }
+                                                                    else{
+                                                                        $('#sched_b').append("<tr><td>" + data.med_name+","+data.id + "</td><td>" +
+                                                                        document.getElementById("quantity_b").value + "</td><td>" + document.getElementById("days_b").value + "</td><td>" + document.getElementById("times_b").value + "</td><td>"+ document.getElementById("stock_b").value.split(",")[0] +","+ document.getElementById("stock_b").value.split(",")[2]  + "</td><td hidden>"+ document.getElementById("stock_b").value.split(",")[3] + "</td></tr>");
+                                                                    }
+                                                               }
+                                                               else if(data.status == -2){
+                                                                alert("enter valid patient id")
+                                                               }
+                                                               else if(data.status==-1){
+                                                                alert("failed to add medcine")
+                                                               }
+                                                               else{
+                                                                alert('mot enough medicine in stock')
+                                                               }
+                                                                document.getElementById("quantity_b").value="";
+                                                                document.getElementById("times_b").value="";
+                                                                document.getElementById("days_b").value="";
+                                                                document.getElementById("medicine_id_b").value="";
+                                                                document.getElementById("medicine_manu_name_b").value="";
+                                                                document.getElementById("medicine_pack_size_b").value="";
+                                                            }
+                                                      });
+                                                    });
+    </script>
+    <script type="text/javascript">
+                    $('#prescribe_b').click(function(e){
+                                                    var user = document.getElementById('patient_b').value;
+                                                    var details = document.getElementById('details_b').value;
+                                                    var tbl = document.getElementById('sched_b');
+                                                    var medicine=[]
+
+                                                    for(var i=0,row;row=tbl.rows[i];i++){
+                                                        var obj= new Object();
+                                                        obj.brand_name=row.cells[0].innerText;
+                                                        obj.quantity=row.cells[1].innerText;
+                                                        obj.Days=row.cells[2].innerText;
+                                                        obj.Times=row.cells[3].innerText;
+                                                        obj.stock=row.cells[4].innerText+","+row.cells[5].innerText;
+                                                        medicine[i]=obj;
+                                                        console.log(obj)
+                                                    }
+
+                                                    console.log(medicine)
+                                                     
+                                                    // Get the file input element
+                                                    var fileInput = document.getElementById('file');
+                                                    
+                                                    // Get the files from the input element
+                                                    var file = fileInput.files[0];
+                                                    
+                                                    // Create a new FormData object
+                                                    if(tbl.rows.length==0){
+                                                        $('#usr_b').html("Please prescribe some medicine!");
+                                                        return false;
+                                                    }
+                                                    if(user=="" || details=="")
+                                                    {
+                                                        $('#usr_b').html("Please enter all the details!");
+                                                        return false;
+                                                    }
+                                                    var formData = new FormData();                                           
+                                                    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}')
+                                                    formData.append('file', file);
+                                                    formData.append('user', $("#patient_b").val());
+                                                    formData.append('doctor', $("#doctor_b").val());
+                                                    formData.append('details', $("#details_b").val());
+                                                    formData.append('tests', $("#tests_b").val());
+                                                    formData.append('prescribe_b', $("#prescribe_b").val());
+                                                    formData.append('is_dependent',$('input[name="is_dependent"]:checked').val());
+                                                    if($('input[name="is_dependent"]:checked').val()=="dependent"){
+                                                        var dep_name = document.getElementById('dep_name').value
+                                                        if($('input[name="is_dependent"]:checked').val()=="dependent" && dep_name == "No Dependent"){
+                                                            alert("dependent not valid")
+                                                            return false;
+                                                        }
+                                                        formData.append('dependent_name',$("#dep_name").val().split(',')[0]);
+                                                        formData.append('dependent_relation',$("#dep_rel").val());
+                                                    }
+                                                    formData.append('pre_medicine',JSON.stringify(medicine));
+                                                    $.ajax({
+                                                      type:'post',
+                                                      url:'/healthcenter/compounder/',
+                                                      data: formData,
+                                                      processData: false, // Don't process the data as a query string
+                                                      contentType: false, // Let the browser set the Content-Type header automatically
+                                                      success: function(data){
+                                                        if (data.status == 1){
+                                                          alert("prescribed medicine");
+                                                          document.getElementById("doctor_b").value="";
+                                                          document.getElementById("details_b").value="";
+                                                          document.getElementById("tests_b").value="";
+                                                          $('#sched_b').empty();
+                                                          window.location.reload();
+                                                        }
+                                                        else if(data.status == -1){
+                                                            aleart("enter valid patient id")
+                                                        }
+                                                        else {
+                                                            if(data.status == 0)
+                                                            alert("Prescription failed!, not enough medicine available in stock");
+                                                            }
+                                                    },
+                                                  });
+                                                  });
+              </script>
+         
+
+
+
+<div class="ui tab" data-tab="prescriptionhistory">
+        <div class="ui vertical segment" >
+            <form class="ui form" style="margin-bottom: 20px;" id="search_patientlog">
+                <div class="field">
+                    <div class="ui fluid large input">
+                        <input placeholder="search" id="patient_search" name="patient_search" type="text">
+                    </div>
+                 </div>
+            </form>
+            <div class="table_wrapper">
+                <table  border=1 class="ui very basic collapsing celled large sortable table"
+                style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;" >
+                <thead>
+                <tr>
+                    <td style="font-weight:bold;color:black;" >
+                        Patient ID
+                    </td>
+
+                    <td style="font-weight:bold;color:black;">
+                        Treated BY
+                    </td>
+
+                    <td style="font-weight:bold;color:black;" >
+                        Date
+                    </td>
+                    <td style="font-weight:bold;color:black;">
+                        Details
+                    </td>
+                    <td style="font-weight:bold;color:black;">
+                        View
+                    </td>
+                </tr>
+                </thead>
+
+                <tbody id="prescriptions-list">
+                {% for pre in presc_hist.page.object_list %}
+                <tr>
+
+                    <td style="white-space:nowrap;">
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                        </h4>
+                        {{pre.user_id}}
+                    </td>
+
+                    <td style="white-space:nowrap;">
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                        </h4>
+                            {{pre.doctor_id}}
+
+
+                    </td>
+
+                    <td style="white-space:nowrap;">
+                        {{pre.date}}
+                    </td>
+
+                    <td>
+                        {{pre.details}}
+                    </td>
+                    <td>
+                        <button class="view-followup-btn"><a style="color: white;" href="{% url 'healthcenter:view_prescription' prescription_id=pre.id %}">View/Follow-up</a></button>
+                    </td>
+
+                    <!-- <td>
+
+                        <input type="button" onclick="rem1({{pre.id}})" id="{{pre.id}}" name="cancel" value="Cancel"class="ui red button" />
+
+                    </td> -->
+
+                </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+            </div>
+            <div class="pagination" style="display: flex; justify-content: center;align-items: center;gap: 15px;margin-top: 15px;">
+                <button id="previous-page" data-page="{{ presc_hist.page.previous_page_number }}" class="ui small muted button">Previous</button>
+                <div>
+                    Page <input type="number" value="{{ presc_hist.page.number }}" id="log_page_number" style="width: 40px;"> of <span id="log_total_pages">{{ presc_hist.count}}</span>
+                </div>
+                <button id="next-page" data-page="{{ presc_hist.page.next_page_number }}" class="ui small muted button">Next</button>
+            </div>
+       
+        
+        <style>
+            .view-followup-btn {
+                font-size: 13px;
+                background-color: #2185D0;
+                border: none;
+                border-radius: 5px;
+                padding: 5px 10px;
+                text-align: center;
+                text-decoration: none;
+                cursor: pointer;
+            }
+            .view-followup-btn:hover {
+                background-color: #0b5ed7;
+            }
+            .w-full {
+                width: 100%;
+            }
+            .flex {
+                display: flex;
+                justify-content: space-between;
+            }
+            .flex-col {
+                flex-direction: column;
+            }
+            .bbx {
+                border: 1px solid red;
+            }
+        </style>
+
+        <script>
+
+            
+        function rem1(id){
+
+        var dis = this;
+        var d = window.confirm('Are you sure, you want to cancel the prescription?');
+        if(d == false){
+            return;
+        }
+                $('#'+id).parent().parent().remove();
+                                                    alert("prescription cancelled");
+
+                $.ajax({
+                            type:'post',
+                            url:'/healthcenter/compounder/',
+                        data: {'cancel_presc':id,},
+
+                        beforeSend: function(xhr) {
+            xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+        },
+                        success: function(data){
+                                                }
+                                                });
+
+
+    }
+        </script>
+
+         <script>
+            let items_per_page = 2;
+            let captures = document.querySelectorAll('.table_wrapper');
+            captures.forEach((capture) => {
+                capture.style.height = `${50 + (items_per_page * 50)}px`;
+            });
+
+            $('#search_patientlog').on('submit',function(e){
+                e.preventDefault();
+                alert('changed search')
+                $.ajax({
+                    type: "post",
+                    url: "/healthcenter/compounder/",
+                    data: {
+                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                        search_patientlog: $("#patient_search").val(),
+                    },
+                    success: function(data){
+                        console.log(data)
+                        $('#prescriptions-list').empty();
+                        const view_button_prescription = `<td><button class="view-followup-btn"><a style="color: white;" href='{% url 'healthcenter:view_prescription' prescription_id=0 %}'>View/Follow-up</a></button></td>` 
+                        $.each( data.presc_context.page.object_list , function(index, prescription) {
+                                console.log("inside",$('#prescriptions-list'))
+                                 $('#prescriptions-list').append(
+                                     '<tr>' +
+                                     '<td style="white-space:nowrap;"><h4 class="ui image header"><img src="{% static "globals/img/zlatan.jpg" %}" class="ui mini circular image"></h4>' + prescription.user_id + '</td>' +
+                                     '<td style="white-space:nowrap;"><h4 class="ui image header"><img src="{% static "globals/img/zlatan.jpg" %}" class="ui mini circular image"></h4>' + prescription.doctor_id + '</td>' +
+                                     '<td style="white-space:nowrap;">' + prescription.date + '</td>' +
+                                     '<td>' + prescription.details + '</td>' +
+                                     view_button_prescription.replace('0',prescription.id) + // Add any file handling logic here
+                                    '</tr>'
+                                 );
+                             });
+                             if (data.presc_context.page.has_previous) {
+                                 $('#previous-page').data('page', data.presc_context.page.previous_page_number).show();
+                             } else {
+                                 $('#previous-page').hide();
+                             }
+         
+                             if (data.presc_context.page.has_next) {
+                                 $('#next-page').data('page', data.presc_context.page.next_page_number).show();
+                             } else {
+                                 $('#next-page').hide();
+                             }
+                             document.getElementById('log_page_number').value=data.presc_context.page.number
+                             document.getElementById('log_total_pages').innerHTML=data.presc_context.count
+                        
+                    }
+                })
+            })
+                 function loadPage(pageNumber) {
+                     $.ajax({
+                         url: '/healthcenter/compounder/',
+                         type: 'POST',
+                         data: {
+                         csrfmiddlewaretoken: '{{ csrf_token }}',
+                         page: pageNumber,
+                         search_patientlog: $("#patient_search").val(),
+                         datatype: 'patientlog'
+                         },
+                         success: function(data) {
+                             $('#prescriptions-list').empty();
+                             const view_button_prescription = `<td><button class="view-followup-btn"><a style="color: white;" href='{% url 'healthcenter:view_prescription' prescription_id=0 %}'>View/Follow-up</a></button></td>` 
+                             $.each(data.report, function(index, prescription) {
+                                console.log("inside",$('#prescriptions-list'))
+                                 $('#prescriptions-list').append(
+                                     '<tr>' +
+                                     '<td style="white-space:nowrap;"><h4 class="ui image header"><img src="{% static "globals/img/zlatan.jpg" %}" class="ui mini circular image"></h4>' + prescription.user_id + '</td>' +
+                                     '<td style="white-space:nowrap;"><h4 class="ui image header"><img src="{% static "globals/img/zlatan.jpg" %}" class="ui mini circular image"></h4>' + prescription.doctor_id + '</td>' +
+                                     '<td style="white-space:nowrap;">' + prescription.date + '</td>' +
+                                     '<td>' + prescription.details + '</td>' +
+                                     view_button_prescription.replace('0',prescription.id) + // Add any file handling logic here
+                                    '</tr>'
+                                 );
+                             });
+                             
+                             if (data.has_previous) {
+                                 $('#previous-page').data('page', data.previous_page_number).show();
+                             }
+         
+                             if (data.has_next) {
+                                 $('#next-page').data('page', data.next_page_number).show();
+                             }
+                            
+                             document.getElementById('log_page_number').value=data.page
+                             document.getElementById('log_total_pages').innerHTML=data.total_pages
+                         }
+                     });
+                 }
+         
+                 $('#previous-page').click(function() {
+                    const pageNumber = $(this).data('page');
+                     loadPage(pageNumber);
+                 });
+         
+                 $('#next-page').click(function() {
+                    const pageNumber = $(this).data('page');
+                     loadPage(pageNumber);
+                     
+                 });
+                 $('#log_page_number').change(function(){
+                    if( document.getElementById('log_page_number').value<=0 || document.getElementById('log_page_number').value > document.getElementById('log_total_pages').innerHTML){
+                        alert("enter valid page number")
+                    }
+                    else{
+                        loadPage(document.getElementById('log_page_number').value);
+                    }
+                 })
+         </script>
+
+    </div>
+</div>
+
+{% endblock %}

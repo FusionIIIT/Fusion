@@ -1,0 +1,94 @@
+{% load static %}
+{% block form2 %}
+
+                  <!--MCM content starts-->
+                <div class="ui active  tab " data-tab="mcm">
+                     
+                      <div class="ui form">
+                          <div class="inline fields">
+                            <div class="field">
+                              <div class="ui radio checkbox">
+                                <input type="radio" name="frequency" checked="checked">
+                                <label> MCM </label>
+                              </div>
+                            </div>
+                            <div class="field">
+                              <div class="ui radio checkbox">
+                                <input type="radio" name="frequency">
+                                <label>NOTIONAL PRIZE</label>
+                              </div>
+                            </div>
+                            <div class="field">
+                              <div class="ui radio checkbox">
+                                <input type="radio" name="frequency">
+                                <label>OTHERS</label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                    
+                    <br> 
+                    <table class="ui very basic collapsing celled table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Roll No.</th>
+                                <th>Batch</th>
+                                <th>Father's Name</th>
+                                <th>Scholarship Application</th>
+                                <th>Action</th>
+                                <th>Comment</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for assist in mcm %}
+                            <tr>
+                                <td>
+                                    <h4 class="ui image header">
+                                        <img src="{% static 'globals/img/matthew.png' %}" class="ui mini rounded image">
+                                        <div class="content">
+                                            {{assist.student_id.id.user}}
+                                            <div class="sub header">{{assist.student_id.id.department.name}}
+                                            </div>
+                                        </div>
+                                    </h4>
+                                </td>
+                                <td>
+                                    {{assist.student_id.id.id}}
+                                </td>
+                                <td>
+                                    2015
+                                </td>
+                                <td>
+                                    {{assist.student_id.father_name}}
+                                </td>
+                                <td>
+                                    <a href="file:///C:/Users/Mayank%20Saurabh/Music/Dean%20Acad/file/first.pdf" target="_blank">View Application</a>
+                                </td>
+                                <td>
+                                   <div class="ui checkbox">
+                                      <input type="checkbox" name="example">
+                                      <label></label>
+                                    </div>  
+                                </td>
+                                <td>
+                                    <div class="ui form">
+                                        <div class="field">
+                                            <textarea rows="2" required></textarea>
+                                        </div>
+                                        <!--<button class="ui primary loading button">Loading</button>-->
+                                    </div>
+
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                        <div class="ui   buttons">
+                                        <button class="ui button">Accept</button>
+                                        <div class="or"></div>
+                                        <button class="ui positive button">Reject</button>
+                                    </div>
+                </div>
+                    
+{% endblock form2 %}
