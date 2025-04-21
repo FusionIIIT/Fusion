@@ -2581,13 +2581,13 @@ def transfer_insert(request):
     return JsonResponse({'message' : 'Your data is saved '})
 
 # def get_personal_info(request):
-#     # Fetch all entries where pf_no is '5318'
-#     projects = faculty_about.objects.filter(user_id='5318').values()
+
+#     projects = faculty_about.objects.filter(user_id=request.GET.get("pfNo")).values()
 
 #     return JsonResponse(list(projects), safe=False)
 
 def get_personal_info(request):
-    # Fetch all entries where pf_no is '5318'
+    
     
     projects = faculty_about.objects.filter(user_id=request.GET.get("pfNo")).values()
 
@@ -2595,75 +2595,75 @@ def get_personal_info(request):
 
 
 def get_research_projects(request):
-    # Fetch all entries where pf_no is '5318'
+    
     projects = emp_research_projects.objects.filter(pf_no=request.GET.get("pfNo")).values()
 
     return JsonResponse(list(projects), safe=False)
 
 def get_consultancy_projects(request):
-    # Fetch all entries where pf_no is '5318'
+    
     projects = emp_consultancy_projects.objects.filter(pf_no=request.GET.get("pfNo")).values()
 
     return JsonResponse(list(projects), safe=False)
 
 def get_patents(request):
-    # Fetch all entries where pf_no is '5318'
+    
     projects = emp_patents.objects.filter(pf_no=request.GET.get("pfNo")).values()
     
     return JsonResponse(list(projects), safe=False)
 
 def get_pg_thesis(request):
-    # Fetch all entries where pf_no is '5318'
+    
     projects = emp_mtechphd_thesis.objects.filter(pf_no=request.GET.get("pfNo"), degree_type='1').values()
 
     return JsonResponse(list(projects), safe=False)
 
 def get_phd_thesis(request):
-    # Fetch all entries where pf_no is '5318'
+    
     projects = emp_mtechphd_thesis.objects.filter(pf_no=request.GET.get("pfNo"), degree_type='2').values()
 
     return JsonResponse(list(projects), safe=False)
 
 def get_event(request):
-    # Fetch all entries where pf_no is '5318'
+    
     
     projects = emp_event_organized.objects.filter(pf_no=request.GET.get("pfNo")).values()
 
     return JsonResponse(list(projects), safe=False)
 
 def get_fvisits(request):
-    # Fetch all entries where pf_no is '5318'
+    
     projects = emp_visits.objects.filter(pf_no=request.GET.get("pfNo"), v_type='2').values()
 
     return JsonResponse(list(projects), safe=False)
 
 def get_ivisits(request):
-    # Fetch all entries where pf_no is '5318'
+    
     projects = emp_visits.objects.filter(pf_no=request.GET.get("pfNo"),  v_type='1').values()
 
     return JsonResponse(list(projects), safe=False)
 
 def get_consym(request):
-    # Fetch all entries where pf_no is '5318'
+    
     projects = emp_confrence_organised.objects.filter(pf_no=request.GET.get("pfNo")).values()
 
     return JsonResponse(list(projects), safe=False)
 
 def get_all_research_projects(request):
-    # Fetch all entries where pf_no is '5318'
+    
     projects = emp_research_projects.objects.values()
 
     return JsonResponse(list(projects), safe=False)
 
 
 # def get_books(request):
-#     # Fetch all entries where pf_no is '5318'
-#     books = emp_published_books.objects.filter(pf_no="5318").order_by('-pyear').values()
+
+#     books = emp_published_books.objects.filter(pf_no=request.GET.get("pfNo")).order_by('-pyear').values()
 
 #     return JsonResponse(list(books), safe=False)
 
 def get_books(request):
-    # Fetch all entries where pf_no is '5318'
+    
     books = emp_published_books.objects.filter(pf_no=request.GET.get("pfNo")).order_by('-pyear').values()
     return JsonResponse(list(books), safe=False)
 
@@ -2677,13 +2677,13 @@ def get_conference(request):
     return JsonResponse(list(conference), safe=False)
 
 def get_achievements(request):
-    # Fetch all entries where pf_no is '5318'
+    
     achievements = emp_achievement.objects.filter(pf_no=request.GET.get("pfNo")).order_by('-a_year').values()
 
     return JsonResponse(list(achievements), safe=False)
 
 def get_talks(request):
-    # Fetch all entries where pf_no is '5318'
+    
     talks = emp_expert_lectures.objects.filter(pf_no=request.GET.get("pfNo")).values()
 
     return JsonResponse(list(talks), safe=False)
@@ -2754,7 +2754,11 @@ def filter_research_projects(request):
 
     # Interval filtering for date fields
     start_date = request.POST.get("start_date")
-    end_date = request.POST.get("end_date")
+    end_date = request.POST.get("finish_date")
+    if start_date:
+        filters['start_date'] = start_date
+    if end_date:
+        filters['finish_date'] = end_date
     if start_date and end_date:
         try:
             interval_filters['start_date__gte'] = datetime.strptime(start_date, '%Y-%m-%d')
@@ -3094,15 +3098,15 @@ def filter_events(request):
 
     name = request.POST.get("name")
     if name:
-        filters['name__icontains'] = name
+        filters['name'] = name
 
     sponsoring_agency = request.POST.get("sponsoring_agency")
     if sponsoring_agency:
-        filters['sponsoring_agency__icontains'] = sponsoring_agency
+        filters['sponsoring_agency'] = sponsoring_agency
 
     venue = request.POST.get("venue")
     if venue:
-        filters['venue__icontains'] = venue
+        filters['venue'] = venue
 
     role = request.POST.get("role")
     if role:
@@ -3111,6 +3115,10 @@ def filter_events(request):
     # Interval filtering for date fields
     start_date = request.POST.get("start_date")
     end_date = request.POST.get("end_date")
+    if start_date:
+        filters['start_date'] = start_date
+    if end_date:
+        filters['end_date'] = end_date
     if start_date and end_date:
         try:
             interval_filters['start_date__gte'] = datetime.strptime(start_date, '%Y-%m-%d')
@@ -3174,11 +3182,11 @@ def filter_visits(request):
 
     place = request.POST.get("place")
     if place:
-        filters['place__icontains'] = place
+        filters['place'] = place
 
     purpose = request.POST.get("purpose")
     if purpose:
-        filters['purpose__icontains'] = purpose
+        filters['purpose'] = purpose
 
     # Interval filtering for date fields
     v_date = request.POST.get("v_date")
@@ -3272,7 +3280,13 @@ def filter_consym(request):
 
     # Interval filtering for date fields
     start_date = request.POST.get("start_date")
+    if start_date:
+        filters['start_date'] = start_date
+
     end_date = request.POST.get("end_date")
+    if end_date:
+        filters['end_date'] = end_date
+
     if start_date and end_date:
         try:
             interval_filters['start_date__gte'] = datetime.strptime(start_date, '%Y-%m-%d')
@@ -3413,6 +3427,10 @@ def filter_journal_or_conference(request):
     title_paper = request.POST.get("title_paper")
     if title_paper:
         filters['title_paper__icontains'] = title_paper
+
+    name = request.POST.get("name")
+    if name:
+        filters['name__icontains'] = name
 
     venue = request.POST.get("venue")
     if venue:
@@ -3569,17 +3587,19 @@ def filter_talks(request):
     if place:
         filters['place__icontains'] = place
 
-    l_year = request.POST.get("l_year")
-    if l_year:
-        filters['l_year'] = int(l_year)
-
-    a_month = request.POST.get("a_month")
-    if a_month:
-        filters['a_month'] = int(a_month)
+    l_date = request.POST.get("l_date")
+    if l_date:
+        filters['l_date'] = int(l_date)
 
     # Interval filtering for lecture date
     start_date = request.POST.get("start_date")
+    if start_date:
+        filters['start_date'] = int(start_date)
+
     end_date = request.POST.get("end_date")
+    if end_date:
+        filters['end_date'] = int(end_date)
+        
     if start_date and end_date:
         try:
             filters['l_date__range'] = (
@@ -3640,25 +3660,62 @@ from rest_framework.decorators import api_view
 
 # @csrf_exempt
 # @api_view(['GET'])
+# def get_all_faculty_ids(request):
+#     """
+#     Fetch all unique id and user_id from the globals_extra_info table where user_type is 'faculty'.
+#     Returns a list of id and user_id combinations.
+#     """
+#     # try:
+#         # Fetch data using Django ORM
+#     faculty_data = ExtraInfo.objects.filter(user_type='faculty').values('id', 'user_id').order_by('user_id')
+    
+#     # Convert the QuerySet to a list
+#     response_data = list(faculty_data)
+    
+#     return JsonResponse(response_data, safe=False)
+    
+#     # except Exception as e:
+#     #     return JsonResponse(
+#     #         {"error": f"Failed to fetch faculty IDs: {str(e)}"},
+#     #         status=500
+#     #     )
+
 def get_all_faculty_ids(request):
     """
-    Fetch all unique id and user_id from the globals_extra_info table where user_type is 'faculty'.
-    Returns a list of id and user_id combinations.
-    """
-    # try:
-        # Fetch data using Django ORM
-    faculty_data = ExtraInfo.objects.filter(user_type='faculty').values('id', 'user_id').order_by('user_id')
+    Get all faculty IDs, optionally filtered by department IDs.
     
-    # Convert the QuerySet to a list
+    Parameters:
+    - department_ids (optional): Comma-separated list of department IDs to filter by
+    
+    Returns:
+    - JSON response with faculty data
+    """
+    # Check if department_ids parameter is provided
+    department_ids_param = request.GET.get('department_ids', None)
+    
+    # Base query
+    query = ExtraInfo.objects.filter(user_type='faculty')
+    
+    # Apply department filter if provided
+    if department_ids_param:
+        try:
+            # Split the comma-separated string into a list of integers
+            department_ids = [int(id.strip()) for id in department_ids_param.split(',') if id.strip()]
+            
+            # Filter by department_id
+            if department_ids:
+                query = query.filter(department_id__in=department_ids)
+                
+        except ValueError:
+            # Handle invalid department_id format
+            return JsonResponse({"error": "Invalid department_id format"}, status=400)
+    
+    # Get the faculty data
+    faculty_data = query.values('id', 'user_id', 'department_id').order_by('user_id')
     response_data = list(faculty_data)
     
     return JsonResponse(response_data, safe=False)
-    
-    # except Exception as e:
-    #     return JsonResponse(
-    #         {"error": f"Failed to fetch faculty IDs: {str(e)}"},
-    #         status=500
-    #     )
+
 
 @csrf_exempt
 def add_administrative_position(request):

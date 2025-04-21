@@ -8,8 +8,11 @@ from django.db.models.functions import Concat,ExtractYear,ExtractMonth,ExtractDa
 from django.db.models import Max,Value,IntegerField,CharField,F,Sum, Case, When
 from io import BytesIO
 import json
+import xlrd
 from xlsxwriter.workbook import Workbook
-
+from django.db.models import Prefetch
+import json
+from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, HttpResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
@@ -18,13 +21,13 @@ from rest_framework.decorators import api_view, permission_classes,authenticatio
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from applications.globals.models import HoldsDesignation, Designation, ExtraInfo
-from applications.programme_curriculum.models import ( CourseSlot, Course as Courses, Batch, Semester)
+from applications.globals.models import Faculty, HoldsDesignation, Designation, ExtraInfo
+from applications.programme_curriculum.models import ( CourseInstructor, CourseSlot, Course as Courses, Batch, Semester)
 # from applications.programme_curriculum.models import Course
 
-from applications.academic_procedures.models import ( Student, Curriculum , ThesisTopicProcess, InitialRegistrations,
+from applications.academic_procedures.models import ( MTechGraduateSeminarReport, PhDProgressExamination, Student, Curriculum , ThesisTopicProcess, InitialRegistrations,
                                                      FinalRegistration, SemesterMarks,backlog_course,
-                                                     BranchChange , StudentRegistrationChecks, Semester , FeePayments , course_registration)
+                                                     BranchChange , StudentRegistrationChecks, Semester , FeePayments , course_registration, course_replacement, AssistantshipClaim)
 
 from applications.academic_information.models import (Curriculum_Instructor , Calendar)
 
@@ -1097,6 +1100,8 @@ def verify_registration(request):
     return JsonResponse({'status': 'error', 'message': 'Error in processing'})
 
 @api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def verify_course(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().select_related(
@@ -1128,19 +1133,19 @@ def verify_course(request):
     details = []
 
     current_sem_courses = get_currently_registered_course(
-        roll_no, curr_sem_id)
+        roll_no, curr_sem_id, True)
 
     idd = obj2
     for z in current_sem_courses:
-        z = z[1]
         print(z)
-        course_code = z.code
-        course_name = z.name
+        course_code = z.course_id.code
+        course_name = z.course_id.name
+        replaced_by = course_replacement.objects.all().filter(old_course_registration=z).first()
         # course_code, course_name = str(z).split(" - ")
         k = {}
         # reg_ig has course registration id appended with the the roll number
         # so that when we have removed the registration we can be redirected to this view
-        k['reg_id'] = roll_no+" - "+course_code
+        k['reg_id'] = z.id
         k['rid'] = roll_no+" - "+course_code
         # Name ID Confusion here , be carefull
         courseobj2 = Courses.objects.all().filter(code=course_code)
@@ -1148,8 +1153,10 @@ def verify_course(request):
         for p in courseobj2:
             k['course_id'] = course_code
             k['course_name'] = course_name
-            k['sem'] = curr_sem_id.semester_no
+            k['sem'] = z.semester_id.semester_no
             k['credits'] = p.credit
+            k['registration_type'] = z.registration_type
+            k['replaced_by'] = serializers.CourseRegistrationSerializer(replaced_by.new_course_registration).data if (replaced_by) else None
         details.append(k)
 
     year = demo_date.year
@@ -1163,8 +1170,9 @@ def verify_course(request):
     # TO DO Bdes
     date = {'year': yearr, 'semflag': semflag}
     course_list = Courses.objects.all()
-    semester_list = Semester.objects.all()
+    semester_list = Semester.objects.filter(curriculum=curr_id)
     semester_no_list=[]
+    courseslot_list = CourseSlot.objects.filter(semester__in=semester_list)
     for i in semester_list:
         semester_no_list.append(int(i.semester_no))
     # return JsonResponse(
@@ -1177,8 +1185,10 @@ def verify_course(request):
     
     return JsonResponse({
         'details': details,
+        'dict2': dict2,
         'course_list': serializers.CourseSerializer(course_list, many=True).data,
         'semester_list': serializers.SemesterSerializer(semester_list, many=True).data,
+        'courseslot_list': serializers.CourseSlotSerializer(courseslot_list, many=True).data,
         'date': date
     })
 
@@ -1802,3 +1812,677 @@ def course_list(request):
         'final_registration': final_registration,
     }
     return Response(data=resp, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def dropcourseadmin(request):
+    '''
+        This function is used to get the view when Acad Admin drops any course of any student.
+        @param:
+                request - trivial
+
+        @variables:
+                data - user's id.
+                rid - Registration ID of Registers table
+                response_data - data to be responded.
+    '''
+    data = request.GET.get('id')
+    # data = data.split(" - ")
+    reg_id = int(data)
+    # student_id = data[0]
+    # course_code = data[1]
+    # course = Courses.objects.get(code=course_code , version = 1.0)
+    # need to add batch and programme
+    # curriculum_object = Curriculum.objects.all().filter(course_code = course_code)
+    try:
+        # Register.objects.filter(curr_id = curriculum_object.first(),student_id=int(data[0])).delete()
+        course_registration.objects.filter(id=reg_id).delete()
+    except Exception as e:
+        print(str(e))
+        return JsonResponse({'error': str(e)}, status=400)
+        # print("hello ")
+    return JsonResponse({'message': 'Success!'}, status=200)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def acad_add_course(request):
+    if(request.method == "POST"):
+        course_id = request.POST["course_id"]
+        courseslot_id = request.POST["courseslot_id"]
+        course = Courses.objects.get(id=course_id)
+        courseslot = CourseSlot.objects.get(id=courseslot_id)
+        roll_no = request.POST['roll_no']
+        student = Student.objects.all().select_related(
+            'id', 'id__user', 'id__department').filter(id=roll_no).first()
+        sem_id = request.POST['semester_id']
+        semester = Semester.objects.get(id=sem_id)
+        registration_type = request.POST["registration_type"]
+        working_year = request.POST.get("working_year", datetime.datetime.now().year)
+        old_course_id = request.POST.get("old_course")
+        with transaction.atomic():
+            cr = course_registration(
+                course_slot_id=courseslot, course_id=course, student_id=student, semester_id=semester , working_year = working_year, registration_type=registration_type)
+            cr.save()
+            if old_course_id:
+                old_course_obj = course_registration.objects.filter(id=old_course_id).first()
+                if old_course_obj:
+                    course_replacement.objects.create(
+                        old_course_registration=old_course_obj, 
+                        new_course_registration=cr
+                    )
+                    
+    return JsonResponse({'message': 'Success!'}, status=200)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def academic_procedures_faculty_api(request):
+    """
+    Comprehensive API for faculty academic procedures.
+    Returns detailed information about faculty's academic responsibilities and requests.
+    
+    Endpoints:
+    - Faculty profile details
+    - Assigned courses
+    - Thesis supervision requests
+    - Assistantship claims
+    - Seminar and progress report requests
+    """
+    try:
+        # Authenticate and validate user
+        current_user = get_object_or_404(User, username=request.user.username)
+        
+        # Verify user is a faculty member
+        if request.user.extrainfo.user_type != 'faculty':
+            return Response(
+                {"error": "Unauthorized access. Faculty only."}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Fetch extended user information
+        user_details = ExtraInfo.objects.select_related(
+            'user', 
+            'department'
+        ).get(user=request.user)
+        
+        # Get faculty's current designation
+        designation = HoldsDesignation.objects.filter(user=request.user).first()
+        
+        # Determine current semester based on month
+        current_month = timezone.now().month
+        semesters = [1, 3, 5, 7] if 7 <= current_month <= 12 else [2, 4, 6, 8]
+        
+        # Fetch faculty object with related information
+        faculty_object = Faculty.objects.select_related(
+            'id', 
+            'id__user', 
+            'id__department'
+        ).get(id=user_details.pk)
+        
+        # 1. Thesis Supervision Requests
+        thesis_requests = ThesisTopicProcess.objects.filter(supervisor_id=faculty_object)
+        thesis_supervision_requests = thesis_requests.filter(pending_supervisor=True)
+        approved_thesis_requests = thesis_requests.filter(approval_supervisor=True)
+        
+        # 2. Assistantship Claims
+        assistantship_requests = AssistantshipClaim.objects.all()
+        hod_assistantship_requests = assistantship_requests.filter(
+            ta_supervisor_remark=True, 
+            thesis_supervisor_remark=True, 
+            hod_approval=False
+        )
+        hod_approved_assistantship = assistantship_requests.filter(
+            ta_supervisor_remark=True, 
+            thesis_supervisor_remark=True, 
+            acad_approval=False
+        )
+        
+        # 3. Seminar and Progress Reports
+        mtechseminar_requests = MTechGraduateSeminarReport.objects.filter(Overall_grade='')
+        phdprogress_requests = PhDProgressExamination.objects.filter(Overall_grade='')
+        
+        # 4. Assigned Courses
+        courses_list = list(
+            CourseInstructor.objects.filter(instructor_id=user_details.id)
+            .select_related('course_id')
+            .values(
+                'course_id__id',      # Course database ID
+                'course_id__code',    # Course code
+                'course_id__name',    # Course name
+                'course_id__version', # Course version
+                'year',                # Academic year
+                'semester_no'          # Semester number
+            )
+        )
+        
+        # Calculate batch for each course
+        for course in courses_list:
+            course['batch'] = int(course['year'] - (course['semester_no'] // 2))
+            
+        # Filter out inactive batches
+        excluded_years = set()
+        for course_instructor in CourseInstructor.objects.filter(
+            instructor_id=user_details.id, 
+            course_id__working_course=True
+        ):
+            target_year = course_instructor.year - (course_instructor.semester_no // 2)
+            batches_for_year = Batch.objects.filter(year=target_year)
+            if batches_for_year.exists() and not batches_for_year.filter(running_batch=True).exists():
+                excluded_years.add(course_instructor.year)
+        
+        # Final assigned courses (excluding inactive batches)
+        assigned_courses = [
+            course for course in courses_list 
+            if course['year'] not in excluded_years
+        ]
+        
+        # Prepare response
+        response_data = {
+            # Faculty Profile Information
+            'faculty_id': user_details.id,
+            'faculty_name': f"{user_details.user.first_name} {user_details.user.last_name}",
+            'department': user_details.department.name if user_details.department else None,
+            'designation': designation.designation.name if designation else None,
+            
+            # Academic Semester Information
+            'semester': semesters,
+            
+            # Thesis Related
+            'thesis_supervision_requests': len(thesis_supervision_requests),
+            'approved_thesis_requests': len(approved_thesis_requests),
+            'pending_thesis_requests': len(thesis_supervision_requests),
+            
+            # Assistantship Claims
+            'assistantship_requests': len(assistantship_requests),
+            'hod_assistantship_requests': len(hod_assistantship_requests),
+            'hod_approved_assistantship': len(hod_approved_assistantship),
+            
+            # Seminar and Progress Reports
+            'mtech_seminar_requests': len(mtechseminar_requests),
+            'phd_progress_requests': len(phdprogress_requests),
+            
+            # Assigned Courses
+            'assigned_courses': assigned_courses
+        }
+        
+        return Response(response_data)
+    
+    except Exception as e:
+        return Response(
+            {"error": f"An error occurred: {str(e)}"}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def search_preregistration(request):
+    try:
+        roll_no=request.data.get("roll_no")
+        sem_no=request.data.get("sem_no")
+        initial_registrations = InitialRegistration.objects.filter(
+            student_id_id=roll_no, semester_id__semester_no=sem_no
+        )
+        student_registration_check = StudentRegistrationChecks.objects.filter(
+            student_id_id=roll_no, semester_id__semester_no=sem_no
+        ).first()
+        initial = serializers.InitialRegistrationSerializer(initial_registrations, many=True)
+        student_registration_check_data = serializers.StudentRegistrationChecksSerializer(student_registration_check)
+        return Response({
+            "initial_registration": initial.data,  # Send serialized initial registrations
+            "student_registration_check": student_registration_check_data.data if student_registration_check else None
+        })
+    except Exception as e:
+        return Response(
+            {"error": f"An error occurred: {str(e)}"}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def delete_preregistration(request):
+    try:
+        # Extract roll_no and sem_no from the request
+        roll_no = request.data.get("roll_no")
+        sem_no = request.data.get("sem_no")
+
+        # Validate input data
+        if not roll_no or not sem_no:
+            return Response(
+                {"error": "Both roll_no and sem_no are required"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Delete initial registration entries
+        initial_registrations = InitialRegistration.objects.filter(
+            student_id_id=roll_no, semester_id__semester_no=sem_no
+        )
+        initial_count = initial_registrations.delete()
+
+        # Delete student registration check entries
+        student_registration_check = StudentRegistrationChecks.objects.filter(
+            student_id_id=roll_no, semester_id__semester_no=sem_no
+        )
+        student_registration_check_count = student_registration_check.delete()
+
+        # Return a success response with counts of deleted entries
+        return Response({
+            "message": "Successfully Deleted."
+        })
+
+    except Exception as e:
+        return Response(
+            {"error": f"An error occurred: {str(e)}"}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def allot_courses(request):
+    try:
+        if request.method == 'POST' and request.FILES:
+            profiles=request.FILES['allotedCourses']
+            batch_id=request.data.get('batch')
+            sem_no=int(request.data.get('semester'))
+            working_year =int(request.data.get('working_year'))
+            
+            batch=Batch.objects.get(id=batch_id)
+            sem_id=Semester.objects.get(curriculum=batch.curriculum,semester_no=sem_no)
+            print(batch , sem_id)
+            #  format of excel sheet being uploaded should be xls only , otherwise error
+            excel = xlrd.open_workbook(file_contents=profiles.read())
+            sheet=excel.sheet_by_index(0)
+            course_registrations=[]
+            final_registrations=[]
+            pre_registrations=[]
+            student_checks=[]
+            # print('>>>>>>>>>>>>>>>>>>>' , sheet.nrows)
+            currroll=set()
+            for i in range(1,sheet.nrows):
+                roll_no = str(sheet.cell(i,0).value).split(".")[0]
+                # print("Roll No from Excel:", roll_no)
+                course_slot_name = sheet.cell_value(i,1)
+                course_code = sheet.cell_value(i,2)
+                course_name = sheet.cell_value(i,3)
+                try:
+
+                    user=User.objects.get(username=roll_no)
+                    user_info = ExtraInfo.objects.get(user=user)
+                    student = Student.objects.get(id=user_info)
+                    course_slot=CourseSlot.objects.get(name=course_slot_name.strip(),semester=sem_id)
+                    slot_courses = course_slot.courses.filter() 
+                    # for i in slot_courses:
+                    #     print("slot course ", i)
+                    # print(course_slot)
+                    print(course_code.strip() , course_name.strip(),student)
+                    course = slot_courses.get(code=course_code.strip())
+                    # print(course_code.strip() , course_name.strip(),student)
+                    # course = Courses.objects.get(code=course_code.strip(),name=course_name.strip())
+                    if(roll_no not in currroll):
+                        student_check=StudentRegistrationChecks(student_id = student, semester_id = sem_id, pre_registration_flag = True,final_registration_flag = True)
+                        student_checks.append(student_check)
+                        currroll.add(roll_no)
+                    # print(">>>>>",roll_no,course_slot_name,course_code,course_name)
+                except Exception as e:
+                    print('----------------------' , e)
+                pre_registration=InitialRegistration(student_id=student,course_slot_id=course_slot,
+                                                    course_id=course,semester_id=sem_id,priority=1)
+                pre_registrations.append(pre_registration)
+                final_registration=FinalRegistration(student_id=student,course_slot_id=course_slot,
+                                                    course_id=course,semester_id=sem_id, verified=True )
+                final_registrations.append(final_registration)
+    
+                courseregistration=course_registration(working_year=working_year,course_id=course,semester_id=sem_id,student_id=student,course_slot_id=course_slot)
+                course_registrations.append(courseregistration)
+                
+
+
+            try:
+                with transaction.atomic():
+                    InitialRegistration.objects.bulk_create(pre_registrations)
+                    StudentRegistrationChecks.objects.bulk_create(student_checks)
+                    FinalRegistration.objects.bulk_create(final_registrations)
+                    course_registration.objects.bulk_create(course_registrations)
+                return Response({"message": 'Successfully uploaded!'})
+                # return HttpResponse("Success")
+            except Exception as e:
+                return Response(
+                    {"error": f"An error occurred: {str(e)}"}, 
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+                # return HttpResponse("Success")
+    except Exception as e:
+        print(e)
+        return Response(
+            {"error": f"Query does not match. Please check if all the data input is in the correct format."}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def student_next_sem_courses(request):
+    """
+    REST API endpoint to return the courses_list as JSON.  Uses DRF authentication.
+    """
+
+    user_details = ExtraInfo.objects.select_related('user', 'department').get(user=request.user) # Changed to user=request.user
+    des = HoldsDesignation.objects.all().select_related().filter(user=request.user).first()
+
+    if str(des.designation) != "student":
+        return Response({"error": "User is not a student"}, status=status.HTTP_403_FORBIDDEN)  # 403 Forbidden - DRF style
+
+    obj = Student.objects.select_related('id', 'id__user', 'id__department').get(id=user_details.id)
+    batch = obj.batch_id
+    curr_id = batch.curriculum
+
+    try:
+        semester_no = obj.curr_semester_no
+        sem_no = semester_no + 1
+        next_sem_id = Semester.objects.get(curriculum=curr_id, semester_no=sem_no)
+    except Semester.DoesNotExist:  # Handle the case where next semester doesn't exist.
+        return Response({"error": "Next semester not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+    # Serialize the data (using DRF serializers is highly recommended)
+    course_slot = CourseSlot.objects.all().filter(semester_id = next_sem_id).prefetch_related(Prefetch('courses', queryset=Courses.objects.all()))
+    print(course_slot[0].courses)
+    serializer = serializers.CourseSlotSerializer(course_slot, many=True) # Assuming you have a CourseSerializer
+    courses_list_data = serializer.data
+
+    return Response({"courses_list": courses_list_data}, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def current_courseregistration(request):
+    try:
+        current_user = request.user
+        user_details = current_user.extrainfo
+
+        student = Student.objects.get(id=user_details)
+
+        current_semester = student.curr_semester_no
+        print(current_semester)
+
+        try:
+            semester = Semester.objects.get(curriculum=student.batch_id.curriculum, semester_no=current_semester)
+        except Semester.DoesNotExist:
+            return JsonResponse({"error": "semester not found."}, status=404)
+
+        print(student)
+        current_courses = course_registration.objects.filter(
+            student_id=student, semester_id=semester
+        )
+        print(current_courses)
+
+        serializer = serializers.CourseRegistrationSerializer(current_courses, many=True)
+        print(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    except Student.DoesNotExist:
+        return Response({"error": "Student profile not found"}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+def get_student_registrtion_check(student, sem):
+    return StudentRegistrationChecks.objects.filter(student_id=student, semester_id=sem).first()
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def get_preregistration_data(request):
+    """
+    Returns the list of course slots available for the student's next semester,
+    along with the list of courses available in each slot.
+    If the student has already completed pre-registration for that semester,
+    returns a message "Already registered".
+    """
+    try:
+        current_user = request.user
+        user_details = current_user.extrainfo
+        student = Student.objects.get(id=user_details)
+        semester_no = student.curr_semester_no
+        next_sem_no = semester_no  
+        try:
+            next_semester = Semester.objects.get(curriculum=student.batch_id.curriculum, semester_no=next_sem_no)
+        except Semester.DoesNotExist:
+            return JsonResponse({"error": "Next semester not found."}, status=404)
+
+        # Check if the student has already completed pre-registration for the semester.
+        registration_check = get_student_registrtion_check(student, next_semester)
+        # if registration_check:
+        #     return JsonResponse({"message": "Already registered"}, status=200)
+
+        # Otherwise, fetch course slots excluding those with names that contain 'SW' or 'BL'.
+        course_slots = CourseSlot.objects.filter(semester=next_semester)\
+            .exclude(name__icontains='SW')\
+            .exclude(name__icontains='BL')
+        data = []
+        for slot in course_slots:
+            courses = slot.courses.all()
+            course_choices = [
+                {
+                    "id": course.id,
+                    "code": course.code,
+                    "name": course.name,
+                    "credits": course.credit
+                }
+                for course in courses
+            ]
+            data.append({
+                "sno": slot.id,
+                "slot_name": slot.name,
+                "slot_type": slot.type,
+                "semester": next_sem_no,
+                "course_choices": course_choices,
+            })
+
+            print(data)
+        return JsonResponse(data, safe=False)
+    except Student.DoesNotExist:
+        return Response({"error": "Student profile not found"}, status=404)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+
+@api_view(['POST'])
+# @authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@csrf_exempt
+def submit_preregistration(request):
+    """
+    Expects a POST request with JSON data containing an array "registrations".
+    Each registration entry should include:
+      - slot_id: the ID of the CourseSlot
+      - course_id: the chosen Course ID for that slot
+      - priority: the priority assigned by the student
+    If the student has not pre-registered, the registrations will be created.
+    """
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid method"}, status=400)
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return Response({"Invalid JSON"})
+
+    registrations = data.get("registrations", [])
+    try:
+        current_user = request.user
+        print(current_user)
+        user_details = current_user.extrainfo
+        student = Student.objects.get(id=user_details)
+        semester_no = student.curr_semester_no
+        # Here you may want to use next_sem_no = semester_no + 1 if that is the logic.
+        next_sem_no = semester_no  
+        try:
+            next_semester = Semester.objects.get(curriculum=student.batch_id.curriculum, semester_no=next_sem_no)
+        except Semester.DoesNotExist:
+            return JsonResponse({"error": "Next semester not found."}, status=404)
+    except Student.DoesNotExist:
+        return Response({"error": "Student profile not found"}, status=404)
+
+    for reg in registrations:
+        slot_id = reg.get("slot_id")
+        course_id = reg.get("course_id")
+        priority = reg.get("priority")
+
+        InitialRegistration.objects.create(
+            course_id_id=course_id,
+            semester_id_id=next_semester.id,
+            student_id=student,
+            course_slot_id_id=slot_id,
+            priority=priority,
+            timestamp=timezone.now()
+        )
+    
+    # Optionally, update the StudentRegistrationChecks record to mark pre-registration as complete.
+    reg_check, created = StudentRegistrationChecks.objects.get_or_create(
+        student_id=student, semester_id_id=next_semester.id,
+        defaults={'pre_registration_flag': True}
+    )
+    if not created:
+        reg_check.pre_registration_flag = True
+        reg_check.save()
+        
+    return JsonResponse({"status": "success"}, status=201)
+
+
+
+import json
+from django.http import JsonResponse, HttpResponseBadRequest
+from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import (
+    api_view,
+    authentication_classes,
+    permission_classes,
+)
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def get_swayam_registration_data(request):
+    """
+    Returns the list of course slots available for Swayam registration for the student's next semester,
+    along with the list of courses available in each slot.
+    (Only course slots whose name starts with "SW" are returned.
+    No registration check is performed.)
+    """
+    try:
+        current_user = request.user
+        user_details = current_user.extrainfo  # assuming extrainfo holds the student id/reference
+        student = Student.objects.get(id=user_details)
+        semester_no = student.curr_semester_no
+        next_sem_no = semester_no  # adjust if needed (e.g. semester_no+1)
+        try:
+            next_semester = Semester.objects.get(
+                curriculum=student.batch_id.curriculum, 
+                semester_no=next_sem_no
+            )
+        except Semester.DoesNotExist:
+            return JsonResponse({"error": "Next semester not found."}, status=404)
+
+        # For Swayam registration, fetch only those course slots whose name starts with "SW".
+        course_slots = CourseSlot.objects.filter(semester=next_semester, name__startswith="SW")
+        data = []
+        for slot in course_slots:
+            courses = slot.courses.all()
+            course_choices = [
+                {
+                    "id": course.id,
+                    "code": course.code,
+                    "name": course.name,
+                    "credits": course.credit
+                }
+                for course in courses
+            ]
+            data.append({
+                "sno": slot.id,
+                "slot_name": slot.name,
+                "slot_type": slot.type,
+                "semester": next_sem_no,
+                "course_choices": course_choices,
+            })
+        return JsonResponse(data, safe=False)
+    except Student.DoesNotExist:
+        return Response({"error": "Student profile not found"}, status=404)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+
+@csrf_exempt
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def submit_swayam_registration(request):
+    """
+    Accepts a POST request with JSON data for Swayam registration.
+    
+    Expected payload structure:
+    {
+         "registrations": [
+              {
+                 "slot_id": <slot id>,
+                 "course_id": <course id>,
+                 "selected_option": "<selected option string>",
+                 "remark": "<remark>"
+              },
+              ...
+         ]
+    }
+    
+    For each registration entry, a record is created in InitialRegistrations.
+    Since Swayam courses are not tied to a course slot in the same way as other courses,
+    the fields course_slot_id and priority are set to None.
+    """
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid method"}, status=400)
+    try:
+        payload = json.loads(request.body)
+    except Exception:
+        return HttpResponseBadRequest("Invalid JSON")
+    try:
+        current_user = request.user
+        user_details = current_user.extrainfo
+        student = Student.objects.get(id=user_details)
+        semester_no = student.curr_semester_no
+        try:
+            semester = Semester.objects.get(
+                curriculum=student.batch_id.curriculum, 
+                semester_no=semester_no
+            )
+        except Semester.DoesNotExist:
+            return JsonResponse({"error": "Next semester not found."}, status=404)
+    except Student.DoesNotExist:
+        return Response({"error": "Student not found"}, status=404)
+    
+    registrations = payload.get("registrations", [])
+    for reg in registrations:
+        slot_id = reg.get("slot_id")
+        course_id = reg.get("course_id")
+        selected_option = reg.get("selected_option")
+        remark = reg.get("remark")
+        print(selected_option, course_id, remark)
+        try:
+            course = Courses.objects.get(id=course_id)
+        except Courses.DoesNotExist:
+            continue
+        
+        course_registration.objects.create(
+            course_id=course,
+            semester_id_id=semester.id,
+            student_id=student,
+            course_slot_id_id=slot_id, 
+        )
+    return JsonResponse({"status": "success"}, status=201)

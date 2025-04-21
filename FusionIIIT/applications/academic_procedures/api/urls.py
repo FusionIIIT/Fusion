@@ -16,13 +16,22 @@ urlpatterns = [
     # url(r'^stu/replaceCourse' , views.replaceCourse , name = 'replaceCourse')
     url(r'^stu/next_sem_courses/', views.student_next_sem_courses, name = 'student_next_sem_courses'),
     url(r'^stu/current_courseregistration/$', views.current_courseregistration, name='current_courseregistration'),
+    url(r'^stu/preregistration/$', views.get_preregistration_data, name='get_preregistration_data'),
+    url(r'^stu/preregistration/submit/$', views.submit_preregistration, name='preregistration-submit'),
+    url(r'^stu/swayam_courses/$', views.get_swayam_registration_data, name='get_swayam_data'),
+    url(r'^stu/swayam/submit/$', views.submit_swayam_registration, name='swayam-submit'),
+    url(r'^stu/next_sem_courses/', views.student_next_sem_courses, name = 'student_next_sem_courses'),
+    url(r'^stu/current_courseregistration/$', views.current_courseregistration, name='current_courseregistration'),
     url(r'^stu/finalregistrationpage/$', views.final_registration_page, name='final_registration_page'),
+    url(r'^fac/academic_procedures_faculty', views.academic_procedures_faculty_api, name='academic_procedures_faculty_api'),
 
 
 
     url(r'^acad/view_registrations' , views.acad_view_reigstrations , name='acad_view_registrations'),
     url(r'^acad/verify_registration' , views.verify_registration , name='verify_registration'),
+    url(r'^acad/verify_course/drop/$' , views.dropcourseadmin , name='dropcourseadmin'),
     url(r'^acad/verify_course' , views.verify_course , name='verify_course'),
+    url(r'^acad/addCourse/', views.acad_add_course, name="acad_add_course"),
     url(r'^acad/get_course_list' , views.get_course_list , name = 'get_course_list' ),
     url(r'^acad/get_all_courses' , views.get_all_courses , name = 'get_all_courses' ),
     url(r'^acad/gen_roll_list' , views.gen_roll_list , name = 'gen_roll_list' ),
@@ -32,6 +41,9 @@ urlpatterns = [
     url(r'^acad/configure_final_registration' , views.configure_final_registration_date , name = 'configure_final_registration'),
     url(r'^acad/add_course_to_slot' , views.add_course_to_slot , name = 'add_course_to_slot'),
     url(r'^acad/remove_course_from_slot' , views.remove_course_from_slot , name = 'remove_course_from_slot'),
+    url(r'^acad/search_preregistration' , views.search_preregistration , name = 'search_preregistration'),
+    url(r'^acad/delete_preregistration' , views.delete_preregistration , name = 'delete_preregistration'),
+    url(r'^acad/allot_courses' , views.allot_courses , name = 'allot_courses'),
     url(r'^get_next_sem_courses' , views.get_next_sem_courses , name= 'get_next_sem_courses'),
 
 
