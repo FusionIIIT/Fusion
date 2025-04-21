@@ -692,3 +692,20 @@ class EventReport(models.Model):
 
     class Meta:
         db_table = "EventReport"
+class YearlyPlan(models.Model):
+    club = models.ForeignKey('Club_info', on_delete=models.CASCADE)
+    year = models.IntegerField()
+    status = models.CharField(max_length=50, choices=Constants.STATUS_CHOICES, default="COORDINATOR")
+    file_link = models.CharField(max_length=255)
+    file_id = models.ForeignKey(File, on_delete=models.CASCADE, null=False)
+    def _str_(self):
+        return f"{self.club.name} - {self.year}"
+class YearlyPlanEvents(models.Model):
+    yearly_plan = models.ForeignKey(YearlyPlan, on_delete=models.CASCADE, related_name='events')
+    event_name = models.CharField(max_length=255)
+    tentative_start_date = models.DateField()
+    tentative_end_date = models.DateField()
+    budget = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.TextField()
+    def _str_(self):
+        return f"{self.event_name} ({self.yearly_plan})"

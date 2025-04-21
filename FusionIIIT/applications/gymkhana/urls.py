@@ -67,9 +67,19 @@ from applications.gymkhana.api.views import (
     AddClubPositionAPIView,
     ListClubPositionAPIView,
     NewFestAPIView,
-    CoordinatorEventsAPIView, 
-    EventInputAPIView, 
-    NewsletterPDFAPIView
+    CoordinatorEventsAPIView,
+    EventInputAPIView,
+    NewsletterPDFAPIView,
+    DownloadYearlyPlanTemplateAPIView,
+    UploadYearlyPlanExcelAPIView,
+    FICApproveYearlyPlanAPIView,
+    CounsellorApproveYearlyPlanAPIView,
+    DeanApproveYearlyPlanAPIView,
+    RejectYearlyPlanAPIView,
+    ListYearlyPlansAPIView,
+    ListClubwiseYearlyPlansAPIView,
+    UploadGalleryImageAPIView,
+    ListGalleryImagesAPIView,
 )
 from . import views
 from rest_framework.authtoken.views import obtain_auth_token
@@ -310,4 +320,14 @@ urlpatterns = [
     url(r'^api/add_event_report/$', EventReportAPIView.as_view(), name='add_event_report'),
     url(r'^api/event_report_pdf/(?P<report_id>\d+)/$', EventReportPDFView.as_view(), name='event_report_pdf'),
     url(r'^api/update_budget/$',  UpdateBudgetAPIView.as_view(), name='update event'),
+    url(r'^api/download_yearly_plan_template/$', DownloadYearlyPlanTemplateAPIView.as_view(), name='download_yearly_plan_template'),
+    url(r'^api/upload_yearly_plan_excel/$', UploadYearlyPlanExcelAPIView.as_view(), name='upload_yearly_plan_excel'),
+    url(r'^api/fic_approve_yearly_plan/$', FICApproveYearlyPlanAPIView.as_view(), name='fic_approve_yearly_plan'),
+    url(r'^api/counsellor_approve_yearly_plan/$', CounsellorApproveYearlyPlanAPIView.as_view(), name='counsellor_approve_yearly_plan'),
+    url(r'^api/dean_approve_yearly_plan/$', DeanApproveYearlyPlanAPIView.as_view(), name='dean_approve_yearly_plan'),
+    url(r'^api/reject_yearly_plan/$', RejectYearlyPlanAPIView.as_view(), name='reject_yearly_plan'),
+    url(r'^api/yearly-plans/', ListYearlyPlansAPIView.as_view(), name='list-yearly-plans'),
+    url(r'^api/clubwise_yearly_plan/$', ListClubwiseYearlyPlansAPIView.as_view(), name='clubwise-yearly-plans'),
+    url(r'^api/upload-gallery-image/',  UploadGalleryImageAPIView.as_view(), name='upload_images'),
+    url(r'^api/list-gallery-images',  ListGalleryImagesAPIView.as_view(), name='view_images'),
 ]
