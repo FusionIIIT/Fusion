@@ -22,7 +22,6 @@ from rest_framework.response import Response
 from .serializers import (
     StudentComplainSerializer,
     CaretakerSerializer,
-    ExtraInfoSerializer,
     Complaint_AdminSerializer,
     WardenSerializer
 )
