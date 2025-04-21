@@ -8,9 +8,9 @@
   <a class="item" href="{% url 'examination:updateGrades' %}">Verify
     <i class="right floated chevron right icon"></i>
   </a>
-  <a class="item" href="{% url 'examination:authenticate' %}">Authenticate Course
+  {% comment %} <a class="item" href="{% url 'examination:authenticate' %}">Authenticate Course
     <i class="right floated chevron right icon"></i>
-  </a>
+  </a> {% endcomment %}
 
   
   <a class="item" href="{% url 'examination:announcement' %}">Announcement
@@ -29,7 +29,7 @@
       {% csrf_token %}
       <div class="field">
           <label>Programme:</label>
-          <select class="ui dropdown" name="programme">
+          <select id="programme-dropdown" class="ui dropdown" name="programme">
               {% for programme in programmes %}
                   <option value="{{ programme }}">{{ programme }}</option>
               {% endfor %}
@@ -38,7 +38,7 @@
 
       <div class="field">
           <label>Batch:</label>
-          <select class="ui dropdown" name="batch">
+          <select id="batch-dropdown" class="ui dropdown" name="batch">
               {% for batch in batches %}
                   <option value="{{ batch }}">{{ batch }}</option>
               {% endfor %}
@@ -47,7 +47,7 @@
 
       <div class="field">
           <label>Specialization:</label>
-          <select class="ui dropdown" name="specialization">
+          <select id="specialization-dropdown" class="ui dropdown" name="specialization">
               {% for specialization in specializations %}
                   <option value="{{ specialization }}">{{ specialization }}</option>
               {% endfor %}
@@ -55,7 +55,7 @@
       </div>
       <div class="field">
           <label>Semester:</label>
-          <select class="ui dropdown" name="semester">    
+          <select id="semester-dropdown" class="ui dropdown" name="semester">    
                   <option value="1">1</option>
                   <option value="2">2</option>
                   <option value="3">3</option>
@@ -69,5 +69,62 @@
 
       <button class="ui blue button" type="submit">Submit</button>
   </form>
+
+  <button id="generate-result" class="ui green button" style="margin-top: 10px;">Generate Result</button>
+
 </div>
-{% endblock %}
+
+<script>
+    document.getElementById('generate-result').addEventListener('click', async function() {
+        const programme = document.getElementById('programme-dropdown').value;
+        const batch = document.getElementById('batch-dropdown').value;
+        const specialization = document.getElementById('specialization-dropdown').value;
+        const semester = document.getElementById('semester-dropdown').value;
+    
+        const data = {
+            programme: programme,
+            batch: batch,
+            specialization: specialization,
+            semester: semester
+        };
+    
+        const button = this;
+        button.textContent = "Generating...";
+        button.disabled = true;
+    
+        try {
+            const response = await fetch('/examination/generate-result/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify(data)
+            });
+    
+            if (!response.ok) {
+                const errorMessage = await response.text();
+                throw new Error(errorMessage || "Failed to generate the result.");
+            }
+    
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'student_grades.xlsx';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+    
+            alert('CSV file downloaded successfully!');
+        } catch (error) {
+            console.error('Error:', error);
+            alert(`An error occurred: ${error.message}`);
+        } finally {
+            button.textContent = "Generate Result";
+            button.disabled = false;
+        }
+    });
+    </script>
+    {% endblock %}

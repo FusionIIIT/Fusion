@@ -1,5 +1,5 @@
 from Fusion.settings.common import *
-
+import os
 DEBUG = True
 TEMPLATE_DEBUG = True 
 SECRET_KEY = '=&w9due426k@l^ju1=s1)fj1rnpf0ok8xvjwx+62_nc-f12-8('
@@ -12,10 +12,12 @@ DATABASES = {
         'NAME': 'fusionlab',
         'HOST': os.environ.get("DB_HOST", default='localhost'),
         'USER': 'fusion_admin',
-        'PASSWORD': 'hello123',
+        'PASSWORD': 'hello123'
     }
 }
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

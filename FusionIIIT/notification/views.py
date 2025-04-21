@@ -1,8 +1,117 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from requests import Response
 from notifications.signals import notify
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from Fusion.celery import app
+from .forms import AnnouncementForm
+from .models import Announcements, AnnouncementRecipients
+from applications.globals.models import ExtraInfo
+from applications.academic_information.models import Student
+from django.contrib import messages
+from django.db.models import Q
+import ast
 # Create your views here.
 
+
+def create_announcement(request, template_name='notifications/create_announcement.html', module='Module', extra_context=None):
+    if request.method == 'POST':
+        form = AnnouncementForm(request.POST)
+        print(form)
+        if form.is_valid():
+            announcement = form.save(commit=False)
+            announcement.created_by = request.user
+            announcement.module = module
+            announcement.save()
+
+            # If specific users are selected, create entries in AnnouncementRecipients
+            if form.cleaned_data['target_group'] == 'specific_users':
+                specific_users = form.cleaned_data['specific_users']
+                print(specific_users, type(specific_users))
+                                # Split the input into individual user IDs and clean them
+                specific_user_ids = ast.literal_eval(specific_users)
+                print(specific_user_ids)
+
+                # Fetch corresponding ExtraInfo objects for these user IDs
+                extra_info_users = ExtraInfo.objects.filter(id__in=specific_user_ids)
+                print(extra_info_users)
+
+                # Create entries in AnnouncementRecipients for each valid user
+                for extra_info in extra_info_users:
+                    AnnouncementRecipients.objects.create(
+                        announcement=announcement,
+                        user=extra_info  # This links the ExtraInfo object, not User
+                    )
+
+            messages.success(request, 'Announcement created successfully.')
+            return redirect('/')
+        else:
+            # Handle invalid form and return the errors to the template
+            messages.error(request, 'There were errors in the form. Please correct them and try again.')
+            context = {'form': form}  # Pass form with errors back to the template
+            if extra_context:
+                context.update(extra_context)
+            return render(request, template_name, context)
+    else:
+        form = AnnouncementForm()
+        # print(form)
+        context = {'form': form}
+        rendered_form = render_to_string('notifications/create_announcement.html', context, request=request)
+        context = {'rendered_form': rendered_form}
+        if extra_context:
+            context.update(extra_context)
+
+    return render(request, template_name, context)
+
+
+def announcement_list(request):
+    user_extrainfo = ExtraInfo.objects.filter(user=request.user).first()
+    if user_extrainfo.user_type == 'faculty':
+        announcements = Announcements.objects.filter(
+            Q(target_group='all') |
+            (Q(target_group='faculty') & (Q(department=user_extrainfo.department) | Q(department__isnull=True)))
+        ).order_by('-created_at')
+    elif user_extrainfo.user_type == 'student':
+        student = Student.objects.filter(id=user_extrainfo).first()
+        announcements = Announcements.objects.filter(
+            Q(target_group='all') |
+            (Q(target_group='students') & 
+             (Q(department=user_extrainfo.department) | Q(department__isnull=True)) &
+             (Q(batch=student.batch) | Q(batch__isnull=True))
+            )
+        ).order_by('-created_at')
+    else:
+        announcements = Announcements.objects.filter(target_group='all')
+
+    # Include specific user announcements
+    specific_announcements = Announcements.objects.filter(recipients__user=user_extrainfo).order_by('-created_at')
+
+    context = {
+        'announcements': (announcements | specific_announcements).distinct().order_by('-created_at')
+    }
+    return context
+
+@app.task
+def send_notification_email(recipient_username, recipient_email, verb, module):
+    print("Trying to send notif.")
+
+    # Make sure the recipient has an email address
+    if recipient_email:
+        subject = f"New Notification from {module}"
+        html_content = render_to_string('notifications/email_notification.html', {
+        'recipient_username': recipient_username,
+        'module': module,
+        'verb': verb
+        })
+
+        email = EmailMessage(
+            subject,
+            html_content,
+            'akashsah2003@gmail.com',  # Replace with your email
+            [recipient_email]
+        )
+        email.content_subtype = 'html'
+        email.send()
 
 def leave_module_notif(sender, recipient, type, date=None):
     url = 'leave:leave'
@@ -35,6 +144,7 @@ def leave_module_notif(sender, recipient, type, date=None):
 
     notify.send(sender=sender, recipient=recipient,
                 url=url, module=module, verb=verb)
+    # send_notification_email(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 
 def placement_cell_notif(sender, recipient, type):
@@ -46,6 +156,7 @@ def placement_cell_notif(sender, recipient, type):
 
     notify.send(sender=sender, recipient=recipient,
                 url=url, module=module, verb=verb)
+    # send_notification_email(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 
 def academics_module_notif(sender, recipient, type):
@@ -57,6 +168,7 @@ def academics_module_notif(sender, recipient, type):
 
     notify.send(sender=sender, recipient=recipient,
                 url=url, module=module, verb=verb)
+    # send_notification_email(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 
 def office_module_notif(sender, recipient):
@@ -68,6 +180,7 @@ def office_module_notif(sender, recipient):
 
     notify.send(sender=sender, recipient=recipient,
                 url=url, module=module, verb=verb)
+    # send_notification_email(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 
 def central_mess_notif(sender, recipient, type, message=None):
@@ -79,6 +192,7 @@ def central_mess_notif(sender, recipient, type, message=None):
 
     if type == 'feedback_submitted':
         verb = 'Your feedback has been successfully submitted.'
+        send_notification_email(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
     elif type == 'menu_change_accepted':
         verb = 'Menu request has been approved'
     elif type == 'leave_request':
@@ -153,8 +267,11 @@ def healthcare_center_notif(sender, recipient, type, message):
     elif type == 'rel_approve':
         verb = "You have a new medical relief approval request"
     elif type == 'rel_approved':
-        verb = 'Your medical relief request has been approved' 
+        verb = 'Your medical relief request has been approved'
+    elif type == 'reject_relief':
+        verb = "Your medical relief request has been rejected"
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb, flag=flag)
+    # send_notification_email.delay(recipient.username, recipient.email, verb, module)
 
 def file_tracking_notif(sender, recipient, title):
     url = 'filetracking:inward'
@@ -183,6 +300,8 @@ def scholarship_portal_notif(sender, recipient, type):
         verb = "Your Mcm form has been accepted "
     elif type == 'Reject_MCM':
         verb = "Your Mcm form has been rejected as you have not fulfilled the required criteria "
+    elif type == 'MCM_UNDER_REVIEW':
+        verb = "Your Mcm form is under review"
     elif type == 'Accept_Gold':
         verb = "Your Convocation form for Director's Gold Medal has been accepted "
     elif type == 'Reject_Gold':
@@ -193,7 +312,7 @@ def scholarship_portal_notif(sender, recipient, type):
         verb = "Your Convocation form for Director's Silver Medal has been rejected "
     elif type == 'Accept_DM':
         verb = "Your Convocation form for D&M Proficiency Gold Medal has been accepted "
-    elif type == 'Reject_Silver':
+    elif type == 'Reject_DM':
         verb = "Your Convocation form for D&M Proficiency Gold Medal has been rejected "
     notify.send(sender=sender, recipient=recipient,
                 url=url, module=module, verb=verb)
@@ -437,6 +556,76 @@ def office_module_DeanRSPC_notif(sender, recipient, type):
     notify.send(sender=sender, recipient=recipient,
                 url=url, module=module, verb=verb)
 
+def RSPC_notif(sender, recipient, type):
+    url = 'rspc'
+    module = 'RSPC'
+    sender = sender
+    recipient = recipient
+    verb = ""
+ 
+    if type == "Proposal Created":
+        verb = f"A new project proposal has been added by {sender.first_name}."
+    elif type == "Co-PI":
+        verb = f"You have been added as a Co-Principal Investigator in {sender.first_name}'s project."
+    elif type == "Proposal Forwarded":
+        verb = "There is a new project proposal for you to approve."
+    elif type == "Submitted":
+        verb = "Your project proposal has been approved by RSPC."
+ 
+    elif type == "Registration Created":
+        verb = f"A new project has been registered by {sender.first_name}."
+    elif type == "Registration Forwarded":
+        verb = "There is a project registration request for you to approve. Make sure to have the hard copy of the New Project Registration Form for the same."
+    elif type == "Registered":
+        verb = "Your project has been registered at RSPC."
+ 
+    elif type == "Project Commenced":
+        verb = "Your project has commenced. Funding for project has been received and you may start working on your project now."
+    elif type == "Proposal Rejected":
+        verb = f"Your project proposal has been rejected by {sender.first_name}. It has been deleted from records. You may submit a new project proposal."
+    elif type == "Registration Rejected":
+        verb = f"Your project registration request has been rejected by {sender.first_name}. Project proposal submission still exists. You may query the issues from rejector and try to register the project again."
+ 
+    elif type == "Ad Created":
+        verb = "A new request has been made for an advertisement to hire project staff. You may forward it to RSPC."
+    elif type == "Selection Committee":
+        verb = f"You are a member of the Selection Committee for hiring a project staff in {sender.first_name}'s project."
+    elif type == "Ad Forwarded":
+        verb = "There is a new advertisement request for you to approve."
+    elif type == "Hiring":
+        verb = "Your advertisement request has been approved by RSPC. You may start with the hiring process."
+ 
+    elif type == "Report Created":
+        verb = f"Selection Committee report for hiring project staff needs your approval."
+    elif type == "Committee Approved":
+        verb = f"Your Selection Committee report has been approved by {sender.first_name}. Other Selection Committee members need to approve it as well."
+    elif type == "Committee Complete":
+        verb = "There is a Selection Committee report for you to forward to RSPC."
+    elif type == "Report Forwarded":
+        verb = "There is a new Selection Committee report for you to approve."
+    elif type == "Approved":
+        verb = "Your Selection Committee report has been approved by RSPC. You may start with the staff onboarding process."
+ 
+    elif type == "Ad Rejected":
+        verb = f"Your request for an advertisement to hire project staff has been rejected by {sender.first_name}. It has been deleted from records. You may submit a new request for the project staff and its advertisement."
+    elif type == "Report Rejected":
+        verb = f"Your Selection Committee report has been rejected by {sender.first_name}. The report has been deleted from records and the staff position remains unfilled. You may submit a new report."
+ 
+    elif type == "Doc Created":
+        verb = "Your project staff's document has been approved by RSPC."
+    elif type == "Doc Approved":
+        verb = "Your project staff's document has been approved by RSPC."
+    elif type == "Doc Rejected":
+        verb = f"Your project staff's document has been rejected by {sender.first_name}. The document has been deleted from records. You may upload a new document."
+ 
+    elif type == "UC/SE Created":
+        verb = "There is a UC/SE upload and project closure request for you to approve."
+    elif type == "Completed":
+        verb = "Your project closure request has been approved by RSPC. The project is now marked as completed."
+    elif type == "UC/SE Rejected":
+        verb = "Your project closure request has been rejected by RSPC. The UC/SE uploaded has been deleted from records. You may submit a new UC/SE and try for project closure again."
+ 
+    notify.send(sender=sender,recipient=recipient,url=url,module=module,verb=verb)
 
 def research_procedures_notif(sender, recipient, type):
     url = 'research_procedures:patent_registration'
@@ -577,4 +766,10 @@ def iwd_notif(sender,recipient,type):
         verb = "Request approved by " + sender.username + "."
     if type == "Request_rejected": 
         verb = "Request rejected by " + sender.username + "." 
+    notify.send(sender=sender,recipient=recipient,url=url,module=module,verb=verb)
+
+def purchase_notif(sender,recipient):   
+    module= 'purchase-and-store'
+    url= 'purchase'
+    verb="A new Indent Received" 
     notify.send(sender=sender,recipient=recipient,url=url,module=module,verb=verb)

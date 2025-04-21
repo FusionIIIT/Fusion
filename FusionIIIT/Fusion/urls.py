@@ -22,6 +22,11 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 
+from django.views.static import serve
+from django.urls import path
+
+from applications.globals.views import RateLimitedPasswordResetView
+
 
 urlpatterns = [
     url(r'^', include('applications.globals.urls')),
@@ -37,6 +42,8 @@ urlpatterns = [
     url(r'^__debug__/', include(debug_toolbar.urls)),
     url(r'^research_procedures/', include('applications.research_procedures.urls')),
     url(r'^accounts/', include('allauth.urls')),
+    
+    # url(r'^api/iwdModuleV2/', include('applications.iwdModuleV2.api.urls')),
 
 
     url(r'^eis/', include('applications.eis.urls')),
@@ -52,6 +59,7 @@ urlpatterns = [
     url(r'^finance/', include('applications.finance_accounts.urls')),
     url(r'^purchase-and-store/', include('applications.ps1.urls')),
     url(r'^gymkhana/', include('applications.gymkhana.urls')),
+    url(r'^inventory/', include('applications.inventory.urls')),
     url(r'^library/', include('applications.library.urls')),
     url(r'^establishment/', include('applications.establishment.urls')),
     url(r'^ocms/', include('applications.online_cms.urls')),
@@ -62,5 +70,36 @@ urlpatterns = [
     url(r'^recruitment/', include('applications.recruitment.urls')),
     url(r'^examination/', include('applications.examination.urls')),
     url(r'^otheracademic/', include('applications.otheracademic.urls')),
+    url(r'^media/(?P<path>.*)$', serve, {"document_root": settings.MEDIA_ROOT},),
+    
+    # Password Reset URLs
+    path(
+        'password-reset/',
+        RateLimitedPasswordResetView.as_view(
+            template_name='registration/password_reset_form.html',
+        ),
+        name='reset_password',
+    ),
+    path(
+        'password-reset/done/',
+        auth_views.PasswordResetDoneView.as_view(
+            template_name='registration/password_reset_done.html'
+        ),
+        name='password_reset_done',
+    ),
+    path(
+        'reset/<uidb64>/<token>/',
+        auth_views.PasswordResetConfirmView.as_view(
+            template_name='registration/password_reset_confirm.html',
+        ),
+        name='password_reset_confirm',
+    ),
+    path(
+        'reset/done/',
+        auth_views.PasswordResetCompleteView.as_view(
+            template_name='registration/password_reset_complete.html'
+        ),
+        name='password_reset_complete',
+    ),
     url(r'^patentsystem/', include('applications.patent_system.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
