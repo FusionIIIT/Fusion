@@ -28,6 +28,7 @@ from reportlab.graphics.shapes import Line,Drawing
 from rest_framework.test import APIRequestFactory
 
 
+
 @method_decorator(csrf_exempt, name='dispatch')
 @permission_classes([IsAuthenticated])
 class PlacementScheduleView(APIView):
@@ -79,16 +80,20 @@ class PlacementScheduleView(APIView):
                 placements = PlacementSchedule.objects.filter(notify_id=notify.id)
                 if request.user.username != 'omvir' and request.user.username!='anilk':
                     
-                    eligibility = Eligibility.objects.get(company_id_id = notify.id)
-                    if eligibility.cpi > student.cpi:
+                    try:
+                        eligibility = Eligibility.objects.get(company_id_id=notify.id)
+                        if eligibility.cpi > student.cpi:
                         
-                        continue
-                    if eligibility.gender!='All' and eligibility.gender!=cur_gender:
-                       
-                        continue
-                    if student.batch+4!=eligibility.passout_year and eligibility.passout_year!=-1:
+                            continue
+                        if eligibility.gender!='All' and eligibility.gender!=cur_gender:
                         
-                        continue
+                            continue
+                        if student.batch+4!=eligibility.passout_year and eligibility.passout_year!=-1:
+                            
+                            continue
+                    except Eligibility.DoesNotExist:
+                        print("entered") 
+                    
                 
                 placement_serializer = PlacementScheduleSerializer(placements, many=True)
                 notify_data = NotifyStudentSerializer(notify).data
@@ -221,9 +226,6 @@ class PlacementScheduleView(APIView):
         
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
-            
-    
-
 @permission_classes([IsAuthenticated]) 
 class BatchStatisticsView(APIView):
 
