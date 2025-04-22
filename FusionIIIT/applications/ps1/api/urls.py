@@ -68,4 +68,6 @@ urlpatterns = [
     path('outboxview2/<str:username>/', views.outboxview2, name='outboxview2'),
     path('stockEntry/<str:username>/', views.stockEntry, name='stock-entry'),
     path('my-indents/<str:username>/', views.my_indents_view, name='my-indents-view'),
+    path('approve-indent/', views.approve_indent, name='approve_indent'),
+
 ]
