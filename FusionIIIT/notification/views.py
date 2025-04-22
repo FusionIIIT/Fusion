@@ -147,17 +147,15 @@ def leave_module_notif(sender, recipient, type, date=None):
     # send_notification_email(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 
-def placement_cell_notif(sender, recipient, type):
+def placement_cell_notif(sender, recipient, type,description):
     url = 'placement:placement'
     module = 'Placement Cell'
     sender = sender
     recipient = recipient
-    verb = ''
+    verb = type
 
     notify.send(sender=sender, recipient=recipient,
-                url=url, module=module, verb=verb)
-    # send_notification_email(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
-
+                url=url, module=module, verb=verb,description=description)
 
 def academics_module_notif(sender, recipient, type):
     url = ''

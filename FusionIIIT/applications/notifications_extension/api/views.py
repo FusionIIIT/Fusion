@@ -56,10 +56,11 @@ class PlacementCellNotificationAPIView(APIView):
         sender = request.user
         recipient_id = request.data.get('recipient')
         type = request.data.get('type')
-        User = get_user_model()
-        recipient = User.objects.get(pk=recipient_id)
+        description = request.data.get('description')
+        # User = get_user_model()
+        recipient = User.objects.get(username=recipient_id)
         # Trigger the notification function
-        placement_cell_notif(sender, recipient, type)
+        placement_cell_notif(sender, recipient, type,description)
 
         return Response({'message': 'Notification sent successfully'}, status=status.HTTP_201_CREATED)
 

@@ -274,6 +274,7 @@ class BatchStatisticsView(APIView):
         placement_type=request.POST.get("placement_type")
         company_name=request.POST.get("company_name")
         roll_no = request.POST.get("roll_no")
+        roll_no = ''.join([ch.upper() if ch.isalpha() else ch for ch in roll_no])
         ctc=request.POST.get("ctc")
         year=request.POST.get("year")
         test_type=request.POST.get("test_type")
@@ -772,7 +773,7 @@ class DebarStudents(APIView):
 class DebaredDetails(APIView):
     def get(self,request,id):
         try:
-            
+            id = ''.join([ch.upper() if ch.isalpha() else ch for ch in id])
             user = User.objects.get(username=id)
             extra_info = ExtraInfo.objects.get(id=id)
             department = DepartmentInfo.objects.get(id=extra_info.department_id)
@@ -800,7 +801,8 @@ class DebaredDetails(APIView):
         
     
     def post(self,request,id):
-        debar = DebarStudentInfo.objects.filter(unique_id_id=id).count()
+        roll_no = ''.join([ch.upper() if ch.isalpha() else ch for ch in id])
+        debar = DebarStudentInfo.objects.filter(unique_id_id=roll_no).count()
         
         if debar==1:
             return Response("already present",status=status.HTTP_300_MULTIPLE_CHOICES)
