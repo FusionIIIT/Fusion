@@ -621,12 +621,20 @@ def get_leave_form_by_id(request, form_id):
         return JsonResponse({'error': 'Authentication required'}, status=401)
 
     try:
-        #print("0")
+        # print("0")
         # Get the employee associated with the user
-        employee = Employee.objects.filter(id=user)
-        if not employee.exists():
-            return JsonResponse({'error': 'Employee not found'}, status=404)
-        employee = employee.first()
+        
+        
+
+        # print("1")
+        # Get the leave form by ID
+        leave_form = LeaveForm.objects.filter(id=form_id)
+        if not leave_form.exists():
+            return JsonResponse({'error': 'Leave form not found'}, status=404)
+        leave_form = leave_form.first()
+        
+        employee = leave_form.employee
+        
         # get leave balance of employee
         leave_balance = LeaveBalance.objects.filter(empid=employee).first()
         if not leave_balance:
@@ -635,15 +643,11 @@ def get_leave_form_by_id(request, form_id):
         leave_per_year = LeavePerYear.objects.filter(empid=employee).first()
         if not leave_per_year:
             return JsonResponse({'error': 'Leave per year not found'}, status=404)
-        
 
-        #print("1")
-        # Get the leave form by ID
-        leave_form = LeaveForm.objects.filter(id=form_id)
-        if not leave_form.exists():
-            return JsonResponse({'error': 'Leave form not found'}, status=404)
-        leave_form = leave_form.first()
-        #print("2")
+
+
+
+        # print("2")
         academic_responsibility_employee=None
         academic_responsibility_user=None
         academic_responsibility_name=None
@@ -662,7 +666,7 @@ def get_leave_form_by_id(request, form_id):
             # Access designations of academic_responsibility_user
             academic_responsibility_designation = leave_form.AcademicResponsibility_designation.name
         
-        #print("hi")
+        # print("hi")
 
         administrative_responsibility_employee=None
         administrative_responsibility_user=None
@@ -681,22 +685,28 @@ def get_leave_form_by_id(request, form_id):
             # Access designations of administrative_responsibility_user
             administrative_responsibility_designation = leave_form.AdministrativeResponsibility_designation.name
         
-        #print("hi2")
+        # print("hi2")
 
         # Access the first_recieved_by (Employee object)
         first_recieved_by_employee = leave_form.first_recieved_by
+        first_recieved_by_user=None
+        first_recieved_by_name=None
+        first_recieved_by_designation=None
 
-        # Access the User object from the Employee object
-        first_recieved_by_user = first_recieved_by_employee.id
+        if(leave_form.first_recieved_by):
+             
+            first_recieved_by_user = first_recieved_by_employee.id
 
 
-        # access name of first_recieved_by_user
-        first_recieved_by_name = first_recieved_by_user.first_name + " " + first_recieved_by_user.last_name
+            # access name of first_recieved_by_user
+            first_recieved_by_name = first_recieved_by_user.first_name + " " + first_recieved_by_user.last_name
 
-        # Access designations of first_recieved_by_user
-        first_recieved_by_designation = leave_form.first_recieved_designation.name
+            # Access designations of first_recieved_by_user
+            first_recieved_by_designation = leave_form.first_recieved_designation.name
 
-        #print("2.5")
+        
+
+        # print("2.5")
 
 
         # attcahed file name only
@@ -708,7 +718,7 @@ def get_leave_form_by_id(request, form_id):
     # approved_by = models.ForeignKey(Employee, on_delete=models.CASCADE, null=True, related_name='leave_approved_by')
     # approved_by_designation=models.ForeignKey(Designation, on_delete=models.CASCADE, null=True, related_name='leave_approved_by_designation')
 
-        if leave_form.status == 'Accepted':
+        if (leave_form.status=='Accepetd' and leave_form.approved_by):
             approved_by_employee = leave_form.approved_by
             approved_by_user = approved_by_employee.id
             approved_by_name = approved_by_user.first_name + " " + approved_by_user.last_name
@@ -719,6 +729,7 @@ def get_leave_form_by_id(request, form_id):
             approved_by_designation = None
             approved_date = None 
 
+        # print("z")
         leave_form_data = {
             'id': leave_form.id,
             'name': leave_form.name,
@@ -772,6 +783,7 @@ def get_leave_form_by_id(request, form_id):
         return JsonResponse({'leave_form': leave_form_data}, status=200)
     except Exception as e:
         return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
+    
     
 
 @api_view(['POST'])
