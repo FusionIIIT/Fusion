@@ -411,15 +411,14 @@ class CourseInstructorForm(forms.ModelForm):
         label="Select Year",
         widget=forms.Select(attrs={'class': 'ui fluid search selection dropdown'})
     )
-    semester_no = forms.ChoiceField(
-        choices=[('', 'Choose a semester')] + [(i, str(i)) for i in range(1, 9)],  # Choices from 1 to 8
-        label="Select Semester Number",
-        # empty_label="Choose a semester",
+    semester_type = forms.ChoiceField(
+        choices=[('', 'Choose a semester type')] + list(CourseInstructor.SEMESTER_TYPE_CHOICES),
+        label="Select Semester Type",
         widget=forms.Select(attrs={'class': 'ui fluid search selection dropdown'})
     )
     class Meta:
         model = CourseInstructor
-        fields = ['course_id', 'instructor_id', 'year', 'semester_no']
+        fields = ['course_id', 'instructor_id', 'year', 'semester_type']
 
     # def __init__(self, *args, **kwargs):
     #     super().__init__(*args, **kwargs)

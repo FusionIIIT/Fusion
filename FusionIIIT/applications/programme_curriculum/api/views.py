@@ -3082,9 +3082,15 @@ def admin_view_all_course_instructor(request):
         faculty_last_name=F('instructor_id__id__user__last_name')
     ).values(
         'course_id', 'course_name', 'course_code', 'course_version', 
-        'instructor_id', 'faculty_first_name', 'faculty_last_name', 
-        'year', 'semester_no', 'id'
+        'instructor_id','semester_type', 'faculty_first_name', 'faculty_last_name', 
+        'year', 'id'
     )
+    for instructor in course_instructors:
+        obj = CourseInstructor(
+            year=instructor['year'],
+            semester_type=instructor['semester_type']
+        )
+        instructor['academic_year'] = obj.academic_year
 
     # Convert queryset to a list
     course_instructors_data = list(course_instructors)
@@ -3110,111 +3116,128 @@ def admin_view_all_faculties(request):
 
     return JsonResponse({'faculties': faculties_data})
 
+def parse_academic_year(academic_year, semester_type):
+    """
+    Parse academic_year string (e.g., "2024-25") and determine the working_year based on semester type.
+    For Odd Semester, working_year = first part (e.g., 2024).
+    For Even Semester, working_year = second part prefixed by '20' (e.g., 2025 if academic_year is "2024-25").
+    The session is set to the academic_year string.
+    """
+    parts = academic_year.split("-")
+    if len(parts) != 2:
+        raise ValueError("Invalid academic year format. Expected format like '2024-25'.")
+    first_year = parts[0].strip()
+    second_year = parts[1].strip()
+    if semester_type == "Odd Semester":
+        working_year = int(first_year)
+    elif semester_type == "Even Semester":
+        working_year = int("20" + second_year)
+    else:
+        # For any other semester type (e.g., Summer Semester) use the first year by default.
+        working_year = int("20"+second_year)
+    return working_year
+
 @csrf_exempt
 @permission_classes([IsAuthenticated])
 def add_course_instructor(request):
-    
-    # print(request.body)
-    if request.method == 'POST':
-        print("gaurav 1")
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid request method"}, status=405)
 
-        # data = json.loads(request.body) 
-        # print(data)
-        if request.body and request.content_type == 'application/json':
-            print("gaurav 2")
-            data = json.loads(request.body) 
+    # 1) JSON branch (manual form)
+    if request.body and request.content_type == "application/json":
+        try:
+            data = json.loads(request.body)
+            # convert academic_year + semester_type → year
+            if "semester_type" not in data:
+                return JsonResponse(
+                    {"error": "Must include semester_type"},
+                    status=400,
+                )
+
+            data["year"] = parse_academic_year(
+                data["academic_year"], data["semester_type"]
+            )
+            data.pop("academic_year", None)
             form = CourseInstructorForm(data)
+            print(data)
             if form.is_valid():
                 form.save()
-                return JsonResponse({"success": "Instructor added successfully"}, status=201)
-            return JsonResponse({"error": "Invalid form data", "details": form.errors}, status=400)
+                return JsonResponse(
+                    {"success": "Instructor added successfully"}, status=201
+                )
+            return JsonResponse(
+                {"error": "Invalid form", "details": form.errors}, status=400
+            )
+        except ValueError as ve:
+            return JsonResponse({"error": str(ve)}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": f"Unexpected error: {e}"}, status=500)
 
-        elif request.FILES.get('manual_instructor_xsl') and request.POST.get('excel_submit'):
-            print("gaurav 3")
-            manual_instructor_xsl = request.FILES.get('manual_instructor_xsl')
-            print(manual_instructor_xsl)
-            if not manual_instructor_xsl:
-                return JsonResponse({"error": "Excel file is required"}, status=400)
+    # 2) Excel branch
+    if request.FILES.get("manual_instructor_xsl") and request.POST.get(
+        "excel_submit"
+    ):
+        f = request.FILES["manual_instructor_xsl"]
+        try:
+            book = xlrd.open_workbook(file_contents=f.read())
+            sheet = book.sheet_by_index(0)
+        except Exception as e:
+            return JsonResponse({"error": f"Excel read error: {e}"}, status=400)
 
-            try:
-                excel = xlrd.open_workbook(file_contents=manual_instructor_xsl.read())
-                sheet = excel.sheet_by_index(0)
+        errors = []
+        rows = []
+        with transaction.atomic():
+            for i in range(1, sheet.nrows):
+                try:
+                    code = str(sheet.cell(i, 0).value).strip()
+                    version = float(sheet.cell(i, 1).value)
+                    instr_id = str(sheet.cell(i, 2).value).strip()
+                    acad_year = str(sheet.cell(i, 3).value).strip()
+                    sem_type = str(sheet.cell(i, 4).value).strip()
 
-                with transaction.atomic():
-                    errors = []
-                    valid_rows = []
+                    # convert year
+                    year = parse_academic_year(acad_year, sem_type)
 
-                    # Step 1: Validate all rows first (no DB changes yet)
-                    for i in range(1, sheet.nrows):  # Skip header row
-                        try:
-                            course_code = str(sheet.cell(i, 0).value).strip()
-                            course_version = float(sheet.cell(i, 1).value)
-                            instructor_id = str(sheet.cell(i, 2).value).strip()
-                            year = int(sheet.cell(i, 3).value) if sheet.cell(i, 3).value else datetime.date.today().year
-                            semester_no = int(sheet.cell(i, 4).value)
+                    # validate semester type choice
+                    if sem_type not in dict(CourseInstructor.SEMESTER_TYPE_CHOICES):
+                        raise ValueError(f"Bad semester_type '{sem_type}'")
 
-                            # Validate semester_no
-                            if not (1 <= semester_no <= 8):
-                                raise ValueError(f"Semester must be 1-8 (got {semester_no})")
+                    course = Course.objects.filter(code__iexact=code, version=version).first()
+                    if not course:
+                        raise ValueError(f"Course {code} v{version} not found")
 
-                            # Check if course exists
-                            course = Course.objects.filter(
-                                code__iexact=course_code, 
-                                version=course_version
-                            ).first()
-                            if not course:
-                                raise ValueError(f"Course {course_code} (v{course_version}) not found")
+                    fac = Faculty.objects.filter(id=instr_id).first()
+                    if not fac:
+                        raise ValueError(f"Instructor {instr_id} not found")
 
-                            # Check if instructor exists
-                            instructor = Faculty.objects.filter(id=instructor_id).first()
-                            if not instructor:
-                                raise ValueError(f"Instructor {instructor_id} not found")
+                    if CourseInstructor.objects.filter(
+                        course_id=course, instructor_id=fac, year=year
+                    ).exists():
+                        raise ValueError("Duplicate entry")
 
-                            # Check for duplicates (optional)
-                            if CourseInstructor.objects.filter(
-                                course_id=course,
-                                instructor_id=instructor,
-                                year=year
-                            ).exists():
-                                raise ValueError("Duplicate entry (course + instructor + year)")
+                    rows.append((course, fac, year, sem_type))
+                except Exception as e:
+                    errors.append({"row": i + 1, "error": str(e)})
 
-                            # Store valid row data
-                            valid_rows.append({
-                                "course": course,
-                                "instructor": instructor,
-                                "year": year,
-                                "semester_no": semester_no
-                            })
+            if errors:
+                return JsonResponse({"error": "Validation failed", "details": errors}, status=400)
 
-                        except Exception as e:
-                            errors.append({"row": i + 1, "error": str(e)})
+            # bulk insert
+            for course, fac, year, sem_type in rows:
+                CourseInstructor.objects.create(
+                    course_id=course,
+                    instructor_id=fac,
+                    year=year,
+                    semester_type=sem_type,
+                    version = version
+                )
 
-                    # Step 2: If any errors, abort and return them
-                    if errors:
-                        return JsonResponse({
-                            "error": "Validation failed",
-                            "details": errors
-                        }, status=400)
+        return JsonResponse({"success": f"{len(rows)} instructors added"}, status=201)
 
-                    # Step 3: Only if ALL rows are valid, insert into DB
-                    for row in valid_rows:
-                        CourseInstructor.objects.create(
-                            course_id=row["course"],
-                            instructor_id=row["instructor"],
-                            year=row["year"],
-                            semester_no=row["semester_no"]
-                        )
+    return JsonResponse({"error": "Unrecognized request"}, status=400)
 
-                    return JsonResponse({
-                        "success": f"{len(valid_rows)} instructors added successfully"
-                    }, status=201)
 
-            except Exception as e:
-                return JsonResponse({
-                    "error": f"Excel parsing error: {str(e)}"
-                }, status=400)
 
-    return JsonResponse({"error": "Invalid request method"}, status=405)
 @csrf_exempt
 @permission_classes([IsAuthenticated])
 def update_course_instructor_form(request, instructor_id):

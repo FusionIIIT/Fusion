@@ -355,13 +355,35 @@ class CourseInstructor(models.Model):
     # instructor_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     instructor_id = models.ForeignKey(Faculty, on_delete=models.CASCADE)
     year = models.IntegerField(default=datetime.date.today().year, null=False)  # Default to the current year
-    semester_no = models.IntegerField(
-        default=1,  # Set default semester as 1
-        validators=[MinValueValidator(1), MaxValueValidator(8)]  # Constraint for semesters
+    SEMESTER_TYPE_CHOICES = [
+        ("Odd Semester", "Odd Semester"),
+        ("Even Semester", "Even Semester"),
+        ("Summer Semester", "Summer Semester"),
+    ]
+    semester_type = models.CharField(
+        max_length=20,
+        choices=SEMESTER_TYPE_CHOICES,
+        null=True
     )
 
     class Meta:
         unique_together = ('course_id', 'instructor_id', 'year')
+
+    @property
+    def academic_year(self):
+        """
+        Dynamically returns academic year in format 'YYYY-YY':
+        - If semester_type is 'Even Semester': returns 'year-year+1'
+        - If semester_type is 'Odd Semester' or 'Summer Semester': returns 'year-1-year'
+        """
+        if self.semester_type == "Even Semester":
+            start_year = self.year - 1
+            end_year = self.year
+        else:
+            start_year = self.year
+            end_year = self.year + 1
+
+        return f"{start_year}-{str(end_year)[-2:]}"
 
 #new
 class NewProposalFile(models.Model):

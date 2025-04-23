@@ -1,6 +1,7 @@
 import datetime
 import json
 from io import BytesIO
+from xlsxwriter.workbook import Workbook
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 import xlsxwriter
@@ -17,12 +18,13 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from applications.globals.models import User,ExtraInfo
 from applications.academic_information.models import Student, Course, Curriculum, Curriculum_Instructor, Student_attendance, Meeting, Calendar, Holiday, Grades, Spi, Timetable, Exam_timetable
-from applications.programme_curriculum.models import Course as Courses, CourseSlot, Batch, Semester
+from applications.programme_curriculum.models import Course as Courses, CourseSlot, Batch, Semester, CourseInstructor
 from applications.academic_procedures.models import InitialRegistration
 from . import serializers
 from rest_framework.generics import ListCreateAPIView
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, JsonResponse
+from django.db.models import Q
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -312,76 +314,179 @@ def start_allocation_api(request):
         return JsonResponse({"error": str(e)}, status=500)
 
 
+def parse_academic_year(academic_year, semester_type):
+    """
+    Parse academic_year string (e.g., "2024-25") and determine the working_year based on semester type.
+    For Odd Semester, working_year = first part (e.g., 2024).
+    For Even Semester, working_year = second part prefixed by '20' (e.g., 2025 if academic_year is "2024-25").
+    The session is set to the academic_year string.
+    """
+    parts = academic_year.split("-")
+    if len(parts) != 2:
+        raise ValueError("Invalid academic year format. Expected format like '2024-25'.")
+    first_year = parts[0].strip()
+    second_year = parts[1].strip()
+    if semester_type == "Odd Semester":
+        working_year = int(first_year)
+    elif semester_type == "Even Semester":
+        working_year = int("20" + second_year)
+    else:
+        # For any other semester type (e.g., Summer Semester) use the first year by default.
+        working_year = int("20"+second_year)
+    return working_year
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def generate_xlsheet_api(request):
     try:
-        # Extract parameters
-        batch = request.data.get('batch', datetime.datetime.now().year)
-        course_id = request.data.get('course')
+        course_id = int(request.data.get('course'))
+        academic_year = request.data.get('academic_year')
+        semester_type = request.data.get('semester_type')
 
-        # Validate course ID
-        if not course_id:
-            return Response({"error": "Course ID is required"}, status=400)
+        if not (academic_year and semester_type):
+            return HttpResponse("Missing academic_year or semester_type", status=400)
 
-        try:
-            # Ensure the course exists
-            course = get_object_or_404(Courses, id=course_id)
-        except Courses.DoesNotExist:
-            return Response({"error": "Invalid course ID"}, status=400)
+        working_year = parse_academic_year(academic_year, semester_type)
+        course = Courses.objects.get(id=course_id)
 
-        # Fetch registered students
+        # Get all instructors for the course
+        instructor_objs = CourseInstructor.objects.filter(
+            course_id=course_id,
+            year=working_year,
+            semester_type=semester_type
+        )
+
+        instructor_names = []
+        for inst in instructor_objs:
+            if hasattr(inst.instructor_id.id, 'user'):
+                name = f"{inst.instructor_id.id.user.first_name} {inst.instructor_id.id.user.last_name}"
+                instructor_names.append(name)
+        course_instructor_name = ", ".join(instructor_names) if instructor_names else ""
+
+        # Get registered students
         registered_courses = course_registration.objects.filter(
-            working_year=int(batch),
             course_id=course,
+            session=academic_year,
+            semester_type=semester_type,
             student_id__finalregistration__verified=True
-        ).select_related("student_id__id__user")
-
-        # Prepare student data
-        ans = []
-        student_ids = set()
-        for reg in registered_courses:
-            student = reg.student_id
-            if student.id.id not in student_ids:
-                student_ids.add(student.id.id)
-                ans.append([
-                    student.id.id,
-                    student.id.user.first_name,
-                    student.id.user.last_name,
-                    student.id.department.name
-                ])
-
-        # Sort students
-        ans.sort()
-
-        # Create Excel file
-        output = BytesIO()
-        book = xlsxwriter.Workbook(output, {'in_memory': True})
-        sheet = book.add_worksheet()
-
-        # Add headers
-        headers = ["Sl. No", "Roll No", "Name", "Discipline", "Signature"]
-        for col, header in enumerate(headers):
-            sheet.write(2, col, header)
-
-        # Add student data
-        for index, row in enumerate(ans, start=1):
-            sheet.write(index + 2, 0, index)
-            sheet.write(index + 2, 1, row[0])
-            sheet.write(index + 2, 2, f"{row[1]} {row[2]}")
-            sheet.write(index + 2, 3, row[3])
-
-        book.close()
-        output.seek(0)
-
-        # Return as a downloadable file
-        response = HttpResponse(output.getvalue(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = f'attachment; filename={course.code}.xlsx'
-        return response
+        )
 
     except Exception as e:
-        return Response({"error": str(e)}, status=500)
-    
+        print("Error generating xlsx:", str(e))
+        return HttpResponse("Invalid data or internal error", status=500)
+
+    ans = []
+    student_ids = set()
+    for reg in registered_courses:
+        sid = reg.student_id.id.id
+        if sid not in student_ids:
+            student_ids.add(sid)
+            first_name = reg.student_id.id.user.first_name
+            last_name = reg.student_id.id.user.last_name
+            department = 'CSE' 
+            email = reg.student_id.id.user.email
+            ans.append([sid, first_name, last_name, department, email])
+    ans.sort(key=lambda x: x[0])
+
+    # Excel generation
+    output = BytesIO()
+    book = Workbook(output, {'in_memory': True})
+
+    big_title_format = book.add_format({
+        'bold': True, 'font_size': 9, 'font_color': 'black',
+        'align': 'right', 'valign': 'vcenter', 'bg_color': '#FFFFFF',
+    })
+    subtitle_format = book.add_format({
+        'bold': True, 'font_size': 12, 'align': 'center',
+        'valign': 'vcenter', 'bg_color': '#FFFFFF', 'border': 1
+    })
+    header_format = book.add_format({
+        'bold': True, 'font_size': 11, 'align': 'center',
+        'valign': 'vcenter', 'bg_color': '#E5E4E2', 'border': 1
+    })
+    normaltext = book.add_format({
+        'bold': False, 'font_size': 11, 'align': 'center',
+        'valign': 'vcenter', 'border': 1
+    })
+    smalltext_format = book.add_format({
+        'bold': False, 'font_size': 10, 'align': 'left',
+        'valign': 'vcenter'
+    })
+    bold_key_format = book.add_format({
+        'bold': True, 'font_size': 10, 'align': 'left',
+        'valign': 'vcenter'
+    })
+
+    sheet = book.add_worksheet()
+    sheet.set_column('A:A', 12)
+    sheet.set_column('B:B', 10)
+    sheet.set_column('C:C', 30)
+    sheet.set_column('D:D', 10)
+    sheet.set_column('E:E', 25)
+    sheet.set_column('F:F', 15)
+
+    sheet.set_row(0, 25)
+    sheet.set_row(1, 20)
+    sheet.set_row(2, 15)
+    sheet.set_row(3, 15)
+    sheet.set_row(4, 15)
+    sheet.set_row(5, 20)
+
+    # Headers
+    sheet.merge_range('A1:F1',
+        "PDPM INDIAN INSTITUTE OF INFORMATION TECHNOLOGY, DESIGN AND MANUFACTURING JABALPUR",
+        big_title_format
+    )
+    sheet.merge_range('A2:F2', f"{semester_type.upper()}, {academic_year}", subtitle_format)
+
+    sheet.write('A3', "Course No:", bold_key_format)
+    sheet.merge_range('B3:F3', f"{course.code}", smalltext_format)
+
+    sheet.write('A4', "Course Title:", bold_key_format)
+    sheet.merge_range('B4:F4', f"{course.name}", smalltext_format)
+
+    sheet.write('A5', "Instructor(s):", bold_key_format)
+    sheet.merge_range('B5:F5', f"{course_instructor_name}", smalltext_format)
+
+    # Table Headers
+    sheet.write_string('A6', "Sl. No", header_format)
+    sheet.write_string('B6', "Roll No", header_format)
+    sheet.write_string('C6', "Name", header_format)
+    sheet.write_string('D6', "Discipline", header_format)
+    sheet.write_string('E6', "Email", header_format)
+    sheet.write_string('F6', "Signature", header_format)
+
+    # Table Body
+    row = 6
+    sno = 1
+    for student in ans:
+        sheet.set_row(row, 30)
+        roll_no = str(student[0])
+        full_name = f"{student[1]} {student[2]}"
+        discipline = student[3]
+        email = student[4]
+
+        sheet.write_number(row, 0, sno, normaltext)
+        sheet.write_string(row, 1, roll_no, normaltext)
+        sheet.write_string(row, 2, full_name, normaltext)
+        sheet.write_string(row, 3, discipline, normaltext)
+        sheet.write_string(row, 4, email, normaltext)
+        sheet.write_string(row, 5, '', normaltext)
+        sno += 1
+        row += 1
+
+    sheet.set_landscape()
+    sheet.set_paper(9)
+    sheet.fit_to_pages(1, 1)
+
+    book.close()
+    output.seek(0)
+
+    response = HttpResponse(output.read(), content_type='application/vnd.ms-excel')
+    filename = f"{course.code}_CourseList.xlsx"
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
