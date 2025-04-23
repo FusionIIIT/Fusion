@@ -434,7 +434,7 @@ class UploadGradesAPI(APIView):
             # Check if any student is registered for this course, working_year, and semester_type.
             registrations = course_registration.objects.filter(
                 course_id=courses_info,
-                working_year=working_year,
+                session = academic_year,
                 semester_type=semester_type
             )
             if not registrations.exists():
@@ -446,7 +446,7 @@ class UploadGradesAPI(APIView):
 
             # Check if grades already exist and cannot be resubmitted.
             existing_grades = Student_grades.objects.filter(
-                course_id=courses_info.id, year=working_year, academic_year = academic_year, semester_type = semester_type
+                course_id=courses_info.id, academic_year = academic_year, semester_type = semester_type
             )
             if existing_grades.exists() and not existing_grades.first().reSubmit:
                 message = "THIS COURSE HAS ALREADY BEEN SUBMITTED."
@@ -488,7 +488,6 @@ class UploadGradesAPI(APIView):
                     registration_exists = course_registration.objects.filter(
                         student_id=stud,
                         course_id=courses_info,
-                        working_year=working_year,
                         semester_type=semester_type,
                         session = academic_year
                     ).exists()
@@ -895,7 +894,7 @@ class GenerateTranscript(APIView):
             try:
                 # Fetch the grade for the course
                 grade = Student_grades.objects.get(
-                    roll_no=student_id, course_id=course.course_id
+                    roll_no=student_id, course_id=course.course_id, semester = semester
                 )
 
                 course_instance = get_object_or_404(Courses, id=course.course_id_id)
@@ -1381,27 +1380,12 @@ class SubmitGradesProfAPI(APIView):
 
         working_year, _ = parse_academic_year(academic_year=academic_year, semester_type=semester_type)
 
-        if semester_type == "Odd Semester":
-            unique_course_ids = (
-                CourseInstructor.objects.filter(instructor_id_id=instructor_id, year = working_year, semester_no__in = [1, 3, 5, 7, 9])
-                .values("course_id_id")
-                .distinct()
-                .annotate(course_id_int=Cast("course_id_id", IntegerField()))
-            )
-        elif semester_type == "Even Semester":
-            unique_course_ids = (
-                CourseInstructor.objects.filter(instructor_id_id=instructor_id, year = working_year, semester_no__in = [2, 4, 6, 8, 10])
-                .values("course_id_id")
-                .distinct()
-                .annotate(course_id_int=Cast("course_id_id", IntegerField()))
-            )
-        else:
-            unique_course_ids = (
-                CourseInstructor.objects.filter(instructor_id_id=instructor_id, year = working_year, semester_no__in = [2, 4, 6, 8, 10])
-                .values("course_id_id")
-                .distinct()
-                .annotate(course_id_int=Cast("course_id_id", IntegerField()))
-            )
+        unique_course_ids = (
+            CourseInstructor.objects.filter(instructor_id_id=instructor_id, year = working_year, semester_type=semester_type)
+            .values("course_id_id")
+            .distinct()
+            .annotate(course_id_int=Cast("course_id_id", IntegerField()))
+        )
 
         # Retrieve course details
         courses_info = Courses.objects.filter(
@@ -1490,7 +1474,6 @@ class UploadGradesProfAPI(APIView):
             # 7) DUPLICATE‐SUBMIT CHECK
             existing = Student_grades.objects.filter(
                 course_id=course_id,
-                year=working_year,
                 academic_year=academic_year,
                 semester_type=semester_type
             )
@@ -1527,7 +1510,6 @@ class UploadGradesProfAPI(APIView):
                 # ─── Reset ALL reSubmit flags for this course/year/semester ───
                 Student_grades.objects.filter(
                     course_id_id=course_id,
-                    year=working_year,
                     academic_year=academic_year,
                     semester_type=semester_type
                 ).update(reSubmit=False)
@@ -1550,7 +1532,6 @@ class UploadGradesProfAPI(APIView):
                     if not course_registration.objects.filter(
                         student_id=stud,
                         course_id=course,
-                        working_year=working_year,
                         semester_type=semester_type,
                         session=academic_year
                     ).exists():
@@ -1632,21 +1613,15 @@ class DownloadGradesAPI(APIView):
             working_year, _ = parse_academic_year(academic_year=academic_year, semester_type=semester_type)
             instructor_id = request.user.username
 
-            if semester_type == "Odd Semester":
-                sems = [1, 3, 5, 7, 9]
-            else:
-                sems = [2, 4, 6, 8, 10]
-
             unique_course_ids = (
                 CourseInstructor.objects
-                    .filter(instructor_id_id=instructor_id, year=working_year, semester_no__in=sems)
+                    .filter(instructor_id_id=instructor_id, year=working_year, semester_type=semester_type)
                     .values("course_id_id")
                     .distinct()
                     .annotate(course_id_int=Cast("course_id_id", IntegerField()))
             )
 
             grades_qs = Student_grades.objects.filter(
-                year=working_year,
                 academic_year = academic_year,
                 semester_type = semester_type,
                 course_id_id__in=unique_course_ids.values_list("course_id_int", flat=True)
@@ -1680,17 +1655,14 @@ class GeneratePDFAPI(APIView):
 
             grades = Student_grades.objects.filter(
                 course_id_id=course_id,
-                year=working_year,
                 academic_year=academic_year,
                 semester_type=semester_type
             ).order_by("roll_no")
 
-            # verify instructor
-            sems = [1,3,5,7,9] if semester_type == "Odd Semester" else [2,4,6,8,10]
             ci = CourseInstructor.objects.filter(
                 course_id_id=course_id,
                 year=working_year,
-                semester_no__in=sems,
+                semester_type=semester_type,
                 instructor_id_id=request.user.username
             )
             if not ci.exists():
@@ -1819,13 +1791,13 @@ class GeneratePDFAPI(APIView):
                 p_title = Paragraph("Grade Sheet", header_style)
                 w, h = p_title.wrap(doc.width, doc.topMargin)
                 p_title.drawOn(canvas, doc.leftMargin, height - h)
-
+                course_details = f"L:{course_info.lecture_hours}, T:{course_info.tutorial_hours}, P:{course_info.project_hours}, C:{course_info.credit}"
                 # 2) Draw your five field_label-style lines below it
                 hdr_texts = [
                     f"<b>Session:</b> {academic_year}",
                     f"<b>Semester:</b> {semester}",
                     f"<b>Course Code:</b> {course_info.code}",
-                    f"<b>Course Name:</b> {course_info.name} ()",
+                    f"<b>Course Name:</b> {course_info.name} ({course_details})",
                     f"<b>Instructor:</b> {instructor}",
                 ]
                 y = height - h - header_style.spaceAfter

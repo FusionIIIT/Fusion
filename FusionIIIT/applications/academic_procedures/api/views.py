@@ -1,4 +1,5 @@
 import datetime
+from datetime import date
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, redirect
@@ -1107,72 +1108,81 @@ def verify_registration(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def verify_course(request):
-    current_user = get_object_or_404(User, username=request.user.username)
-    roll_no = request.data["rollno"]
-    roll_no_user = get_object_or_404(User, username=roll_no)
-    user_details = ExtraInfo.objects.get(user=roll_no_user)
-    firstname = user_details.user.first_name
-    lastname = user_details.user.last_name
-    dict2 = {'roll_no': roll_no, 'firstname': firstname, 'lastname': lastname}
-    obj2 = Student.objects.filter(id=roll_no).first()
-    batch = obj2.batch_id
-    curr_id = batch.curriculum
-    curr_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = obj2.curr_semester_no)
-    details = []
+    roll_no = request.data.get("rollno").upper()
+    if not roll_no:
+        return Response({"error": "rollno is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-    current_sem_courses = get_currently_registered_course(
-        roll_no, curr_sem_id, True)
+    student = Student.objects.filter(id_id=roll_no).first()
+    if not student:
+        return Response({"error": "Student record not found"}, status=status.HTTP_400_BAD_REQUEST)
 
-    idd = obj2
-    for z in current_sem_courses:
-        course_code = z.course_id.code
-        course_name = z.course_id.name
-        replaced_by = course_replacement.objects.all().filter(old_course_registration=z).first()
-        k = {}
-        k['reg_id'] = z.id
-        k['rid'] = roll_no+" - "+course_code
-        # Name ID Confusion here , be carefull
-        courseobj2 = Courses.objects.all().filter(id=z.course_id.id)
-        # if(str(z.student_id) == str(idd)):
-        for p in courseobj2: # return JsonResponse(
-    #                 {'details': details,
-    #                     # 'dict2': dict2,
-    #                     'course_list': serializers.CourseSerializer(course_list, many=True).data,
-    #                     # 'semester_list': semester_list,
-    #                     'date': date}
-    #                 )
+
+    extra = student.id
+    user_obj = extra.user
     
-            k['course_id'] = course_code
-            k['course_name'] = course_name
-            k['sem'] = z.semester_id.semester_no
-            k['credits'] = p.credit
-            k['registration_type'] = z.registration_type
-            k['replaced_by'] = serializers.CourseRegistrationSerializer(replaced_by.new_course_registration).data if (replaced_by) else None
-        details.append(k)
+    # name & roll for frontend
+    dict2 = {
+        "roll_no": roll_no,
+        "firstname": user_obj.first_name or "",
+        "lastname": user_obj.last_name or "",
+    }
 
-    year = demo_date.year
-    month = demo_date.month
-    yearr = str(year) + "-" + str(year+1)
-    semflag = 0
-    if(month >= 7):
-        semflag = 1
-    else:
-        semflag = 2
-    # TO DO Bdes
-    date = {'year': yearr, 'semflag': semflag}
-    course_list = Courses.objects.all()
-    semester_list = Semester.objects.filter(curriculum=curr_id)
-    semester_no_list=[]
-    courseslot_list = CourseSlot.objects.filter(semester__in=semester_list)
-    for i in semester_list:
-        semester_no_list.append(int(i.semester_no))
-    return JsonResponse({
-        'details': details,
-        'dict2': dict2,
-        'course_list': serializers.CourseSerializer(course_list, many=True).data,
-        'semester_list': serializers.SemesterSerializer(semester_list, many=True).data,
-        'courseslot_list': serializers.CourseSlotSerializer(courseslot_list, many=True).data,
-        'date': date
+    # current curriculum & semester
+    curr = student.batch_id.curriculum
+    curr_sem = Semester.objects.filter(curriculum=curr, semester_no=student.curr_semester_no).first()
+    if not curr_sem:
+        return Response({"error": "Current semester not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    # gather registered courses for this semester
+    regs = course_registration.objects.filter(student_id=student).order_by('-semester_id__semester_no')
+    details = []
+    for reg in regs:
+        slot_course = Courses.objects.filter(id=reg.course_id.id).first()
+        replaced = course_replacement.objects.filter(old_course_registration=reg).first()
+        new_reg = replaced.new_course_registration if replaced else None
+
+        details.append({
+            "id":reg.id,
+            "reg_id": reg.id,
+            "rid": f"{roll_no} - {reg.course_id.code}",
+            "course_id": reg.course_id.code,
+            "course_name": reg.course_id.name,
+            "sem": reg.semester_id.semester_no,
+            "credits": slot_course.credit if slot_course else 0,
+            "registration_type": reg.registration_type,
+            "replaced_by": {
+                "course_id": {
+                    "code": new_reg.course_id.code,
+                    "name": new_reg.course_id.name,
+                },
+                "semester_id": {
+                    "semester_no": new_reg.semester_id.semester_no,
+                },
+            } if new_reg else None,
+        })
+
+    # lists for selects (no serializers)
+    course_list = list(Courses.objects.values("id", "code", "name", "credit"))
+    semester_list = list(
+        Semester.objects.filter(curriculum=curr).values("id", "semester_no")
+    )
+    courseslot_list = list(
+        CourseSlot.objects.filter(semester__in=[s["id"] for s in semester_list]).values("id", "name")
+    )
+
+    # academic year & semflag
+    today = date.today()
+    year = today.year
+    semflag = 1 if today.month >= 7 else 2
+    yearr = f"{year}-{year+1}"
+
+    return Response({
+        "details": details,
+        "dict2": dict2,
+        "course_list": course_list,
+        "semester_list": semester_list,
+        "courseslot_list": courseslot_list,
+        "date": {"year": yearr, "semflag": semflag},
     })
 
 
@@ -1800,204 +1810,87 @@ def course_list(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def dropcourseadmin(request):
-    '''
-        This function is used to get the view when Acad Admin drops any course of any student.
-        @param:
-                request - trivial
-
-        @variables:
-                data - user's id.
-                rid - Registration ID of Registers table
-                response_data - data to be responded.
-    '''
-    data = request.GET.get('id')
-    # data = data.split(" - ")
-    reg_id = int(data)
-    # student_id = data[0]
-    # course_code = data[1]
-    # course = Courses.objects.get(code=course_code , version = 1.0)
-    # need to add batch and programme
-    # curriculum_object = Curriculum.objects.all().filter(course_code = course_code)
     try:
-        # Register.objects.filter(curr_id = curriculum_object.first(),student_id=int(data[0])).delete()
+        reg_id = request.data.get('id')
+        roll_no = request.data.get('roll_no')
+
+        if not reg_id or not roll_no:
+            return JsonResponse({'error': 'Missing registration ID or roll number'}, status=400)
+
+        reg_id = int(reg_id)
         course_registration.objects.filter(id=reg_id).delete()
+
+        return JsonResponse({'message': 'Success!'}, status=200)
     except Exception as e:
-        print(str(e))
         return JsonResponse({'error': str(e)}, status=400)
-        # print("hello ")
-    return JsonResponse({'message': 'Success!'}, status=200)
 
 
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def acad_add_course(request):
-    if(request.method == "POST"):
-        course_id = request.POST["course_id"]
-        courseslot_id = request.POST["courseslot_id"]
-        course = Courses.objects.get(id=course_id)
-        courseslot = CourseSlot.objects.get(id=courseslot_id)
-        roll_no = request.POST['roll_no']
-        student = Student.objects.all().select_related(
-            'id', 'id__user', 'id__department').filter(id=roll_no).first()
-        sem_id = request.POST['semester_id']
-        semester = Semester.objects.get(id=sem_id)
-        registration_type = request.POST["registration_type"]
-        working_year = request.POST.get("working_year", datetime.datetime.now().year)
-        old_course_id = request.POST.get("old_course")
-        with transaction.atomic():
-            cr = course_registration(
-                course_slot_id=courseslot, course_id=course, student_id=student, semester_id=semester , working_year = working_year, registration_type=registration_type)
-            cr.save()
-            if old_course_id:
-                old_course_obj = course_registration.objects.filter(id=old_course_id).first()
-                if old_course_obj:
-                    course_replacement.objects.create(
-                        old_course_registration=old_course_obj, 
-                        new_course_registration=cr
-                    )
-                    
-    return JsonResponse({'message': 'Success!'}, status=200)
+    data = request.data
+    for fld in ("roll_no", "semester_id", "courseslot_id", "course_id", "academic_year", "registration_type"):
+        if not data.get(fld):
+            return Response({ "error": f"{fld} is required" }, status=status.HTTP_400_BAD_REQUEST)
+    student = get_object_or_404(Student, id=data["roll_no"].upper())
+    semester = get_object_or_404(Semester,   id=data["semester_id"])
+    slot     = get_object_or_404(CourseSlot, id=data["courseslot_id"])
+    course   = get_object_or_404(Courses,     id=data["course_id"])
+    session  = data["academic_year"]
+    reg_type = data["registration_type"]
+    old_id   = data.get("old_course")
+    with transaction.atomic():
+        cr = course_registration.objects.create(
+            student_id       = student,
+            semester_id      = semester,
+            course_slot_id   = slot,
+            course_id        = course,
+            session          = session,
+            registration_type= reg_type,
+        )
+        if old_id:
+            old = course_registration.objects.filter(id=old_id).first()
+            if old:
+                course_replacement.objects.create(
+                    old_course_registration = old,
+                    new_course_registration = cr,
+                )
 
-@api_view(['GET'])
+    return Response({ "message": "Course added successfully" }, status=status.HTTP_200_OK)
+
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def academic_procedures_faculty_api(request):
-    """
-    Comprehensive API for faculty academic procedures.
-    Returns detailed information about faculty's academic responsibilities and requests.
-    
-    Endpoints:
-    - Faculty profile details
-    - Assigned courses
-    - Thesis supervision requests
-    - Assistantship claims
-    - Seminar and progress report requests
-    """
     try:
-        # Authenticate and validate user
-        current_user = get_object_or_404(User, username=request.user.username)
-        
-        # Verify user is a faculty member
+        # Ensure the user is a faculty member
         if request.user.extrainfo.user_type != 'faculty':
-            return Response(
-                {"error": "Unauthorized access. Faculty only."}, 
-                status=status.HTTP_403_FORBIDDEN
-            )
-        
-        # Fetch extended user information
-        user_details = ExtraInfo.objects.select_related(
-            'user', 
-            'department'
-        ).get(user=request.user)
-        
-        # Get faculty's current designation
-        designation = HoldsDesignation.objects.filter(user=request.user).first()
-        
-        # Determine current semester based on month
-        current_month = timezone.now().month
-        semesters = [1, 3, 5, 7] if 7 <= current_month <= 12 else [2, 4, 6, 8]
-        
-        # Fetch faculty object with related information
-        faculty_object = Faculty.objects.select_related(
-            'id', 
-            'id__user', 
-            'id__department'
-        ).get(id=user_details.pk)
-        
-        # 1. Thesis Supervision Requests
-        thesis_requests = ThesisTopicProcess.objects.filter(supervisor_id=faculty_object)
-        thesis_supervision_requests = thesis_requests.filter(pending_supervisor=True)
-        approved_thesis_requests = thesis_requests.filter(approval_supervisor=True)
-        
-        # 2. Assistantship Claims
-        assistantship_requests = AssistantshipClaim.objects.all()
-        hod_assistantship_requests = assistantship_requests.filter(
-            ta_supervisor_remark=True, 
-            thesis_supervisor_remark=True, 
-            hod_approval=False
-        )
-        hod_approved_assistantship = assistantship_requests.filter(
-            ta_supervisor_remark=True, 
-            thesis_supervisor_remark=True, 
-            acad_approval=False
-        )
-        
-        # 3. Seminar and Progress Reports
-        mtechseminar_requests = MTechGraduateSeminarReport.objects.filter(Overall_grade='')
-        phdprogress_requests = PhDProgressExamination.objects.filter(Overall_grade='')
-        
-        # 4. Assigned Courses
-        courses_list = list(
-            CourseInstructor.objects.filter(instructor_id=user_details.id)
-            .select_related('course_id')
-            .values(
-                'course_id__id',      # Course database ID
-                'course_id__code',    # Course code
-                'course_id__name',    # Course name
-                'course_id__version', # Course version
-                'year',                # Academic year
-                'semester_no'          # Semester number
-            )
-        )
-        
-        # Calculate batch for each course
-        for course in courses_list:
-            course['batch'] = int(course['year'] - (course['semester_no'] // 2))
+            return Response({"error": "Unauthorized access. Faculty only."}, status=403)
+
+        user_details = ExtraInfo.objects.select_related("department").get(user=request.user)
+
+        # Get courses taught by the faculty
+        courses = CourseInstructor.objects.filter(instructor_id=user_details.id).select_related("course_id")
+
+        current_year = timezone.now().year
+        response_data = []
+
+        for course in courses:
+            # Calculate academic year from calendar year + semester
             
-        # Filter out inactive batches
-        excluded_years = set()
-        for course_instructor in CourseInstructor.objects.filter(
-            instructor_id=user_details.id, 
-            course_id__working_course=True
-        ):
-            target_year = course_instructor.year - (course_instructor.semester_no // 2)
-            batches_for_year = Batch.objects.filter(year=target_year)
-            if batches_for_year.exists() and not batches_for_year.filter(running_batch=True).exists():
-                excluded_years.add(course_instructor.year)
-        
-        # Final assigned courses (excluding inactive batches)
-        assigned_courses = [
-            course for course in courses_list 
-            if course['year'] not in excluded_years
-        ]
-        
-        # Prepare response
-        response_data = {
-            # Faculty Profile Information
-            'faculty_id': user_details.id,
-            'faculty_name': f"{user_details.user.first_name} {user_details.user.last_name}",
-            'department': user_details.department.name if user_details.department else None,
-            'designation': designation.designation.name if designation else None,
-            
-            # Academic Semester Information
-            'semester': semesters,
-            
-            # Thesis Related
-            'thesis_supervision_requests': len(thesis_supervision_requests),
-            'approved_thesis_requests': len(approved_thesis_requests),
-            'pending_thesis_requests': len(thesis_supervision_requests),
-            
-            # Assistantship Claims
-            'assistantship_requests': len(assistantship_requests),
-            'hod_assistantship_requests': len(hod_assistantship_requests),
-            'hod_approved_assistantship': len(hod_approved_assistantship),
-            
-            # Seminar and Progress Reports
-            'mtech_seminar_requests': len(mtechseminar_requests),
-            'phd_progress_requests': len(phdprogress_requests),
-            
-            # Assigned Courses
-            'assigned_courses': assigned_courses
-        }
-        
-        return Response(response_data)
-    
+            response_data.append({
+                "course_id": course.course_id.id,
+                "course_code": course.course_id.code,
+                "course_name": course.course_id.name,
+                "version": course.course_id.version,
+                "semester_type": course.semester_type,
+                "academic_year": course.academic_year,
+            })
+
+        return Response({"assigned_courses": response_data})
+
     except Exception as e:
-        return Response(
-            {"error": f"An error occurred: {str(e)}"}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-    
+        return Response({"error": str(e)}, status=500)
 
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
@@ -2562,3 +2455,49 @@ def submit_swayam_registration(request):
             course_slot_id_id=slot_id, 
         )
     return JsonResponse({"status": "success"}, status=201)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def get_add_course_slots(request):
+    """
+    GET /api/course-slots/?semester_id=<id>
+    Returns JSON list of { id, name } for all slots in that semester.
+    """
+    sem_id = request.query_params.get("semester_id")
+    if not sem_id:
+        return Response(
+            {"error": "semester_id query parameter is required"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # ensure the semester exists (404 if not)
+    get_object_or_404(Semester, id=sem_id)
+
+    # fetch slots and return only id & name
+    slots = CourseSlot.objects.filter(semester_id=sem_id).values("id", "name")
+    return Response(list(slots), status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def get_add_course_courses(request):
+    """
+    GET /api/courses/?courseslot_id=<id>
+    Returns JSON list of { id, code, name, credit } for all courses in that slot.
+    """
+    slot_id = request.query_params.get("courseslot_id")
+    if not slot_id:
+        return Response(
+            {"error": "courseslot_id query parameter is required"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # ensure the slot exists (404 if not)
+    slot = get_object_or_404(CourseSlot, id=slot_id)
+
+    # via the M2M relationship .courses
+    courses = slot.courses.all().values("id", "code", "name", "credit")
+    return Response(list(courses), status=status.HTTP_200_OK)
