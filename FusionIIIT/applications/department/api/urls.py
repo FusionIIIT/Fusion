@@ -1,7 +1,7 @@
 from django.conf.urls import url
 
 from . import views
-
+from applications.globals.api.views import profile
 urlpatterns = [
     url(r'announcements/$', views.ListCreateAnnouncementView.as_view(),name='announcements'),
     url(r'dep-main/$', views.DepMainAPIView.as_view(), name='depmain'),
@@ -19,4 +19,6 @@ urlpatterns = [
     url(r'labs/delete/$', views.LabDeleteAPIView.as_view(), name='delete_lab'),
     url(r'feedback/create/$', views.FeedbackCreateAPIView.as_view(), name='feedback_create'),
    url(r'feedback/$', views.FeedbackListView.as_view(), name='getfeedback'),
+   url(r'^profile/(?P<username>[\w.@+-]+)/$', profile, name='profile-dynamic'),
+
 ]
