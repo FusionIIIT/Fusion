@@ -15,6 +15,7 @@ from rest_framework.decorators import (
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.shortcuts import render
+from django.core.files.storage import default_storage
 from applications.gymkhana.models import (
     Registration_form,
     Student,
@@ -30,6 +31,7 @@ from applications.gymkhana.models import (
     Achievements,
     ClubPosition,
     Fest,
+    YearlyPlan
 )
 from .serializers import (
     Club_memberSerializer,
@@ -48,7 +50,8 @@ from .serializers import (
     ClubPositionSerializer,
     FestSerializer,
     EventInputSerializer,
-    EventReportSerializer
+    EventReportSerializer,
+    YearlyPlanSerializer
 )
 
 from io import BytesIO
@@ -64,10 +67,10 @@ from applications.gymkhana.views import *
 from rest_framework import generics
 from django.core.files.base import ContentFile
 import base64
-
+from django.core.files.storage import default_storage
+from openpyxl import load_workbook,Workbook
 from rest_framework.parsers import MultiPartParser
 from notifications.signals import notify
-
 def gymkhana_notif(sender, recipient, notif_type, message=None, club_name=None):
     url = 'gymkhana:gymkhana'
     module = 'Gymkhana'
@@ -99,11 +102,27 @@ def gymkhana_notif(sender, recipient, notif_type, message=None, club_name=None):
         verb = f"Dean has approved budget (ID: {message}) for '{club_name}'."
     elif notif_type == "event_report_submitted":
         verb=f"The event report for '{message}' has been submitted by the coordinator of {club_name}."
+    elif notif_type == "yearly_plan_approved_fic":
+        verb = f"FIC has approved the yearly plan for '{club_name}'."
+    elif notif_type == "yearly_plan_approved_counsellor":
+        verb = f"Counsellor has approved the yearly plan for '{club_name}'."
+    elif notif_type == "yearly_plan_approved_dean":
+        verb = f"Dean has approved the yearly plan for '{club_name}'."
+    elif notif_type == "yearly_plan_rejected":
+        verb = f"The yearly plan for '{club_name}' has been rejected."
+    elif notif_type == "new_yearly_plan": 
+        verb = f"Yearly Plan has been submitted for '{club_name}': {message}."
+    
 
     if verb:
         notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 
+class Budgetinfo(APIView):
+    def get(self, request):
+        budgets = Budget.objects.all()
+        serializer = BudgetSerializer(budgets, many=True)
+        return Response(serializer.data)
 class Budgetinfo(APIView):
     def get(self, request):
         budgets = Budget.objects.all()
@@ -126,7 +145,7 @@ class Club_Detail(APIView):
 class UpcomingEventsAPIView(APIView):
     def get(self, request):
         events = Event_info.objects.filter(
-            start_date__gte=datetime.datetime.now()
+            start_date__gte=datetime.now()
         ).order_by("start_date")
         serializer = event_infoserializer(events, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -135,7 +154,7 @@ class UpcomingEventsAPIView(APIView):
 class PastEventsAPIView(APIView):
     def get(self, request):
         events = Event_info.objects.filter(
-            end_date__lt=datetime.datetime.now()
+            end_date__lt=datetime.now()
         ).order_by("end_date")
         serializer = event_infoserializer(events, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -1178,7 +1197,6 @@ class NewEventAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
 class FICApproveEventAPIView(APIView):
     def put(self, request):
         event_id = request.data.get("id")
@@ -1215,7 +1233,6 @@ class FICApproveEventAPIView(APIView):
             status=status.HTTP_200_OK,
         )
 
-
 class CounsellorApproveEventAPIView(APIView):
     def put(self, request):
         event_id = request.data.get("id")
@@ -1251,22 +1268,48 @@ class CounsellorApproveEventAPIView(APIView):
         )
 
 
+from notification.views import create_announcement  # Import your existing function for creating announcements
+from applications.globals.models import User
+from notification.models import Announcements
+
 class DeanApproveEventAPIView(APIView):
     def put(self, request):
         event_id = request.data.get("id")
         event = get_object_or_404(Event_info, id=event_id)
+
         if event.status != "DEAN":
             return Response(
                 {"error": "Event is not under Dean review."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
         event.status = "ACCEPT"
         event.save()
 
+        try:
+            coordinator_position = ClubPosition.objects.get(club=event.club, position='COORDINATOR')
+            coordinator_user = User.objects.get(username=coordinator_position.name)
+        except (ClubPosition.DoesNotExist, User.DoesNotExist):
+            return Response(
+                {"error": "Coordinator not found for this club."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        announcement = Announcements.objects.create(
+            created_by=coordinator_user,
+            message=f"Get ready! '{event.event_name}' by {event.club} is happening on {event.start_date}. Stay tuned for more details!",
+            target_group='students',
+            department=None,
+            batch=None,
+            upload_announcement=None,
+            module="GymKhana"
+        )
+
         return Response(
-            {"message": "Event status changed to 'Accepted'."},
+            {"message": "Event approved and announcement sent to all students."},
             status=status.HTTP_200_OK,
         )
+
 
 
 class NewBudgetAPIView(APIView):
@@ -1428,29 +1471,6 @@ class RejectBudgetAPIView(APIView):
         )
 
 
-class RejectEventAPIView(APIView):
-    def put(self, request):
-        event_id = request.data.get("id")
-        event = get_object_or_404(Event_info, id=event_id)
-        event.status = "REJECT"
-        event.save()
-        try:
-            coordinator = ClubPosition.objects.get(club=event.club, position='COORDINATOR') 
-            recipient = User.objects.get(username=coordinator.name)
-            sender = request.user
-            gymkhana_notif(
-                sender=sender,
-                recipient=recipient,
-                notif_type="event_rejected",
-                club_name=str(event.club),
-                message=event.event_name
-            )
-        except (ClubPosition.DoesNotExist, User.DoesNotExist):
-            pass
-        return Response(
-            {"message": "Event status changed to 'Rejected'."},
-            status=status.HTTP_200_OK,
-        )
 
 
 class AchievementsAPIView(APIView):
@@ -1537,6 +1557,19 @@ class RejectEventAPIView(APIView):
         event = get_object_or_404(Event_info, id=event_id)
         event.status = "REJECT"
         event.save()
+        try:
+            coordinator = ClubPosition.objects.get(club=event.club, position='COORDINATOR') 
+            recipient = User.objects.get(username=coordinator.name)
+            sender = request.user
+            gymkhana_notif(
+                sender=sender,
+                recipient=recipient,
+                notif_type="event_rejected",
+                club_name=str(event.club),
+                message=event.event_name
+            )
+        except (ClubPosition.DoesNotExist, User.DoesNotExist):
+            pass
         return Response(
             {"message": "Event status changed to 'Rejected'."},
             status=status.HTTP_200_OK,
@@ -1766,26 +1799,24 @@ class CoordinatorEventsAPIView(APIView):
 
 class EventInputAPIView(APIView):
     def get(self, request):
-        """
-        Returns a list of all Event_info objects (dropdown options).
-        """
         events = Event_info.objects.all()
-        events_data = [{"id": event.id, "name": event.event_name} for event in events]  # Adjust fields as needed
+        events_data = [{"id": event.id, "name": event.event_name} for event in events]
         return Response(events_data, status=status.HTTP_200_OK)
 
     def post(self, request):
-        """
-        Creates a new EventInput instance.
-        """
-        # print(request.data["event"])
-        # request.data["images"]=None
-        print(request.data)
         serializer = EventInputSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
+
+            Announcements.objects.create(
+                created_by=request.user,
+                message="📰 The Gymkhana Newsletter has been updated! Dive into the latest club highlights and event stories now.",
+                target_group='students',
+                module='Gymkhana'
+            )
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 #helper
 def add_page_decorations(canvas, doc):
     canvas.saveState()
@@ -2080,16 +2111,302 @@ class EventReportPDFView(APIView):
         except EventReport.DoesNotExist:
             return Response({"error": "Event report not found"}, status=status.HTTP_404_NOT_FOUND)
 
-class UpdateBudgetAPIView(APIView):
+from datetime import datetime
+
+class UploadYearlyPlanExcelAPIView(APIView):
+    parser_classes = [MultiPartParser]
+
+    def post(self, request):
+        club_name = request.data.get("club")
+        if not club_name:
+            return Response({"error": "Club name is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        club = get_object_or_404(Club_info, club_name=club_name)
+        no_file_id = request.data.get("file_id")
+        Coress_file = File.objects.filter(id=no_file_id).first()
+        # Get uploaded Excel file
+        file = request.FILES.get("file")
+        if not file:
+            return Response({"error": "No Excel file provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Save the file to default storage
+        file_name = f"yearly_plan_{club_name}_{datetime.now().strftime('%Y%m%d%H%M%S')}.xlsx"
+        file_path = f"gymkhana/year_planners/{file_name}"
+        default_storage.save(file_path, file)
+
+        try:
+            # Read and process the saved file
+            with default_storage.open(file_path, mode="rb") as temp_file:
+                workbook = load_workbook(temp_file)
+                sheet = workbook.active
+
+                # Build file URL
+                file_url = request.build_absolute_uri(default_storage.url(file_path))
+
+                # Create YearlyPlan DB entry
+                yearly_plan = YearlyPlan.objects.create(
+                    club=club,
+                    year=datetime.now().year,
+                    file_link=file_url,
+                    status="FIC",
+                    file_id=Coress_file
+                )
+
+                # Process rows
+                for row in sheet.iter_rows(min_row=2, values_only=True):
+                    event_name, tentative_start_date, tentative_end_date, budget, description = row
+
+                    if not all([event_name, tentative_start_date, tentative_end_date, budget]):
+                        return Response({"error": "Missing required fields in some rows."}, status=status.HTTP_400_BAD_REQUEST)
+                    
+                    try:
+                        tentative_start_date = self._parse_date(tentative_start_date)
+                        tentative_end_date = self._parse_date(tentative_end_date)
+                    except ValueError as e:
+                        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                    YearlyPlanEvents.objects.create(
+                        yearly_plan=yearly_plan,
+                        event_name=event_name,
+                        tentative_start_date=tentative_start_date,
+                        tentative_end_date=tentative_end_date,
+                        budget=budget,
+                        description=description
+                    )
+
+                # Notify FIC
+                try:
+                    fic = ClubPosition.objects.get(club=club, position="FIC")
+                    fic_user = User.objects.get(username=fic.name)
+                    gymkhana_notif(
+                        sender=request.user,
+                        recipient=fic_user,
+                        notif_type="new_yearly_plan",
+                        message=f"Yearly plan for {club_name}",
+                        club_name=club_name,
+                    )
+                except (ClubPosition.DoesNotExist, User.DoesNotExist):
+                    return Response({"error": "FIC for the club not found."}, status=status.HTTP_404_NOT_FOUND)
+
+                return Response({
+                    "message": "Yearly Plan and Events uploaded and saved successfully.",
+                    "file_link": file_url
+                }, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    @staticmethod
+    def _parse_date(date_value):
+        """
+        Attempts to parse a date value from different formats (e.g., dd/mm/yyyy, mm/dd/yyyy).
+        Returns a date object in yyyy-mm-dd format if successful.
+        """
+        if isinstance(date_value, datetime):
+            return date_value.date()
+        if isinstance(date_value, str):
+            for fmt in ("%d/%m/%Y", "%m/%d/%Y", "%Y-%m-%d"):
+                try:
+                    return datetime.strptime(date_value, fmt).date()
+                except ValueError:
+                    continue
+        raise ValueError(f"Invalid date format: {date_value}")
+
+
+
+class DownloadYearlyPlanTemplateAPIView(APIView):
+    def get(self, request):
+        # Create workbook
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "YearlyPlanEvents"
+
+        # Add headers
+        headers = ["Event Name", "Tentative Start Date (YYYY-MM-DD)", "Tentative End Date (YYYY-MM-DD)", 
+                   "Budget", "Description"]
+        ws.append(headers)
+
+        # Create response for download
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=YearlyPlan_Template.xlsx'
+        wb.save(response)
+
+        return response
+class FICApproveYearlyPlanAPIView(APIView):
     def put(self, request):
-        budget_id = request.data.get('id')
-        budget = get_object_or_404(Budget, id=budget_id)
-        if budget.status != 'COORDINATOR':
-            return Response({"error": "Budget is not under Coordinator."}, status=status.HTTP_400_BAD_REQUEST)
-        budget.status = 'FIC'
-        serializer = BudgetSerializer(budget, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save(status=budget.status)
-            return Response({"message": "Budget updated and status changed"}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+        plan_id = request.data.get("id")
+        yearly_plan = get_object_or_404(YearlyPlan, id=plan_id)
+        
+        if yearly_plan.status != "FIC":
+            return Response(
+                {"error": "Yearly Plan is not under FIC review."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Change the status to "Counsellor"
+        yearly_plan.status = "COUNSELLOR"
+        yearly_plan.save()
+
+        # Send notification to Counsellor
+        try:
+            print(1)
+            print(2)
+            counsellor = ClubPosition.objects.get(
+                club=yearly_plan.club,
+                position__in=['TECHNICAL_COUNSELLOR', 'CULTURAL_COUNSELLOR', 'SPORTS_COUNSELLOR']
+            )
+            print(counsellor.name)
+            recipient = User.objects.get(username=counsellor.name)
+            sender = request.user
+            gymkhana_notif(
+                sender=sender,
+                recipient=recipient,
+                notif_type="yearly_plan_approved_fic",
+                message=yearly_plan.id,
+                club_name=str(yearly_plan.club)
+            )
+        except (ClubPosition.DoesNotExist, User.DoesNotExist):
+            pass
+
+        return Response(
+            {"message": "Yearly Plan status changed to 'Counsellor Review'."},
+            status=status.HTTP_200_OK,
+        )
+class CounsellorApproveYearlyPlanAPIView(APIView):
+    def put(self, request):
+        plan_id = request.data.get('id')
+        yearly_plan = get_object_or_404(YearlyPlan, id=plan_id)
+        
+        # Check if the current status is either "COUNSELLOR" or "REREVIEW"
+        if yearly_plan.status not in ['COUNSELLOR', 'REREVIEW']:
+            return Response({"error": "Yearly Plan is not under Counsellor review."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Determine new status: "DEAN" if "COUNSELLOR", "ACCEPT" if "REREVIEW"
+        new_status = 'DEAN' if yearly_plan.status == 'COUNSELLOR' else 'ACCEPT'
+        yearly_plan.status = new_status
+        yearly_plan.save()
+
+        # Send notification to Dean if status changes to "DEAN"
+        if new_status == 'DEAN':
+            try:
+                dean_user = User.objects.get(username="mkroy")  # Example Dean user
+                gymkhana_notif(
+                    sender=request.user,
+                    recipient=dean_user,
+                    notif_type="yearly_plan_approved_counsellor",
+                    message=yearly_plan.id,
+                    club_name=str(yearly_plan.club)
+                )
+            except User.DoesNotExist:
+                pass
+
+        return Response({"message": "Yearly Plan status updated."}, status=status.HTTP_200_OK)
+class DeanApproveYearlyPlanAPIView(APIView):
+    def put(self, request):
+        plan_id = request.data.get("id")
+        yearly_plan = get_object_or_404(YearlyPlan, id=plan_id)
+
+        if yearly_plan.status != "DEAN":
+            return Response(
+                {"error": "Yearly Plan is not under Dean review."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Change the status to "Approved"
+        yearly_plan.status = "ACCEPT"
+        yearly_plan.save()
+
+        # Send notification to the Coordinator (or another relevant person) after approval
+        try:
+            coordinator = ClubPosition.objects.get(club=yearly_plan.club, position='COORDINATOR')
+            recipient = User.objects.get(username=coordinator.name)
+            sender = request.user
+            gymkhana_notif(
+                sender=sender,
+                recipient=recipient,
+                notif_type="yearly_plan_approved_dean",
+                message=yearly_plan.id,
+                club_name=str(yearly_plan.club)
+            )
+        except (ClubPosition.DoesNotExist, User.DoesNotExist):
+            pass
+
+        return Response(
+            {"message": "Yearly Plan status changed to 'Approved'."},
+            status=status.HTTP_200_OK,
+        )
+class RejectYearlyPlanAPIView(APIView):
+    def put(self, request):
+        plan_id = request.data.get("id")
+        yearly_plan = get_object_or_404(YearlyPlan, id=plan_id)
+
+        if yearly_plan.status == 'REJECT':
+            return Response({"error": "Yearly Plan is already rejected."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Change the status to "REJECTED"
+        yearly_plan.status = "REJECT"
+        yearly_plan.save()
+
+        # Send notification to relevant user after rejection (could be coordinator or another role)
+        try:
+            coordinator = ClubPosition.objects.get(club=yearly_plan.club, position='COORDINATOR')
+            recipient = User.objects.get(username=coordinator.name)
+            sender = request.user
+            gymkhana_notif(
+                sender=sender,
+                recipient=recipient,
+                notif_type="yearly_plan_rejected",
+                message=yearly_plan.id,
+                club_name=str(yearly_plan.club)
+            )
+        except (ClubPosition.DoesNotExist, User.DoesNotExist):
+            pass
+
+        return Response(
+            {"message": "Yearly Plan status changed to 'Rejected'."},
+            status=status.HTTP_200_OK,
+        )
+class ListYearlyPlansAPIView(APIView):
+    def get(self, request):
+        yearly_plans = YearlyPlan.objects.all()
+        serializer = YearlyPlanSerializer(yearly_plans, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class ListClubwiseYearlyPlansAPIView(APIView):
+    def get(self, request):
+        yearly_plans = YearlyPlanEvents.objects.all()
+        serializer = YearlyPlanSerializer(yearly_plans, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+class UploadGalleryImageAPIView(APIView):
+    parser_classes = [MultiPartParser]
+    def post(self, request):
+        club_name = request.data.get("club_name")
+        if not club_name:
+            return Response({"error": "Club name is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Get the uploaded file
+        file = request.FILES.get('image')
+        if not file:
+            return Response({"error": "No image file provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Save the file to the 'gymkhana/gallery/<club_name>/' directory
+        gallery_path = f"gymkhana/gallery/{club_name}/{file.name}"
+        file_path = default_storage.save(gallery_path, file)
+
+        return Response(
+            {"message": "Image uploaded successfully.", "file_name": file.name, "file_path": gallery_path},
+            status=status.HTTP_201_CREATED
+        )
+class ListGalleryImagesAPIView(APIView):
+    def get(self, request):
+        # Get the club name
+        club_name = request.query_params.get("club_name")
+        if not club_name:
+            return Response({"error": "Club name is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        gallery_dir = f"gymkhana/gallery/{club_name}/"
+        try:
+            # List files in the directory
+            files = default_storage.listdir(gallery_dir)[1]  # [1] gets the files, not directories
+            image_urls = [f"{gallery_dir}{file}" for file in files]
+            return Response({"images": image_urls}, status=200)
+        except Exception as e:
+            return Response({"error": f"An error occurred: {str(e)}"}, status=500)
