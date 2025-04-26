@@ -76,6 +76,7 @@ def exam_view(request):
         return Response({"redirect_url": "/dashboard/"})
 
 from decimal import Decimal, ROUND_HALF_UP
+
 def round_from_last_decimal(number, decimal_places=1):
     d = Decimal(str(number))
     current_places = abs(d.as_tuple().exponent)
@@ -105,7 +106,7 @@ def calculate_spi_for_student(student, selected_semester):
     total_credits = 0
     for g in grades:
         credit = g.course_id.credit
-        factor = grade_conversion.get(g.grade, 0)
+        factor = grade_conversion.get(g.grade.strip(), 0)
         if factor != 0:
             total_points += factor * credit
             total_credits += credit
@@ -1032,20 +1033,7 @@ class GenerateTranscriptForm(APIView):
             "semester": semester
         }, status=status.HTTP_200_OK)
 
-from decimal import Decimal, ROUND_HALF_UP
-def round_from_last_decimal(number, decimal_places=1):
-    d = Decimal(str(number))
-    current_places = abs(d.as_tuple().exponent)
 
-    # Keep rounding from the last decimal place until we reach the desired one
-    while current_places > decimal_places:
-        quantize_str = '0.' + '0' * (current_places - 1) + '1'
-        d = d.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-        current_places -= 1
-
-    # Final rounding to target place
-    final_quantize = '0.' + '0' * (decimal_places - 1) + '1'
-    return float(d.quantize(Decimal(final_quantize), rounding=ROUND_HALF_UP))
 
 
 class GenerateResultAPI(APIView):
@@ -2155,21 +2143,6 @@ class ValidateDeanSubmitView(APIView):
                 {"error": f"An error occurred while processing the file: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
-
-def round_from_last_decimal(number, decimal_places=1):
-    d = Decimal(str(number))
-    current_places = abs(d.as_tuple().exponent)
-
-    # Keep rounding from the last decimal place until we reach the desired one
-    while current_places > decimal_places:
-        quantize_str = '0.' + '0' * (current_places - 1) + '1'
-        d = d.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-        current_places -= 1
-
-    # Final rounding to target place
-    final_quantize = '0.' + '0' * (decimal_places - 1) + '1'
-    return float(d.quantize(Decimal(final_quantize), rounding=ROUND_HALF_UP))
 
 class CheckResultView(APIView):
     permission_classes = [IsAuthenticated]
