@@ -38,10 +38,11 @@ class PlacementScheduleView(APIView):
         
             combined_data = []
             notify_students = NotifyStudent.objects.all()
+            roll_no=request.user.username
 
-            if request.user.username != 'omvir' and request.user.username!='anilk':
-                student = Student.objects.get(id_id=request.user.username)
-                debar_status = DebarStudentInfo.objects.filter(unique_id_id = request.user.username).count()
+            try:
+                student = Student.objects.get(id_id=roll_no)
+                debar_status = DebarStudentInfo.objects.filter(unique_id_id = roll_no).count()
                 global_restrictions = GlobalRestrictions.objects.all()
                 for global_restriction in global_restrictions:
                     value = global_restriction.value  
@@ -51,7 +52,7 @@ class PlacementScheduleView(APIView):
                         except:
                             statistics = None
                         if statistics!=None:
-                            record = StudentRecord.objects.filter(unique_id_id=request.user.username,record_id=statistics).count()
+                            record = StudentRecord.objects.filter(unique_id_id=roll_no,record_id=statistics).count()
                             if global_restriction.condition == "equal" and record==1:
                                 debar_status=1
                             elif global_restriction.condition == "not_equal" and record==0:
@@ -59,9 +60,9 @@ class PlacementScheduleView(APIView):
 
                     if global_restriction.criteria == "ctc":
                         value = int(value)
-                        statistics = StudentRecord.objects.filter(unique_id_id=request.user.username).count()
+                        statistics = StudentRecord.objects.filter(unique_id_id=roll_no).count()
                         if statistics!=0:
-                            statistics = StudentRecord.objects.get(unique_id_id=request.user.username)
+                            statistics = StudentRecord.objects.get(unique_id_id=roll_no)
                             statistic = PlacementRecord.objects.get(id=statistics.record_id_id)
                             if statistic.ctc > value and global_restriction.condition=="greater_than":
                                 debar_status = 1
@@ -71,42 +72,58 @@ class PlacementScheduleView(APIView):
 
                 if debar_status == 1 :
                     return Response([],status=status.HTTP_200_OK)
-            extra_info = ExtraInfo.objects.get(id=request.user.username)
-            cur_gender = "Female"
-            if extra_info.sex == 'M':
-                cur_gender='Male'
-                
-            for notify in notify_students:
-                placements = PlacementSchedule.objects.filter(notify_id=notify.id)
-                if request.user.username != 'omvir' and request.user.username!='anilk':
+                extra_info = ExtraInfo.objects.get(id=roll_no)
+                cur_gender = "Female"
+                if extra_info.sex == 'M':
+                    cur_gender='Male'
                     
-                    try:
-                        eligibility = Eligibility.objects.get(company_id_id=notify.id)
-                        if eligibility.cpi > student.cpi:
+                for notify in notify_students:
+                    placements = PlacementSchedule.objects.filter(notify_id=notify.id)
+                    if roll_no != 'omvir' and roll_no!='anilk':
                         
-                            continue
-                        if eligibility.gender!='All' and eligibility.gender!=cur_gender:
-                        
-                            continue
-                        if student.batch+4!=eligibility.passout_year and eligibility.passout_year!=-1:
+                        try:
+                            eligibility = Eligibility.objects.get(company_id_id=notify.id)
+                            if eligibility.cpi > student.cpi:
                             
-                            continue
-                    except Eligibility.DoesNotExist:
-                        print("entered") 
+                                continue
+                            if eligibility.gender!='All' and eligibility.gender!=cur_gender:
+                            
+                                continue
+                            if student.batch+4!=eligibility.passout_year and eligibility.passout_year!=-1:
+                                
+                                continue
+                        except Eligibility.DoesNotExist:
+                            print("entered") 
+                        
                     
-                
-                placement_serializer = PlacementScheduleSerializer(placements, many=True)
-                notify_data = NotifyStudentSerializer(notify).data
+                    placement_serializer = PlacementScheduleSerializer(placements, many=True)
+                    notify_data = NotifyStudentSerializer(notify).data
 
-                for placement in placement_serializer.data:
-                    counting = PlacementForm_responses.objects.filter(company_id_id=placement['id'],unique_id_id=request.user.username).count()
-                    role_st = Role.objects.get(id=placement['role'])
-                    check = True
-                    if counting==0:
-                        check=False
-                    combined_entry = {**notify_data, **placement ,'check':check ,'role_st':role_st.role,'jobID':placement['id'],}
-                    combined_data.append(combined_entry)
-            
+                    for placement in placement_serializer.data:
+                        counting = PlacementForm_responses.objects.filter(company_id_id=placement['id'],unique_id_id=request.user.username).count()
+                        role_st = Role.objects.get(id=placement['role'])
+                        check = True
+                        if counting==0:
+                            check=False
+                        combined_entry = {**notify_data, **placement ,'check':check ,'role_st':role_st.role,'jobID':placement['id'],}
+                        combined_data.append(combined_entry)
+
+
+            except Student.DoesNotExist:
+                for notify in notify_students:
+                    placements = PlacementSchedule.objects.filter(notify_id=notify.id)
+                    placement_serializer = PlacementScheduleSerializer(placements, many=True)
+                    notify_data = NotifyStudentSerializer(notify).data
+
+                    for placement in placement_serializer.data:
+                        counting = PlacementForm_responses.objects.filter(company_id_id=placement['id'],unique_id_id=request.user.username).count()
+                        role_st = Role.objects.get(id=placement['role'])
+                        check = True
+                        if counting==0:
+                            check=False
+                        combined_entry = {**notify_data, **placement ,'check':check ,'role_st':role_st.role,'jobID':placement['id'],}
+                        combined_data.append(combined_entry)
+
             return Response(combined_data, status=status.HTTP_200_OK)
         
         
