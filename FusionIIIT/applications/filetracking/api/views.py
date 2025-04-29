@@ -12,6 +12,7 @@ from ..models import File, Tracking
 from applications.globals.models import Designation
 from ..sdk.methods import create_draft, create_file, view_drafts, view_file, delete_file, view_inbox, view_outbox, view_history, forward_file, get_designations, archive_file, view_archived, unarchive_file
 from notification.views import file_tracking_notif
+from applications.filetracking.api.serializers import FileSerializer
 
 class CreateFileView(APIView):
     authentication_classes = [TokenAuthentication]
@@ -27,9 +28,7 @@ class CreateFileView(APIView):
             description = request.data.get('description')
             src_module = request.data.get('src_module')
             attached_files = request.FILES.getlist('files')
-            remarks = request.data.get('remarks', "")
-            if remarks:
-                file_extra_JSON['remarks'] = remarks
+            remarks = request.data.get('remarks')
             # Check for missing required fields
             if None in [current_designation, receiver_username, receiver_designation, subject, description, src_module]:
                 return Response({'error': 'One or more required fields are missing.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -52,7 +51,8 @@ class CreateFileView(APIView):
                 subject=subject,
                 description=description,
                 src_module=src_module,
-                attached_file=zip_file
+                attached_file=zip_file,
+                remarks=remarks,
             )
 
 
@@ -176,16 +176,22 @@ class ViewHistoryView(APIView):
         try:
            tracking_array = []
            histories = view_history(file_id)
-           for history in histories:
-               temp_obj_action = history;
+           requested_file = File.objects.get(id=file_id)
+           serializer = FileSerializer(requested_file)
+           file_details = serializer.data
+           prev_designation = file_details['designation']
+           for history in reversed(histories): #iterating from the first user to the latest user.
+               temp_obj_action = history.copy()
                temp_obj_action['receiver_id'] = User.objects.get(id=history['receiver_id']).username
                temp_obj_action['receive_design'] = Designation.objects.get(id=history['receive_design']).name
+               temp_obj_action['sender_designation'] = Designation.objects.get(id=prev_designation).name
+               prev_designation = int(history['receive_design'])
                tracking_array.append(temp_obj_action)
-
            return Response(tracking_array)
         except Tracking.DoesNotExist:
            return Response({'error': f'File with ID {file_id} not found.'}, status=404)
         except Exception as e:
+           print("error: ", e)
            logger.error(f"An unexpected error occurred: {e}")
            return Response({'error': 'Internal server error.'}, status=500)
         
