@@ -17,7 +17,8 @@ def create_file(
         subject: str = "",
         description: str = "",
         src_object_id: str = "",
-        attached_file: Any = None) -> int:
+        attached_file: Any = None,
+        remarks: str = "") -> int:
     '''
     This function is used to create a file object corresponding to any object of a module that needs to be tracked
     '''
@@ -41,7 +42,7 @@ def create_file(
 
     new_file = File.objects.create(
         uploader=uploader_extrainfo_obj,
-        subject=subject, 
+        subject=subject,
         description=description,
         designation=uploader_designation_obj,
         src_module=src_module,
@@ -61,7 +62,7 @@ def create_file(
         receiver_id=receiver_obj,
         receive_design=receiver_designation_obj,
         tracking_extra_JSON=file_extra_JSON,
-        remarks=f"File with id:{str(new_file.id)} created by {uploader} and sent to {receiver}"
+        remarks=remarks,
         # upload_file = None, dont add file for first tracking
     )
     if new_tracking is None:
@@ -80,6 +81,7 @@ def view_file(file_id: int) -> dict:
         serializer = FileSerializer(requested_file)
         file_details = serializer.data
         file_details['branch'] = User.objects.get(username = file_details['uploader']).extrainfo.department.name
+        file_details['uploader_designation'] = Designation.objects.get(id=file_details['designation']).name
         return file_details
     except File.DoesNotExist:
         raise NotFound("File Not Found with provided ID")
@@ -120,6 +122,7 @@ def view_inbox(username: str, designation: str, src_module: str) -> list:
         file['sent_by_user'] = get_last_file_sender(file['id']).username
         file['sent_by_designation'] = get_last_file_sender_designation(file['id']).name
         file['branch'] = User.objects.get(username = file['uploader']).extrainfo.department.name
+        file['uploader_designation'] = Designation.objects.get(id=file['designation']).name
     filtered_files = [
         file for file in received_files_serialized if get_current_file_owner(file['id']).username == username
     ]
@@ -151,6 +154,8 @@ def view_outbox(username: str, designation: str, src_module: str) -> list:
         file['branch'] = User.objects.get(username = file['uploader']).extrainfo.department.name
         file['receiver'] = get_current_file_owner(file['id']).username
         file['receiver_designation'] = get_current_file_owner_designation(file['id']).name
+        file['uploader_designation'] = Designation.objects.get(id=file['designation']).name
+
     filtered_files = [
         file for file in sent_files_serialized if get_current_file_owner(file['id']).username != username
     ]
@@ -188,6 +193,7 @@ def view_archived(username: str, designation: str, src_module: str) -> dict:
     archived_files_serialized = FileHeaderSerializer(archived_files_unique, many=True)
     for file in archived_files_serialized.data:
         file['branch'] = User.objects.get(username = file['uploader']).extrainfo.department.name
+        file['uploader_designation'] = Designation.objects.get(id=file['designation']).name
     return archived_files_serialized.data
 
 
