@@ -1,0 +1,181 @@
+<!-- templates/hostelmanagement/manual_room_allocation.html -->
+
+{% extends 'globals/base.html' %}
+
+{% load static %}
+
+{% block title %}
+Hostel Allotment
+{% endblock %}
+
+{% block body %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
+
+<div class="ui stackable doubling grid">
+    <div class="column"></div>
+    <div class="three wide column">
+        <div class="row">
+            {% block userCard %}
+            {% include 'globals/usercard.html' %}
+            {% endblock %}
+        </div>
+    </div>
+    <div class="eight wide column">
+        <h1 class="ui center aligned header">Manual Room Allocation</h1>
+        <br>
+        <div class="ui form mb-4">
+            <div class="field">
+                <label for="studentSelect">Select Student</label>
+                <select id="studentSelect" class="ui dropdown">
+                    <option value="">Select a student</option>
+                    {% for student in students %}
+                    <option value="{{ student.id.id }}">{{ student.id.user }} ({{ student.programme }}) - Current Room:
+                        {{student.room_no }}</option>
+                    {% endfor %}
+
+
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="roomSelect">Select Vacant Room</label>
+                <select id="roomSelect" class="ui dropdown">
+                    <option value="">Select a room</option>
+                    {% for room in rooms %}
+                    <option value="{{ room.room_number }}">{{ room.room_number }} - Vacant Seats: {{room.available_seats}}</option>
+                        
+
+
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button id="reassignRoomBtn" class="ui green button fluid">Reassign Room</button>
+
+            <div class="ui segment mt-3 center aligned" id="loading" style="display: none;">
+                <p>Processing...</p>
+            </div>
+        </div>
+        <br>
+        <!-- Swap Room Form -->
+        <div class="ui form mb-4">
+            <h1 class="ui center aligned header">Swap Rooms</h3>
+
+            <div class="field">
+                <label for="student1Select">Select Student 1</label>
+                <select id="student1Select" class="ui dropdown">
+                    <option value="">Select a student</option>
+                    {% for student in students %}
+                    <option value="{{ student.id.id }}">{{ student.id.user }} ({{ student.programme }}) - Current Room:
+                        {{student.room_no }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="student2Select">Select Student 2</label>
+                <select id="student2Select" class="ui dropdown">
+                    <option value="">Select a student</option>
+                    {% for student in students %}
+                    <option value="{{ student.id.id }}">{{ student.id.user }} ({{ student.programme }}) - Current Room:
+                        {{student.room_no }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button id="swapRoomsBtn" class="ui blue button fluid">Swap Rooms</button>
+
+            <div class="ui segment mt-3 center aligned" id="swapLoading" style="display: none;">
+                <p>Processing...</p>
+            </div>
+
+        </div>
+        <br>
+        <button class="mini ui button"><a href="{% url 'hostelmanagement:hostel_view' %}">Back To Homepage</a></button>
+        <button class="mini ui button"><a class="item" href="{% url 'hostelmanagement:hostel_details' hostel.hall_id %}">
+            <i class="tasks icon"></i>Room Details
+        </a></button>
+
+    </div>
+    
+</div>
+
+{% block scripts %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        const csrftoken = "{{ csrf_token }}";
+
+
+        function handleReassign() {
+            const studentId = $('#studentSelect').val();
+            const roomNum = $('#roomSelect').val();
+
+
+            if (!studentId || !roomNum) {
+                alert('Please select both a student and a room.');
+                return;
+            }
+
+
+
+            $('#loading').show();
+
+            $.ajax({
+                url: "{% url 'hostelmanagement:reassign_student_room' %}",
+                type: 'POST',
+                data: JSON.stringify({ studentId: studentId, roomNum: roomNum }),
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                success: function (response) {
+                    alert(response.message);
+                    location.reload();
+                },
+                error: function (xhr) {
+                    alert(xhr.responseJSON.message);
+                    $('#loading').hide();
+                }
+            });
+        }
+
+        function handleSwap() {
+            const studentId1 = $('#student1Select').val();
+            const studentId2 = $('#student2Select').val();
+
+            if (!studentId1 || !studentId2 || studentId1 === studentId2) {
+                alert('Please select two different students.');
+                return;
+            }
+
+            $('#swapLoading').show();
+
+            $.ajax({
+                url: "{% url 'hostelmanagement:swap_student_rooms' %}",
+                type: 'POST',
+                data: JSON.stringify({ studentId1: studentId1, studentId2: studentId2 }),
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                success: function (response) {
+                    alert(response.message);
+                    location.reload();
+                },
+                error: function (xhr) {
+                    alert(xhr.responseJSON.message);
+                    $('#swapLoading').hide();
+                }
+            });
+        }
+
+        $('#reassignRoomBtn').click(handleReassign);
+        $('#swapRoomsBtn').click(handleSwap);
+    });
+</script>
+{% endblock %}
+{% endblock %}

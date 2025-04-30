@@ -114,5 +114,21 @@ urlpatterns = [
     path('edit-student/<str:student_id>/', views.EditStudentView.as_view(), name='edit_student'),
     path('remove-student/<str:student_id>/', views.RemoveStudentView.as_view(), name='remove-student'),
     
+    path('addNewHall',views.AddNewHall.as_view(), name='add_new_hall'),
+    path('hostelDetails/<str:id>/', views.HostelDetails.as_view(), name='hostel_details'),
+    path('hostelAllotmentPage/', views.hostel_allotment_page, name='hostel_allotment_page'),
+    path('hostels/', views.fetch_hostels, name='fetch_hostels'),
+    path('allot-hostel/', views.allot_hostel, name='allot_hostel'),
+    path('students/', views.fetch_students, name='fetch_students'),
+    
+    path('allot-rooms/<str:hostel_id>/', views.allot_rooms_to_students, name='allot_rooms'),
+    path('remove-room-allotments/<str:hostel_id>/', views.remove_room_allotments, name='remove_room_allotments'),
+    path('remove-hostel-allotment/', views.remove_hostel_allotment, name='remove_hostel_allotment'),
+
+    path('hostel/<str:hostel_id>/manual-room-allocation/', views.manual_room_allocation, name='manual_room_allocation'),
+    path('reassign-room/', views.reassign_student_room, name='reassign_student_room'),
+    path('swap-rooms/', views.swap_student_rooms, name='swap_student_rooms'),
+
+
      
 ]
