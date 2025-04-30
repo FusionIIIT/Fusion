@@ -59,3 +59,13 @@ class Feedback(models.Model):
 
     def __str__(self):
         return f"{self.department} - {self.rating}"
+    
+class Facility(models.Model):
+    name = models.CharField(max_length=100)
+    branch = models.CharField(max_length=50)  # No foreign key, just a plain string
+    location = models.CharField(max_length=200)
+    amount = models.PositiveIntegerField(default=0)  # New amount field
+    picture = models.ImageField(upload_to='department/facility_pictures/', blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.branch} - {self.name}"

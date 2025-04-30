@@ -20,5 +20,11 @@ urlpatterns = [
     url(r'feedback/create/$', views.FeedbackCreateAPIView.as_view(), name='feedback_create'),
    url(r'feedback/$', views.FeedbackListView.as_view(), name='getfeedback'),
    url(r'^profile/(?P<username>[\w.@+-]+)/$', profile, name='profile-dynamic'),
+    # URL for listing and creating facilities
+    url(r'facilities/$', views.FacilityListCreateAPIView.as_view(), name='facility-list-create'),
+    
+    # URL for retrieving, updating, and deleting a single facility
+    url(r'facilities/(?P<pk>\d+)/$', views.FacilityDetailAPIView.as_view(), name='facility-detail'),
+    url(r'^facilities/delete/$', views.FacilityBulkDeleteAPIView.as_view(), name='facility-bulk-delete'),
 
 ]

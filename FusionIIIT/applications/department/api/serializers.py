@@ -7,6 +7,8 @@ from applications.eis.models import (faculty_about, emp_research_projects)
 from applications.department.models import Information
 from applications.department.models import Lab
 from applications.department.models import Feedback
+from applications.department.models import Facility
+
 class AnnouncementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Announcements 
@@ -85,3 +87,9 @@ class FeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feedback
         fields = ['id', 'department', 'rating', 'remark']
+
+
+class FacilitiesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Facility
+        fields = '__all__'  # Include all fields from the model
