@@ -1279,11 +1279,14 @@ def get_excel(request):
     sheet.set_default_row(25)
     sheet.write_string('A1','Student Roll no',subtitle)
     sheet.write_string('B1','Student name',subtitle)
+    sheet.write_string('C1','Student Branch',subtitle)
     k=2
     for no in return_list :
         student= User.objects.get(username=no)
+        discipline = Student.objects.get(id=no).batch_id.discipline.name
         sheet.write_string('A'+str(k),no,normaltext)
         sheet.write_string('B'+str(k),student.first_name+student.last_name,normaltext)
+        sheet.write_string('C'+str(k),discipline,normaltext)
         k+=1
     
     book.close()
