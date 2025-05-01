@@ -2481,7 +2481,7 @@ class HostelFineListView(APIView):
 
         hall_id = caretaker.hall_id
         fines = HostelFine.objects.filter(hall_id=hall_id).values(
-            "fine_id", "student_id", "amount", "status"
+            "fine_id", "student_id", "amount", "status", "reason"
         )
         return Response({"fines": list(fines)}, status=200)
     
