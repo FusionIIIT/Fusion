@@ -54,9 +54,6 @@ def create_request(request):
         to create a new request
     '''
     data = request.data.copy()
-    print("\n\n\n\n")
-    print(data)
-    print("\n\n\n\n")
     data['requestCreatedBy'] = request.user.username
     attachment = request.FILES.get('file')
     serializer = CreateRequestsSerializer(data=data, context={'request': request})
@@ -472,15 +469,20 @@ def director_approved_requests(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def issue_work_order(request):
-    
     '''
         issue work order
     '''
-    
-    request_id = request.data.get('request_id')
+    data = request.data.copy()
+    data['work_issuer'] = request.user.username
+    request_id = data.get('request_id')
     request_instance = get_object_or_404(Requests, pk=request_id)
-    serializer = WorkOrderFormSerializer(data=request.data)
+    active_proposal = request_instance.activeProposal
+    proposal_obj = get_object_or_404(Proposal, pk=active_proposal)
+    data['estimate_budget']=proposal_obj.proposal_budget
+    print(data)
+    serializer = WorkOrderFormSerializer(data=data)
     if serializer.is_valid():
+
         work_order = serializer.save(request_id=request_instance)
 
         request_instance.status = "Work Order issued"
@@ -489,8 +491,8 @@ def issue_work_order(request):
 
         messages.success(request, "Work Order Issued")
         return Response(status=status.HTTP_200_OK)
-    else:
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    print("wow")
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -620,38 +622,6 @@ def requests_status(request):
     '''
         this api will get status of all the requests in outbox of user
     '''
-    # params = request.query_params
-    # desg = params.get('role')
-    # obj = []
-    # inbox_files = view_inbox(
-    #     username=request.user,
-    #     designation=desg,
-    #     src_module="IWD"
-    # )
-    # print(request.user, desg)
-    # print(inbox_files)
-    # for result in inbox_files:
-    #     src_object_id = result['src_object_id']
-    #     request_object = Requests.objects.filter(id=src_object_id).first()
-    #     if request_object:
-    #         file_obj = get_object_or_404(File, src_object_id=request_object.id, src_module="IWD")
-    #         element = {
-    #             'file_id': file_obj.id,
-    #             'request_id': request_object.id,
-    #             'name': request_object.name,
-    #             'area': request_object.area,
-    #             'description': request_object.description,
-    #             'requestCreatedBy': request_object.requestCreatedBy,
-    #             'processed_by_admin': request_object.iwdAdminApproval,
-    #             'processed_by_director': request_object.directorApproval,
-    #             'work_order': request_object.issuedWorkOrder,
-    #             'work_completed': request_object.workCompleted,
-    #             'processed_by_dean': request_object.deanProcessed,
-    #             'status': request_object.status,
-    #             'active_proposal': request_object.activeProposal,
-    #             'creatiion_time' : request_object.creationTime,
-    #         }
-    #         obj.append(element)
     params = request.query_params
     desg = params.get('role')
     files = Requests.objects.all()
@@ -674,6 +644,40 @@ def requests_status(request):
                 'status': request_object.status,
                 'active_proposal': request_object.activeProposal,
                 'creatiion_time' : request_object.creationTime,
+            }
+            obj.append(element)
+    return Response(obj, status=200)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_issued_work(request):
+
+    '''
+        this api will get details of all the issued work orders
+    '''
+
+    params = request.query_params
+    desg = params.get('role')
+    files = Requests.objects.filter(issuedWorkOrder=1)
+    obj = []
+    for request_object in files:
+        work_obj = WorkOrder.objects.filter(request_id=request_object.id).first()
+        if work_obj:
+            file_obj = File.objects.filter(src_object_id=request_object.id, src_module="IWD").first()
+            element = {
+                'request_id': request_object.id,
+                'name': request_object.name,
+                'area': request_object.area,
+                'description': request_object.description,
+                'work_issuer': work_obj.work_issuer,
+                'start_date': work_obj.start_date,
+                'estimate_budget': work_obj.estimate_budget,
+                'file_id': file_obj.id,
+                'work_completed': request_object.workCompleted,
+                'active_proposal': request_object.activeProposal,
+                'processed_by_admin': request_object.iwdAdminApproval,
+                'processed_by_director': request_object.directorApproval,
+                'work_order': request_object.issuedWorkOrder,
             }
             obj.append(element)
     return Response(obj, status=200)
@@ -1425,3 +1429,25 @@ def handle_admin_approval(request):
         return Response({'message': 'Request rejected by IWD Admin'}, status=status.HTTP_200_OK)
     else:
         return Response({'error': 'Invalid action'}, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+# def addbill(bill):
+    
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_vendor(request):
+    '''
+        this function is responsible to add vendors corresponding to a particular work / request 
+        - there can be multiple vendors associated
+    '''
+    data = request.data.copy()
+    billsdata = data['bills']
+    serializer = VendorSerializer(data)
+    if serializer.is_valid():
+        if data:
+            for bill in data:
+                addbill(bill, serializer)
+
+    return Response({'message':'unable to register vendor'}, status=status.HTTP_400_BAD_REQUEST)
