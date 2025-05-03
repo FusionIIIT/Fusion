@@ -2038,7 +2038,8 @@ def inward_files(request):
             'forward_date',
             'sender_archive',
             'receiver_archive',
-            'disciplines'
+            'disciplines',
+            'is_rejected'
         )
         
         return JsonResponse({
