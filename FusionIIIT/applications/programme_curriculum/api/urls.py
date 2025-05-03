@@ -70,6 +70,7 @@ urlpatterns = [
     path('tracking_unarchive/<ProposalId>/',views.tracking_unarchive,name='tracking_unarchive'),
     path('file_archive/<FileId>/',views.file_archive,name='file_archive'),
     path('file_unarchive/<FileId>/',views.file_unarchive,name='file_unarchive'),
+    path('get_superior_data/', views.get_superior_data, name='get_superior_data'),
 
     path('admin_get_course_slot_type/',views.course_slot_type_choices,name='course_slot_type_choices'),
     path('admin_get_semesterDetails/',views.semester_details,name='semester_details'),
@@ -83,5 +84,5 @@ urlpatterns = [
     path('admin_faculties/', views.admin_view_all_faculties, name='admin_view_all_faculties'),
     path('admin_add_course_instructor/', views.add_course_instructor, name='add_course_instructor'),
     path('admin_update_course_instructor/<instructor_id>/', views.update_course_instructor_form, name='update_course_instructor_form'),
-    path('get_superior_data/', views.get_superior_data, name='get_superior_data'),
+    
 ]
