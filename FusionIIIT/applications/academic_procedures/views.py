@@ -1085,7 +1085,7 @@ def verify_course(request):
             k['reg_id'] = z.id
             k['rid'] = roll_no+" - "+course_code
             # Name ID Confusion here , be carefull
-            courseobj2 = Courses.objects.all().filter(code=course_code)
+            courseobj2 = Courses.objects.all().filter(id=z.course_id.id)
             # if(str(z.student_id) == str(idd)):
             for p in courseobj2:
                 k['course_id'] = course_code
@@ -2250,7 +2250,7 @@ def get_currently_registered_course(id, sem_id, courseregobj=False):
     if (type(sem_id) == int):
         obj = course_registration.objects.all().filter(student_id = id, semester_id__semester_no=sem_id)
     else:
-        obj = course_registration.objects.all().filter(student_id = id).order_by('-semester_id_id')
+        obj = course_registration.objects.all().filter(student_id = id).order_by('-semester_id__semester_no')
     courses = []
     for i in obj:
         if (courseregobj):

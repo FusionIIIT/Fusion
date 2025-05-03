@@ -580,6 +580,57 @@ class StudentRegistrationChecks(models.Model):
         db_table = 'StudentRegistrationChecks'
 
 
+class course_registration(models.Model):
+    '''
+            Current Purpose : stores information regarding the process of registration of a student for a course 
+
+            ATTRIBUTES
+            course_id(programme_curriculum.Course) -  reference to the course details for which the registration is being done
+            semester_id(programme_curriculum.Semester) - reference to the semester for which the course registration is done
+            student_id(academic_information.Student) - reference to the student
+            course_slot_id(programme_curriculum.CourseSlot) - details about under which course slot the course is offered(Optional/Core other details)
+
+    '''
+    
+
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    working_year=models.IntegerField(null=True,blank=True,choices=Year_Choices)
+    semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True, on_delete=models.SET_NULL)
+    REGISTRATION_TYPE_CHOICES = [
+        ('Audit', 'Audit'),
+        ('Improvement', 'Improvement'),
+        ('Backlog', 'Backlog'),
+        ('Regular', 'Regular'),
+        ('Extra Credits', 'Extra Credits'),
+        ('Replacement', 'Replacement'),
+    ]
+    registration_type = models.CharField(
+        max_length=20,
+        choices=REGISTRATION_TYPE_CHOICES,
+        default='Regular',
+    )
+    session = models.CharField(max_length=9, null=True)   
+    SEMESTER_TYPE_CHOICES = [
+        ("Odd Semester", "Odd Semester"),
+        ("Even Semester", "Even Semester"),
+        ("Summer Semester", "Summer Semester"),
+    ]
+    semester_type = models.CharField(
+        max_length=20,
+        choices=SEMESTER_TYPE_CHOICES,
+        null=True
+    )
+    # grade = models.CharField(max_length=10)
+    #course_registration_year = models.IntegerField()
+    def __str__(self):
+        return str(self.semester_id.semester_no)
+    class Meta:
+        db_table = 'course_registration'
+        unique_together = ('course_id', 'student_id', 'semester_id', 'registration_type')
+
+
 class InitialRegistration(models.Model):
     '''
             Current Purpose : stores information regarding the process of registration of a student for a course 
@@ -603,6 +654,7 @@ class InitialRegistration(models.Model):
     course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True,on_delete=models.SET_NULL)
     timestamp = models.DateTimeField(default=timezone.now)
     priority = models.IntegerField(blank=True,null=True)
+    old_course_registration=models.ForeignKey(course_registration, null=True, on_delete=models.CASCADE)
     REGISTRATION_TYPE_CHOICES = [
         ('Audit', 'Audit'),
         ('Improvement', 'Improvement'),
@@ -639,6 +691,7 @@ class FinalRegistration(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     verified = models.BooleanField(default=False)
     course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True,on_delete=models.SET_NULL)
+    old_course_registration=models.ForeignKey(course_registration, null=True, on_delete=models.CASCADE)
     REGISTRATION_TYPE_CHOICES = [
         ('Audit', 'Audit'),
         ('Improvement', 'Improvement'),
@@ -688,45 +741,6 @@ class FeePayments(models.Model):
     class Meta:
         db_table = 'FeePayments'
 
-
-class course_registration(models.Model):
-    '''
-            Current Purpose : stores information regarding the process of registration of a student for a course 
-
-            ATTRIBUTES
-            course_id(programme_curriculum.Course) -  reference to the course details for which the registration is being done
-            semester_id(programme_curriculum.Semester) - reference to the semester for which the course registration is done
-            student_id(academic_information.Student) - reference to the student
-            course_slot_id(programme_curriculum.CourseSlot) - details about under which course slot the course is offered(Optional/Core other details)
-
-    '''
-    
-
-    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-    working_year=models.IntegerField(null=True,blank=True,choices=Year_Choices)
-    semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
-    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
-    course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True, on_delete=models.SET_NULL)
-    REGISTRATION_TYPE_CHOICES = [
-        ('Audit', 'Audit'),
-        ('Improvement', 'Improvement'),
-        ('Backlog', 'Backlog'),
-        ('Regular', 'Regular'),
-        ('Extra Credits', 'Extra Credits'),
-        ('Replacement', 'Replacement'),
-    ]
-    registration_type = models.CharField(
-        max_length=20,
-        choices=REGISTRATION_TYPE_CHOICES,
-        default='Regular',
-    )
-    # grade = models.CharField(max_length=10)
-    #course_registration_year = models.IntegerField()
-    def __str__(self):
-        return str(self.semester_id.semester_no)
-    class Meta:
-        db_table = 'course_registration'
-        unique_together = ('course_id', 'student_id', 'semester_id', 'registration_type')
 
 class course_replacement(models.Model):
     old_course_registration=models.ForeignKey(course_registration, on_delete=models.CASCADE,related_name="replaced")
