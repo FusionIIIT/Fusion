@@ -1,36 +1,18 @@
 from django.db.models.query_utils import Q
-from django.http import request,HttpResponse
-from django.shortcuts import get_object_or_404, render, HttpResponse,redirect
-from django.http import HttpResponse, HttpResponseRedirect
-import itertools
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, HttpResponse
+from django.http import HttpResponse
 from django.http import JsonResponse
 from decimal import Decimal, ROUND_HALF_UP
-# from applications.academic_information.models import Student
-from applications.globals.models import (DepartmentInfo, Designation,
-                                         ExtraInfo, Faculty, HoldsDesignation)
-
-from applications.academic_procedures.models import(course_registration , Register, Semester, course_replacement,course_replacement)
-# from applications.academic_information.models import Course , Curriculum
-from applications.programme_curriculum.models import Course as Courses , Curriculum, Discipline, Batch, CourseSlot, CourseInstructor
-from applications.examination.models import(hidden_grades , authentication , grade, ResultAnnouncement)
-from applications.department.models import(Announcements , SpecialRequest)
+from applications.academic_procedures.models import(course_registration, course_replacement, course_replacement)
+from applications.programme_curriculum.models import Course as Courses ,  Batch, CourseInstructor
+from applications.examination.models import(hidden_grades , ResultAnnouncement)
 from applications.academic_information.models import(Student)
 from applications.online_cms.models import(Student_grades)
-from applications.globals.models import(ExtraInfo)
-from . import serializers
-from datetime import date 
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
-
-from django.core.serializers import serialize
-from django.http import JsonResponse
-import json
-from datetime import datetime
 import csv
 from io import StringIO
 from django.contrib.auth import get_user_model
@@ -38,7 +20,6 @@ from rest_framework.views import APIView
 from django.db.models import IntegerField
 from django.db.models.functions import Cast
 from rest_framework.parsers import MultiPartParser, FormParser
-from django.shortcuts import reverse
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Alignment, Font, PatternFill, Border, Side
@@ -50,9 +31,133 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, 
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.colors import HexColor
 from reportlab.lib.units import inch
-from reportlab.pdfgen.canvas import Canvas
 from django.core.exceptions import ObjectDoesNotExist
 from collections import defaultdict
+
+
+grade_conversion = {
+    "O": 1, "A+": 1, "A": 0.9, "B+": 0.8, "B": 0.7,
+    "C+": 0.6, "C": 0.5, "D+": 0.4, "D": 0.3, "F": 0.2, "S": 0
+}
+
+ALLOWED_GRADES = {
+    "O", "A+", "A",
+    "B+", "B",
+    "C+", "C",
+    "D+", "D", "F",
+    "CD", "S", "X"
+}
+
+def round_from_last_decimal(number, decimal_places=1):
+    d = Decimal(str(number))
+    current_places = abs(d.as_tuple().exponent)
+
+    # Keep rounding from the last decimal place until we reach the desired one
+    while current_places > decimal_places:
+        quantize_str = '0.' + '0' * (current_places - 1) + '1'
+        d = d.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
+        current_places -= 1
+
+    # Final rounding to target place
+    final_quantize = '0.' + '0' * (decimal_places - 1) + '1'
+    return float(d.quantize(Decimal(final_quantize), rounding=ROUND_HALF_UP))
+
+def calculate_spi_for_student(student, selected_semester):
+    semester_unit = 0
+    grades = Student_grades.objects.filter(
+        roll_no=student.id_id,
+        semester=selected_semester
+    )
+    total_points = 0
+    total_credits = 0
+    for g in grades:
+        credit = g.course_id.credit
+        factor = grade_conversion.get(g.grade.strip(), -1)
+        if factor >= 0:
+            if factor != 0:
+                total_points += factor * credit
+                total_credits += credit
+            semester_unit += credit
+    return round_from_last_decimal(10 * total_points / total_credits) if total_credits else 0, semester_unit
+
+def trace_registration(reg_id, mapping):
+    seen = set()
+    while reg_id in mapping and reg_id not in seen:
+        seen.add(reg_id)
+        reg_id = mapping[reg_id]
+    return reg_id
+
+def calculate_cpi_for_student(student, selected_semester):
+    total_unit = 0
+    grades = Student_grades.objects.filter(
+        roll_no=student.id_id, semester__lte=selected_semester
+    )
+    registrations = course_registration.objects.select_related('course_id', 'semester_id').filter(
+        student_id=student,
+        semester_id__semester_no__lte=selected_semester
+    )
+    reg_mapping = {}
+    for reg in registrations:
+        key = (reg.course_id.code.strip(), reg.semester_id.semester_no)
+        reg_mapping[key] = reg.id
+    replacements = course_replacement.objects.filter(
+        Q(old_course_registration__student_id=student) |
+        Q(new_course_registration__student_id=student)
+    ).select_related('old_course_registration', 'new_course_registration')
+    reg_replacement_map = {}
+    for rep in replacements:
+        old_reg_id = rep.old_course_registration.id
+        new_reg_id = rep.new_course_registration.id
+        if new_reg_id != old_reg_id:
+            reg_replacement_map[new_reg_id] = old_reg_id
+    grade_groups = defaultdict(list)
+    for g in grades:
+        key = (g.course_id.code.strip(), g.semester)
+        reg_id = reg_mapping.get(key)
+        if reg_id is None:
+            continue
+        original_reg_id = trace_registration(reg_id, reg_replacement_map)
+        grade_groups[original_reg_id].append(g)
+    total_points = 0
+    total_credits = 0
+    for orig_reg, g_list in grade_groups.items():
+        best_record = max(g_list, key=lambda r: grade_conversion.get(r.grade.strip(), -1))
+        grade_factor = grade_conversion.get(best_record.grade.strip(), -1)
+        credit = getattr(best_record.course_id, 'credit', 3)
+        if grade_factor >=  0:
+            if grade_factor != 0:
+                total_points += grade_factor * credit
+                total_credits += credit
+            total_unit += credit    
+    return round_from_last_decimal(10 * total_points / total_credits) if total_credits else 0, total_unit
+
+def parse_academic_year(academic_year, semester_type):
+    """
+    Parse academic_year string (e.g., "2024-25") and determine the working_year based on semester type.
+    For Odd Semester, working_year = first part (e.g., 2024).
+    For Even Semester, working_year = second part prefixed by '20' (e.g., 2025 if academic_year is "2024-25").
+    The session is set to the academic_year string.
+    """
+    parts = academic_year.split("-")
+    if len(parts) != 2:
+        raise ValueError("Invalid academic year format. Expected format like '2024-25'.")
+    first_year = parts[0].strip()
+    second_year = parts[1].strip()
+    if semester_type == "Odd Semester":
+        working_year = int(first_year)
+    elif semester_type == "Even Semester":
+        working_year = int("20" + second_year)
+    else:
+        # For any other semester type (e.g., Summer Semester) use the first year by default.
+        working_year = int("20"+second_year)
+    session = academic_year  # Use the complete academic year string as session.
+    return working_year, session
+
+def is_valid_grade(grade: str) -> bool:
+    """
+    Returns True if the given grade string is in our allowed set.
+    """
+    return grade in ALLOWED_GRADES
 
 
 @api_view(['POST'])
@@ -74,94 +179,6 @@ def exam_view(request):
         return Response({"redirect_url": "/examination/verifyGradesDean/"})
     else:
         return Response({"redirect_url": "/dashboard/"})
-
-from decimal import Decimal, ROUND_HALF_UP
-
-def round_from_last_decimal(number, decimal_places=1):
-    d = Decimal(str(number))
-    current_places = abs(d.as_tuple().exponent)
-
-    # Keep rounding from the last decimal place until we reach the desired one
-    while current_places > decimal_places:
-        quantize_str = '0.' + '0' * (current_places - 1) + '1'
-        d = d.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-        current_places -= 1
-
-    # Final rounding to target place
-    final_quantize = '0.' + '0' * (decimal_places - 1) + '1'
-    return float(d.quantize(Decimal(final_quantize), rounding=ROUND_HALF_UP))
-
-grade_conversion = {
-    "O": 1, "A+": 1, "A": 0.9, "B+": 0.8, "B": 0.7,
-    "C+": 0.6, "C": 0.5, "D+": 0.4, "D": 0.3, "F": 0.2,
-}
-
-def calculate_spi_for_student(student, selected_semester):
-    semester_unit = 0
-    grades = Student_grades.objects.filter(
-        roll_no=student.id_id,
-        semester=selected_semester
-    )
-    total_points = 0
-    total_credits = 0
-    for g in grades:
-        credit = g.course_id.credit
-        factor = grade_conversion.get(g.grade.strip(), 0)
-        if factor != 0:
-            total_points += factor * credit
-            total_credits += credit
-        semester_unit += credit
-    return round_from_last_decimal(10 * total_points / total_credits) if total_credits else 0, semester_unit
-
-def trace_registration(reg_id, mapping):
-    seen = set()
-    while reg_id in mapping and reg_id not in seen:
-        seen.add(reg_id)
-        reg_id = mapping[reg_id]
-    return reg_id
-
-def calculate_cpi_for_student(student, selected_semester):
-    total_unit = 0
-    grades = Student_grades.objects.filter(
-        roll_no=student.id_id, semester__lte=selected_semester
-    )
-    registrations = course_registration.objects.select_related('course_id', 'semester_id').filter(
-        student_id=student,
-        semester_id__semester_no__lte=selected_semester
-    )
-    reg_mapping = {}
-    for reg in registrations:
-        key = (reg.course_id.code, reg.semester_id.semester_no)
-        reg_mapping[key] = reg.id
-    replacements = course_replacement.objects.filter(
-        Q(old_course_registration__student_id=student) |
-        Q(new_course_registration__student_id=student)
-    ).select_related('old_course_registration', 'new_course_registration')
-    reg_replacement_map = {}
-    for rep in replacements:
-        old_reg_id = rep.old_course_registration.id
-        new_reg_id = rep.new_course_registration.id
-        if new_reg_id != old_reg_id:
-            reg_replacement_map[new_reg_id] = old_reg_id
-    grade_groups = defaultdict(list)
-    for g in grades:
-        key = (g.course_id.code, g.semester)
-        reg_id = reg_mapping.get(key)
-        if reg_id is None:
-            continue
-        original_reg_id = trace_registration(reg_id, reg_replacement_map)
-        grade_groups[original_reg_id].append(g)
-    total_points = 0
-    total_credits = 0
-    for orig_reg, g_list in grade_groups.items():
-        best_record = max(g_list, key=lambda r: grade_conversion.get(r.grade, 0))
-        grade_factor = grade_conversion.get(best_record.grade, 0)
-        credit = getattr(best_record.course_id, 'credit', 3)
-        if grade_factor != 0:
-            total_points += grade_factor * credit
-            total_credits += credit
-        total_unit += credit    
-    return round_from_last_decimal(10 * total_points / total_credits) if total_credits else 0, total_unit
 
 
 class UniqueStudentGradeYearsView(APIView):
@@ -195,6 +212,7 @@ class UniqueRegistrationYearsView(APIView):
         )
         print(years)
         return Response({'academic_years': list(years)}, status=200)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -322,71 +340,6 @@ class SubmitGradesView(APIView):
             {"sessions": list(sessions)},
             status=status.HTTP_200_OK
         )
-    
-
-
-"""
-API to upload student grades via a CSV file.
-
-- Only users with the role of 'acadadmin' can access this endpoint.
-- Requires 'course_id' and 'academic_year' as form data.
-- Accepts a CSV file with columns: roll_no, grade, remarks, (optional) semester.
-- Validates course existence and prevents duplicate grade submissions.
-- Saves grades into the 'Student_grades' model.
-- Redirects based on user role after successful upload.
-
-Expected Request:
-Headers:
-    Authorization: Token <your_auth_token>
-
-Form Data:
-    Role: acadadmin
-    course_id: <Course_ID>
-    academic_year: <Academic_Year>
-    csv_file: <CSV_File>
-
-Response:
-    200 OK - {"message": "Grades uploaded successfully.", "redirect_url": "/examination/submitGrades"}
-    403 Forbidden - {"error": "Access denied."}
-    400 Bad Request - {"error": "Invalid file format."} or other validation errors.
-    500 Internal Server Error - {"error": "An error occurred: <error_message>"}
-"""
-
-def parse_academic_year(academic_year, semester_type):
-    """
-    Parse academic_year string (e.g., "2024-25") and determine the working_year based on semester type.
-    For Odd Semester, working_year = first part (e.g., 2024).
-    For Even Semester, working_year = second part prefixed by '20' (e.g., 2025 if academic_year is "2024-25").
-    The session is set to the academic_year string.
-    """
-    parts = academic_year.split("-")
-    if len(parts) != 2:
-        raise ValueError("Invalid academic year format. Expected format like '2024-25'.")
-    first_year = parts[0].strip()
-    second_year = parts[1].strip()
-    if semester_type == "Odd Semester":
-        working_year = int(first_year)
-    elif semester_type == "Even Semester":
-        working_year = int("20" + second_year)
-    else:
-        # For any other semester type (e.g., Summer Semester) use the first year by default.
-        working_year = int("20"+second_year)
-    session = academic_year  # Use the complete academic year string as session.
-    return working_year, session
-
-ALLOWED_GRADES = {
-    "0", "A+", "A",
-    "B+", "B",
-    "C+", "C",
-    "D+", "D", "F",
-    "CD",
-}
-
-def is_valid_grade(grade: str) -> bool:
-    """
-    Returns True if the given grade string is in our allowed set.
-    """
-    return grade in ALLOWED_GRADES
 
 
 from django.db import transaction
@@ -858,75 +811,45 @@ class GenerateTranscript(APIView):
     permission_classes = [IsAuthenticated] 
 
     def post(self, request):
-       
         des = request.data.get("Role")
         student_id = request.data.get("student")
         semester = request.data.get("semester")
+
         if des != "acadadmin":
             return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
-
-       
 
         if not student_id or not semester:
             return Response({"error": "Student ID and Semester are required."}, status=status.HTTP_400_BAD_REQUEST)
 
-
-        try :
-            student = Student.objects.get(id_id = student_id)
+        try:
+            student = Student.objects.get(id_id=student_id)
             name = student.id.user.first_name
             cpi, _ = calculate_cpi_for_student(student, semester)
             spi, _ = calculate_spi_for_student(student, semester)
         except:
             return Response({"error": "Student ID does not exist."}, status=status.HTTP_400_BAD_REQUEST)
-        # Fetch courses registered for the given student and semester
-        courses_registered = Student_grades.objects.filter(
-            roll_no=student_id, semester=semester
-        )
 
-        
         course_grades = {}
+        courses_registered = Student_grades.objects.filter(roll_no=student_id, semester=semester)
 
-        # Fetch all courses registered up to the given semester
-        total_course_registered = Student_grades.objects.filter(
-            roll_no=student_id, semester__lte=semester
-        )
-
-        for course in courses_registered:
-            try:
-                # Fetch the grade for the course
-                grade = Student_grades.objects.get(
-                    roll_no=student_id, course_id=course.course_id, semester = semester
-                )
-
-                course_instance = get_object_or_404(Courses, id=course.course_id_id)
-
-                course_grades[course_instance.id] = {
-                    "course_name": course_instance.name,
-                    "course_code": course_instance.code,
-                    "grade": grade.grade,
-                }
-            except Student_grades.DoesNotExist:
-                course_grades[course.course_id.id] = {"message": "Grading not done yet"}
-
-        total_courses_registered_serialized = [
-            {
-                "course_id": course.course_id.id,
-                "semester": course.semester,
-                "grade": course.grade,
+        for reg in courses_registered:
+            course = reg.course_id
+            course_grades[course.id] = {
+                "course_name": course.name,
+                "course_code": course.code,
+                "credit": course.credit,
+                "grade": reg.grade,
             }
-            for course in total_course_registered
-        ]
+
         response_data = {
+            "name": name,
             "courses_grades": course_grades,
-            "total_courses_registered": total_courses_registered_serialized,
-            "spi":spi,
-            "cpi":cpi,
-            "name": name
+            "spi": spi,
+            "cpi": cpi,
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
     
-
 
 """
 API to fetch available academic details and retrieve students for generating transcripts.
@@ -1032,8 +955,6 @@ class GenerateTranscriptForm(APIView):
             "students": list(students.values()),
             "semester": semester
         }, status=status.HTTP_200_OK)
-
-
 
 
 class GenerateResultAPI(APIView):
@@ -1580,6 +1501,7 @@ class UploadGradesProfAPI(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+
 class DownloadGradesAPI(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -1625,6 +1547,7 @@ class DownloadGradesAPI(APIView):
             # Optionally log the exception here
             return Response({"error": "Internal server error."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 class GeneratePDFAPI(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -1656,7 +1579,7 @@ class GeneratePDFAPI(APIView):
             if not ci.exists():
                 return Response({"success": False, "error": "Course not found."}, status=404)
 
-            semester   = ci.first().semester_no
+            # semester   = ci.first().semester_no
             instructor = f"{request.user.first_name} {request.user.last_name}"
 
             # count grades
@@ -1783,7 +1706,6 @@ class GeneratePDFAPI(APIView):
                 # 2) Draw your five field_label-style lines below it
                 hdr_texts = [
                     f"<b>Session:</b> {academic_year}",
-                    f"<b>Semester:</b> {semester}",
                     f"<b>Course Code:</b> {course_info.code}",
                     f"<b>Course Name:</b> {course_info.name} ({course_details})",
                     f"<b>Instructor:</b> {instructor}",
@@ -1854,6 +1776,8 @@ Expected Requests:
         500 Internal Server Error - Unexpected Error
             {"error": "An error occurred: <error_message>"}
 """
+
+
 class VerifyGradesDeanView(APIView):
     """
     API for Dean Academic to verify student grades.
@@ -1875,13 +1799,13 @@ class VerifyGradesDeanView(APIView):
         qs = Student_grades.objects.filter(
             academic_year=academic_year,
             semester_type=semester_type,
-            verified = False
         )
         course_ids = qs.values_list("course_id_id", flat=True).distinct()
         courses = Courses.objects.filter(id__in=course_ids).order_by("code")
         courses_info = list(courses.values("id", "code", "name"))
 
         return Response({"courses_info": courses_info}, status=status.HTTP_200_OK)
+
 
 """
 API for the Dean Academic to verify if a course has been submitted by the instructor.
@@ -1923,6 +1847,8 @@ Expected Requests:
         500 Internal Server Error - Unexpected Error
             {"error": "An error occurred: <error_message>"}
 """
+
+
 class UpdateEnterGradesDeanView(APIView):
     """
     API for Dean Academic to fetch all student registrations for a course & year.
@@ -2144,6 +2070,7 @@ class ValidateDeanSubmitView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+
 class CheckResultView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request, *args, **kwargs):
@@ -2187,7 +2114,8 @@ class CheckResultView(APIView):
         }
 
         return JsonResponse(response_data)
-    
+
+
 class PreviewGradesAPI(APIView):
     permission_classes = [IsAuthenticated] 
     parser_classes = [MultiPartParser, FormParser]
@@ -2333,6 +2261,7 @@ class ResultAnnouncementListAPI(APIView):
         
         return Response({"announcements": ann_data, "batches": batch_options}, status=status.HTTP_200_OK)
 
+
 class UpdateAnnouncementAPI(APIView):
     """
     POST /api/update-announcement/
@@ -2345,7 +2274,7 @@ class UpdateAnnouncementAPI(APIView):
 
     def post(self, request):
         role = request.data.get("Role")
-        if role != "acadadmin":
+        if role != "acadadmin" and role != "Dean Academic":
             return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
         announcement_id = request.data.get("id")
         announced = request.data.get("announced")
@@ -2360,6 +2289,7 @@ class UpdateAnnouncementAPI(APIView):
             traceback.print_exc()
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 class CreateAnnouncementAPI(APIView):
     """
     POST /api/create-announcement/
@@ -2373,7 +2303,7 @@ class CreateAnnouncementAPI(APIView):
     def post(self, request):
         try:
             role = request.data.get("Role")
-            if role != "acadadmin":
+            if role != "acadadmin" and role != "Dean Academic":
                 return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
 
             batch_id = request.data.get("batch")

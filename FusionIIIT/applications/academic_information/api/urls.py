@@ -14,14 +14,22 @@ urlpatterns = [
 
     # url(r'^meeting',views.meeting_api,name='meeting-get-api'),
 
-    url(r'^calendar',views.ListCalendarView.as_view(),name='calendar-get-api'),
-    url(r'^update-calendar',views.update_calendar,name='calendar-update-api'),
-    url(r'^add-calendar',views.add_calendar,name='calendar-add-api'),
-    url(r'^delete-calendar',views.delete_calendar,name='calendar-delete-api'),
+    # url(r'^calendar',views.ListCalendarView.as_view(),name='calendar-get-api'),
+    # url(r'^update-calendar',views.update_calendar,name='calendar-update-api'),
+    # url(r'^add-calendar',views.add_calendar,name='calendar-add-api'),
+    # url(r'^delete-calendar',views.delete_calendar,name='calendar-delete-api'),
     url(r'^check-allocation$', views.check_allocation_api, name='check-allocation-api'),
     url(r'^start-allocation$', views.start_allocation_api, name='start-allocation-api'),
     url(r'^generatexlsheet$', views.generate_xlsheet_api, name='generate-xlsheet-api'),
+    url(r'^available-courses/$', views.available_courses, name='available_courses'),
     url(r'^generate_preregistration_report',views.generate_preregistration_report, name = "generate_preregistration_report"),
+    url(r'^calendar/$',        views.list_calendar,   name='list_calendar'),
+    url(r'^calendar/add/$',    views.add_calendar,    name='add_calendar'),
+    url(r'^calendar/update/$', views.update_calendar, name='update_calendar'),
+    url(r'^calendar/delete/$', views.delete_calendar, name='delete_calendar'),
+    url(r'^calendar/clear/$',  views.clear_calendar,  name='clear_calendar'),
+    url(r'^calendar/export/$', views.export_calendar, name='export_calendar'),
+    url(r'^calendar/import/$', views.import_calendar, name='import_calendar'),
 
 
     # url(r'^holiday',views.holiday_api,name='holiday-get-api'),
