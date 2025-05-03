@@ -367,7 +367,7 @@ class CourseInstructor(models.Model):
     )
 
     class Meta:
-        unique_together = ('course_id', 'instructor_id', 'year')
+        unique_together = ('course_id', 'instructor_id', 'year', 'semester_type')
 
     @property
     def academic_year(self):

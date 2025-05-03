@@ -763,3 +763,105 @@ class backlog_course(models.Model):
     semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
     course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
     is_summer_course = models.BooleanField(default= False)
+
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+
+class Assignment(models.Model):
+    ta          = models.ForeignKey(Student, on_delete=models.CASCADE)
+    faculty     = models.ForeignKey(Faculty, on_delete=models.CASCADE)
+    start_year  = models.IntegerField()
+    start_month = models.IntegerField()  # 1–12
+    end_year    = models.IntegerField()
+    end_month   = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.ta}→{self.faculty} ({self.start_month}/{self.start_year}–{self.end_month}/{self.end_year})"
+
+class StipendRequest(models.Model):
+    PENDING      = 'pending'
+    FAC_APPROVED = 'approved_by_faculty'
+    HOD_APPROVED = 'approved_by_hod'
+    STATUS_CHOICES = [
+        (PENDING,      'Pending'),
+        (FAC_APPROVED, 'Approved by Faculty'),
+        (HOD_APPROVED, 'Approved by HOD'),
+    ]
+
+    assignment     = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name='stipends')
+    year           = models.IntegerField()
+    month          = models.IntegerField()
+    status         = models.CharField(max_length=20, choices=STATUS_CHOICES, default=PENDING)
+    faculty_remark = models.TextField(blank=True, null=True)
+    hod_remark     = models.TextField(blank=True, null=True)
+
+    class Meta:
+        unique_together = ('assignment','year','month')
+        ordering        = ['year','month']
+
+    def __str__(self):
+        return f"{self.assignment.ta} - {self.month}/{self.year} [{self.get_status_display()}]"
+
+@receiver(post_save, sender=Assignment)
+def create_monthly_stipends(sender, instance, created, **kwargs):
+    if not created: return
+    sy, sm = instance.start_year, instance.start_month
+    ey, em = instance.end_year,   instance.end_month
+    year, month = sy, sm
+    while (year<ey) or (year==ey and month<=em):
+        StipendRequest.objects.create(assignment=instance, year=year, month=month)
+        if month==12:
+            month, year = 1, year+1
+        else:
+            month += 1
+
+
+
+class CourseReplacementRequest(models.Model):
+    STATUS_CHOICES = [
+        ("Pending",  "Pending"),
+        ("Approved", "Approved"),
+        ("Rejected", "Rejected"),
+    ]
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    academic_year = models.CharField(max_length=9)
+    semester_type = models.CharField(
+        max_length=20,
+        choices=[
+            ("Odd Semester",    "Odd Semester"),
+            ("Even Semester",   "Even Semester"),
+            ("Summer Semester", "Summer Semester"),
+        ],
+    )
+    course_slot = models.ForeignKey(CourseSlot, on_delete=models.CASCADE)
+    old_course = models.ForeignKey(
+        Courses,
+        related_name='old_course_reqs',
+        on_delete=models.CASCADE,
+    )
+    new_course = models.ForeignKey(
+        Courses,
+        related_name='new_course_reqs',
+        on_delete=models.CASCADE,
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="Pending",
+    )
+    created_at = models.DateTimeField(default=timezone.now)
+    processed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = (
+            'student',
+            'course_slot',
+            'academic_year',
+            'semester_type',
+        )
+
+    def __str__(self):
+        return f"{self.old_course.code}→{self.new_course.code} [{self.status}]"

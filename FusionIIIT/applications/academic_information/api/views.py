@@ -1,5 +1,7 @@
 import datetime
 import json
+import io
+import pandas as pd
 from io import BytesIO
 from xlsxwriter.workbook import Workbook
 from django.contrib.auth import get_user_model
@@ -19,12 +21,13 @@ from rest_framework.response import Response
 from applications.globals.models import User,ExtraInfo
 from applications.academic_information.models import Student, Course, Curriculum, Curriculum_Instructor, Student_attendance, Meeting, Calendar, Holiday, Grades, Spi, Timetable, Exam_timetable
 from applications.programme_curriculum.models import Course as Courses, CourseSlot, Batch, Semester, CourseInstructor
-from applications.academic_procedures.models import InitialRegistration
+from applications.academic_procedures.models import InitialRegistration, Assignment, StipendRequest
 from . import serializers
 from rest_framework.generics import ListCreateAPIView
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
+from applications.academic_procedures.api.views import role_required
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -83,63 +86,63 @@ def meeting_api(request):
         return Response(data=resp,status=status.HTTP_200_OK)
 
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-@authentication_classes([TokenAuthentication])
-def calendar_api(request):
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# @authentication_classes([TokenAuthentication])
+# def calendar_api(request):
 
-    if request.method == 'GET':
-        calendar = Calendar.objects.all()
-        calendar_serialized = serializers.CalendarSerializers(calendar,many=True).data
-        resp = {
-            'calendar' :calendar_serialized,
-        }
-        return Response(data=resp,status=status.HTTP_200_OK)
+#     if request.method == 'GET':
+#         calendar = Calendar.objects.all()
+#         calendar_serialized = serializers.CalendarSerializers(calendar,many=True).data
+#         resp = {
+#             'calendar' :calendar_serialized,
+#         }
+#         return Response(data=resp,status=status.HTTP_200_OK)
     
-class ListCalendarView(ListCreateAPIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes=[TokenAuthentication]
-    serializer_class = serializers.CalendarSerializers
-    queryset = Calendar.objects.all()
+# class ListCalendarView(ListCreateAPIView):
+#     permission_classes = [IsAuthenticated]
+#     authentication_classes=[TokenAuthentication]
+#     serializer_class = serializers.CalendarSerializers
+#     queryset = Calendar.objects.all()
 
-@api_view(['PUT'])
-@permission_classes([IsAuthenticated])
-@authentication_classes([TokenAuthentication])
-def update_calendar(request):
-    if request.method == "PUT":
-        id = request.data.get("id")
-        instance = Calendar.objects.get(pk = id)
-        instance.from_date = request.data.get("from_date")
-        instance.to_date = request.data.get("to_date")
-        instance.description = request.data.get("description")
-        instance.save()
+# @api_view(['PUT'])
+# @permission_classes([IsAuthenticated])
+# @authentication_classes([TokenAuthentication])
+# def update_calendar(request):
+#     if request.method == "PUT":
+#         id = request.data.get("id")
+#         instance = Calendar.objects.get(pk = id)
+#         instance.from_date = request.data.get("from_date")
+#         instance.to_date = request.data.get("to_date")
+#         instance.description = request.data.get("description")
+#         instance.save()
         
-        return Response({"message": "Updated successfully!"})
+#         return Response({"message": "Updated successfully!"})
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-@authentication_classes([TokenAuthentication])
-def add_calendar(request):
-    if request.method == "POST":
-        from_date = request.data.get("from_date")
-        to_date = request.data.get("to_date")
-        description = request.data.get("description")
-        Calendar.objects.create(from_date=from_date, to_date=to_date, description=description)
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# @authentication_classes([TokenAuthentication])
+# def add_calendar(request):
+#     if request.method == "POST":
+#         from_date = request.data.get("from_date")
+#         to_date = request.data.get("to_date")
+#         description = request.data.get("description")
+#         Calendar.objects.create(from_date=from_date, to_date=to_date, description=description)
         
-        return Response({"message": "Created successfully!"})
+#         return Response({"message": "Created successfully!"})
     
-@api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
-@authentication_classes([TokenAuthentication])
-def delete_calendar(request):
-    id = request.data.get("id")  # Get the ID from request body
+# @api_view(['DELETE'])
+# @permission_classes([IsAuthenticated])
+# @authentication_classes([TokenAuthentication])
+# def delete_calendar(request):
+#     id = request.data.get("id")  # Get the ID from request body
 
-    try:
-        instance = Calendar.objects.get(pk=id)
-        instance.delete()
-        return Response({"message": "Deleted successfully!"}, status=200)
-    except Calendar.DoesNotExist:
-        return Response({"error": "Calendar entry not found"}, status=404)
+#     try:
+#         instance = Calendar.objects.get(pk=id)
+#         instance.delete()
+#         return Response({"message": "Deleted successfully!"}, status=200)
+#     except Calendar.DoesNotExist:
+#         return Response({"error": "Calendar entry not found"}, status=404)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -241,6 +244,7 @@ def spi_api(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
 def check_allocation_api(request):
     """
     API to check the allocation status for a given batch, semester, and year.
@@ -285,7 +289,10 @@ def check_allocation_api(request):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
-@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
 def start_allocation_api(request):
     if request.method != "POST":
         return JsonResponse({"error": "Invalid request method"}, status=400)
@@ -338,6 +345,7 @@ def parse_academic_year(academic_year, semester_type):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@role_required(['acadadmin', "Associate Professor", "Professor", "Assistant Professor", "Dean Academic"])
 def generate_xlsheet_api(request):
     try:
         course_id = int(request.data.get('course'))
@@ -380,11 +388,16 @@ def generate_xlsheet_api(request):
     student_ids = set()
     for reg in registered_courses:
         sid = reg.student_id.id.id
+        spec = ""
+        try:
+            spec = reg.student_id.specialization
+        except e:
+            pass
         if sid not in student_ids:
             student_ids.add(sid)
             first_name = reg.student_id.id.user.first_name
             last_name = reg.student_id.id.user.last_name
-            department = 'CSE' 
+            department = spec
             email = reg.student_id.id.user.email
             ans.append([sid, first_name, last_name, department, email])
     ans.sort(key=lambda x: x[0])
@@ -491,6 +504,7 @@ def generate_xlsheet_api(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
 def generate_preregistration_report(request):
     """
     to generate preresgistration report after pre-registration
@@ -696,3 +710,120 @@ def generate_preregistration_report(request):
         st = 'attachment; filename = ' + batch.name + batch.discipline.acronym + str(batch.year) + '-preresgistration.xlsx'
         response['Content-Disposition'] = st
         return response
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+
+def list_calendar(request):
+    events = Calendar.objects.all().values('id', 'description', 'from_date', 'to_date')
+    return Response(list(events))
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
+def add_calendar(request):
+    Calendar.objects.create(
+        description=request.data.get('description'),
+        from_date=request.data.get('from_date'),
+        to_date=request.data.get('to_date'),
+    )
+    return Response({'message': 'Created successfully!'})
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
+def update_calendar(request):
+    try:
+        cal = Calendar.objects.get(pk=request.data.get('id'))
+    except Calendar.DoesNotExist:
+        return Response({'error': 'Not found'}, status=404)
+    cal.description = request.data.get('description')
+    cal.from_date = request.data.get('from_date')
+    cal.to_date = request.data.get('to_date')
+    cal.save()
+    return Response({'message': 'Updated successfully!'})
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
+def delete_calendar(request):
+    try:
+        cal = Calendar.objects.get(pk=request.data.get('id'))
+        cal.delete()
+        return Response({'message': 'Deleted successfully!'})
+    except Calendar.DoesNotExist:
+        return Response({'error': 'Not found'}, status=404)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
+def clear_calendar(request):
+    Calendar.objects.all().delete()
+    return Response({'message': 'All events deleted!'})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
+def export_calendar(request):
+    qs = Calendar.objects.all().values('description', 'from_date', 'to_date')
+    df = pd.DataFrame(list(qs))
+    buf = io.BytesIO()
+    with pd.ExcelWriter(buf, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False)
+    buf.seek(0)
+    resp = HttpResponse(
+        buf.read(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    resp['Content-Disposition'] = 'attachment; filename="calendar.xlsx"'
+    return resp
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
+def import_calendar(request):
+    file = request.FILES.get('file')
+    if not file:
+        return Response({'error': 'Excel file required'}, status=400)
+    df = pd.read_excel(file)
+    errors = []
+    for _, row in df.iterrows():
+        try:
+            Calendar.objects.create(
+                description=row['description'],
+                from_date=row['from_date'],
+                to_date=row['to_date'],
+            )
+        except Exception as e:
+            errors.append(str(e))
+    if errors:
+        return Response({'errors': errors}, status=400)
+    return Response({'message': 'Imported successfully!'})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def available_courses(request):
+    """
+    GET /api/available-courses/?academic_year=2024-25&semester_type=Odd+Semester
+    Returns unique courses for which the student has registrations.
+    """
+    year = request.query_params.get('academic_year')
+    sem  = request.query_params.get('semester_type')
+    if not year or not sem:
+        return Response({"detail": "academic_year and semester_type required"}, status=400)
+
+    regs = course_registration.objects.filter(session=year, semester_type=sem)
+    course_ids = regs.values_list('course_id', flat=True).distinct()
+    courses = Courses.objects.filter(id__in=course_ids)
+    data = [{"id": c.id, "code": c.code, "name": c.name} for c in courses]
+    return Response(data)

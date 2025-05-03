@@ -1,6 +1,6 @@
 from django.db import models
 
-from applications.globals.models import ExtraInfo
+from applications.globals.models import ExtraInfo, Faculty
 
 from applications.programme_curriculum.models import Batch
 
