@@ -32,7 +32,9 @@ urlpatterns = [
     path('handle-admin-approval/', views.handle_admin_approval, name='handleAdminApproval'),
 
     path('issued-work/', views.get_issued_work, name='activeWork'),
-    path('register-vendor/', views.add_vendor, name="addVendor"),
+    path('add-vendor/', views.add_vendor, name="addVendor"),
+    path('get-work/', views.get_work, name="getWork"),
+    path('get-vendors/', views.get_vendors, name="getVendors"),
 
     # partially integrated on frontend
     path('handle-process-bills/', views.handle_process_bills, name='handleProcessedBills'),

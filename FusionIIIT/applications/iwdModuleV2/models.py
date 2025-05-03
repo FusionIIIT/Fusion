@@ -200,6 +200,8 @@ class Vendor(models.Model):
     itemdata = models.FileField(null=True, blank=True, upload_to='iwd/vendors/')
     finalbill = models.BooleanField(default=False)
     total_amount = models.DecimalField(default=0, max_digits=10, decimal_places=2)
+    contact_number = models.CharField(max_length=20, blank=True, null=True)
+    email_address = models.CharField(null=True, blank=True, max_length=200)
 
 class Bills(models.Model):
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE)
@@ -209,11 +211,11 @@ class Bills(models.Model):
     total_amount = models.DecimalField(default=0, max_digits=10, decimal_places=2)
     '''
         two types of bills are there currently
-        1st kind is partial bill
-        2nd kind is final bill
+        1st kind is partial bill (billtype == 0)
+        2nd kind is final bill (billtype == 1)
         - once a final bill is uploaded, no more bill uploads for that particular vendor is permitted
     '''
-    billtype = models.BooleanField(default=False) 
+    billtype = models.IntegerField(default=0)
 class BillItems(models.Model):
     bill = models.ForeignKey(Bills, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)

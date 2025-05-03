@@ -75,14 +75,9 @@ class CreateProposalSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def create(self, validated_data):
-        # Pop the 'items' from the validated data
         items_data = validated_data.pop('items', [])
-
-        # Create the proposal instance with the validated data
         proposal = Proposal.objects.create(**validated_data)
-
         proposal.save()
-
         return proposal
 
 class ProposalSerializer(serializers.ModelSerializer):
@@ -95,7 +90,7 @@ class VendorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vendor
         fields = '__all__'
-    def create(validated_data):
+    def create(self, validated_data):
         vendor = Vendor.objects.create(**validated_data)
         vendor.save()
         return vendor
