@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 from rest_framework import serializers
 from applications.gymkhana.models import Club_info,Session_info,Event_info
-from applications.gymkhana.models import Club_member,Club_budget,Club_report,Fest_budget,Fest,Registration_form,Budget,Budget_Comments,Event_Comments,Achievements,ClubPosition, EventInput, EventReport
+from applications.gymkhana.models import Club_member,Club_budget,Club_report,Fest_budget,Fest,Registration_form,Budget,Budget_Comments,Event_Comments,Achievements,ClubPosition, EventInput, EventReport, YearlyPlan, YearlyPlanEvents
 
 # class Voting_choicesSerializer(serializers.ModelSerializer):
 #     class Meta:
@@ -50,14 +50,13 @@ class event_infoserializer(serializers.ModelSerializer):
 
     class Meta:
         model=Event_info
-        fields=['club','event_name','incharge','start_date','end_date','venue','start_time','id','details','status','end_time','details']
+        fields=['club','event_name','incharge','start_date','end_date','venue','start_time','id','details','status','end_time','details','file_id']
 
 class club_budgetserializer(serializers.ModelSerializer):
 
     class Meta:
         model=Club_budget
-        fields=['club','budget_for','budget_amt','budget_file','status','id','description','remarks']
-
+        fields=['club','budget_for','budget_amt','budget_file','status','id','description','remarks','file_id']
 class Club_reportSerializers(serializers.ModelSerializer):
     class Meta:
         model = Club_report
@@ -81,7 +80,10 @@ class Registration_formSerializer(serializers.ModelSerializer):
 class BudgetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Budget
-        fields = ['id', 'club', 'budget_for', 'budget_requested', 'budget_allocated', 'budget_file', 'description', 'status', 'remarks', 'budget_comment']
+        fields = '__all__'
+        extra_kwargs = {
+            'budget_file': {'required': False},  # <- allow optional on update
+        }
 class AchievementsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Achievements
@@ -118,3 +120,29 @@ class EventReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventReport
         fields = '__all__'
+class YearlyPlanEventsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = YearlyPlanEvents
+        fields = [
+            'id',
+            'event_name',
+            'tentative_start_date',
+            'tentative_end_date',
+            'budget',
+            'description'
+        ]
+
+class YearlyPlanSerializer(serializers.ModelSerializer):
+    events = YearlyPlanEventsSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = YearlyPlan
+        fields = [
+            'id',
+            'club',
+            'year',
+            'status',
+            'file_link',
+            'file_id',
+            'events'
+        ]

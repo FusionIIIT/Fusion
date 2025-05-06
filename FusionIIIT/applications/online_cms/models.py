@@ -19,7 +19,7 @@ class CourseDocuments(models.Model):
     upload_time = models.DateTimeField(auto_now=True)
     description = models.CharField(max_length=100)
     document_name = models.CharField(max_length=40)
-    document_url = models.CharField(max_length=100, null=True)
+    document_url = models.FileField(upload_to='course_documents/', default='course_documents/default.pdf')
 
     def __str__(self):
         return '{} - {}'.format(self.course_id, self.document_name)
@@ -173,7 +173,7 @@ class StudentAssignment(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     assignment_id = models.ForeignKey(Assignment, on_delete=models.CASCADE)
     upload_time = models.DateTimeField(auto_now=True)
-    upload_url = models.TextField(max_length=200)
+    upload_url = models.FileField(upload_to='assignments/')
     score = models.IntegerField(null=True)        #score is submitted by faculty 
     feedback = models.CharField(max_length=100, null=True)  #feedback by the faculty for the solution of the assignment submitted
     assign_name = models.CharField(max_length=100) 
@@ -267,10 +267,11 @@ class Student_grades(models.Model):
     semester = models.IntegerField(default=1)
     year = models.IntegerField(default=2016)
     roll_no = models.TextField(max_length=2000)
-    total_marks = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     grade = models.TextField(max_length=2000)
     batch = models.IntegerField(default=2021)
- 
+    remarks = models.CharField(max_length=500,null=True)
+    verified = models.BooleanField(default=False) 
+    reSubmit = models.BooleanField(default=True) 
     def __str__(self):
         return '{} - {}'.format(self.pk, self.course_id)
 

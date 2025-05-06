@@ -23,9 +23,15 @@ urlpatterns = [
     url(r'^record-meal/', views.record_meal, name = 'record_meal'),
     url(r'^bill/', views.bill_generation, name = 'bill_generation'),
     url(r'^update-booking/', views.update_booking, name = 'update_booking'),
+    url(r'^check-out-with-inventory/', views.check_out_with_inventory, name = 'check_out_with_inventory'),
 
     url(r'^bill_between_date_range/', views.bill_between_dates, name = 'generate_records'),
     url(r'^room-availability/', views.room_availabity, name = 'room_availabity'),
+    url(r'^room_availabity_new/', views.room_availabity_new, name = 'room_availabity_new'),
+
+    url(r'^check-partial-booking/', views.check_partial_booking, name='check_partial_booking'),
+
+
     url(r'^room_availabity_new/', views.room_availabity_new, name = 'room_availabity_new'),
 
     url(r'^check-partial-booking/', views.check_partial_booking, name='check_partial_booking'),
@@ -40,11 +46,12 @@ urlpatterns = [
     url(r'^user-details/', views.get_user_details, name='get_user_details'),  #
     url(r'^get-booking-details/(?P<booking_id>\d+)/$', views.get_booking_details, name='get_booking_details'),  #
     url(r'^forward-booking-new/$', views.forward_booking_new, name='forward_booking_new'),
+    url(r'^update-booking-new/$', views.update_booking_new, name='update_booking_new'),
 
      url(r'^confirm-booking-new/$', views.confirm_booking_new, name='confirm_booking_new'),  #
 
     url(r'^inventory/$', views.get_inventory_items, name='get_inventory_items'),
-    url(r'^inventory/(?P<pk>\d+)/$', views.get_inventory_item, name='get_inventory_item'),
+    # url(r'^inventory/(?P<pk>\d+)/$', views.get_inventory_item, name='get_inventory_item'),
     url(r'^inventory-bills/$', views.get_inventory_bills, name='get_inventory_bills'),
     url(r'^inventory-bills/(?P<pk>\d+)/$', views.get_inventory_bill, name='get_inventory_bill'),
 
@@ -57,6 +64,7 @@ urlpatterns = [
     url('api/inventory_list/', InventoryListView.as_view(), name='inventory-list'),
     # completed bookings
     url(r'^completed-bookings/', views.completed_bookings, name='completed_bookings'),
+    url(r'^expire-pending-bookings/', views.expire_pending_bookings, name='expire_pending_bookings'),
 
 ]
 

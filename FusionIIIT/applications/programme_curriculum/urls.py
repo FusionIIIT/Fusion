@@ -70,13 +70,12 @@ urlpatterns = [
     path('tracking_unarchive/<ProposalId>/',views.tracking_unarchive,name='tracking_unarchive'),
     path('file_archive/<FileId>/',views.file_archive,name='file_archive'),
     path('file_unarchive/<FileId>/',views.file_unarchive,name='file_unarchive'),
+
+    path('admin_instructor/',views.admin_view_all_course_instructor,name='admin_view_all_course_instructor'),
+    path('admin_add_course_instructor/', views.add_course_instructor, name='add_course_instructor'),
+    path('admin_update_course_instructor/<instructor_id>/', views.update_course_instructor_form, name='update_course_instructor_form'),
     
 
     # urls for api view
-    path('api/programmes_ug/', v2.view_ug_programmes, name='view_ug_programmes_api'),
-    path('api/programmes_pg/', v2.view_pg_programmes, name='view_pg_programmes_api'),
-    path('api/programmes_phd/', v2.view_phd_programmes, name='view_phd_programmes_api'),
-    path('api/programme_info/', v2.get_programme_info, name='programme_info_api'),
-    path('api/curriculumns/', v2.view_curriculumns, name='curriculumns_api'),
-    path('api/add_programme/', v2.create_programme, name='add_programme_api'),
+    path('api/',include('applications.programme_curriculum.api.urls'))
 ]

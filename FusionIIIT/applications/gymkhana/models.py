@@ -7,6 +7,7 @@ from django.db import models
 from django.utils import timezone
 from django.urls import reverse
 
+from applications.filetracking.models import File
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, Faculty
 
@@ -341,6 +342,7 @@ class Event_info(models.Model):
     event_poster = models.FileField(upload_to="gymkhana/event_poster", blank=True)
     details = models.TextField(max_length=256, null=True)
     status = models.CharField(max_length=50, choices=Constants.STATUS_CHOICES, default="open")
+    file_id = models.ForeignKey(File, on_delete=models.CASCADE, null=False)
     #change the status choices
     def __str__(self):
         return str(self.id)
@@ -587,6 +589,7 @@ class Budget(models.Model):
     status = models.CharField(max_length=50, choices=Constants.STATUS_CHOICES, default="COORDINATOR")
     remarks = models.CharField(max_length=256, null=True)
     budget_comment = models.CharField(max_length=2000, null=True)
+    file_id = models.ForeignKey(File, on_delete=models.CASCADE, null=False)
 
     def __str__(self):
         return str(self.id)
@@ -689,3 +692,20 @@ class EventReport(models.Model):
 
     class Meta:
         db_table = "EventReport"
+class YearlyPlan(models.Model):
+    club = models.ForeignKey('Club_info', on_delete=models.CASCADE)
+    year = models.IntegerField()
+    status = models.CharField(max_length=50, choices=Constants.STATUS_CHOICES, default="COORDINATOR")
+    file_link = models.CharField(max_length=255)
+    file_id = models.ForeignKey(File, on_delete=models.CASCADE, null=False)
+    def _str_(self):
+        return f"{self.club.name} - {self.year}"
+class YearlyPlanEvents(models.Model):
+    yearly_plan = models.ForeignKey(YearlyPlan, on_delete=models.CASCADE, related_name='events')
+    event_name = models.CharField(max_length=255)
+    tentative_start_date = models.DateField()
+    tentative_end_date = models.DateField()
+    budget = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.TextField()
+    def _str_(self):
+        return f"{self.event_name} ({self.yearly_plan})"

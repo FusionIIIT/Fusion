@@ -1,4 +1,8 @@
 from django.conf.urls import url
+from django.contrib import admin
+from django.urls import path, include, re_path  # Import 'include' to include app-specific URLs
+
+
 
 from . import views
 
@@ -207,7 +211,12 @@ urlpatterns = [
     url(r'^othersAssistantship/$', views.othersAssistantship, name='othersAssistanship'),
     url(r'^othersNoDues/$', views.othersNoDues, name='othersNoDues'),
 
+path('admin/', admin.site.urls),
+    path('api/', include('applications.otheracademic.api.urls')),
 
 
+
+    re_path(r'^fetch_pending_leaves/$', views.fetch_pending_leave_requests, name='fetch_pending_leaves'),
+    re_path(r'^get_leave_requests/$', views.get_leave_requests, name='get_leave_requests'),
 ]
 
