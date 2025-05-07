@@ -901,11 +901,22 @@ def verify_course(request):
     details = []
     for reg in regs:
         slot_course = Courses.objects.filter(id=reg.course_id.id).first()
-        replaced = course_replacement.objects.filter(old_course_registration=reg).first()
-        new_reg = replaced.new_course_registration if replaced else None
+        repl_qs = course_replacement.objects.filter(old_course_registration=reg)
+        replaced_list = []
+        for repl in repl_qs:
+            nr = repl.new_course_registration
+            replaced_list.append({
+                "course_id": {
+                    "code": nr.course_id.code,
+                    "name": nr.course_id.name,
+                },
+                "semester_id": {
+                    "semester_no": nr.semester_id.semester_no,
+                },
+            })
 
         details.append({
-            "id":reg.id,
+            "id": reg.id,
             "reg_id": reg.id,
             "rid": f"{roll_no} - {reg.course_id.code}",
             "course_id": reg.course_id.code,
@@ -913,15 +924,7 @@ def verify_course(request):
             "sem": reg.semester_id.semester_no,
             "credits": slot_course.credit if slot_course else 0,
             "registration_type": reg.registration_type,
-            "replaced_by": {
-                "course_id": {
-                    "code": new_reg.course_id.code,
-                    "name": new_reg.course_id.name,
-                },
-                "semester_id": {
-                    "semester_no": new_reg.semester_id.semester_no,
-                },
-            } if new_reg else None,
+            "replaced_by": replaced_list,
         })
 
     # lists for selects (no serializers)
@@ -1601,7 +1604,7 @@ def dropcourseadmin(request):
 @role_required(['acadadmin'])
 def acad_add_course(request):
     data = request.data
-    for fld in ("roll_no", "semester_id", "courseslot_id", "course_id", "academic_year", "registration_type"):
+    for fld in ("roll_no", "semester_id", "courseslot_id", "course_id", "academic_year", "registration_type", "semester_type"):
         if not data.get(fld):
             return Response({ "error": f"{fld} is required" }, status=status.HTTP_400_BAD_REQUEST)
     student = get_object_or_404(Student, id=data["roll_no"].upper())
@@ -1611,6 +1614,7 @@ def acad_add_course(request):
     session  = data["academic_year"]
     reg_type = data["registration_type"]
     old_id   = data.get("old_course")
+    sem_type = data["semester_type"]
     with transaction.atomic():
         cr = course_registration.objects.create(
             student_id       = student,
@@ -1619,6 +1623,8 @@ def acad_add_course(request):
             course_id        = course,
             session          = session,
             registration_type= reg_type,
+            semester_type = sem_type,
+            working_year = parse_academic_year(academic_year=session, semester_type=sem_type)[0]
         )
         if old_id:
             old = course_registration.objects.filter(id=old_id).first()
@@ -3038,3 +3044,40 @@ def student_calendar_view(request):
     ]
 
     return Response({"calendar_events": result})
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def student_search(request):
+    roll_no = request.data.get('rollno','').upper()
+    if not roll_no:
+        return JsonResponse({'error':'rollno is required'},status=400)
+    student = Student.objects.filter(id_id=roll_no).first()
+    if not student:
+        return JsonResponse({'error':'Student record not found'},status=400)
+    extra = student.id
+    user = extra.user
+    data = {
+        'roll_no':roll_no,
+        'full_name':f"{user.first_name} {user.last_name}".strip(),
+        'date_of_birth':str(extra.date_of_birth),
+        'user_status':extra.user_status,
+        'address':extra.address,
+        'phone_no':extra.phone_no,
+        'department':extra.department.name if extra.department else None,
+        'programme':student.programme,
+        'batch':student.batch,
+        'batch_name':student.batch_id.name if student.batch_id else None,
+        'discipline':student.batch_id.discipline.name if student.batch_id and student.batch_id.discipline else None,
+        'curriculum':student.batch_id.curriculum.name if student.batch_id and student.batch_id.curriculum else None,
+        'cpi':student.cpi,
+        'category':student.category,
+        'father_name':student.father_name,
+        'mother_name':student.mother_name,
+        'hall_no':student.hall_no,
+        'room_no':student.room_no,
+        'specialization':student.specialization,
+        'curr_semester_no':student.curr_semester_no,
+    }
+    return JsonResponse(data,status=200)
