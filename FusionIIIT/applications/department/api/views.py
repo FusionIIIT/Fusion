@@ -1,12 +1,13 @@
 from rest_framework import generics
 from rest_framework.views import APIView
 from applications.department.models import Announcements
+from applications.department.models import Facility
 from applications.academic_information.models import Spi, Student
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation,Faculty)
 from applications.eis.models import (faculty_about, emp_research_projects)
 from .serializers import (AnnouncementSerializer,ExtraInfoSerializer,SpiSerializer,StudentSerializer,DesignationSerializer
-                          ,HoldsDesignationSerializer,FacultySerializer,faculty_aboutSerializer,emp_research_projectsSerializer)
+                          ,HoldsDesignationSerializer,FacultySerializer,faculty_aboutSerializer,emp_research_projectsSerializer, FacilitiesSerializer)
 from rest_framework.permissions import IsAuthenticated
 from .permissions import IsFacultyStaffOrReadOnly
 from django.http import JsonResponse 
@@ -521,3 +522,59 @@ class FeedbackCreateAPIView(generics.CreateAPIView):
 class FeedbackListView(generics.ListAPIView):
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
+
+
+
+
+# View for listing and creating facilities
+class FacilityListCreateAPIView(generics.ListCreateAPIView):
+    queryset = Facility.objects.all()  # Get all facilities
+    serializer_class = FacilitiesSerializer  # Use FacilitiesSerializer
+
+    def get(self, request):
+        # List all the facilities
+        facilities = Facility.objects.all()
+        serializer = FacilitiesSerializer(facilities, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        # Create a new facility
+        serializer = FacilitiesSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()  # Save the new facility to the database
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# View for retrieving, updating, and deleting a single facility
+class FacilityDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Facility.objects.all()  # Get all facilities
+    serializer_class = FacilitiesSerializer  # Use FacilitiesSerializer
+
+    def get(self, request, pk):
+        # Retrieve a specific facility
+        facility = self.get_object()  # Get the facility by pk
+        serializer = FacilitiesSerializer(facility)
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        # Update a specific facility
+        facility = self.get_object()  # Get the facility by pk
+        serializer = FacilitiesSerializer(facility, data=request.data)
+        if serializer.is_valid():
+            serializer.save()  # Save the updated data
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        # Delete a specific facility
+        facility = self.get_object()  # Get the facility by pk
+        facility.delete()  # Delete the facility from the database
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class FacilityBulkDeleteAPIView(APIView):
+    def delete(self, request):
+        ids = request.data.get("facility_ids", [])
+        if not ids:
+            return Response({"detail": "No facility IDs provided."}, status=status.HTTP_400_BAD_REQUEST)
+        Facility.objects.filter(id__in=ids).delete()
+        return Response({"detail": "Facilities deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
