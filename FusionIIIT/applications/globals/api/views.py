@@ -23,6 +23,16 @@ from applications.globals.models import (ExtraInfo, Feedback, HoldsDesignation,
 from .utils import get_and_authenticate_user
 from notifications.models import Notification
 
+from rest_framework.views import APIView
+from django.core.mail import send_mail
+from django.conf import settings
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.auth.tokens import default_token_generator
+import logging
+
+logger = logging.getLogger(__name__)
 User = get_user_model()
 
 @api_view(['POST'])
@@ -420,3 +430,121 @@ def department_info(request):
         return Response(serializer.data, status=status.HTTP_200_OK)  # Return serialized data as JSON
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def password_reset_view(request):
+    """
+    API endpoint to request a password reset email
+    """
+    email = request.data.get('email')
+    if not email:
+        return Response(
+            {"error": "Email is required"}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+        
+    try:
+        user = User.objects.filter(email__iexact=email).first()
+        
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        
+        reset_url = f"{settings.FRONTEND_URL}/reset-password-confirm/{uid}/{token}/"
+        
+        context = {
+            'user': user,
+            'reset_url': reset_url,
+            'site_name': getattr(settings, 'SITE_NAME', 'Fusion'),
+        }
+        
+        subject = "Password Reset Request"
+        message = f"""
+        Hello {user.username},
+
+        You requested a password reset for your Fusion account.
+
+        Please go to the following link to set a new password:
+        {reset_url}
+
+        If you didn't request this, you can ignore this email.
+
+        Thanks,
+        The Fusion Team
+                """
+        
+        # Send email
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=False
+            )
+            logger.info(f"Password reset email sent to {email}")
+        except Exception as e:
+            logger.error(f"Failed to send password reset email: {str(e)}")
+            return Response(
+                {"error": "Failed to send email. Please try again later."}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+        return Response(
+            {"message": "Password reset email has been sent."}, 
+            status=status.HTTP_200_OK
+        )
+        
+    except User.DoesNotExist:
+        logger.warning(f"Password reset attempt for non-existent email: {email}")
+        return Response(
+            {"error": "User with this email does not exist."}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def password_reset_confirm_view(request):
+    """
+    API endpoint to confirm password reset and set new password
+    """
+    uid = request.data.get('uid')
+    token = request.data.get('token')
+    new_password = request.data.get('new_password')
+    
+    if not (uid and token and new_password):
+        return Response(
+            {"error": "UID, token and new password are required"}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+        
+    try:
+        # Decode the user ID
+        user_id = force_str(urlsafe_base64_decode(uid))
+        user = User.objects.get(pk=user_id)
+        
+        # Verify the token
+        if default_token_generator.check_token(user, token):
+            # Set new password
+            user.set_password(new_password)
+            user.save()
+            
+            logger.info(f"Password reset successful for user {user.username}")
+            
+            return Response(
+                {"message": "Password has been reset successfully."}, 
+                status=status.HTTP_200_OK
+            )
+        else:
+            logger.warning(f"Invalid token used for password reset for user {user.username}")
+            return Response(
+                {"error": "Invalid or expired token."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        logger.warning(f"Invalid password reset attempt with uid: {uid}")
+        return Response(
+            {"error": "Invalid reset link."}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )

@@ -283,8 +283,9 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = ('semantic-ui')
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
 YOUTUBE_DATA_API_KEY = 'api_key'
 
+FRONTEND_URL = 'http://localhost:5173'
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # Add your frontend origin here
+    FRONTEND_URL,  # Add your frontend origin here
 ]
 
 CORS_ALLOW_CREDENTIALS = True
