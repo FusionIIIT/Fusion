@@ -55,6 +55,7 @@ urlpatterns = [
     url(r'^acad/allot_courses' , views.allot_courses , name = 'allot_courses'),
     url(r'^acad/change-requests/allocate_all/$', views.allocate_all, name='allocate_all'),
     url(r'^acad/replacement-requests/$', views.admin_list_requests, name='admin_list_requests'),
+    url(r'^acad/student-search/$',views.student_search,name='student-search'),
     url(r'^get_next_sem_courses' , views.get_next_sem_courses , name= 'get_next_sem_courses'),
 
 
