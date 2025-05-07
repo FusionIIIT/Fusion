@@ -26,4 +26,7 @@ urlpatterns = [
     # url(r'^department-info/', views.department_info, name='department_info'),
     path('department-info/', department_info, name='department-info'),
 
+# Password reset endpoints
+    url(r'^auth/password-reset/', views.password_reset_view, name='password-reset'),
+    url(r'^auth/password-reset-confirm/', views.password_reset_confirm_view, name='password-reset-confirm'),
 ]
