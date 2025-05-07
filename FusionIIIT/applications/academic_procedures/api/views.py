@@ -1601,14 +1601,14 @@ def dropcourseadmin(request):
 @role_required(['acadadmin'])
 def acad_add_course(request):
     data = request.data
-    for fld in ("roll_no", "semester_id", "courseslot_id", "course_id", "working_year", "registration_type"):
+    for fld in ("roll_no", "semester_id", "courseslot_id", "course_id", "academic_year", "registration_type"):
         if not data.get(fld):
             return Response({ "error": f"{fld} is required" }, status=status.HTTP_400_BAD_REQUEST)
     student = get_object_or_404(Student, id=data["roll_no"].upper())
     semester = get_object_or_404(Semester,   id=data["semester_id"])
     slot     = get_object_or_404(CourseSlot, id=data["courseslot_id"])
     course   = get_object_or_404(Courses,     id=data["course_id"])
-    session  = data["working_year"]
+    session  = data["academic_year"]
     reg_type = data["registration_type"]
     old_id   = data.get("old_course")
     with transaction.atomic():
