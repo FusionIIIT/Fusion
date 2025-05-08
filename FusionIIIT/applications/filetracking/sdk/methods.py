@@ -1,7 +1,7 @@
 from amqp import NotFound
 from django.contrib.auth.models import User
 from applications.filetracking.models import Tracking, File
-from applications.globals.models import Designation, HoldsDesignation, ExtraInfo
+from applications.globals.models import Designation, HoldsDesignation, ExtraInfo, DepartmentInfo
 from applications.filetracking.api.serializers import FileSerializer, FileHeaderSerializer, TrackingSerializer
 from django.core.exceptions import ValidationError
 from typing import Any
@@ -80,11 +80,17 @@ def view_file(file_id: int) -> dict:
         requested_file = File.objects.get(id=file_id)
         serializer = FileSerializer(requested_file)
         file_details = serializer.data
-        file_details['branch'] = User.objects.get(username = file_details['uploader']).extrainfo.department.name
+        non_basic_dept_id = Designation.objects.get(id=file_details['designation']).dept_if_not_basic_id
+        if non_basic_dept_id is not None:
+            file_details['branch'] = DepartmentInfo.objects.get(id=non_basic_dept_id).name
+        else:
+            file_details['branch'] = User.objects.get(username = file_details['uploader']).extrainfo.department.name
         file_details['uploader_designation'] = Designation.objects.get(id=file_details['designation']).name
         return file_details
     except File.DoesNotExist:
         raise NotFound("File Not Found with provided ID")
+    except Exception as e:
+        print(e)
 
 
 def delete_file(file_id: int) -> bool:
@@ -121,7 +127,11 @@ def view_inbox(username: str, designation: str, src_module: str) -> list:
     for file in received_files_serialized: 
         file['sent_by_user'] = get_last_file_sender(file['id']).username
         file['sent_by_designation'] = get_last_file_sender_designation(file['id']).name
-        file['branch'] = User.objects.get(username = file['uploader']).extrainfo.department.name
+        non_basic_dept_id = Designation.objects.get(id=file['designation']).dept_if_not_basic_id
+        if non_basic_dept_id is not None:
+            file['branch'] = DepartmentInfo.objects.get(id=non_basic_dept_id).name
+        else:
+            file['branch'] = User.objects.get(username = file['uploader']).extrainfo.department.name
         file['uploader_designation'] = Designation.objects.get(id=file['designation']).name
     filtered_files = [
         file for file in received_files_serialized if get_current_file_owner(file['id']).username == username
@@ -151,7 +161,11 @@ def view_outbox(username: str, designation: str, src_module: str) -> list:
     sent_files_serialized = list(FileHeaderSerializer(
         sent_files_unique, many=True).data)
     for file in sent_files_serialized:
-        file['branch'] = User.objects.get(username = file['uploader']).extrainfo.department.name
+        non_basic_dept_id = Designation.objects.get(id=file['designation']).dept_if_not_basic_id
+        if non_basic_dept_id is not None:
+            file['branch'] = DepartmentInfo.objects.get(id=non_basic_dept_id).name
+        else:
+            file['branch'] = User.objects.get(username = file['uploader']).extrainfo.department.name
         file['receiver'] = get_current_file_owner(file['id']).username
         file['receiver_designation'] = get_current_file_owner_designation(file['id']).name
         file['uploader_designation'] = Designation.objects.get(id=file['designation']).name
@@ -192,7 +206,11 @@ def view_archived(username: str, designation: str, src_module: str) -> dict:
     archived_files_unique = uniqueList(archived_files)
     archived_files_serialized = FileHeaderSerializer(archived_files_unique, many=True)
     for file in archived_files_serialized.data:
-        file['branch'] = User.objects.get(username = file['uploader']).extrainfo.department.name
+        non_basic_dept_id = Designation.objects.get(id=file['designation']).dept_if_not_basic_id
+        if non_basic_dept_id is not None:
+            file['branch'] = DepartmentInfo.objects.get(id=non_basic_dept_id).name
+        else:
+            file['branch'] = User.objects.get(username = file['uploader']).extrainfo.department.name
         file['uploader_designation'] = Designation.objects.get(id=file['designation']).name
     return archived_files_serialized.data
 
@@ -236,9 +254,6 @@ def create_draft(
     uploader_extrainfo_obj = get_ExtraInfo_object_from_username(uploader)
     uploader_designation_obj = Designation.objects.get(
         name=uploader_designation)
-    print(uploader)
-    print(uploader_designation)
-    print(src_module)
     if file_extra_JSON is None:
         file_extra_JSON = {}
     new_file = File.objects.create(
