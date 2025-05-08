@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('filetracking', '0002_auto_20250508_1903'),
+        ('filetracking', '0001_initial'),
     ]
 
     operations = [
