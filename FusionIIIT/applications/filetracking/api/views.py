@@ -229,7 +229,7 @@ class ForwardFileView(APIView):
                 file_attachment = zip_file
             )
             receiver_user = User.objects.get(username=receiver)
-            file_tracking_notif(request.user, receiver_user, "File Forwarded from" + str(request.user))
+            file_tracking_notif(request.user, receiver_user, "File Forwarded from " + str(request.user))
             logging.info(f"Successfully forwarded file {file_id} with tracking ID: {new_tracking_id}")
         except Exception as e:
             logging.error(f"Error forwarding file {file_id}: {str(e)}")

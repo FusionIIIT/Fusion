@@ -9,8 +9,8 @@ class File(models.Model):
     """
     uploader = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE, related_name='uploaded_files')
     designation = models.ForeignKey(Designation, on_delete=models.CASCADE, null=True, related_name='upload_designation')
-    subject = models.CharField(max_length=100, null=True, blank=True)
-    description = models.CharField(max_length=400, null=True, blank=True)
+    subject = models.CharField(max_length=300, null=True, blank=True)
+    description = models.CharField(max_length=2500, null=True, blank=True)
     upload_date = models.DateTimeField(auto_now_add=True)
     upload_file = models.FileField(blank=True) # if you want to access the attachment, use this field, not attached_file or uploaded_file.
     is_read = models.BooleanField(default = False)
@@ -40,7 +40,7 @@ class Tracking(models.Model):
 
     receive_date = models.DateTimeField(auto_now_add=True)
     forward_date = models.DateTimeField(auto_now_add=True)
-    remarks = models.CharField(max_length=250, null=True, blank=True)
+    remarks = models.CharField(max_length=500, null=True, blank=True)
     upload_file = models.FileField(blank=True)
     is_read = models.BooleanField(default = False)
 
