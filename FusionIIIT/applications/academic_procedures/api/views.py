@@ -1899,7 +1899,6 @@ def course_registration_view(request):
         user_details = current_user.extrainfo
         student = Student.objects.get(id=user_details)
 
-        # Get the semester number from query parameters or default to current semester
         semester_no = request.query_params.get('semester', student.curr_semester_no)
         try:
             semester = Semester.objects.get(curriculum=student.batch_id.curriculum, semester_no=semester_no)
@@ -1907,8 +1906,26 @@ def course_registration_view(request):
             return JsonResponse({"error": "Semester not found."}, status=404)
 
         courses = course_registration.objects.filter(student_id=student, semester_id=semester)
-        serializer = serializers.CourseRegistrationSerializer(courses, many=True)
-        return Response({"reg_data" : serializer.data, "sem_no": semester_no}, status=status.HTTP_200_OK)
+
+        result = []
+        for reg in courses:
+            course_data = serializers.CourseRegistrationSerializer(reg).data
+
+            replacements = course_replacement.objects.filter(old_course_registration=reg)
+            replaced_by_list = []
+
+            for replacement in replacements:
+                new_reg = replacement.new_course_registration
+                replaced_by_list.append({
+                    "code": new_reg.course_id.code,
+                    "name": new_reg.course_id.name,
+                    "semester_no": new_reg.semester_id.semester_no,
+                })
+
+            course_data["replaced_by"] = replaced_by_list
+            result.append(course_data)
+
+        return Response({"reg_data": result, "sem_no": semester_no}, status=status.HTTP_200_OK)
 
     except Student.DoesNotExist:
         return Response({"error": "Student profile not found"}, status=status.HTTP_404_NOT_FOUND)
