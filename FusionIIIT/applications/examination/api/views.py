@@ -2123,7 +2123,7 @@ class PreviewGradesAPI(APIView):
     def post(self, request):
         # Validate user role
         user_role = request.data.get("Role")
-        if user_role != "acadadmin" and user_role!='Assistant Professor' and user_role != 'Professor':
+        if user_role != "acadadmin" and user_role!='Assistant Professor' and user_role != 'Professor' and user_role!='Associate Professor':
             return Response(
                 {"error": "Access denied."},
                 status=status.HTTP_403_FORBIDDEN,
