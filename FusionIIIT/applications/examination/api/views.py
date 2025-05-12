@@ -255,7 +255,7 @@ def download_template(request):
             course_id_id=course,
             session=session_year,
             semester_type=semester_type
-        )
+        ).order_by("student_id_id")
 
         if not course_info.exists():
             return Response(
