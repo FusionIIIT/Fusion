@@ -1583,7 +1583,7 @@ class GeneratePDFAPI(APIView):
             instructor = f"{request.user.first_name} {request.user.last_name}"
 
             # count grades
-            all_grades   = ["O","A+","A","B+","B","C+","C","D+","D","F","I","S","X"]
+            all_grades   = ["O","A+","A","B+","B","C+","C","D+","D","F","S","X","CD"]
             grade_counts = {g: grades.filter(grade=g).count() for g in all_grades}
 
             # prepare PDF response
@@ -1663,7 +1663,7 @@ class GeneratePDFAPI(APIView):
             elements.append(grade_table1)
             elements.append(Spacer(1, 10))
 
-            grade_data2 = [["D","F","I","S","X"]]
+            grade_data2 = [["D","F","S","X","CD"]]
             grade_data2.append([grade_counts[g] for g in grade_data2[0]])
             grade_table2 = Table(grade_data2, colWidths=[80]*5)
             grade_table2.setStyle(TableStyle([
@@ -1695,6 +1695,7 @@ class GeneratePDFAPI(APIView):
 
             # ——— Page Header & Footer ———
             def draw_page(canvas, doc):
+                canvas.setTitle(f"Grade Sheet - {course_info.code}")
                 canvas.saveState()
                 width, height = letter
 
