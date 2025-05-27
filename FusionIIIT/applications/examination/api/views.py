@@ -33,11 +33,13 @@ from reportlab.lib.colors import HexColor
 from reportlab.lib.units import inch
 from django.core.exceptions import ObjectDoesNotExist
 from collections import defaultdict
-
+from django.db.models import Case, When, IntegerField
 
 grade_conversion = {
-    "O": 1, "A+": 1, "A": 0.9, "B+": 0.8, "B": 0.7,
-    "C+": 0.6, "C": 0.5, "D+": 0.4, "D": 0.3, "F": 0.2, "S": 0
+    "O": 1.0, "A+": 1.0, "A": 0.9, "B+": 0.8, "B": 0.7,
+    "C+": 0.6, "C": 0.5, "D+": 0.4, "D": 0.3, "F": 0.2, "S": 0.0,
+    **{f"A{i}": round(9.0 + i * 0.1, 1) for i in range(1, 11)},
+    **{f"B{i}": round(8.0 + i * 0.1, 1) for i in range(1, 11)}
 }
 
 ALLOWED_GRADES = {
@@ -47,6 +49,12 @@ ALLOWED_GRADES = {
     "D+", "D", "F",
     "CD", "S", "X"
 }
+
+PBI_AND_BTP_ALLOWED_GRADES = {
+    f"A{i}" for i in range(1, 11)
+}.union({
+    f"B{i}" for i in range(1, 11)
+})
 
 def round_from_last_decimal(number, decimal_places=1):
     d = Decimal(str(number))
@@ -62,11 +70,25 @@ def round_from_last_decimal(number, decimal_places=1):
     final_quantize = '0.' + '0' * (decimal_places - 1) + '1'
     return float(d.quantize(Decimal(final_quantize), rounding=ROUND_HALF_UP))
 
-def calculate_spi_for_student(student, selected_semester):
+def calculate_spi_for_student(student, selected_semester, semester_type):
     semester_unit = 0
-    grades = Student_grades.objects.filter(
-        roll_no=student.id_id,
-        semester=selected_semester
+    grades = (
+        Student_grades.objects
+            .filter(
+                roll_no=student.id_id,
+                semester=selected_semester,
+                semester_type=semester_type
+            )
+            .annotate(
+                semester_type_order=Case(
+                    When(semester_type="Odd Semester",    then=0),
+                    When(semester_type="Even Semester",   then=1),
+                    When(semester_type="Summer Semester", then=2),
+                    default=3,
+                    output_field=IntegerField(),
+                )
+            )
+            .order_by('semester', 'semester_type_order')
     )
     total_points = 0
     total_credits = 0
@@ -78,7 +100,7 @@ def calculate_spi_for_student(student, selected_semester):
                 total_points += factor * credit
                 total_credits += credit
             semester_unit += credit
-    return round_from_last_decimal(10 * total_points / total_credits) if total_credits else 0, semester_unit
+    return round_from_last_decimal(10 * (total_points / total_credits)) if total_credits else 0, semester_unit
 
 def trace_registration(reg_id, mapping):
     seen = set()
@@ -87,18 +109,53 @@ def trace_registration(reg_id, mapping):
         reg_id = mapping[reg_id]
     return reg_id
 
-def calculate_cpi_for_student(student, selected_semester):
+def calculate_cpi_for_student(student, selected_semester, semester_type):
     total_unit = 0
-    grades = Student_grades.objects.filter(
-        roll_no=student.id_id, semester__lte=selected_semester
-    )
-    registrations = course_registration.objects.select_related('course_id', 'semester_id').filter(
-        student_id=student,
-        semester_id__semester_no__lte=selected_semester
-    )
+    if selected_semester % 2 == 0 and semester_type == 'Summer Semester':
+        grades = (
+            Student_grades.objects
+                .filter(roll_no=student.id_id, semester__lte=selected_semester)
+                .annotate(
+                    semester_type_order=Case(
+                        When(semester_type="Odd Semester",  then=0),
+                        When(semester_type="Even Semester", then=1),
+                        When(semester_type="Summer Semester", then=2),
+                        default=3,
+                        output_field=IntegerField(),
+                    )
+                )
+                .order_by('semester', 'semester_type_order')
+        )
+        registrations = (
+            course_registration.objects
+                .select_related('course_id', 'semester_id')
+                .filter(
+                    student_id=student,
+                    semester_id__semester_no__lte=selected_semester,
+                )
+                .annotate(
+                    semester_type_order=Case(
+                        When(semester_type="Odd Semester",    then=0),
+                        When(semester_type="Even Semester",   then=1),
+                        When(semester_type="Summer Semester", then=2),
+                        default=3,
+                        output_field=IntegerField(),
+                    )
+                )
+                .order_by('semester_id__semester_no', 'semester_type_order')
+        )
+    else :
+        grades = Student_grades.objects.filter(
+            roll_no=student.id_id, semester__lte=selected_semester,
+        ).exclude(semester_type = 'Summer Semester', semester = selected_semester)
+
+        registrations = course_registration.objects.select_related('course_id', 'semester_id').filter(
+            student_id=student,
+            semester_id__semester_no__lte=selected_semester
+        ).exclude(semester_type = 'Summer Semester', semester_id__semester_no = selected_semester)
     reg_mapping = {}
     for reg in registrations:
-        key = (reg.course_id.code.strip(), reg.semester_id.semester_no)
+        key = (reg.course_id.code.strip(), reg.semester_id.semester_no, reg.semester_type)
         reg_mapping[key] = reg.id
     replacements = course_replacement.objects.filter(
         Q(old_course_registration__student_id=student) |
@@ -112,7 +169,7 @@ def calculate_cpi_for_student(student, selected_semester):
             reg_replacement_map[new_reg_id] = old_reg_id
     grade_groups = defaultdict(list)
     for g in grades:
-        key = (g.course_id.code.strip(), g.semester)
+        key = (g.course_id.code.strip(), g.semester, g.semester_type)
         reg_id = reg_mapping.get(key)
         if reg_id is None:
             continue
@@ -129,7 +186,7 @@ def calculate_cpi_for_student(student, selected_semester):
                 total_points += grade_factor * credit
                 total_credits += credit
             total_unit += credit    
-    return round_from_last_decimal(10 * total_points / total_credits) if total_credits else 0, total_unit
+    return round_from_last_decimal(10 * (total_points / total_credits)) if total_credits else 0, total_unit
 
 def parse_academic_year(academic_year, semester_type):
     """
@@ -153,10 +210,19 @@ def parse_academic_year(academic_year, semester_type):
     session = academic_year  # Use the complete academic year string as session.
     return working_year, session
 
-def is_valid_grade(grade: str) -> bool:
+def is_valid_grade(grade: str, course_code: str) -> bool:
     """
-    Returns True if the given grade string is in our allowed set.
+    Returns True if the grade is valid for the given course code.
+    Special grades apply to PR4001 and BTP4001.
     """
+    if not grade or not course_code:
+        return False
+
+    code = course_code.strip().upper()
+    grade = grade.strip().upper()
+
+    if code in {"PR4001", "BTP4001"}:
+        return grade in PBI_AND_BTP_ALLOWED_GRADES
     return grade in ALLOWED_GRADES
 
 
@@ -452,7 +518,7 @@ class UploadGradesAPI(APIView):
                         continue
 
 
-                    if not is_valid_grade(grade):
+                    if not is_valid_grade(grade, courses_info.code):
                         errors.append(
                             f"Row {index}: Invalid grade '{grade}' for roll_no {roll_no}. "
                             f"Allowed grades are: {allowed_list}."
@@ -807,6 +873,7 @@ Response:
         {"error": "An error occurred: <error_message>"}
 """
 
+import json
 class GenerateTranscript(APIView):
     permission_classes = [IsAuthenticated] 
 
@@ -814,6 +881,9 @@ class GenerateTranscript(APIView):
         des = request.data.get("Role")
         student_id = request.data.get("student")
         semester = request.data.get("semester")
+        semester = json.loads(semester)
+        semester_number = semester.get('no')
+        semester_type = semester.get('type')
 
         if des != "acadadmin":
             return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
@@ -824,13 +894,13 @@ class GenerateTranscript(APIView):
         try:
             student = Student.objects.get(id_id=student_id)
             name = student.id.user.first_name
-            cpi, _ = calculate_cpi_for_student(student, semester)
-            spi, _ = calculate_spi_for_student(student, semester)
+            cpi, tu = calculate_cpi_for_student(student, semester_number, semester_type)
+            spi, su = calculate_spi_for_student(student, semester_number, semester_type)
         except:
             return Response({"error": "Student ID does not exist."}, status=status.HTTP_400_BAD_REQUEST)
 
         course_grades = {}
-        courses_registered = Student_grades.objects.filter(roll_no=student_id, semester=semester)
+        courses_registered = Student_grades.objects.filter(roll_no=student_id, semester=semester_number, semester_type = semester_type)
 
         for reg in courses_registered:
             course = reg.course_id
@@ -838,7 +908,8 @@ class GenerateTranscript(APIView):
                 "course_name": course.name,
                 "course_code": course.code,
                 "credit": course.credit,
-                "grade": reg.grade,
+                "grade":"" if reg.course_id.code in ("PR4001", "BTP4001") else reg.grade,
+                "points": grade_conversion.get(reg.grade, 0)*10,
             }
 
         response_data = {
@@ -846,6 +917,8 @@ class GenerateTranscript(APIView):
             "courses_grades": course_grades,
             "spi": spi,
             "cpi": cpi,
+            "tu":tu,
+            "su":su,
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
@@ -981,6 +1054,7 @@ class GenerateResultAPI(APIView):
             semester = request.data.get("semester")
             branch = request.data.get("specialization")  # optional now
             batch_id = request.data.get("batch")
+            semester_type = request.data.get("semester_type")
 
             if not semester or not batch_id:
                 return Response({"error": "Semester and Batch are required."}, status=400)
@@ -1000,7 +1074,8 @@ class GenerateResultAPI(APIView):
             course_ids = Student_grades.objects.filter(
                 batch=batch_obj.year, 
                 semester=semester,
-                roll_no__in = students
+                roll_no__in = students,
+                semester_type = semester_type
             ).exclude(grade__isnull=True).exclude(grade="").values_list('course_id_id', flat=True).distinct()
             
             courses = Courses.objects.filter(id__in=course_ids)
@@ -1128,8 +1203,8 @@ class GenerateResultAPI(APIView):
                     col_ptr += 2
 
                 # Calculate SPI and CPI.
-                spi_val, SU = calculate_spi_for_student(student, semester)
-                cpi_val, TU = calculate_cpi_for_student(student, semester)
+                spi_val, SU = calculate_spi_for_student(student, semester, semester_type)
+                cpi_val, TU = calculate_cpi_for_student(student, semester, semester_type)
                 ws.cell(row=row_idx, column=col_ptr).value = spi_val
                 ws.cell(row=row_idx, column=col_ptr+1).value = cpi_val
                 ws.cell(row=row_idx, column=col_ptr+2).value = SU
@@ -2074,46 +2149,67 @@ class ValidateDeanSubmitView(APIView):
 
 class CheckResultView(APIView):
     permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         roll_number = request.user.username
-        semester = request.data.get('semester')
+        semester_no = request.data.get('semester_no')
+        semester_type = request.data.get('semester_type')
+        print(semester_type, semester_no)
+
+        if semester_no is None or semester_type is None:
+            return JsonResponse(
+                {"success": False, "message": "semester_no and semester_type are required."},
+                status=400,
+            )
+
         try:
             student = Student.objects.get(id_id=roll_number)
         except Student.DoesNotExist:
             return JsonResponse(
                 {"success": False, "message": "Student record not found."},
-            )
-        ann = ResultAnnouncement.objects.filter(
-            batch=student.batch_id, semester=semester
-        ).first()
-        if not ann or not ann.announced:
-            return JsonResponse(
-                {"success": False, "message": "Results not announced yet."},
-                status=200,
+                status=404,
             )
 
-        grades_info = Student_grades.objects.filter(roll_no=roll_number, semester=semester).select_related('course_id')
+        # Find the announcement for this batch, number and type
+        # ann = ResultAnnouncement.objects.filter(
+        #     batch=student.batch_id,
+        #     semester=semester_no,
+        # ).first()
 
-        spi, su = calculate_spi_for_student(student, semester)
-        cpi, tu = calculate_cpi_for_student(student, semester)
+        # if not ann or not ann.announced:
+        #     return JsonResponse(
+        #         {"success": False, "message": "Results not announced yet."},
+        #         status=200,
+        #     )
+
+        # Filter grades on both fields
+        grades_info = Student_grades.objects.filter(
+            roll_no=roll_number,
+            semester=semester_no,
+            semester_type=semester_type
+        ).select_related('course_id')
+
+        spi, su = calculate_spi_for_student(student, semester_no, semester_type)
+        cpi, tu = calculate_cpi_for_student(student, semester_no, semester_type)
+
         response_data = {
             "success": True,
             "courses": [
                 {
-                    "coursecode": grade.course_id.code, 
+                    "coursecode": grade.course_id.code,
                     "courseid": grade.course_id.id,
                     "coursename": grade.course_id.name,
                     "credits": grade.course_id.credit,
-                    "grade": grade.grade,
+                    "grade":"" if grade.course_id.code in ("PR4001", "BTP4001") else grade.grade,
+                    "points": grade_conversion.get(grade.grade, 0)*10,
                 }
                 for grade in grades_info
             ],
             "spi": spi,
-            "cpi":cpi,
-            "su": su, 
-            "tu": tu,  
+            "cpi": cpi,
+            "su": su,
+            "tu": tu,
         }
-
         return JsonResponse(response_data)
 
 
@@ -2341,3 +2437,40 @@ class CreateAnnouncementAPI(APIView):
         except Exception as e:
             traceback.print_exc()
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+from collections import OrderedDict
+
+
+def make_label(no: int, sem_type: str) -> str:
+    """
+    - odd → "Semester <no>"
+    - even & Even Semester → "Semester <no>"
+    - even & Summer Semester → "Summer <no//2>"
+    """
+    if no % 2 == 1:
+        return f"Semester {no}"
+    if sem_type == "Summer Semester":
+        return f"Summer {no // 2}"
+    return f"Semester {no}"
+
+class StudentSemesterListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        roll_number = request.user.username
+        qs = (Student_grades.objects
+              .filter(roll_no=roll_number)
+              .values_list('semester', 'semester_type')
+              .distinct()
+              .order_by('semester'))
+        unique = OrderedDict()
+        for sem_no, sem_type in qs:
+            label = make_label(sem_no, sem_type or "")
+            unique[(sem_no, sem_type)] = label
+
+        semesters = [
+            {"semester_no": no, "semester_type": typ, "label": lbl}
+            for (no, typ), lbl in unique.items()
+        ]
+
+        return JsonResponse({"success": True, "semesters": semesters})
