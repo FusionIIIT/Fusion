@@ -922,6 +922,7 @@ def verify_course(request):
             "course_id": reg.course_id.code,
             "course_name": reg.course_id.name,
             "sem": reg.semester_id.semester_no,
+            "semester_type" : reg.semester_type,
             "credits": slot_course.credit if slot_course else 0,
             "registration_type": reg.registration_type,
             "replaced_by": replaced_list,
@@ -1742,84 +1743,98 @@ def delete_preregistration(request):
 @permission_classes([IsAuthenticated])
 @role_required(['acadadmin'])
 def allot_courses(request):
+    if 'allotedCourses' not in request.FILES:
+        return Response({'error': 'Excel file not provided.'},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    batch_id = request.data.get('batch')
+    sem_no = request.data.get('semester')
+    sem_type = request.data.get('semester_type')
+    academic_year = request.data.get('academic_year')
+    working_year, _ = parse_academic_year(academic_year=academic_year, semester_type=sem_type)
+
+    if not all([batch_id, sem_no, sem_type, academic_year]):
+        return Response({'error': 'Missing required fields.'},
+                        status=status.HTTP_400_BAD_REQUEST)
+
     try:
-        if request.method == 'POST' and request.FILES:
-            profiles=request.FILES['allotedCourses']
-            batch_id=request.data.get('batch')
-            sem_no=int(request.data.get('semester'))
-            working_year =int(request.data.get('working_year'))
-            
-            batch=Batch.objects.get(id=batch_id)
-            sem_id=Semester.objects.get(curriculum=batch.curriculum,semester_no=sem_no)
-            print(batch , sem_id)
-            #  format of excel sheet being uploaded should be xls only , otherwise error
-            excel = xlrd.open_workbook(file_contents=profiles.read())
-            sheet=excel.sheet_by_index(0)
-            course_registrations=[]
-            final_registrations=[]
-            pre_registrations=[]
-            student_checks=[]
-            # print('>>>>>>>>>>>>>>>>>>>' , sheet.nrows)
-            currroll=set()
-            for i in range(1,sheet.nrows):
-                roll_no = str(sheet.cell(i,0).value).split(".")[0]
-                # print("Roll No from Excel:", roll_no)
-                course_slot_name = sheet.cell_value(i,1)
-                course_code = sheet.cell_value(i,2)
-                course_name = sheet.cell_value(i,3)
-                try:
+        sem_no = int(sem_no)
+    except ValueError:
+        return Response({'error': 'Semester must be integer.'},
+                        status=status.HTTP_400_BAD_REQUEST)
 
-                    user=User.objects.get(username=roll_no)
-                    user_info = ExtraInfo.objects.get(user=user)
-                    student = Student.objects.get(id=user_info)
-                    course_slot=CourseSlot.objects.get(name=course_slot_name.strip(),semester=sem_id)
-                    slot_courses = course_slot.courses.filter() 
-                    # for i in slot_courses:
-                    #     print("slot course ", i)
-                    # print(course_slot)
-                    print(course_code.strip() , course_name.strip(),student)
-                    course = slot_courses.get(code=course_code.strip())
-                    # print(course_code.strip() , course_name.strip(),student)
-                    # course = Courses.objects.get(code=course_code.strip(),name=course_name.strip())
-                    if(roll_no not in currroll):
-                        student_check=StudentRegistrationChecks(student_id = student, semester_id = sem_id, pre_registration_flag = True,final_registration_flag = True)
-                        student_checks.append(student_check)
-                        currroll.add(roll_no)
-                    # print(">>>>>",roll_no,course_slot_name,course_code,course_name)
-                except Exception as e:
-                    print('----------------------' , e)
-                pre_registration=InitialRegistration(student_id=student,course_slot_id=course_slot,
-                                                    course_id=course,semester_id=sem_id,priority=1)
-                pre_registrations.append(pre_registration)
-                final_registration=FinalRegistration(student_id=student,course_slot_id=course_slot,
-                                                    course_id=course,semester_id=sem_id, verified=True )
-                final_registrations.append(final_registration)
-    
-                courseregistration=course_registration(working_year=working_year,course_id=course,semester_id=sem_id,student_id=student,course_slot_id=course_slot)
-                course_registrations.append(courseregistration)
-                
+    try:
+        with transaction.atomic():
+            batch = Batch.objects.get(id=batch_id)
+            sem = Semester.objects.get(
+                curriculum=batch.curriculum,
+                semester_no=sem_no
+            )
+            book = xlrd.open_workbook(file_contents=request.FILES['allotedCourses'].read())
+            sheet = book.sheet_by_index(0)
 
+            checks, pre_regs, final_regs, course_regs = [], [], [], []
+            seen = set()
 
-            try:
-                with transaction.atomic():
-                    InitialRegistration.objects.bulk_create(pre_registrations)
-                    StudentRegistrationChecks.objects.bulk_create(student_checks)
-                    FinalRegistration.objects.bulk_create(final_registrations)
-                    course_registration.objects.bulk_create(course_registrations)
-                return Response({"message": 'Successfully uploaded!'})
-                # return HttpResponse("Success")
-            except Exception as e:
-                return Response(
-                    {"error": f"An error occurred: {str(e)}"}, 
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
-                )
-                # return HttpResponse("Success")
+            for i in range(1, sheet.nrows):
+                roll_no = str(sheet.cell_value(i,0)).split('.')[0].strip()
+                slot_name = sheet.cell_value(i,1).strip()
+                code = sheet.cell_value(i,2).strip()
+
+                # user = User.objects.get(username=roll_no)
+                student = Student.objects.get(id_id=roll_no)
+                slot = CourseSlot.objects.get(name=slot_name, semester=sem)
+                course = slot.courses.get(code=code)
+
+                if roll_no not in seen:
+                    checks.append(StudentRegistrationChecks(
+                        student_id=student,
+                        semester_id=sem,
+                        pre_registration_flag=True,
+                        final_registration_flag=True
+                    ))
+                    seen.add(roll_no)
+
+                pre_regs.append(InitialRegistration(
+                    student_id=student,
+                    course_slot_id=slot,
+                    course_id=course,
+                    semester_id=sem,
+                    priority=1
+                ))
+                final_regs.append(FinalRegistration(
+                    student_id=student,
+                    course_slot_id=slot,
+                    course_id=course,
+                    semester_id=sem,
+                    verified=True
+                ))
+                course_regs.append(course_registration(
+                    session=academic_year,
+                    working_year = working_year,
+                    course_id=course,
+                    semester_id=sem,
+                    student_id=student,
+                    course_slot_id=slot,
+                    semester_type = sem_type
+                ))
+
+            StudentRegistrationChecks.objects.bulk_create(checks)
+            InitialRegistration.objects.bulk_create(pre_regs)
+            FinalRegistration.objects.bulk_create(final_regs)
+            course_registration.objects.bulk_create(course_regs)
+
+        return Response({'message': 'Successfully uploaded!'})
+    except Batch.DoesNotExist:
+        return Response({'error': 'Invalid batch id.'}, status=status.HTTP_400_BAD_REQUEST)
+    except Semester.DoesNotExist:
+        return Response({'error': 'Invalid semester or type.'}, status=status.HTTP_400_BAD_REQUEST)
+    except xlrd.XLRDError:
+        return Response({'error': 'Invalid Excel format.'}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         print(e)
-        return Response(
-            {"error": f"Query does not match. Please check if all the data input is in the correct format."}, 
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+        return Response({'error': f'Processing error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

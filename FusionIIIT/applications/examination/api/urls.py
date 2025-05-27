@@ -31,5 +31,6 @@ urlpatterns = [
     url(r'update-announcement/', views.UpdateAnnouncementAPI.as_view(), name="update-announcement"),
     url(r'create-announcement/', views.CreateAnnouncementAPI.as_view(), name="create-announcement"),
     url(r'unique-course-reg-years/', views.UniqueRegistrationYearsView.as_view(), name="unique-course-reg-years"),
-    url(r'unique-stu-grades-years/', views.UniqueStudentGradeYearsView.as_view(), name="unique-stu-grades-years")
+    url(r'unique-stu-grades-years/', views.UniqueStudentGradeYearsView.as_view(), name="unique-stu-grades-years"),
+    url(r'^student/result_semesters/$', views.StudentSemesterListView.as_view(), name='get_student_semesters'),
 ]
