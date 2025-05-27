@@ -2154,7 +2154,6 @@ class CheckResultView(APIView):
         roll_number = request.user.username
         semester_no = request.data.get('semester_no')
         semester_type = request.data.get('semester_type')
-        print(semester_type, semester_no)
 
         if semester_no is None or semester_type is None:
             return JsonResponse(
@@ -2171,16 +2170,16 @@ class CheckResultView(APIView):
             )
 
         # Find the announcement for this batch, number and type
-        # ann = ResultAnnouncement.objects.filter(
-        #     batch=student.batch_id,
-        #     semester=semester_no,
-        # ).first()
+        ann = ResultAnnouncement.objects.filter(
+            batch=student.batch_id,
+            semester=semester_no,
+        ).first()
 
-        # if not ann or not ann.announced:
-        #     return JsonResponse(
-        #         {"success": False, "message": "Results not announced yet."},
-        #         status=200,
-        #     )
+        if not ann or not ann.announced:
+            return JsonResponse(
+                {"success": False, "message": "Results not announced yet."},
+                status=200,
+            )
 
         # Filter grades on both fields
         grades_info = Student_grades.objects.filter(
