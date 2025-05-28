@@ -30,6 +30,7 @@ urlpatterns = [
     url(r'^stu/registrations_drop/$', views.student_registrations_for_drop, name='student_registrations_drop'),
     url(r'^stu/drop-course/$',   views.drop_course, name='drop_course'),
     url(r'^stu/calendar/student/$', views.student_calendar_view, name='student-calendar'),
+    url(r'^stu/course_reg/semesters/$', views.student_registration_semesters_view, name='student-course_reg-semesters'),
 
 
 
