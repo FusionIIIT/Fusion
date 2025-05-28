@@ -1,6 +1,6 @@
 import datetime
 import random
-from collections import defaultdict, deque
+from collections import defaultdict, deque, OrderedDict
 from functools import wraps
 from datetime import date
 from django.utils import timezone
@@ -58,6 +58,18 @@ from . import serializers
 User = get_user_model()
 
 date_time = datetime.datetime.now()
+
+def make_label(no: int, sem_type: str) -> str:
+    """
+    - odd → "Semester <no>"
+    - even & Even Semester → "Semester <no>"
+    - even & Summer Semester → "Summer <no//2>"
+    """
+    if no % 2 == 1:
+        return f"Semester {no}"
+    if sem_type == "Summer Semester":
+        return f"Summer {no // 2}"
+    return f"Semester {no}"
 
 
 def get_semester_type(semester):
@@ -1915,12 +1927,13 @@ def course_registration_view(request):
         student = Student.objects.get(id=user_details)
 
         semester_no = request.query_params.get('semester', student.curr_semester_no)
+        semester_type = request.query_params.get('semester_type', 'Even Semester' if student.curr_semester_no%2==0 else 'Odd Semester')
         try:
             semester = Semester.objects.get(curriculum=student.batch_id.curriculum, semester_no=semester_no)
         except Semester.DoesNotExist:
             return JsonResponse({"error": "Semester not found."}, status=404)
 
-        courses = course_registration.objects.filter(student_id=student, semester_id=semester)
+        courses = course_registration.objects.filter(student_id=student, semester_id=semester, semester_type=semester_type)
 
         result = []
         for reg in courses:
@@ -1935,12 +1948,12 @@ def course_registration_view(request):
                     "code": new_reg.course_id.code,
                     "name": new_reg.course_id.name,
                     "semester_no": new_reg.semester_id.semester_no,
+                    "label" : make_label(new_reg.semester_id.semester_no, new_reg.semester_type)
                 })
 
             course_data["replaced_by"] = replaced_by_list
             result.append(course_data)
-
-        return Response({"reg_data": result, "sem_no": semester_no}, status=status.HTTP_200_OK)
+        return Response({"reg_data": result, "sem_no": semester_no, "semester_type": semester_type}, status=status.HTTP_200_OK)
 
     except Student.DoesNotExist:
         return Response({"error": "Student profile not found"}, status=status.HTTP_404_NOT_FOUND)
@@ -3113,3 +3126,42 @@ def student_search(request):
         'curr_semester_no':student.curr_semester_no,
     }
     return JsonResponse(data,status=200)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['student'])
+def student_registration_semesters_view(request):
+    """
+    Return a list of distinct semesters in which the student has registrations.
+    """
+    print("hello")
+    try:
+        roll_number = request.user.username
+        student = Student.objects.get(id_id=roll_number)
+
+        # Pull distinct (semester_no, semester_type) from the student's course registrations
+        qs = (course_registration.objects
+              .filter(student_id=student)
+              .values_list('semester_id__semester_no', 'semester_type')
+              .distinct()
+              .order_by('semester_id__semester_no'))
+
+        unique = OrderedDict()
+        for sem_no, sem_type in qs:
+            label = make_label(sem_no, sem_type or "")
+            unique[(sem_no, sem_type)] = label
+
+        semesters = [
+            {"semester_no": no, "semester_type": typ, "label": lbl}
+            for (no, typ), lbl in unique.items()
+        ]
+
+        return JsonResponse({"success": True, "semesters": semesters}, status=200)
+
+    except Student.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Student not found."}, status=404)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
