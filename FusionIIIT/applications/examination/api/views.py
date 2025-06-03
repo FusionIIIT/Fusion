@@ -58,17 +58,20 @@ PBI_AND_BTP_ALLOWED_GRADES = {
 
 def round_from_last_decimal(number, decimal_places=1):
     d = Decimal(str(number))
-    current_places = abs(d.as_tuple().exponent)
+    return Decimal(d).quantize(Decimal('0.1'), rounding=ROUND_HALF_UP)
+    # d = Decimal(str(number))
+    # current_places = abs(d.as_tuple().exponent)
 
-    # Keep rounding from the last decimal place until we reach the desired one
-    while current_places > decimal_places:
-        quantize_str = '0.' + '0' * (current_places - 1) + '1'
-        d = d.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-        current_places -= 1
+    # # Keep rounding from the last decimal place until we reach the desired one
+    # while current_places > decimal_places:
+    #     quantize_str = '0.' + '0' * (current_places - 1) + '1'
+    #     d = d.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
+    #     current_places -= 1
 
-    # Final rounding to target place
-    final_quantize = '0.' + '0' * (decimal_places - 1) + '1'
-    return float(d.quantize(Decimal(final_quantize), rounding=ROUND_HALF_UP))
+    # # Final rounding to target place
+    # final_quantize = '0.' + '0' * (decimal_places - 1) + '1'
+    # return float(d.quantize(Decimal(final_quantize), rounding=ROUND_HALF_UP))
+    
 
 def calculate_spi_for_student(student, selected_semester, semester_type):
     semester_unit = 0
