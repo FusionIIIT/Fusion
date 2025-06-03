@@ -185,7 +185,7 @@ def calculate_cpi_for_student(student, selected_semester, semester_type):
             if grade_factor != 0:
                 total_points += grade_factor * credit
                 total_credits += credit
-            total_unit += credit    
+            total_unit += credit
     return round_from_last_decimal(10 * (total_points / total_credits)) if total_credits else 0, total_unit
 
 def parse_academic_year(academic_year, semester_type):
@@ -213,7 +213,7 @@ def parse_academic_year(academic_year, semester_type):
 def is_valid_grade(grade: str, course_code: str) -> bool:
     """
     Returns True if the grade is valid for the given course code.
-    Special grades apply to PR4001 and BTP4001.
+    Special grades apply to PR4001, PR4002 and BTP4001.
     """
     if not grade or not course_code:
         return False
@@ -221,7 +221,7 @@ def is_valid_grade(grade: str, course_code: str) -> bool:
     code = course_code.strip().upper()
     grade = grade.strip().upper()
 
-    if code in {"PR4001", "BTP4001"}:
+    if code in {"PR4001","PR4002", "BTP4001"}:
         return grade in PBI_AND_BTP_ALLOWED_GRADES
     return grade in ALLOWED_GRADES
 
@@ -908,7 +908,7 @@ class GenerateTranscript(APIView):
                 "course_name": course.name,
                 "course_code": course.code,
                 "credit": course.credit,
-                "grade":"" if reg.course_id.code in ("PR4001", "BTP4001") else reg.grade,
+                "grade":"" if reg.course_id.code in ("PR4001","PR4002", "BTP4001") else reg.grade,
                 "points": grade_conversion.get(reg.grade, 0)*10,
             }
 
@@ -2199,7 +2199,7 @@ class CheckResultView(APIView):
                     "courseid": grade.course_id.id,
                     "coursename": grade.course_id.name,
                     "credits": grade.course_id.credit,
-                    "grade":"" if grade.course_id.code in ("PR4001", "BTP4001") else grade.grade,
+                    "grade":"" if grade.course_id.code in ("PR4001", "PR4002", "BTP4001") else grade.grade,
                     "points": grade_conversion.get(grade.grade, 0)*10,
                 }
                 for grade in grades_info
