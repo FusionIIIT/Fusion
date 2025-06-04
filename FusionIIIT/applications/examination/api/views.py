@@ -74,7 +74,7 @@ def round_from_last_decimal(number, decimal_places=1):
     
 
 def calculate_spi_for_student(student, selected_semester, semester_type):
-    semester_unit = 0
+    semester_unit = Decimal('0')
     grades = (
         Student_grades.objects
             .filter(
@@ -93,17 +93,18 @@ def calculate_spi_for_student(student, selected_semester, semester_type):
             )
             .order_by('semester', 'semester_type_order')
     )
-    total_points = 0
-    total_credits = 0
+    total_points = Decimal('0')
+    total_credits = Decimal('0')
     for g in grades:
-        credit = g.course_id.credit
+        credit = Decimal(str(g.course_id.credit))
         factor = grade_conversion.get(g.grade.strip(), -1)
         if factor >= 0:
             if factor != 0:
+                factor = Decimal(str(factor))
                 total_points += factor * credit
                 total_credits += credit
             semester_unit += credit
-    return round_from_last_decimal(10 * (total_points / total_credits)) if total_credits else 0, semester_unit
+    return round_from_last_decimal(Decimal('10') * (total_points / total_credits)) if total_credits else 0, semester_unit
 
 def trace_registration(reg_id, mapping):
     seen = set()
@@ -113,7 +114,7 @@ def trace_registration(reg_id, mapping):
     return reg_id
 
 def calculate_cpi_for_student(student, selected_semester, semester_type):
-    total_unit = 0
+    total_unit = Decimal('0')
     if selected_semester % 2 == 0 and semester_type == 'Summer Semester':
         grades = (
             Student_grades.objects
@@ -178,18 +179,19 @@ def calculate_cpi_for_student(student, selected_semester, semester_type):
             continue
         original_reg_id = trace_registration(reg_id, reg_replacement_map)
         grade_groups[original_reg_id].append(g)
-    total_points = 0
-    total_credits = 0
+    total_points = Decimal('0')
+    total_credits = Decimal('0')
     for orig_reg, g_list in grade_groups.items():
         best_record = max(g_list, key=lambda r: grade_conversion.get(r.grade.strip(), -1))
         grade_factor = grade_conversion.get(best_record.grade.strip(), -1)
-        credit = getattr(best_record.course_id, 'credit', 3)
+        credit = Decimal(str(getattr(best_record.course_id, 'credit', 3)))
         if grade_factor >=  0:
             if grade_factor != 0:
+                grade_factor =  Decimal(str(grade_factor))
                 total_points += grade_factor * credit
                 total_credits += credit
             total_unit += credit
-    return round_from_last_decimal(10 * (total_points / total_credits)) if total_credits else 0, total_unit
+    return round_from_last_decimal(Decimal('10') * (total_points / total_credits)) if total_credits else 0, total_unit
 
 def parse_academic_year(academic_year, semester_type):
     """
