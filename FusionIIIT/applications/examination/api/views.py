@@ -104,7 +104,7 @@ def calculate_spi_for_student(student, selected_semester, semester_type):
                 total_points += factor * credit
                 total_credits += credit
             semester_unit += credit
-    return round_from_last_decimal(Decimal('10') * (total_points / total_credits)) if total_credits else 0, semester_unit
+    return round_from_last_decimal(Decimal('10') * (total_points / total_credits)) if total_credits else 0, semester_unit, (total_points*10)
 
 def trace_registration(reg_id, mapping):
     seen = set()
@@ -191,7 +191,7 @@ def calculate_cpi_for_student(student, selected_semester, semester_type):
                 total_points += grade_factor * credit
                 total_credits += credit
             total_unit += credit
-    return round_from_last_decimal(Decimal('10') * (total_points / total_credits)) if total_credits else 0, total_unit
+    return round_from_last_decimal(Decimal('10') * (total_points / total_credits)) if total_credits else 0, total_unit, (total_points*10)
 
 def parse_academic_year(academic_year, semester_type):
     """
@@ -899,8 +899,8 @@ class GenerateTranscript(APIView):
         try:
             student = Student.objects.get(id_id=student_id)
             name = student.id.user.first_name
-            cpi, tu = calculate_cpi_for_student(student, semester_number, semester_type)
-            spi, su = calculate_spi_for_student(student, semester_number, semester_type)
+            cpi, tu, _ = calculate_cpi_for_student(student, semester_number, semester_type)
+            spi, su, _ = calculate_spi_for_student(student, semester_number, semester_type)
         except:
             return Response({"error": "Student ID does not exist."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1175,6 +1175,18 @@ class GenerateResultAPI(APIView):
             cell.font = Font(bold=True)
             cell.fill = header_fill
 
+            cell = ws.cell(row=1, column=col_idx+4)
+            cell.value = "SP"
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            cell.font = Font(bold=True)
+            cell.fill = header_fill
+
+            cell = ws.cell(row=1, column=col_idx+5)
+            cell.value = "TP"
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            cell.font = Font(bold=True)
+            cell.fill = header_fill
+
             # Ensure full header rows (1 to 4) are highlighted.
             max_col = ws.max_column
             for row in range(1, 5):
@@ -1208,12 +1220,14 @@ class GenerateResultAPI(APIView):
                     col_ptr += 2
 
                 # Calculate SPI and CPI.
-                spi_val, SU = calculate_spi_for_student(student, semester, semester_type)
-                cpi_val, TU = calculate_cpi_for_student(student, semester, semester_type)
+                spi_val, SU, SP = calculate_spi_for_student(student, semester, semester_type)
+                cpi_val, TU, TP = calculate_cpi_for_student(student, semester, semester_type)
                 ws.cell(row=row_idx, column=col_ptr).value = spi_val
                 ws.cell(row=row_idx, column=col_ptr+1).value = cpi_val
                 ws.cell(row=row_idx, column=col_ptr+2).value = SU
                 ws.cell(row=row_idx, column=col_ptr+3).value = TU
+                ws.cell(row=row_idx, column=col_ptr+4).value = SP
+                ws.cell(row=row_idx, column=col_ptr+5).value = TP
                 for c in [col_ptr, col_ptr+1]:
                     ws.cell(row=row_idx, column=c).alignment = Alignment(horizontal="center", vertical="center")
                 row_idx += 1
@@ -2193,8 +2207,8 @@ class CheckResultView(APIView):
             semester_type=semester_type
         ).select_related('course_id')
 
-        spi, su = calculate_spi_for_student(student, semester_no, semester_type)
-        cpi, tu = calculate_cpi_for_student(student, semester_no, semester_type)
+        spi, su, _ = calculate_spi_for_student(student, semester_no, semester_type)
+        cpi, tu, _ = calculate_cpi_for_student(student, semester_no, semester_type)
 
         response_data = {
             "success": True,
