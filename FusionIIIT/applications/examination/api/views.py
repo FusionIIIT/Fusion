@@ -38,8 +38,8 @@ from django.db.models import Case, When, IntegerField
 grade_conversion = {
     "O": 1.0, "A+": 1.0, "A": 0.9, "B+": 0.8, "B": 0.7,
     "C+": 0.6, "C": 0.5, "D+": 0.4, "D": 0.3, "F": 0.2, "S": 0.0,
-    **{f"A{i}": round(9.0 + i * 0.1, 1) for i in range(1, 11)},
-    **{f"B{i}": round(8.0 + i * 0.1, 1) for i in range(1, 11)}
+    **{f"A{i}": Decimal(str(0.9 + i * 0.01)) for i in range(1, 11)},
+    **{f"B{i}": Decimal(str(0.8 + i * 0.01)) for i in range(1, 11)}
 }
 
 ALLOWED_GRADES = {
@@ -914,7 +914,7 @@ class GenerateTranscript(APIView):
                 "course_code": course.code,
                 "credit": course.credit,
                 "grade":"" if reg.course_id.code in ("PR4001","PR4002", "BTP4001") else reg.grade,
-                "points": grade_conversion.get(reg.grade, 0)*10,
+                "points": Decimal(str(grade_conversion.get(reg.grade, 0) * 10)).quantize(Decimal('0.1'), rounding=ROUND_HALF_UP),
             }
 
         response_data = {
@@ -2219,7 +2219,7 @@ class CheckResultView(APIView):
                     "coursename": grade.course_id.name,
                     "credits": grade.course_id.credit,
                     "grade":"" if grade.course_id.code in ("PR4001", "PR4002", "BTP4001") else grade.grade,
-                    "points": grade_conversion.get(grade.grade, 0)*10,
+                    "points": Decimal(str(grade_conversion.get(grade.grade, 0) * 10)).quantize(Decimal('0.1'), rounding=ROUND_HALF_UP),
                 }
                 for grade in grades_info
             ],
