@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, HttpResponse
 from django.http import HttpResponse
 from django.http import JsonResponse
 from decimal import Decimal, ROUND_HALF_UP
-from applications.academic_procedures.models import(course_registration, course_replacement, course_replacement)
+from applications.academic_procedures.models import(course_registration, course_replacement)
 from applications.programme_curriculum.models import Course as Courses ,  Batch, CourseInstructor
 from applications.examination.models import(hidden_grades , ResultAnnouncement)
 from applications.academic_information.models import(Student)
@@ -39,7 +39,11 @@ grade_conversion = {
     "O": 1.0, "A+": 1.0, "A": 0.9, "B+": 0.8, "B": 0.7,
     "C+": 0.6, "C": 0.5, "D+": 0.4, "D": 0.3, "F": 0.2, "S": 0.0,
     **{f"A{i}": Decimal(str(0.9 + i * 0.01)) for i in range(1, 11)},
-    **{f"B{i}": Decimal(str(0.8 + i * 0.01)) for i in range(1, 11)}
+    **{f"B{i}": Decimal(str(0.8 + i * 0.01)) for i in range(1, 11)},
+    **{
+        f"{x/10:.1f}": Decimal(f"{x/100:.2f}")
+        for x in range(20, 101)
+    }
 }
 
 ALLOWED_GRADES = {
@@ -51,10 +55,8 @@ ALLOWED_GRADES = {
 }
 
 PBI_AND_BTP_ALLOWED_GRADES = {
-    f"A{i}" for i in range(1, 11)
-}.union({
-    f"B{i}" for i in range(1, 11)
-})
+    f"{x:.1f}" for x in [i / 10 for i in range(20, 101)]
+}
 
 def round_from_last_decimal(number, decimal_places=1):
     d = Decimal(str(number))
@@ -229,6 +231,28 @@ def is_valid_grade(grade: str, course_code: str) -> bool:
     if code in {"PR4001","PR4002", "BTP4001"}:
         return grade in PBI_AND_BTP_ALLOWED_GRADES
     return grade in ALLOWED_GRADES
+
+
+def gather_related_registrations(initial_reg, max_semester):
+    """
+    Using BFS, collect all course_registration objects related by replacements
+    up to the given semester, ignoring semester_type.
+    """
+    related = set()
+    queue = [initial_reg]
+    while queue:
+        reg = queue.pop(0)
+        if reg.id in related:
+            continue
+        related.add(reg.id)
+        olds = course_replacement.objects.filter(old_course_registration=reg)
+        news = course_replacement.objects.filter(new_course_registration=reg)
+        for rep in list(olds) + list(news):
+            for neighbor in (rep.old_course_registration, rep.new_course_registration):
+                if (neighbor.student_id == initial_reg.student_id and
+                    neighbor.semester_id.semester_no <= max_semester):
+                    queue.append(neighbor)
+    return course_registration.objects.filter(id__in=related).exclude(id=initial_reg.id)
 
 
 @api_view(['POST'])
@@ -1008,25 +1032,24 @@ class GenerateTranscriptForm(APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        programme = request.data.get('programme')
         batch = request.data.get('batch')
         specialization = request.data.get('specialization')
         semester = request.data.get('semester')
 
-        if not programme or not batch or not semester:
+        if not batch or not semester:
             return Response(
-                {"error": "Programme, batch, and semester are required fields."},
+                {"error": "batch, and semester are required fields."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         # Use the batch from the Batch table (passed as ID).
         if specialization:
             students = Student.objects.filter(
-                programme=programme, batch_id=batch, specialization=specialization
+                batch_id=batch, specialization=specialization
             ).order_by('id')
         else:
             students = Student.objects.filter(
-                programme=programme, batch_id=batch
+                batch_id=batch
             ).order_by('id')
 
         return Response({
@@ -1207,12 +1230,49 @@ class GenerateResultAPI(APIView):
                 student_grades = Student_grades.objects.filter(
                     roll_no=student.id_id,
                     course_id_id__in=course_ids,
+                    semester_type=semester_type,
                     semester=semester
                 )
-                grades_map = {grade.course_id_id: (grade.grade, grade.remarks) for grade in student_grades}
+                grades_map = {g.course_id_id: g for g in student_grades}
                 col_ptr = 3
                 for course in courses:
-                    grade_val, remark = grades_map.get(course.id, ("-", "-"))
+                    grade_entry = grades_map.get(course.id)
+                    grade_val = grade_entry.grade if grade_entry else '-'
+
+                    remark = '-'
+                    if grade_entry:
+                        reg = course_registration.objects.filter(
+                            student_id=student,
+                            course_id=course,
+                            semester_id__semester_no=semester,
+                            semester_type=semester_type,
+                            session=grade_entry.academic_year,
+                        ).first()
+                        if reg:
+                            related_regs = gather_related_registrations(reg, semester)
+                            attempts = []
+                            for r in related_regs:
+                                g = Student_grades.objects.filter(
+                                    roll_no=student.id_id,
+                                    course_id__code=r.course_id.code,
+                                    semester=r.semester_id.semester_no,
+                                    semester_type = r.semester_type,
+                                    academic_year = r.session
+                                ).order_by('-semester').first()
+                                if g:
+                                    attempts.append((r.course_id.code, g.grade))
+
+                            if len(attempts) >= 1:
+                                scored = sorted(
+                                    attempts,
+                                    key=lambda x: grade_conversion.get(x[1], -1),
+                                    reverse=True
+                                )
+                                first_code, first_grade = scored[0]
+                                if first_grade == 'F' or first_grade == 'X':
+                                    remark = 'R(BL)' if first_code == course.code else 'S(BL)'
+                                else:
+                                    remark = 'R(IM)' if first_code == course.code else 'S(IM)'
                     ws.cell(row=row_idx, column=col_ptr).value = grade_val
                     ws.cell(row=row_idx, column=col_ptr+1).value = remark
                     for c in [col_ptr, col_ptr+1]:
