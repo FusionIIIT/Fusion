@@ -3531,7 +3531,7 @@ def apply_batch_changes(request):
                 errors.append({"index": idx, "detail": "student_id, new_batch_id, new_batch_year required."})
                 continue
             try:
-                student = Student.objects.select_for_update().select_related("batch_id").get(id=sid)
+                student = Student.objects.get(id=sid)
             except Student.DoesNotExist:
                 errors.append({"index": idx, "detail": f"Student {sid} not found."})
                 continue
