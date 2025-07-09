@@ -31,6 +31,8 @@ urlpatterns = [
     url(r'^stu/drop-course/$',   views.drop_course, name='drop_course'),
     url(r'^stu/calendar/student/$', views.student_calendar_view, name='student-calendar'),
     url(r'^stu/course_reg/semesters/$', views.student_registration_semesters_view, name='student-course_reg-semesters'),
+    url(r'^stu/feedback_questions/$', views.student_questions, name='student-questions'),
+    url(r'^stu/feedback_submit/$', views.student_submit, name='student-feedback-submit'),
 
 
 
@@ -57,11 +59,20 @@ urlpatterns = [
     url(r'^acad/change-requests/allocate_all/$', views.allocate_all, name='allocate_all'),
     url(r'^acad/replacement-requests/$', views.admin_list_requests, name='admin_list_requests'),
     url(r'^acad/student-search/$',views.student_search,name='student-search'),
+    url(r"^acad/feedback_courses/$",    views.admin_course_list,   name="admin-course-list"),
+    url(r"^acad/stats/all/$",  views.admin_all_stats,     name="admin-all-stats"),
+    url(r'^acad/batch_change/batches/$', views.list_batches, name='batch-list'),
+    url(r'^acad/batch_change/students/$', views.list_students_in_batch, name='batch-students'),
+    url(r'^acad/batch_change/apply/$', views.apply_batch_changes, name='batch-apply'),
+    url(r'^acad/promote/students/$', views.list_students_in_batch_semester_promotion, name='promote-batch-students'),
+    url(r'^acad/promote/apply/$', views.apply_promotion, name='promote-apply'),
     url(r'^get_next_sem_courses' , views.get_next_sem_courses , name= 'get_next_sem_courses'),
 
 
     url(r'^fac/view_assigned_courses' , views.faculty_assigned_courses , name = 'faculty_assigned_courses'),
     # url(r'^fac/get_roll_list' , views.fetch_roll_list , name = 'fetch_roll_list'),
+    url(r"^inst/courses/$", views.inst_courses, name="inst-courses"),
+    url(r"^inst/stats/all/$", views.inst_all_stats, name="inst-all-stats"),
 
 
 

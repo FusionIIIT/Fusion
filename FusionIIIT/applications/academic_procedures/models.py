@@ -2,10 +2,12 @@ import datetime
 
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
+from django.contrib.auth import get_user_model
 from applications.academic_information.models import Course, Student, Curriculum
-from applications.programme_curriculum.models import Course as Courses, Semester, CourseSlot
+from applications.programme_curriculum.models import Course as Courses, Semester, CourseSlot, Batch
 from applications.globals.models import DepartmentInfo, ExtraInfo, Faculty
 from django.utils import timezone
+
 
 
 class Constants:
@@ -865,3 +867,59 @@ class CourseReplacementRequest(models.Model):
 
     def __str__(self):
         return f"{self.old_course.code}→{self.new_course.code} [{self.status}]"
+    
+
+class BatchChangeHistory(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    old_batch = models.ForeignKey(Batch, on_delete=models.PROTECT, related_name="history_old")
+    new_batch = models.ForeignKey(Batch, on_delete=models.PROTECT, related_name="history_new")
+    changed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-changed_at"]
+
+
+SEMESTER_CHOICES = [
+    ("Odd Semester", "Odd Semester"),
+    ("Even Semester", "Even Semester"),
+    ("Summer Semester", "Summer Semester"),
+]
+
+class FeedbackQuestion(models.Model):
+    SECTION_CHOICES = [
+        ("contents", "Course Contents"),
+        ("instructor", "Course Instructor"),
+        ("tutorial", "Tutorial"),
+        ("lab", "Lab Instructor"),
+        ("attendance", "Attendance"),
+    ]
+    section = models.CharField(max_length=20, choices=SECTION_CHOICES)
+    text    = models.TextField()
+    order   = models.PositiveIntegerField()
+    class Meta:
+        ordering = ["section", "order"]
+
+class FeedbackOption(models.Model):
+    question = models.ForeignKey(FeedbackQuestion, on_delete=models.CASCADE, related_name="options")
+    text     = models.CharField(max_length=50)
+    order    = models.PositiveIntegerField()
+    class Meta:
+        ordering = ["order"]
+
+class FeedbackResponse(models.Model):
+    question      = models.ForeignKey(FeedbackQuestion, on_delete=models.CASCADE)
+    option        = models.ForeignKey(FeedbackOption, on_delete=models.CASCADE, null=True, blank=True)
+    text_answer   = models.TextField(blank=True)
+    course        = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    section       = models.CharField(max_length=20, choices=FeedbackQuestion.SECTION_CHOICES)
+    session       = models.CharField(max_length=9)
+    semester_type = models.CharField(max_length=20, choices=SEMESTER_CHOICES)
+    submitted_at  = models.DateTimeField(auto_now_add=True)
+
+class FeedbackFilled(models.Model):
+    student      = models.ForeignKey(Student, on_delete=models.CASCADE)
+    semester_no  = models.PositiveIntegerField()
+    filled_at    = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("student", "semester_no")
