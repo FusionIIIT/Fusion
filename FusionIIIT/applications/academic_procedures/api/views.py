@@ -36,7 +36,7 @@ from applications.programme_curriculum.models import ( CourseInstructor, CourseS
 
 from applications.academic_procedures.models import ( MTechGraduateSeminarReport, PhDProgressExamination, Student, Curriculum , ThesisTopicProcess, InitialRegistrations,
                                                      FinalRegistration, SemesterMarks,backlog_course,
-                                                     BranchChange , StudentRegistrationChecks, Semester , FeePayments , course_registration, course_replacement, AssistantshipClaim, Assignment, StipendRequest, CourseReplacementRequest)
+                                                     BranchChange , StudentRegistrationChecks, Semester , FeePayments , course_registration, course_replacement, AssistantshipClaim, Assignment, StipendRequest, CourseReplacementRequest, BatchChangeHistory, FeedbackQuestion, FeedbackResponse, FeedbackFilled, FeedbackOption)
 
 from applications.academic_information.models import (Curriculum_Instructor , Calendar)
 
@@ -1789,47 +1789,50 @@ def allot_courses(request):
             seen = set()
 
             for i in range(1, sheet.nrows):
-                roll_no = str(sheet.cell_value(i,0)).split('.')[0].strip()
-                slot_name = sheet.cell_value(i,1).strip()
-                code = sheet.cell_value(i,2).strip()
 
-                # user = User.objects.get(username=roll_no)
-                student = Student.objects.get(id_id=roll_no)
-                slot = CourseSlot.objects.get(name=slot_name, semester=sem)
-                course = slot.courses.get(code=code)
+                try:
+                    roll_no = str(sheet.cell_value(i,0)).split('.')[0].strip()
+                    slot_name = sheet.cell_value(i,1).strip()
+                    code = sheet.cell_value(i,2).strip()
 
-                if roll_no not in seen:
-                    checks.append(StudentRegistrationChecks(
+                    # user = User.objects.get(username=roll_no)
+                    student = Student.objects.get(id_id=roll_no)
+                    slot = CourseSlot.objects.get(name=slot_name, semester=sem)
+                    course = slot.courses.get(code=code)
+                    if roll_no not in seen:
+                        checks.append(StudentRegistrationChecks(
+                            student_id=student,
+                            semester_id=sem,
+                            pre_registration_flag=True,
+                            final_registration_flag=True
+                        ))
+                        seen.add(roll_no)
+
+                    pre_regs.append(InitialRegistration(
                         student_id=student,
+                        course_slot_id=slot,
+                        course_id=course,
                         semester_id=sem,
-                        pre_registration_flag=True,
-                        final_registration_flag=True
+                        priority=1
                     ))
-                    seen.add(roll_no)
-
-                pre_regs.append(InitialRegistration(
-                    student_id=student,
-                    course_slot_id=slot,
-                    course_id=course,
-                    semester_id=sem,
-                    priority=1
-                ))
-                final_regs.append(FinalRegistration(
-                    student_id=student,
-                    course_slot_id=slot,
-                    course_id=course,
-                    semester_id=sem,
-                    verified=True
-                ))
-                course_regs.append(course_registration(
-                    session=academic_year,
-                    working_year = working_year,
-                    course_id=course,
-                    semester_id=sem,
-                    student_id=student,
-                    course_slot_id=slot,
-                    semester_type = sem_type
-                ))
+                    final_regs.append(FinalRegistration(
+                        student_id=student,
+                        course_slot_id=slot,
+                        course_id=course,
+                        semester_id=sem,
+                        verified=True
+                    ))
+                    course_regs.append(course_registration(
+                        session=academic_year,
+                        working_year = working_year,
+                        course_id=course,
+                        semester_id=sem,
+                        student_id=student,
+                        course_slot_id=slot,
+                        semester_type = sem_type
+                    ))
+                except Exception as e:
+                    print(e, "-----", roll_no, slot_name, code)
 
             StudentRegistrationChecks.objects.bulk_create(checks)
             InitialRegistration.objects.bulk_create(pre_regs)
@@ -3136,7 +3139,6 @@ def student_registration_semesters_view(request):
     """
     Return a list of distinct semesters in which the student has registrations.
     """
-    print("hello")
     try:
         roll_number = request.user.username
         student = Student.objects.get(id_id=roll_number)
@@ -3165,3 +3167,565 @@ def student_registration_semesters_view(request):
     except Exception as e:
         print(e)
         return JsonResponse({"success": False, "error": str(e)}, status=500)
+    
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+@role_required(['student'])
+def student_filled(request):
+    roll_number = request.user.username
+    student = Student.objects.get(id_id=roll_number)
+    semester_no = student.curr_semester_no
+    done = FeedbackFilled.objects.filter(student=student, semester_no = semester_no).exists()
+    return Response({"filled": done})
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+@role_required(['student'])
+def student_questions(request):
+    try:
+        roll_number = request.user.username
+        student = Student.objects.get(id_id=roll_number)
+    except Student.DoesNotExist:
+        return Response({"detail": "Student profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    semester_no = student.curr_semester_no
+
+    filled = FeedbackFilled.objects.filter(
+        student=student,
+        semester_no=semester_no
+    ).exists()
+
+    registrations = course_registration.objects.filter(
+        student_id=student,
+        semester_id__semester_no=semester_no,
+    ).select_related("course_id")
+
+    courses = []
+    for reg in registrations:
+        course = reg.course_id
+        academic_year, _ = parse_academic_year(reg.session, reg.semester_type)
+        instructor_entry = CourseInstructor.objects.filter(
+            course_id=course,
+            semester_type=reg.semester_type,
+            year = academic_year
+            
+        ).first()
+
+        instructor_id = instructor_entry.id if instructor_entry else None
+        instructor_name = (
+            f"{instructor_entry.instructor_id.id.user.first_name} {instructor_entry.instructor_id.id.user.last_name}"
+            if instructor_entry else ""
+        )
+
+        courses.append({
+            "course_id": course.id,
+            "code": course.code,
+            "name": course.name,
+            "instructor_id": instructor_id,
+            "instructor_name": instructor_name,
+        })
+
+    questions = [
+        {
+            "id": question.id,
+            "section": question.section,
+            "text": question.text,
+            "options": [{"id": option.id, "text": option.text} for option in question.options.all()],
+        }
+        for question in FeedbackQuestion.objects.all()
+    ]
+
+    return Response({
+        "filled": filled,
+        "courses": courses,
+        "questions": questions,
+    })
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+@role_required(['student'])
+def student_submit(request):
+    try:
+        roll_number = request.user.username
+        student = Student.objects.get(id_id=roll_number)
+    except Student.DoesNotExist:
+        return Response({"detail": "Student profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    semester_no = student.curr_semester_no
+    data = request.data
+    if FeedbackFilled.objects.filter(student=student, semester_no = semester_no).exists():
+        return Response({"detail":"Already filled."}, status=status.HTTP_409_CONFLICT)
+
+    with transaction.atomic():
+        for r in data["responses"]:
+
+            reg = course_registration.objects.get(student_id =student, course_id_id = r["course_id"], semester_id__semester_no = student.curr_semester_no)
+            FeedbackResponse.objects.create(
+                question_id   = r["question_id"],
+                option_id     = r.get("option_id"),
+                text_answer   = r.get("text_answer",""),
+                course_id     = r["course_id"],
+                section       = r["section"],
+                session       = reg.session,
+                semester_type = reg.semester_type,
+            )
+        FeedbackFilled.objects.create(student=student, semester_no = student.curr_semester_no)
+
+    return Response({"detail":"Submitted"}, status=status.HTTP_201_CREATED)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def inst_courses(request):
+    """
+    GET /inst/courses/?session=<str>&semester_type=<str>
+    Returns the list of courses the logged-in instructor is teaching.
+    """
+    fac = request.user.username
+    sess = request.query_params.get("session")
+    semt = request.query_params.get("semester_type")
+    if not sess or not semt:
+        return Response({"detail": "Provide 'session' and 'semester_type'."}, status=status.HTTP_400_BAD_REQUEST)
+
+    academic_year, _ = parse_academic_year(sess, semt)
+    regs = CourseInstructor.objects.filter(
+        instructor_id_id=fac,
+        year=academic_year,
+        semester_type=semt,
+    )
+
+    return Response([{
+        "course_id": cr.course_id.id,
+        "code":      cr.course_id.code,
+        "name":      cr.course_id.name,
+    } for cr in regs])
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def inst_all_stats(request):
+    """
+    GET /inst/stats/all/?session=&semester_type=&course_id=
+    Returns per-question counts + comments for the 'Course Instructor' section.
+    If no responses yet, returns {"detail": "No responses found till now."}.
+    """
+    sess = request.query_params.get("session")
+    semt = request.query_params.get("semester_type")
+    cid = request.query_params.get("course_id")
+
+    academic_year, _ = parse_academic_year(sess, semt)
+    if not CourseInstructor.objects.filter(
+        course_id_id=cid,
+        instructor_id_id=request.user.username,
+        year=academic_year,
+        semester_type=semt,
+    ).exists():
+        return Response(
+            {"error": "Access denied: you are not assigned as instructor for this course."},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    has_any = FeedbackResponse.objects.filter(
+        course_id=cid,
+        session=sess,
+        semester_type=semt,
+        question__section="instructor",
+    ).exists()
+
+    if not has_any:
+        return Response(
+            {"detail": "No responses found till now."},
+            status=status.HTTP_200_OK
+        )
+
+    out = []
+    questions = FeedbackQuestion.objects.filter(section="instructor").order_by("order")
+    
+    for q in questions:
+        base = FeedbackResponse.objects.filter(
+            question=q,
+            course_id=cid,
+            session=sess,
+            semester_type=semt,
+        )
+        counts = {
+            o.text: base.filter(option=o).count()
+            for o in FeedbackOption.objects.filter(question=q)
+        }
+        comments = list(
+            base.filter(option__isnull=True).values_list("text_answer", flat=True)
+        )
+        out.append({
+            "question_id": q.id,
+            "text": q.text,
+            "counts": counts,
+            "comments": comments,
+        })
+
+    return Response(out, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def admin_course_list(request):
+    """
+    GET /admin/courses/?session=<str>&semester_type=<str>
+    """
+    sess = request.query_params.get("session")
+    semt = request.query_params.get("semester_type")
+    if not sess or not semt:
+        return Response(
+            {"detail":"Provide 'session' & 'semester_type'."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    regs = FeedbackResponse.objects.filter(
+        session=sess,
+        semester_type=semt,
+    ).select_related("course").distinct()
+
+    seen = set()
+    courses = []
+    for reg in regs:
+        c = reg.course
+        if c.id in seen:
+            continue
+        seen.add(c.id)
+        courses.append({
+            "course_id": c.id,
+            "code":      c.code,
+            "name":      c.name,
+        })
+
+    return Response(courses)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def admin_all_stats(request):
+    """
+    GET /admin/stats/all/?session=<str>&semester_type=<str>&course_id=<int>
+    Returns a JSON payload grouped by section:
+      {
+        sections: [
+          {
+            section: "<section_key>",
+            questions: [
+              {
+                question_id, text,
+                counts: { option_text: count, ... },
+                comments: [ ... ]
+              },
+              ...
+            ]
+          },
+          ...
+        ]
+      }
+    """
+    sess = request.query_params.get("session")
+    semt = request.query_params.get("semester_type")
+    cid  = request.query_params.get("course_id")
+    if not sess or not semt or not cid:
+        return Response(
+            {"detail":"Provide 'session', 'semester_type', and 'course_id'."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    raw = []
+    for q in FeedbackQuestion.objects.all().order_by("order"):
+        base = FeedbackResponse.objects.filter(
+            question=q,
+            course_id=cid,
+            session=sess,
+            semester_type=semt,
+        )
+        counts = {
+            o.text: base.filter(option=o).count()
+            for o in FeedbackOption.objects.filter(question=q)
+        }
+        comments = list(
+            base.filter(option__isnull=True)
+                .values_list("text_answer", flat=True)
+        )
+        raw.append({
+            "section":     q.section,
+            "question_id": q.id,
+            "text":        q.text,
+            "counts":      counts,
+            "comments":    comments,
+        })
+
+    grouped = {}
+    for item in raw:
+        sec = item["section"]
+        grouped.setdefault(sec, []).append({
+            "question_id": item["question_id"],
+            "text":        item["text"],
+            "counts":      item["counts"],
+            "comments":    item["comments"],
+        })
+
+    response = {
+        "sections": [
+            {"section": sec, "questions": qs}
+            for sec, qs in grouped.items()
+        ]
+    }
+
+    if not raw or all(len(v["questions"]) == 0 for v in response["sections"]):
+        return Response({"detail":"No responses found till now."})
+
+    return Response(response)
+
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def list_batches(request):
+    batches = Batch.objects.filter(running_batch=True).select_related("discipline").order_by("year", "name")
+    result = []
+    for b in batches:
+        label = f"{b.name} {b.discipline.acronym} {b.year}"
+        result.append({"id": b.id, "label": label, "year": b.year})
+    return Response(result)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def list_students_in_batch(request):
+    batch_id = request.query_params.get("batch_id")
+    if not batch_id:
+        return Response({"detail": "batch_id required."}, status=status.HTTP_400_BAD_REQUEST)
+    students = Student.objects.filter(batch_id__id=batch_id)
+    result = []
+    for st in students:
+        cb = st.batch_id
+        cb_label = f"{cb.name} {cb.discipline.acronym} {cb.year}"
+        result.append({
+            "id": st.id_id,
+            "username": str(st.id_id),
+            "current_batch": cb_label,
+            "current_batch_id": cb.id,
+            "current_batch_year": st.batch,
+        })
+    return Response(result)
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def apply_batch_changes(request):
+    data = request.data
+    user = request.user
+    errors = []
+
+    with transaction.atomic():
+        for idx, pair in enumerate(data):
+            sid = pair.get("student_id")
+            nid = pair.get("new_batch_id")
+            nyear = pair.get("new_batch_year")
+            if not sid or not nid or nyear is None:
+                errors.append({"index": idx, "detail": "student_id, new_batch_id, new_batch_year required."})
+                continue
+            try:
+                student = Student.objects.select_for_update().select_related("batch_id").get(id=sid)
+            except Student.DoesNotExist:
+                errors.append({"index": idx, "detail": f"Student {sid} not found."})
+                continue
+
+            old_batch = student.batch_id
+            if old_batch and old_batch.id == nid and student.batch == nyear:
+                continue
+            try:
+                new_batch = Batch.objects.get(id=nid)
+            except Batch.DoesNotExist:
+                errors.append({"index": idx, "detail": f"Batch {nid} not found."})
+                continue
+
+            BatchChangeHistory.objects.create(
+                student=student,
+                old_batch=old_batch,
+                new_batch=new_batch,
+            )
+            student.batch_id = new_batch
+            student.batch = nyear
+            student.save()
+
+    if errors:
+        return Response({"errors": errors}, status=status.HTTP_207_MULTI_STATUS)
+    return Response({"detail": "Batch changes applied."}, status=status.HTTP_200_OK)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def list_students_in_batch_semester_promotion(request):
+    batch_id = request.query_params.get("batch_id")
+    if not batch_id:
+        return Response({"detail": "batch_id required."}, status=status.HTTP_400_BAD_REQUEST)
+    students = Student.objects.filter(batch_id__id=batch_id).order_by('id_id')
+    result = []
+    for st in students:
+        result.append({
+            "id": st.id_id,
+            "username": str(st.id_id),
+            "current_semester_no": st.curr_semester_no,
+        })
+    return Response(result)
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def apply_promotion(request):
+    data = request.data  # list of student IDs
+    user = request.user
+    errors = []
+    with transaction.atomic():
+        for idx, sid in enumerate(data):
+            try:
+                student = Student.objects.get(id=sid)
+            except Student.DoesNotExist:
+                errors.append({"index": idx, "detail": f"Student {sid} not found."})
+                continue
+            old_sem = student.curr_semester_no
+            new_sem = old_sem + 1
+            try:
+                semester_obj = Semester.objects.get(curriculum=student.batch_id.curriculum,semester_no=new_sem)
+            except Semester.DoesNotExist:
+                errors.append({"index": idx, "detail": f"Semester {new_sem} not defined."})
+                continue
+            student.curr_semester_no = new_sem
+            student.save()
+            frs = FinalRegistration.objects.filter(student_id=student, verified=False, semester_id = semester_obj)
+            for fr in frs:
+                course = fr.course_id
+                exists = course_registration.objects.filter(
+                    student_id=student,
+                    course_id=course,
+                    semester_id=semester_obj
+                ).exists()
+                session, semester_type = generate_next_session(date_time.year, new_sem)
+                if not exists:
+                    new_cr = course_registration.objects.create(
+                        student_id=student,
+                        working_year=None,
+                        semester_id=semester_obj,
+                        course_id=course,
+                        course_slot_id=fr.course_slot_id,
+                        registration_type=fr.registration_type,
+                        session=session,
+                        semester_type=semester_type
+                    )
+                    if fr.old_course_registration:
+                        course_replacement.objects.create(
+                            old_course_registration=fr.old_course_registration,
+                            new_course_registration=new_cr
+                        )
+                fr.verified = True
+                fr.save()
+    if errors:
+        return Response({"errors": errors}, status=status.HTTP_207_MULTI_STATUS)
+    return Response({"detail": "Promotion applied."}, status=status.HTTP_200_OK)
+
+
+# @api_view(["GET"])
+# @permission_classes([IsAuthenticated])
+# def download_user_template(request):
+#     columns = [
+#         "username", "first_name", "last_name", "email", "gender", "date_of_birth",
+#         "user_status", "address", "phone_no", "user_type", "department",
+#         "title", "about_me",
+#         "programme", "batch", "batch_id", "category",
+#         "father_name", "mother_name", "hall_no", "room_no", "specialization", "curr_semester_no"
+#     ]
+#     df = pd.DataFrame(columns=columns)
+#     buffer = io.BytesIO()
+#     df.to_excel(buffer, index=False)
+#     buffer.seek(0)
+#     resp = HttpResponse(buffer, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+#     resp["Content-Disposition"] = "attachment; filename=student_upload_template.xlsx"
+#     return resp
+
+# @api_view(["POST"])
+# @permission_classes([IsAuthenticated])
+# def upload_users(request):
+#     f = request.FILES.get("file")
+#     if not f:
+#         return JsonResponse({"detail": "No file uploaded."}, status=status.HTTP_400_BAD_REQUEST)
+#     try:
+#         df = pd.read_excel(f)
+#     except Exception:
+#         return JsonResponse({"detail": "Invalid Excel file."}, status=status.HTTP_400_BAD_REQUEST)
+#     required = ["username", "first_name", "last_name", "email", "gender", "date_of_birth", "user_type", "programme", "batch", "category"]
+#     errors = []
+#     created = []
+#     with transaction.atomic():
+#         for idx, row in df.iterrows():
+#             rownum = idx + 2
+#             for field in required:
+#                 if pd.isna(row.get(field)):
+#                     errors.append({"row": rownum, "detail": f"{field} is required."})
+#                     break
+#             else:
+#                 uname = str(row["username"]).strip()
+#                 if User.objects.filter(username=uname).exists():
+#                     errors.append({"row": rownum, "detail": "Username already exists."})
+#                     continue
+#                 email = str(row["email"]).strip()
+#                 gender = str(row["gender"]).strip().upper()[0]
+#                 dob = row["date_of_birth"]
+#                 if isinstance(dob, datetime.date) is False:
+#                     errors.append({"row": rownum, "detail": "Invalid date_of_birth."})
+#                     continue
+#                 user = User.objects.create_user(username=uname, email=email, password="user@123")
+#                 user.first_name = str(row["first_name"]).strip()
+#                 user.last_name = str(row["last_name"]).strip()
+#                 user.save()
+#                 eid = uname  # using username as ExtraInfo.id
+#                 dept_name = str(row.get("department", "")).strip()
+#                 dept = None
+#                 if dept_name:
+#                     dept, _ = DepartmentInfo.objects.get_or_create(name=dept_name)
+#                 ei = ExtraInfo.objects.create(
+#                     id=eid,
+#                     user=user,
+#                     title=str(row.get("title", "")).strip() or None,
+#                     sex=gender,
+#                     date_of_birth=dob,
+#                     user_status=str(row.get("user_status", "")).strip() or None,
+#                     address=str(row.get("address", "")).strip() or None,
+#                     phone_no=int(row.get("phone_no")) if not pd.isna(row.get("phone_no")) else None,
+#                     user_type=str(row["user_type"]).strip(),
+#                     department=dept,
+#                     about_me=str(row.get("about_me", "")).strip() or None,
+#                 )
+#                 batch_year = int(row["batch"])
+#                 prog = str(row["programme"]).strip()
+#                 cat = str(row["category"]).strip()
+#                 batch_id_val = row.get("batch_id")
+#                 batch_obj = None
+#                 if not pd.isna(batch_id_val):
+#                     try:
+#                         batch_obj = Batch.objects.get(id=int(batch_id_val))
+#                     except Batch.DoesNotExist:
+#                         errors.append({"row": rownum, "detail": "Invalid batch_id."})
+#                         continue
+#                 student = Student.objects.create(
+#                     id=ei,
+#                     programme=prog,
+#                     batch=batch_year,
+#                     batch_id=batch_obj,
+#                     cpi=float(row.get("cpi", 0)) if not pd.isna(row.get("cpi")) else 0,
+#                     category=cat,
+#                     father_name=str(row.get("father_name", "")).strip() or None,
+#                     mother_name=str(row.get("mother_name", "")).strip() or None,
+#                     hall_no=int(row.get("hall_no")) if not pd.isna(row.get("hall_no")) else 0,
+#                     room_no=str(row.get("room_no", "")).strip() or None,
+#                     specialization=str(row.get("specialization", "")).strip() or None,
+#                     curr_semester_no=int(row.get("curr_semester_no")) if not pd.isna(row.get("curr_semester_no")) else 1
+#                 )
+#                 created.append(uname)
+#     status_code = status.HTTP_207_MULTI_STATUS if errors else status.HTTP_201_CREATED
+#     return JsonResponse({"created": created, "errors": errors}, status=status_code)
