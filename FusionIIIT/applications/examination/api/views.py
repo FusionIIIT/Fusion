@@ -937,7 +937,7 @@ class GenerateTranscript(APIView):
                 "course_name": course.name,
                 "course_code": course.code,
                 "credit": course.credit,
-                "grade":"" if reg.course_id.code in ("PR4001","PR4002", "BTP4001") else reg.grade,
+                "grade": reg.grade,
                 "points": Decimal(str(grade_conversion.get(reg.grade, 0) * 10)).quantize(Decimal('0.1'), rounding=ROUND_HALF_UP),
             }
 
@@ -2278,7 +2278,7 @@ class CheckResultView(APIView):
                     "courseid": grade.course_id.id,
                     "coursename": grade.course_id.name,
                     "credits": grade.course_id.credit,
-                    "grade":"" if grade.course_id.code in ("PR4001", "PR4002", "BTP4001") else grade.grade,
+                    "grade":grade.grade,
                     "points": Decimal(str(grade_conversion.get(grade.grade, 0) * 10)).quantize(Decimal('0.1'), rounding=ROUND_HALF_UP),
                 }
                 for grade in grades_info

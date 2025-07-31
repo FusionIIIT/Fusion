@@ -3229,8 +3229,7 @@ def add_course_instructor(request):
                     course_id=course,
                     instructor_id=fac,
                     year=year,
-                    semester_type=sem_type,
-                    version = version
+                    semester_type=sem_type 
                 )
 
         return JsonResponse({"success": f"{len(rows)} instructors added"}, status=201)
