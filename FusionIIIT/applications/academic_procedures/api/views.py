@@ -2955,19 +2955,26 @@ def allocate_all(request):
         course = queue.popleft()
         in_q.discard(course)
 
-        used = course_registration.objects.filter(course_id=course, session = year, semester_type = sem).exclude(course_slot_id__name__startswith = 'BL').count()
-        free = max(course.max_seats - used, 0)
-        reqs = by_course[course]
-        if free <= 0 or not reqs:
-            continue
+        while True:
+            used = course_registration.objects.filter(course_id=course, session=year, semester_type=sem).exclude(course_slot_id__name__startswith='BL').count()
+            free = max(course.max_seats - used, 0)
+            reqs = by_course[course]
+            if free <= 0 or not reqs:
+                break
 
-        to_approve = reqs if len(reqs) <= free else random.sample(reqs, free)
-        for cr in to_approve:
+            # Always pick one request at a time (FIFO)
+            cr = reqs[0]
             cr.status = "Approved"
             cr.processed_at = timezone.now()
-            cr.save(update_fields=['status','processed_at'])
+            cr.save(update_fields=['status', 'processed_at'])
             results.append({'id': cr.id, 'status': 'Approved'})
-
+            # print(
+            #     "Looking for old_reg with:",
+            #     "student_id=", cr.student,
+            #     "course_slot_id=", cr.course_slot,
+            #     "session=", cr.academic_year,
+            #     "semester_type=", cr.semester_type
+            # )
             # swap registrations
             old_reg = course_registration.objects.select_for_update().get(
                 student_id=cr.student,
@@ -2976,25 +2983,26 @@ def allocate_all(request):
                 semester_type=cr.semester_type
             )
             old_course = old_reg.course_id
+            # print(old_course)
             semester_id = old_reg.semester_id
             old_reg.delete()
 
-            working_year,_ = parse_academic_year(cr.academic_year, cr.semester_type)
+            working_year, _ = parse_academic_year(cr.academic_year, cr.semester_type)
             course_registration.objects.create(
                 student_id=cr.student,
                 course_slot_id=cr.course_slot,
                 course_id=course,
                 session=cr.academic_year,
                 semester_type=cr.semester_type,
-                semester_id = semester_id,
-                working_year = working_year
+                semester_id=semester_id,
+                working_year=working_year
             )
             by_course[course].remove(cr)
 
-            # cascade enqueue old_course
-            used_old = course_registration.objects.filter(course_id=old_course, session = year, semester_type = sem).exclude(course_slot_id__name__startswith = 'BL').count()
+            # cascade enqueue old_course if it now has free seats and pending requests
+            used_old = course_registration.objects.filter(course_id=old_course, session=year, semester_type=sem).exclude(course_slot_id__name__startswith='BL').count()
             free_old = max(old_course.max_seats - used_old, 0)
-            if free_old > 0 and by_course.get(old_course) and old_course not in in_q:
+            if free_old > 0 and by_course.get(old_course) and by_course[old_course] and old_course not in in_q:
                 queue.append(old_course)
                 in_q.add(old_course)
 
@@ -3003,7 +3011,7 @@ def allocate_all(request):
         for cr in reqs:
             cr.status = "Rejected"
             cr.processed_at = timezone.now()
-            cr.save(update_fields=['status','processed_at'])
+            cr.save(update_fields=['status', 'processed_at'])
             results.append({'id': cr.id, 'status': 'Rejected'})
 
     return JsonResponse(results, safe=False)
