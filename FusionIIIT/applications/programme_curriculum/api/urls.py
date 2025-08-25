@@ -2,6 +2,8 @@ from django.conf.urls import url
 from django.urls import path, include
 from django.contrib import admin
 from . import views 
+from . import views_student_management
+from .. import views_password_email
 
 
 urlpatterns = [
@@ -84,5 +86,52 @@ urlpatterns = [
     path('admin_faculties/', views.admin_view_all_faculties, name='admin_view_all_faculties'),
     path('admin_add_course_instructor/', views.add_course_instructor, name='add_course_instructor'),
     path('admin_update_course_instructor/<instructor_id>/', views.update_course_instructor_form, name='update_course_instructor_form'),
+    
+    # Student Data Management APIs
+    path('admin_batches_overview/', views_student_management.admin_batches_overview, name='admin_batches_overview'),
+    path('process_excel_upload/', views_student_management.process_excel_upload, name='process_excel_upload'),
+    path('admin_process_excel_upload/', views_student_management.process_excel_upload, name='admin_process_excel_upload'),  # Alias for frontend
+    path('save_students_batch/', views_student_management.save_students_batch, name='save_students_batch'),
+    path('admin_save_students_batch/', views_student_management.save_students_batch, name='admin_save_students_batch'),  # Alias for frontend
+    path('admin_add_single_student/', views_student_management.add_single_student, name='admin_add_single_student'),
+    path('set_total_seats/', views_student_management.set_total_seats, name='set_total_seats'),
+    path('admin_set_total_seats/', views_student_management.set_total_seats, name='admin_set_total_seats'),  # Alias for frontend
+    path('update_student_status/', views_student_management.update_student_status, name='update_student_status'),
+    path('admin_update_student_status/', views_student_management.update_student_status, name='admin_update_student_status'),  # Alias for frontend
+    path('export_students/<str:programme_type>/', views_student_management.export_students, name='export_students'),
+    path('admin_export_students/<str:programme_type>/', views_student_management.export_students, name='admin_export_students'),  # Alias for frontend
+    path('upload_history/', views_student_management.upload_history, name='upload_history'),
+    path('admin_upload_history/', views_student_management.upload_history, name='admin_upload_history'),  # Alias for frontend
+    path('list_students/', views_student_management.list_students, name='list_students'),
+    path('admin_list_students/', views_student_management.list_students, name='admin_list_students'),  # Alias for frontend
+    
+    # Individual Student CRUD APIs
+    path('student/<int:student_id>/', views_student_management.get_student, name='get_student'),
+    path('student/<int:student_id>/update/', views_student_management.update_student, name='update_student'),
+    path('student/<int:student_id>/delete/', views_student_management.delete_student, name='delete_student'),
+    path('admin_student/<int:student_id>/', views_student_management.get_student, name='admin_get_student'),  # Alias for frontend
+    path('admin_student/<int:student_id>/update/', views_student_management.update_student, name='admin_update_student'),  # Alias for frontend
+    path('admin_student/<int:student_id>/delete/', views_student_management.delete_student, name='admin_delete_student'),  # Alias for frontend
+    
+    # Batch Management CRUD APIs
+    path('batches/create/', views_student_management.create_batch, name='create_batch'),
+    path('batches/<int:batch_id>/update/', views_student_management.update_batch, name='update_batch'),
+    path('batches/<int:batch_id>/delete/', views_student_management.delete_batch, name='delete_batch'),
+    path('batches/list/', views_student_management.list_batches_with_status, name='list_batches_with_status'),
+    
+    # Student Status Management
+    path('students/<int:student_id>/update_status/', views_student_management.update_student_status_crud, name='update_student_status_crud'),
+    
+    # Password Management
+    path('batches/auto_generate_passwords/', views_student_management.auto_generate_passwords_for_batch, name='auto_generate_passwords_for_batch'),
+    
+    # Password Email Management APIs
+    path('send_student_password/', views_password_email.send_student_password, name='send_student_password'),
+    path('admin_send_student_password/', views_password_email.send_student_password, name='admin_send_student_password'),  # Alias for frontend
+    path('bulk_send_passwords/', views_password_email.bulk_send_passwords, name='bulk_send_passwords'),
+    path('admin_bulk_send_passwords/', views_password_email.bulk_send_passwords, name='admin_bulk_send_passwords'),  # Alias for frontend
+    path('password_email_status/<int:email_log_id>/', views_password_email.password_email_status, name='password_email_status'),
+    path('bulk_operation_status/<str:operation_id>/', views_password_email.bulk_operation_status, name='bulk_operation_status'),
+    path('manage_email_templates/', views_password_email.manage_email_templates, name='manage_email_templates'),
     
 ]

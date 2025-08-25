@@ -1,7 +1,7 @@
 from django.db.models.query_utils import Q
 from django.http import request
 from django.shortcuts import get_object_or_404, render, HttpResponse,redirect
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 # import itertools
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -1749,3 +1749,27 @@ def update_course_instructor_form(request, instructor_id):
     
     # Redirect to the main page if the user is not 'acadadmin'
     return HttpResponseRedirect('/programme_curriculum/')
+
+
+@login_required(login_url='/accounts/login')
+def batch_upload(request):
+    """
+    API endpoint for batch upload access check - used by React frontend
+    """
+    if request.session.get('currentDesignationSelected') in ["acadadmin", "studentacadadmin"]:
+        # Return success response for React frontend
+        return JsonResponse({
+            'success': True,
+            'message': 'Access granted for batch upload',
+            'user': {
+                'username': request.user.username,
+                'designation': request.session.get('currentDesignationSelected'),
+                'name': f"{request.user.first_name} {request.user.last_name}"
+            }
+        })
+    
+    # Return access denied for unauthorized users
+    return JsonResponse({
+        'success': False,
+        'message': 'Access denied. Only acadadmin and studentacadadmin can access batch upload.'
+    }, status=403)

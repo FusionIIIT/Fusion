@@ -2209,10 +2209,10 @@ def view_all_student_data(request):
                 students = Student.objects.select_related('batch_id', 'id__user', 'batch_id__discipline', 'id').filter(**filter_names).order_by('id').all().only('batch', 'id__id', 'id__user', 'programme','pwd_status', 'father_mobile_no', 'mother_mobile_no', 'batch_id__discipline__acronym', 'specialization', 'id__sex', 'category', 'id__phone_no', 'id__date_of_birth', 'id__user__first_name', 'id__user__last_name', 'id__user__email', 'father_name', 'mother_name', 'id__address')
             for student in students:
                 obj = {
-                    "admissionYear" : student.batch,
+                    "admissionYear" : student.batch_id.year if student.batch_id else student.batch,
                     "RollNo" : student.id.id,
                     "name" : student.id.user.get_full_name(),
-                    "program": student.programme,
+                    "program": student.programme if student.programme else (student.batch_id.name if student.batch_id else ""),
                     "discipline": student.batch_id.discipline.acronym,
                     "specailization": student.specialization,
                     "gender" : student.id.sex,
