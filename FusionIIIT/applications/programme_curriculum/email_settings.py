@@ -12,7 +12,7 @@ EMAIL_USE_TLS = False  # Don't use TLS when using SSL
 
 # Email Authentication (Use environment variables for security)
 EMAIL_HOST_USER = 'vikrantkrd@gmail.com'  # Change to your email
-EMAIL_HOST_PASSWORD = 'usow zrpk zjte wjsv'    # Use app password for Gmail
+EMAIL_HOST_PASSWORD = ''    # Use app password for Gmail
 
 # Default From Email
 DEFAULT_FROM_EMAIL = 'FUSION Portal <fusion@iiitdmj.ac.in>'

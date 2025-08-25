@@ -2197,26 +2197,56 @@ def delete_batch(request, batch_id):
     URL: /programme_curriculum/api/batches/<int:batch_id>/delete/
     """
     try:
+        print(f"Attempting to delete batch ID: {batch_id}")
+        
         try:
             batch = BatchConfiguration.objects.get(id=batch_id)
+            print(f"Found batch: {batch.programme} - {batch.discipline} - {batch.year}")
         except BatchConfiguration.DoesNotExist:
+            print(f"Batch {batch_id} not found")
             return JsonResponse({
                 'success': False,
                 'message': 'Batch not found'
             }, status=404)
         
-        # Check if batch has students
-        student_count = StudentBatchUpload.objects.filter(
-            branch__icontains=batch.discipline,
-            year=batch.year
-        ).count()
+        # Check if batch has students - using improved field mapping to avoid cross-programme matching
+        # First get all students in the year
+        students_in_year = StudentBatchUpload.objects.filter(year=batch.year)
+        
+        # Then filter based on programme type to avoid cross-matching
+        if batch.programme.upper() == 'PHD':
+            # For PhD, look for students with PhD programme_type
+            students_in_batch = students_in_year.filter(
+                programme_type__icontains='phd'
+            ).filter(
+                branch__icontains=batch.discipline
+            )
+        elif batch.programme.upper() in ['UG', 'UNDERGRADUATE', 'BTECH']:
+            # For UG, look for students with UG programme_type
+            students_in_batch = students_in_year.filter(
+                programme_type__icontains='ug'
+            ).filter(
+                branch__icontains=batch.discipline
+            )
+        else:
+            # Default: use original logic for other programmes
+            students_in_batch = students_in_year.filter(
+                branch__icontains=batch.discipline
+            )
+        
+        student_count = students_in_batch.count()
+        
+        print(f"Batch: {batch.programme} - {batch.discipline} - {batch.year}")
+        print(f"Students found in batch: {student_count}")
         
         if student_count > 0:
+            print(f"Cannot delete batch - has {student_count} students")
             return JsonResponse({
                 'success': False,
-                'message': f'Cannot delete batch with {student_count} enrolled students'
+                'message': f'Cannot delete batch with {student_count} enrolled students. Please delete students first.'
             }, status=400)
         
+        print(f"Deleting batch {batch_id}")
         batch.delete()
         
         return JsonResponse({
@@ -2225,6 +2255,9 @@ def delete_batch(request, batch_id):
         })
         
     except Exception as e:
+        print(f"Error deleting batch {batch_id}: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return JsonResponse({
             'success': False,
             'message': f'Failed to delete batch: {str(e)}'

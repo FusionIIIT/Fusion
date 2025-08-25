@@ -55,7 +55,7 @@ EMAIL_USE_TLS = False  # Don't use TLS when using SSL
 
 # Email sender configuration
 EMAIL_HOST_USER = 'vikrantkrd@gmail.com'
-EMAIL_HOST_PASSWORD = 'usow zrpk zjte wjsv'  # Your actual Gmail app password ✅
+EMAIL_HOST_PASSWORD = ''  # Your actual Gmail app password
 
 # Email timeout
 EMAIL_TIMEOUT = 30
