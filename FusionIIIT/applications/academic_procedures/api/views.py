@@ -886,7 +886,9 @@ def verify_course(request):
     roll_no = request.data.get("rollno")
     if not roll_no:
         return Response({"error": "rollno is required"}, status=status.HTTP_400_BAD_REQUEST)
-    roll_no = roll_no.upper()
+    
+    # Convert to uppercase after null check
+    roll_no = roll_no.strip().upper()
 
     # First check main academic tables
     student = Student.objects.filter(id_id=roll_no).first()

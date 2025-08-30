@@ -47,6 +47,9 @@ LOGIN_REDIRECT_URL = '/dashboard'
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For testing - emails will print in terminal
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # For production - real email sending
 
+# For development, you might want to use console backend instead:
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' if os.environ.get('DJANGO_ENV') == 'development' else 'django.core.mail.backends.smtp.EmailBackend'
+
 # SMTP Configuration for Gmail
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 465
@@ -54,8 +57,8 @@ EMAIL_USE_SSL = True  # Use SSL for port 465
 EMAIL_USE_TLS = False  # Don't use TLS when using SSL
 
 # Email sender configuration
-EMAIL_HOST_USER = 'vikrantkrd@gmail.com'
-EMAIL_HOST_PASSWORD = ''  # Your actual Gmail app password
+EMAIL_HOST_USER = 'fusion@iiitdmj.ac.in'
+EMAIL_HOST_PASSWORD = os.environ.get('MAIL_PASSWORD', '')
 
 # Email timeout
 EMAIL_TIMEOUT = 30
@@ -74,9 +77,9 @@ ACCOUNT_EMAIL_VERIFICATION = 'optional'
 
 ACCOUNT_EMAIL_SUBJECT_PREFIX = 'Fusion: '
 
-DEFAULT_FROM_EMAIL = 'Fusion IIIT <vikrantkrd@gmail.com>'
+DEFAULT_FROM_EMAIL = 'Fusion IIIT <fusion@iiitdmj.ac.in>'
 
-SERVER_EMAIL = 'vikrantkrd@gmail.com'
+SERVER_EMAIL = 'fusion@iiitdmj.ac.in'
 
 # Portal URL for email templates
 FUSION_PORTAL_URL = 'http://fusion.iiitdmj.ac.in/'

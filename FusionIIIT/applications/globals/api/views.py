@@ -32,28 +32,19 @@ def login(request):
     serializer.is_valid(raise_exception=True)
     user = get_and_authenticate_user(**serializer.validated_data)
     data = serializers.AuthUserSerializer(user).data
-    print(user.id)
+    
     desig = list(HoldsDesignation.objects.select_related('user','working','designation').all().filter(working = user).values_list('designation'))
-    print(desig)
     b = [i for sub in desig for i in sub]
     design = HoldsDesignation.objects.select_related('user','designation').filter(working=user)
 
     designation=[]
-                
                 
     if str(user.extrainfo.user_type) == "student":
         designation.append(str(user.extrainfo.user_type))
         
     for i in design:
         if str(i.designation) != str(user.extrainfo.user_type):
-            print('-------')
-            print(i.designation)
-            print(user.extrainfo.user_type)
-            print('')
             designation.append(str(i.designation))
-    for i in designation:
-        print(i)
-
     
     resp = {
         'success' : 'True',
@@ -88,7 +79,6 @@ def auth_view(request):
         name_ = get_object_or_404(Designation, id = id)
         designation_info.append(str(name_.name))
 
-    print(designation_info)
     accessible_modules = {}
     
     for designation in designation_info:
@@ -140,7 +130,6 @@ def update_last_selected_role(request):
 
     return Response({'message': 'last_selected_role updated successfully'}, status=status.HTTP_200_OK)
 
-# This API is only for student profile. For faculty profile, use eis_profile views
 @api_view(['GET'])
 def profile(request, username=None):
     user = get_object_or_404(User, username=username) if username else request.user
@@ -393,3 +382,69 @@ def delete_notification(request):
             'details': str(e)
         }
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+from django.db import transaction
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def admin_delete_course_proxy(request, course_id):
+    """
+    Proxy function to call the actual course delete function from programme_curriculum API
+    """
+    try:
+        from applications.programme_curriculum.models import Course, CourseSlot, CourseInstructor
+        
+        try:
+            course = Course.objects.get(id=course_id)
+        except Course.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Course not found.'
+            }, status=404)
+
+        course_name = course.name
+        course_code = course.code
+        
+        try:
+            instructor_count = CourseInstructor.objects.filter(course_id=course).count()
+            if instructor_count > 0:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Cannot delete course. It has {instructor_count} active instructor assignment(s). Please remove instructor assignments first.'
+                }, status=400)
+            
+            slot_count = CourseSlot.objects.filter(courses=course).count()
+            if slot_count > 0:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Cannot delete course. It is assigned to {slot_count} course slot(s) in curriculum(s). Please remove from course slots first.'
+                }, status=400)
+                
+        except Exception as dependency_error:
+            return JsonResponse({
+                'success': False,
+                'message': f'Error checking course dependencies: {str(dependency_error)}'
+            }, status=500)
+
+        try:
+            with transaction.atomic():
+                course.delete()
+                
+            return JsonResponse({
+                'success': True,
+                'message': f'Course "{course_name}" has been successfully deleted.'
+            }, status=200)
+            
+        except Exception as delete_error:
+            return JsonResponse({
+                'success': False,
+                'message': f'Error deleting course: {str(delete_error)}'
+            }, status=500)
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': 'An unexpected error occurred while deleting the course.',
+            'error': str(e)
+        }, status=500)

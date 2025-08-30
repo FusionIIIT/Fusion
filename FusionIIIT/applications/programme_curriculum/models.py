@@ -12,9 +12,6 @@ from applications.globals.models import (DepartmentInfo, Designation,
                                          ExtraInfo, Faculty, HoldsDesignation)
 from django.contrib.auth.models import User
 
-
-# Create your models here.
-# Create your models here.
 PROGRAMME_CATEGORY_CHOICES = [
     ('UG', 'Undergraduate'),
     ('PG', 'Postgraduate'),
@@ -49,19 +46,7 @@ BATCH_NAMES = [
 
 
 class Programme(models.Model):
-    '''
-        Current Purpose : To store the details regardina a programme
-
-
-
-        ATTRIBUTES :
-
-        category(char) - to store the type of program(eg UG/PG)
-        name(char) - name of the program(eg 'Btech  CSE' )
-        program_begin_year(+ve Integer) -  to store since when the programme is being offered
-
-        ! - the name attribute has ambiguous entries
-    '''
+    """Store programme details"""
 
     category = models.CharField(
         max_length=3, choices=PROGRAMME_CATEGORY_CHOICES, null=False, blank=False)
@@ -83,18 +68,7 @@ class Programme(models.Model):
 
 
 class Discipline(models.Model):
-    '''
-        Current Purpose : To store the details regarding a discipline
-
-
-
-        ATTRIBUTES :
-
-        name(char) - to store the name of discipline(eg design, Computer science and engineering)
-        acronym(char) - the short form of the discipline(eg : CSE)
-        programmes(programme_curriculum.Programme) - to link a programme with the discipline(CSE in Btech, CSE in Mtech)
-
-    '''
+    """Store discipline details"""
 
     name = models.CharField(max_length=100, null=False,
                             unique=True, blank=False)
@@ -111,27 +85,11 @@ class Discipline(models.Model):
 
 
 class Curriculum(models.Model):
-    '''
-        Current Purpose : To store the details regarding a curriculum
-        Curriculum definition : a set of all courses offered by the institute within a programme
-
-
-
-
-        ATTRIBUTES :
-
-        programmes(program_curriculum.Programme) - to link a program to a curriculum
-        name(char) - to store the name of the curriculum
-        version(positive Integer) - to store the version of a curriculum(used in cases of updating an existing curriculum)
-        working_curriculum(Boolean) - to check whether the curriculum is currently in execution or not
-        no_of_semester(Integer) - the number of semesters defined for the curriculum
-        min_credit(Integer) - the minimum credits required for the curriculum
-    '''
+    """Store curriculum details"""
+    
     programme = models.ForeignKey(
         Programme, on_delete=models.CASCADE, null=False)
     name = models.CharField(max_length=100, null=False, blank=False)
-    # version = models.FloatField(default=1.0, null=False)
-    # version = models.PositiveIntegerField(default=1, null=False)
     version = models.DecimalField(
     max_digits=5, 
     decimal_places=1,  
@@ -141,9 +99,6 @@ class Curriculum(models.Model):
     no_of_semester = models.PositiveIntegerField(default=1, null=False)
     min_credit = models.PositiveIntegerField(default=0, null=False)
     latest_version = models.BooleanField(default=True)
-    
-
-    
 
     class Meta:
         unique_together = ('name', 'version',)
@@ -161,22 +116,8 @@ class Curriculum(models.Model):
 
 
 class Semester(models.Model):
-    '''
-        Current Purpose : To store the details regarding a semester
-
-
-
-
-
-        ATTRIBUTES :
-
-        curriculum(programme_curriculum.Curriculum) - to store the link for the associated curriculum details for the semester
-        semester_no(int) - to store the semester number(format unclear)
-        instigate_semester(boolean) - might be used to check whether the semester is currently in action
-        start_semester(DateTime) - to store the start date of the semester
-        end_semester(DateTime) - to store the end date of the semester
-
-    '''
+    """Store semester details"""
+    
     curriculum = models.ForeignKey(
         Curriculum, null=False, on_delete=models.CASCADE)
     semester_no = models.PositiveIntegerField(null=False)
@@ -197,39 +138,8 @@ class Semester(models.Model):
 
 
 class Course(models.Model):
-    '''
-        Current Purpose : To store the details regarding a course
-
-
-
-
-
-        ATTRIBUTES :
-
-        code(char) -  the course code (eg CS3005)
-        name(char) -  the name of the course(eg Machine Learning)
-        credit(Integer) -  the credits defined for the course
-        lecture_hours(integer) -  lecture hours defined for the course
-        tutorial_hours(Integer) - tutorial hours defined for the course
-        practical_hours(Integer)  - practical hours defined for the course
-        discussion_hours(Integer) - discussion hours
-        project_hours(Integer) - project hours
-        pre_requisits(Boolean) -  denote whether  this course has prerequisites(courses that one should take before opting this )
-        pre_requisit_courses(programme_curriculum.Course) - link to set of prerequisite courses
-        syllabus(text) - syllabus described for the course
-        percent_quiz_1(+ve int)  - defined weightage in marking
-        percent_midsem(+ve int)  - defined weightage in marking
-        percent_quiz_2(+ve int)  - defined weightage in marking
-        percent_endsem (+ve int)  - defined weightage in marking
-        percent_project(+ve int)  - defined weightage in marking
-        percent_lab_evaluation (+ve int)  - defined weightage in marking
-        percent_course_attendance (+ve int)  - defined weightage in marking
-        ref_books(text) - reference books suggested for the course
-        working_course(boolean) - to denote whether the course is currently in execution or not
-        disciplines(programme_curriculum.Discipline) - to store which discipline is offering the course
-
-
-    '''
+    """Store course details"""
+    
     code = models.CharField(max_length=10, null=False, blank=False)
     name = models.CharField(max_length=100, null=False, blank=False)
     version = models.DecimalField(
@@ -277,23 +187,8 @@ class Course(models.Model):
 
 
 class Batch(models.Model):
+    """Store batch details"""
 
-    '''
-        Current Purpose : To store the details regarding a batch(eg details of curriculum assigned for batch)
-
-
-
-
-
-        ATTRIBUTES :
-
-        name(char) -  to store the type of batch(eg Btech/Mtech/Phd, not nullable)
-        discipline(programme_curriculum.Discipline) - to link the discipline for the batch[not nullable]
-        year(+ve Integer) - to store the year of the batch(eg:2019 batch)
-        curriculum(programme_curriculum.Curriculum) - reference to the curriculum for the batch(can be null)
-        running_batch(Boolean) - to denote whether the batch is currently active or has graduated
-
-    '''
     name = models.CharField(choices=BATCH_NAMES,
                             max_length=50, null=False, blank=False)
     discipline = models.ForeignKey(
@@ -303,6 +198,7 @@ class Batch(models.Model):
     curriculum = models.ForeignKey(
         Curriculum, null=True, blank=True, on_delete=models.SET_NULL)
     running_batch = models.BooleanField(default=True)
+    total_seats = models.PositiveIntegerField(default=60, null=False, blank=False)
 
     class Meta:
         unique_together = ('name', 'discipline', 'year',)
@@ -312,22 +208,8 @@ class Batch(models.Model):
 
 
 class CourseSlot(models.Model):
-    '''
-        Current Purpose : To store the details regarding a course slot 
-            Course slot : is defined as per the curriculum for a programme to have specific type of courses 
-                            for a given semester
-        ATTRIBUTES :
-
-        semester(programme_curriculum.Semester) - [not nullable] to denote link to the semester details for which the courseslot is made
-        name(char) - [not nullable] the domain of the course[Professional Elective 1, IT Lab etc ]
-        type(char) - [not nullable] the type of course(elective/ core/NS/)
-        course slot_info - [can be null] stores textual info regarding course
-        courses(programme_curriculum.Course) - the list of courses being floated for the slot(can be null)
-        duration(integer) - might be to denote for how many semester will the course run for(eg PR's are run across 2 semesters)
-        minimum_registration_limit(integer) - minimum students required for a course
-        maximum_registration_limit(integer) - maximum students required for a course 
-
-    '''
+    """Store course slot details"""
+    
     semester = models.ForeignKey(
         Semester, null=False, on_delete=models.CASCADE)
     name = models.CharField(max_length=100, null=False, blank=False)
@@ -352,9 +234,8 @@ class CourseSlot(models.Model):
 
 class CourseInstructor(models.Model):
     course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
-    # instructor_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     instructor_id = models.ForeignKey(Faculty, on_delete=models.CASCADE)
-    year = models.IntegerField(default=datetime.date.today().year, null=False)  # Default to the current year
+    year = models.IntegerField(default=datetime.date.today().year, null=False)
     SEMESTER_TYPE_CHOICES = [
         ("Odd Semester", "Odd Semester"),
         ("Even Semester", "Even Semester"),
@@ -371,11 +252,7 @@ class CourseInstructor(models.Model):
 
     @property
     def academic_year(self):
-        """
-        Dynamically returns academic year in format 'YYYY-YY':
-        - If semester_type is 'Even Semester': returns 'year-year+1'
-        - If semester_type is 'Odd Semester' or 'Summer Semester': returns 'year-1-year'
-        """
+        """Returns academic year in format 'YYYY-YY'"""
         if self.semester_type == "Even Semester":
             start_year = self.year - 1
             end_year = self.year
@@ -385,7 +262,7 @@ class CourseInstructor(models.Model):
 
         return f"{start_year}-{str(end_year)[-2:]}"
 
-#new
+
 class NewProposalFile(models.Model):
     
     uploader = models.CharField(max_length=100, null=False, blank=False)
@@ -420,36 +297,35 @@ class NewProposalFile(models.Model):
     subject = models.CharField(max_length=100, null=True, blank=False)
     description = models.CharField(max_length=400, null=True, blank=False)
     upload_date = models.DateTimeField(auto_now_add=True)
-    is_read = models.BooleanField(default = False)
-    is_update= models.BooleanField(default = False)
-    is_archive = models.BooleanField(default = False)
+    is_read = models.BooleanField(default=False)
+    is_update = models.BooleanField(default=False)
+    is_archive = models.BooleanField(default=False)
+    
     class Meta:
-        unique_together = ('code', 'uploader','name') # if code and faculty code matches to another proposal name will take care of it         
+        unique_together = ('code', 'uploader', 'name')
     
     def __str__(self):
-        return str(self.uploader + " - " +self.designation+" - "+self.code + " - "+self.name)
+        return str(self.uploader + " - " + self.designation + " - " + self.code + " - " + self.name)
+
 
 class Proposal_Tracking(models.Model):
 
     file_id = models.CharField(max_length=100, null=False, blank=False)
-    current_id =  models.CharField(max_length=100, null=False, blank=False)
+    current_id = models.CharField(max_length=100, null=False, blank=False)
     current_design = models.CharField(max_length=100, null=False, blank=False)
-    receive_id = models.ForeignKey(User,blank=False,on_delete=models.CASCADE)
-    receive_design = models.ForeignKey(Designation, blank=False,on_delete=models.CASCADE)
-    disciplines = models.ForeignKey(Discipline, blank=False,on_delete=models.CASCADE)
+    receive_id = models.ForeignKey(User, blank=False, on_delete=models.CASCADE)
+    receive_design = models.ForeignKey(Designation, blank=False, on_delete=models.CASCADE)
+    disciplines = models.ForeignKey(Discipline, blank=False, on_delete=models.CASCADE)
     receive_date = models.DateTimeField(auto_now_add=True)
     forward_date = models.DateTimeField(auto_now_add=True)
     remarks = models.CharField(max_length=250, null=True, blank=True)
-    is_added = models.BooleanField(default = False)
-    is_submitted = models.BooleanField(default = False)
-    is_rejected = models.BooleanField(default = False)
-    sender_archive = models.BooleanField(default = False)
-    receiver_archive = models.BooleanField(default = False)
-    
-
+    is_added = models.BooleanField(default=False)
+    is_submitted = models.BooleanField(default=False)
+    is_rejected = models.BooleanField(default=False)
+    sender_archive = models.BooleanField(default=False)
+    receiver_archive = models.BooleanField(default=False)
 
     class Meta:
-        # unique_together = ('file_id', 'current_id','receive_id','receive_design')
-        unique_together = ('file_id', 'current_id','current_design','disciplines')
+        unique_together = ('file_id', 'current_id', 'current_design', 'disciplines')
 
         

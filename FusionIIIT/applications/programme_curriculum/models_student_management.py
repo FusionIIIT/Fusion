@@ -60,17 +60,13 @@ class BatchConfiguration(models.Model):
         return f"{self.programme} - {self.discipline} ({self.year})"
     
     def calculate_seats(self):
-        """Calculate filled and available seats based on actual student count"""
+        """Calculate filled and available seats based on unique student count"""
         try:
             from django.db.models import Q
             
-            # Create flexible query to match students
             discipline_q = Q()
-            
-            # Direct match
             discipline_q |= Q(branch__icontains=self.discipline)
             
-            # Normalized discipline matching
             if self.discipline == 'Computer Science and Engineering':
                 discipline_q |= Q(branch__icontains='Computer Science') | Q(branch__icontains='CSE')
             elif self.discipline == 'Electronics and Communication Engineering':
@@ -82,18 +78,19 @@ class BatchConfiguration(models.Model):
             elif self.discipline == 'Design':
                 discipline_q |= Q(branch__icontains='Design') | Q(branch__icontains='Des')
             
-            # Count students matching this batch
-            student_count = StudentBatchUpload.objects.filter(
+            unique_students = StudentBatchUpload.objects.filter(
                 discipline_q,
                 year=self.year
-            ).count()
+            ).values_list('roll_number', flat=True).distinct()
             
-            self.filled_seats = student_count
-            self.available_seats = max(0, self.total_seats - self.filled_seats)
-            self.save(update_fields=['filled_seats', 'available_seats'])
+            student_count = len(unique_students)
+            
+            if self.filled_seats != student_count:
+                self.filled_seats = student_count
+                self.available_seats = max(0, self.total_seats - self.filled_seats)
+                self.save(update_fields=['filled_seats', 'available_seats'])
             
         except Exception as e:
-            print(f"Error calculating seats for batch {self.id}: {e}")
             self.filled_seats = 0
             self.available_seats = self.total_seats
 
@@ -124,6 +121,7 @@ class StudentBatchUpload(models.Model):
     REPORTED_STATUS_CHOICES = [
         ('NOT_REPORTED', 'Not Reported'),
         ('REPORTED', 'Reported'),
+        ('WITHDRAWAL', 'Withdrawal'),
     ]
     
     PROGRAMME_TYPE_CHOICES = [
@@ -179,6 +177,13 @@ class StudentBatchUpload(models.Model):
     allocation_status = models.CharField(max_length=50, default='ALLOCATED', help_text="Allocation Status")
     reported_status = models.CharField(max_length=20, choices=REPORTED_STATUS_CHOICES, default='NOT_REPORTED')
     
+    # Source tracking - Track where the student data came from
+    source = models.CharField(
+        max_length=50, 
+        default='admin_upload',
+        help_text='Source of student data (admin_upload, excel_upload, manual_entry, etc.)'
+    )
+    
     # Authentication - Map to existing user_account_id column instead of creating OneToOneField
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='student_profile', db_column='user_account_id')
     
@@ -207,15 +212,6 @@ class StudentBatchUpload(models.Model):
     
     def __str__(self):
         return f"{self.name} ({self.roll_number or self.jee_app_no})"
-    
-    def save(self, *args, **kwargs):
-        """Override save to automatically set academic_year string"""
-        if not self.academic_year:
-            # Auto-generate academic year string (e.g., "2025-26")
-            year = self.year or get_current_academic_year()
-            next_year = (year + 1) % 100  # Get last 2 digits of next year
-            self.academic_year = f"{year}-{next_year:02d}"
-        super().save(*args, **kwargs)
     
     def get_programme_name(self):
         """Get the full programme name based on programme_type and branch"""
@@ -248,12 +244,32 @@ class StudentBatchUpload(models.Model):
             return 'DES'
         return self.branch
     
+    @property
+    def first_name(self):
+        """Get first name from full name"""
+        if self.name:
+            return self.name.split()[0]
+        return ''
+    
+    @property
+    def last_name(self):
+        """Get last name from full name"""
+        if self.name:
+            name_parts = self.name.split()
+            if len(name_parts) > 1:
+                return ' '.join(name_parts[1:])
+        return ''
+    
     def save(self, *args, **kwargs):
-        # Auto-generate institute email if roll number is provided
+        """Override save to automatically set academic_year string and normalize emails"""
+        if not self.academic_year:
+            year = self.year or get_current_academic_year()
+            next_year = (year + 1) % 100
+            self.academic_year = f"{year}-{next_year:02d}"
+        
         if self.roll_number and not self.institute_email:
             self.institute_email = f"{self.roll_number.lower()}@iiitdmj.ac.in"
         
-        # Normalize email addresses to lowercase for delivery consistency
         if self.institute_email:
             self.institute_email = self.institute_email.lower()
         if self.personal_email:
@@ -262,67 +278,54 @@ class StudentBatchUpload(models.Model):
         super().save(*args, **kwargs)
     
     def create_user_account(self, password=None):
-        """
-        Create Django User account for this student
-        Password is ONLY stored in auth_user table, never in student table
-        """
+        """Create Django User account for this student"""
         from django.contrib.auth.models import User
         from django.db import IntegrityError
         import secrets
         import string
         
         if self.user:
-            return self.user, None  # User already exists
+            return self.user, None
         
-        # Generate secure password if not provided
         if not password:
             password = self.generate_secure_password()
         
-        # Create username (prefer roll_number, fallback to jee_app_no) - KEEP UPPERCASE
-        username = self.roll_number or self.jee_app_no  # Keep original case (uppercase)
-        email = (self.institute_email or self.personal_email or '').lower()  # FORCE LOWERCASE for email
+        username = self.roll_number or self.jee_app_no
+        email = (self.institute_email or self.personal_email or '').lower()
         
         try:
-            # Check if user already exists
             existing_user = User.objects.filter(username=username).first()
             if existing_user:
-                # Link existing user to this student
                 self.user = existing_user
                 self.save()
-                return existing_user, None  # Return None for password since it's existing user
+                return existing_user, None
             
-            # Create new User with hashed password in auth_user table
             user = User.objects.create_user(
                 username=username,
                 email=email,
-                password=password,  # Django automatically hashes this
+                password=password,
                 first_name=self.name.split()[0] if self.name else '',
                 last_name=' '.join(self.name.split()[1:]) if len(self.name.split()) > 1 else '',
                 is_active=True
             )
             
-            # Link the user to this student
             self.user = user
             
-            # Store password for email notification
             from django.utils import timezone
             self.email_password = password
             self.password_generated_at = timezone.now()
             self.password_email_sent = False
             self.save()
             
-            return user, password  # Return user object and plain password for emailing
+            return user, password
             
         except IntegrityError as e:
-            # Handle duplicate username gracefully
             if 'username' in str(e):
-                # Try to find and link existing user
                 existing_user = User.objects.filter(username=username).first()
                 if existing_user:
                     self.user = existing_user
                     self.save()
                     return existing_user, None
-            # Re-raise if it's a different integrity error
             raise e
     
     def get_user_account(self):
@@ -334,26 +337,21 @@ class StudentBatchUpload(models.Model):
         return self.user is not None
     
     def update_user_password(self, new_password):
-        """
-        Update user password (stored only in auth_user table)
-        """
+        """Update user password"""
         if self.user:
-            self.user.set_password(new_password)  # Django handles hashing
+            self.user.set_password(new_password)
             self.user.save()
             return True
         return False
     
     @staticmethod
     def generate_secure_password(length=8):
-        """
-        Generate cryptographically secure password
-        """
+        """Generate cryptographically secure password"""
         lowercase = string.ascii_lowercase
         uppercase = string.ascii_uppercase
         digits = string.digits
         special = "!@#$%"
         
-        # Ensure password has at least one from each category
         password = [
             secrets.choice(lowercase),
             secrets.choice(uppercase), 
@@ -361,14 +359,92 @@ class StudentBatchUpload(models.Model):
             secrets.choice(special)
         ]
         
-        # Fill remaining length
         all_chars = lowercase + uppercase + digits + special
         for _ in range(length - 4):
             password.append(secrets.choice(all_chars))
         
-        # Shuffle the password
         secrets.SystemRandom().shuffle(password)
         return ''.join(password)
+    
+    def create_complete_student_profile(self):
+        """Manually trigger complete student profile creation"""
+        if self.reported_status != 'REPORTED':
+            raise ValueError("Student must be in REPORTED status to create complete profile")
+        
+        if not self.roll_number:
+            raise ValueError("Student must have a roll number to create complete profile")
+        
+        from .signals import create_django_user, create_extra_info, create_academic_student
+        from django.db import transaction
+        
+        try:
+            with transaction.atomic():
+                user, password = create_django_user(self)
+                extra_info = create_extra_info(self, user)
+                academic_student = create_academic_student(self, extra_info)
+                
+                self.user = user
+                self.save(update_fields=['user'])
+                
+                return {
+                    'success': True,
+                    'user': user,
+                    'extra_info': extra_info,
+                    'academic_student': academic_student,
+                    'password': password
+                }
+                
+        except Exception as e:
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    def has_complete_profile(self):
+        """
+        Check if student has complete profile (User + ExtraInfo + Academic Student)
+        """
+        if not self.user:
+            return False
+        
+        try:
+            # Check if ExtraInfo exists
+            extra_info = self.user.extrainfo
+            
+            # Check if Academic Student exists
+            from applications.academic_information.models import Student
+            academic_student = Student.objects.get(id=extra_info)
+            
+            return True
+        except:
+            return False
+    
+    def get_profile_status(self):
+        """
+        Get detailed status of student profile creation
+        """
+        status = {
+            'has_user': bool(self.user),
+            'has_extra_info': False,
+            'has_academic_student': False,
+            'is_complete': False
+        }
+        
+        if self.user:
+            try:
+                extra_info = self.user.extrainfo
+                status['has_extra_info'] = True
+                
+                # Check academic student
+                from applications.academic_information.models import Student
+                academic_student = Student.objects.get(id=extra_info)
+                status['has_academic_student'] = True
+                
+                status['is_complete'] = True
+            except:
+                pass
+        
+        return status
 
 
 class StudentStatusLog(models.Model):
@@ -426,3 +502,115 @@ class UploadHistory(models.Model):
         if self.total_records == 0:
             return 0
         return round((self.successful_records / self.total_records) * 100, 2)
+
+
+# Django Signal for Automatic Student Profile Creation
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+def create_student_profiles_automatically(students_list):
+    """Create student profiles automatically"""
+    from django.utils import timezone
+    from applications.globals.models import ExtraInfo, DepartmentInfo
+    from applications.programme_curriculum.models import Batch, Discipline, Curriculum, Programme
+    from applications.academic_information.models import Student as AcademicStudent
+    from applications.globals.models import Designation, HoldsDesignation
+    import json
+    
+    results = []
+    
+    for student in students_list:
+        try:
+            if student.user:
+                results.append({'success': True, 'student': student.name, 'skipped': True})
+                continue
+            
+            user, password = student.create_user_account()
+            if user:
+                pass
+                
+            if student.roll_number and student.user:
+                branch_field = student.branch or ''
+                branch_upper = branch_field.upper()
+                
+                if 'COMPUTER SCIENCE' in branch_upper or 'CSE' in branch_upper:
+                    dept_name = 'CSE'
+                elif 'ELECTRONICS' in branch_upper or 'ECE' in branch_upper:
+                    dept_name = 'ECE'
+                elif 'DESIGN' in branch_upper:
+                    dept_name = 'Design'
+                else:
+                    dept_name = 'CSE'
+                
+                department = DepartmentInfo.objects.get_or_create(name=dept_name)[0]
+                
+                extra_info, created = ExtraInfo.objects.get_or_create(
+                    id=student.roll_number,
+                    defaults={
+                        'user': student.user,
+                        'title': 'Mr.' if student.gender == 'Male' else 'Ms.',
+                        'sex': 'M' if student.gender == 'Male' else 'F',
+                        'user_type': 'student',
+                        'department': department
+                    }
+                )
+            
+            if student.user and student.roll_number:
+                from applications.academic_information.models import Student as AcademicStudent
+                
+                try:
+                    extra_info = ExtraInfo.objects.get(id=student.roll_number)
+                    
+                    academic_student, created = AcademicStudent.objects.get_or_create(
+                        id=extra_info,
+                        defaults={
+                            'programme': student.get_programme_name(),
+                            'batch': student.year,
+                            'cpi': 0.0,
+                            'category': student.category or 'General',
+                            'father_name': student.father_name or '',
+                            'mother_name': student.mother_name or '',
+                            'hall_no': 0,
+                            'room_no': '',
+                            'specialization': ''
+                        }
+                    )
+                        
+                except ExtraInfo.DoesNotExist:
+                    pass
+                except Exception as e:
+                    pass
+            
+            if student.user:
+                student_designation = Designation.objects.filter(name='student').first()
+                if student_designation:
+                    holds_designation, created = HoldsDesignation.objects.get_or_create(
+                        user=student.user,
+                        designation=student_designation,
+                        defaults={'working': student.user}
+                    )
+            
+            results.append({'success': True, 'student': student.name})
+            
+        except Exception as e:
+            results.append({'success': False, 'student': student.name, 'error': str(e)})
+    
+    return results
+
+@receiver(post_save, sender=StudentBatchUpload)
+def auto_create_student_profile(sender, instance, created, **kwargs):
+    """Automatically create student profile when status changes to REPORTED"""
+    if instance.reported_status == 'REPORTED' and not instance.user:
+        try:
+            post_save.disconnect(auto_create_student_profile, sender=StudentBatchUpload)
+            
+            try:
+                automation_result = create_student_profiles_automatically([instance])
+            finally:
+                post_save.connect(auto_create_student_profile, sender=StudentBatchUpload)
+            
+        except Exception as e:
+            try:
+                post_save.connect(auto_create_student_profile, sender=StudentBatchUpload)
+            except:
+                pass

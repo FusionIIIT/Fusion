@@ -84,10 +84,10 @@ def get_email_template_context(student, password, additional_context=None):
         'programme': student.get_programme_name(),
         'branch': student.get_display_branch(),
         'year': student.year,
-        'portal_url': getattr(settings, 'FUSION_PORTAL_URL', 'https://fusion.iiitdmj.ac.in'),
+        'fusion_url': getattr(settings, 'FUSION_URL', 'http://fusion.iiitdmj.ac.in'),
         'current_date': datetime.now().strftime('%B %d, %Y'),
-        'academic_office_email': getattr(settings, 'ACADEMIC_OFFICE_EMAIL', 'fusion@iiitdmj.ac.in'),
-        'institute_name': 'IIITDM Jabalpur'
+        'fusion_email': settings.FUSION_EMAIL,
+        'institute_name': 'PDPM IIITDM Jabalpur'
     }
     
     if additional_context:
@@ -101,6 +101,13 @@ def send_password_email_smtp(student_email, student_name, password, roll_number,
     Send password email using SMTP configuration
     """
     try:
+        # Validate required email settings
+        if not hasattr(settings, 'EMAIL_HOST_USER') or not settings.EMAIL_HOST_USER:
+            return False, "EMAIL_HOST_USER setting is not configured"
+        
+        if not hasattr(settings, 'FUSION_EMAIL') or not settings.FUSION_EMAIL:
+            return False, "FUSION_EMAIL setting is not configured"
+        
         # Get email template or use default
         try:
             template = EmailTemplate.objects.get(
@@ -114,22 +121,22 @@ def send_password_email_smtp(student_email, student_name, password, roll_number,
             
         except EmailTemplate.DoesNotExist:
             # Default email template
-            subject = f"FUSION Portal - Login Credentials - {roll_number}"
+            subject = f"FUSION - Login Credentials - {roll_number}"
             html_content = f"""
             <html>
             <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
                 <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
                     <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
                         <h2 style="color: #007bff; margin-top: 0;">Welcome to FUSION Portal</h2>
-                        <p style="font-size: 16px; margin-bottom: 0;">IIITDM Jabalpur</p>
+                        <p style="font-size: 16px; margin-bottom: 0;">PDPM IIITDM Jabalpur</p>
                     </div>
                     
                     <p>Dear <strong>{student_name}</strong>,</p>
                     
-                    <p>Your FUSION portal account has been created successfully. Please find your login credentials below:</p>
+                    <p>Your FUSION account has been created successfully. Please find your login credentials below:</p>
                     
                     <div style="background-color: #e3f2fd; padding: 20px; border-left: 4px solid #2196f3; margin: 20px 0; border-radius: 4px;">
-                        <p style="margin: 8px 0;"><strong>Portal URL:</strong> <a href="https://fusion.iiitdmj.ac.in" style="color: #1976d2;">https://fusion.iiitdmj.ac.in</a></p>
+                        <p style="margin: 8px 0;"><strong>URL:</strong> <a href="http://fusion.iiitdmj.ac.in" style="color: #1976d2;">http://fusion.iiitdmj.ac.in</a></p>
                         <p style="margin: 8px 0;"><strong>Username:</strong> <code style="background-color: #f5f5f5; padding: 4px 8px; border-radius: 3px; font-family: monospace;">{roll_number}</code></p>
                         <p style="margin: 8px 0;"><strong>Password:</strong> <code style="background-color: #fff3cd; padding: 4px 8px; border-radius: 3px; font-family: monospace; color: #856404; border: 1px solid #ffeaa7;">{password}</code></p>
                     </div>
@@ -138,19 +145,19 @@ def send_password_email_smtp(student_email, student_name, password, roll_number,
                         <h4 style="margin-top: 0; color: #155724;">📞 Need Help?</h4>
                         <p style="margin-bottom: 0; color: #155724;">
                             For any login issues or technical support, please contact:<br>
-                            📧 <a href="mailto:fusion@iiitdmj.ac.in" style="color: #155724;">academic@iiitdmj.ac.in</a><br>
-                            🏢 IIITDM Jabalpur
+                            📧 <a href="mailto:{settings.FUSION_EMAIL}" style="color: #155724;">{settings.FUSION_EMAIL}</a><br>
+                            🏢 PDPM IIITDM Jabalpur
                         </p>
                     </div>
                     
                     <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;">
                         <p style="margin-bottom: 0;">Best regards,<br>
-                        <strong>Academic Office</strong><br>
-                        IIITDM Jabalpur</p>
+                        <strong>Fusion Development Team</strong><br>
+                        PDPM IIITDM Jabalpur</p>
                     </div>
                     
                     <div style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 4px; font-size: 12px; color: #6c757d; text-align: center;">
-                        This is an automated message generated by FUSION Portal. Please do not reply to this email.
+                        This is an automated message generated by FUSION. Please do not reply to this email.
                         <br>Generated on {datetime.now().strftime('%B %d, %Y at %I:%M %p')}
                     </div>
                 </div>
@@ -164,7 +171,7 @@ def send_password_email_smtp(student_email, student_name, password, roll_number,
         email = EmailMultiAlternatives(
             subject=subject,
             body=f"Your FUSION login credentials - Username: {roll_number}, Password: {password}",
-            from_email=getattr(settings, 'EMAIL_HOST_USER', 'vikrantkrd@gmail.com'),  # Use actual Gmail account
+            from_email=settings.EMAIL_HOST_USER,
             to=[student_email]
         )
         
@@ -222,24 +229,25 @@ def send_student_password(request):
         
         # Generate password and create/update user account
         with transaction.atomic():
+            # Check if this is an initial password before creating/updating the account
+            is_initial_password = not student.has_user_account()
+            
             # Use the student model's built-in user account creation
             if student.has_user_account():
                 # User exists, generate new password
                 password = student.generate_secure_password()
                 student.update_user_password(password)
                 user = student.get_user_account()
-                print(f"✅ Updated existing user password for {student.name}")
             else:
                 # Create new user account with hashed password in auth_user table
                 user, password = student.create_user_account()
-                print(f"✅ Created new user account for {student.name}")
             
             # Create password history record
             StudentPasswordHistory.objects.create(
                 student=student,
-                password_hash=user.password,  # Already hashed by Django
+                password_hash=user.password,
                 created_by=request.user,
-                is_initial_password=not student.has_user_account(),
+                is_initial_password=is_initial_password,
                 is_active=True
             )
         
@@ -327,6 +335,9 @@ def bulk_send_passwords(request):
                 
                 # Generate password and create user
                 with transaction.atomic():
+                    # Check if this is an initial password before creating/updating the account
+                    is_initial_password = not student.has_user_account()
+                    
                     # Use the student model's built-in user account creation
                     if student.has_user_account():
                         # User exists, generate new password
@@ -341,7 +352,7 @@ def bulk_send_passwords(request):
                         student=student,
                         password_hash=user.password,  # Already hashed by Django
                         created_by=request.user,
-                        is_initial_password=not student.has_user_account(),
+                        is_initial_password=is_initial_password,
                         is_active=True
                     )
                 
