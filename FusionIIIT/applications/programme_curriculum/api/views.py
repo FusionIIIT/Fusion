@@ -1164,7 +1164,7 @@ def add_curriculum_form(request):
             programme_id = data.get('programme')
             working_curriculum = data.get('working_curriculum', False)
             version_no = data.get('version_no', 1.0)
-            num_semesters = data.get('no_of_semester', 1)
+            num_semesters = data.get('num_semesters', 1)
             num_credits = data.get('num_credits', 0)
 
             # Validate that the programme exists
@@ -1202,12 +1202,29 @@ def add_curriculum_form(request):
 
 
 @permission_classes([IsAuthenticated])
-@api_view(['PUT'])
+@api_view(['GET', 'PUT'])
 def edit_curriculum_form(request, curriculum_id):
     """
-    Handle updating Curriculum and Semesters through an API endpoint.
+    Handle getting and updating Curriculum and Semesters through an API endpoint.
     """
-    if request.method == 'PUT':
+    if request.method == 'GET':
+        # Return current curriculum data for editing
+        curriculum = get_object_or_404(Curriculum, id=curriculum_id)
+        
+        curriculum_data = {
+            'id': curriculum.id,
+            'curriculum_name': curriculum.name,
+            'programme': curriculum.programme.id,
+            'programme_name': curriculum.programme.name,
+            'working_curriculum': curriculum.working_curriculum,
+            'version_no': curriculum.version,
+            'num_semesters': curriculum.no_of_semester,  # Frontend expects num_semesters
+            'num_credits': curriculum.min_credit,
+        }
+        
+        return JsonResponse({'status': 'success', 'curriculum': curriculum_data})
+    
+    elif request.method == 'PUT':
         try:
             # Parse the incoming JSON data
             data = json.loads(request.body)
@@ -1215,7 +1232,13 @@ def edit_curriculum_form(request, curriculum_id):
             programme_id = data.get('programme')
             working_curriculum = data.get('working_curriculum', False)
             version_no = data.get('version_no', 1.0)
-            num_semesters = data.get('no_of_semester', 1)
+            
+            # Frontend sends 'num_semesters' field
+            num_semesters = data.get('num_semesters', 1)
+            
+            # Convert to int to ensure it's a valid number
+            num_semesters = int(num_semesters)
+            
             num_credits = data.get('num_credits', 0)
 
             # Fetch the existing curriculum
