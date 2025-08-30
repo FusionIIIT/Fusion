@@ -1,6 +1,7 @@
 from django.db import models
 from django import forms
 import datetime
+import json
 from django.utils import timezone
 from django.db.models.fields import IntegerField, PositiveIntegerField
 from django.db.models import CheckConstraint, Q, F
@@ -43,6 +44,39 @@ BATCH_NAMES = [
     ('M.Des', 'M.Des'),
     ('Phd', 'Phd')
 ]
+
+VERSION_BUMP_CHOICES = [
+    ('NONE', 'No Version Bump'),
+    ('PATCH', 'Patch (0.0.1)'),
+    ('MINOR', 'Minor (0.1.0)'),
+    ('MAJOR', 'Major (1.0.0)'),
+]
+
+class CourseAuditLog(models.Model):
+    """Store audit trail for all course changes"""
+    
+    course = models.ForeignKey('Course', on_delete=models.CASCADE, related_name='audit_logs')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    action = models.CharField(max_length=20, choices=[
+        ('CREATE', 'Create'),
+        ('UPDATE', 'Update'),
+        ('DELETE', 'Delete')
+    ], default='UPDATE')
+    old_values = models.JSONField(null=True, blank=True)  # Store old field values
+    new_values = models.JSONField(null=True, blank=True)  # Store new field values
+    changed_fields = models.JSONField(default=list)  # List of field names that changed
+    version_bump_type = models.CharField(max_length=10, choices=VERSION_BUMP_CHOICES, default='NONE')
+    old_version = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
+    new_version = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
+    admin_override = models.BooleanField(default=False)  # True if admin manually decided version bump
+    reason = models.TextField(blank=True)  # Optional reason for changes
+    
+    class Meta:
+        ordering = ['-timestamp']
+    
+    def __str__(self):
+        return f"{self.course.code} - {self.action} by {self.user.username} at {self.timestamp}"
 
 
 class Programme(models.Model):

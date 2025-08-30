@@ -8,7 +8,7 @@ import datetime
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from ..models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot,NewProposalFile,Proposal_Tracking,CourseInstructor
+from ..models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot,NewProposalFile,Proposal_Tracking,CourseInstructor,CourseAuditLog
 from ..forms import ProgrammeForm, DisciplineForm, CurriculumForm, SemesterForm, CourseForm, BatchForm, CourseSlotForm, ReplicateCurriculumForm,NewCourseProposalFile,CourseProposalTrackingFile, CourseInstructor, CourseInstructorForm
 from ..filters import CourseFilter, BatchFilter, CurriculumFilter
 
@@ -1302,10 +1302,47 @@ def add_course_form(request):
             form = CourseForm(data)
             if form.is_valid():
                 new_course = form.save(commit=False)
-                # new_course.version = 1.0
                 new_course.save()
-                course = Course.objects.last()
-                return JsonResponse({'success': True, 'message': 'Course added successfully', 'course_id': course.id}, status=201)
+                
+                # Create initial audit log for course creation
+                initial_data = {
+                    'name': new_course.name,
+                    'code': new_course.code,
+                    'credit': new_course.credit,
+                    'version': new_course.version,
+                    'lecture_hours': new_course.lecture_hours,
+                    'tutorial_hours': new_course.tutorial_hours,
+                    'pratical_hours': new_course.pratical_hours,
+                    'discussion_hours': new_course.discussion_hours,
+                    'project_hours': new_course.project_hours,
+                    'pre_requisits': new_course.pre_requisits,
+                    'syllabus': new_course.syllabus,
+                    'ref_books': new_course.ref_books,
+                    'percent_quiz_1': new_course.percent_quiz_1,
+                    'percent_midsem': new_course.percent_midsem,
+                    'percent_quiz_2': new_course.percent_quiz_2,
+                    'percent_endsem': new_course.percent_endsem,
+                    'percent_project': new_course.percent_project,
+                    'percent_lab_evaluation': new_course.percent_lab_evaluation,
+                    'percent_course_attendance': new_course.percent_course_attendance,
+                    'max_seats': new_course.max_seats,
+                    'working_course': new_course.working_course,
+                }
+                
+                create_course_audit_log(
+                    course=new_course,
+                    user=request.user,
+                    action='CREATE',
+                    old_data=None,
+                    new_data=initial_data,
+                    version_bump_type='MAJOR',  # New course creation is always major
+                    old_version=None,
+                    new_version=new_course.version,
+                    admin_override=False,
+                    reason="New course created"
+                )
+                
+                return JsonResponse({'success': True, 'message': 'Course added successfully', 'course_id': new_course.id}, status=201)
             else:
                 return JsonResponse({'success': False, 'errors': form.errors}, status=400)
 
@@ -1349,39 +1386,114 @@ def update_course_form(request, course_id):
                 'percent_project': course.percent_project,
                 'percent_lab_evaluation': course.percent_lab_evaluation,
                 'percent_course_attendance': course.percent_course_attendance,
+                'max_seats': course.max_seats,
+                'working_course': course.working_course,
+                # Version history and audit info
+                'version_history': list(Course.objects.filter(code=course.code).order_by('-version').values('version', 'id')),
+                'recent_changes': list(CourseAuditLog.objects.filter(course=course).order_by('-timestamp')[:5].values(
+                    'timestamp', 'user__username', 'action', 'version_bump_type', 'old_version', 'new_version', 'reason'
+                ))
             }
             return Response(data, status=status.HTTP_200_OK)
         
         elif request.method == 'PUT':
-            # Handle course update
+            # Handle course update with intelligent versioning
             data = json.loads(request.body)
-            previous_version = Course.objects.filter(code=course.code).order_by('version').last()
-            # Validate version
-            new_version = data.get('version', course.version)
-            if float(new_version) <= float(previous_version.version):
-                return Response(
-                    {'error': f'Version must be greater than current version ({previous_version.version})'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
             
-            # Update basic course fields
+            # Check if admin wants to override version bump decision
+            admin_override = data.get('admin_override_version', False)
+            manual_version = data.get('version') if admin_override else None
+            
+            # Capture old course data for audit and comparison
+            old_course_data = {
+                'name': course.name,
+                'code': course.code,
+                'credit': course.credit,
+                'lecture_hours': course.lecture_hours,
+                'tutorial_hours': course.tutorial_hours,
+                'pratical_hours': course.pratical_hours,
+                'discussion_hours': course.discussion_hours,
+                'project_hours': course.project_hours,
+                'pre_requisits': course.pre_requisits,
+                'pre_requisit_courses': list(course.pre_requisit_courses.values_list('id', flat=True)),
+                'syllabus': course.syllabus,
+                'ref_books': course.ref_books,
+                'percent_quiz_1': course.percent_quiz_1,
+                'percent_midsem': course.percent_midsem,
+                'percent_quiz_2': course.percent_quiz_2,
+                'percent_endsem': course.percent_endsem,
+                'percent_project': course.percent_project,
+                'percent_lab_evaluation': course.percent_lab_evaluation,
+                'percent_course_attendance': course.percent_course_attendance,
+                'disciplines': list(course.disciplines.values_list('id', flat=True)),
+                'max_seats': course.max_seats,
+                'working_course': course.working_course,
+            }
+            old_version = course.version
+            
+            # Prepare new course data
+            new_course_data = {}
             update_fields = [
                 'code', 'name', 'credit', 'lecture_hours', 'tutorial_hours',
                 'pratical_hours', 'discussion_hours', 'project_hours',
                 'pre_requisits', 'syllabus', 'percent_quiz_1', 'percent_midsem',
                 'percent_quiz_2', 'percent_endsem', 'percent_project',
-                'percent_lab_evaluation', 'percent_course_attendance', 'ref_books'
+                'percent_lab_evaluation', 'percent_course_attendance', 'ref_books',
+                'max_seats', 'working_course'
             ]
             
+            # Collect new values for comparison
+            for field in update_fields:
+                if field in data:
+                    new_course_data[field] = data[field]
+                else:
+                    new_course_data[field] = getattr(course, field)
+            
+            # Handle many-to-many fields
+            if 'disciplines' in data:
+                new_course_data['disciplines'] = data['disciplines']
+            else:
+                new_course_data['disciplines'] = list(course.disciplines.values_list('id', flat=True))
+                
+            if 'pre_requisit_courses' in data:
+                new_course_data['pre_requisit_courses'] = data['pre_requisit_courses']
+            else:
+                new_course_data['pre_requisit_courses'] = list(course.pre_requisit_courses.values_list('id', flat=True))
+            
+            # Determine if version bump is needed
+            bump_type, changed_academic_fields, reason = determine_version_bump_type(old_course_data, new_course_data)
+            
+            # Calculate new version
+            new_version = old_version
+            if admin_override and manual_version:
+                # Admin manually specified version
+                new_version = manual_version
+                bump_type = 'MAJOR'  # Assume major if manually overridden
+                reason = f"Admin override: {reason}"
+            elif bump_type != 'NONE':
+                # Auto-calculate new version based on bump type
+                new_version = calculate_new_version(old_version, bump_type)
+            
+            # Validate new version if it changed
+            if float(new_version) != float(old_version):
+                previous_latest = Course.objects.filter(code=course.code).order_by('-version').first()
+                if float(new_version) <= float(previous_latest.version):
+                    return Response(
+                        {'error': f'Version must be greater than current version ({previous_latest.version})'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            
+            # Update course fields
             for field in update_fields:
                 if field in data:
                     setattr(course, field, data[field])
             
-            # Set version and latest version flags
-            course.version = new_version
-            previous_version.latest_version = False
-            previous_version.save()
-            course.latest_version = True
+            # Update version if needed
+            if float(new_version) != float(old_version):
+                # Mark previous version as not latest
+                Course.objects.filter(code=course.code, latest_version=True).update(latest_version=False)
+                course.version = new_version
+                course.latest_version = True
             
             course.save()
             
@@ -1396,21 +1508,91 @@ def update_course_form(request, course_id):
                 prereq_courses = Course.objects.filter(id__in=prereq_course_ids)
                 course.pre_requisit_courses.set(prereq_courses)
             
-            return Response(
-                {
-                    'message': 'Course updated successfully!',
-                    'course_id': course.id,
-                    'code': course.code,
-                    'name': course.name
-                },
-                status=status.HTTP_200_OK
+            # Create audit log
+            create_course_audit_log(
+                course=course,
+                user=request.user,
+                action='UPDATE',
+                old_data=old_course_data,
+                new_data=new_course_data,
+                version_bump_type=bump_type,
+                old_version=old_version,
+                new_version=new_version,
+                admin_override=admin_override,
+                reason=reason
             )
+            
+            # Prepare response
+            response_data = {
+                'message': 'Course updated successfully!',
+                'course_id': course.id,
+                'code': course.code,
+                'name': course.name,
+                'old_version': str(old_version),
+                'new_version': str(new_version),
+                'version_bump_type': bump_type,
+                'changed_academic_fields': changed_academic_fields,
+                'reason': reason
+            }
+            
+            return Response(response_data, status=status.HTTP_200_OK)
     
     except Exception as e:
         return Response(
             {'error': str(e)},
             status=status.HTTP_400_BAD_REQUEST
         )
+
+
+@csrf_exempt
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def course_audit_logs(request, course_id):
+    """
+    Get audit logs for a specific course
+    """
+    try:
+        course = get_object_or_404(Course, id=course_id)
+        
+        # Get audit logs with pagination
+        page = int(request.GET.get('page', 1))
+        page_size = int(request.GET.get('page_size', 20))
+        offset = (page - 1) * page_size
+        
+        audit_logs = CourseAuditLog.objects.filter(course=course).order_by('-timestamp')[offset:offset + page_size]
+        total_count = CourseAuditLog.objects.filter(course=course).count()
+        
+        logs_data = []
+        for log in audit_logs:
+            logs_data.append({
+                'id': log.id,
+                'user': log.user.username,
+                'timestamp': log.timestamp,
+                'action': log.action,
+                'version_bump_type': log.version_bump_type,
+                'old_version': str(log.old_version) if log.old_version else None,
+                'new_version': str(log.new_version) if log.new_version else None,
+                'changed_fields': log.changed_fields,
+                'admin_override': log.admin_override,
+                'reason': log.reason,
+                'old_values': log.old_values,
+                'new_values': log.new_values
+            })
+        
+        return Response({
+            'logs': logs_data,
+            'total_count': total_count,
+            'page': page,
+            'page_size': page_size,
+            'has_next': offset + page_size < total_count
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response(
+            {'error': str(e)},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
 
 @permission_classes([IsAuthenticated])
 @api_view(['POST'])
@@ -3955,3 +4137,218 @@ def delete_batch_invalid(request, batch_id):
             'provided_id': batch_id,
             'user_action': 'Please ensure you have selected a valid batch before attempting to delete.'
         }, status=400)
+
+
+# Utility functions for intelligent course versioning
+
+def levenshtein_distance(s1, s2):
+    """Calculate Levenshtein distance between two strings"""
+    if len(s1) < len(s2):
+        return levenshtein_distance(s2, s1)
+    
+    if len(s2) == 0:
+        return len(s1)
+    
+    previous_row = list(range(len(s2) + 1))
+    for i, c1 in enumerate(s1):
+        current_row = [i + 1]
+        for j, c2 in enumerate(s2):
+            insertions = previous_row[j + 1] + 1
+            deletions = current_row[j] + 1
+            substitutions = previous_row[j] + (c1 != c2)
+            current_row.append(min(insertions, deletions, substitutions))
+        previous_row = current_row
+    
+    return previous_row[-1]
+
+
+def is_typo_correction(old_value, new_value, max_distance=3):
+    """Check if the change is likely a typo correction using Levenshtein distance"""
+    if not old_value or not new_value:
+        return False
+    
+    # Convert to string and strip whitespace
+    old_str = str(old_value).strip()
+    new_str = str(new_value).strip()
+    
+    # If they're the same after stripping, it's just whitespace change
+    if old_str == new_str:
+        return True
+    
+    # Calculate distance
+    distance = levenshtein_distance(old_str.lower(), new_str.lower())
+    
+    # Consider it a typo if distance is small relative to string length
+    min_length = min(len(old_str), len(new_str))
+    if min_length == 0:
+        return False
+    
+    # Allow up to max_distance characters difference, or 20% of string length, whichever is smaller
+    threshold = min(max_distance, max(1, int(min_length * 0.2)))
+    
+    return distance <= threshold
+
+
+def determine_version_bump_type(old_course_data, new_course_data):
+    """
+    Determine the type of version bump needed based on changed fields.
+    
+    Returns:
+        tuple: (bump_type, changed_academic_fields, reason)
+        bump_type: 'MAJOR', 'MINOR', 'PATCH', or 'NONE'
+        changed_academic_fields: list of academic fields that changed
+        reason: string explaining the decision
+    """
+    
+    # Define version-controlled academic fields
+    VERSION_CONTROLLED_FIELDS = {
+        'course_name': 'name',
+        'course_code': 'code', 
+        'credit': 'credit',
+        'lecture': 'lecture_hours',
+        'tutorial': 'tutorial_hours', 
+        'practical': 'pratical_hours',
+        'discussion_hours': 'discussion_hours',
+        'practical_hours': 'project_hours',  # Note: this maps to project_hours in model
+        'pre_requisites': 'pre_requisits',
+        'pre_requisite_course': 'pre_requisit_courses',
+        'syllabus': 'syllabus',
+        'references': 'ref_books',
+        'quiz_1': 'percent_quiz_1',
+        'quiz_2': 'percent_quiz_2', 
+        'midsem': 'percent_midsem',
+        'endsem': 'percent_endsem',
+        'project': 'percent_project',
+        'lab': 'percent_lab_evaluation',
+        'attendance': 'percent_course_attendance'
+    }
+    
+    # Fields that trigger different bump types
+    MAJOR_BUMP_FIELDS = ['name', 'code', 'credit', 'lecture_hours', 'tutorial_hours', 'pratical_hours', 'pre_requisits', 'pre_requisit_courses']
+    MINOR_BUMP_FIELDS = ['percent_quiz_1', 'percent_quiz_2', 'percent_midsem', 'percent_endsem', 'percent_project', 'percent_lab_evaluation', 'percent_course_attendance', 'ref_books']
+    PATCH_BUMP_FIELDS = ['syllabus', 'discussion_hours', 'project_hours']
+    
+    changed_academic_fields = []
+    major_changes = []
+    minor_changes = []
+    patch_changes = []
+    
+    # Check each version-controlled field for changes
+    for field_name, model_field in VERSION_CONTROLLED_FIELDS.items():
+        old_value = old_course_data.get(model_field)
+        new_value = new_course_data.get(model_field)
+        
+        if old_value != new_value:
+            # Special handling for course name and code - check if it's a typo
+            if model_field in ['name', 'code']:
+                if is_typo_correction(old_value, new_value):
+                    continue  # Skip typo corrections - no version bump needed
+            
+            changed_academic_fields.append(field_name)
+            
+            if model_field in MAJOR_BUMP_FIELDS:
+                major_changes.append(field_name)
+            elif model_field in MINOR_BUMP_FIELDS:
+                minor_changes.append(field_name)
+            elif model_field in PATCH_BUMP_FIELDS:
+                patch_changes.append(field_name)
+    
+    # Determine bump type based on highest priority changes
+    if major_changes:
+        return ('MAJOR', changed_academic_fields, f"Major academic changes: {', '.join(major_changes)}")
+    elif minor_changes:
+        return ('MINOR', changed_academic_fields, f"Minor academic changes: {', '.join(minor_changes)}")
+    elif patch_changes:
+        return ('PATCH', changed_academic_fields, f"Minor syllabus/content changes: {', '.join(patch_changes)}")
+    else:
+        return ('NONE', changed_academic_fields, "No academic fields changed or only typo corrections detected")
+
+
+def calculate_new_version(current_version, bump_type):
+    """Calculate the new version number based on bump type - all bumps increment by 0.1"""
+    if bump_type == 'NONE':
+        return current_version
+    
+    # Parse current version (e.g., "1.2" -> 1.2)
+    current_float = float(current_version)
+    
+    # All version bumps increment by 0.1
+    if bump_type in ['MAJOR', 'MINOR', 'PATCH']:
+        new_version = current_float + 0.1
+        # Format to 1 decimal place
+        return f"{new_version:.1f}"
+    
+    return current_version
+
+
+def create_course_audit_log(course, user, action, old_data=None, new_data=None, 
+                          version_bump_type='NONE', old_version=None, new_version=None,
+                          admin_override=False, reason=""):
+    """Create an audit log entry for course changes"""
+    
+    changed_fields = []
+    if old_data and new_data:
+        # Find changed fields
+        for field, old_value in old_data.items():
+            new_value = new_data.get(field)
+            if old_value != new_value:
+                changed_fields.append(field)
+    
+    audit_log = CourseAuditLog.objects.create(
+        course=course,
+        user=user,
+        action=action,
+        old_values=old_data,
+        new_values=new_data,
+        changed_fields=changed_fields,
+        version_bump_type=version_bump_type,
+        old_version=old_version,
+        new_version=new_version,
+        admin_override=admin_override,
+        reason=reason
+    )
+    
+    return audit_log
+
+
+# Test function for intelligent versioning (remove in production)
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def test_intelligent_versioning(request):
+    """
+    Test endpoint to demonstrate intelligent versioning functionality
+    Example usage:
+    POST /programme_curriculum/api/test_intelligent_versioning/
+    {
+        "old_course_data": {"name": "Introduction to Programming", "code": "CS101", "credit": 3},
+        "new_course_data": {"name": "Introduction to Programing", "code": "CS101", "credit": 3}
+    }
+    """
+    try:
+        data = json.loads(request.body)
+        old_data = data.get('old_course_data', {})
+        new_data = data.get('new_course_data', {})
+        
+        bump_type, changed_fields, reason = determine_version_bump_type(old_data, new_data)
+        
+        # Test string similarity
+        old_name = old_data.get('name', '')
+        new_name = new_data.get('name', '')
+        is_typo = is_typo_correction(old_name, new_name)
+        
+        return Response({
+            'old_data': old_data,
+            'new_data': new_data,
+            'version_bump_type': bump_type,
+            'changed_academic_fields': changed_fields,
+            'reason': reason,
+            'is_typo_correction': is_typo,
+            'levenshtein_distance': levenshtein_distance(old_name, new_name) if old_name and new_name else 0
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response(
+            {'error': str(e)},
+            status=status.HTTP_400_BAD_REQUEST
+        )

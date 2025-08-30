@@ -39,6 +39,7 @@ urlpatterns = [
     path('admin_add_batch/', views.add_batch_form, name='add_batch_form'),
 
     path('admin_update_course/<course_id>/', views.update_course_form, name='update_course_form'),
+    path('admin_course_audit_logs/<course_id>/', views.course_audit_logs, name='course_audit_logs'),
     path('admin_edit_curriculum/<curriculum_id>/', views.edit_curriculum_form, name='edit_curriculum_form'),
     path('admin_edit_programme/<programme_id>/', views.edit_programme_form, name='edit_programme_form'),
     path('admin_edit_courseslot/<courseslot_id>/', views.edit_courseslot_form, name='edit_courseslot_form'),
@@ -151,5 +152,8 @@ urlpatterns = [
     path('password_email_status/<int:email_log_id>/', views_password_email.password_email_status, name='password_email_status'),
     path('bulk_operation_status/<str:operation_id>/', views_password_email.bulk_operation_status, name='bulk_operation_status'),
     path('manage_email_templates/', views_password_email.manage_email_templates, name='manage_email_templates'),
+    
+    # Test endpoint for intelligent versioning (remove in production)
+    path('test_intelligent_versioning/', views.test_intelligent_versioning, name='test_intelligent_versioning'),
     
 ]

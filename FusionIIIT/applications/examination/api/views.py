@@ -14,7 +14,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
 import csv
-from io import StringIO
+from io import StringIO, BytesIO
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
 from django.db.models import IntegerField
@@ -27,7 +27,7 @@ import traceback
 from applications.academic_information.models import Course
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.colors import HexColor
 from reportlab.lib.units import inch
@@ -1707,10 +1707,19 @@ class GeneratePDFAPI(APIView):
 
     def post(self, request):
         try:
+            # Check if this is a student result request (no Role field or Role is student)
             role = request.data.get("Role")
+            
+            # If no role specified or role is student, handle as student result PDF
+            if not role or role.lower() == "student" or "student_info" in request.data:
+                # Delegate to student result PDF generation
+                return self.generate_student_result_pdf(request)
+            
+            # Faculty role check for course grade sheets
             if role not in ["Associate Professor", "Professor", "Assistant Professor"]:
                 return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
 
+            # Existing faculty course grade sheet logic
             course_id     = request.data.get("course_id")
             academic_year = request.data.get("academic_year")
             semester_type = request.data.get("semester_type")
@@ -1892,6 +1901,165 @@ class GeneratePDFAPI(APIView):
         except Exception as e:
             traceback.print_exc()
             return Response({'error': str(e)}, status=500)
+    
+    def generate_student_result_pdf(self, request):
+        """Generate PDF for student examination results"""
+        try:
+            # Get data from request
+            data = request.data
+            student_info = data.get('student_info', {})
+            courses = data.get('courses', [])
+            spi = float(data.get('spi', 0))
+            cpi = float(data.get('cpi', 0))
+            su = int(data.get('su', 0))
+            tu = int(data.get('tu', 0))
+            semester_no = data.get('semester_no', 1)
+            
+            # Create PDF buffer
+            buffer = BytesIO()
+            doc = SimpleDocTemplate(
+                buffer,
+                pagesize=letter,
+                rightMargin=0.5*inch,
+                leftMargin=0.5*inch,
+                topMargin=0.5*inch,
+                bottomMargin=0.5*inch
+            )
+            
+            story = []
+            styles = getSampleStyleSheet()
+            
+            # Header styles
+            title_style = ParagraphStyle(
+                'Title',
+                parent=styles['Heading1'],
+                fontSize=14,
+                spaceAfter=8,
+                alignment=1,  # Center
+                fontName='Times-Bold'
+            )
+            
+            subtitle_style = ParagraphStyle(
+                'Subtitle',
+                parent=styles['Normal'],
+                fontSize=11,
+                spaceAfter=6,
+                alignment=1,  # Center
+                fontName='Times-Roman'
+            )
+            
+            # Institution Header
+            story.append(Paragraph("PDPM Indian Institute of Information Technology, Design &", title_style))
+            story.append(Paragraph("Manufacturing, Jabalpur", title_style))
+            story.append(Paragraph("(An Institute of National Importance under MoE, Govt. of India)", subtitle_style))
+            story.append(Paragraph("Semester Grade Report / Marksheet", subtitle_style))
+            story.append(Spacer(1, 20))
+            
+            # Student Information Table
+            student_data = [
+                ['Name of Student:', student_info.get('name', 'N/A'), 'Roll No.:', student_info.get('roll_number', 'N/A')],
+                ['Programme:', student_info.get('programme', 'N/A'), 'Branch:', student_info.get('department', 'N/A')],
+                ['Semester:', str(semester_no), 'Academic Year:', student_info.get('academic_year', 'N/A')]
+            ]
+            
+            student_table = Table(student_data, colWidths=[1.4*inch, 2.1*inch, 1*inch, 2*inch])
+            student_table.setStyle(TableStyle([
+                ('FONTNAME', (0, 0), (-1, -1), 'Times-Roman'),
+                ('FONTSIZE', (0, 0), (-1, -1), 10),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('LEFTPADDING', (0, 0), (-1, -1), 5),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+                ('TOPPADDING', (0, 0), (-1, -1), 4),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+            ]))
+            
+            story.append(student_table)
+            story.append(Spacer(1, 15))
+            
+            # Courses Table
+            headers = ['S. No.', 'Course Code', 'Course Title', 'Credits', 'Grade', 'Grade Points']
+            course_data = [headers]
+            
+            for i, course in enumerate(courses, 1):
+                course_data.append([
+                    str(i),
+                    course.get('coursecode', ''),
+                    course.get('coursename', ''),
+                    str(course.get('credits', '')),
+                    course.get('grade', ''),
+                    str(course.get('points', ''))
+                ])
+            
+            course_table = Table(course_data, colWidths=[0.5*inch, 1*inch, 3.2*inch, 0.7*inch, 0.6*inch, 1*inch])
+            course_table.setStyle(TableStyle([
+                ('FONTNAME', (0, 0), (-1, 0), 'Times-Bold'),  # Header
+                ('FONTNAME', (0, 1), (-1, -1), 'Times-Roman'),  # Data
+                ('FONTSIZE', (0, 0), (-1, -1), 9),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('ALIGN', (2, 1), (2, -1), 'LEFT'),  # Course title left aligned
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+                ('LEFTPADDING', (0, 0), (-1, -1), 3),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 3),
+                ('TOPPADDING', (0, 0), (-1, -1), 3),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+            ]))
+            
+            story.append(course_table)
+            story.append(Spacer(1, 15))
+            
+            # Summary Table
+            summary_data = [
+                ['Total Credits Registered:', str(tu), 'Total Credits Earned:', str(su)],
+                ['SPI (Semester Performance Index):', f"{spi:.2f}", 'CPI (Cumulative Performance Index):', f"{cpi:.2f}"]
+            ]
+            
+            summary_table = Table(summary_data, colWidths=[2.2*inch, 0.8*inch, 2.2*inch, 0.8*inch])
+            summary_table.setStyle(TableStyle([
+                ('FONTNAME', (0, 0), (-1, -1), 'Times-Roman'),
+                ('FONTSIZE', (0, 0), (-1, -1), 10),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('LEFTPADDING', (0, 0), (-1, -1), 5),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+                ('TOPPADDING', (0, 0), (-1, -1), 4),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+            ]))
+            
+            story.append(summary_table)
+            story.append(Spacer(1, 25))
+            
+            # Footer
+            footer_style = ParagraphStyle(
+                'Footer',
+                parent=styles['Normal'],
+                fontSize=8,
+                alignment=1,  # Center
+                fontName='Times-Italic'
+            )
+            
+            from datetime import datetime
+            current_date = datetime.now().strftime("%d/%m/%Y")
+            story.append(Paragraph(f"This is a computer-generated document. Generated on {current_date}", footer_style))
+            
+            # Build PDF
+            doc.build(story)
+            
+            # Return PDF response
+            pdf_data = buffer.getvalue()
+            buffer.close()
+            
+            response = HttpResponse(pdf_data, content_type='application/pdf')
+            filename = f"result_{student_info.get('rollNumber', student_info.get('roll_number', 'student'))}_sem{semester_no}.pdf"
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            response['Content-Length'] = len(pdf_data)
+            
+            return response
+            
+        except Exception as e:
+            return JsonResponse({'error': f'PDF generation failed: {str(e)}'}, status=500)
 
 
 """
@@ -2227,6 +2395,40 @@ class ValidateDeanSubmitView(APIView):
 
 
 class CheckResultView(APIView):
+    """
+    API endpoint to retrieve student result information including grades and personal details.
+    
+    Returns:
+        JsonResponse: Contains student personal information, course grades, SPI, CPI, and credit units
+        
+    Response Structure:
+        {
+            "success": True,
+            "student_info": {
+                "name": "Student Full Name",
+                "roll_number": "Student Roll Number",
+                "programme": "Programme Name",
+                "batch": "Batch Information",
+                "department": "Department Name",
+                "semester": "Current Semester Number",
+                "academic_year": "Academic Year (e.g., 2023-24)"
+            },
+            "courses": [
+                {
+                    "coursecode": "Course Code",
+                    "courseid": "Course ID", 
+                    "coursename": "Course Name",
+                    "credits": "Course Credits",
+                    "grade": "Letter Grade",
+                    "points": "Grade Points"
+                }
+            ],
+            "spi": "Semester Performance Index",
+            "cpi": "Cumulative Performance Index", 
+            "su": "Semester Credits",
+            "tu": "Total Credits"
+        }
+    """
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
@@ -2267,11 +2469,37 @@ class CheckResultView(APIView):
             semester_type=semester_type
         ).select_related('course_id')
 
+        # Get academic year from the first grade record
+        academic_year = None
+        if grades_info.exists():
+            academic_year = grades_info.first().academic_year
+            print(f"DEBUG CheckResultView - Found academic_year: {academic_year}")
+        else:
+            print("DEBUG CheckResultView - No grades found")
+
         spi, su, _ = calculate_spi_for_student(student, semester_no, semester_type)
         cpi, tu, _ = calculate_cpi_for_student(student, semester_no, semester_type)
 
+        # Add student personal information to the response
+        student_info = {
+            "name": f"{student.id.user.first_name} {student.id.user.last_name}".strip(),
+            "rollNumber": student.id.user.username,  # Frontend uses camelCase
+            "roll_number": student.id.user.username,  # Backend uses snake_case
+            "programme": student.programme,
+            "batch": str(student.batch_id) if student.batch_id else str(student.batch),
+            "branch": student.id.department.name if student.id.department else "",  # Frontend uses branch
+            "department": student.id.department.name if student.id.department else "",  # Backend uses department
+            "semester": student.curr_semester_no,
+            "academicYear": academic_year or "",  # Frontend uses camelCase
+            "academic_year": academic_year or ""   # Backend uses snake_case
+        }
+
+        print(f"DEBUG CheckResultView - Sending student_info: {student_info}")
+        print(f"DEBUG CheckResultView - Academic year being sent: {academic_year}")
+
         response_data = {
             "success": True,
+            "student_info": student_info,
             "courses": [
                 {
                     "coursecode": grade.course_id.code,
@@ -2552,3 +2780,214 @@ class StudentSemesterListView(APIView):
         ]
 
         return JsonResponse({"success": True, "semesters": semesters})
+
+
+class GenerateStudentResultPDFAPI(APIView):
+    """
+    API endpoint to generate PDF report for student examination results
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            # Get data from request
+            data = request.data
+            student_info = data.get('student_info', {})
+            courses = data.get('courses', [])
+            spi = float(data.get('spi', 0))
+            cpi = float(data.get('cpi', 0))
+            su = int(data.get('su', 0))
+            tu = int(data.get('tu', 0))
+            semester_no = data.get('semester_no', 1)
+            
+            # Debug: Print student_info to see what academic year we're getting
+            print(f"DEBUG PDF Generation - Student Info: {student_info}")
+            print(f"DEBUG PDF Generation - Academic Year from student_info: {student_info.get('academicYear', 'Not found')}")
+            print(f"DEBUG PDF Generation - Academic Year fallback: {student_info.get('academic_year', 'Not found')}")
+            
+            # Create PDF buffer
+            buffer = BytesIO()
+            doc = SimpleDocTemplate(
+                buffer,
+                pagesize=letter,
+                rightMargin=0.5*inch,
+                leftMargin=0.5*inch,
+                topMargin=0.5*inch,
+                bottomMargin=0.5*inch
+            )
+            
+            story = []
+            styles = getSampleStyleSheet()
+            
+            # Header styles
+            title_style = ParagraphStyle(
+                'Title',
+                parent=styles['Heading1'],
+                fontSize=14,
+                spaceAfter=8,
+                alignment=1,  # Center
+                fontName='Times-Bold'
+            )
+            
+            subtitle_style = ParagraphStyle(
+                'Subtitle',
+                parent=styles['Normal'],
+                fontSize=11,
+                spaceAfter=6,
+                alignment=1,  # Center
+                fontName='Times-Roman'
+            )
+            
+            # Header with logo on the left side
+            header_data = []
+            
+            # Try to add logo
+            try:
+                from django.conf import settings
+                import os
+                logo_path = os.path.join(settings.MEDIA_ROOT, 'logo2.jpg')
+                if os.path.exists(logo_path):
+                    # Make logo smaller to match website appearance
+                    logo = Image(logo_path, width=0.8*inch, height=0.8*inch)
+                    
+                    # Create separate paragraphs for better text formatting
+                    title_para = Paragraph("PDPM Indian Institute of Information Technology, Design &", title_style)
+                    subtitle1_para = Paragraph("Manufacturing, Jabalpur", title_style)
+                    subtitle2_para = Paragraph("(An Institute of National Importance under MoE, Govt. of India)", subtitle_style)
+                    subtitle3_para = Paragraph("Semester Grade Report / Marksheet", subtitle_style)
+                    
+                    # Create header table with logo and text
+                    header_table_data = [
+                        [logo, [title_para, subtitle1_para, subtitle2_para, subtitle3_para]]
+                    ]
+                    header_table = Table(header_table_data, colWidths=[1*inch, 6*inch])
+                    header_table.setStyle(TableStyle([
+                        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                        ('ALIGN', (0, 0), (0, 0), 'CENTER'),  # Logo center aligned
+                        ('ALIGN', (1, 0), (1, 0), 'CENTER'),  # Text center aligned
+                        ('LEFTPADDING', (0, 0), (-1, -1), 5),
+                        ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+                        ('TOPPADDING', (0, 0), (-1, -1), 5),
+                        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+                    ]))
+                    story.append(header_table)
+                else:
+                    # No logo, just text
+                    story.append(Paragraph("PDPM Indian Institute of Information Technology, Design &", title_style))
+                    story.append(Paragraph("Manufacturing, Jabalpur", title_style))
+                    story.append(Paragraph("(An Institute of National Importance under MoE, Govt. of India)", subtitle_style))
+                    story.append(Paragraph("Semester Grade Report / Marksheet", subtitle_style))
+            except Exception as e:
+                # If logo fails, continue with text only
+                story.append(Paragraph("PDPM Indian Institute of Information Technology, Design &", title_style))
+                story.append(Paragraph("Manufacturing, Jabalpur", title_style))
+                story.append(Paragraph("(An Institute of National Importance under MoE, Govt. of India)", subtitle_style))
+                story.append(Paragraph("Semester Grade Report / Marksheet", subtitle_style))
+            
+            story.append(Spacer(1, 12))
+            
+            # Student Information Table - Fixed field mapping to match frontend
+            student_data = [
+                ['Name of Student:', student_info.get('name', 'N/A'), 'Roll No.:', student_info.get('rollNumber', student_info.get('roll_number', 'N/A'))],
+                ['Programme:', student_info.get('programme', 'N/A'), 'Branch:', student_info.get('branch', student_info.get('department', 'N/A'))],
+                ['Semester:', str(semester_no), 'Academic Year:', student_info.get('academicYear', student_info.get('academic_year', 'N/A'))]
+            ]
+            
+            student_table = Table(student_data, colWidths=[1.4*inch, 2.1*inch, 1*inch, 2*inch])
+            student_table.setStyle(TableStyle([
+                ('FONTNAME', (0, 0), (-1, -1), 'Times-Roman'),
+                ('FONTSIZE', (0, 0), (-1, -1), 10),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('LEFTPADDING', (0, 0), (-1, -1), 6),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+                ('TOPPADDING', (0, 0), (-1, -1), 6),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ]))
+            
+            story.append(student_table)
+            story.append(Spacer(1, 12))
+            
+            # Courses Table
+            headers = ['S. No.', 'Course Code', 'Course Title', 'Credits', 'Grade', 'Grade Points']
+            course_data = [headers]
+            
+            for i, course in enumerate(courses, 1):
+                course_data.append([
+                    str(i),
+                    course.get('coursecode', ''),
+                    course.get('coursename', ''),
+                    str(course.get('credits', '')),
+                    course.get('grade', ''),
+                    str(course.get('points', ''))
+                ])
+            
+            course_table = Table(course_data, colWidths=[0.5*inch, 1*inch, 3.2*inch, 0.7*inch, 0.6*inch, 1*inch])
+            course_table.setStyle(TableStyle([
+                ('FONTNAME', (0, 0), (-1, 0), 'Times-Bold'),  # Header
+                ('FONTNAME', (0, 1), (-1, -1), 'Times-Roman'),  # Data
+                ('FONTSIZE', (0, 0), (-1, -1), 9),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('ALIGN', (2, 1), (2, -1), 'LEFT'),  # Course title left aligned
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+                ('LEFTPADDING', (0, 0), (-1, -1), 3),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 3),
+                ('TOPPADDING', (0, 0), (-1, -1), 3),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+            ]))
+            
+            story.append(course_table)
+            story.append(Spacer(1, 15))
+            
+            # Summary Table
+            summary_data = [
+                ['Total Credits Registered:', str(tu), 'Total Credits Earned:', str(su)],
+                ['SPI (Semester Performance Index):', f"{spi:.2f}", 'CPI (Cumulative Performance Index):', f"{cpi:.2f}"]
+            ]
+            
+            summary_table = Table(summary_data, colWidths=[2.2*inch, 0.8*inch, 2.2*inch, 0.8*inch])
+            summary_table.setStyle(TableStyle([
+                ('FONTNAME', (0, 0), (-1, -1), 'Times-Roman'),
+                ('FONTSIZE', (0, 0), (-1, -1), 10),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('LEFTPADDING', (0, 0), (-1, -1), 5),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+                ('TOPPADDING', (0, 0), (-1, -1), 4),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+            ]))
+            
+            story.append(summary_table)
+            story.append(Spacer(1, 25))
+            
+            # Footer
+            footer_style = ParagraphStyle(
+                'Footer',
+                parent=styles['Normal'],
+                fontSize=8,
+                alignment=1,  # Center
+                fontName='Times-Italic'
+            )
+            
+            from datetime import datetime
+            current_date = datetime.now().strftime("%d/%m/%Y")
+            story.append(Paragraph(f"This is a computer-generated document. Generated on {current_date}", footer_style))
+            
+            # Build PDF
+            doc.build(story)
+            
+            # Return PDF response
+            pdf_data = buffer.getvalue()
+            buffer.close()
+            
+            response = HttpResponse(pdf_data, content_type='application/pdf')
+            filename = f"result_{student_info.get('rollNumber', student_info.get('roll_number', 'student'))}_sem{semester_no}.pdf"
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            response['Content-Length'] = len(pdf_data)
+            
+            return response
+            
+        except Exception as e:
+            return JsonResponse({'error': f'PDF generation failed: {str(e)}'}, status=500)

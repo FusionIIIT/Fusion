@@ -20,6 +20,7 @@ urlpatterns = [
     url(r'^submitGradesProf/', views.SubmitGradesProfAPI.as_view(), name='submitGradesProf'),
     url(r'^upload_grades_prof/', views.UploadGradesProfAPI.as_view(), name='upload_grades_prof'),
     url(r'^generate_pdf/', views.GeneratePDFAPI.as_view(), name='generate_pdf'),
+    url(r'^generate_student_result_pdf/', views.GenerateStudentResultPDFAPI.as_view(), name='generate_student_result_pdf'),
     url(r'^downloadGrades/', views.DownloadGradesAPI.as_view(), name='downloadGrades'),
     url(r'verify_grades_dean/',views.VerifyGradesDeanView.as_view(),name='verify_grades_dean'),
     url(r'update_enter_grades_dean/',views.UpdateEnterGradesDeanView.as_view(),name='update_enter_grades_dean'),
@@ -33,4 +34,5 @@ urlpatterns = [
     url(r'unique-course-reg-years/', views.UniqueRegistrationYearsView.as_view(), name="unique-course-reg-years"),
     url(r'unique-stu-grades-years/', views.UniqueStudentGradeYearsView.as_view(), name="unique-stu-grades-years"),
     url(r'^student/result_semesters/$', views.StudentSemesterListView.as_view(), name='get_student_semesters'),
+    url(r'^generate_student_result_pdf/', views.GenerateStudentResultPDFAPI.as_view(), name='generate_student_result_pdf'),
 ]
