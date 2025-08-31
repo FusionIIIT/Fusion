@@ -5,10 +5,7 @@ DEBUG = True
 SECRET_KEY = os.environ['SECRET_KEY']
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '172.27.16.216']
-
-# password of sender
-EMAIL_HOST_PASSWORD = os.environ['MAIL_PASSWORD']
-
+EMAIL_HOST_PASSWORD = os.environ.get('MAIL_PASSWORD')
 # Database template for postgres
 
 DATABASES = {

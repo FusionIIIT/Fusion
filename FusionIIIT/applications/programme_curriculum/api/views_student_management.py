@@ -51,6 +51,38 @@ def get_academic_year_from_batch_year(batch_year):
     next_year = batch_year + 1
     return f"{batch_year}-{str(next_year)[-2:]}"
 
+def calculate_batch_filled_seats(batch):
+    """
+    Centralized function to calculate filled seats for a batch using priority-based algorithm.
+    """
+    try:
+        from applications.academic_information.models import Student
+        direct_count = Student.objects.filter(batch_id=batch).count()
+        if direct_count > 0:
+            return direct_count
+        else:
+            discipline_name = batch.discipline.name if batch.discipline else ''
+            discipline_acronym = batch.discipline.acronym if batch.discipline else ''
+            discipline_count = Student.objects.filter(
+                batch=batch.year,
+                id__department__name__in=[discipline_acronym, discipline_name.split()[0] if discipline_name else '']
+            ).count() if discipline_name else 0
+            if discipline_count > 0:
+                return discipline_count
+            else:
+                if batch.name and batch.year:
+                    programme_count = Student.objects.filter(
+                        programme__icontains=batch.name.split()[0] if batch.name else '',
+                        batch=batch.year,
+                        id__department__name__in=[discipline_acronym] if discipline_acronym else []
+                    ).count()
+                    return programme_count
+                else:
+                    return 0
+                    
+    except Exception as e:
+        return 0
+
 def normalize_year_input(year_input):
     try:
         if isinstance(year_input, str):
@@ -916,9 +948,55 @@ def add_single_student(request):
                 source='manual_entry'
             )
             
-            # Only create user accounts when admin marks student as REPORTED
+            # Automatically transfer manual entries to main academic tables
             auto_generated_password = None
             user_created = False
+            transfer_success = False
+            
+            try:
+                from django.http import HttpRequest
+                from django.contrib.auth.models import AnonymousUser
+                
+                # Create a mock request for the status update function
+                mock_request = HttpRequest()
+                mock_request.method = 'PUT'
+                mock_request._body = json.dumps({
+                    'studentId': student.id,
+                    'reportedStatus': 'REPORTED'
+                }).encode('utf-8')
+                mock_request.user = request.user if hasattr(request, 'user') else AnonymousUser()
+
+                from django.test import RequestFactory
+                factory = RequestFactory()
+                update_request = factory.put(
+                    '/api/students/status/',
+                    data=json.dumps({
+                        'studentId': student.id,
+                        'reportedStatus': 'REPORTED'
+                    }),
+                    content_type='application/json'
+                )
+                update_request.user = request.user if hasattr(request, 'user') else AnonymousUser()
+                
+                # Call update_student_status function directly
+                status_response = update_student_status(update_request)
+                
+                if status_response.status_code == 200:
+                    response_data = json.loads(status_response.content)
+                    if response_data.get('success'):
+                        transfer_success = True
+                        auto_generated_password = response_data.get('password')
+                        user_created = response_data.get('user_created', False)
+                
+            except Exception as transfer_error:
+                transfer_success = False
+        
+        # Build success message
+        success_message = f'Student added successfully'
+        if transfer_success:
+            success_message += f' and transferred to main academic tables'
+            if user_created:
+                success_message += f' with auto-generated login credentials'
         
         return JsonResponse({
             'success': True,
@@ -928,9 +1006,10 @@ def add_single_student(request):
                 'institute_email': student.institute_email or student_data.get('institute_email'),
                 'password': auto_generated_password,
                 'user_created': user_created,
-                'username': student.roll_number if user_created else None
+                'username': student.roll_number if user_created else None,
+                'transferred_to_academic': transfer_success
             },
-            'message': f'Student added successfully{" with auto-generated login credentials" if user_created else ""}'
+            'message': success_message
         })
         
     except json.JSONDecodeError as e:
@@ -1093,7 +1172,7 @@ def update_student_status(request):
                         elif 'SMART MANUFACTURING' in branch_upper or 'SMART' in branch_upper or 'SM' in branch_upper:
                             dept_name = 'SM'
                             discipline_name = 'Smart Manufacturing'
-                        elif 'DESIGN' in branch_upper or 'DES' in branch_upper:
+                        elif 'DESIGN' in branch_upper or 'DES' in branch_upper or 'B.DES' in branch_upper:
                             dept_name = 'Design'  # Exact database name
                             discipline_name = 'Design'
                             discipline_acronym = 'Des.'  # Use existing acronym
@@ -1176,7 +1255,7 @@ def update_student_status(request):
                         # FIND existing programme based on correct naming pattern
                         if student.programme_type == 'ug':
                             if 'design' in student.branch.lower():
-                                programme_name = 'B.Des.'
+                                programme_name = 'B.Des'  # Match the actual batch name in database
                             else:
                                 programme_name = 'B.Tech'
                             programme_category = 'UG'
@@ -1192,7 +1271,7 @@ def update_student_status(request):
                         try:
                             if dept_name == 'Design':
                                 programme = Programme.objects.filter(
-                                    name='B.Des.',
+                                    name='B.Des',  # Match the actual batch name in database
                                     category=programme_category,
                                     discipline=discipline
                                 ).first()
@@ -1260,8 +1339,8 @@ def update_student_status(request):
                                 if batch_obj:
                                     pass
                                 else:
+                                    # Enhanced error message
                                     error_msg = f"❌ BATCH NOT FOUND: No existing batch found for {programme_name} {discipline.name} Year-{student.year}. Please create the batch first via Admin Batch Management."
-                                    pass
                                     
                                     return JsonResponse({
                                         'success': False,
@@ -1915,11 +1994,29 @@ def update_batch(request, batch_id):
         try:
             batch = BatchConfiguration.objects.get(id=batch_id)
         except BatchConfiguration.DoesNotExist:
-            return JsonResponse({
-                'success': False,
-                'message': 'Batch not found'
-            }, status=404)
+            # Try to find it in regular Batch model
+            try:
+                from applications.programme_curriculum.models import Batch
+                regular_batch = Batch.objects.get(id=batch_id)
+                
+                # Create a corresponding BatchConfiguration if it doesn't exist
+                batch_config = BatchConfiguration.objects.create(
+                    programme=regular_batch.name,
+                    discipline=regular_batch.discipline.name if regular_batch.discipline else "Unknown",
+                    year=regular_batch.year,
+                    total_seats=regular_batch.total_seats
+                )
+                batch_config.id = batch_id  # Force the same ID
+                batch_config.save()
+                batch = batch_config
+                
+            except:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Batch with ID {batch_id} not found in any model'
+                }, status=404)
 
+        # Update fields
         if 'programme' in data:
             batch.programme = data['programme']
         if 'discipline' in data:
@@ -1927,7 +2024,8 @@ def update_batch(request, batch_id):
         if 'year' in data:
             batch.year = data['year']
         if 'total_seats' in data or 'totalSeats' in data:
-            batch.total_seats = data.get('total_seats') or data.get('totalSeats')
+            new_total_seats = data.get('total_seats') or data.get('totalSeats')
+            batch.total_seats = new_total_seats
 
         if 'displayBranch' in data:
             batch.discipline = data['displayBranch']
@@ -1936,7 +2034,14 @@ def update_batch(request, batch_id):
         
         return JsonResponse({
             'success': True,
-            'message': 'Batch updated successfully'
+            'message': 'Batch updated successfully',
+            'batch': {
+                'id': batch.id,
+                'programme': batch.programme,
+                'discipline': batch.discipline,
+                'year': batch.year,
+                'total_seats': batch.total_seats
+            }
         })
         
     except Exception as e:
@@ -2942,24 +3047,8 @@ def admin_batches_unified(request):
         unified_batches = []
         
         for batch in all_batches:
-
-            try:
-                uploaded_students_count = StudentBatchUpload.objects.filter(
-                    year=batch.year,
-                    branch__icontains=batch.discipline.name
-                ).count()
-                try:
-                    from applications.academic_information.models import Student
-                    academic_students_count = Student.objects.filter(
-                        batch_id=batch
-                    ).count()
-                except ImportError:
-                    academic_students_count = 0
-
-                actual_filled = uploaded_students_count + academic_students_count
-                
-            except Exception as e:
-                actual_filled = 0
+            # Use centralized filled seats calculation function
+            actual_filled = calculate_batch_filled_seats(batch)
 
             if hasattr(batch, 'total_seats') and batch.total_seats:
                 total_seats = batch.total_seats
@@ -3080,11 +3169,11 @@ def admin_batches_unified(request):
 def sync_batch_data(request):
     """
     Sync total seats and curriculum between 'Batches' tab and 'Upcoming Batches' tab
-    Ensures consistency between different views of batch data
     URL: /programme_curriculum/api/batches/sync/
     """
     try:
         from applications.programme_curriculum.models import Batch
+        from applications.academic_information.models import Student
 
         all_batches = Batch.objects.filter(running_batch=True).select_related(
             'discipline', 'curriculum'
@@ -3093,7 +3182,8 @@ def sync_batch_data(request):
         sync_results = []
         
         for batch in all_batches:
-            actual_filled = batch.filled_seats
+            # Use centralized filled seats calculation function
+            actual_filled = calculate_batch_filled_seats(batch)
 
             if hasattr(batch, 'total_seats') and batch.total_seats:
                 available_seats = max(0, batch.total_seats - actual_filled)
@@ -3102,10 +3192,9 @@ def sync_batch_data(request):
                 default_seats = {
                     'CSE': 300,
                     'ECE': 120, 
-                    'ME': 120,
-                    'SM': 60,
+                    'ME': 80,
+                    'SM': 80,
                     'Des.': 80,
-                    'Design': 80
                 }
                 batch.total_seats = default_seats.get(batch.discipline.acronym, 100)
                 batch.save()
@@ -3115,6 +3204,7 @@ def sync_batch_data(request):
                 'batch_id': batch.id,
                 'name': batch.name,
                 'discipline': batch.discipline.acronym,
+                'discipline_name': batch.discipline.name,
                 'year': batch.year,
                 'total_seats': batch.total_seats,
                 'filled_seats': actual_filled,
@@ -3831,3 +3921,61 @@ def transfer_student_to_academic_system(student):
             'success': False,
             'message': f'Transfer failed: {str(e)}'
         }
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def sync_batches_to_configuration(request):
+    """
+    Sync batches from Batch model to BatchConfiguration model
+    This ensures that all batches are available in the BatchConfiguration model
+    """
+    try:
+        from applications.programme_curriculum.models import Batch
+        
+        synced_count = 0
+        created_count = 0
+        updated_count = 0
+        
+        for batch in Batch.objects.all():
+            # Check if BatchConfiguration already exists with this ID
+            try:
+                batch_config = BatchConfiguration.objects.get(id=batch.id)
+                # Update existing
+                batch_config.programme = batch.name
+                batch_config.discipline = batch.discipline.name if batch.discipline else "Unknown"
+                batch_config.year = batch.year
+                batch_config.total_seats = batch.total_seats
+                batch_config.save()
+                updated_count += 1
+                
+            except BatchConfiguration.DoesNotExist:
+                # Create new
+                batch_config = BatchConfiguration.objects.create(
+                    programme=batch.name,
+                    discipline=batch.discipline.name if batch.discipline else "Unknown",
+                    year=batch.year,
+                    total_seats=batch.total_seats
+                )
+                # Force the same ID to maintain consistency
+                batch_config.id = batch.id
+                batch_config.save()
+                created_count += 1
+            
+            synced_count += 1
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Synced {synced_count} batches. Created: {created_count}, Updated: {updated_count}',
+            'stats': {
+                'total_synced': synced_count,
+                'created': created_count,
+                'updated': updated_count
+            }
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Sync failed: {str(e)}'
+        }, status=500)

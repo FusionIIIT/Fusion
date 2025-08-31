@@ -59,6 +59,8 @@ EMAIL_USE_TLS = False  # Don't use TLS when using SSL
 # Email sender configuration
 EMAIL_HOST_USER = 'fusion@iiitdmj.ac.in'
 EMAIL_HOST_PASSWORD = os.environ.get('MAIL_PASSWORD', '')
+FUSION_EMAIL = 'fusion@iiitdmj.ac.in'
+FUSION_URL = 'http://fusion.iiitdmj.ac.in'
 
 # Email timeout
 EMAIL_TIMEOUT = 30

@@ -34,7 +34,6 @@ class DisciplineSerializer(serializers.ModelSerializer):
 class BatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Batch
-        fields = ['name', 'year']
         fields = '__all__'
 
 

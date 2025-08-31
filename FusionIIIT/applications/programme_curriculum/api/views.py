@@ -848,32 +848,12 @@ def admin_view_all_batches(request):
     # Serialize the batch data with filled seats calculation
     batch_data = []
     for batch in running_batches:
-        # Calculate filled seats by counting actual students for this specific batch
-        try:
-            from .views_student_management import StudentBatchUpload
-            
-            # Step 1: Count students from StudentBatchUpload table
-            uploaded_students_count = StudentBatchUpload.objects.filter(
-                year=batch.year,
-                branch__icontains=batch.discipline.name
-            ).count()
-            
-            # Step 2: Count students from academic_information.Student table
-            try:
-                from applications.academic_information.models import Student
-                academic_students_count = Student.objects.filter(
-                    batch_id=batch
-                ).count()
-            except ImportError:
-                academic_students_count = 0
-            
-            # Total filled seats = both upload and academic students
-            filled_seats = uploaded_students_count + academic_students_count
-            available_seats = max(0, batch.total_seats - filled_seats)
-            
-        except Exception as e:
-            filled_seats = 0
-            available_seats = batch.total_seats
+        # Import the centralized function
+        from .views_student_management import calculate_batch_filled_seats
+        
+        # Use centralized filled seats calculation function
+        filled_seats = calculate_batch_filled_seats(batch)
+        available_seats = max(0, batch.total_seats - filled_seats)
         
         batch_data.append({
             'batch_id': batch.id,
@@ -884,7 +864,6 @@ def admin_view_all_batches(request):
             'id': batch.curriculum.id if batch.curriculum else None,
             'curriculumVersion': batch.curriculum.version if batch.curriculum else None,
             'running_batch': batch.running_batch,
-            # Add seat information for frontend display
             'totalSeats': batch.total_seats,
             'total_seats': batch.total_seats,
             'filledSeats': filled_seats,
@@ -895,29 +874,12 @@ def admin_view_all_batches(request):
 
     finished_batch_data = []
     for batch in finished_batches:
-        # Calculate filled seats for finished batches too
-        try:
-            from .views_student_management import StudentBatchUpload
-            
-            uploaded_students_count = StudentBatchUpload.objects.filter(
-                year=batch.year,
-                branch__icontains=batch.discipline.name
-            ).count()
-            
-            try:
-                from applications.academic_information.models import Student
-                academic_students_count = Student.objects.filter(
-                    batch_id=batch
-                ).count()
-            except ImportError:
-                academic_students_count = 0
-            
-            filled_seats = uploaded_students_count + academic_students_count
-            available_seats = max(0, batch.total_seats - filled_seats)
-            
-        except Exception as e:
-            filled_seats = 0
-            available_seats = batch.total_seats
+        # Import the centralized function
+        from .views_student_management import calculate_batch_filled_seats
+        
+        # Use centralized filled seats calculation function
+        filled_seats = calculate_batch_filled_seats(batch)
+        available_seats = max(0, batch.total_seats - filled_seats)
         
         finished_batch_data.append({
             'batch_id': batch.id,
@@ -1160,13 +1122,28 @@ def add_curriculum_form(request):
         try:
             # Parse the incoming JSON data
             data = json.loads(request.body)
+            
             curriculum_name = data.get('curriculum_name')
             programme_id = data.get('programme')
             working_curriculum = data.get('working_curriculum', False)
             version_no = data.get('version_no', 1.0)
-            num_semesters = data.get('num_semesters', 1)
-            num_credits = data.get('num_credits', 0)
-
+            
+            # Handle multiple possible field names for number of semesters
+            num_semesters = (data.get('num_semesters') or 
+                           data.get('no_of_semester') or 
+                           data.get('numberOfSemesters') or 
+                           data.get('semesters') or 1)
+            
+            # Handle multiple possible field names for credits
+            num_credits = (data.get('num_credits') or 
+                          data.get('min_credit') or 
+                          data.get('minCredits') or 
+                          data.get('credits') or 0)
+            
+            # Convert to int to ensure they are valid numbers
+            num_semesters = int(num_semesters)
+            num_credits = int(num_credits)
+            
             # Validate that the programme exists
             try:
                 programme = Programme.objects.get(id=programme_id)
@@ -1228,19 +1205,30 @@ def edit_curriculum_form(request, curriculum_id):
         try:
             # Parse the incoming JSON data
             data = json.loads(request.body)
+            
             curriculum_name = data.get('curriculum_name')
             programme_id = data.get('programme')
             working_curriculum = data.get('working_curriculum', False)
             version_no = data.get('version_no', 1.0)
             
-            # Frontend sends 'num_semesters' field
-            num_semesters = data.get('num_semesters', 1)
+            # Handle multiple possible field names for number of semesters
+            num_semesters = (data.get('num_semesters') or 
+                           data.get('no_of_semester') or 
+                           data.get('numberOfSemesters') or 
+                           data.get('semesters'))
+            
+            if num_semesters is None:
+                num_semesters = 1
             
             # Convert to int to ensure it's a valid number
             num_semesters = int(num_semesters)
             
-            num_credits = data.get('num_credits', 0)
-
+            # Handle multiple possible field names for credits
+            num_credits = (data.get('num_credits') or 
+                          data.get('min_credit') or 
+                          data.get('minCredits') or 
+                          data.get('credits') or 0)
+            
             # Fetch the existing curriculum
             curriculum = get_object_or_404(Curriculum, id=curriculum_id)
 
@@ -1284,7 +1272,6 @@ def edit_curriculum_form(request, curriculum_id):
             return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     return JsonResponse({'error': 'Invalid request method.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 @csrf_exempt
-@permission_classes([IsAuthenticated])
 def add_course_form(request):
 
     # user_details = ExtraInfo.objects.get(user = request.user)
@@ -1299,52 +1286,75 @@ def add_course_form(request):
     try:
         if request.method == 'POST':
             data = json.loads(request.body.decode('utf-8'))
+            
             form = CourseForm(data)
+            
             if form.is_valid():
-                new_course = form.save(commit=False)
-                new_course.save()
-                
-                # Create initial audit log for course creation
-                initial_data = {
-                    'name': new_course.name,
-                    'code': new_course.code,
-                    'credit': new_course.credit,
-                    'version': new_course.version,
-                    'lecture_hours': new_course.lecture_hours,
-                    'tutorial_hours': new_course.tutorial_hours,
-                    'pratical_hours': new_course.pratical_hours,
-                    'discussion_hours': new_course.discussion_hours,
-                    'project_hours': new_course.project_hours,
-                    'pre_requisits': new_course.pre_requisits,
-                    'syllabus': new_course.syllabus,
-                    'ref_books': new_course.ref_books,
-                    'percent_quiz_1': new_course.percent_quiz_1,
-                    'percent_midsem': new_course.percent_midsem,
-                    'percent_quiz_2': new_course.percent_quiz_2,
-                    'percent_endsem': new_course.percent_endsem,
-                    'percent_project': new_course.percent_project,
-                    'percent_lab_evaluation': new_course.percent_lab_evaluation,
-                    'percent_course_attendance': new_course.percent_course_attendance,
-                    'max_seats': new_course.max_seats,
-                    'working_course': new_course.working_course,
-                }
-                
-                create_course_audit_log(
-                    course=new_course,
-                    user=request.user,
-                    action='CREATE',
-                    old_data=None,
-                    new_data=initial_data,
-                    version_bump_type='MAJOR',  # New course creation is always major
-                    old_version=None,
-                    new_version=new_course.version,
-                    admin_override=False,
-                    reason="New course created"
-                )
-                
-                return JsonResponse({'success': True, 'message': 'Course added successfully', 'course_id': new_course.id}, status=201)
+                try:
+                    new_course = form.save(commit=False)
+                    new_course.save()
+                    
+                    # Handle many-to-many relationships if any
+                    if 'disciplines' in data:
+                        new_course.disciplines.set(data['disciplines'])
+                    
+                    if 'pre_requisit_courses' in data and data['pre_requisit_courses']:
+                        new_course.pre_requisit_courses.set(data['pre_requisit_courses'])
+                    
+                    # Create initial audit log for course creation (only for authenticated users)
+                    if request.user.is_authenticated and not request.user.is_anonymous:
+                        initial_data = {
+                            'name': new_course.name,
+                            'code': new_course.code,
+                            'credit': new_course.credit,
+                            'version': new_course.version,
+                            'lecture_hours': new_course.lecture_hours,
+                            'tutorial_hours': new_course.tutorial_hours,
+                            'pratical_hours': new_course.pratical_hours,
+                            'discussion_hours': new_course.discussion_hours,
+                            'project_hours': new_course.project_hours,
+                            'pre_requisits': new_course.pre_requisits,
+                            'syllabus': new_course.syllabus,
+                            'ref_books': new_course.ref_books,
+                            'percent_quiz_1': new_course.percent_quiz_1,
+                            'percent_midsem': new_course.percent_midsem,
+                            'percent_quiz_2': new_course.percent_quiz_2,
+                            'percent_endsem': new_course.percent_endsem,
+                            'percent_project': new_course.percent_project,
+                            'percent_lab_evaluation': new_course.percent_lab_evaluation,
+                            'percent_course_attendance': new_course.percent_course_attendance,
+                            'max_seats': new_course.max_seats,
+                            'working_course': new_course.working_course,
+                        }
+                        
+                        create_course_audit_log(
+                            course=new_course,
+                            user=request.user,
+                            action='CREATE',
+                            old_data=None,
+                            new_data=initial_data,
+                            version_bump_type='MAJOR',  # New course creation is always major
+                            old_version=None,
+                            new_version=new_course.version,
+                            admin_override=False,
+                            reason="New course created"
+                        )
+                    
+                    return JsonResponse({'success': True, 'message': 'Course added successfully', 'course_id': new_course.id}, status=201)
+                    
+                except Exception as save_error:
+                    return JsonResponse({'success': False, 'message': f'Error saving course: {str(save_error)}'}, status=500)
             else:
-                return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+                # Return detailed form validation errors
+                error_details = {}
+                for field, errors in form.errors.items():
+                    error_details[field] = list(errors)
+                
+                return JsonResponse({
+                    'success': False, 
+                    'message': 'Form validation failed',
+                    'errors': error_details
+                }, status=400)
 
         return JsonResponse({'error': 'Invalid request method. Use POST.'}, status=405)
 
@@ -1727,7 +1737,7 @@ def add_batch_form(request):
     """
     if request.method == 'POST':
         data = request.data
-
+        
         # Map frontend fields to the correct model fields
         batch_data = {
             "name": data.get("batch_name"),  
@@ -1735,12 +1745,15 @@ def add_batch_form(request):
             "year": data.get("batchYear"),
             "curriculum": data.get("disciplineBatch"),  # Assuming curriculum is disciplineBatch
             "running_batch": data.get("runningBatch"),  # Assuming running_batch is a field in the model
+            "total_seats": data.get("total_seats") or data.get("totalSeats") or data.get("Total_Seats") or 60,  # Try multiple field name variations
         }
+        
         # data = json.loads(request.body)
         serializer = BatchSerializer(data=batch_data)
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "Added Batch successfully"}, status=status.HTTP_201_CREATED)
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     return Response({"error": "Invalid request method"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
@@ -1768,7 +1781,8 @@ def edit_batch_form(request, batch_id):
             'name': batch.name,
             'year': batch.year,
             'curriculum_id': batch.curriculum_id,
-            'running_batch':batch.running_batch,
+            'running_batch': batch.running_batch,
+            'total_seats': batch.total_seats,  # Add total_seats to GET response
         }
 
         curricula_data = None
@@ -1799,11 +1813,15 @@ def edit_batch_form(request, batch_id):
 
             # Parse the incoming JSON data
             data = json.loads(request.body)
-
+            
             # Update batch fields
             batch.name = data.get('batch_name', batch.name)  # Use existing value if not provided
             batch.year = data.get('batchYear', batch.year)  # Use existing value if not provided
             batch.running_batch = data.get('runningBatch', batch.running_batch)  # Use existing value if not provided
+            
+            # Handle total_seats update - try multiple possible field names
+            new_total_seats = data.get('total_seats') or data.get('totalSeats') or data.get('Total_Seats') or batch.total_seats
+            batch.total_seats = new_total_seats
 
             # Update discipline (if provided)
             discipline_id = data.get('discipline')
@@ -1827,7 +1845,7 @@ def edit_batch_form(request, batch_id):
 
             # Save the updated batch
             batch.save()
-
+            
             return JsonResponse({'status': status.HTTP_200_OK, 'message': 'Batch updated successfully'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -2950,8 +2968,6 @@ def view_inward_files(request,ProposalId):
 @permission_classes([IsAuthenticated])
 def reject_form(request, ProposalId):
     try:
-        # Debugging - print incoming request data
-        
         # Get query parameters
         username = request.GET.get('username', '')
         designation = request.GET.get('des', '')

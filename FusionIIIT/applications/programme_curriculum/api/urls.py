@@ -93,7 +93,6 @@ urlpatterns = [
     path('admin_delete_discipline/<int:discipline_id>/', views.admin_delete_discipline, name='admin_delete_discipline'),
     
     # Student management
-    path('admin_batches_overview/', views_student_management.admin_batches_overview, name='admin_batches_overview'),
     path('admin_batches/', views_student_management.admin_batches_unified, name='admin_batches_unified'),
     path('admin_batch_students/<int:batch_id>/', views_student_management.get_batch_students, name='get_batch_students'),
     path('batches/<int:batch_id>/students/', views_student_management.get_batch_students, name='get_batch_students_legacy'),
@@ -130,6 +129,7 @@ urlpatterns = [
     path('admin_delete_batch/<int:batch_id>/', views.delete_batch, name='admin_delete_batch'),
     path('batches/list/', views_student_management.list_batches_with_status, name='list_batches_with_status'),
     path('batches/sync/', views_student_management.sync_batch_data, name='sync_batch_data'),
+    path('batches/sync_to_configuration/', views_student_management.sync_batches_to_configuration, name='sync_batches_to_configuration'),
     path('batches/validate_prerequisites/', views_student_management.validate_batch_prerequisites, name='validate_batch_prerequisites'),
     path('batches/curriculum_status/', views_student_management.check_batches_curriculum_status, name='check_batches_curriculum_status'),
     path('validate_student_upload_prerequisites/', views_student_management.validate_student_upload_prerequisites, name='validate_student_upload_prerequisites'),
