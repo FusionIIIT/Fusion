@@ -242,6 +242,7 @@ def process_excel_upload(request):
             'gender': ['gender', 'sex'],
             'category': ['category', 'caste'],
             'pwd': ['pwd', 'disability', 'pwb'],
+            'minority': ['minority', 'minority status'],
             'phone_number': ['mobileno', 'mobile', 'phone', 'mobile no'],
             'institute_email': ['institute email id', 'institute email', 'inst email id'],
             'personal_email': ['alternet email id', 'alternate email id', 'email', 'personal email'],
@@ -277,7 +278,20 @@ def process_excel_upload(request):
                     if excel_col in df.columns:
                         value = row[excel_col]
                         if pd.notna(value):
-                            student_data[field] = str(value).strip()
+                            # Normalize minority values
+                            if field == 'minority':
+                                value_upper = str(value).strip().upper()
+                                if value_upper in ['APPLICABLE']:
+                                    student_data[field] = 'Applicable'
+                                elif value_upper in ['NOT APPLICABLE', 'N/A', 'NA']:
+                                    student_data[field] = 'Not Applicable'
+                                else:
+                                    student_data[field] = str(value).strip()
+                            # Fix serial number to start from 1
+                            elif field == 'sno':
+                                student_data[field] = str(index + 1)  # Force serial number to be 1-based
+                            else:
+                                student_data[field] = str(value).strip()
 
                 required_fields = ['name', 'discipline', 'roll_number', 'institute_email']
                 missing_fields = [field for field in required_fields if not student_data.get(field)]
@@ -293,6 +307,11 @@ def process_excel_upload(request):
                     pwd = student_data['pwd'].upper()
                     if pwd not in ['YES', 'NO']:
                         errors.append(f'Invalid PWD value: {student_data["pwd"]}')
+
+                if student_data.get('minority'):
+                    minority = student_data['minority'].upper()
+                    if minority not in ['APPLICABLE', 'NOT APPLICABLE']:
+                        errors.append(f'Invalid Minority value: {student_data["minority"]}')
 
                 if student_data.get('institute_email'):
                     email = student_data['institute_email']
@@ -329,6 +348,7 @@ def process_excel_upload(request):
                         'Gender': student_data.get('gender', ''),
                         'Category': student_data.get('category', ''),
                         'PWD': student_data.get('pwd', ''),
+                        'Minority': student_data.get('minority', ''),
                         'Mobile No': student_data.get('phone_number', ''),
                         'Institute Email ID': student_data.get('institute_email', ''),
                         'Alternet Email ID': student_data.get('personal_email', ''),
@@ -580,6 +600,7 @@ def save_students_batch(request):
                         gender=student_data.get('Gender') or student_data.get('gender', ''),
                         category=student_data.get('Category') or student_data.get('category', ''),
                         pwd=student_data.get('PWD') or student_data.get('pwd', 'NO'),
+                        minority=student_data.get('Minority') or student_data.get('minority', 'Not Applicable'),
 
                         phone_number=student_data.get('Mobile No') or student_data.get('phoneNumber', ''),
                         personal_email=student_data.get('Alternet Email ID') or student_data.get('email', ''),
@@ -921,6 +942,7 @@ def add_single_student(request):
                 gender=student_data.get('gender'),
                 category=student_data.get('category'),
                 pwd=student_data.get('pwd'),
+                minority=data.get('minority', 'Not Applicable'),
                 date_of_birth=dob or data.get('date_of_birth'),
 
                 phone_number=data.get('phone_number', '') or data.get('MobileNo', ''),
@@ -1715,7 +1737,7 @@ def export_students(request, programme_type):
 
         headers = [
             'S.No', 'JEE Application Number', 'Institute Roll Number', 'Name',
-            'Discipline', 'Gender', 'Category', 'PWD', 'Mobile No',
+            'Discipline', 'Gender', 'Category', 'PWD', 'Minority', 'Mobile No',
             'Institute Email ID', 'Alternate Email ID', 'Father\'s Name',
             'Father\'s Occupation', 'Father Mobile Number', 'Mother\'s Name',
             'Mother\'s Occupation', 'Mother Mobile Number', 'Date of Birth',
@@ -1736,6 +1758,7 @@ def export_students(request, programme_type):
                 student.gender,
                 student.category,
                 student.pwd,
+                getattr(student, 'minority', 'Not Applicable'),
                 student.phone_number,
                 student.institute_email,
                 student.personal_email,
@@ -1842,6 +1865,7 @@ def list_students(request):
                 'father_name': student.father_name,
                 'category': student.category,
                 'pwd': student.pwd,
+                'minority': getattr(student, 'minority', 'Not Applicable'),
                 'reported_status': student.reported_status,
                 'branch': student.branch,
                 'year': student.year,
@@ -2401,6 +2425,7 @@ def get_student(request, student_id):
             'gender': student.gender,
             'category': student.category,
             'pwd': student.pwd,
+            'minority': getattr(student, 'minority', 'Not Applicable'),
             'date_of_birth': student.date_of_birth.isoformat() if student.date_of_birth else '',
             'dateOfBirth': student.date_of_birth.isoformat() if student.date_of_birth else '',
 
@@ -2541,7 +2566,7 @@ def update_student(request, student_id):
                     setattr(student, backend_field, value)
 
         direct_fields = [
-            'name', 'gender', 'category', 'pwd', 'address', 'state', 'branch'
+            'name', 'gender', 'category', 'pwd', 'minority', 'address', 'state', 'branch'
         ]
         
         for field in direct_fields:
@@ -2940,6 +2965,7 @@ def get_batch_students(request, batch_id):
                 'gender': getattr(student, 'gender', ''),
                 'category': student.category,
                 'pwd': getattr(student, 'pwd', ''),
+                'minority': getattr(student, 'minority', 'Not Applicable'),
                 'date_of_birth': student.date_of_birth.isoformat() if student.date_of_birth else '',
 
                 'phone_number': getattr(student, 'phone_number', ''),

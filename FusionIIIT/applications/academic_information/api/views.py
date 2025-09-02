@@ -345,13 +345,15 @@ def parse_academic_year(academic_year, semester_type):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 @role_required(['acadadmin', "Associate Professor", "Professor", "Assistant Professor", "Dean Academic"])
 def generate_xlsheet_api(request):
     try:
         course_id = int(request.data.get('course'))
         academic_year = request.data.get('academic_year')
         semester_type = request.data.get('semester_type')
-
+        list_type = request.data.get('list_type')  # Optional
+        preview_only = request.data.get('preview_only', False)
         if not (academic_year and semester_type):
             return HttpResponse("Missing academic_year or semester_type", status=400)
 
@@ -372,18 +374,39 @@ def generate_xlsheet_api(request):
                 instructor_names.append(name)
         course_instructor_name = ", ".join(instructor_names) if instructor_names else ""
 
-        # Get registered students
-        registered_courses = course_registration.objects.filter(
-            course_id=course,
-            session=academic_year,
-            semester_type=semester_type,
-            student_id__finalregistration__verified=True
-        )
+        # Build filter for course registration based on list_type
+        filter_kwargs = {
+            'course_id': course,
+            'session': academic_year,
+            'semester_type': semester_type,
+            'student_id__finalregistration__verified': True
+        }
+
+        if list_type and list_type != 'all':
+            registration_type_mapping = {
+                'Regular': 'Regular',
+                'Backlog': 'Backlog', 
+                'Improvement': 'Improvement',
+                'Audit': 'Audit',
+                'Extra Credits': 'Extra Credits',
+                'Replacement': 'Replacement',
+                'backlog_improvement': ['Backlog', 'Improvement']
+            }
+            
+            if list_type in registration_type_mapping:
+                reg_type = registration_type_mapping[list_type]
+                if isinstance(reg_type, list):
+                    filter_kwargs['registration_type__in'] = reg_type
+                else:
+                    filter_kwargs['registration_type'] = reg_type
+
+        registered_courses = course_registration.objects.filter(**filter_kwargs)
 
     except Exception as e:
         print("Error generating xlsx:", str(e))
         return HttpResponse("Invalid data or internal error", status=500)
 
+    # Process student data
     ans = []
     student_ids = set()
     for reg in registered_courses:
@@ -391,7 +414,7 @@ def generate_xlsheet_api(request):
         spec = ""
         try:
             spec = reg.student_id.specialization
-        except e:
+        except:
             pass
         if sid not in student_ids:
             student_ids.add(sid)
@@ -399,7 +422,38 @@ def generate_xlsheet_api(request):
             last_name = reg.student_id.id.user.last_name
             department = spec
             email = reg.student_id.id.user.email
-            ans.append([sid, first_name, last_name, department, email])
+            registration_type = reg.registration_type  # Include registration type
+            ans.append([sid, first_name, last_name, department, email, registration_type])
+    ans.sort(key=lambda x: x[0])
+
+    # If preview_only is True, return JSON data for preview
+    if preview_only:
+        list_type_display = list_type.title() if list_type else "All Registrations"
+        preview_data = {
+            'students': [],
+            'course_info': {
+                'code': course.code,
+                'name': course.name,
+                'instructor': course_instructor_name,
+                'academic_year': academic_year,
+                'semester_type': semester_type,
+                'list_type': list_type_display,
+                'total_count': len(ans)
+            }
+        }
+        
+        for student in ans:
+            preview_data['students'].append({
+                'roll_no': student[0],
+                'first_name': student[1],
+                'last_name': student[2],
+                'full_name': f"{student[1]} {student[2]}",
+                'discipline': student[3],
+                'email': student[4],
+                'registration_type': student[5]
+            })
+        
+        return JsonResponse(preview_data, status=200)
     ans.sort(key=lambda x: x[0])
 
     # Excel generation
@@ -438,40 +492,46 @@ def generate_xlsheet_api(request):
     sheet.set_column('D:D', 10)
     sheet.set_column('E:E', 25)
     sheet.set_column('F:F', 15)
-
+    sheet.set_column('G:G', 15)
     sheet.set_row(0, 25)
     sheet.set_row(1, 20)
     sheet.set_row(2, 15)
     sheet.set_row(3, 15)
     sheet.set_row(4, 15)
-    sheet.set_row(5, 20)
+    sheet.set_row(5, 15)
+    sheet.set_row(6, 20)
 
     # Headers
-    sheet.merge_range('A1:F1',
+    sheet.merge_range('A1:G1',
         "PDPM INDIAN INSTITUTE OF INFORMATION TECHNOLOGY, DESIGN AND MANUFACTURING JABALPUR",
         big_title_format
     )
-    sheet.merge_range('A2:F2', f"{semester_type.upper()}, {academic_year}", subtitle_format)
+    sheet.merge_range('A2:G2', f"{semester_type.upper()}, {academic_year}", subtitle_format)
 
     sheet.write('A3', "Course No:", bold_key_format)
-    sheet.merge_range('B3:F3', f"{course.code}", smalltext_format)
+    sheet.merge_range('B3:G3', f"{course.code}", smalltext_format)
 
     sheet.write('A4', "Course Title:", bold_key_format)
-    sheet.merge_range('B4:F4', f"{course.name}", smalltext_format)
+    sheet.merge_range('B4:G4', f"{course.name}", smalltext_format)
 
     sheet.write('A5', "Instructor(s):", bold_key_format)
-    sheet.merge_range('B5:F5', f"{course_instructor_name}", smalltext_format)
+    sheet.merge_range('B5:G5', f"{course_instructor_name}", smalltext_format)
+
+    sheet.write('A6', "List Type:", bold_key_format)
+    list_type_display = list_type.title() if list_type else "All Registrations"
+    sheet.merge_range('B6:G6', f"{list_type_display}", smalltext_format)
 
     # Table Headers
-    sheet.write_string('A6', "Sl. No", header_format)
-    sheet.write_string('B6', "Roll No", header_format)
-    sheet.write_string('C6', "Name", header_format)
-    sheet.write_string('D6', "Discipline", header_format)
-    sheet.write_string('E6', "Email", header_format)
-    sheet.write_string('F6', "Signature", header_format)
+    sheet.write_string('A7', "Sl. No", header_format)
+    sheet.write_string('B7', "Roll No", header_format)
+    sheet.write_string('C7', "Name", header_format)
+    sheet.write_string('D7', "Discipline", header_format)
+    sheet.write_string('E7', "Email", header_format)
+    sheet.write_string('F7', "Reg. Type", header_format)
+    sheet.write_string('G7', "Signature", header_format)
 
     # Table Body
-    row = 6
+    row = 7
     sno = 1
     for student in ans:
         sheet.set_row(row, 30)
@@ -479,13 +539,15 @@ def generate_xlsheet_api(request):
         full_name = f"{student[1]} {student[2]}"
         discipline = student[3]
         email = student[4]
+        registration_type = student[5]
 
         sheet.write_number(row, 0, sno, normaltext)
         sheet.write_string(row, 1, roll_no, normaltext)
         sheet.write_string(row, 2, full_name, normaltext)
         sheet.write_string(row, 3, discipline, normaltext)
         sheet.write_string(row, 4, email, normaltext)
-        sheet.write_string(row, 5, '', normaltext)
+        sheet.write_string(row, 5, registration_type, normaltext)
+        sheet.write_string(row, 6, '', normaltext)
         sno += 1
         row += 1
 
@@ -497,7 +559,8 @@ def generate_xlsheet_api(request):
     output.seek(0)
 
     response = HttpResponse(output.read(), content_type='application/vnd.ms-excel')
-    filename = f"{course.code}_CourseList.xlsx"
+    list_type_filename = list_type.replace(' ', '_') if list_type else "All_Registrations"
+    filename = f"{course.code}_{list_type_filename}_CourseList.xlsx"
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
 
