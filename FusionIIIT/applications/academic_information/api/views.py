@@ -382,7 +382,7 @@ def generate_xlsheet_api(request):
             'student_id__finalregistration__verified': True
         }
 
-        if list_type and list_type != 'all':
+        if list_type and list_type.strip() and list_type != 'all':
             registration_type_mapping = {
                 'Regular': 'Regular',
                 'Backlog': 'Backlog', 
@@ -390,7 +390,7 @@ def generate_xlsheet_api(request):
                 'Audit': 'Audit',
                 'Extra Credits': 'Extra Credits',
                 'Replacement': 'Replacement',
-                'backlog_improvement': ['Backlog', 'Improvement']
+                'backlog_improvement': ['Backlog', 'Improvement'] 
             }
             
             if list_type in registration_type_mapping:
@@ -428,7 +428,13 @@ def generate_xlsheet_api(request):
 
     # If preview_only is True, return JSON data for preview
     if preview_only:
-        list_type_display = list_type.title() if list_type else "All Registrations"
+        if not list_type or not list_type.strip():
+            list_type_display = "All Enrolled Students" 
+        elif list_type == 'backlog_improvement':
+            list_type_display = "Backlog & Improvement Students"
+        else:
+            list_type_display = f"{list_type} Students"
+            
         preview_data = {
             'students': [],
             'course_info': {
@@ -518,7 +524,12 @@ def generate_xlsheet_api(request):
     sheet.merge_range('B5:G5', f"{course_instructor_name}", smalltext_format)
 
     sheet.write('A6', "List Type:", bold_key_format)
-    list_type_display = list_type.title() if list_type else "All Registrations"
+    if not list_type or not list_type.strip():
+        list_type_display = "All Enrolled Students"
+    elif list_type == 'backlog_improvement':
+        list_type_display = "Backlog & Improvement Students"
+    else:
+        list_type_display = f"{list_type} Students"
     sheet.merge_range('B6:G6', f"{list_type_display}", smalltext_format)
 
     # Table Headers
@@ -559,7 +570,13 @@ def generate_xlsheet_api(request):
     output.seek(0)
 
     response = HttpResponse(output.read(), content_type='application/vnd.ms-excel')
-    list_type_filename = list_type.replace(' ', '_') if list_type else "All_Registrations"
+    # Use consistent filename logic
+    if not list_type or not list_type.strip():
+        list_type_filename = "All_Enrolled_Students"
+    elif list_type == 'backlog_improvement':
+        list_type_filename = "Backlog_Improvement_Students"
+    else:
+        list_type_filename = f"{list_type.replace(' ', '_')}_Students"
     filename = f"{course.code}_{list_type_filename}_CourseList.xlsx"
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
