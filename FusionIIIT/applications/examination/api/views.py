@@ -58,6 +58,24 @@ PBI_AND_BTP_ALLOWED_GRADES = {
     f"{x:.1f}" for x in [i / 10 for i in range(20, 101)]
 }
 
+# Helper function to format semester display for PDFs
+def format_semester_display(semester_no, semester_type=None, semester_label=None):
+    if semester_label and 'summer' in semester_label.lower():
+        return semester_label
+    if semester_type and 'summer' in semester_type.lower():
+        if semester_no == 2:
+            return "Summer 1"
+        elif semester_no == 4:
+            return "Summer 2" 
+        elif semester_no == 6:
+            return "Summer 3"
+        elif semester_no == 8:
+            return "Summer 4"
+        else:
+            return f"Summer {semester_no // 2}"
+    else:
+        return str(semester_no)
+
 def round_from_last_decimal(number, decimal_places=1):
     d = Decimal(str(number))
     return Decimal(d).quantize(Decimal('0.1'), rounding=ROUND_HALF_UP)
@@ -922,7 +940,6 @@ class GenerateTranscript(APIView):
 
         try:
             student = Student.objects.get(id_id=student_id)
-            name = student.id.user.first_name
             cpi, tu, _ = calculate_cpi_for_student(student, semester_number, semester_type)
             spi, su, _ = calculate_spi_for_student(student, semester_number, semester_type)
         except:
@@ -930,6 +947,11 @@ class GenerateTranscript(APIView):
 
         course_grades = {}
         courses_registered = Student_grades.objects.filter(roll_no=student_id, semester=semester_number, semester_type = semester_type)
+
+        # Get academic year from the first grade record
+        academic_year = None
+        if courses_registered.exists():
+            academic_year = courses_registered.first().academic_year
 
         for reg in courses_registered:
             course = reg.course_id
@@ -941,13 +963,35 @@ class GenerateTranscript(APIView):
                 "points": Decimal(str(grade_conversion.get(reg.grade, 0) * 10)).quantize(Decimal('0.1'), rounding=ROUND_HALF_UP),
             }
 
+        # Add complete student information like CheckResultView
+        student_info = {
+            "name": f"{student.id.user.first_name} {student.id.user.last_name}".strip(),
+            "student_name": f"{student.id.user.first_name} {student.id.user.last_name}".strip(),
+            "rollNumber": student.id.user.username,
+            "roll_number": student.id.user.username,
+            "programme": student.programme,
+            "batch": str(student.batch_id) if student.batch_id else str(student.batch),
+            "branch": student.id.department.name if student.id.department else "",
+            "department": student.id.department.name if student.id.department else "",
+            "semester": student.curr_semester_no,
+            "academicYear": academic_year or "",
+            "academic_year": academic_year or ""
+        }
+
         response_data = {
-            "name": name,
+            "name": f"{student.id.user.first_name} {student.id.user.last_name}".strip(),
+            "student_name": f"{student.id.user.first_name} {student.id.user.last_name}".strip(),
+            "roll_number": student.id.user.username,
+            "programme": student.programme,
+            "department": student.id.department.name if student.id.department else "",
+            "branch": student.id.department.name if student.id.department else "",
+            "academic_year": academic_year or "",
+            "student_info": student_info,
             "courses_grades": course_grades,
             "spi": spi,
             "cpi": cpi,
-            "tu":tu,
-            "su":su,
+            "tu": tu,
+            "su": su,
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
@@ -1753,6 +1797,9 @@ class GeneratePDFAPI(APIView):
             response = HttpResponse(content_type="application/pdf")
             response["Content-Disposition"] = f'attachment; filename="{course_info.code}_grades.pdf"'
 
+            # Create PDF metadata to fix "(anonymous)" title issue
+            pdf_title = f"Course Grades - {course_info.code} - {course_info.name}"
+            
             # ↑ Increase topMargin to 2" for header + spaceBetween
             doc = SimpleDocTemplate(
                 response,
@@ -1760,7 +1807,11 @@ class GeneratePDFAPI(APIView):
                 leftMargin=inch,
                 rightMargin=inch,
                 topMargin=2 * inch,
-                bottomMargin=inch
+                bottomMargin=inch,
+                title=pdf_title,
+                author="PDPM IIITDM Jabalpur",
+                subject=f"Course Grade Report - {course_info.code}",
+                creator="Fusion Academic System"
             )
 
             elements = []
@@ -1914,16 +1965,27 @@ class GeneratePDFAPI(APIView):
             su = int(data.get('su', 0))
             tu = int(data.get('tu', 0))
             semester_no = data.get('semester_no', 1)
+            semester_type = data.get('semester_type', '')
+            semester_label = data.get('semester_label', '')
+            formatted_semester = format_semester_display(semester_no, semester_type, semester_label)
             
             # Create PDF buffer
             buffer = BytesIO()
+            
+            # Create PDF metadata to fix "(anonymous)" title issue
+            pdf_title = f"Student Result - {student_info.get('name', student_info.get('rollNumber', 'Student'))} - {formatted_semester}"
+            
             doc = SimpleDocTemplate(
                 buffer,
                 pagesize=letter,
                 rightMargin=0.5*inch,
                 leftMargin=0.5*inch,
                 topMargin=0.5*inch,
-                bottomMargin=0.5*inch
+                bottomMargin=0.5*inch,
+                title=pdf_title,
+                author="PDPM IIITDM Jabalpur",
+                subject=f"Student Result Report - {formatted_semester}",
+                creator="Fusion Academic System"
             )
             
             story = []
@@ -1945,7 +2007,7 @@ class GeneratePDFAPI(APIView):
                 fontSize=11,
                 spaceAfter=6,
                 alignment=1,  # Center
-                fontName='Times-Roman'
+                fontName='Times-Bold'
             )
             
             # Institution Header
@@ -1959,10 +2021,10 @@ class GeneratePDFAPI(APIView):
             student_data = [
                 ['Name of Student:', student_info.get('name', 'N/A'), 'Roll No.:', student_info.get('roll_number', 'N/A')],
                 ['Programme:', student_info.get('programme', 'N/A'), 'Branch:', student_info.get('department', 'N/A')],
-                ['Semester:', str(semester_no), 'Academic Year:', student_info.get('academic_year', 'N/A')]
+                ['Semester:', formatted_semester, 'Academic Year:', student_info.get('academic_year', 'N/A')]
             ]
             
-            student_table = Table(student_data, colWidths=[1.4*inch, 2.1*inch, 1*inch, 2*inch])
+            student_table = Table(student_data, colWidths=[1.75*inch, 1.75*inch, 1.75*inch, 1.75*inch])
             student_table.setStyle(TableStyle([
                 ('FONTNAME', (0, 0), (-1, -1), 'Times-Roman'),
                 ('FONTSIZE', (0, 0), (-1, -1), 10),
@@ -2012,8 +2074,8 @@ class GeneratePDFAPI(APIView):
             
             # Summary Table
             summary_data = [
-                ['Total Credits Registered:', str(tu), 'Total Credits Earned:', str(su)],
-                ['SPI (Semester Performance Index):', f"{spi:.2f}", 'CPI (Cumulative Performance Index):', f"{cpi:.2f}"]
+                ['Total Credits Registered:', str(tu), 'Semester Credits Earned:', str(su)],
+                ['SPI:', f"{spi:.1f}", 'CPI:', f"{cpi:.1f}"]
             ]
             
             summary_table = Table(summary_data, colWidths=[2.2*inch, 0.8*inch, 2.2*inch, 0.8*inch])
@@ -2052,7 +2114,9 @@ class GeneratePDFAPI(APIView):
             buffer.close()
             
             response = HttpResponse(pdf_data, content_type='application/pdf')
-            filename = f"result_{student_info.get('rollNumber', student_info.get('roll_number', 'student'))}_sem{semester_no}.pdf"
+            # Create filename with formatted semester for clarity
+            semester_suffix = formatted_semester.replace(' ', '_').replace(':', '').lower() 
+            filename = f"result_{student_info.get('rollNumber', student_info.get('roll_number', 'student'))}_{semester_suffix}.pdf"
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             response['Content-Length'] = len(pdf_data)
             
@@ -2792,13 +2856,96 @@ class GenerateStudentResultPDFAPI(APIView):
         try:
             # Get data from request
             data = request.data
+            
+            # Check if student_info is provided, if not fetch it like CheckResultView
             student_info = data.get('student_info', {})
             courses = data.get('courses', [])
-            spi = float(data.get('spi', 0))
-            cpi = float(data.get('cpi', 0))
-            su = int(data.get('su', 0))
-            tu = int(data.get('tu', 0))
+            
+            # If student_info or courses are not provided, fetch them from database
+            if not student_info or not courses:
+                # Fetch student data like CheckResultView does
+                roll_number = request.user.username
+                semester_no = data.get('semester_no')
+                semester_type = data.get('semester_type')
+
+                if semester_no is None or semester_type is None:
+                    return JsonResponse(
+                        {"success": False, "message": "semester_no and semester_type are required."},
+                        status=400,
+                    )
+
+                try:
+                    student = Student.objects.get(id_id=roll_number)
+                except Student.DoesNotExist:
+                    return JsonResponse(
+                        {"success": False, "message": "Student record not found."},
+                        status=404,
+                    )
+
+                ann = ResultAnnouncement.objects.filter(
+                    batch=student.batch_id,
+                    semester=semester_no,
+                ).first()
+
+                if not ann or not ann.announced:
+                    return JsonResponse(
+                        {"success": False, "message": "Results not announced yet."},
+                        status=200,
+                    )
+
+                grades_info = Student_grades.objects.filter(
+                    roll_no=roll_number,
+                    semester=semester_no,
+                    semester_type=semester_type
+                ).select_related('course_id')
+
+                academic_year = None
+                if grades_info.exists():
+                    academic_year = grades_info.first().academic_year
+
+                spi, su, _ = calculate_spi_for_student(student, semester_no, semester_type)
+                cpi, tu, _ = calculate_cpi_for_student(student, semester_no, semester_type)
+
+                student_info = {
+                    "name": f"{student.id.user.first_name} {student.id.user.last_name}".strip(),
+                    "rollNumber": student.id.user.username,
+                    "roll_number": student.id.user.username,
+                    "programme": student.programme,
+                    "batch": str(student.batch_id) if student.batch_id else str(student.batch),
+                    "branch": student.id.department.name if student.id.department else "",
+                    "department": student.id.department.name if student.id.department else "",
+                    "semester": student.curr_semester_no,
+                    "academicYear": academic_year or "",
+                    "academic_year": academic_year or ""
+                }
+
+                # Build courses list like CheckResultView
+                from applications.academic_information.models import grade_conversion
+                from decimal import Decimal, ROUND_HALF_UP
+                
+                courses = [
+                    {
+                        "coursecode": grade.course_id.code,
+                        "courseid": grade.course_id.id,
+                        "coursename": grade.course_id.name,
+                        "credits": grade.course_id.credit,
+                        "grade": grade.grade,
+                        "points": Decimal(str(grade_conversion.get(grade.grade, 0) * 10)).quantize(Decimal('0.1'), rounding=ROUND_HALF_UP),
+                    }
+                    for grade in grades_info
+                ]
+            else:
+                # Use provided data
+                spi = float(data.get('spi', 0))
+                cpi = float(data.get('cpi', 0))
+                su = int(data.get('su', 0))
+                tu = int(data.get('tu', 0))
+
             semester_no = data.get('semester_no', 1)
+            semester_type = data.get('semester_type', '')
+            semester_label = data.get('semester_label', '')
+
+            formatted_semester = format_semester_display(semester_no, semester_type, semester_label)
             
             # Debug: Print student_info to see what academic year we're getting
             print(f"DEBUG PDF Generation - Student Info: {student_info}")
@@ -2807,13 +2954,23 @@ class GenerateStudentResultPDFAPI(APIView):
             
             # Create PDF buffer
             buffer = BytesIO()
+            
+            # Create PDF metadata to fix "(anonymous)" title issue
+            is_transcript = data.get('is_transcript', False) or request.path.find('transcript') != -1 or data.get('document_type') == 'transcript'
+            doc_type = "Transcript" if is_transcript else "Student Result"
+            pdf_title = f"{doc_type} - {student_info.get('name', student_info.get('rollNumber', 'Student'))} - {formatted_semester}"
+            
             doc = SimpleDocTemplate(
                 buffer,
                 pagesize=letter,
                 rightMargin=0.5*inch,
                 leftMargin=0.5*inch,
                 topMargin=0.5*inch,
-                bottomMargin=0.5*inch
+                bottomMargin=0.5*inch,
+                title=pdf_title,
+                author="PDPM IIITDM Jabalpur",
+                subject=f"{doc_type} Report - {formatted_semester}",
+                creator="Fusion Academic System"
             )
             
             story = []
@@ -2886,14 +3043,14 @@ class GenerateStudentResultPDFAPI(APIView):
             
             story.append(Spacer(1, 12))
             
-            # Student Information Table - Fixed field mapping to match frontend
+            # Student Information Table
             student_data = [
                 ['Name of Student:', student_info.get('name', 'N/A'), 'Roll No.:', student_info.get('rollNumber', student_info.get('roll_number', 'N/A'))],
                 ['Programme:', student_info.get('programme', 'N/A'), 'Branch:', student_info.get('branch', student_info.get('department', 'N/A'))],
-                ['Semester:', str(semester_no), 'Academic Year:', student_info.get('academicYear', student_info.get('academic_year', 'N/A'))]
+                ['Semester:', formatted_semester, 'Academic Year:', student_info.get('academicYear', student_info.get('academic_year', 'N/A'))]
             ]
             
-            student_table = Table(student_data, colWidths=[1.4*inch, 2.1*inch, 1*inch, 2*inch])
+            student_table = Table(student_data, colWidths=[1.75*inch, 1.75*inch, 1.75*inch, 1.75*inch])
             student_table.setStyle(TableStyle([
                 ('FONTNAME', (0, 0), (-1, -1), 'Times-Roman'),
                 ('FONTSIZE', (0, 0), (-1, -1), 10),
@@ -2943,8 +3100,8 @@ class GenerateStudentResultPDFAPI(APIView):
             
             # Summary Table
             summary_data = [
-                ['Total Credits Registered:', str(tu), 'Total Credits Earned:', str(su)],
-                ['SPI (Semester Performance Index):', f"{spi:.2f}", 'CPI (Cumulative Performance Index):', f"{cpi:.2f}"]
+                ['Total Credits Registered:', str(tu), 'Semester Credits Earned:', str(su)],
+                ['SPI:', f"{spi:.1f}", 'CPI:', f"{cpi:.1f}"]
             ]
             
             summary_table = Table(summary_data, colWidths=[2.2*inch, 0.8*inch, 2.2*inch, 0.8*inch])
@@ -2983,7 +3140,21 @@ class GenerateStudentResultPDFAPI(APIView):
             buffer.close()
             
             response = HttpResponse(pdf_data, content_type='application/pdf')
-            filename = f"result_{student_info.get('rollNumber', student_info.get('roll_number', 'student'))}_sem{semester_no}.pdf"
+            
+            # Check if this is a transcript request (could be determined by various factors)
+            # If called from transcript context, use 'transcript_' prefix, otherwise 'result_'
+            is_transcript = data.get('is_transcript', False) or request.path.find('transcript') != -1 or data.get('document_type') == 'transcript'
+            
+            # Create filename with formatted semester for clarity
+            semester_suffix = formatted_semester.replace(' ', '_').replace(':', '').lower()
+            print(f"DEBUG PDF Generation - Formatted semester: '{formatted_semester}' -> Filename suffix: '{semester_suffix}'")
+            
+            # Choose prefix based on document type
+            prefix = "transcript_" if is_transcript else "result_"
+            filename = f"{prefix}{student_info.get('rollNumber', student_info.get('roll_number', 'student'))}_{semester_suffix}.pdf"
+            
+            print(f"DEBUG PDF Generation - Document type: {'transcript' if is_transcript else 'result'}")
+            print(f"DEBUG PDF Generation - Final filename: '{filename}'")
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             response['Content-Length'] = len(pdf_data)
             
