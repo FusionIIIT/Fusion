@@ -86,7 +86,7 @@ def get_email_template_context(student, password, additional_context=None):
         'year': student.year,
         'fusion_url': getattr(settings, 'FUSION_URL', 'http://fusion.iiitdmj.ac.in'),
         'current_date': datetime.now().strftime('%B %d, %Y'),
-        'fusion_email': settings.FUSION_EMAIL,
+        'email_host_user': settings.EMAIL_HOST_USER,
         'institute_name': 'PDPM IIITDM Jabalpur'
     }
     
@@ -105,8 +105,8 @@ def send_password_email_smtp(student_email, student_name, password, roll_number,
         if not hasattr(settings, 'EMAIL_HOST_USER') or not settings.EMAIL_HOST_USER:
             return False, "EMAIL_HOST_USER setting is not configured"
         
-        if not hasattr(settings, 'FUSION_EMAIL') or not settings.FUSION_EMAIL:
-            return False, "FUSION_EMAIL setting is not configured"
+        if not hasattr(settings, 'EMAIL_HOST_USER') or not settings.EMAIL_HOST_USER:
+            return False, "EMAIL_HOST_USER setting is not configured"
         
         # Get email template or use default
         try:
@@ -145,7 +145,7 @@ def send_password_email_smtp(student_email, student_name, password, roll_number,
                         <h4 style="margin-top: 0; color: #155724;">📞 Need Help?</h4>
                         <p style="margin-bottom: 0; color: #155724;">
                             For any login issues or technical support, please contact:<br>
-                            📧 <a href="mailto:{settings.FUSION_EMAIL}" style="color: #155724;">{settings.FUSION_EMAIL}</a><br>
+                            📧 <a href="mailto:{settings.EMAIL_HOST_USER}" style="color: #155724;">{settings.EMAIL_HOST_USER}</a><br>
                             🏢 PDPM IIITDM Jabalpur
                         </p>
                     </div>
