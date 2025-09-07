@@ -44,26 +44,15 @@ LOGIN_URL = '/accounts/login/'
 LOGOUT_URL = '/accounts/logout/'
 LOGIN_REDIRECT_URL = '/dashboard'
 
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For testing - emails will print in terminal
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # For production - real email sending
-
-# For development, you might want to use console backend instead:
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' if os.environ.get('DJANGO_ENV') == 'development' else 'django.core.mail.backends.smtp.EmailBackend'
-
-# SMTP Configuration for Gmail
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 465
-EMAIL_USE_SSL = True  # Use SSL for port 465
-EMAIL_USE_TLS = False  # Don't use TLS when using SSL
 
-# Email sender configuration
+# email of sender
+
 EMAIL_HOST_USER = 'fusion@iiitdmj.ac.in'
-EMAIL_HOST_PASSWORD = os.environ.get('MAIL_PASSWORD', '')
-FUSION_EMAIL = 'fusion@iiitdmj.ac.in'
-FUSION_URL = 'http://fusion.iiitdmj.ac.in'
 
-# Email timeout
-EMAIL_TIMEOUT = 30
+EMAIL_PORT = 587
 ACCOUNT_EMAIL_REQUIRED = True
 
 ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
@@ -81,11 +70,7 @@ ACCOUNT_EMAIL_SUBJECT_PREFIX = 'Fusion: '
 
 DEFAULT_FROM_EMAIL = 'Fusion IIIT <fusion@iiitdmj.ac.in>'
 
-SERVER_EMAIL = 'fusion@iiitdmj.ac.in'
-
-# Portal URL for email templates
-FUSION_PORTAL_URL = 'http://fusion.iiitdmj.ac.in/'
-SITE_URL = 'http://fusion.iiitdmj.ac.in/'
+SERVER_EMAIL = 'fusionmailservice@iiitdmj.ac.in'
 
 ACCOUNT_LOGOUT_REDIRECT_URL = '/accounts/login/'
 ACCOUNT_USERNAME_MIN_LENGTH = 3

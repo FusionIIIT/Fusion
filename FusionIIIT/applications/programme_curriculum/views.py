@@ -22,30 +22,6 @@ from applications.globals.models import (DepartmentInfo, Designation,ExtraInfo, 
 
 
 @login_required(login_url='/accounts/login')
-def admin_view_all_course_instructor(request):
-    # Fetch all records from the CourseInstructor table
-    course_instructors = CourseInstructor.objects.all()
-
-    # Passing the data to the template
-    context = {
-        'course_instructors': course_instructors,
-    }
-
-    return render(request, 'programme_curriculum/acad_admin/admin_view_all_course_instructor.html', context)
-@login_required(login_url='/accounts/login')
-def update_course_instructor_form(request, id):
-
-    instructor = get_object_or_404(CourseInstructor, id=id)
-    course_instructors = CourseInstructor.objects.all()
-
-    # Passing the data to the template
-    context = {
-        'course_instructors': course_instructors,
-    }
-    # Handle the update logic here
-    return render(request, 'programme_curriculum/acad_admin/admin_view_all_course_instructor.html', context)
-
-@login_required(login_url='/accounts/login')
 def programme_curriculum(request):
     """
     This function is used to Differenciate acadadmin and all other user.
@@ -1749,27 +1725,3 @@ def update_course_instructor_form(request, instructor_id):
     
     # Redirect to the main page if the user is not 'acadadmin'
     return HttpResponseRedirect('/programme_curriculum/')
-
-
-@login_required(login_url='/accounts/login')
-def batch_upload(request):
-    """
-    API endpoint for batch upload access check - used by React frontend
-    """
-    if request.session.get('currentDesignationSelected') in ["acadadmin", "studentacadadmin"]:
-        # Return success response for React frontend
-        return JsonResponse({
-            'success': True,
-            'message': 'Access granted for batch upload',
-            'user': {
-                'username': request.user.username,
-                'designation': request.session.get('currentDesignationSelected'),
-                'name': f"{request.user.first_name} {request.user.last_name}"
-            }
-        })
-    
-    # Return access denied for unauthorized users
-    return JsonResponse({
-        'success': False,
-        'message': 'Access denied. Only acadadmin and studentacadadmin can access batch upload.'
-    }, status=403)

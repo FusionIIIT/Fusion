@@ -4255,8 +4255,9 @@ def determine_version_bump_type(old_course_data, new_course_data):
         new_value = new_course_data.get(model_field)
         
         if old_value != new_value:
-            # Special handling for course name and code - check if it's a typo
-            if model_field in ['name', 'code']:
+            # Special handling for course name - check if it's a typo
+            # Course codes always trigger version bump regardless of similarity
+            if model_field == 'name':
                 if is_typo_correction(old_value, new_value):
                     continue  # Skip typo corrections - no version bump needed
             
