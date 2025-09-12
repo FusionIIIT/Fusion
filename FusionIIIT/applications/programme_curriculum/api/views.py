@@ -3289,7 +3289,6 @@ def get_unused_curriculam(request):
         }
         for curriculum in unused_curricula
     ]
-    print(unused_curricula_data)
 
     # Return the serialized data as a JSON response
     return JsonResponse(unused_curricula_data, safe=False)
@@ -3384,7 +3383,6 @@ def add_course_instructor(request):
             )
             data.pop("academic_year", None)
             form = CourseInstructorForm(data)
-            print(data)
             if form.is_valid():
                 form.save()
                 return JsonResponse(
@@ -3491,22 +3489,17 @@ def get_superior_data(request):
     try:
         # Get parameters from request
         username = request.GET.get('uploaderId')
-        print("username",username)
         designation = request.GET.get('uploaderDes', '').lower()
-        print("designation",designation)
         
         if not username:
             return JsonResponse({'error': 'Username is required'}, status=400)
         
         # Get the user object
         user = User.objects.get(username=username)
-        print("user",user)
         
         # Get user's extra info and department
         extra_info = ExtraInfo.objects.get(user=user)
-        print("extra_info",extra_info)
         user_department = extra_info.department
-        print("user_department",user_department)
         
         # Initialize response data
         response_data = {
@@ -3518,11 +3511,9 @@ def get_superior_data(request):
         # Check if user is Professor/Associate Professor/Assistant Professor
         professor_designations = ['professor', 'associate professor', 'assistant professor']
         is_professor = designation in professor_designations
-        print("is_professor",is_professor)
         
         # Check if user is HOD (using regex to match HOD (DEPT) pattern)
         is_hod = bool(re.match(r'^hod\s*\(.*\)$', designation, re.IGNORECASE))
-        print("is_hod",is_hod)
         
         if is_professor and user_department:
             # Get HOD of the same department
@@ -3595,21 +3586,15 @@ def admin_delete_course_instructor(request, instructor_id):
     Only accessible by authenticated users (frontend handles role check)
     """
     try:
-        print(f"Delete request for instructor ID: {instructor_id}")
-        print(f"User: {request.user}")
-        
         # For API endpoints, we rely on token authentication
         # The frontend handles role-based access control
-        print("Processing delete request")
 
         # Find the course instructor record
         try:
             course_instructor = CourseInstructor.objects.select_related(
                 'course_id', 'instructor_id__id__user'
             ).get(id=instructor_id)
-            print(f"Found course instructor: {course_instructor}")
         except CourseInstructor.DoesNotExist:
-            print("Course instructor not found")
             return JsonResponse({
                 'success': False,
                 'message': 'Course instructor not found.'
@@ -3622,9 +3607,7 @@ def admin_delete_course_instructor(request, instructor_id):
             instructor_name = f"{course_instructor.instructor_id.id.user.first_name} {course_instructor.instructor_id.id.user.last_name}"
             academic_year = course_instructor.academic_year
             semester_type = course_instructor.semester_type
-            print(f"Details gathered successfully")
         except Exception as detail_error:
-            print(f"Error gathering details: {detail_error}")
             return JsonResponse({
                 'success': False,
                 'message': f'Error accessing course instructor details: {str(detail_error)}'
@@ -3633,9 +3616,7 @@ def admin_delete_course_instructor(request, instructor_id):
         # Delete the course instructor assignment
         try:
             course_instructor.delete()
-            print("Delete operation successful")
         except Exception as delete_error:
-            print(f"Error during delete: {delete_error}")
             return JsonResponse({
                 'success': False,
                 'message': f'Error deleting course instructor: {str(delete_error)}'
@@ -3655,7 +3636,6 @@ def admin_delete_course_instructor(request, instructor_id):
         }, status=200)
 
     except Exception as e:
-        print(f"Unexpected error in delete endpoint: {e}")
         import traceback
         traceback.print_exc()
         return JsonResponse({
@@ -3678,15 +3658,10 @@ def admin_delete_course(request, course_id):
     Only accessible by authenticated users (frontend handles role check)
     """
     try:
-        print(f"Delete request for course ID: {course_id}")
-        print(f"User: {request.user}")
-        
         # Find the course record
         try:
             course = Course.objects.get(id=course_id)
-            print(f"Found course: {course.name} ({course.code})")
         except Course.DoesNotExist:
-            print("Course not found")
             return JsonResponse({
                 'success': False,
                 'message': 'Course not found.'
@@ -3716,7 +3691,6 @@ def admin_delete_course(request, course_id):
                 }, status=400)
                 
         except Exception as dependency_error:
-            print(f"Error checking dependencies: {dependency_error}")
             return JsonResponse({
                 'success': False,
                 'message': f'Error checking course dependencies: {str(dependency_error)}'
@@ -3725,9 +3699,7 @@ def admin_delete_course(request, course_id):
         # Delete the course
         try:
             course.delete()
-            print("Delete operation successful")
         except Exception as delete_error:
-            print(f"Error during delete: {delete_error}")
             return JsonResponse({
                 'success': False,
                 'message': f'Error deleting course: {str(delete_error)}'
@@ -3744,7 +3716,6 @@ def admin_delete_course(request, course_id):
         }, status=200)
 
     except Exception as e:
-        print(f"Unexpected error in delete course endpoint: {e}")
         import traceback
         traceback.print_exc()
         return JsonResponse({
@@ -3763,15 +3734,10 @@ def admin_delete_programme(request, programme_id):
     Only accessible by authenticated users (frontend handles role check)
     """
     try:
-        print(f"Delete request for programme ID: {programme_id}")
-        print(f"User: {request.user}")
-        
         # Find the programme record
         try:
             programme = Programme.objects.get(id=programme_id)
-            print(f"Found programme: {programme.name} ({programme.category})")
         except Programme.DoesNotExist:
-            print("Programme not found")
             return JsonResponse({
                 'success': False,
                 'message': 'Programme not found.'
@@ -3793,7 +3759,6 @@ def admin_delete_programme(request, programme_id):
                 }, status=400)
                 
         except Exception as dependency_error:
-            print(f"Error checking dependencies: {dependency_error}")
             return JsonResponse({
                 'success': False,
                 'message': f'Error checking programme dependencies: {str(dependency_error)}'
@@ -3802,9 +3767,7 @@ def admin_delete_programme(request, programme_id):
         # Delete the programme
         try:
             programme.delete()
-            print("Delete operation successful")
         except Exception as delete_error:
-            print(f"Error during delete: {delete_error}")
             return JsonResponse({
                 'success': False,
                 'message': f'Error deleting programme: {str(delete_error)}'
@@ -3822,7 +3785,6 @@ def admin_delete_programme(request, programme_id):
         }, status=200)
 
     except Exception as e:
-        print(f"Unexpected error in delete programme endpoint: {e}")
         import traceback
         traceback.print_exc()
         return JsonResponse({
@@ -3841,15 +3803,10 @@ def admin_delete_curriculum(request, curriculum_id):
     Only accessible by authenticated users (frontend handles role check)
     """
     try:
-        print(f"Delete request for curriculum ID: {curriculum_id}")
-        print(f"User: {request.user}")
-        
         # Find the curriculum record
         try:
             curriculum = Curriculum.objects.select_related('programme').get(id=curriculum_id)
-            print(f"Found curriculum: {curriculum.name} (Version: {curriculum.version})")
         except Curriculum.DoesNotExist:
-            print("Curriculum not found")
             return JsonResponse({
                 'success': False,
                 'message': 'Curriculum not found.'
@@ -3859,7 +3816,6 @@ def admin_delete_curriculum(request, curriculum_id):
         curriculum_name = curriculum.name
         curriculum_version = curriculum.version
         programme_name = curriculum.programme.name if curriculum.programme else None
-        print(f"Curriculum details - Name: {curriculum_name}, Version: {curriculum_version}, Programme: {programme_name}")
         
         # Check for dependencies before deletion
         try:
@@ -3867,19 +3823,14 @@ def admin_delete_curriculum(request, curriculum_id):
             # If no active batches are using this curriculum, it can be deleted regardless of course content
             from applications.programme_curriculum.models import Batch
             batch_count = Batch.objects.filter(curriculum=curriculum, running_batch=True).count()
-            print(f"Active batch count for curriculum {curriculum.id}: {batch_count}")
             
             if batch_count > 0:
-                print(f"❌ Blocking deletion - curriculum is assigned to {batch_count} active batch(es)")
                 return JsonResponse({
                     'success': False,
                     'message': f'Cannot delete curriculum. It is assigned to {batch_count} active batch(es). Please unassign from batches first.'
                 }, status=400)
-            
-            print(f"✅ No active batches using curriculum {curriculum.id} - safe to delete")
                 
         except Exception as dependency_error:
-            print(f"❌ Error checking dependencies: {dependency_error}")
             import traceback
             traceback.print_exc()
             return JsonResponse({
@@ -3889,11 +3840,8 @@ def admin_delete_curriculum(request, curriculum_id):
 
         # Delete the curriculum
         try:
-            print(f"🗑️ Attempting to delete curriculum: {curriculum_name} (ID: {curriculum.id})")
             curriculum.delete()
-            print("✅ Delete operation successful")
         except Exception as delete_error:
-            print(f"❌ Error during delete: {delete_error}")
             import traceback
             traceback.print_exc()
             return JsonResponse({
@@ -3901,7 +3849,6 @@ def admin_delete_curriculum(request, curriculum_id):
                 'message': f'Error deleting curriculum: {str(delete_error)}'
             }, status=500)
 
-        print(f"🎉 Successfully deleted curriculum: {curriculum_name}")
         return JsonResponse({
             'success': True,
             'message': f'Curriculum "{curriculum_name} (v{curriculum_version})" deleted successfully.',
@@ -3914,7 +3861,6 @@ def admin_delete_curriculum(request, curriculum_id):
         }, status=200)
 
     except Exception as e:
-        print(f"Unexpected error in delete curriculum endpoint: {e}")
         import traceback
         traceback.print_exc()
         return JsonResponse({
@@ -3934,15 +3880,10 @@ def admin_delete_discipline(request, discipline_id):
     Simple rule: Only check if discipline has any programmes/batches using it
     """
     try:
-        print(f"Delete request for discipline ID: {discipline_id}")
-        print(f"User: {request.user}")
-        
         # Find the discipline record
         try:
             discipline = Discipline.objects.get(id=discipline_id)
-            print(f"Found discipline: {discipline.name} ({discipline.acronym})")
         except Discipline.DoesNotExist:
-            print("Discipline not found")
             return JsonResponse({
                 'success': False,
                 'message': 'Discipline not found.'
@@ -3951,26 +3892,20 @@ def admin_delete_discipline(request, discipline_id):
         # Store details for response
         discipline_name = discipline.name
         discipline_acronym = discipline.acronym
-        print(f"Discipline details - Name: {discipline_name}, Acronym: {discipline_acronym}")
         
         # Check for dependencies before deletion
         try:
             # Check if discipline has any batches using it
             from applications.programme_curriculum.models import Batch
             batch_count = Batch.objects.filter(discipline=discipline, running_batch=True).count()
-            print(f"Active batch count for discipline {discipline.id}: {batch_count}")
             
             if batch_count > 0:
-                print(f"❌ Blocking deletion - discipline is used by {batch_count} active batch(es)")
                 return JsonResponse({
                     'success': False,
                     'message': f'Cannot delete discipline. It is used by {batch_count} active batch(es). Please remove batches first.'
                 }, status=400)
-            
-            print(f"✅ No active batches using discipline {discipline.id} - safe to delete")
                 
         except Exception as dependency_error:
-            print(f"❌ Error checking dependencies: {dependency_error}")
             import traceback
             traceback.print_exc()
             return JsonResponse({
@@ -3980,11 +3915,8 @@ def admin_delete_discipline(request, discipline_id):
 
         # Delete the discipline
         try:
-            print(f"🗑️ Attempting to delete discipline: {discipline_name} (ID: {discipline.id})")
             discipline.delete()
-            print("✅ Delete operation successful")
         except Exception as delete_error:
-            print(f"❌ Error during delete: {delete_error}")
             import traceback
             traceback.print_exc()
             return JsonResponse({
@@ -3992,7 +3924,6 @@ def admin_delete_discipline(request, discipline_id):
                 'message': f'Error deleting discipline: {str(delete_error)}'
             }, status=500)
 
-        print(f"🎉 Successfully deleted discipline: {discipline_name}")
         return JsonResponse({
             'success': True,
             'message': f'Discipline "{discipline_name} ({discipline_acronym})" deleted successfully.',
@@ -4004,7 +3935,6 @@ def admin_delete_discipline(request, discipline_id):
         }, status=200)
 
     except Exception as e:
-        print(f"Unexpected error in delete discipline endpoint: {e}")
         import traceback
         traceback.print_exc()
         return JsonResponse({
@@ -4022,19 +3952,13 @@ def delete_batch(request, batch_id):
     Methods: DELETE or POST (for frontend compatibility)
     """
     try:
-        print(f"🗑️ DELETE BATCH REQUEST - ID: {batch_id} (type: {type(batch_id)})")
-        print(f"🗑️ Request method: {request.method}")
-        print(f"🗑️ Request path: {request.path}")
-        
         from applications.programme_curriculum.models import Batch
         from .views_student_management import StudentBatchUpload
         
         # Get the batch to delete
         try:
             batch = Batch.objects.get(id=batch_id)
-            print(f"✅ Found batch: {batch.name} {batch.discipline.acronym} {batch.year}")
         except Batch.DoesNotExist:
-            print(f"❌ Batch {batch_id} not found")
             return JsonResponse({
                 'success': False,
                 'message': f'Batch with ID {batch_id} not found'
@@ -4062,13 +3986,7 @@ def delete_batch(request, batch_id):
             # Total = students in this year's uploads + students assigned to this specific batch
             total_students = uploaded_students_this_year + academic_students_this_batch
             
-            print(f"🔍 STUDENT CHECK for {batch.name} {batch.discipline.acronym} Year-{batch.year}:")
-            print(f"  → Students uploaded for Year-{batch.year} in {batch.discipline.name}: {uploaded_students_this_year}")
-            print(f"  → Students assigned to this batch record: {academic_students_this_batch}")
-            print(f"  → TOTAL students in this specific batch: {total_students}")
-            
             if total_students > 0:
-                print(f"❌ CANNOT DELETE - Batch has {total_students} students")
                 return JsonResponse({
                     'success': False,
                     'message': f'Cannot delete batch "{batch.name} {batch.discipline.acronym} {batch.year}". It contains {total_students} students. Please transfer or remove students first.',
@@ -4081,12 +3999,10 @@ def delete_batch(request, batch_id):
                         'year': batch.year
                     }
                 }, status=400)
-            
-            print(f"✅ SAFE TO DELETE - Batch {batch.name} {batch.discipline.acronym} {batch.year} has no students")
         
         except Exception as e:
-            print(f"⚠️ Error checking students: {str(e)}")
             # Proceed with caution - assume no students if check fails
+            pass
         
         # Store batch info for response before deletion
         batch_info = {
@@ -4102,7 +4018,6 @@ def delete_batch(request, batch_id):
         
         # Delete the batch
         batch.delete()
-        print(f"🗑️ ✅ SUCCESSFULLY DELETED: {batch_info['name']} {batch_info['discipline_acronym']} {batch_info['year']}")
         
         return JsonResponse({
             'success': True,
@@ -4111,7 +4026,6 @@ def delete_batch(request, batch_id):
         })
         
     except Exception as e:
-        print(f"❌ UNEXPECTED ERROR deleting batch: {str(e)}")
         import traceback
         traceback.print_exc()
         return JsonResponse({
@@ -4127,8 +4041,6 @@ def delete_batch_invalid(request, batch_id):
     Handle delete requests with invalid batch IDs (like 'undefined')
     URL: /programme_curriculum/api/batches/<str:batch_id>/delete/
     """
-    print(f"🚫 Invalid batch delete request - ID: '{batch_id}'")
-    
     # Check for common invalid values
     if batch_id in ['undefined', 'null', 'NaN', '']:
         return JsonResponse({
@@ -4142,7 +4054,6 @@ def delete_batch_invalid(request, batch_id):
     # Try to convert to integer in case it's a string number
     try:
         actual_batch_id = int(batch_id)
-        print(f"Converting string batch ID '{batch_id}' to integer {actual_batch_id}")
         # Redirect to the proper delete function
         return delete_batch(request, actual_batch_id)
     except (ValueError, TypeError):
@@ -4326,46 +4237,3 @@ def create_course_audit_log(course, user, action, old_data=None, new_data=None,
     )
     
     return audit_log
-
-
-# Test function for intelligent versioning (remove in production)
-@csrf_exempt
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def test_intelligent_versioning(request):
-    """
-    Test endpoint to demonstrate intelligent versioning functionality
-    Example usage:
-    POST /programme_curriculum/api/test_intelligent_versioning/
-    {
-        "old_course_data": {"name": "Introduction to Programming", "code": "CS101", "credit": 3},
-        "new_course_data": {"name": "Introduction to Programing", "code": "CS101", "credit": 3}
-    }
-    """
-    try:
-        data = json.loads(request.body)
-        old_data = data.get('old_course_data', {})
-        new_data = data.get('new_course_data', {})
-        
-        bump_type, changed_fields, reason = determine_version_bump_type(old_data, new_data)
-        
-        # Test string similarity
-        old_name = old_data.get('name', '')
-        new_name = new_data.get('name', '')
-        is_typo = is_typo_correction(old_name, new_name)
-        
-        return Response({
-            'old_data': old_data,
-            'new_data': new_data,
-            'version_bump_type': bump_type,
-            'changed_academic_fields': changed_fields,
-            'reason': reason,
-            'is_typo_correction': is_typo,
-            'levenshtein_distance': levenshtein_distance(old_name, new_name) if old_name and new_name else 0
-        }, status=status.HTTP_200_OK)
-        
-    except Exception as e:
-        return Response(
-            {'error': str(e)},
-            status=status.HTTP_400_BAD_REQUEST
-        )

@@ -32,7 +32,7 @@ from .models_password_email import (
 # PASSWORD GENERATION AND EMAIL UTILITIES
 # =============================================================================
 
-def generate_random_password(length=8):
+def generate_random_password(length=12):
     """
     Generate a secure random password
     """
@@ -105,8 +105,8 @@ def send_password_email_smtp(student_email, student_name, password, roll_number,
         if not hasattr(settings, 'EMAIL_HOST_USER') or not settings.EMAIL_HOST_USER:
             return False, "EMAIL_HOST_USER setting is not configured"
         
-        if not hasattr(settings, 'EMAIL_HOST_USER') or not settings.EMAIL_HOST_USER:
-            return False, "EMAIL_HOST_USER setting is not configured"
+        if not hasattr(settings, 'EMAIL_HOST_PASSWORD') or not settings.EMAIL_HOST_PASSWORD:
+            return False, "EMAIL_HOST_PASSWORD setting is not configured"
         
         # Get email template or use default
         try:

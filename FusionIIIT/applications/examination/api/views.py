@@ -323,7 +323,6 @@ class UniqueRegistrationYearsView(APIView):
             .distinct()
             .order_by('session').exclude(session__isnull = True)
         )
-        print(years)
         return Response({'academic_years': list(years)}, status=200)
 
 
@@ -401,7 +400,6 @@ def download_template(request):
         return response
 
     except Exception as e:
-        print(f"Error in download_template: {str(e)}")
         return Response({'error': 'An unexpected error occurred'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 
@@ -1741,7 +1739,6 @@ class DownloadGradesAPI(APIView):
             return Response({"courses": list(courses_details.values())}, status=status.HTTP_200_OK)
 
         except Exception as e:
-            print(e)
             # Optionally log the exception here
             return Response({"error": "Internal server error."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -2247,7 +2244,6 @@ class UpdateEnterGradesDeanView(APIView):
         course_id = request.data.get("course")
         year = request.data.get("year")
         semester_type = request.data.get("semester_type")
-        print(year, semester_type)
 
         if role != "Dean Academic":
             return Response({"success": False, "error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
@@ -2537,9 +2533,8 @@ class CheckResultView(APIView):
         academic_year = None
         if grades_info.exists():
             academic_year = grades_info.first().academic_year
-            print(f"DEBUG CheckResultView - Found academic_year: {academic_year}")
         else:
-            print("DEBUG CheckResultView - No grades found")
+            pass
 
         spi, su, _ = calculate_spi_for_student(student, semester_no, semester_type)
         cpi, tu, _ = calculate_cpi_for_student(student, semester_no, semester_type)
@@ -2557,9 +2552,6 @@ class CheckResultView(APIView):
             "academicYear": academic_year or "",  # Frontend uses camelCase
             "academic_year": academic_year or ""   # Backend uses snake_case
         }
-
-        print(f"DEBUG CheckResultView - Sending student_info: {student_info}")
-        print(f"DEBUG CheckResultView - Academic year being sent: {academic_year}")
 
         response_data = {
             "success": True,
@@ -2947,11 +2939,6 @@ class GenerateStudentResultPDFAPI(APIView):
 
             formatted_semester = format_semester_display(semester_no, semester_type, semester_label)
             
-            # Debug: Print student_info to see what academic year we're getting
-            print(f"DEBUG PDF Generation - Student Info: {student_info}")
-            print(f"DEBUG PDF Generation - Academic Year from student_info: {student_info.get('academicYear', 'Not found')}")
-            print(f"DEBUG PDF Generation - Academic Year fallback: {student_info.get('academic_year', 'Not found')}")
-            
             # Create PDF buffer
             buffer = BytesIO()
             
@@ -3147,14 +3134,10 @@ class GenerateStudentResultPDFAPI(APIView):
             
             # Create filename with formatted semester for clarity
             semester_suffix = formatted_semester.replace(' ', '_').replace(':', '').lower()
-            print(f"DEBUG PDF Generation - Formatted semester: '{formatted_semester}' -> Filename suffix: '{semester_suffix}'")
             
             # Choose prefix based on document type
             prefix = "transcript_" if is_transcript else "result_"
             filename = f"{prefix}{student_info.get('rollNumber', student_info.get('roll_number', 'student'))}_{semester_suffix}.pdf"
-            
-            print(f"DEBUG PDF Generation - Document type: {'transcript' if is_transcript else 'result'}")
-            print(f"DEBUG PDF Generation - Final filename: '{filename}'")
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             response['Content-Length'] = len(pdf_data)
             

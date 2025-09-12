@@ -357,9 +357,6 @@ def generate_xlsheet_api(request):
     try:
         start_time = time.time()
         
-        # Debug: Check request data
-        print(f"DEBUG: Request data: {request.data}")
-        
         # Get parameters
         course_id = int(request.data.get('course'))
         academic_year = request.data.get('academic_year')
@@ -433,7 +430,6 @@ def generate_xlsheet_api(request):
                         })
                     
                     sql_time = time.time() - start_sql
-                    print(f"DEBUG: SQL Execution Time: {sql_time:.3f}s for {len(students)} students")
 
                     reg_types = set(student['registration_type'] for student in students)
 
@@ -570,16 +566,13 @@ def generate_xlsheet_api(request):
         except:
             error_time = 0
             
-        print(f"DETAILED ERROR: {str(e)}")
-        print(f"ERROR TYPE: {type(e)}")
         import traceback
-        print(f"TRACEBACK: {traceback.format_exc()}")
+        traceback.print_exc()
         
         return Response({
             'error': f'Error: {str(e)}',
             'error_type': str(type(e)),
-            'processing_time_ms': round(error_time * 1000, 2),
-            'debug_info': 'Check server console for detailed traceback'
+            'processing_time_ms': round(error_time * 1000, 2)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])

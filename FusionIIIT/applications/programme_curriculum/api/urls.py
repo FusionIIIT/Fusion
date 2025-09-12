@@ -152,8 +152,4 @@ urlpatterns = [
     path('password_email_status/<int:email_log_id>/', views_password_email.password_email_status, name='password_email_status'),
     path('bulk_operation_status/<str:operation_id>/', views_password_email.bulk_operation_status, name='bulk_operation_status'),
     path('manage_email_templates/', views_password_email.manage_email_templates, name='manage_email_templates'),
-    
-    # Test endpoint for intelligent versioning (remove in production)
-    path('test_intelligent_versioning/', views.test_intelligent_versioning, name='test_intelligent_versioning'),
-    
 ]

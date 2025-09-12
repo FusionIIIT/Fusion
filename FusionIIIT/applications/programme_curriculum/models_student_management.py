@@ -351,7 +351,7 @@ class StudentBatchUpload(models.Model):
         return False
     
     @staticmethod
-    def generate_secure_password(length=8):
+    def generate_secure_password(length=12):
         """Generate cryptographically secure password"""
         lowercase = string.ascii_lowercase
         uppercase = string.ascii_uppercase
