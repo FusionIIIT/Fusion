@@ -1547,7 +1547,7 @@ def student_list(request):
                         'fee_paid', 'utr_number', 'reason', 'fee_receipt', 'actual_fee',
                         'student_id__id__user__username'
                     ).distinct())
-                print(reg_table)
+
             else:
                 reg_table = []
 
@@ -1560,7 +1560,7 @@ def student_list(request):
 
         elif excel_export == "true":
             if student_obj:
-                table = [("Admission Year", "Semester", "Roll Number", "Full Name", "Program", "Discipline", "Specialization", "Gender", "Category", "PWD Status", "Mobile Number", "Actual Fee", "Fee Paid By Student", "Reason", "Date", "Mode", "UTR Number", "Fee Receipt")]
+                table = [("Admission Year", "Semester", "Roll Number", "Full Name", "Program", "Discipline", "Specialization", "Gender", "Category", "Mobile Number", "Actual Fee", "Fee Paid By Student", "Reason", "Date", "Mode", "UTR Number", "Fee Receipt")]
                 
                 table += student_obj.prefetch_related('student_id__studentregistrationchecks').filter(semester_id=student_obj[0].semester_id, student_id__studentregistrationchecks__final_registration_flag=True).select_related('student_id', 'student_id__id', 'student_id__id__user', 'student_id__id__department').annotate(
                     admission_year = F('student_id__batch'),
@@ -1572,12 +1572,11 @@ def student_list(request):
                     specialization=F('student_id__specialization'),
                     gender=F('student_id__id__sex'),
                     category=F('student_id__category'),
-                    pwd_status=Value("YES", output_field = CharField()) if F('student_id__pwd_status') == True else Value("NO", output_field = CharField()),
                     phone_no=F('student_id__id__phone_no'),
                     date_deposited=Concat(Cast(ExtractDay('deposit_date'), CharField()), Value('/'),
                                       Cast(ExtractMonth('deposit_date'), CharField()), Value('/'),
                                       Cast(ExtractYear('deposit_date'), CharField()), output_field=CharField())
-                    ).values_list('admission_year', 'semester', 'roll_no', 'full_name', 'program', 'discipline', 'specialization', 'gender', 'category', 'pwd_status', 'phone_no', 'actual_fee', 'fee_paid', 'reason', 'date_deposited', 'mode', 'utr_number', 'fee_receipt').distinct()
+                    ).values_list('admission_year', 'semester', 'roll_no', 'full_name', 'program', 'discipline', 'specialization', 'gender', 'category', 'phone_no', 'actual_fee', 'fee_paid', 'reason', 'date_deposited', 'mode', 'utr_number', 'fee_receipt').distinct()
 
                 excel_response = BytesIO()
                 final_register_workbook = Workbook(excel_response)
