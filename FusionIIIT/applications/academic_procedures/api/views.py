@@ -883,12 +883,32 @@ def verify_registration(request):
 @permission_classes([IsAuthenticated])
 @role_required(['acadadmin'])
 def verify_course(request):
-    roll_no = request.data.get("rollno").upper()
+    roll_no = request.data.get("rollno")
     if not roll_no:
         return Response({"error": "rollno is required"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Convert to uppercase after null check
+    roll_no = roll_no.strip().upper()
 
+    # First check main academic tables
     student = Student.objects.filter(id_id=roll_no).first()
     if not student:
+        # If not found in main tables, check StudentBatchUpload
+        try:
+            from applications.programme_curriculum.models_student_management import StudentBatchUpload
+            batch_student = StudentBatchUpload.objects.filter(roll_number=roll_no).first()
+            if batch_student:
+                if batch_student.reported_status == 'REPORTED':
+                    return Response({
+                        "error": f"Student {roll_no} has reported but not yet transferred to main academic system. Please contact academic office."
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    return Response({
+                        "error": f"Student {roll_no} found in upcoming batches but status is '{batch_student.reported_status}'. Student must report first."
+                    }, status=status.HTTP_400_BAD_REQUEST)
+        except ImportError:
+            pass
+        
         return Response({"error": "Student record not found"}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -902,7 +922,17 @@ def verify_course(request):
         "lastname": user_obj.last_name or "",
     }
 
-    # current curriculum & semester
+    # current curriculum & semester - handle None batch_id case
+    if not student.batch_id:
+        return Response({
+            "error": f"Student {roll_no} does not have a valid batch assignment. Please contact academic office to complete student setup."
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    if not student.batch_id.curriculum:
+        return Response({
+            "error": f"Student {roll_no}'s batch does not have a curriculum assigned. Please contact academic office."
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
     curr = student.batch_id.curriculum
     curr_sem = Semester.objects.filter(curriculum=curr, semester_no=student.curr_semester_no).first()
     if not curr_sem:
@@ -1517,7 +1547,7 @@ def student_list(request):
                         'fee_paid', 'utr_number', 'reason', 'fee_receipt', 'actual_fee',
                         'student_id__id__user__username'
                     ).distinct())
-                print(reg_table)
+
             else:
                 reg_table = []
 
@@ -1530,7 +1560,7 @@ def student_list(request):
 
         elif excel_export == "true":
             if student_obj:
-                table = [("Admission Year", "Semester", "Roll Number", "Full Name", "Program", "Discipline", "Specialization", "Gender", "Category", "PWD Status", "Mobile Number", "Actual Fee", "Fee Paid By Student", "Reason", "Date", "Mode", "UTR Number", "Fee Receipt")]
+                table = [("Admission Year", "Semester", "Roll Number", "Full Name", "Program", "Discipline", "Specialization", "Gender", "Category", "Mobile Number", "Actual Fee", "Fee Paid By Student", "Reason", "Date", "Mode", "UTR Number", "Fee Receipt")]
                 
                 table += student_obj.prefetch_related('student_id__studentregistrationchecks').filter(semester_id=student_obj[0].semester_id, student_id__studentregistrationchecks__final_registration_flag=True).select_related('student_id', 'student_id__id', 'student_id__id__user', 'student_id__id__department').annotate(
                     admission_year = F('student_id__batch'),
@@ -1542,12 +1572,11 @@ def student_list(request):
                     specialization=F('student_id__specialization'),
                     gender=F('student_id__id__sex'),
                     category=F('student_id__category'),
-                    pwd_status=Value("YES", output_field = CharField()) if F('student_id__pwd_status') == True else Value("NO", output_field = CharField()),
                     phone_no=F('student_id__id__phone_no'),
                     date_deposited=Concat(Cast(ExtractDay('deposit_date'), CharField()), Value('/'),
                                       Cast(ExtractMonth('deposit_date'), CharField()), Value('/'),
                                       Cast(ExtractYear('deposit_date'), CharField()), output_field=CharField())
-                    ).values_list('admission_year', 'semester', 'roll_no', 'full_name', 'program', 'discipline', 'specialization', 'gender', 'category', 'pwd_status', 'phone_no', 'actual_fee', 'fee_paid', 'reason', 'date_deposited', 'mode', 'utr_number', 'fee_receipt').distinct()
+                    ).values_list('admission_year', 'semester', 'roll_no', 'full_name', 'program', 'discipline', 'specialization', 'gender', 'category', 'phone_no', 'actual_fee', 'fee_paid', 'reason', 'date_deposited', 'mode', 'utr_number', 'fee_receipt').distinct()
 
                 excel_response = BytesIO()
                 final_register_workbook = Workbook(excel_response)
@@ -3146,6 +3175,7 @@ def student_search(request):
 def student_registration_semesters_view(request):
     """
     Return a list of distinct semesters in which the student has registrations.
+    For new students, also include their current semester even if no registrations exist.
     """
     try:
         roll_number = request.user.username
@@ -3162,6 +3192,14 @@ def student_registration_semesters_view(request):
         for sem_no, sem_type in qs:
             label = make_label(sem_no, sem_type or "")
             unique[(sem_no, sem_type)] = label
+
+        # For new students who haven't registered for any courses yet,
+        # include their current semester
+        if not unique and student.curr_semester_no:
+            # Determine semester type based on semester number (odd/even)
+            current_sem_type = "Odd Semester" if student.curr_semester_no % 2 == 1 else "Even Semester"
+            current_label = make_label(student.curr_semester_no, current_sem_type)
+            unique[(student.curr_semester_no, current_sem_type)] = current_label
 
         semesters = [
             {"semester_no": no, "semester_type": typ, "label": lbl}

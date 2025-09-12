@@ -1,7 +1,7 @@
 from django.db.models.query_utils import Q
 from django.http import request
 from django.shortcuts import get_object_or_404, render, HttpResponse,redirect
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 # import itertools
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -20,30 +20,6 @@ from applications.globals.models import (DepartmentInfo, Designation,ExtraInfo, 
 
 
 
-
-@login_required(login_url='/accounts/login')
-def admin_view_all_course_instructor(request):
-    # Fetch all records from the CourseInstructor table
-    course_instructors = CourseInstructor.objects.all()
-
-    # Passing the data to the template
-    context = {
-        'course_instructors': course_instructors,
-    }
-
-    return render(request, 'programme_curriculum/acad_admin/admin_view_all_course_instructor.html', context)
-@login_required(login_url='/accounts/login')
-def update_course_instructor_form(request, id):
-
-    instructor = get_object_or_404(CourseInstructor, id=id)
-    course_instructors = CourseInstructor.objects.all()
-
-    # Passing the data to the template
-    context = {
-        'course_instructors': course_instructors,
-    }
-    # Handle the update logic here
-    return render(request, 'programme_curriculum/acad_admin/admin_view_all_course_instructor.html', context)
 
 @login_required(login_url='/accounts/login')
 def programme_curriculum(request):

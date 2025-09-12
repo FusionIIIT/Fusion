@@ -2,12 +2,13 @@ from django.db.models.query_utils import Q
 from django.http import request
 from django.shortcuts import get_object_or_404, render, HttpResponse,redirect
 from django.http import HttpResponse, HttpResponseRedirect,JsonResponse
+from django.views.decorators.http import require_http_methods
 import datetime
 # import itertools
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from ..models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot,NewProposalFile,Proposal_Tracking,CourseInstructor
+from ..models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot,NewProposalFile,Proposal_Tracking,CourseInstructor,CourseAuditLog
 from ..forms import ProgrammeForm, DisciplineForm, CurriculumForm, SemesterForm, CourseForm, BatchForm, CourseSlotForm, ReplicateCurriculumForm,NewCourseProposalFile,CourseProposalTrackingFile, CourseInstructor, CourseInstructorForm
 from ..filters import CourseFilter, BatchFilter, CurriculumFilter
 
@@ -19,8 +20,9 @@ from django.forms.models import model_to_dict
 import json, xlrd
 from django.db.models import F
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import IsAuthenticated 
+from rest_framework.authentication import TokenAuthentication
 from django.core.exceptions import PermissionDenied
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -119,7 +121,6 @@ def view_curriculums_of_a_programme(request, programme_id):
 
     # Fetch program and related curriculums
     program = get_object_or_404(Programme, id=programme_id)
-    print(program.name)
     curriculums = program.curriculums.all()  # Adjust if it's a related name
 
 
@@ -453,7 +454,7 @@ def admin_view_all_programmes(request):
     phd = Programme.objects.filter(category='PHD').prefetch_related('discipline_set').values(
         'id', 'name', 'category', 'programme_begin_year', 'discipline__name'
     )
-    print(ug)
+    
     # Prepare the JSON response data
     response_data = {
         'ug_programmes': list(ug),
@@ -607,7 +608,6 @@ def admin_view_a_semester_of_a_curriculum(request, semester_id):
     course_slots = semester.courseslot_set.all()
 
     # Prepare JSON response
-    # print(semester.curriculum)
     semester_data = {
         'id': semester.id,
         'semester_no':semester.semester_no,
@@ -679,7 +679,6 @@ def admin_view_a_courseslot(request, courseslot_id):
         })
 
     # Default response if not in edit mode
-    print(course_slot.semester.curriculum)
     return JsonResponse({
         'course_slot': {
             'id': course_slot.id,
@@ -846,34 +845,58 @@ def admin_view_all_batches(request):
     finished_batches = batches.filter(running_batch=False)
     running_batches = batches.filter(running_batch=True)
 
-    # Serialize the batch data
-    batch_data = [
-        {
-            'batch_id':batch.id,
+    # Serialize the batch data with filled seats calculation
+    batch_data = []
+    for batch in running_batches:
+        # Import the centralized function
+        from .views_student_management import calculate_batch_filled_seats
+        
+        # Use centralized filled seats calculation function
+        filled_seats = calculate_batch_filled_seats(batch)
+        available_seats = max(0, batch.total_seats - filled_seats)
+        
+        batch_data.append({
+            'batch_id': batch.id,
             'name': batch.name,
             'discipline': str(batch.discipline.acronym),
             'year': batch.year,
             'curriculum': batch.curriculum.name if batch.curriculum else None,
             'id': batch.curriculum.id if batch.curriculum else None,
             'curriculumVersion': batch.curriculum.version if batch.curriculum else None,
-            'running_batch': batch.running_batch
-        }
-        for batch in running_batches
-    ]
+            'running_batch': batch.running_batch,
+            'totalSeats': batch.total_seats,
+            'total_seats': batch.total_seats,
+            'filledSeats': filled_seats,
+            'filled_seats': filled_seats,
+            'availableSeats': available_seats,
+            'available_seats': available_seats
+        })
 
-    finished_batch_data = [
-        {
-            'batch_id':batch.id,
+    finished_batch_data = []
+    for batch in finished_batches:
+        # Import the centralized function
+        from .views_student_management import calculate_batch_filled_seats
+        
+        # Use centralized filled seats calculation function
+        filled_seats = calculate_batch_filled_seats(batch)
+        available_seats = max(0, batch.total_seats - filled_seats)
+        
+        finished_batch_data.append({
+            'batch_id': batch.id,
             'name': batch.name,
             'discipline': str(batch.discipline.acronym),
             'year': batch.year,
             'curriculum': batch.curriculum.name if batch.curriculum else None,
             'id': batch.curriculum.id if batch.curriculum else None,
             'curriculumVersion': batch.curriculum.version if batch.curriculum else None,
-            'running_batch': batch.running_batch
-        }
-        for batch in finished_batches
-    ]
+            'running_batch': batch.running_batch,
+            'totalSeats': batch.total_seats,
+            'total_seats': batch.total_seats,
+            'filledSeats': filled_seats,
+            'filled_seats': filled_seats,
+            'availableSeats': available_seats,
+            'available_seats': available_seats
+        })
 
     return JsonResponse({
         'batches': batch_data,
@@ -1006,9 +1029,7 @@ def edit_discipline_form(request, discipline_id):
 @csrf_exempt
 def add_programme_form(request):
     if request.method == 'POST':
-        # print(request.body)
         data = json.loads(request.body)
-        print(data)
         form_data={
             'name': data.get('name'),
             'category': data.get('category'),
@@ -1101,13 +1122,28 @@ def add_curriculum_form(request):
         try:
             # Parse the incoming JSON data
             data = json.loads(request.body)
+            
             curriculum_name = data.get('curriculum_name')
             programme_id = data.get('programme')
             working_curriculum = data.get('working_curriculum', False)
             version_no = data.get('version_no', 1.0)
-            num_semesters = data.get('no_of_semester', 1)
-            num_credits = data.get('num_credits', 0)
-
+            
+            # Handle multiple possible field names for number of semesters
+            num_semesters = (data.get('num_semesters') or 
+                           data.get('no_of_semester') or 
+                           data.get('numberOfSemesters') or 
+                           data.get('semesters') or 1)
+            
+            # Handle multiple possible field names for credits
+            num_credits = (data.get('num_credits') or 
+                          data.get('min_credit') or 
+                          data.get('minCredits') or 
+                          data.get('credits') or 0)
+            
+            # Convert to int to ensure they are valid numbers
+            num_semesters = int(num_semesters)
+            num_credits = int(num_credits)
+            
             # Validate that the programme exists
             try:
                 programme = Programme.objects.get(id=programme_id)
@@ -1143,22 +1179,56 @@ def add_curriculum_form(request):
 
 
 @permission_classes([IsAuthenticated])
-@api_view(['PUT'])
+@api_view(['GET', 'PUT'])
 def edit_curriculum_form(request, curriculum_id):
     """
-    Handle updating Curriculum and Semesters through an API endpoint.
+    Handle getting and updating Curriculum and Semesters through an API endpoint.
     """
-    if request.method == 'PUT':
+    if request.method == 'GET':
+        # Return current curriculum data for editing
+        curriculum = get_object_or_404(Curriculum, id=curriculum_id)
+        
+        curriculum_data = {
+            'id': curriculum.id,
+            'curriculum_name': curriculum.name,
+            'programme': curriculum.programme.id,
+            'programme_name': curriculum.programme.name,
+            'working_curriculum': curriculum.working_curriculum,
+            'version_no': curriculum.version,
+            'num_semesters': curriculum.no_of_semester,  # Frontend expects num_semesters
+            'num_credits': curriculum.min_credit,
+        }
+        
+        return JsonResponse({'status': 'success', 'curriculum': curriculum_data})
+    
+    elif request.method == 'PUT':
         try:
             # Parse the incoming JSON data
             data = json.loads(request.body)
+            
             curriculum_name = data.get('curriculum_name')
             programme_id = data.get('programme')
             working_curriculum = data.get('working_curriculum', False)
             version_no = data.get('version_no', 1.0)
-            num_semesters = data.get('no_of_semester', 1)
-            num_credits = data.get('num_credits', 0)
-
+            
+            # Handle multiple possible field names for number of semesters
+            num_semesters = (data.get('num_semesters') or 
+                           data.get('no_of_semester') or 
+                           data.get('numberOfSemesters') or 
+                           data.get('semesters'))
+            
+            if num_semesters is None:
+                num_semesters = 1
+            
+            # Convert to int to ensure it's a valid number
+            num_semesters = int(num_semesters)
+            
+            # Handle multiple possible field names for credits
+            num_credits = (data.get('num_credits') or 
+                          data.get('min_credit') or 
+                          data.get('minCredits') or 
+                          data.get('credits') or 0)
+            
             # Fetch the existing curriculum
             curriculum = get_object_or_404(Curriculum, id=curriculum_id)
 
@@ -1202,7 +1272,6 @@ def edit_curriculum_form(request, curriculum_id):
             return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     return JsonResponse({'error': 'Invalid request method.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 @csrf_exempt
-@permission_classes([IsAuthenticated])
 def add_course_form(request):
 
     # user_details = ExtraInfo.objects.get(user = request.user)
@@ -1217,15 +1286,75 @@ def add_course_form(request):
     try:
         if request.method == 'POST':
             data = json.loads(request.body.decode('utf-8'))
+            
             form = CourseForm(data)
+            
             if form.is_valid():
-                new_course = form.save(commit=False)
-                # new_course.version = 1.0
-                new_course.save()
-                course = Course.objects.last()
-                return JsonResponse({'success': True, 'message': 'Course added successfully', 'course_id': course.id}, status=201)
+                try:
+                    new_course = form.save(commit=False)
+                    new_course.save()
+                    
+                    # Handle many-to-many relationships if any
+                    if 'disciplines' in data:
+                        new_course.disciplines.set(data['disciplines'])
+                    
+                    if 'pre_requisit_courses' in data and data['pre_requisit_courses']:
+                        new_course.pre_requisit_courses.set(data['pre_requisit_courses'])
+                    
+                    # Create initial audit log for course creation (only for authenticated users)
+                    if request.user.is_authenticated and not request.user.is_anonymous:
+                        initial_data = {
+                            'name': new_course.name,
+                            'code': new_course.code,
+                            'credit': new_course.credit,
+                            'version': new_course.version,
+                            'lecture_hours': new_course.lecture_hours,
+                            'tutorial_hours': new_course.tutorial_hours,
+                            'pratical_hours': new_course.pratical_hours,
+                            'discussion_hours': new_course.discussion_hours,
+                            'project_hours': new_course.project_hours,
+                            'pre_requisits': new_course.pre_requisits,
+                            'syllabus': new_course.syllabus,
+                            'ref_books': new_course.ref_books,
+                            'percent_quiz_1': new_course.percent_quiz_1,
+                            'percent_midsem': new_course.percent_midsem,
+                            'percent_quiz_2': new_course.percent_quiz_2,
+                            'percent_endsem': new_course.percent_endsem,
+                            'percent_project': new_course.percent_project,
+                            'percent_lab_evaluation': new_course.percent_lab_evaluation,
+                            'percent_course_attendance': new_course.percent_course_attendance,
+                            'max_seats': new_course.max_seats,
+                            'working_course': new_course.working_course,
+                        }
+                        
+                        create_course_audit_log(
+                            course=new_course,
+                            user=request.user,
+                            action='CREATE',
+                            old_data=None,
+                            new_data=initial_data,
+                            version_bump_type='MAJOR',  # New course creation is always major
+                            old_version=None,
+                            new_version=new_course.version,
+                            admin_override=False,
+                            reason="New course created"
+                        )
+                    
+                    return JsonResponse({'success': True, 'message': 'Course added successfully', 'course_id': new_course.id}, status=201)
+                    
+                except Exception as save_error:
+                    return JsonResponse({'success': False, 'message': f'Error saving course: {str(save_error)}'}, status=500)
             else:
-                return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+                # Return detailed form validation errors
+                error_details = {}
+                for field, errors in form.errors.items():
+                    error_details[field] = list(errors)
+                
+                return JsonResponse({
+                    'success': False, 
+                    'message': 'Form validation failed',
+                    'errors': error_details
+                }, status=400)
 
         return JsonResponse({'error': 'Invalid request method. Use POST.'}, status=405)
 
@@ -1267,42 +1396,114 @@ def update_course_form(request, course_id):
                 'percent_project': course.percent_project,
                 'percent_lab_evaluation': course.percent_lab_evaluation,
                 'percent_course_attendance': course.percent_course_attendance,
+                'max_seats': course.max_seats,
+                'working_course': course.working_course,
+                # Version history and audit info
+                'version_history': list(Course.objects.filter(code=course.code).order_by('-version').values('version', 'id')),
+                'recent_changes': list(CourseAuditLog.objects.filter(course=course).order_by('-timestamp')[:5].values(
+                    'timestamp', 'user__username', 'action', 'version_bump_type', 'old_version', 'new_version', 'reason'
+                ))
             }
             return Response(data, status=status.HTTP_200_OK)
         
         elif request.method == 'PUT':
-            # Handle course update
-            print("gaurav")
+            # Handle course update with intelligent versioning
             data = json.loads(request.body)
-            print(data)
-            previous_version = Course.objects.filter(code=course.code).order_by('version').last()
-            print(previous_version)
-            # Validate version
-            new_version = data.get('version', course.version)
-            if float(new_version) <= float(previous_version.version):
-                return Response(
-                    {'error': f'Version must be greater than current version ({previous_version.version})'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
             
-            # Update basic course fields
+            # Check if admin wants to override version bump decision
+            admin_override = data.get('admin_override_version', False)
+            manual_version = data.get('version') if admin_override else None
+            
+            # Capture old course data for audit and comparison
+            old_course_data = {
+                'name': course.name,
+                'code': course.code,
+                'credit': course.credit,
+                'lecture_hours': course.lecture_hours,
+                'tutorial_hours': course.tutorial_hours,
+                'pratical_hours': course.pratical_hours,
+                'discussion_hours': course.discussion_hours,
+                'project_hours': course.project_hours,
+                'pre_requisits': course.pre_requisits,
+                'pre_requisit_courses': list(course.pre_requisit_courses.values_list('id', flat=True)),
+                'syllabus': course.syllabus,
+                'ref_books': course.ref_books,
+                'percent_quiz_1': course.percent_quiz_1,
+                'percent_midsem': course.percent_midsem,
+                'percent_quiz_2': course.percent_quiz_2,
+                'percent_endsem': course.percent_endsem,
+                'percent_project': course.percent_project,
+                'percent_lab_evaluation': course.percent_lab_evaluation,
+                'percent_course_attendance': course.percent_course_attendance,
+                'disciplines': list(course.disciplines.values_list('id', flat=True)),
+                'max_seats': course.max_seats,
+                'working_course': course.working_course,
+            }
+            old_version = course.version
+            
+            # Prepare new course data
+            new_course_data = {}
             update_fields = [
                 'code', 'name', 'credit', 'lecture_hours', 'tutorial_hours',
                 'pratical_hours', 'discussion_hours', 'project_hours',
                 'pre_requisits', 'syllabus', 'percent_quiz_1', 'percent_midsem',
                 'percent_quiz_2', 'percent_endsem', 'percent_project',
-                'percent_lab_evaluation', 'percent_course_attendance', 'ref_books'
+                'percent_lab_evaluation', 'percent_course_attendance', 'ref_books',
+                'max_seats', 'working_course'
             ]
             
+            # Collect new values for comparison
+            for field in update_fields:
+                if field in data:
+                    new_course_data[field] = data[field]
+                else:
+                    new_course_data[field] = getattr(course, field)
+            
+            # Handle many-to-many fields
+            if 'disciplines' in data:
+                new_course_data['disciplines'] = data['disciplines']
+            else:
+                new_course_data['disciplines'] = list(course.disciplines.values_list('id', flat=True))
+                
+            if 'pre_requisit_courses' in data:
+                new_course_data['pre_requisit_courses'] = data['pre_requisit_courses']
+            else:
+                new_course_data['pre_requisit_courses'] = list(course.pre_requisit_courses.values_list('id', flat=True))
+            
+            # Determine if version bump is needed
+            bump_type, changed_academic_fields, reason = determine_version_bump_type(old_course_data, new_course_data)
+            
+            # Calculate new version
+            new_version = old_version
+            if admin_override and manual_version:
+                # Admin manually specified version
+                new_version = manual_version
+                bump_type = 'MAJOR'  # Assume major if manually overridden
+                reason = f"Admin override: {reason}"
+            elif bump_type != 'NONE':
+                # Auto-calculate new version based on bump type
+                new_version = calculate_new_version(old_version, bump_type)
+            
+            # Validate new version if it changed
+            if float(new_version) != float(old_version):
+                previous_latest = Course.objects.filter(code=course.code).order_by('-version').first()
+                if float(new_version) <= float(previous_latest.version):
+                    return Response(
+                        {'error': f'Version must be greater than current version ({previous_latest.version})'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            
+            # Update course fields
             for field in update_fields:
                 if field in data:
                     setattr(course, field, data[field])
             
-            # Set version and latest version flags
-            course.version = new_version
-            previous_version.latest_version = False
-            previous_version.save()
-            course.latest_version = True
+            # Update version if needed
+            if float(new_version) != float(old_version):
+                # Mark previous version as not latest
+                Course.objects.filter(code=course.code, latest_version=True).update(latest_version=False)
+                course.version = new_version
+                course.latest_version = True
             
             course.save()
             
@@ -1317,21 +1518,91 @@ def update_course_form(request, course_id):
                 prereq_courses = Course.objects.filter(id__in=prereq_course_ids)
                 course.pre_requisit_courses.set(prereq_courses)
             
-            return Response(
-                {
-                    'message': 'Course updated successfully!',
-                    'course_id': course.id,
-                    'code': course.code,
-                    'name': course.name
-                },
-                status=status.HTTP_200_OK
+            # Create audit log
+            create_course_audit_log(
+                course=course,
+                user=request.user,
+                action='UPDATE',
+                old_data=old_course_data,
+                new_data=new_course_data,
+                version_bump_type=bump_type,
+                old_version=old_version,
+                new_version=new_version,
+                admin_override=admin_override,
+                reason=reason
             )
+            
+            # Prepare response
+            response_data = {
+                'message': 'Course updated successfully!',
+                'course_id': course.id,
+                'code': course.code,
+                'name': course.name,
+                'old_version': str(old_version),
+                'new_version': str(new_version),
+                'version_bump_type': bump_type,
+                'changed_academic_fields': changed_academic_fields,
+                'reason': reason
+            }
+            
+            return Response(response_data, status=status.HTTP_200_OK)
     
     except Exception as e:
         return Response(
             {'error': str(e)},
             status=status.HTTP_400_BAD_REQUEST
         )
+
+
+@csrf_exempt
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def course_audit_logs(request, course_id):
+    """
+    Get audit logs for a specific course
+    """
+    try:
+        course = get_object_or_404(Course, id=course_id)
+        
+        # Get audit logs with pagination
+        page = int(request.GET.get('page', 1))
+        page_size = int(request.GET.get('page_size', 20))
+        offset = (page - 1) * page_size
+        
+        audit_logs = CourseAuditLog.objects.filter(course=course).order_by('-timestamp')[offset:offset + page_size]
+        total_count = CourseAuditLog.objects.filter(course=course).count()
+        
+        logs_data = []
+        for log in audit_logs:
+            logs_data.append({
+                'id': log.id,
+                'user': log.user.username,
+                'timestamp': log.timestamp,
+                'action': log.action,
+                'version_bump_type': log.version_bump_type,
+                'old_version': str(log.old_version) if log.old_version else None,
+                'new_version': str(log.new_version) if log.new_version else None,
+                'changed_fields': log.changed_fields,
+                'admin_override': log.admin_override,
+                'reason': log.reason,
+                'old_values': log.old_values,
+                'new_values': log.new_values
+            })
+        
+        return Response({
+            'logs': logs_data,
+            'total_count': total_count,
+            'page': page,
+            'page_size': page_size,
+            'has_next': offset + page_size < total_count
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response(
+            {'error': str(e)},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
 
 @permission_classes([IsAuthenticated])
 @api_view(['POST'])
@@ -1380,16 +1651,10 @@ def add_courseslot_form(request):
 @csrf_exempt  # Use this decorator if you're not using CSRF tokens in your API calls
 @permission_classes([IsAuthenticated])
 def edit_courseslot_form(request, courseslot_id):
-    # print(courseslot_id)
     
     courseslot = get_object_or_404(CourseSlot, Q(id=courseslot_id))
     curriculum_id = courseslot.semester.curriculum.id
-    # print("gaurav")
-    # print("gaurav")
-    # print("gaurav")
-    # print("gaurav")
-    # print("gaurav")
-    # print("gaurav")
+    
     if request.method == 'GET':
         # Prepare the course slot data for the frontend
         courseslot_data = {
@@ -1404,7 +1669,6 @@ def edit_courseslot_form(request, courseslot_id):
             'max_registration_limit': courseslot.max_registration_limit,
             'curriculum_id': curriculum_id,
         }
-        print(courseslot_data)
         return JsonResponse({'status': 'success', 'courseslot': courseslot_data})
 
     elif request.method == 'PUT':
@@ -1429,7 +1693,6 @@ def edit_courseslot_form(request, courseslot_id):
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_courseslot(request, courseslot_id):
-    print(request.session.keys())
     try:
         # Check if the user has the required session key
         # if 'currentDesignationSelected' not in request.session:
@@ -1440,8 +1703,6 @@ def delete_courseslot(request, courseslot_id):
         des = HoldsDesignation.objects.all().filter(user=request.user).first()
         
         # Restrict access based on user role
-        # print(request.session.keys())
-        # print(request.session['currentDesignationSelected'])
         # current_designation = request.session['currentDesignationSelected']
         # if current_designation == "student" or \
         #    current_designation == "Associate Professor" or \
@@ -1476,7 +1737,7 @@ def add_batch_form(request):
     """
     if request.method == 'POST':
         data = request.data
-
+        
         # Map frontend fields to the correct model fields
         batch_data = {
             "name": data.get("batch_name"),  
@@ -1484,12 +1745,15 @@ def add_batch_form(request):
             "year": data.get("batchYear"),
             "curriculum": data.get("disciplineBatch"),  # Assuming curriculum is disciplineBatch
             "running_batch": data.get("runningBatch"),  # Assuming running_batch is a field in the model
+            "total_seats": data.get("total_seats") or data.get("totalSeats") or data.get("Total_Seats") or 60,  # Try multiple field name variations
         }
+        
         # data = json.loads(request.body)
         serializer = BatchSerializer(data=batch_data)
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "Added Batch successfully"}, status=status.HTTP_201_CREATED)
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     return Response({"error": "Invalid request method"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
@@ -1506,7 +1770,7 @@ def edit_batch_form(request, batch_id):
     #     pass
     # elif 'hod' in request.session['currentDesignationSelected'].lower():
     #     return HttpResponseRedirect('/programme_curriculum/programmes/')
-    print('gaurav',batch_id)
+    
     # Fetch the course slot
     batch = get_object_or_404(Batch, Q(id=batch_id))
     if request.method == 'GET':
@@ -1517,7 +1781,8 @@ def edit_batch_form(request, batch_id):
             'name': batch.name,
             'year': batch.year,
             'curriculum_id': batch.curriculum_id,
-            'running_batch':batch.running_batch,
+            'running_batch': batch.running_batch,
+            'total_seats': batch.total_seats,  # Add total_seats to GET response
         }
 
         curricula_data = None
@@ -1536,12 +1801,9 @@ def edit_batch_form(request, batch_id):
                 # 'programme': curriculum.programme.name,
             }]
         
-        print(batch_data)
-        print(curricula_data)
         return JsonResponse({'status': 'success', 'batch': batch_data,'curriculum':curricula_data if curricula_data is not None else None})
     
     elif request.method == 'PUT':
-        print("put is used")
         try:
             # Fetch the existing batch instance
             try:
@@ -1551,11 +1813,15 @@ def edit_batch_form(request, batch_id):
 
             # Parse the incoming JSON data
             data = json.loads(request.body)
-
+            
             # Update batch fields
             batch.name = data.get('batch_name', batch.name)  # Use existing value if not provided
             batch.year = data.get('batchYear', batch.year)  # Use existing value if not provided
             batch.running_batch = data.get('runningBatch', batch.running_batch)  # Use existing value if not provided
+            
+            # Handle total_seats update - try multiple possible field names
+            new_total_seats = data.get('total_seats') or data.get('totalSeats') or data.get('Total_Seats') or batch.total_seats
+            batch.total_seats = new_total_seats
 
             # Update discipline (if provided)
             discipline_id = data.get('discipline')
@@ -1579,7 +1845,7 @@ def edit_batch_form(request, batch_id):
 
             # Save the updated batch
             batch.save()
-
+            
             return JsonResponse({'status': status.HTTP_200_OK, 'message': 'Batch updated successfully'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -1811,7 +2077,6 @@ def new_course_proposal_file(request):
     #     return HttpResponseRedirect('/programme_curriculum/admin_programmes')
     # else:
     #     return HttpResponseRedirect('/programme_curriculum/programmes')
-    print("new course proposal file")
     
     if request.method == 'POST':
         try:
@@ -1875,7 +2140,6 @@ def new_course_proposal_file(request):
                     'prerequisite_courses_added': len(prerequisite_course_ids)
                 }, status=201)
             else:
-                print(form.errors)
                 return JsonResponse({
                     'status': 'error',
                     'message': 'Invalid form data',
@@ -1883,8 +2147,6 @@ def new_course_proposal_file(request):
                 }, status=400)
                 
         except json.JSONDecodeError:
-            print("error")
-
             return JsonResponse({
                 'status': 'error',
                 'message': 'Invalid JSON data'
@@ -1911,7 +2173,6 @@ def filetracking(request, proposal_id):
             # Get the file being tracked
             file = get_object_or_404(NewProposalFile, id=proposal_id)
 
-            print(file)
             # Get user objects from IDs
             try:
                 receiver_id=data.get('receiverId')
@@ -1919,16 +2180,9 @@ def filetracking(request, proposal_id):
                 receiver_user = User.objects.get(username=data.get('receiverId'))
                 uploader_user=User.objects.get(username=data.get('uploader'))
 
-                # print("uploader_user",uploader_user)
-                # print('type',type(uploader_user))
-
                 receiver_designation = Designation.objects.get(name=data.get('receiverDesignation'))
 
-                # print("receiver_user",receiver_user)
-                # print('type',type(receiver_user))
-
                 discipline = Discipline.objects.get(id=data.get('discipline'))  # Assuming single discipline
-                print(discipline)
             except (User.DoesNotExist, Designation.DoesNotExist, Discipline.DoesNotExist) as e:
                 return JsonResponse({
                     'status': 'error',
@@ -1946,7 +2200,6 @@ def filetracking(request, proposal_id):
                 'remarks': data.get('remarks', ''),
                 # 'is_submitted': True
             }
-            print(tracking_data)
             form = CourseProposalTrackingFile(tracking_data)
             
             if form.is_valid():
@@ -1956,15 +2209,12 @@ def filetracking(request, proposal_id):
                     
                     # Prepare notification data
                     file_data = f"{file.name} {file.code}"
-                    print('file data',file_data)
                     notification_data = (
                         f"Received as {receiver_id} - {receiver_des} "
                         f"Course Proposal Form '{file_data}' "
                         f"By {data.get('uploader')} - {data.get('designation')}"
                     )
-                    print('notification data',notification_data)    
                     prog_and_curr_notif(uploader_user,receiver_user,notification_data)
-                    print('success')
                     
                     return JsonResponse({
                         'status': 'success',
@@ -1983,7 +2233,7 @@ def filetracking(request, proposal_id):
                     'message': 'Invalid form data',
                     'errors': form.errors
                 }, status=400)
-            print("till here is okay")       
+                
         except json.JSONDecodeError:
             return JsonResponse({
                 'status': 'error',
@@ -2009,8 +2259,6 @@ def inward_files(request):
 
         username = request.GET.get('username')
         designation_name = request.GET.get('des')
-        print("username ",username)
-        print("designation ",designation_name)
         if not username or not designation_name:
             return JsonResponse({
                 'status': 'error',
@@ -2019,9 +2267,7 @@ def inward_files(request):
         
         # Get user and designation objects
         user = User.objects.get(username=username)
-        print('user',user)
         designation = Designation.objects.get(name=designation_name)
-        print('des',designation)
         # Get inward files
         course_proposals = Proposal_Tracking.objects.filter(
             receive_design=designation.id,
@@ -2349,10 +2595,8 @@ def forward_course_forms(request, ProposalId):
     try:
         # Parse JSON data from request body
         data = json.loads(request.body)
-        print(data)
         username = request.GET.get('username')
         designation = request.GET.get('des')
-        print(designation)
         if not username or not designation:
             return JsonResponse({
                 'status': 'error',
@@ -2368,9 +2612,7 @@ def forward_course_forms(request, ProposalId):
         
         # Handle different designation cases
         if designation == "Dean Academic":
-            print("gaurav 1")
             course = Course.objects.filter(code=file2.code).last()
-            print(course)
             previous = None
             version_error = None
             
@@ -2384,7 +2626,6 @@ def forward_course_forms(request, ProposalId):
                     }, status=400)
             
             # Update course and tracking
-            # print("gaurav 2")
             course_data = {
                 'code': data.get('code'),
                 'name': data.get('name'),
@@ -2463,7 +2704,6 @@ def forward_course_forms(request, ProposalId):
                     'prerequisite_courses_added': len(prerequisite_course_ids)
                 }, status=201)
             else:
-                print(form.errors)
                 return JsonResponse({
                     'status': 'error',
                     'message': 'Invalid form data',
@@ -2475,11 +2715,7 @@ def forward_course_forms(request, ProposalId):
                 receiver_user = User.objects.get(username=data.get('receiverId'))
                 uploader_user = User.objects.get(username=data.get('uploader'))
                 receiver_designation = Designation.objects.get(name=data.get('receiverDesignation'))
-                # print("receiver_user ff",receiver_user)
-                # print("receiver des ff",receiver_designation)
-                # print(data.get('discipline'))
                 discipline = Discipline.objects.get(id=data.get('discipline'))  # Assuming single discipline
-                # print(discipline)
             except (User.DoesNotExist, Designation.DoesNotExist, Discipline.DoesNotExist) as e:
                 return JsonResponse({
                     'status': 'error',
@@ -2497,9 +2733,7 @@ def forward_course_forms(request, ProposalId):
                 'remarks': data.get('remarks', ''),
                 # 'is_submitted': True
             }
-            # print("traking data ff",tracking_data)
             # Validate form data
-            # print("gaurav 1")
             required_fields = ['receiverId', 'receiverDesignation']
             if not all(field in data for field in required_fields):
                 return JsonResponse({
@@ -2566,7 +2800,6 @@ def forward_course_forms(request, ProposalId):
             'message': 'Invalid JSON data'
         }, status=400)
     except Exception as e:
-        print(str(e))
         return JsonResponse({
             'status': 'error',
             'message': str(e)
@@ -2622,7 +2855,6 @@ def forward_course_forms_II(request):
             'data': response_data
         })
     except Exception as e:
-        print(str(e))
         return JsonResponse({
             'status': 'error',
             'message': str(e)
@@ -2726,7 +2958,6 @@ def view_inward_files(request,ProposalId):
         })
         
     except Exception as e:
-        print(str(e))
         return JsonResponse({
             'status': 'error',
             'message': str(e)
@@ -2737,10 +2968,6 @@ def view_inward_files(request,ProposalId):
 @permission_classes([IsAuthenticated])
 def reject_form(request, ProposalId):
     try:
-        # Debugging - print incoming request data
-        print(f"Incoming request - User: {request.user}, Method: {request.method}")
-        print(f"Query params: {request.GET}")
-        
         # Get query parameters
         username = request.GET.get('username', '')
         designation = request.GET.get('des', '')
@@ -2910,7 +3137,6 @@ def tracking_archive(request,ProposalId):
 @csrf_exempt  # Use this decorator if you're not using CSRF tokens in your API calls
 @permission_classes([IsAuthenticated])
 def file_archive(request,FileId):
-    print("ID:", FileId)
     try:
         file = get_object_or_404(NewProposalFile, Q(id=FileId))
         file.is_archive = True
@@ -2930,7 +3156,6 @@ def file_archive(request,FileId):
 @permission_classes([IsAuthenticated])
 def file_unarchive(request,FileId):
     
-    print("ID:", FileId)
     try:
         file = get_object_or_404(NewProposalFile, Q(id=FileId))
         file.is_archive = False
@@ -2986,7 +3211,6 @@ def semester_details(request):
         "semesters": semester_list,
     }
 
-    print("data:", data)
     return JsonResponse(data)
 
 @api_view(['GET'])
@@ -3065,7 +3289,6 @@ def get_unused_curriculam(request):
         }
         for curriculum in unused_curricula
     ]
-    print(unused_curricula_data)
 
     # Return the serialized data as a JSON response
     return JsonResponse(unused_curricula_data, safe=False)
@@ -3160,7 +3383,6 @@ def add_course_instructor(request):
             )
             data.pop("academic_year", None)
             form = CourseInstructorForm(data)
-            print(data)
             if form.is_valid():
                 form.save()
                 return JsonResponse(
@@ -3267,22 +3489,17 @@ def get_superior_data(request):
     try:
         # Get parameters from request
         username = request.GET.get('uploaderId')
-        print("username",username)
         designation = request.GET.get('uploaderDes', '').lower()
-        print("designation",designation)
         
         if not username:
             return JsonResponse({'error': 'Username is required'}, status=400)
         
         # Get the user object
         user = User.objects.get(username=username)
-        print("user",user)
         
         # Get user's extra info and department
         extra_info = ExtraInfo.objects.get(user=user)
-        print("extra_info",extra_info)
         user_department = extra_info.department
-        print("user_department",user_department)
         
         # Initialize response data
         response_data = {
@@ -3294,11 +3511,9 @@ def get_superior_data(request):
         # Check if user is Professor/Associate Professor/Assistant Professor
         professor_designations = ['professor', 'associate professor', 'assistant professor']
         is_professor = designation in professor_designations
-        print("is_professor",is_professor)
         
         # Check if user is HOD (using regex to match HOD (DEPT) pattern)
         is_hod = bool(re.match(r'^hod\s*\(.*\)$', designation, re.IGNORECASE))
-        print("is_hod",is_hod)
         
         if is_professor and user_department:
             # Get HOD of the same department
@@ -3354,5 +3569,671 @@ def get_superior_data(request):
     except ExtraInfo.DoesNotExist:
         return JsonResponse({'error': 'User extra info not found'}, status=404)
     except Exception as e:
-        print(str(e))   
         return JsonResponse({'error': str(e)}, status=500)
+
+
+# =============================================================================
+# COURSE INSTRUCTOR DELETE ENDPOINT
+# =============================================================================
+
+@csrf_exempt
+@api_view(['DELETE'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def admin_delete_course_instructor(request, instructor_id):
+    """
+    Delete a course instructor assignment
+    Only accessible by authenticated users (frontend handles role check)
+    """
+    try:
+        # For API endpoints, we rely on token authentication
+        # The frontend handles role-based access control
+
+        # Find the course instructor record
+        try:
+            course_instructor = CourseInstructor.objects.select_related(
+                'course_id', 'instructor_id__id__user'
+            ).get(id=instructor_id)
+        except CourseInstructor.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Course instructor not found.'
+            }, status=404)
+
+        # Store details for response
+        try:
+            course_name = course_instructor.course_id.name
+            course_code = course_instructor.course_id.code
+            instructor_name = f"{course_instructor.instructor_id.id.user.first_name} {course_instructor.instructor_id.id.user.last_name}"
+            academic_year = course_instructor.academic_year
+            semester_type = course_instructor.semester_type
+        except Exception as detail_error:
+            return JsonResponse({
+                'success': False,
+                'message': f'Error accessing course instructor details: {str(detail_error)}'
+            }, status=500)
+        
+        # Delete the course instructor assignment
+        try:
+            course_instructor.delete()
+        except Exception as delete_error:
+            return JsonResponse({
+                'success': False,
+                'message': f'Error deleting course instructor: {str(delete_error)}'
+            }, status=500)
+
+        return JsonResponse({
+            'success': True,
+            'message': f'Course instructor assignment deleted successfully.',
+            'details': {
+                'course_name': course_name,
+                'course_code': course_code,
+                'instructor_name': instructor_name,
+                'academic_year': academic_year,
+                'semester_type': semester_type,
+                'deleted_id': instructor_id
+            }
+        }, status=200)
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({
+            'success': False,
+            'message': f'An error occurred while deleting course instructor: {str(e)}'
+        }, status=500)
+
+
+# =============================================================================
+# ADDITIONAL DELETE ENDPOINTS
+# =============================================================================
+
+@csrf_exempt
+@api_view(['DELETE'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def admin_delete_course(request, course_id):
+    """
+    Delete a course
+    Only accessible by authenticated users (frontend handles role check)
+    """
+    try:
+        # Find the course record
+        try:
+            course = Course.objects.get(id=course_id)
+        except Course.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Course not found.'
+            }, status=404)
+
+        # Store details for response
+        course_name = course.name
+        course_code = course.code
+        
+        # Check for dependencies before deletion
+        try:
+            # Check if course has active instructors
+            instructor_count = CourseInstructor.objects.filter(course_id=course).count()
+            if instructor_count > 0:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Cannot delete course. It has {instructor_count} active instructor assignment(s). Please remove instructor assignments first.'
+                }, status=400)
+            
+            # Check if course is part of any curriculum (through course slots)
+            # Note: Courses are linked to curriculum through CourseSlot -> Semester -> Curriculum
+            slot_count = CourseSlot.objects.filter(courses=course).count()
+            if slot_count > 0:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Cannot delete course. It is assigned to {slot_count} course slot(s) in curriculum(s). Please remove from course slots first.'
+                }, status=400)
+                
+        except Exception as dependency_error:
+            return JsonResponse({
+                'success': False,
+                'message': f'Error checking course dependencies: {str(dependency_error)}'
+            }, status=500)
+
+        # Delete the course
+        try:
+            course.delete()
+        except Exception as delete_error:
+            return JsonResponse({
+                'success': False,
+                'message': f'Error deleting course: {str(delete_error)}'
+            }, status=500)
+
+        return JsonResponse({
+            'success': True,
+            'message': f'Course "{course_name} ({course_code})" deleted successfully.',
+            'details': {
+                'course_name': course_name,
+                'course_code': course_code,
+                'deleted_id': course_id
+            }
+        }, status=200)
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({
+            'success': False,
+            'message': f'An error occurred while deleting course: {str(e)}'
+        }, status=500)
+
+
+@csrf_exempt
+@api_view(['DELETE'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def admin_delete_programme(request, programme_id):
+    """
+    Delete a programme
+    Only accessible by authenticated users (frontend handles role check)
+    """
+    try:
+        # Find the programme record
+        try:
+            programme = Programme.objects.get(id=programme_id)
+        except Programme.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Programme not found.'
+            }, status=404)
+
+        # Store details for response
+        programme_name = programme.name
+        programme_category = programme.category
+        programme_begin_year = programme.programme_begin_year
+        
+        # Check for dependencies before deletion
+        try:
+            # Primary check: if programme has curriculums (direct relationship)
+            curriculum_count = Curriculum.objects.filter(programme=programme).count()
+            if curriculum_count > 0:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Cannot delete programme. It has {curriculum_count} curriculum(s). Please remove curriculums first.'
+                }, status=400)
+                
+        except Exception as dependency_error:
+            return JsonResponse({
+                'success': False,
+                'message': f'Error checking programme dependencies: {str(dependency_error)}'
+            }, status=500)
+
+        # Delete the programme
+        try:
+            programme.delete()
+        except Exception as delete_error:
+            return JsonResponse({
+                'success': False,
+                'message': f'Error deleting programme: {str(delete_error)}'
+            }, status=500)
+
+        return JsonResponse({
+            'success': True,
+            'message': f'Programme "{programme_name} ({programme_category})" deleted successfully.',
+            'details': {
+                'programme_name': programme_name,
+                'programme_category': programme_category,
+                'programme_begin_year': programme_begin_year,
+                'deleted_id': programme_id
+            }
+        }, status=200)
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({
+            'success': False,
+            'message': f'An error occurred while deleting programme: {str(e)}'
+        }, status=500)
+
+
+@csrf_exempt
+@api_view(['DELETE'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def admin_delete_curriculum(request, curriculum_id):
+    """
+    Delete a curriculum
+    Only accessible by authenticated users (frontend handles role check)
+    """
+    try:
+        # Find the curriculum record
+        try:
+            curriculum = Curriculum.objects.select_related('programme').get(id=curriculum_id)
+        except Curriculum.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Curriculum not found.'
+            }, status=404)
+
+        # Store details for response
+        curriculum_name = curriculum.name
+        curriculum_version = curriculum.version
+        programme_name = curriculum.programme.name if curriculum.programme else None
+        
+        # Check for dependencies before deletion
+        try:
+            # SIMPLE RULE: Only check if curriculum has active batches
+            # If no active batches are using this curriculum, it can be deleted regardless of course content
+            from applications.programme_curriculum.models import Batch
+            batch_count = Batch.objects.filter(curriculum=curriculum, running_batch=True).count()
+            
+            if batch_count > 0:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Cannot delete curriculum. It is assigned to {batch_count} active batch(es). Please unassign from batches first.'
+                }, status=400)
+                
+        except Exception as dependency_error:
+            import traceback
+            traceback.print_exc()
+            return JsonResponse({
+                'success': False,
+                'message': f'Error checking curriculum dependencies: {str(dependency_error)}'
+            }, status=500)
+
+        # Delete the curriculum
+        try:
+            curriculum.delete()
+        except Exception as delete_error:
+            import traceback
+            traceback.print_exc()
+            return JsonResponse({
+                'success': False,
+                'message': f'Error deleting curriculum: {str(delete_error)}'
+            }, status=500)
+
+        return JsonResponse({
+            'success': True,
+            'message': f'Curriculum "{curriculum_name} (v{curriculum_version})" deleted successfully.',
+            'details': {
+                'curriculum_name': curriculum_name,
+                'curriculum_version': curriculum_version,
+                'programme_name': programme_name,
+                'deleted_id': curriculum_id
+            }
+        }, status=200)
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({
+            'success': False,
+            'message': f'An error occurred while deleting curriculum: {str(e)}'
+        }, status=500)
+
+
+@csrf_exempt
+@api_view(['DELETE'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def admin_delete_discipline(request, discipline_id):
+    """
+    Delete a discipline
+    Only accessible by authenticated users (frontend handles role check)
+    Simple rule: Only check if discipline has any programmes/batches using it
+    """
+    try:
+        # Find the discipline record
+        try:
+            discipline = Discipline.objects.get(id=discipline_id)
+        except Discipline.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Discipline not found.'
+            }, status=404)
+
+        # Store details for response
+        discipline_name = discipline.name
+        discipline_acronym = discipline.acronym
+        
+        # Check for dependencies before deletion
+        try:
+            # Check if discipline has any batches using it
+            from applications.programme_curriculum.models import Batch
+            batch_count = Batch.objects.filter(discipline=discipline, running_batch=True).count()
+            
+            if batch_count > 0:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Cannot delete discipline. It is used by {batch_count} active batch(es). Please remove batches first.'
+                }, status=400)
+                
+        except Exception as dependency_error:
+            import traceback
+            traceback.print_exc()
+            return JsonResponse({
+                'success': False,
+                'message': f'Error checking discipline dependencies: {str(dependency_error)}'
+            }, status=500)
+
+        # Delete the discipline
+        try:
+            discipline.delete()
+        except Exception as delete_error:
+            import traceback
+            traceback.print_exc()
+            return JsonResponse({
+                'success': False,
+                'message': f'Error deleting discipline: {str(delete_error)}'
+            }, status=500)
+
+        return JsonResponse({
+            'success': True,
+            'message': f'Discipline "{discipline_name} ({discipline_acronym})" deleted successfully.',
+            'details': {
+                'discipline_name': discipline_name,
+                'discipline_acronym': discipline_acronym,
+                'deleted_id': discipline_id
+            }
+        }, status=200)
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({
+            'success': False,
+            'message': f'An error occurred while deleting discipline: {str(e)}'
+        }, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["DELETE", "POST"])
+def delete_batch(request, batch_id):
+    """
+    Delete batch with safety checks
+    URL: /programme_curriculum/api/batches/<int:batch_id>/delete/
+    Methods: DELETE or POST (for frontend compatibility)
+    """
+    try:
+        from applications.programme_curriculum.models import Batch
+        from .views_student_management import StudentBatchUpload
+        
+        # Get the batch to delete
+        try:
+            batch = Batch.objects.get(id=batch_id)
+        except Batch.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': f'Batch with ID {batch_id} not found'
+            }, status=404)
+        
+        # 🔒 STUDENT VALIDATION: Check if batch has any students
+        try:
+            # Step 1: Check StudentBatchUpload table - FIRST filter by year, THEN by discipline
+            uploaded_students_this_year = StudentBatchUpload.objects.filter(
+                year=batch.year  # FIRST: Only students from this academic year (e.g., 2025)
+            ).filter(
+                branch__icontains=batch.discipline.name  # THEN: Only this discipline within that year
+            ).count()
+            
+            # Step 2: Check academic_information.Student table 
+            # Students directly assigned to THIS specific batch record
+            try:
+                from applications.academic_information.models import Student
+                academic_students_this_batch = Student.objects.filter(
+                    batch_id=batch  # Direct foreign key to THIS specific batch
+                ).count()
+            except ImportError:
+                academic_students_this_batch = 0
+            
+            # Total = students in this year's uploads + students assigned to this specific batch
+            total_students = uploaded_students_this_year + academic_students_this_batch
+            
+            if total_students > 0:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Cannot delete batch "{batch.name} {batch.discipline.acronym} {batch.year}". It contains {total_students} students. Please transfer or remove students first.',
+                    'student_count': total_students,
+                    'validation_error': 'batch_has_students',
+                    'batch_info': {
+                        'id': batch.id,
+                        'name': batch.name,
+                        'discipline': batch.discipline.name,
+                        'year': batch.year
+                    }
+                }, status=400)
+        
+        except Exception as e:
+            # Proceed with caution - assume no students if check fails
+            pass
+        
+        # Store batch info for response before deletion
+        batch_info = {
+            'id': batch.id,
+            'name': batch.name,
+            'discipline': batch.discipline.name,
+            'discipline_acronym': batch.discipline.acronym,
+            'year': batch.year,
+            'total_seats': batch.total_seats,
+            'curriculum': batch.curriculum.name if batch.curriculum else None,
+            'running_batch': batch.running_batch
+        }
+        
+        # Delete the batch
+        batch.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Successfully deleted batch "{batch_info["name"]} {batch_info["discipline_acronym"]} {batch_info["year"]}".',
+            'deleted_batch': batch_info
+        })
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({
+            'success': False,
+            'message': f'Failed to delete batch: {str(e)}'
+        }, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["DELETE", "POST"])
+def delete_batch_invalid(request, batch_id):
+    """
+    Handle delete requests with invalid batch IDs (like 'undefined')
+    URL: /programme_curriculum/api/batches/<str:batch_id>/delete/
+    """
+    # Check for common invalid values
+    if batch_id in ['undefined', 'null', 'NaN', '']:
+        return JsonResponse({
+            'success': False,
+            'message': 'Please select a batch before attempting to delete. No batch was selected.',
+            'error_type': 'no_batch_selected',
+            'provided_id': batch_id,
+            'user_action': 'Please click on a batch row to select it, then try deleting again.'
+        }, status=400)
+    
+    # Try to convert to integer in case it's a string number
+    try:
+        actual_batch_id = int(batch_id)
+        # Redirect to the proper delete function
+        return delete_batch(request, actual_batch_id)
+    except (ValueError, TypeError):
+        return JsonResponse({
+            'success': False,
+            'message': f'Invalid batch ID format: "{batch_id}". The batch ID must be a number.',
+            'error_type': 'invalid_batch_id_format',
+            'provided_id': batch_id,
+            'user_action': 'Please ensure you have selected a valid batch before attempting to delete.'
+        }, status=400)
+
+
+# Utility functions for intelligent course versioning
+
+def levenshtein_distance(s1, s2):
+    """Calculate Levenshtein distance between two strings"""
+    if len(s1) < len(s2):
+        return levenshtein_distance(s2, s1)
+    
+    if len(s2) == 0:
+        return len(s1)
+    
+    previous_row = list(range(len(s2) + 1))
+    for i, c1 in enumerate(s1):
+        current_row = [i + 1]
+        for j, c2 in enumerate(s2):
+            insertions = previous_row[j + 1] + 1
+            deletions = current_row[j] + 1
+            substitutions = previous_row[j] + (c1 != c2)
+            current_row.append(min(insertions, deletions, substitutions))
+        previous_row = current_row
+    
+    return previous_row[-1]
+
+
+def is_typo_correction(old_value, new_value, max_distance=3):
+    """Check if the change is likely a typo correction using Levenshtein distance"""
+    if not old_value or not new_value:
+        return False
+    
+    # Convert to string and strip whitespace
+    old_str = str(old_value).strip()
+    new_str = str(new_value).strip()
+    
+    # If they're the same after stripping, it's just whitespace change
+    if old_str == new_str:
+        return True
+    
+    # Calculate distance
+    distance = levenshtein_distance(old_str.lower(), new_str.lower())
+    
+    # Consider it a typo if distance is small relative to string length
+    min_length = min(len(old_str), len(new_str))
+    if min_length == 0:
+        return False
+    
+    # Allow up to max_distance characters difference, or 20% of string length, whichever is smaller
+    threshold = min(max_distance, max(1, int(min_length * 0.2)))
+    
+    return distance <= threshold
+
+
+def determine_version_bump_type(old_course_data, new_course_data):
+    """
+    Determine the type of version bump needed based on changed fields.
+    
+    Returns:
+        tuple: (bump_type, changed_academic_fields, reason)
+        bump_type: 'MAJOR', 'MINOR', 'PATCH', or 'NONE'
+        changed_academic_fields: list of academic fields that changed
+        reason: string explaining the decision
+    """
+    
+    # Define version-controlled academic fields
+    VERSION_CONTROLLED_FIELDS = {
+        'course_name': 'name',
+        'course_code': 'code', 
+        'credit': 'credit',
+        'lecture': 'lecture_hours',
+        'tutorial': 'tutorial_hours', 
+        'practical': 'pratical_hours',
+        'discussion_hours': 'discussion_hours',
+        'practical_hours': 'project_hours',  # Note: this maps to project_hours in model
+        'pre_requisites': 'pre_requisits',
+        'pre_requisite_course': 'pre_requisit_courses',
+        'syllabus': 'syllabus',
+        'references': 'ref_books',
+        'quiz_1': 'percent_quiz_1',
+        'quiz_2': 'percent_quiz_2', 
+        'midsem': 'percent_midsem',
+        'endsem': 'percent_endsem',
+        'project': 'percent_project',
+        'lab': 'percent_lab_evaluation',
+        'attendance': 'percent_course_attendance'
+    }
+    
+    # Fields that trigger different bump types
+    MAJOR_BUMP_FIELDS = ['name', 'code', 'credit', 'lecture_hours', 'tutorial_hours', 'pratical_hours', 'pre_requisits', 'pre_requisit_courses']
+    MINOR_BUMP_FIELDS = ['percent_quiz_1', 'percent_quiz_2', 'percent_midsem', 'percent_endsem', 'percent_project', 'percent_lab_evaluation', 'percent_course_attendance', 'ref_books']
+    PATCH_BUMP_FIELDS = ['syllabus', 'discussion_hours', 'project_hours']
+    
+    changed_academic_fields = []
+    major_changes = []
+    minor_changes = []
+    patch_changes = []
+    
+    # Check each version-controlled field for changes
+    for field_name, model_field in VERSION_CONTROLLED_FIELDS.items():
+        old_value = old_course_data.get(model_field)
+        new_value = new_course_data.get(model_field)
+        
+        if old_value != new_value:
+            # Special handling for course name - check if it's a typo
+            # Course codes always trigger version bump regardless of similarity
+            if model_field == 'name':
+                if is_typo_correction(old_value, new_value):
+                    continue  # Skip typo corrections - no version bump needed
+            
+            changed_academic_fields.append(field_name)
+            
+            if model_field in MAJOR_BUMP_FIELDS:
+                major_changes.append(field_name)
+            elif model_field in MINOR_BUMP_FIELDS:
+                minor_changes.append(field_name)
+            elif model_field in PATCH_BUMP_FIELDS:
+                patch_changes.append(field_name)
+    
+    # Determine bump type based on highest priority changes
+    if major_changes:
+        return ('MAJOR', changed_academic_fields, f"Major academic changes: {', '.join(major_changes)}")
+    elif minor_changes:
+        return ('MINOR', changed_academic_fields, f"Minor academic changes: {', '.join(minor_changes)}")
+    elif patch_changes:
+        return ('PATCH', changed_academic_fields, f"Minor syllabus/content changes: {', '.join(patch_changes)}")
+    else:
+        return ('NONE', changed_academic_fields, "No academic fields changed or only typo corrections detected")
+
+
+def calculate_new_version(current_version, bump_type):
+    """Calculate the new version number based on bump type - all bumps increment by 0.1"""
+    if bump_type == 'NONE':
+        return current_version
+    
+    # Parse current version (e.g., "1.2" -> 1.2)
+    current_float = float(current_version)
+    
+    # All version bumps increment by 0.1
+    if bump_type in ['MAJOR', 'MINOR', 'PATCH']:
+        new_version = current_float + 0.1
+        # Format to 1 decimal place
+        return f"{new_version:.1f}"
+    
+    return current_version
+
+
+def create_course_audit_log(course, user, action, old_data=None, new_data=None, 
+                          version_bump_type='NONE', old_version=None, new_version=None,
+                          admin_override=False, reason=""):
+    """Create an audit log entry for course changes"""
+    
+    changed_fields = []
+    if old_data and new_data:
+        # Find changed fields
+        for field, old_value in old_data.items():
+            new_value = new_data.get(field)
+            if old_value != new_value:
+                changed_fields.append(field)
+    
+    audit_log = CourseAuditLog.objects.create(
+        course=course,
+        user=user,
+        action=action,
+        old_values=old_data,
+        new_values=new_data,
+        changed_fields=changed_fields,
+        version_bump_type=version_bump_type,
+        old_version=old_version,
+        new_version=new_version,
+        admin_override=admin_override,
+        reason=reason
+    )
+    
+    return audit_log

@@ -1,6 +1,8 @@
 import datetime
 import json
 import io
+import logging
+import time
 import pandas as pd
 from io import BytesIO
 from xlsxwriter.workbook import Workbook
@@ -28,6 +30,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
 from applications.academic_procedures.api.views import role_required
+from django.core.cache import cache
+from django.db import connection
+
+logger = logging.getLogger(__name__)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -344,162 +350,230 @@ def parse_academic_year(academic_year, semester_type):
 
 
 @api_view(['POST'])
+@authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @role_required(['acadadmin', "Associate Professor", "Professor", "Assistant Professor", "Dean Academic"])
 def generate_xlsheet_api(request):
     try:
+        start_time = time.time()
+        
+        # Get parameters
         course_id = int(request.data.get('course'))
         academic_year = request.data.get('academic_year')
         semester_type = request.data.get('semester_type')
+        list_type = request.data.get('list_type', '').strip()
+        preview_only = request.data.get('preview_only', False)
 
-        if not (academic_year and semester_type):
-            return HttpResponse("Missing academic_year or semester_type", status=400)
+        if not list_type:
+            list_type = None
+        
+        if not all([course_id, academic_year, semester_type]):
+            return Response({
+                'error': 'Missing required parameters: course, academic_year, semester_type'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        cache_key = f"student_list_{course_id}_{academic_year.replace('-', '_')}_{semester_type.replace(' ', '_')}_{(list_type or 'all').replace(' ', '_')}"
+        
+        cached_data = cache.get(cache_key)
+        if cached_data and not preview_only:
+            students, course_info = cached_data
+        else:
+            sql = """
+            SELECT DISTINCT
+                u.username as roll_no,
+                u.first_name,
+                u.last_name,
+                CONCAT(u.first_name, ' ', u.last_name) as full_name,
+                COALESCE(s.specialization, 'General') as discipline,
+                u.email,
+                cr.registration_type,
+                c.code as course_code,
+                c.name as course_name
+            FROM course_registration cr
+            INNER JOIN globals_extrainfo ei ON cr.student_id_id = ei.id
+            INNER JOIN auth_user u ON ei.user_id = u.id
+            LEFT JOIN academic_information_student s ON ei.id = s.id_id
+            INNER JOIN programme_curriculum_course c ON cr.course_id_id = c.id
+            WHERE cr.session = %s 
+                AND cr.semester_type = %s 
+                AND cr.course_id_id = %s
+            """
+            
+            params = [academic_year, semester_type, course_id]
+            
+            # Add list_type filter if specified
+            if list_type:
+                if list_type.lower() == 'backlog_improvement':
+                    sql += " AND cr.registration_type IN ('Backlog', 'Improvement')"
+                else:
+                    sql += " AND cr.registration_type = %s"
+                    params.append(list_type)
+            
+            sql += " ORDER BY u.username"
+            try:
+                with connection.cursor() as cursor:
+                    start_sql = time.time()
 
-        working_year = parse_academic_year(academic_year, semester_type)
-        course = Courses.objects.get(id=course_id)
+                    cursor.execute(sql, params)
+                    columns = [col[0] for col in cursor.description]
+                    raw_results = cursor.fetchall()
+                    students = []
+                    for row in raw_results:
+                        data = dict(zip(columns, row))
+                        students.append({
+                            'roll_no': data['roll_no'],
+                            'first_name': data['first_name'],
+                            'last_name': data['last_name'],
+                            'full_name': data['full_name'],
+                            'discipline': data['discipline'],
+                            'email': data['email'],
+                            'registration_type': data['registration_type']
+                        })
+                    
+                    sql_time = time.time() - start_sql
 
-        # Get all instructors for the course
-        instructor_objs = CourseInstructor.objects.filter(
-            course_id=course_id,
-            year=working_year,
-            semester_type=semester_type
+                    reg_types = set(student['registration_type'] for student in students)
+
+                    if raw_results:
+                        course_info = {
+                            'code': raw_results[0][7],  # course_code
+                            'name': raw_results[0][8]   # course_name
+                        }
+                    else:
+                        cursor.execute("SELECT code, name FROM programme_curriculum_course WHERE id = %s", [course_id])
+                        result = cursor.fetchone()
+                        course_info = {'code': result[0], 'name': result[1]} if result else {'code': 'N/A', 'name': 'Unknown'}
+            except Exception as e:
+                # Debug: logger.error(f"SQL Error in generate_xlsheet_api: {str(e)}")
+                return Response({
+                    'error': f'Database query failed: {str(e)}',
+                    'sql_debug': sql,
+                    'params': params
+                }, status=500)
+            
+            cache.set(cache_key, (students, course_info), 300)
+
+        if not list_type:
+            list_type_display = "All Enrolled Students"
+        elif list_type.lower() == 'backlog_improvement':
+            list_type_display = "Backlog & Improvement Students"
+        else:
+            list_type_display = f"{list_type} Students"
+        
+        processing_time = time.time() - start_time
+        if preview_only:
+            preview_students = students[:350] if len(students) > 350 else students
+            
+            return Response({
+                'students': preview_students,
+                'course_info': {
+                    'code': course_info['code'],
+                    'name': course_info['name'],
+                    'academic_year': academic_year,
+                    'semester_type': semester_type,
+                    'list_type': list_type_display,
+                    'total_count': len(students),
+                    'preview_count': len(preview_students),
+                    'processing_time_ms': round(processing_time * 1000, 2)
+                }
+            }, status=status.HTTP_200_OK)
+        
+        # OPTIMIZATION 7: Fast Excel generation with minimal formatting
+        from openpyxl import Workbook
+        from openpyxl.styles import Font, PatternFill, Alignment
+        
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Student List"
+        
+        # Set column widths once
+        column_widths = [8, 15, 30, 15, 35, 18, 15]
+        for i, width in enumerate(column_widths, 1):
+            ws.column_dimensions[chr(64 + i)].width = width
+        
+        # Minimal header formatting (single operation)
+        header_font = Font(bold=True, color="FFFFFF")
+        header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+        
+        # Add title rows efficiently
+        ws.merge_cells('A1:G1')
+        ws['A1'] = "PDPM INDIAN INSTITUTE OF INFORMATION TECHNOLOGY, DESIGN AND MANUFACTURING JABALPUR"
+        ws['A1'].font = Font(bold=True, size=9)
+        ws['A1'].alignment = Alignment(horizontal="center")
+        
+        ws.merge_cells('A2:G2')
+        ws['A2'] = f"{semester_type.upper()}, {academic_year}"
+        ws['A2'].font = Font(bold=True, size=12)
+        ws['A2'].alignment = Alignment(horizontal="center")
+        
+        # Course details
+        ws['A3'] = "Course No:"
+        ws['B3'] = course_info['code']
+        ws['A4'] = "Course Title:"
+        ws.merge_cells('B4:G4')
+        ws['B4'] = course_info['name']
+        ws['A5'] = "List Type:"
+        ws.merge_cells('B5:G5')
+        ws['B5'] = list_type_display
+
+        headers = ['Sl. No', 'Roll No', 'Name', 'Discipline', 'Email', 'Reg. Type', 'Signature']
+        for col, header in enumerate(headers, 1):
+            cell = ws.cell(row=7, column=col, value=header)
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = Alignment(horizontal="center")
+
+        for idx, student in enumerate(students, 1):
+            row_data = [
+                idx,
+                student['roll_no'],
+                student['full_name'],
+                student['discipline'],
+                student['email'],
+                student['registration_type'],
+                ''  # Signature
+            ]
+            ws.append(row_data)
+
+        from io import BytesIO
+        output = BytesIO()
+        wb.save(output)
+        output.seek(0)
+        
+        response = HttpResponse(
+            output.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
 
-        instructor_names = []
-        for inst in instructor_objs:
-            if hasattr(inst.instructor_id.id, 'user'):
-                name = f"{inst.instructor_id.id.user.first_name} {inst.instructor_id.id.user.last_name}"
-                instructor_names.append(name)
-        course_instructor_name = ", ".join(instructor_names) if instructor_names else ""
-
-        # Get registered students
-        registered_courses = course_registration.objects.filter(
-            course_id=course,
-            session=academic_year,
-            semester_type=semester_type,
-            student_id__finalregistration__verified=True
-        )
-
+        if not list_type:
+            filename_suffix = "All_Enrolled_Students"
+        elif list_type.lower() == 'backlog_improvement':
+            filename_suffix = "Backlog_Improvement_Students"
+        else:
+            filename_suffix = f"{list_type.replace(' ', '_')}_Students"
+        
+        filename = f"{course_info['code']}_{filename_suffix}_CourseList.xlsx"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        total_time = time.time() - start_time
+        response['X-Processing-Time'] = f"{round(total_time * 1000, 2)}ms"
+        response['X-Student-Count'] = str(len(students))
+        
+        return response
+        
     except Exception as e:
-        print("Error generating xlsx:", str(e))
-        return HttpResponse("Invalid data or internal error", status=500)
-
-    ans = []
-    student_ids = set()
-    for reg in registered_courses:
-        sid = reg.student_id.id.id
-        spec = ""
         try:
-            spec = reg.student_id.specialization
-        except e:
-            pass
-        if sid not in student_ids:
-            student_ids.add(sid)
-            first_name = reg.student_id.id.user.first_name
-            last_name = reg.student_id.id.user.last_name
-            department = spec
-            email = reg.student_id.id.user.email
-            ans.append([sid, first_name, last_name, department, email])
-    ans.sort(key=lambda x: x[0])
-
-    # Excel generation
-    output = BytesIO()
-    book = Workbook(output, {'in_memory': True})
-
-    big_title_format = book.add_format({
-        'bold': True, 'font_size': 9, 'font_color': 'black',
-        'align': 'right', 'valign': 'vcenter', 'bg_color': '#FFFFFF',
-    })
-    subtitle_format = book.add_format({
-        'bold': True, 'font_size': 12, 'align': 'center',
-        'valign': 'vcenter', 'bg_color': '#FFFFFF', 'border': 1
-    })
-    header_format = book.add_format({
-        'bold': True, 'font_size': 11, 'align': 'center',
-        'valign': 'vcenter', 'bg_color': '#E5E4E2', 'border': 1
-    })
-    normaltext = book.add_format({
-        'bold': False, 'font_size': 11, 'align': 'center',
-        'valign': 'vcenter', 'border': 1
-    })
-    smalltext_format = book.add_format({
-        'bold': False, 'font_size': 10, 'align': 'left',
-        'valign': 'vcenter'
-    })
-    bold_key_format = book.add_format({
-        'bold': True, 'font_size': 10, 'align': 'left',
-        'valign': 'vcenter'
-    })
-
-    sheet = book.add_worksheet()
-    sheet.set_column('A:A', 12)
-    sheet.set_column('B:B', 10)
-    sheet.set_column('C:C', 30)
-    sheet.set_column('D:D', 10)
-    sheet.set_column('E:E', 25)
-    sheet.set_column('F:F', 15)
-
-    sheet.set_row(0, 25)
-    sheet.set_row(1, 20)
-    sheet.set_row(2, 15)
-    sheet.set_row(3, 15)
-    sheet.set_row(4, 15)
-    sheet.set_row(5, 20)
-
-    # Headers
-    sheet.merge_range('A1:F1',
-        "PDPM INDIAN INSTITUTE OF INFORMATION TECHNOLOGY, DESIGN AND MANUFACTURING JABALPUR",
-        big_title_format
-    )
-    sheet.merge_range('A2:F2', f"{semester_type.upper()}, {academic_year}", subtitle_format)
-
-    sheet.write('A3', "Course No:", bold_key_format)
-    sheet.merge_range('B3:F3', f"{course.code}", smalltext_format)
-
-    sheet.write('A4', "Course Title:", bold_key_format)
-    sheet.merge_range('B4:F4', f"{course.name}", smalltext_format)
-
-    sheet.write('A5', "Instructor(s):", bold_key_format)
-    sheet.merge_range('B5:F5', f"{course_instructor_name}", smalltext_format)
-
-    # Table Headers
-    sheet.write_string('A6', "Sl. No", header_format)
-    sheet.write_string('B6', "Roll No", header_format)
-    sheet.write_string('C6', "Name", header_format)
-    sheet.write_string('D6', "Discipline", header_format)
-    sheet.write_string('E6', "Email", header_format)
-    sheet.write_string('F6', "Signature", header_format)
-
-    # Table Body
-    row = 6
-    sno = 1
-    for student in ans:
-        sheet.set_row(row, 30)
-        roll_no = str(student[0])
-        full_name = f"{student[1]} {student[2]}"
-        discipline = student[3]
-        email = student[4]
-
-        sheet.write_number(row, 0, sno, normaltext)
-        sheet.write_string(row, 1, roll_no, normaltext)
-        sheet.write_string(row, 2, full_name, normaltext)
-        sheet.write_string(row, 3, discipline, normaltext)
-        sheet.write_string(row, 4, email, normaltext)
-        sheet.write_string(row, 5, '', normaltext)
-        sno += 1
-        row += 1
-
-    sheet.set_landscape()
-    sheet.set_paper(9)
-    sheet.fit_to_pages(1, 1)
-
-    book.close()
-    output.seek(0)
-
-    response = HttpResponse(output.read(), content_type='application/vnd.ms-excel')
-    filename = f"{course.code}_CourseList.xlsx"
-    response['Content-Disposition'] = f'attachment; filename="{filename}"'
-    return response
+            error_time = time.time() - start_time
+        except:
+            error_time = 0
+            
+        import traceback
+        traceback.print_exc()
+        
+        return Response({
+            'error': f'Error: {str(e)}',
+            'error_type': str(type(e)),
+            'processing_time_ms': round(error_time * 1000, 2)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

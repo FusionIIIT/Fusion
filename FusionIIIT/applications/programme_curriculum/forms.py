@@ -124,14 +124,19 @@ class CourseForm(ModelForm):
     def clean(self):
         cleaned_data = super().clean()
 
+        # Get percentage fields with default values of 0 if None or missing
+        percent_quiz_1 = cleaned_data.get("percent_quiz_1") or 0
+        percent_midsem = cleaned_data.get("percent_midsem") or 0
+        percent_quiz_2 = cleaned_data.get("percent_quiz_2") or 0
+        percent_endsem = cleaned_data.get("percent_endsem") or 0
+        percent_project = cleaned_data.get("percent_project") or 0
+        percent_lab_evaluation = cleaned_data.get("percent_lab_evaluation") or 0
+        percent_course_attendance = cleaned_data.get("percent_course_attendance") or 0
+
         percentages_sum = (
-                cleaned_data.get("percent_quiz_1")
-                + cleaned_data.get("percent_midsem")
-                + cleaned_data.get("percent_quiz_2")
-                + cleaned_data.get("percent_endsem")
-                + cleaned_data.get("percent_project")
-                + cleaned_data.get("percent_lab_evaluation")
-                + cleaned_data.get("percent_course_attendance")
+                percent_quiz_1 + percent_midsem + percent_quiz_2 + 
+                percent_endsem + percent_project + percent_lab_evaluation + 
+                percent_course_attendance
             )
         
         # credits = cleaned_data.get("credit")
