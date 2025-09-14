@@ -1825,7 +1825,7 @@ def allot_courses(request):
                     code = sheet.cell_value(i,2).strip()
 
                     # user = User.objects.get(username=roll_no)
-                    student = Student.objects.get(id_id=roll_no)
+                    student = Student.objects.get(id__user__username=roll_no)
                     slot = CourseSlot.objects.get(name=slot_name, semester=sem)
                     course = slot.courses.get(code=code)
                     if roll_no not in seen:
@@ -1863,10 +1863,10 @@ def allot_courses(request):
                 except Exception as e:
                     print(e, "-----", roll_no, slot_name, code)
 
-            StudentRegistrationChecks.objects.bulk_create(checks)
-            InitialRegistration.objects.bulk_create(pre_regs)
-            FinalRegistration.objects.bulk_create(final_regs)
-            course_registration.objects.bulk_create(course_regs)
+            StudentRegistrationChecks.objects.bulk_create(checks, ignore_conflicts=True)
+            InitialRegistration.objects.bulk_create(pre_regs, ignore_conflicts=True)
+            FinalRegistration.objects.bulk_create(final_regs, ignore_conflicts=True)
+            course_registration.objects.bulk_create(course_regs, ignore_conflicts=True)
 
         return Response({'message': 'Successfully uploaded!'})
     except Batch.DoesNotExist:
