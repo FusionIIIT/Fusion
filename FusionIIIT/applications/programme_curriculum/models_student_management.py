@@ -118,10 +118,7 @@ class StudentBatchUpload(models.Model):
         ('NO', 'No'),
     ]
     
-    MINORITY_CHOICES = [
-        ('Applicable', 'Applicable'),
-        ('Not Applicable', 'Not Applicable'),
-    ]
+
     
     REPORTED_STATUS_CHOICES = [
         ('NOT_REPORTED', 'Not Reported'),
@@ -147,7 +144,7 @@ class StudentBatchUpload(models.Model):
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
     category = models.CharField(max_length=10, choices=CATEGORY_CHOICES)
     pwd = models.CharField(max_length=3, choices=PWD_CHOICES, default='NO', help_text="Person with Disability")
-    minority = models.CharField(max_length=20, choices=MINORITY_CHOICES, default='Not Applicable', help_text="Minority Status")
+    minority = models.TextField(blank=True, null=True, help_text="Minority Status (e.g., Muslim, Christian, Sikh, Buddhist, Jain, Parsi, etc.)")
     
     # Contact and address
     phone_number = models.CharField(max_length=15, blank=True, null=True, help_text="Mobile Number")

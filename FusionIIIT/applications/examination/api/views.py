@@ -2015,8 +2015,13 @@ class GeneratePDFAPI(APIView):
             story.append(Spacer(1, 20))
             
             # Student Information Table
+            from reportlab.platypus import Paragraph
+            student_name = student_info.get('name')
+            if len(student_name) > 25:
+                student_name = Paragraph(student_name, ParagraphStyle('NameStyle', parent=styles['Normal'], fontSize=10, fontName='Times-Roman'))
+            
             student_data = [
-                ['Name of Student:', student_info.get('name', 'N/A'), 'Roll No.:', student_info.get('roll_number', 'N/A')],
+                ['Name of Student:', student_name, 'Roll No.:', student_info.get('roll_number', 'N/A')],
                 ['Programme:', student_info.get('programme', 'N/A'), 'Branch:', student_info.get('department', 'N/A')],
                 ['Semester:', formatted_semester, 'Academic Year:', student_info.get('academic_year', 'N/A')]
             ]
@@ -2026,7 +2031,7 @@ class GeneratePDFAPI(APIView):
                 ('FONTNAME', (0, 0), (-1, -1), 'Times-Roman'),
                 ('FONTSIZE', (0, 0), (-1, -1), 10),
                 ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('VALIGN', (0, 0), (-1, -1), 'TOP'), 
                 ('LEFTPADDING', (0, 0), (-1, -1), 5),
                 ('RIGHTPADDING', (0, 0), (-1, -1), 5),
                 ('TOPPADDING', (0, 0), (-1, -1), 4),
@@ -3031,8 +3036,13 @@ class GenerateStudentResultPDFAPI(APIView):
             story.append(Spacer(1, 12))
             
             # Student Information Table
+            # Wrap long names in Paragraph to enable word wrapping
+            student_name = student_info.get('name', 'N/A')
+            if len(student_name) > 25:  # If name is too long, wrap it
+                student_name = Paragraph(student_name, ParagraphStyle('NameStyle', parent=styles['Normal'], fontSize=10, fontName='Times-Roman'))
+            
             student_data = [
-                ['Name of Student:', student_info.get('name', 'N/A'), 'Roll No.:', student_info.get('rollNumber', student_info.get('roll_number', 'N/A'))],
+                ['Name of Student:', student_name, 'Roll No.:', student_info.get('rollNumber', student_info.get('roll_number', 'N/A'))],
                 ['Programme:', student_info.get('programme', 'N/A'), 'Branch:', student_info.get('branch', student_info.get('department', 'N/A'))],
                 ['Semester:', formatted_semester, 'Academic Year:', student_info.get('academicYear', student_info.get('academic_year', 'N/A'))]
             ]
@@ -3042,7 +3052,7 @@ class GenerateStudentResultPDFAPI(APIView):
                 ('FONTNAME', (0, 0), (-1, -1), 'Times-Roman'),
                 ('FONTSIZE', (0, 0), (-1, -1), 10),
                 ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('VALIGN', (0, 0), (-1, -1), 'TOP'),  # Changed from MIDDLE to TOP for better text wrapping
                 ('LEFTPADDING', (0, 0), (-1, -1), 6),
                 ('RIGHTPADDING', (0, 0), (-1, -1), 6),
                 ('TOPPADDING', (0, 0), (-1, -1), 6),
