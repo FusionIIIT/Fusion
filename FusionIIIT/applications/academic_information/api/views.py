@@ -485,7 +485,6 @@ def generate_xlsheet_api(request):
         ws = wb.active
         ws.title = "Student List"
         
-        # Set column widths once
         column_widths = [8, 15, 30, 15, 35, 18, 15]
         for i, width in enumerate(column_widths, 1):
             ws.column_dimensions[chr(64 + i)].width = width
@@ -505,19 +504,29 @@ def generate_xlsheet_api(request):
         ws['A2'].font = Font(bold=True, size=12)
         ws['A2'].alignment = Alignment(horizontal="center")
         
+        # Get instructor information
+        year_int = int(academic_year.split('-')[0])
+        instructor_name = "TBA"
+        course_instructor = CourseInstructor.objects.filter(course_id=course_id, year=year_int, semester_type=semester_type).first()
+        if course_instructor:
+            instructor_name = f"{course_instructor.instructor_id.id.user.first_name} {course_instructor.instructor_id.id.user.last_name}".strip()
+        
         # Course details
         ws['A3'] = "Course No:"
         ws['B3'] = course_info['code']
         ws['A4'] = "Course Title:"
         ws.merge_cells('B4:G4')
         ws['B4'] = course_info['name']
-        ws['A5'] = "List Type:"
+        ws['A5'] = "Instructor:"
         ws.merge_cells('B5:G5')
-        ws['B5'] = list_type_display
+        ws['B5'] = instructor_name
+        ws['A6'] = "List Type:"
+        ws.merge_cells('B6:G6')
+        ws['B6'] = list_type_display
 
         headers = ['Sl. No', 'Roll No', 'Name', 'Discipline', 'Email', 'Reg. Type', 'Signature']
         for col, header in enumerate(headers, 1):
-            cell = ws.cell(row=7, column=col, value=header)
+            cell = ws.cell(row=8, column=col, value=header)
             cell.font = header_font
             cell.fill = header_fill
             cell.alignment = Alignment(horizontal="center")
@@ -899,5 +908,21 @@ def available_courses(request):
     regs = course_registration.objects.filter(session=year, semester_type=sem)
     course_ids = regs.values_list('course_id', flat=True).distinct()
     courses = Courses.objects.filter(id__in=course_ids)
-    data = [{"id": c.id, "code": c.code, "name": c.name} for c in courses]
+    
+    data = []
+    year_int = int(year.split('-')[0])
+    
+    for c in courses:
+        instructor_name = "TBA"
+        course_instructor = CourseInstructor.objects.filter(course_id=c, year=year_int, semester_type=sem).first()
+        if course_instructor:
+            instructor_name = f"{course_instructor.instructor_id.id.user.first_name} {course_instructor.instructor_id.id.user.last_name}".strip()
+        
+        data.append({
+            "id": c.id, 
+            "code": c.code, 
+            "name": c.name,
+            "instructor": instructor_name
+        })
+    
     return Response(data)
