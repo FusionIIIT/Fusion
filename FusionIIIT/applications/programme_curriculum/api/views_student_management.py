@@ -38,6 +38,14 @@ except ImportError:
     from django.contrib.auth.models import User
     pass
 
+def sanitize_phone_number(phone_value):
+    if phone_value is None:
+        return phone_value
+    phone_str = str(phone_value)
+    if phone_str.endswith('.0'):
+        phone_str = phone_str[:-2]
+    return phone_str
+
 def get_batch_year_from_academic_year(academic_year):
     if isinstance(academic_year, str):
         if '-' in academic_year:
