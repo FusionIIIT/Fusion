@@ -46,6 +46,47 @@ def sanitize_phone_number(phone_value):
         phone_str = phone_str[:-2]
     return phone_str
 
+def sanitize_rank_value(rank_value):
+    if rank_value is None:
+        return rank_value
+    rank_str = str(rank_value)
+    if rank_str.endswith('.0'):
+        rank_str = rank_str[:-2]
+    return rank_str
+
+def parse_date_flexible(date_value):
+    if date_value is None or date_value == '':
+        return None
+    
+    try:
+        if hasattr(date_value, 'date'):
+            return date_value.date()
+
+        date_str = str(date_value).strip()
+        if not date_str or date_str.lower() == 'nan':
+            return None
+
+        date_formats = [
+            '%d-%m-%Y',    # dd-mm-yyyy (Excel common format)
+            '%d/%m/%Y',    # dd/mm/yyyy
+            '%Y-%m-%d',    # yyyy-mm-dd (ISO format)
+            '%m/%d/%Y',    # mm/dd/yyyy (US format)
+            '%d-%m-%y',    # dd-mm-yy
+            '%d/%m/%y',    # dd/mm/yy
+            '%Y/%m/%d',    # yyyy/mm/dd
+        ]
+        
+        for fmt in date_formats:
+            try:
+                return datetime.strptime(date_str, fmt).date()
+            except ValueError:
+                continue
+        
+        return None
+        
+    except Exception:
+        return None
+
 def get_batch_year_from_academic_year(academic_year):
     if isinstance(academic_year, str):
         if '-' in academic_year:
@@ -293,6 +334,11 @@ def process_excel_upload(request):
                                 student_data[field] = str(index + 1)  # Force serial number to be 1-based
                             elif field in ['phone_number', 'father_mobile', 'mother_mobile']:
                                 student_data[field] = sanitize_phone_number(value)
+                            elif field in ['ai_rank', 'category_rank']:
+                                student_data[field] = sanitize_rank_value(value)
+                            elif field == 'date_of_birth':
+                                parsed_date = parse_date_flexible(value)
+                                student_data[field] = parsed_date.isoformat() if parsed_date else str(value).strip()
                             else:
                                 student_data[field] = str(value).strip()
 
@@ -546,17 +592,8 @@ def save_students_batch(request):
                         errors.append(f"Student at row has no name - skipping")
                         continue
                     
-                    dob = None
-                    dob_value = student_data.get('Date of Birth') or student_data.get('dob')
-                    if dob_value:
-                        try:
-                            dob_str = str(dob_value)
-                            if '/' in dob_str:
-                                dob = datetime.strptime(dob_str, '%m/%d/%Y').date()
-                            elif '-' in dob_str:
-                                dob = datetime.strptime(dob_str, '%Y-%m-%d').date()
-                        except Exception as dob_error:
-                            dob = None
+                    dob_value = student_data.get('Date of Birth') or student_data.get('dob') or student_data.get('date_of_birth')
+                    dob = parse_date_flexible(dob_value)
                     
                     discipline_name = student_data.get('Discipline') or student_data.get('branch', '')
                     
@@ -609,8 +646,8 @@ def save_students_batch(request):
 
                         branch=student_data.get('Discipline') or student_data.get('branch', ''),
                         date_of_birth=dob,
-                        ai_rank=int(str((student_data.get('AI rank') or student_data.get('jeeRank', 0))).replace(',', '')) if (student_data.get('AI rank') or student_data.get('jeeRank')) and str((student_data.get('AI rank') or student_data.get('jeeRank', 0))).replace(',', '').isdigit() else None,
-                        category_rank=int(str((student_data.get('Category Rank') or student_data.get('categoryRank', 0))).replace(',', '')) if (student_data.get('Category Rank') or student_data.get('categoryRank')) and str((student_data.get('Category Rank') or student_data.get('categoryRank', 0))).replace(',', '').isdigit() else None,
+                        ai_rank=int(sanitize_rank_value(student_data.get('AI rank') or student_data.get('jeeRank', 0) or 0).replace(',', '')) if (student_data.get('AI rank') or student_data.get('jeeRank')) and sanitize_rank_value(student_data.get('AI rank') or student_data.get('jeeRank', 0) or 0).replace(',', '').isdigit() else None,
+                        category_rank=int(sanitize_rank_value(student_data.get('Category Rank') or student_data.get('categoryRank', 0) or 0).replace(',', '')) if (student_data.get('Category Rank') or student_data.get('categoryRank')) and sanitize_rank_value(student_data.get('Category Rank') or student_data.get('categoryRank', 0) or 0).replace(',', '').isdigit() else None,
 
                         father_occupation=student_data.get("Father's Occupation") or student_data.get('fatherOccupation', ''),
                         father_mobile=sanitize_phone_number(student_data.get('Father Mobile Number') or student_data.get('fatherMobile', '')),
@@ -918,16 +955,7 @@ def add_single_student(request):
                     'message': f'Student with JEE Application Number {jee_app_no} already exists (Roll Number: {existing_student.roll_number})'
                 }, status=400)
 
-        dob = None
-        if data.get('date_of_birth'):
-            try:
-                dob_str = str(data['date_of_birth'])
-                if '/' in dob_str:
-                    dob = datetime.strptime(dob_str, '%m/%d/%Y').date()
-                elif '-' in dob_str:
-                    dob = datetime.strptime(dob_str, '%Y-%m-%d').date()
-            except Exception:
-                dob = None
+        dob = parse_date_flexible(data.get('date_of_birth'))
         
         # Save to database with ALL Excel-equivalent fields for complete synchronization
         with transaction.atomic():
@@ -956,8 +984,8 @@ def add_single_student(request):
                 mother_mobile=sanitize_phone_number(data.get('mother_mobile', '') or data.get('Mother Mobile Number', '')),
 
                 branch=student_data.get('branch'),
-                ai_rank=data.get('ai_rank') or data.get('AI rank'),
-                category_rank=data.get('category_rank') or data.get('Category Rank'),
+                ai_rank=sanitize_rank_value(data.get('ai_rank') or data.get('AI rank')),
+                category_rank=sanitize_rank_value(data.get('category_rank') or data.get('Category Rank')),
 
                 allotted_category=data.get('allotted_category', '') or data.get('allottedcat', ''),
                 allotted_gender=data.get('allotted_gender', '') or data.get('Allotted Gender', ''),
@@ -2353,15 +2381,12 @@ def create_or_update_main_student_record(student_data, batch_obj, batch_year):
             }
         )
 
-        if student_data.get('Date of Birth'):
-            try:
-                dob_str = str(student_data['Date of Birth'])
-                if '/' in dob_str:
-                    dob = datetime.strptime(dob_str, '%m/%d/%Y').date()
-                    extra_info.date_of_birth = dob
-                    extra_info.save()
-            except:
-                pass
+        dob_value = student_data.get('Date of Birth') or student_data.get('date_of_birth') or student_data.get('dob')
+        if dob_value:
+            dob = parse_date_flexible(dob_value)
+            if dob:
+                extra_info.date_of_birth = dob
+                extra_info.save()
 
         category_mapping = {
             'General': 'GEN',
@@ -2590,7 +2615,8 @@ def update_student(request, student_id):
         jee_rank_value = data.get('jeeRank') or data.get('aiRank') or data.get('ai_rank')
         if jee_rank_value:
             try:
-                student.ai_rank = int(str(jee_rank_value).replace(',', '')) if str(jee_rank_value).replace(',', '').isdigit() else None
+                sanitized_rank = sanitize_rank_value(jee_rank_value)
+                student.ai_rank = int(sanitized_rank.replace(',', '')) if sanitized_rank.replace(',', '').isdigit() else None
             except (ValueError, TypeError) as e:
                 student.ai_rank = None
 
@@ -2607,7 +2633,11 @@ def update_student(request, student_id):
             value = data.get(frontend_field) or data.get(field)
             if value:
                 try:
-                    setattr(student, field, int(str(value).replace(',', '')) if str(value).replace(',', '').isdigit() else None)
+                    if field == 'category_rank':
+                        sanitized_value = sanitize_rank_value(value)
+                        setattr(student, field, int(sanitized_value.replace(',', '')) if sanitized_value.replace(',', '').isdigit() else None)
+                    else:
+                        setattr(student, field, int(str(value).replace(',', '')) if str(value).replace(',', '').isdigit() else None)
                 except (ValueError, TypeError):
                     setattr(student, field, None)
         
