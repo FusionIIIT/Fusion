@@ -283,6 +283,8 @@ def process_excel_upload(request):
                             # Fix serial number to start from 1
                             elif field == 'sno':
                                 student_data[field] = str(index + 1)  # Force serial number to be 1-based
+                            elif field in ['phone_number', 'father_mobile', 'mother_mobile']:
+                                student_data[field] = sanitize_phone_number(value)
                             else:
                                 student_data[field] = str(value).strip()
 
@@ -310,7 +312,8 @@ def process_excel_upload(request):
                 # Validate phone numbers (basic check)
                 for phone_field in ['phone_number', 'father_mobile', 'mother_mobile']:
                     if student_data.get(phone_field):
-                        phone = student_data[phone_field].replace(' ', '').replace('-', '')
+                        sanitized_phone = sanitize_phone_number(student_data[phone_field])
+                        phone = sanitized_phone.replace(' ', '').replace('-', '') if sanitized_phone else ''
                         if not phone.isdigit() or len(phone) != 10:
                             errors.append(f'Invalid {phone_field}: {student_data[phone_field]}')
                 
@@ -591,7 +594,7 @@ def save_students_batch(request):
                         pwd=student_data.get('PWD') or student_data.get('pwd', 'NO'),
                         minority=student_data.get('Minority') or student_data.get('minority', ''),
 
-                        phone_number=student_data.get('Mobile No') or student_data.get('phoneNumber', ''),
+                        phone_number=sanitize_phone_number(student_data.get('Mobile No') or student_data.get('phoneNumber', '')),
                         personal_email=student_data.get('Alternet Email ID') or student_data.get('email', ''),
                         address=student_data.get('Full Address') or student_data.get('address', ''),
                         state=student_data.get('State') or student_data.get('state', ''),
@@ -602,9 +605,9 @@ def save_students_batch(request):
                         category_rank=int(str((student_data.get('Category Rank') or student_data.get('categoryRank', 0))).replace(',', '')) if (student_data.get('Category Rank') or student_data.get('categoryRank')) and str((student_data.get('Category Rank') or student_data.get('categoryRank', 0))).replace(',', '').isdigit() else None,
 
                         father_occupation=student_data.get("Father's Occupation") or student_data.get('fatherOccupation', ''),
-                        father_mobile=student_data.get('Father Mobile Number') or student_data.get('fatherMobile', ''),
+                        father_mobile=sanitize_phone_number(student_data.get('Father Mobile Number') or student_data.get('fatherMobile', '')),
                         mother_occupation=student_data.get("Mother's Occupation") or student_data.get('motherOccupation', ''),
-                        mother_mobile=student_data.get('Mother Mobile Number') or student_data.get('motherMobile', ''),
+                        mother_mobile=sanitize_phone_number(student_data.get('Mother Mobile Number') or student_data.get('motherMobile', '')),
 
                         allotted_category=student_data.get('allottedcat') or student_data.get('allottedCategory', ''),
                         allotted_gender=student_data.get('Allotted Gender') or student_data.get('allottedGender', ''),
@@ -934,15 +937,15 @@ def add_single_student(request):
                 minority=data.get('minority', ''),
                 date_of_birth=dob or data.get('date_of_birth'),
 
-                phone_number=data.get('phone_number', '') or data.get('MobileNo', ''),
+                phone_number=sanitize_phone_number(data.get('phone_number', '') or data.get('MobileNo', '')),
                 personal_email=data.get('personal_email', '') or data.get('Alternet Email ID', ''),
                 address=student_data.get('address'),
                 state=data.get('state', '') or data.get('State', ''),
 
                 father_occupation=data.get('father_occupation', '') or data.get("Father's Occupation", ''),
-                father_mobile=data.get('father_mobile', '') or data.get('Father Mobile Number', ''),
+                father_mobile=sanitize_phone_number(data.get('father_mobile', '') or data.get('Father Mobile Number', '')),
                 mother_occupation=data.get('mother_occupation', '') or data.get("Mother's Occupation", ''),
-                mother_mobile=data.get('mother_mobile', '') or data.get('Mother Mobile Number', ''),
+                mother_mobile=sanitize_phone_number(data.get('mother_mobile', '') or data.get('Mother Mobile Number', '')),
 
                 branch=student_data.get('branch'),
                 ai_rank=data.get('ai_rank') or data.get('AI rank'),
@@ -1205,7 +1208,7 @@ def update_student_status(request):
                                 'sex': 'M' if student.gender == 'Male' else ('F' if student.gender == 'Female' else 'O'),
                                 'date_of_birth': student.date_of_birth or timezone.now().date(),
                                 'address': student.address or '',
-                                'phone_no': int(student.phone_number) if student.phone_number and student.phone_number.isdigit() else 9999999999,
+                                'phone_no': int(sanitize_phone_number(student.phone_number)) if student.phone_number and sanitize_phone_number(student.phone_number).isdigit() else 9999999999,
                                 'user_type': 'student',  # CRITICAL: Must be 'student' for proper access
                                 'department': department
                             }
@@ -1219,8 +1222,9 @@ def update_student_status(request):
                             extra_info.sex = 'M' if student.gender == 'Male' else ('F' if student.gender == 'Female' else 'O')
                             extra_info.date_of_birth = student.date_of_birth or extra_info.date_of_birth
                             extra_info.address = student.address or extra_info.address
-                            if student.phone_number and student.phone_number.isdigit():
-                                extra_info.phone_no = int(student.phone_number)
+                            sanitized_phone = sanitize_phone_number(student.phone_number)
+                            if sanitized_phone and sanitized_phone.isdigit():
+                                extra_info.phone_no = int(sanitized_phone)
                             extra_info.user_type = 'student'  # CRITICAL: Ensure user_type is always 'student'
                             extra_info.save()
 
