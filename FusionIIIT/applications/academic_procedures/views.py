@@ -21,6 +21,10 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.template.loader import render_to_string
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
 from notification.views import AssistantshipClaim_notify,AssistantshipClaim_acad_notify,AssistantshipClaim_account_notify,AssistantshipClaim_faculty_notify
 from applications.academic_information.models import (Calendar, Course, Student,Curriculum_Instructor, Curriculum,
                                                       Student_attendance)
@@ -3348,7 +3352,8 @@ def generate_grade_sheet_pdf(request):
         return response
     return HttpResponse("PDF could not be generated")
 
-@login_required(login_url='/accounts/login')
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def generate_course_registration_receipt(request):
     try:
         current_user = request.user
@@ -3359,20 +3364,27 @@ def generate_course_registration_receipt(request):
         curr_id = batch.curriculum
         curr_sem_id = Semester.objects.get(curriculum = curr_id, semester_no = current_user.curr_semester_no)
         courses = course_registration.objects.filter(student_id = current_user, semester_id = curr_sem_id)
+
+        course_list = []
+        for course in courses:
+            course_list.append({
+                'course_code': course.course_id.code,
+                'course_name': course.course_id.name,
+                'credits': course.course_id.credit
+            })
+        
         context = {
-            'current_courseregistrations': courses,
+            'current_courseregistrations': course_list,
             'semester_no': current_user.curr_semester_no,
             'name': request.user.first_name + request.user.last_name,
             'roll_no' : current_user.id_id,
             'batch': batch.name+' '+str(batch.year),
             'branch': curr_id.name.split(' ')[0]
         }
-        return render(request, '../templates/academic_procedures/course_registration_receipt.html',
-                context
-            )
+        return JsonResponse(context)
     
-    except:
-        return HttpResponseRedirect('/academic-procedures/')
+    except Exception as e:
+        return JsonResponse({'error': 'Unable to retrieve data', 'details': str(e)})
 
 def get_spi(course_list,grade_list):
     spi = 0.0
