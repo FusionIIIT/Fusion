@@ -3599,6 +3599,24 @@ def apply_batch_changes(request):
             student.batch_id = new_batch
             student.batch = nyear
             student.save()
+            
+            # Sync branch, department, and specialization
+            try:
+                from applications.programme_curriculum.models_student_management import StudentBatchUpload
+                from applications.globals.models import DepartmentInfo
+                student_upload = StudentBatchUpload.objects.filter(roll_number=student.id_id).first()
+                if student_upload:
+                    student_upload.branch = new_batch.discipline.name
+                    student_upload.save()
+                dept_name = new_batch.discipline.acronym
+                department = DepartmentInfo.objects.filter(name=dept_name).first()
+                if department:
+                    student.id.department = department
+                    student.id.save()
+                student.specialization = dept_name
+                student.save()
+            except:
+                pass
 
     if errors:
         return Response({"errors": errors}, status=status.HTTP_207_MULTI_STATUS)

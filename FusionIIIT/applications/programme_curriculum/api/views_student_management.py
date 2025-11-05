@@ -47,12 +47,26 @@ def sanitize_phone_number(phone_value):
     return phone_str
 
 def sanitize_rank_value(rank_value):
-    if rank_value is None:
-        return rank_value
-    rank_str = str(rank_value)
+    if rank_value is None or rank_value == '' or rank_value == 'null':
+        return None
+    rank_str = str(rank_value).strip()
+    if not rank_str or rank_str.lower() == 'nan':
+        return None
     if rank_str.endswith('.0'):
         rank_str = rank_str[:-2]
     return rank_str
+
+def _safe_int_conversion(value):
+    """Convert a value to int, returning None for empty/invalid values"""
+    if value is None or value == '' or value == 'null':
+        return None
+    try:
+        value_str = str(value).replace(',', '').strip()
+        if value_str and value_str.isdigit():
+            return int(value_str)
+    except (ValueError, TypeError):
+        pass
+    return None
 
 def parse_date_flexible(date_value):
     if date_value is None or date_value == '':
@@ -381,6 +395,19 @@ def process_excel_upload(request):
                         phone = sanitized_phone.replace(' ', '').replace('-', '') if sanitized_phone else ''
                         if not phone.isdigit() or len(phone) != 10:
                             errors.append(f'Invalid {phone_field}: {student_data[phone_field]}')
+
+                # Validation: father's mobile should not be same as student's mobile
+                student_phone = None
+                father_phone = None
+                if student_data.get('phone_number'):
+                    sp = sanitize_phone_number(student_data.get('phone_number'))
+                    student_phone = sp.replace(' ', '').replace('-', '') if sp else None
+                if student_data.get('father_mobile'):
+                    fp = sanitize_phone_number(student_data.get('father_mobile'))
+                    father_phone = fp.replace(' ', '').replace('-', '') if fp else None
+
+                if student_phone and father_phone and student_phone == father_phone:
+                    errors.append("Father's mobile number should not be same as student's mobile number")
                 
                 if missing_fields or errors:
                     error_msg = []
@@ -601,8 +628,33 @@ def save_students_batch(request):
             
             students = filtered_students
 
-        # Process batch allocation (remove atomic transaction to allow individual student processing)
-        processed_students = process_batch_allocation(students, programme_type, batch_year)
+        # Filter out students with validation errors before processing
+        valid_students_only = []
+        skipped_invalid = 0
+        
+        for student in students:
+            has_validation_errors = False
+            student_phone = None
+            father_phone = None
+            phone_number = student.get('Mobile No') or student.get('phoneNumber', '')
+            father_mobile = student.get('Father Mobile Number') or student.get('fatherMobile', '')
+            
+            if phone_number:
+                sp = sanitize_phone_number(phone_number)
+                student_phone = sp.replace(' ', '').replace('-', '') if sp else None
+            if father_mobile:
+                fp = sanitize_phone_number(father_mobile)
+                father_phone = fp.replace(' ', '').replace('-', '') if fp else None
+            if student_phone and father_phone and student_phone == father_phone:
+                has_validation_errors = True
+                skipped_invalid += 1
+                errors.append(f"Skipped student {student.get('Name', 'Unknown')}: Father's mobile number should not be same as student's mobile number")
+                continue
+
+            if not has_validation_errors:
+                valid_students_only.append(student)
+
+        processed_students = process_batch_allocation(valid_students_only, programme_type, batch_year)
         
         for student_data in processed_students:
             try:
@@ -679,8 +731,8 @@ def save_students_batch(request):
 
                         branch=student_data.get('Discipline') or student_data.get('branch', ''),
                         date_of_birth=dob,
-                        ai_rank=int(sanitize_rank_value(student_data.get('AI rank') or student_data.get('jeeRank', 0) or 0).replace(',', '')) if (student_data.get('AI rank') or student_data.get('jeeRank')) and sanitize_rank_value(student_data.get('AI rank') or student_data.get('jeeRank', 0) or 0).replace(',', '').isdigit() else None,
-                        category_rank=int(sanitize_rank_value(student_data.get('Category Rank') or student_data.get('categoryRank', 0) or 0).replace(',', '')) if (student_data.get('Category Rank') or student_data.get('categoryRank')) and sanitize_rank_value(student_data.get('Category Rank') or student_data.get('categoryRank', 0) or 0).replace(',', '').isdigit() else None,
+                        ai_rank=_safe_int_conversion(sanitize_rank_value(student_data.get('AI rank') or student_data.get('jeeRank'))),
+                        category_rank=_safe_int_conversion(sanitize_rank_value(student_data.get('Category Rank') or student_data.get('categoryRank'))),
 
                         father_occupation=student_data.get("Father's Occupation") or student_data.get('fatherOccupation', ''),
                         father_mobile=sanitize_phone_number(student_data.get('Father Mobile Number') or student_data.get('fatherMobile', '')),
@@ -723,7 +775,7 @@ def save_students_batch(request):
                 error_msg = f"Failed to save student {student_name}: {str(e)}"
                 errors.append(error_msg)
 
-        total_processed = successful_uploads + failed_uploads + validation_errors
+        total_processed = successful_uploads + failed_uploads + validation_errors + skipped_invalid
         response_data = {
             'success': True,
             'data': {
@@ -731,6 +783,7 @@ def save_students_batch(request):
                 'failed_uploads': failed_uploads,
                 'skipped_duplicates': skipped_duplicates,
                 'validation_errors': validation_errors,
+                'skipped_invalid': skipped_invalid,
                 'total_processed': total_processed,
                 'original_count': len(data.get('students', []))
             },
@@ -744,6 +797,8 @@ def save_students_batch(request):
             messages.append(f'{successful_uploads} students uploaded successfully')
         if skipped_duplicates > 0:
             messages.append(f'{skipped_duplicates} duplicates skipped')
+        if skipped_invalid > 0:
+            messages.append(f'{skipped_invalid} students with validation errors skipped')
         if failed_uploads > 0:
             messages.append(f'{failed_uploads} uploads failed')
         if validation_errors > 0:
@@ -2568,6 +2623,8 @@ def update_student(request, student_id):
     try:
         student = StudentBatchUpload.objects.get(id=student_id)
         data = json.loads(request.body)
+        old_discipline = student.branch
+        discipline_changed = False
 
         field_mapping = {
             # Identification fields
@@ -2670,6 +2727,8 @@ def update_student(request, student_id):
         
         for field in direct_fields:
             if field in data:
+                if field == 'branch' and data[field] != old_discipline:
+                    discipline_changed = True
                 setattr(student, field, data[field])
 
         dob_value = data.get('dob') or data.get('dateOfBirth') or data.get('date_of_birth')
@@ -2703,14 +2762,24 @@ def update_student(request, student_id):
             elif field == 'twelfth_marks':
                 frontend_field = 'twelfthMarks'
                 
-            value = data.get(frontend_field) or data.get(field)
-            if value:
+            # Get value from either frontend field name or backend field name
+            value = data.get(frontend_field, data.get(field))
+            if value is None or value == '' or value == 'null':
+                setattr(student, field, None)
+            else:
                 try:
                     if field == 'category_rank':
                         sanitized_value = sanitize_rank_value(value)
-                        setattr(student, field, int(sanitized_value.replace(',', '')) if sanitized_value.replace(',', '').isdigit() else None)
+                        if sanitized_value and sanitized_value.replace(',', '').isdigit():
+                            setattr(student, field, int(sanitized_value.replace(',', '')))
+                        else:
+                            setattr(student, field, None)
                     else:
-                        setattr(student, field, int(str(value).replace(',', '')) if str(value).replace(',', '').isdigit() else None)
+                        value_str = str(value).replace(',', '')
+                        if value_str.isdigit():
+                            setattr(student, field, int(value_str))
+                        else:
+                            setattr(student, field, None)
                 except (ValueError, TypeError):
                     setattr(student, field, None)
         
@@ -2720,10 +2789,71 @@ def update_student(request, student_id):
         
         student.save()
         
+        # Handle discipline change using existing batch change API logic if discipline was changed
+        if discipline_changed and student.reported_status == 'REPORTED':
+            try:
+                from applications.academic_information.models import Student as AcademicStudent
+                from applications.programme_curriculum.models import Batch, Discipline
+                from applications.academic_procedures.models import BatchChangeHistory
+                
+                academic_student = AcademicStudent.objects.filter(id__id=student.roll_number).first()
+                
+                if academic_student:
+                    new_discipline_obj = Discipline.objects.filter(name__iexact=student.branch).first()
+                    if not new_discipline_obj:
+                        discipline_upper = student.branch.upper()
+                        if 'COMPUTER SCIENCE' in discipline_upper or 'CSE' in discipline_upper:
+                            new_discipline_obj = Discipline.objects.filter(name__icontains='Computer Science').first()
+                        elif 'ELECTRONICS' in discipline_upper or 'ECE' in discipline_upper:
+                            new_discipline_obj = Discipline.objects.filter(name__icontains='Electronics').first()
+                        elif 'MECHANICAL' in discipline_upper or 'ME' in discipline_upper:
+                            new_discipline_obj = Discipline.objects.filter(name__icontains='Mechanical').first()
+                        elif 'SMART' in discipline_upper or 'MANUFACTURING' in discipline_upper:
+                            new_discipline_obj = Discipline.objects.filter(name__icontains='Smart Manufacturing').first()
+                        elif 'DESIGN' in discipline_upper:
+                            new_discipline_obj = Discipline.objects.filter(name__icontains='Design').first()
+                    
+                    if new_discipline_obj:
+                        new_batch = Batch.objects.filter(
+                            discipline=new_discipline_obj,
+                            year=student.year,
+                            running_batch=True
+                        ).first()
+                        
+                        if new_batch and academic_student.batch_id != new_batch:
+                            old_batch = academic_student.batch_id
+                            BatchChangeHistory.objects.create(
+                                student=academic_student,
+                                old_batch=old_batch,
+                                new_batch=new_batch,
+                            )
+
+                            academic_student.batch_id = new_batch
+                            academic_student.save()
+                            
+                            # Update department and specialization
+                            try:
+                                from applications.globals.models import DepartmentInfo
+                                dept_name = new_batch.discipline.acronym
+                                department = DepartmentInfo.objects.filter(name=dept_name).first()
+                                if department:
+                                    academic_student.id.department = department
+                                    academic_student.id.save()
+                                academic_student.specialization = dept_name
+                                academic_student.save()
+                            except:
+                                pass
+                            
+            except Exception as batch_change_error:
+                pass
+        
         return JsonResponse({
             'success': True,
             'message': f'Student {student.name} updated successfully',
-            'student_id': student.id
+            'student_id': student.id,
+            'discipline_changed': discipline_changed,
+            'old_discipline': old_discipline if discipline_changed else None,
+            'new_discipline': student.branch if discipline_changed else None
         })
         
     except StudentBatchUpload.DoesNotExist:
