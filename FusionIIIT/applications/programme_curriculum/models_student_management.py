@@ -118,7 +118,46 @@ class StudentBatchUpload(models.Model):
         ('NO', 'No'),
     ]
     
-
+    PWD_CATEGORY_CHOICES = [
+        ('Locomotor Disability', 'Locomotor Disability'),
+        ('Visual Impairment', 'Visual Impairment'),
+        ('Hearing Impairment', 'Hearing Impairment'),
+        ('Speech and Language Disability', 'Speech and Language Disability'),
+        ('Intellectual Disability', 'Intellectual Disability'),
+        ('Autism Spectrum Disorder', 'Autism Spectrum Disorder'),
+        ('Multiple Disabilities', 'Multiple Disabilities'),
+        ('Any other (remarks)', 'Any other (remarks)'),
+    ]
+    
+    BLOOD_GROUP_CHOICES = [
+        ('A+', 'A+'),
+        ('A-', 'A-'),
+        ('B+', 'B+'),
+        ('B-', 'B-'),
+        ('AB+', 'AB+'),
+        ('AB-', 'AB-'),
+        ('O+', 'O+'),
+        ('O-', 'O-'),
+        ('Other', 'Other'),
+    ]
+    
+    ADMISSION_MODE_CHOICES = [
+        ('JEE Main', 'JEE Main'),
+        ('JEE Advanced', 'JEE Advanced'),
+        ('GATE', 'GATE'),
+        ('DASA', 'DASA'),
+        ('Foreign National', 'Foreign National'),
+        ('Sponsored', 'Sponsored'),
+        ('Any other (remarks)', 'Any other (remarks)'),
+    ]
+    
+    INCOME_GROUP_CHOICES = [
+        ('Below 1 Lakh', 'Below 1 Lakh'),
+        ('1-2.5 Lakhs', '1-2.5 Lakhs'),
+        ('2.5-5 Lakhs', '2.5-5 Lakhs'),
+        ('5-8 Lakhs', '5-8 Lakhs'),
+        ('Above 8 Lakhs', 'Above 8 Lakhs'),
+    ]
     
     REPORTED_STATUS_CHOICES = [
         ('NOT_REPORTED', 'Not Reported'),
@@ -145,18 +184,26 @@ class StudentBatchUpload(models.Model):
     category = models.CharField(max_length=10, choices=CATEGORY_CHOICES)
     pwd = models.CharField(max_length=3, choices=PWD_CHOICES, default='NO', help_text="Person with Disability")
     minority = models.TextField(blank=True, null=True, help_text="Minority Status (e.g., Muslim, Christian, Sikh, Buddhist, Jain, Parsi, etc.)")
+    blood_group = models.CharField(max_length=10, choices=BLOOD_GROUP_CHOICES, blank=True, null=True)
+    blood_group_remarks = models.TextField(blank=True, null=True, help_text="Blood group remarks when 'Other' is selected")
+    pwd_category = models.CharField(max_length=100, choices=PWD_CATEGORY_CHOICES, blank=True, null=True, help_text="Required when PWD is YES")
+    pwd_category_remarks = models.TextField(blank=True, null=True, help_text="Required when PWD category is 'Any other (remarks)'")
     
     # Contact and address
     phone_number = models.CharField(max_length=15, blank=True, null=True, help_text="Mobile Number")
     personal_email = models.EmailField(blank=True, null=True, help_text="Personal Email ID")
     address = models.TextField(help_text="Full Address")
     state = models.CharField(max_length=100, blank=True, null=True)
+    country = models.CharField(max_length=100, blank=True, null=True, default='India')
+    nationality = models.CharField(max_length=100, blank=True, null=True, default='Indian')
     
     # Academic information
     branch = models.CharField(max_length=200, help_text="Discipline/Branch")
     date_of_birth = models.DateField(blank=True, null=True)
     ai_rank = models.IntegerField(blank=True, null=True, help_text="JEE AI Rank", db_column='jee_rank')
     category_rank = models.IntegerField(blank=True, null=True, help_text="Category Rank")
+    income_group = models.CharField(max_length=30, choices=INCOME_GROUP_CHOICES, blank=True, null=True)
+    income = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, help_text="Annual family income")
     
     # Additional academic details
     tenth_marks = models.FloatField(blank=True, null=True, help_text="10th Class Marks (%)")
@@ -167,11 +214,14 @@ class StudentBatchUpload(models.Model):
     father_mobile = models.CharField(max_length=15, blank=True, null=True)
     mother_occupation = models.CharField(max_length=200, blank=True, null=True)
     mother_mobile = models.CharField(max_length=15, blank=True, null=True)
+    parent_email = models.EmailField(blank=True, null=True, help_text="Parent Email ID")
     aadhar_number = models.CharField(max_length=12, blank=True, null=True)
     
     # Allotment details
-    allotted_category = models.CharField(max_length=20, blank=True, null=True)
-    allotted_gender = models.CharField(max_length=20, blank=True, null=True)
+    allotted_category = models.CharField(max_length=50, blank=True, null=True)
+    allotted_gender = models.CharField(max_length=50, blank=True, null=True)
+    admission_mode = models.CharField(max_length=50, choices=ADMISSION_MODE_CHOICES, blank=True, null=True)
+    admission_mode_remarks = models.TextField(blank=True, null=True, help_text="Required when admission mode is 'Any other (remarks)'")
     
     # System fields
     year = models.IntegerField(help_text="Academic Year", db_column='batch_year', default=get_current_academic_year)
@@ -263,6 +313,35 @@ class StudentBatchUpload(models.Model):
                 return ' '.join(name_parts[1:])
         return ''
     
+    def clean_branch_name(self, branch_text):
+        """Clean branch name by removing parenthetical content"""
+        import re
+        if not branch_text:
+            return branch_text
+        # Remove content in parentheses like "(4 Years, Bachelor of Technology)"
+        cleaned = re.sub(r'\s*\([^)]*\)', '', branch_text)
+        return cleaned.strip()
+    
+    def clean(self):
+        """Validate conditional field requirements"""
+        from django.core.exceptions import ValidationError
+        
+        # PWD Category validation
+        if self.pwd == 'YES' and not self.pwd_category:
+            raise ValidationError('PWD Category is required when PWD is YES')
+        
+        # PWD Category remarks validation
+        if self.pwd_category == 'Any other (remarks)' and not self.pwd_category_remarks:
+            raise ValidationError('PWD Category remarks are required when selecting "Any other (remarks)"')
+        
+        # Admission mode remarks validation
+        if self.admission_mode == 'Any other (remarks)' and not self.admission_mode_remarks:
+            raise ValidationError('Admission mode remarks are required when selecting "Any other (remarks)"')
+            
+        # Blood group remarks validation
+        if self.blood_group == 'Other' and not self.blood_group_remarks:
+            raise ValidationError('Blood group remarks are required when selecting "Other"')
+    
     def save(self, *args, **kwargs):
         """Override save to automatically set academic_year string and normalize emails"""
         if not self.academic_year:
@@ -273,10 +352,17 @@ class StudentBatchUpload(models.Model):
         if self.roll_number and not self.institute_email:
             self.institute_email = f"{self.roll_number.lower()}@iiitdmj.ac.in"
         
+        # Normalize email addresses to lowercase
         if self.institute_email:
             self.institute_email = self.institute_email.lower()
         if self.personal_email:
             self.personal_email = self.personal_email.lower()
+        if self.parent_email:
+            self.parent_email = self.parent_email.lower()
+            
+        # Clean branch name
+        if self.branch:
+            self.branch = self.clean_branch_name(self.branch)
         
         super().save(*args, **kwargs)
     

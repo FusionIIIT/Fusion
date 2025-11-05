@@ -294,7 +294,7 @@ def process_excel_upload(request):
             'minority': ['minority', 'minority status'],
             'phone_number': ['mobileno', 'mobile', 'phone', 'mobile no'],
             'institute_email': ['institute email id', 'institute email', 'inst email id'],
-            'personal_email': ['alternet email id', 'alternate email id', 'email', 'personal email'],
+            'personal_email': ['alternate email id', 'email', 'personal email'],
             'father_name': ['father\'s name', 'father name', 'fathers name'],
             'father_occupation': ['father\'s occupation', 'father occupation', 'fathers occupation'],
             'father_mobile': ['father mobile number', 'father mobile', 'fathers mobile'],
@@ -307,7 +307,18 @@ def process_excel_upload(request):
             'allotted_category': ['allottedcat', 'allotted category', 'alloted category'],
             'allotted_gender': ['allotted gender', 'alloted gender'],
             'state': ['state'],
-            'address': ['full address', 'address', 'complete address']
+            'address': ['full address', 'address', 'complete address'],
+            'parent_email': ['parent\'s email', 'parent email', 'parents email'],
+            'country': ['country'],
+            'nationality': ['nationality'],
+            'blood_group': ['blood group', 'bloodgroup'],
+            'blood_group_remarks': ['blood group remarks', 'bloodgroup remarks'],
+            'pwd_category': ['pwd category', 'pwb category', 'disability category'],
+            'pwd_category_remarks': ['pwd category remarks', 'pwb category remarks', 'disability remarks'],
+            'admission_mode': ['admission mode', 'admission type'],
+            'admission_mode_remarks': ['admission mode remarks', 'admission type remarks'],
+            'income_group': ['income group', 'family income group'],
+            'income': ['income', 'family income', 'annual income']
         }
 
         df.columns = df.columns.str.lower().str.strip()
@@ -397,7 +408,7 @@ def process_excel_upload(request):
                         'Minority': student_data.get('minority', ''),
                         'Mobile No': student_data.get('phone_number', ''),
                         'Institute Email ID': student_data.get('institute_email', ''),
-                        'Alternet Email ID': student_data.get('personal_email', ''),
+                        'Alternate Email ID': student_data.get('personal_email', ''),
                         'Father\'s Name': student_data.get('father_name', ''),
                         'Father\'s Occupation': student_data.get('father_occupation', ''),
                         'Father Mobile Number': student_data.get('father_mobile', ''),
@@ -410,7 +421,18 @@ def process_excel_upload(request):
                         'allottedcat': student_data.get('allotted_category', ''),
                         'Allotted Gender': student_data.get('allotted_gender', ''),
                         'State': student_data.get('state', ''),
-                        'Full Address': student_data.get('address', '')
+                        'Full Address': student_data.get('address', ''),
+                        'Parent\'s Email': student_data.get('parent_email', ''),
+                        'Country': student_data.get('country', ''),
+                        'Nationality': student_data.get('nationality', ''),
+                        'Blood Group': student_data.get('blood_group', ''),
+                        'Blood Group Remarks': student_data.get('blood_group_remarks', ''),
+                        'PwD Category': student_data.get('pwd_category', ''),
+                        'PwD Category Remarks': student_data.get('pwd_category_remarks', ''),
+                        'Admission Mode': student_data.get('admission_mode', ''),
+                        'Admission Mode Remarks': student_data.get('admission_mode_remarks', ''),
+                        'Income Group': student_data.get('income_group', ''),
+                        'Income': student_data.get('income', '')
                     }
                     valid_students.append(cleaned_data)
                     
@@ -640,9 +662,20 @@ def save_students_batch(request):
                         minority=student_data.get('Minority') or student_data.get('minority', ''),
 
                         phone_number=sanitize_phone_number(student_data.get('Mobile No') or student_data.get('phoneNumber', '')),
-                        personal_email=student_data.get('Alternet Email ID') or student_data.get('email', ''),
+                        personal_email=student_data.get('Alternate Email ID') or student_data.get('email', '') or student_data.get('alternateEmail', '') or student_data.get('personalEmail', '') or student_data.get('personal_email', ''),
+                        parent_email=student_data.get('Parent Email') or student_data.get('parentEmail', '') or student_data.get('parent_email', ''),
                         address=student_data.get('Full Address') or student_data.get('address', ''),
                         state=student_data.get('State') or student_data.get('state', ''),
+                        country=student_data.get('Country') or student_data.get('country', 'India'),
+                        nationality=student_data.get('Nationality') or student_data.get('nationality', 'Indian'),
+                        blood_group=student_data.get('Blood Group') or student_data.get('bloodGroup', ''),
+                        blood_group_remarks=student_data.get('Blood Group Remarks') or student_data.get('bloodGroupRemarks', ''),
+                        pwd_category=student_data.get('PWD Category') or student_data.get('pwdCategory', ''),
+                        pwd_category_remarks=student_data.get('PWD Category Remarks') or student_data.get('pwdCategoryRemarks', ''),
+                        admission_mode=student_data.get('Admission Mode') or student_data.get('admissionMode', ''),
+                        admission_mode_remarks=student_data.get('Admission Mode Remarks') or student_data.get('admissionModeRemarks', ''),
+                        income_group=student_data.get('Income Group') or student_data.get('incomeGroup', ''),
+                        income=student_data.get('Income') or student_data.get('income', None),
 
                         branch=student_data.get('Discipline') or student_data.get('branch', ''),
                         date_of_birth=dob,
@@ -912,9 +945,14 @@ def add_single_student(request):
             'fatherMobile': 'father_mobile',
             'motherOccupation': 'mother_occupation',
             'motherMobile': 'mother_mobile',
-            # DON'T map these - process_batch_allocation needs original names
-            # 'rollNumber': 'roll_number',
-            # 'instituteEmail': 'institute_email'
+            'parentEmail': 'parent_email',
+            'bloodGroup': 'blood_group',
+            'bloodGroupRemarks': 'blood_group_remarks',
+            'pwdCategory': 'pwd_category',
+            'pwdCategoryRemarks': 'pwd_category_remarks',
+            'admissionMode': 'admission_mode',
+            'admissionModeRemarks': 'admission_mode_remarks',
+            'incomeGroup': 'income_group',
         }
 
         mapped_data = {}
@@ -959,94 +997,55 @@ def add_single_student(request):
         
         # Save to database with ALL Excel-equivalent fields for complete synchronization
         with transaction.atomic():
-            student = StudentBatchUpload.objects.create(
-                name=student_data.get('name'),
-                jee_app_no=student_data.get('jee_app_no'),
-                roll_number=student_data.get('roll_number'),
-                institute_email=student_data.get('institute_email'),
+                student = StudentBatchUpload.objects.create(
+                    name=student_data.get('name'),
+                    jee_app_no=student_data.get('jee_app_no'),
+                    roll_number=student_data.get('roll_number'),
+                    institute_email=student_data.get('institute_email'),
 
-                father_name=student_data.get('father_name'),
-                mother_name=student_data.get('mother_name'),
-                gender=student_data.get('gender'),
-                category=student_data.get('category'),
-                pwd=student_data.get('pwd'),
-                minority=data.get('minority', ''),
-                date_of_birth=dob or data.get('date_of_birth'),
+                    father_name=student_data.get('father_name'),
+                    mother_name=student_data.get('mother_name'),
+                    gender=student_data.get('gender'),
+                    category=student_data.get('category'),
+                    pwd=student_data.get('pwd'),
+                    minority=data.get('minority', ''),
+                    date_of_birth=dob or data.get('date_of_birth'),
 
-                phone_number=sanitize_phone_number(data.get('phone_number', '') or data.get('MobileNo', '')),
-                personal_email=data.get('personal_email', '') or data.get('Alternet Email ID', ''),
-                address=student_data.get('address'),
-                state=data.get('state', '') or data.get('State', ''),
+                    phone_number=sanitize_phone_number(data.get('phone_number', '') or data.get('MobileNo', '')),
+                    personal_email=data.get('personal_email', '') or data.get('email', '') or data.get('alternateEmail', '') or data.get('Alternate Email ID', ''),
+                    parent_email=data.get('parent_email', '') or data.get('parentEmail', ''),
+                    address=student_data.get('address'),
+                    state=data.get('state', '') or data.get('State', ''),
+                    country=data.get('country', 'India'),
+                    nationality=data.get('nationality', 'Indian'),
+                    blood_group=data.get('blood_group', '') or data.get('bloodGroup', ''),
+                    blood_group_remarks=data.get('blood_group_remarks', '') or data.get('bloodGroupRemarks', ''),
+                    pwd_category=data.get('pwd_category', '') or data.get('pwdCategory', ''),
+                    pwd_category_remarks=data.get('pwd_category_remarks', '') or data.get('pwdCategoryRemarks', ''),
+                    admission_mode=data.get('admission_mode', '') or data.get('admissionMode', ''),
+                    admission_mode_remarks=data.get('admission_mode_remarks', '') or data.get('admissionModeRemarks', ''),
+                    income_group=data.get('income_group', '') or data.get('incomeGroup', ''),
+                    income=data.get('income', None),
 
-                father_occupation=data.get('father_occupation', '') or data.get("Father's Occupation", ''),
-                father_mobile=sanitize_phone_number(data.get('father_mobile', '') or data.get('Father Mobile Number', '')),
-                mother_occupation=data.get('mother_occupation', '') or data.get("Mother's Occupation", ''),
-                mother_mobile=sanitize_phone_number(data.get('mother_mobile', '') or data.get('Mother Mobile Number', '')),
+                    father_occupation=data.get('father_occupation', '') or data.get("Father's Occupation", ''),
+                    father_mobile=sanitize_phone_number(data.get('father_mobile', '') or data.get('Father Mobile Number', '')),
+                    mother_occupation=data.get('mother_occupation', '') or data.get("Mother's Occupation", ''),
+                    mother_mobile=sanitize_phone_number(data.get('mother_mobile', '') or data.get('Mother Mobile Number', '')),
 
-                branch=student_data.get('branch'),
-                ai_rank=sanitize_rank_value(data.get('ai_rank') or data.get('AI rank')),
-                category_rank=sanitize_rank_value(data.get('category_rank') or data.get('Category Rank')),
+                    branch=student_data.get('branch'),
+                    ai_rank=sanitize_rank_value(data.get('ai_rank') or data.get('AI rank')),
+                    category_rank=sanitize_rank_value(data.get('category_rank') or data.get('Category Rank')),
 
-                allotted_category=data.get('allotted_category', '') or data.get('allottedcat', ''),
-                allotted_gender=data.get('allotted_gender', '') or data.get('Allotted Gender', ''),
+                    allotted_category=data.get('allotted_category', '') or data.get('allottedcat', ''),
+                    allotted_gender=data.get('allotted_gender', '') or data.get('allottedGender', ''),
 
-                year=batch_year, 
-                programme_type=programme_type,
-                reported_status='NOT_REPORTED',
-                academic_year=academic_year,
-                allocation_status='ALLOCATED',
-                source='manual_entry'
-            )
-            
-            # Automatically transfer manual entries to main academic tables
-            auto_generated_password = None
-            user_created = False
-            transfer_success = False
-            
-            try:
-                from django.http import HttpRequest
-                from django.contrib.auth.models import AnonymousUser
-                
-                # Create a mock request for the status update function
-                mock_request = HttpRequest()
-                mock_request.method = 'PUT'
-                mock_request._body = json.dumps({
-                    'studentId': student.id,
-                    'reportedStatus': 'REPORTED'
-                }).encode('utf-8')
-                mock_request.user = request.user if hasattr(request, 'user') else AnonymousUser()
-
-                from django.test import RequestFactory
-                factory = RequestFactory()
-                update_request = factory.put(
-                    '/api/students/status/',
-                    data=json.dumps({
-                        'studentId': student.id,
-                        'reportedStatus': 'REPORTED'
-                    }),
-                    content_type='application/json'
+                    year=batch_year, 
+                    programme_type=programme_type,
+                    reported_status='NOT_REPORTED',
+                    academic_year=academic_year,
+                    allocation_status='ALLOCATED',
+                    source='manual_entry'
                 )
-                update_request.user = request.user if hasattr(request, 'user') else AnonymousUser()
-                
-                # Call update_student_status function directly
-                status_response = update_student_status(update_request)
-                
-                if status_response.status_code == 200:
-                    response_data = json.loads(status_response.content)
-                    if response_data.get('success'):
-                        transfer_success = True
-                        auto_generated_password = response_data.get('password')
-                        user_created = response_data.get('user_created', False)
-                
-            except Exception as transfer_error:
-                transfer_success = False
-        
-        # Build success message
-        success_message = f'Student added successfully'
-        if transfer_success:
-            success_message += f' and transferred to main academic tables'
-            if user_created:
-                success_message += f' with auto-generated login credentials'
         
         return JsonResponse({
             'success': True,
@@ -1054,12 +1053,14 @@ def add_single_student(request):
                 'student_id': student.id,
                 'roll_number': student.roll_number or student_data.get('roll_number'),
                 'institute_email': student.institute_email or student_data.get('institute_email'),
-                'password': auto_generated_password,
-                'user_created': user_created,
-                'username': student.roll_number if user_created else None,
-                'transferred_to_academic': transfer_success
+                'name': student.name,
+                'personal_email': student.personal_email,
+                'parent_email': student.parent_email,
+                'blood_group': student.blood_group,
+                'country': student.country,
+                'nationality': student.nationality
             },
-            'message': success_message
+            'message': f'Student {student.name} added successfully. Use "Update Status" to transfer to main academic system when ready.'
         })
         
     except json.JSONDecodeError as e:
@@ -1898,7 +1899,27 @@ def list_students(request):
                 'reported_status': student.reported_status,
                 'branch': student.branch,
                 'year': student.year,
-                'source': getattr(student, 'source', 'unknown')  # Include source field
+                'source': getattr(student, 'source', 'unknown'),  # Include source field
+                'parent_email': getattr(student, 'parent_email', ''),
+                'parentEmail': getattr(student, 'parent_email', ''),  # Camel case for frontend
+                'alternateEmail': getattr(student, 'personal_email', ''),
+                'country': getattr(student, 'country', ''),
+                'nationality': getattr(student, 'nationality', ''),
+                'blood_group': getattr(student, 'blood_group', ''),
+                'bloodGroup': getattr(student, 'blood_group', ''),  # Camel case for frontend
+                'blood_group_remarks': getattr(student, 'blood_group_remarks', ''),
+                'bloodGroupRemarks': getattr(student, 'blood_group_remarks', ''),  # Camel case for frontend
+                'pwd_category': getattr(student, 'pwd_category', ''),
+                'pwdCategory': getattr(student, 'pwd_category', ''),  # Camel case for frontend
+                'pwd_category_remarks': getattr(student, 'pwd_category_remarks', ''),
+                'pwdCategoryRemarks': getattr(student, 'pwd_category_remarks', ''),  # Camel case for frontend
+                'admission_mode': getattr(student, 'admission_mode', ''),
+                'admissionMode': getattr(student, 'admission_mode', ''),  # Camel case for frontend
+                'admission_mode_remarks': getattr(student, 'admission_mode_remarks', ''),
+                'admissionModeRemarks': getattr(student, 'admission_mode_remarks', ''),  # Camel case for frontend
+                'income_group': getattr(student, 'income_group', ''),
+                'incomeGroup': getattr(student, 'income_group', ''),  # Camel case for frontend
+                'income': getattr(student, 'income', '')
             })
         
         return JsonResponse({
@@ -2458,7 +2479,6 @@ def get_student(request, student_id):
             'phone_number': student.phone_number,
             'phoneNumber': student.phone_number,
             'mobile': student.phone_number,  # Additional alias
-            'personal_email': student.personal_email,
             'personalEmail': student.personal_email,
             'address': student.address,
             'state': student.state,
@@ -2488,6 +2508,25 @@ def get_student(request, student_id):
             'allottedGender': student.allotted_gender,
             'aadhar_number': student.aadhar_number,
             'aadharNumber': student.aadhar_number,
+            'parent_email': getattr(student, 'parent_email', ''),
+            'parentEmail': getattr(student, 'parent_email', ''),  # Camel case for frontend
+            'alternateEmail': getattr(student, 'personal_email', ''),
+            'nationality': getattr(student, 'nationality', ''),
+            'blood_group': getattr(student, 'blood_group', ''),
+            'bloodGroup': getattr(student, 'blood_group', ''),  # Camel case for frontend
+            'blood_group_remarks': getattr(student, 'blood_group_remarks', ''),
+            'bloodGroupRemarks': getattr(student, 'blood_group_remarks', ''),  # Camel case for frontend
+            'pwd_category': getattr(student, 'pwd_category', ''),
+            'pwdCategory': getattr(student, 'pwd_category', ''),  # Camel case for frontend
+            'pwd_category_remarks': getattr(student, 'pwd_category_remarks', ''),
+            'pwdCategoryRemarks': getattr(student, 'pwd_category_remarks', ''),  # Camel case for frontend
+            'admission_mode': getattr(student, 'admission_mode', ''),
+            'admissionMode': getattr(student, 'admission_mode', ''),  # Camel case for frontend
+            'admission_mode_remarks': getattr(student, 'admission_mode_remarks', ''),
+            'admissionModeRemarks': getattr(student, 'admission_mode_remarks', ''),  # Camel case for frontend
+            'income_group': getattr(student, 'income_group', ''),
+            'incomeGroup': getattr(student, 'income_group', ''),  # Camel case for frontend
+            'income': getattr(student, 'income', ''),
 
             'reported_status': student.reported_status,
             'reportedStatus': student.reported_status,
@@ -2531,34 +2570,65 @@ def update_student(request, student_id):
         data = json.loads(request.body)
 
         field_mapping = {
+            # Identification fields
             'jeeAppNo': 'jee_app_no',
-            'rollNumber': 'roll_number', 
+            'rollNumber': 'roll_number',
             'instituteEmail': 'institute_email',
+
+            # Names
             'fatherName': 'father_name',
             'fname': 'father_name',
-            'mname': 'mother_name', 
+            'mname': 'mother_name',
             'motherName': 'mother_name',
+
+            # Dates & phones
             'dateOfBirth': 'date_of_birth',
             'dob': 'date_of_birth',
             'phoneNumber': 'phone_number',
             'mobile': 'phone_number',
-            'personalEmail': 'personal_email',
-            'email': 'personal_email', 
-            'aiRank': 'ai_rank',
+
+            # Email / alternate
+            'email': 'personal_email',
+            'alternateEmail': 'personal_email',
+
+            # Academic ranks
             'jeeRank': 'ai_rank',
             'categoryRank': 'category_rank',
             'tenthMarks': 'tenth_marks',
             'twelfthMarks': 'twelfth_marks',
+
+            # Parents / contacts
             'fatherOccupation': 'father_occupation',
             'fatherMobile': 'father_mobile',
             'motherOccupation': 'mother_occupation',
             'motherMobile': 'mother_mobile',
+            'parentEmail': 'parent_email',
+            'parent_email': 'parent_email',
+
+            # Allotment
             'allottedCategory': 'allotted_category',
             'allottedGender': 'allotted_gender',
+
+            # New fields added
+            'country': 'country',
+            'nationality': 'nationality',
+            'bloodGroup': 'blood_group',
+            'blood_group': 'blood_group',
+            'bloodGroupRemarks': 'blood_group_remarks',
+            'blood_group_remarks': 'blood_group_remarks',
+            'pwdCategory': 'pwd_category',
+            'pwd_category': 'pwd_category',
+            'pwdCategoryRemarks': 'pwd_category_remarks',
+            'admissionMode': 'admission_mode',
+            'admissionModeRemarks': 'admission_mode_remarks',
+            'incomeGroup': 'income_group',
+            'income': 'income',
+
             'aadharNumber': 'aadhar_number',
             'reportedStatus': 'reported_status',
             'programmeType': 'programme_type'
         }
+
         
         jee_app_no = data.get('jeeAppNo') or data.get('jee_app_no')
         roll_number = data.get('rollNumber') or data.get('roll_number')
@@ -2592,7 +2662,10 @@ def update_student(request, student_id):
                     setattr(student, backend_field, value)
 
         direct_fields = [
-            'name', 'gender', 'category', 'pwd', 'minority', 'address', 'state', 'branch'
+            'name', 'gender', 'category', 'pwd', 'minority', 'address', 'state', 'branch',
+            'personal_email', 'parent_email', 'country', 'nationality',
+            'blood_group', 'blood_group_remarks', 'pwd_category', 'pwd_category_remarks',
+            'admission_mode', 'admission_mode_remarks', 'income_group', 'income'
         ]
         
         for field in direct_fields:
@@ -3000,7 +3073,6 @@ def get_batch_students(request, batch_id):
                 'date_of_birth': student.date_of_birth.isoformat() if student.date_of_birth else '',
 
                 'phone_number': getattr(student, 'phone_number', ''),
-                'personal_email': getattr(student, 'personal_email', ''),
                 'address': getattr(student, 'address', ''),
                 'state': getattr(student, 'state', ''),
 
@@ -3018,6 +3090,26 @@ def get_batch_students(request, batch_id):
 
                 'allotted_category': getattr(student, 'allotted_category', ''),
                 'allotted_gender': getattr(student, 'allotted_gender', ''),
+                'parent_email': getattr(student, 'parent_email', ''),
+                'parentEmail': getattr(student, 'parent_email', ''),  # Camel case for frontend
+                'alternateEmail': getattr(student, 'personal_email', ''),
+                'country': getattr(student, 'country', ''),
+                'nationality': getattr(student, 'nationality', ''),
+                'blood_group': getattr(student, 'blood_group', ''),
+                'bloodGroup': getattr(student, 'blood_group', ''),  # Camel case for frontend
+                'blood_group_remarks': getattr(student, 'blood_group_remarks', ''),
+                'bloodGroupRemarks': getattr(student, 'blood_group_remarks', ''),  # Camel case for frontend
+                'pwd_category': getattr(student, 'pwd_category', ''),
+                'pwdCategory': getattr(student, 'pwd_category', ''),  # Camel case for frontend
+                'pwd_category_remarks': getattr(student, 'pwd_category_remarks', ''),
+                'pwdCategoryRemarks': getattr(student, 'pwd_category_remarks', ''),  # Camel case for frontend
+                'admission_mode': getattr(student, 'admission_mode', ''),
+                'admissionMode': getattr(student, 'admission_mode', ''),  # Camel case for frontend
+                'admission_mode_remarks': getattr(student, 'admission_mode_remarks', ''),
+                'admissionModeRemarks': getattr(student, 'admission_mode_remarks', ''),  # Camel case for frontend
+                'income_group': getattr(student, 'income_group', ''),
+                'incomeGroup': getattr(student, 'income_group', ''),  # Camel case for frontend
+                'income': getattr(student, 'income', ''),
 
                 'year': student.year,
                 'academic_year': getattr(student, 'academic_year', ''),
