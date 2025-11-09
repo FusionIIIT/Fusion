@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from applications.programme_curriculum.models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot, CourseInstructor
+from applications.programme_curriculum.models_student_management import StudentBatchUpload
 
 # this is for Programme model ....
 
@@ -122,3 +123,8 @@ class ProgrammePostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Programme
         fields = ['id', 'category', 'name', 'programme_begin_year']
+
+class StudentBatchUploadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentBatchUpload
+        fields = '__all__'
