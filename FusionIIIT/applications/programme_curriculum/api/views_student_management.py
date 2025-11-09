@@ -3180,9 +3180,12 @@ def get_batch_students(request, batch_id):
                 'message': f'Batch with ID {batch_id} not found'
             }, status=404)
 
+        programme_type = 'ug' if batch.name.startswith('B.') else 'pg' if batch.name.startswith('M.') else 'phd'
+        
         students = StudentBatchUpload.objects.filter(
             year=batch.year,
-            branch__icontains=batch.discipline.name
+            branch__icontains=batch.discipline.name,
+            programme_type=programme_type
         ).order_by('roll_number')
 
         upload_students = []
