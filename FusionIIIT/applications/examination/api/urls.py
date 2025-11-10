@@ -34,4 +34,5 @@ urlpatterns = [
     url(r'unique-course-reg-years/', views.UniqueRegistrationYearsView.as_view(), name="unique-course-reg-years"),
     url(r'unique-stu-grades-years/', views.UniqueStudentGradeYearsView.as_view(), name="unique-stu-grades-years"),
     url(r'^student/result_semesters/$', views.StudentSemesterListView.as_view(), name='get_student_semesters'),
+    url(r'^grade_status/', views.GradeStatusAPI.as_view(), name='grade_status'),
 ]
