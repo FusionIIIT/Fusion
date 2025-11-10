@@ -6,7 +6,7 @@ from django.http import JsonResponse
 from decimal import Decimal, ROUND_HALF_UP
 from applications.academic_procedures.models import(course_registration, course_replacement)
 from applications.programme_curriculum.models import Course as Courses ,  Batch, CourseInstructor
-from applications.examination.models import(hidden_grades , ResultAnnouncement)
+from applications.examination.models import(hidden_grades , ResultAnnouncement, authentication)
 from applications.academic_information.models import(Student)
 from applications.online_cms.models import(Student_grades)
 from rest_framework import status
@@ -1163,25 +1163,19 @@ class GenerateResultAPI(APIView):
             )
 
 
-            # Setup header rows: S. No, Roll No, and Name in columns A, B, and C.
+            # Setup header rows: S. No and Roll No in columns A and B.
             ws["A1"] = "S. No"
             ws["B1"] = "Roll No"
-            ws["C1"] = "Name"
             for col in ("A", "B"):
                 cell = ws[col + "1"]
                 cell.alignment = Alignment(horizontal="center", vertical="center")
                 cell.font = Font(bold=True)
                 cell.fill = header_fill
-            cell = ws["C1"]
-            cell.alignment = Alignment(horizontal="center", vertical="center")
-            cell.font = Font(bold=True)
-            cell.fill = header_fill
             ws.column_dimensions[get_column_letter(1)].width = 12
             ws.column_dimensions[get_column_letter(2)].width = 18
-            ws.column_dimensions[get_column_letter(3)].width = 30
 
-            # Starting from column 4, add headers for each course (each course uses 2 columns for Grade and Remarks).
-            col_idx = 4
+            # Starting from column 3, add headers for each course (each course uses 2 columns for Grade and Remarks).
+            col_idx = 3
             for course in courses:
                 # Merge cells for the course code header.
                 ws.merge_cells(start_row=1, start_column=col_idx, end_row=1, end_column=col_idx+1)
@@ -1268,19 +1262,11 @@ class GenerateResultAPI(APIView):
 
             # Fill in student rows, starting from row 5.
             row_idx = 5
-            User = get_user_model()
             for idx, student in enumerate(students, start=1):
                 ws.cell(row=row_idx, column=1).value = idx
                 ws.cell(row=row_idx, column=2).value = student.id_id
-
-                try:
-                    student_user = User.objects.get(username=student.id_id)
-                    student_name = f"{student_user.first_name} {student_user.last_name}".strip() or student_user.username
-                except:
-                    student_name = student.id_id
-                
-                ws.cell(row=row_idx, column=3).value = student_name
-                ws.cell(row=row_idx, column=3).alignment = Alignment(horizontal="left", vertical="center")
+                for c in [1, 2]:
+                    ws.cell(row=row_idx, column=c).alignment = Alignment(horizontal="center", vertical="center")
                 
                 # Get the student’s grade records for the current semester.
                 student_grades = Student_grades.objects.filter(
@@ -1290,7 +1276,7 @@ class GenerateResultAPI(APIView):
                     semester=semester
                 )
                 grades_map = {g.course_id_id: g for g in student_grades}
-                col_ptr = 4
+                col_ptr = 3
                 for course in courses:
                     grade_entry = grades_map.get(course.id)
                     grade_val = grade_entry.grade if grade_entry else '-'
@@ -2856,6 +2842,162 @@ class StudentSemesterListView(APIView):
 
         return JsonResponse({"success": True, "semesters": semesters})
 
+
+class GradeStatusAPI(APIView):
+    """
+    API to get grade status for all courses in a given academic year and semester type.
+    Shows course information, professor name, and submission/verification status.
+    
+    Expected Request:
+    POST /api/examination/grade_status/
+    Headers:
+        Authorization: Token <your_auth_token>
+    Body (JSON):
+        {
+            "Role": "acadadmin",
+            "academic_year": "2024-25", 
+            "semester_type": "Odd Semester"
+        }
+        
+    Response:
+        200 OK - List of courses with status information
+        403 Forbidden - Access denied
+        400 Bad Request - Missing required fields
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        role = request.data.get("Role")
+        academic_year = request.data.get("academic_year") 
+        semester_type = request.data.get("semester_type")
+        
+        # Role-based access control
+        if role not in ["acadadmin", "Dean Academic"]:
+            return Response(
+                {"success": False, "error": "Access denied."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+            
+        # Validate required parameters
+        if not academic_year or not semester_type:
+            return Response(
+                {"error": "Academic year and semester type are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        try:
+            # Parse academic year to get working year
+            working_year, session = parse_academic_year(academic_year, semester_type)
+            
+            # Get all courses that have registrations for this academic year and semester type
+            # Use values_list with flat=True for better performance
+            course_ids = course_registration.objects.filter(
+                session=academic_year,
+                semester_type=semester_type
+            ).values_list('course_id', flat=True).distinct()
+            
+            # Fetch courses with select_related for better performance
+            courses = Courses.objects.filter(id__in=course_ids).order_by('code')
+            
+            # Bulk fetch all instructors to avoid N+1 queries
+            instructors_map = {}
+            instructors = CourseInstructor.objects.filter(
+                course_id__in=course_ids,
+                year=working_year,
+                semester_type=semester_type
+            ).select_related()
+            
+            for instructor in instructors:
+                instructors_map[instructor.course_id_id] = instructor
+            
+            # Bulk fetch professor names to avoid individual User queries
+            instructor_ids = [inst.instructor_id_id for inst in instructors]
+            users_map = {}
+            if instructor_ids:
+                users = get_user_model().objects.filter(username__in=instructor_ids)
+                users_map = {
+                    user.username: f"{user.first_name} {user.last_name}".strip() 
+                    for user in users
+                }
+            
+            # Bulk fetch grade submission and verification status
+            submitted_courses = set(
+                Student_grades.objects.filter(
+                    course_id__in=course_ids,
+                    academic_year=academic_year,
+                    semester_type=semester_type
+                ).values_list('course_id', flat=True).distinct()
+            )
+            
+            verified_courses = set(
+                Student_grades.objects.filter(
+                    course_id__in=course_ids,
+                    academic_year=academic_year,
+                    semester_type=semester_type,
+                    verified=True
+                ).values_list('course_id', flat=True).distinct()
+            )
+            
+            # Bulk fetch authentication records
+            auth_records_map = {}
+            auth_records = authentication.objects.filter(
+                course_id__in=course_ids,
+                course_year=working_year
+            )
+            
+            for auth in auth_records:
+                auth_records_map[auth.course_id_id] = auth
+            
+            # Build response data efficiently
+            grade_status_list = []
+            
+            for course in courses:
+                # Get instructor information from pre-fetched data
+                instructor = instructors_map.get(course.id)
+                professor_name = "Not Assigned"
+                
+                if instructor:
+                    professor_name = users_map.get(
+                        instructor.instructor_id_id, 
+                        instructor.instructor_id_id
+                    )
+                
+                # Determine status from pre-fetched sets
+                submitted = "Submitted" if course.id in submitted_courses else "Not Submitted"
+                verified = "Verified" if course.id in verified_courses else "Not Verified"
+                
+                # Check validation status
+                validated = "Not Validated"
+                if course.id in verified_courses:  # Only check if verified
+                    auth_record = auth_records_map.get(course.id)
+                    if (auth_record and auth_record.authenticator_1 and 
+                        auth_record.authenticator_2 and auth_record.authenticator_3):
+                        validated = "Validated"
+                
+                grade_status_list.append({
+                    "course_code": course.code,
+                    "course_name": course.name,
+                    "course_id": course.id,
+                    "professor_name": professor_name,
+                    "submitted": submitted,
+                    "verified": verified,
+                    "validated": validated,
+                    "credits": course.credit,
+                    "version": course.version
+                })
+                
+            return Response({
+                "success": True,
+                "grade_status": grade_status_list,
+                "academic_year": academic_year,
+                "semester_type": semester_type
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {"error": f"An error occurred: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 class GenerateStudentResultPDFAPI(APIView):
     """
