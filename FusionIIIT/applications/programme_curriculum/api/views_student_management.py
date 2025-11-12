@@ -2128,7 +2128,7 @@ def create_batch(request):
                     }, status=400)
         
         # Students will be assigned specific curriculums when they become REPORTED based on specialization
-        if programme == 'M.Tech' and len(curriculum_objs) > 1:
+        if programme in ['M.Tech', 'M.Des', 'Phd'] and len(curriculum_objs) > 1:
             primary_curriculum = None  
         elif len(curriculum_objs) == 1:
             primary_curriculum = curriculum_objs[0]
@@ -2144,7 +2144,7 @@ def create_batch(request):
         else:
             return JsonResponse({
                 'success': False,
-                'message': f'Multiple curriculum assignment is currently only supported for M.Tech programmes.',
+                'message': f'Multiple curriculum assignment is currently only supported for PG programmes (M.Tech, M.Des, Phd).',
                 'validation_error': 'unsupported_multi_curriculum'
             }, status=400)
         
@@ -2198,6 +2198,23 @@ def create_batch(request):
                 'message': f'Failed to create batch: {str(batch_error)}'
             }, status=500)
 
+        # Persist curriculum options for multi-curriculum batches (all PG programmes)
+        if programme in ['M.Tech', 'M.Des', 'Phd'] and len(curriculum_objs) > 1:
+            try:
+                batch.curriculum_options = [
+                    {'id': c.id, 'name': c.name, 'version': c.version} for c in curriculum_objs
+                ]
+                batch.save()
+            except Exception:
+                # Non-fatal: we already created the batch; just continue
+                pass
+        else:
+            # Clear any previous options for single-curriculum batches
+            try:
+                batch.curriculum_options = None
+                batch.save()
+            except Exception:
+                pass
         if programme == 'M.Tech' and len(curriculum_objs) > 1:
             success_message = f'Multi-curriculum M.Tech batch created! Students will be auto-assigned to curriculums based on their specialization.'
             curriculum_info = {
@@ -2483,36 +2500,57 @@ def auto_generate_passwords_for_batch(request):
 def get_available_curriculums_for_batch(batch_obj):
     """
     Get available curriculums for a batch based on programme and discipline
-    For multi-curriculum M.Tech batches, return all relevant curriculums
+    For multi-curriculum PG batches (M.Tech, M.Des), return all relevant curriculums
     """
     if not batch_obj:
         return []
     
     from applications.programme_curriculum.models import Curriculum
     
-    # Check if this is a multi-curriculum M.Tech batch
-    if batch_obj.name == 'M.Tech' and not batch_obj.curriculum:
+    if hasattr(batch_obj, 'curriculum_options') and batch_obj.curriculum_options:
+        return batch_obj.curriculum_options
+
+    # Check if this is a multi-curriculum PG batch (M.Tech, M.Des, PhD, etc.)
+    if batch_obj.name in ['M.Tech', 'M.Des', 'Phd'] and not batch_obj.curriculum:
         # Get all working curriculums for this discipline and programme
         available_curriculums = Curriculum.objects.filter(
             working_curriculum=True,
-            programme__name__icontains='M.Tech'
+            programme__name__icontains=batch_obj.name
         )
         
         # Filter by discipline if possible (based on common patterns)
         discipline_name = batch_obj.discipline.name.lower()
+        discipline_filtered = available_curriculums
+        
+        # Apply discipline-specific filtering for various disciplines
         if 'computer science' in discipline_name or 'cse' in discipline_name:
-            # Return CSE-related curriculums
-            cse_curriculums = available_curriculums.filter(
-                Q(name__icontains='CSE') | 
-                Q(name__icontains='AI') | 
+            discipline_filtered = available_curriculums.filter(
+                Q(name__icontains='AI') |
                 Q(name__icontains='Data Science') |
                 Q(name__icontains='Computer Science')
             )
-            if cse_curriculums.exists():
-                return [{'id': c.id, 'name': c.name, 'version': c.version} for c in cse_curriculums]
-        
-        # Fallback to all M.Tech curriculums
-        return [{'id': c.id, 'name': c.name, 'version': c.version} for c in available_curriculums]
+        elif 'electronics' in discipline_name or 'ece' in discipline_name:
+            discipline_filtered = available_curriculums.filter(
+                Q(name__icontains='Communication and Signal Processing') |
+                Q(name__icontains='Nanoelectronics and VLSI Design') |
+                Q(name__icontains='Power & Control')
+            )
+        elif 'mechanical engineering' in discipline_name or 'me' in discipline_name:
+            discipline_filtered = available_curriculums.filter(
+                Q(name__icontains='Design') |
+                Q(name__icontains='CAD/CAM') |
+                Q(name__icontains='Manufacturing and Automation')
+            )
+        elif 'mechatronics' in discipline_name or 'mt' in discipline_name:
+            discipline_filtered = available_curriculums.filter(
+                Q(name__icontains='Mechatronics')
+            )
+        elif 'design' in discipline_name or 'des' in discipline_name:
+            discipline_filtered = available_curriculums.filter(
+                Q(name__icontains='Design')
+            )
+        final_curriculums = discipline_filtered if discipline_filtered.exists() else available_curriculums
+        return [{'id': c.id, 'name': c.name, 'version': c.version} for c in final_curriculums]
     
     elif batch_obj.curriculum:
         # Single curriculum batch

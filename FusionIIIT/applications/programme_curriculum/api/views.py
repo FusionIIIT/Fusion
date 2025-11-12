@@ -536,11 +536,33 @@ def Admin_view_all_working_curriculums(request):
     # Manually serialize the curriculums into a list of dictionaries
     curriculum_data = []
     for curriculum in curriculums:
+        primary_batches = curriculum.batches.all()
+
+        from django.db.models import Q
+        multi_curriculum_batches = Batch.objects.filter(
+            curriculum_options__isnull=False
+        ).exclude(
+            curriculum_options=[]
+        )
+
+        batches_with_this_curriculum = []
+        for batch in primary_batches:
+            batches_with_this_curriculum.append(batch)
+            
+        for batch in multi_curriculum_batches:
+            if batch.curriculum_options:
+                for curr_option in batch.curriculum_options:
+                    if curr_option.get('id') == curriculum.id:
+                        batches_with_this_curriculum.append(batch)
+                        break
+
+        unique_batches = list(set(batches_with_this_curriculum))
+        
         curriculum_data.append({
             'id':curriculum.id,
             'name': curriculum.name,
             'version': str(curriculum.version),  # Convert Decimal to string for JSON compatibility
-            'batch': [str(batch) for batch in curriculum.batches],  # Use batches property from model
+            'batch': [str(batch) for batch in unique_batches],  # Include both primary and multi-curriculum batches
             'semesters': curriculum.no_of_semester,
         })
 
@@ -1833,7 +1855,7 @@ def edit_batch_form(request, batch_id):
             curricula_data = [{
                 'id': curriculum.id,
                 'name': curriculum.name,
-                'version': curriculum.version,
+                'version': str(curriculum.version),
                 # Uncomment these if you want to include discipline and programme details
                 # 'discipline': curriculum.discipline.name,
                 # 'programme': curriculum.programme.name,
@@ -1870,16 +1892,52 @@ def edit_batch_form(request, batch_id):
                 except Discipline.DoesNotExist:
                     return JsonResponse({'error': 'Invalid discipline ID'}, status=400)
 
-            # Update curriculum (if provided)
-            curriculum_id = data.get('disciplineBatch')
-            if curriculum_id:
-                try:
-                    curriculum = Curriculum.objects.get(id=curriculum_id)
-                    batch.curriculum = curriculum
-                except Curriculum.DoesNotExist:
-                    return JsonResponse({'error': 'Invalid curriculum ID'}, status=400)
-            else:
-                batch.curriculum = None  # Set curriculum to None if not provided
+            curriculum_data = data.get('disciplineBatch') or data.get('curriculum') or data.get('curriculum_data')
+            if curriculum_data is not None:
+                # Normalize to list of ids if possible
+                curriculum_ids = []
+                if isinstance(curriculum_data, list):
+                    curriculum_ids = curriculum_data
+                elif isinstance(curriculum_data, str):
+                    if ',' in curriculum_data:
+                        curriculum_ids = [c.strip() for c in curriculum_data.split(',') if c.strip()]
+                    elif curriculum_data.lower() in ['null', 'none', '']:
+                        curriculum_ids = []
+                    else:
+                        curriculum_ids = [curriculum_data]
+                else:
+                    curriculum_ids = [curriculum_data]
+
+                if len(curriculum_ids) > 1:
+                    option_list = []
+                    for cid in curriculum_ids:
+                        try:
+                            c_obj = Curriculum.objects.get(id=int(cid))
+                            option_list.append({'id': c_obj.id, 'name': c_obj.name, 'version': str(c_obj.version)})
+                        except (Curriculum.DoesNotExist, ValueError):
+                            return JsonResponse({'error': f'Invalid curriculum ID: {cid}'}, status=400)
+                    batch.curriculum = None
+                    try:
+                        batch.curriculum_options = option_list
+                    except Exception:
+                        pass
+                elif len(curriculum_ids) == 1:
+                    # Single curriculum selected
+                    try:
+                        c_obj = Curriculum.objects.get(id=int(curriculum_ids[0]))
+                        batch.curriculum = c_obj
+                        try:
+                            batch.curriculum_options = None
+                        except Exception:
+                            pass
+                    except (Curriculum.DoesNotExist, ValueError):
+                        return JsonResponse({'error': 'Invalid curriculum ID'}, status=400)
+                else:
+                    batch.curriculum = None
+                    try:
+                        batch.curriculum_options = None
+                    except Exception:
+                        pass
 
             # Save the updated batch
             batch.save()
@@ -3215,7 +3273,6 @@ def course_slot_type_choices(request):
     API endpoint to return the list of course slot type choices from the CourseSlot model.
     """
     choices = [{'value': key, 'label': label} for key, label in CourseSlot._meta.get_field('type').choices]
-    # print(choices)
     return JsonResponse({'choices': choices})
 
 @csrf_exempt
@@ -3277,14 +3334,6 @@ def get_programme(request, programme_id):
 @permission_classes([IsAuthenticated])
 def get_batch_names(request):
     choices = [{'value': key, 'label': label} for key, label in Batch._meta.get_field('name').choices]
-    # print('choices',choices)
-
-    # batch_names = Batch.objects.values_list('name', flat=True).distinct()
-    # print(batch_names)
-    # # Convert the QuerySet to a list
-    # batch_names_list = list(batch_names)
-    # print(batch_names_list)
-    # Return the list as a JSON response
     return JsonResponse({'choices': choices})
 
 @csrf_exempt
@@ -3309,13 +3358,9 @@ def get_all_disciplines(request):
 @csrf_exempt
 @permission_classes([IsAuthenticated])
 def get_unused_curriculam(request):
-    # Fetch all curriculum IDs that are present in the Batch table
     used_curriculum_ids = Batch.objects.exclude(curriculum__isnull=True).values_list('curriculum_id', flat=True)
-
-    # Fetch curricula whose IDs are not in the used_curriculum_ids list
     unused_curricula = Curriculum.objects.exclude(id__in=used_curriculum_ids)
-
-    # Serialize the unused curricula
+    # ...existing code...
     unused_curricula_data = [
         {
             'id': curriculum.id,

@@ -231,6 +231,7 @@ class Batch(models.Model):
         default=datetime.date.today().year, null=False)
     curriculum = models.ForeignKey(
         Curriculum, null=True, blank=True, on_delete=models.SET_NULL)
+    curriculum_options = models.JSONField(null=True, blank=True)
     running_batch = models.BooleanField(default=True)
     total_seats = models.PositiveIntegerField(default=60, null=False, blank=False)
 
