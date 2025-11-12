@@ -570,6 +570,7 @@ def admin_view_all_batches(request):
 
     batches = batches.filter(running_batch=True)
 
+    from applications.programme_curriculum.api.views_student_management import get_batch_curriculum_display
 
     return render(request, 'programme_curriculum/acad_admin/admin_view_all_batches.html', {'batches': batches, 'finished_batches': finished_batches, 'batchfilter': batchfilter})
 

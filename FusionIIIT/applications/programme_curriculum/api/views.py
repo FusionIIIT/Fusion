@@ -13,6 +13,7 @@ from ..forms import ProgrammeForm, DisciplineForm, CurriculumForm, SemesterForm,
 from ..filters import CourseFilter, BatchFilter, CurriculumFilter
 
 from .serializers import CourseSerializer,CurriculumSerializer,BatchSerializer
+from .views_student_management import get_batch_curriculum_display, get_available_curriculums_for_batch
 from django.core.serializers import serialize
 from django.db import IntegrityError, transaction
 from django.utils import timezone
@@ -880,13 +881,17 @@ def admin_view_all_batches(request):
         # Use centralized filled seats calculation function
         filled_seats = calculate_batch_filled_seats(batch)
         available_seats = max(0, batch.total_seats - filled_seats)
+
+        from .views_student_management import get_batch_curriculum_display
+        curriculum_display = get_batch_curriculum_display(batch)
         
         batch_data.append({
             'batch_id': batch.id,
             'name': batch.name,
             'discipline': str(batch.discipline.acronym),
             'year': batch.year,
-            'curriculum': batch.curriculum.name if batch.curriculum else None,
+            'curriculum': curriculum_display if curriculum_display != "No curriculum assigned" else (batch.curriculum.name if batch.curriculum else None),
+            'curriculum_display': curriculum_display,
             'id': batch.curriculum.id if batch.curriculum else None,
             'curriculumVersion': batch.curriculum.version if batch.curriculum else None,
             'running_batch': batch.running_batch,
@@ -907,12 +912,17 @@ def admin_view_all_batches(request):
         filled_seats = calculate_batch_filled_seats(batch)
         available_seats = max(0, batch.total_seats - filled_seats)
         
+        # Get curriculum display for multi-curriculum support
+        from .views_student_management import get_batch_curriculum_display
+        curriculum_display = get_batch_curriculum_display(batch)
+        
         finished_batch_data.append({
             'batch_id': batch.id,
             'name': batch.name,
             'discipline': str(batch.discipline.acronym),
             'year': batch.year,
-            'curriculum': batch.curriculum.name if batch.curriculum else None,
+            'curriculum': curriculum_display if curriculum_display != "No curriculum assigned" else (batch.curriculum.name if batch.curriculum else None),
+            'curriculum_display': curriculum_display,
             'id': batch.curriculum.id if batch.curriculum else None,
             'curriculumVersion': batch.curriculum.version if batch.curriculum else None,
             'running_batch': batch.running_batch,
@@ -1807,8 +1817,10 @@ def edit_batch_form(request, batch_id):
             'name': batch.name,
             'year': batch.year,
             'curriculum_id': batch.curriculum_id,
+            'curriculum_display': get_batch_curriculum_display(batch),
             'running_batch': batch.running_batch,
             'total_seats': batch.total_seats,  # Add total_seats to GET response
+            'available_curriculums': get_available_curriculums_for_batch(batch),
         }
 
         curricula_data = None
@@ -1835,7 +1847,7 @@ def edit_batch_form(request, batch_id):
             try:
                 batch = Batch.objects.get(id=batch_id)
             except Batch.DoesNotExist:
-                return JsonResponse({'error': 'Batch not found'}, status=status.HTTP_404_NOT_FOUND)
+                return JsonResponse({'error': 'Batch not found'}, status=404)
 
             # Parse the incoming JSON data
             data = json.loads(request.body)
@@ -1856,7 +1868,7 @@ def edit_batch_form(request, batch_id):
                     discipline = Discipline.objects.get(id=discipline_id)
                     batch.discipline = discipline
                 except Discipline.DoesNotExist:
-                    return JsonResponse({'error': 'Invalid discipline ID'}, status=status.HTTP_400_BAD_REQUEST)
+                    return JsonResponse({'error': 'Invalid discipline ID'}, status=400)
 
             # Update curriculum (if provided)
             curriculum_id = data.get('disciplineBatch')
@@ -1865,18 +1877,17 @@ def edit_batch_form(request, batch_id):
                     curriculum = Curriculum.objects.get(id=curriculum_id)
                     batch.curriculum = curriculum
                 except Curriculum.DoesNotExist:
-                    return JsonResponse({'error': 'Invalid curriculum ID'}, status=status.HTTP_400_BAD_REQUEST)
+                    return JsonResponse({'error': 'Invalid curriculum ID'}, status=400)
             else:
                 batch.curriculum = None  # Set curriculum to None if not provided
 
             # Save the updated batch
             batch.save()
             
-            return JsonResponse({'status': status.HTTP_200_OK, 'message': 'Batch updated successfully'})
+            return JsonResponse({'status': 'success', 'message': 'Batch updated successfully'})
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    return JsonResponse({'error': 'Invalid request method'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 def instigate_semester(request, semester_id):
     """
