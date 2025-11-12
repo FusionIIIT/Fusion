@@ -172,7 +172,7 @@ class StudentBatchUpload(models.Model):
     ]
     
     # Core identification fields
-    jee_app_no = models.CharField(max_length=50, unique=True, help_text="JEE Application Number")
+    jee_app_no = models.CharField(max_length=50, unique=True, help_text="JEE App. No./CCMT Roll. No.")
     roll_number = models.CharField(max_length=20, unique=True, blank=True, null=True, help_text="Institute Roll Number")
     institute_email = models.EmailField(blank=True, null=True, help_text="Institute Email ID")
     
@@ -199,6 +199,7 @@ class StudentBatchUpload(models.Model):
     
     # Academic information
     branch = models.CharField(max_length=200, help_text="Discipline/Branch")
+    specialization = models.CharField(max_length=200, blank=True, null=True, help_text="Specialization")
     date_of_birth = models.DateField(blank=True, null=True)
     ai_rank = models.IntegerField(blank=True, null=True, help_text="JEE AI Rank", db_column='jee_rank')
     category_rank = models.IntegerField(blank=True, null=True, help_text="Category Rank")

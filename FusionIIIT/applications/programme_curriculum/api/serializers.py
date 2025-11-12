@@ -33,9 +33,18 @@ class DisciplineSerializer(serializers.ModelSerializer):
 # this is for Curriculum ....
 # fields in fronted form --> name, version , batch , no of semester
 class BatchSerializer(serializers.ModelSerializer):
+    curriculum_display = serializers.SerializerMethodField()
+    
     class Meta:
         model = Batch
         fields = '__all__'
+    
+    def get_curriculum_display(self, obj):
+        """
+        Get appropriate curriculum display for both single and multi-curriculum batches
+        """
+        from applications.programme_curriculum.api.views_student_management import get_batch_curriculum_display
+        return get_batch_curriculum_display(obj)
 
 
 

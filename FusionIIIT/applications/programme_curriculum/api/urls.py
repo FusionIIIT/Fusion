@@ -36,7 +36,7 @@ urlpatterns = [
     path('admin_add_course/', views.add_course_form, name='add_course_form'),
     path('admin_add_courseslot/', views.add_courseslot_form, name='add_courseslot_form'),
     path('admin_add_course/', views.add_course_form, name='add_course_form'),
-    path('admin_add_batch/', views.add_batch_form, name='add_batch_form'),
+    path('admin_add_batch/', views_student_management.create_batch, name='admin_add_batch'),
 
     path('admin_update_course/<course_id>/', views.update_course_form, name='update_course_form'),
     path('admin_course_audit_logs/<course_id>/', views.course_audit_logs, name='course_audit_logs'),
