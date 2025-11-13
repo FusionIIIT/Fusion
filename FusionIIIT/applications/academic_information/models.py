@@ -41,15 +41,22 @@ class Constants:
 
     MTechSpecialization = (
         ('Power and Control', 'Power and Control'),
+        ('Power & Control', 'Power & Control'),  # Alternative format
         ('Microwave and Communication Engineering', 'Microwave and Communication Engineering'),
+        ('Communication and Signal Processing', 'Communication and Signal Processing'),
         ('Micro-nano Electronics', 'Micro-nano Electronics'),
+        ('Nanoelectronics and VLSI Design', 'Nanoelectronics and VLSI Design'),
         ('CAD/CAM', 'CAD/CAM'),
         ('Design', 'Design'),
         ('Manufacturing', 'Manufacturing'),
+        ('Manufacturing and Automation', 'Manufacturing and Automation'),
         ('CSE', 'CSE'),
+        ('AI & ML', 'AI & ML'),
+        ('Data Science', 'Data Science'),
         ('Mechatronics', 'Mechatronics'),
         ('MDes', 'MDes'),
-        ('None', 'None')
+        ('None', 'None'),
+        ('', 'No Specialization')
     )
 
     COURSE_TYPE = (
