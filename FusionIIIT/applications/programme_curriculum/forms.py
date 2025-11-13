@@ -229,13 +229,9 @@ class BatchForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(BatchForm, self).__init__(*args, **kwargs)
         
-        # Get the list of curriculum ids that are already assigned to batches (excluding NULL values)
-        assigned_curriculum_ids = Batch.objects.filter(curriculum__isnull=False).values_list('curriculum', flat=True)
+        available_curriculums = Curriculum.objects.filter(working_curriculum=True)
 
-        # Exclude curriculums already in use
-        available_curriculums = Curriculum.objects.exclude(id__in=assigned_curriculum_ids)
 
-        # Add an empty option (blank choice) at the start of the curriculum choices
         self.fields['curriculum'].queryset = available_curriculums
         self.fields['curriculum'].empty_label = "Select Curriculum"  # This adds a blank option with a label
 

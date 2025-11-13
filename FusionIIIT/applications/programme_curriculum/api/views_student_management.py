@@ -3,6 +3,8 @@ import pandas as pd
 import openpyxl
 import random
 import string
+import sys
+import os
 from io import BytesIO
 from datetime import datetime, date
 from django.http import JsonResponse, HttpResponse
@@ -52,6 +54,9 @@ def parse_request_data(request, field_mappings=None):
     """
     try:
         data = json.loads(request.body)
+
+        if not isinstance(data, dict):
+            return {}
     except json.JSONDecodeError:
         # Fallback: accept form-encoded or multipart form data from frontend
         try:
@@ -320,18 +325,12 @@ def validate_batch_curriculum_requirements(batch_year, academic_year, action_con
         }, status=400)
 
     batches_without_curriculum = existing_batches.filter(curriculum__isnull=True)
-    non_multi_curriculum_batches = []
     
-    for batch in batches_without_curriculum:
-        available_curriculums = get_available_curriculums_for_batch(batch)
-        if not (batch.name == 'M.Tech' and len(available_curriculums) > 1):
-            non_multi_curriculum_batches.append(batch)
-    
-    if non_multi_curriculum_batches:
-        batch_names = [f"{batch.name} {batch.discipline.acronym}" for batch in non_multi_curriculum_batches]
+    if batches_without_curriculum.exists():
+        batch_names = [f"{batch.name} {batch.discipline.acronym}" for batch in batches_without_curriculum]
         return JsonResponse({
             'success': False,
-            'message': f'The following batches for {academic_year} exist but have no curriculum assigned: {", ".join(batch_names)}. Please assign curriculums to all batches first. (Multi-curriculum M.Tech batches are allowed)',
+            'message': f'The following batches for {academic_year} exist but have no curriculum assigned: {", ".join(batch_names)}. Please assign a curriculum to all batches first.',
             'validation_error': 'batch_missing_curriculum',
             'batches_without_curriculum': batch_names,
             'academic_year': academic_year
@@ -715,7 +714,7 @@ def save_students_batch(request):
         valid_students_only = []
         skipped_invalid = 0
         
-        for student in students:
+        for i, student in enumerate(students):
             student_phone, father_phone, phone_errors = validate_phone_numbers(student)
             if phone_errors:
                 skipped_invalid += 1
@@ -726,11 +725,12 @@ def save_students_batch(request):
 
         processed_students = process_batch_allocation(valid_students_only, programme_type, batch_year)
         
-        for student_data in processed_students:
+        for i, student_data in enumerate(processed_students):
             try:
                 with transaction.atomic():
                     student_name = student_data.get('Name') or student_data.get('name', 'Unknown')
                     name = (student_data.get('Name') or student_data.get('name', '')).strip()
+                    
                     if not name:
                         validation_errors += 1
                         errors.append(f"Student at row has no name - skipping")
@@ -740,10 +740,35 @@ def save_students_batch(request):
                     dob = parse_date_flexible(dob_value)
                     
                     discipline_name = student_data.get('Discipline') or student_data.get('branch', '')
+                    specialization = student_data.get('Specialization') or student_data.get('specialization', '')
                     
-                    batch_name = get_batch_name_from_discipline(discipline_name, programme_type)
+                    # For M.Tech students, use specialization-specific batch names
+                    if programme_type == 'pg' and specialization:
+                        if 'design' in discipline_name.lower():
+                            batch_name = 'M.Des'
+                        elif specialization == 'Mechatronics':
+                            batch_name = 'M.Tech'  # Mechatronics batch is just named "M.Tech"
+                        else:
+                            batch_name = f'M.Tech {specialization}'
+                    else:
+                        batch_name = get_batch_name_from_discipline(discipline_name, programme_type)
                     
-                    discipline_obj = get_or_create_discipline(discipline_name)
+
+                    if programme_type == 'pg' and specialization:
+                        if 'design' in discipline_name.lower():
+                            discipline_obj = get_or_create_discipline('Design')
+                        elif specialization in ['Data Science', 'AI & ML']:
+                            discipline_obj = get_or_create_discipline('Computer Science and Engineering')
+                        elif specialization in ['Communication and Signal Processing', 'Nanoelectronics and VLSI Design', 'Power & Control']:
+                            discipline_obj = get_or_create_discipline('Electronics and Communication Engineering')
+                        elif specialization in ['Design', 'CAD/CAM', 'Manufacturing and Automation']:
+                            discipline_obj = get_or_create_discipline('Mechanical Engineering')
+                        elif specialization == 'Mechatronics':
+                            discipline_obj = get_or_create_discipline('Mechatronics')
+                        else:
+                            discipline_obj = get_or_create_discipline(discipline_name)
+                    else:
+                        discipline_obj = get_or_create_discipline(discipline_name)
                     
                     try:
                         batch_obj = Batch.objects.get(
@@ -768,6 +793,8 @@ def save_students_batch(request):
                             'required_action': f'Create batch for {batch_name} {discipline_obj.name} Year-{batch_year} via Admin Batch Management first'
                         })
                         continue
+
+                    student_name = student_data.get('Name') or student_data.get('name', 'Unknown')
                     
                     student_upload = StudentBatchUpload.objects.create(
                         # Core identification - handle both field name formats
@@ -887,6 +914,7 @@ def save_students_batch(request):
 
 def process_batch_allocation(students, programme_type, batch_year=None):
     """Process batch allocation algorithm"""
+    
     if batch_year is None:
         current_year = datetime.now().year
         batch_year = current_year if datetime.now().month >= 7 else current_year - 1
@@ -895,7 +923,7 @@ def process_batch_allocation(students, programme_type, batch_year=None):
 
     branch_groups = {}
     
-    for student in students:
+    for i, student in enumerate(students):
         branch_field = student.get('Discipline', '') or student.get('branch', '')
         branch_code = get_branch_code(branch_field, programme_type)
         
@@ -907,7 +935,7 @@ def process_batch_allocation(students, programme_type, batch_year=None):
             'branch_code': branch_code,
             'display_branch': get_display_branch_name(branch_field)
         })
-
+  
     for branch_code in branch_groups:
         branch_groups[branch_code].sort(key=lambda x: x.get('Name', '') or x.get('name', ''))
     
@@ -982,10 +1010,14 @@ def generate_institute_email(roll_number):
     return f"{roll_number.lower()}@iiitdmj.ac.in"
 
 def generate_password():
-    import random
+    """Generate a cryptographically secure password"""
+    import secrets
     import string
+    length = 12
     charset = string.ascii_letters + string.digits + "!@#$%"
-    return ''.join(random.choice(charset) for _ in range(8))
+    password = ''.join(secrets.choice(charset) for _ in range(length))
+    
+    return password
 
 def get_allocation_summary(students, programme_type):
     branch_counts = {}
@@ -1230,6 +1262,7 @@ def update_student_status(request):
     """
     Update student reported status
     """
+    
     if request.method == 'OPTIONS':
         response = JsonResponse({})
         response['Access-Control-Allow-Origin'] = '*'
@@ -1369,37 +1402,83 @@ def update_student_status(request):
                         # FIND existing discipline based on department mapping
                         discipline = None
                         try:
-                            if dept_name == 'Design':
-                                discipline = Discipline.objects.filter(
-                                    acronym='Des.',
-                                    name='Design'
-                                ).first()
+                            # For PG students with specialization, use the same mapping as upload logic
+                            if student.programme_type == 'pg' and student.specialization:
+                                if student.specialization in ['Data Science', 'AI & ML']:
+                                    discipline_name = 'Computer Science and Engineering'
+                                elif student.specialization in ['Communication and Signal Processing', 'Nanoelectronics and VLSI Design', 'Power & Control']:
+                                    discipline_name = 'Electronics and Communication Engineering'
+                                elif student.specialization in ['Design', 'CAD/CAM', 'Manufacturing and Automation']:
+                                    discipline_name = 'Mechanical Engineering'
+                                elif student.specialization == 'Mechatronics':
+                                    discipline_name = 'Mechatronics'
+                                else:
+                                    branch_field = student.branch or ''
+                                    branch_upper = branch_field.upper()
+                                    if 'COMPUTER SCIENCE' in branch_upper or 'CSE' in branch_upper:
+                                        discipline_name = 'Computer Science and Engineering'
+                                    elif 'ELECTRONICS' in branch_upper or 'ECE' in branch_upper:
+                                        discipline_name = 'Electronics and Communication Engineering'
+                                    elif 'MECHANICAL' in branch_upper or 'ME' in branch_upper:
+                                        discipline_name = 'Mechanical Engineering'
+                                    elif 'DESIGN' in branch_upper or 'DES' in branch_upper:
+                                        discipline_name = 'Design'
+                                    else:
+                                        discipline_name = 'Computer Science and Engineering'
+
+                                discipline = Discipline.objects.filter(name__exact=discipline_name).first()
+                                if not discipline:
+                                    discipline = Discipline.objects.filter(name__icontains=discipline_name.split()[0]).first()
+                            else:
+                                branch_field = student.branch or ''
+                                branch_upper = branch_field.upper()
+
+                                if 'COMPUTER SCIENCE' in branch_upper or 'CSE' in branch_upper:
+                                    dept_name = 'CSE'
+                                    discipline_name = 'Computer Science and Engineering'
+                                elif 'ELECTRONICS' in branch_upper or 'ECE' in branch_upper:
+                                    dept_name = 'ECE'
+                                    discipline_name = 'Electronics and Communication Engineering'
+                                elif 'MECHANICAL' in branch_upper or 'ME' in branch_upper:
+                                    dept_name = 'ME'
+                                    discipline_name = 'Mechanical Engineering'
+                                elif 'SMART MANUFACTURING' in branch_upper or 'SMART' in branch_upper or 'SM' in branch_upper:
+                                    dept_name = 'SM'
+                                    discipline_name = 'Smart Manufacturing'
+                                elif 'DESIGN' in branch_upper or 'DES' in branch_upper or 'B.DES' in branch_upper:
+                                    dept_name = 'Design'  # Exact database name
+                                    discipline_name = 'Design'
+                                    discipline_acronym = 'Des.'  # Use existing acronym
+                                else:
+                                    dept_name = 'CSE'
+                                    discipline_name = 'Computer Science and Engineering'
+                                
+                                if dept_name == 'Design':
+                                    discipline = Discipline.objects.filter(
+                                        acronym='Des.',
+                                        name='Design'
+                                    ).first()
+                                    
+                                    if not discipline:
+                                        discipline = Discipline.objects.filter(name__icontains='design').first()
+                                else:
+                                    discipline = Discipline.objects.filter(
+                                        acronym=dept_name,
+                                        name__exact=discipline_name
+                                    ).first()
                                 
                                 if not discipline:
-                                    discipline = Discipline.objects.filter(name__icontains='design').first()
-                            else:
-                                discipline = Discipline.objects.filter(
-                                    acronym=dept_name,
-                                    name__exact=discipline_name
-                                ).first()
-                            
-                            if not discipline:
-                                disciplines = Discipline.objects.filter(acronym=dept_name).order_by('name')
-                                discipline = disciplines.first()
-                                
+                                    disciplines = Discipline.objects.filter(acronym=dept_name).order_by('name')
+                                    discipline = disciplines.first()
+                                    
                         except Exception as e:
                             pass
 
-                        if not discipline and dept_name != 'Design':
-                            try:
-                                discipline = Discipline.objects.create(
-                                    name=discipline_name,
-                                    acronym=dept_name
-                                )
-                            except Exception as e:
-                                discipline = Discipline.objects.filter(acronym=dept_name).first()
-                        elif not discipline and dept_name == 'Design':
-                            discipline = Discipline.objects.filter(name__icontains='design').first()
+                        if not discipline:
+                            if student.programme_type == 'pg' and student.specialization:
+                                discipline = Discipline.objects.filter(name__icontains='Computer Science').first()  # Default fallback
+                            else:
+                                discipline = Discipline.objects.filter(acronym='CSE').first()  # Default fallback
                         
                         # FIND existing programme based on correct naming pattern
                         if student.programme_type == 'ug':
@@ -1474,113 +1553,139 @@ def update_student_status(request):
                         transfer_message_addition = ""
 
                         curriculum_assigned = False
-                        if student.programme_type == 'pg' and (student.specialization or 'design' in student.branch.lower()):
-                            from applications.programme_curriculum.models import Curriculum
+                        if student.programme_type == 'pg':
+                            curriculum_id = get_curriculum_by_specialization(student.specialization, discipline)
                             
-                            # Direct mapping based on student specialization to exact curriculum names
-                            spec_lower = (student.specialization or '').lower().strip()
-                            target_curriculum_name = None
-                            
-                            # CSE specializations
-                            if spec_lower == 'data science':
-                                target_curriculum_name = 'CSE Data Science PG Curriculum'
-                            elif spec_lower in ['ai & ml', 'ai and ml', 'artificial intelligence', 'machine learning']:
-                                target_curriculum_name = 'CSE AI & ML PG Curriculum'
-                            
-                            # ECE specializations
-                            elif spec_lower in ['communication and signal processing', 'signal processing', 'communication']:
-                                target_curriculum_name = 'ECE Communication and Signal Processing PG Curriculum'
-                            elif spec_lower in ['nanoelectronics and vlsi design', 'vlsi', 'nanoelectronics']:
-                                target_curriculum_name = 'ECE Nanoelectronics and VLSI Design PG Curriculum'
-                            elif spec_lower in ['power & control', 'power and control', 'power systems']:
-                                target_curriculum_name = 'ECE Power & Control PG Curriculum'
-                            
-                            # ME specializations
-                            elif spec_lower in ['cad/cam', 'cad', 'cam']:
-                                target_curriculum_name = 'ME CAD/CAM PG Curriculum'
-                            elif spec_lower in ['manufacturing and automation', 'manufacturing', 'automation']:
-                                target_curriculum_name = 'ME Manufacturing and Automation PG Curriculum'
-                            elif spec_lower in ['design']:
-                                target_curriculum_name = 'ME Design PG Curriculum'
-                            
-                            # MT specializations
-                            elif spec_lower == 'mechatronics':
-                                target_curriculum_name = 'MT PG Curriculum'
-                            
-                            # Design specializations (no specialization subdivision for Design)
-                            elif spec_lower in ['total design', 'design'] or spec_lower == '' or spec_lower is None:
-                                # For Design students, check if they're actually from Design discipline
-                                if 'design' in student.branch.lower():
-                                    target_curriculum_name = 'Design PG Curriculum'
-
-                            if target_curriculum_name:
+                            if curriculum_id:
                                 try:
-                                    target_curriculum = Curriculum.objects.filter(
-                                        name=target_curriculum_name,
-                                        working_curriculum=True
-                                    ).first()
-                                    
-                                    if target_curriculum:
-                                        curriculum_assigned = True
-                                        specialization_display = student.specialization if student.specialization else 'Design (No specialization subdivision)'
-                                        transfer_message_addition += f" | Curriculum: {target_curriculum_name} (Specialization: {specialization_display})"
-                                    else:
-                                        transfer_message_addition += f" | WARNING: {target_curriculum_name} not found in database"
-                                        
-                                except Exception as curriculum_error:
-                                    transfer_message_addition += f" | ERROR assigning {target_curriculum_name}: {str(curriculum_error)}"
+                                    from applications.programme_curriculum.models import Curriculum
+                                    student_specific_curriculum = Curriculum.objects.get(id=curriculum_id, working_curriculum=True)
+                                    curriculum_assigned = True
+                                    specialization_display = student.specialization if student.specialization else 'No specialization'
+                                    transfer_message_addition += f" | Curriculum: {student_specific_curriculum.name} (Specialization: {specialization_display})"
+                                except Curriculum.DoesNotExist:
+                                    transfer_message_addition += f" | WARNING: Curriculum with ID {curriculum_id} not found"
                             else:
-                                specialization_display = student.specialization if student.specialization else 'empty/blank (Design students)'
+                                specialization_display = student.specialization if student.specialization else 'empty/blank'
                                 transfer_message_addition += f" | No curriculum mapping found for specialization '{specialization_display}'"
+                        else:
+                            student_specific_curriculum = None
                         
-                        # Find batch
+
                         try:
-                            batch_obj = Batch.objects.filter(
-                                name=programme_name,    
-                                year=student.year,   
-                                discipline=discipline,  
-                                running_batch=True
-                            ).first()
+                            batch_obj = None
+                            batch_created = False
                             
-                            if batch_obj:
-                                pass
-                            else:
+                            # For PG students with specialization, create/find specialization-specific batches
+                            if programme_category == 'PG' and student.specialization and student_specific_curriculum:
+                                if student.specialization == 'Mechatronics':
+                                    specialization_batch_name = 'M.Tech'
+                                else:
+                                    specialization_batch_name = f"{programme_name} {student.specialization}"
+
                                 batch_obj = Batch.objects.filter(
+                                    name=specialization_batch_name,
                                     year=student.year,
                                     discipline=discipline,
                                     running_batch=True
                                 ).first()
                                 
-                                if batch_obj:
-                                    pass
-                                else:
-                                    # Enhanced error message
-                                    error_msg = f"BATCH NOT FOUND: No existing batch found for {programme_name} {discipline.name} Year-{student.year}. Please create the batch first via Admin Batch Management."
+                                if not batch_obj:
+                                    general_batch = Batch.objects.filter(
+                                        name=programme_name,
+                                        year=student.year,
+                                        discipline=discipline,
+                                        running_batch=True
+                                    ).first()
                                     
-                                    return JsonResponse({
-                                        'success': False,
-                                        'message': error_msg,
-                                        'error_code': 'BATCH_NOT_FOUND',
-                                        'required_action': f'Create batch for {programme_name} {discipline.name} Year-{student.year} via Admin Batch Management first'
-                                    }, status=400)
+                                    if general_batch:
+                                        batch_obj = Batch.objects.create(
+                                            name=specialization_batch_name,
+                                            year=student.year,
+                                            discipline=discipline,
+                                            programme=general_batch.programme,
+                                            curriculum=student_specific_curriculum,
+                                            running_batch=True
+                                        )
+                                        batch_created = True
+                                    else:
+                                        return JsonResponse({
+                                            'success': False,
+                                            'message': f'No base batch found for {programme_name} {discipline.name} Year-{student.year}. Create the general batch first.',
+                                            'error_code': 'BATCH_NOT_FOUND'
+                                        }, status=400)
+
+                            if not batch_obj:
+                                batch_obj = Batch.objects.filter(
+                                    name=programme_name,    
+                                    year=student.year,   
+                                    discipline=discipline,  
+                                    running_batch=True
+                                ).first()
+                            
+                            if not batch_obj and programme_category == 'PG':
+                                from applications.programme_curriculum.models import Programme
+                                pg_programmes = Programme.objects.filter(category='PG')
+                                batch_obj = Batch.objects.filter(
+                                    year=student.year,
+                                    discipline=discipline,
+                                    programme__in=pg_programmes,
+                                    running_batch=True
+                                ).first()
+                                
+                            if not batch_obj and programme_category == 'PG':
+                                batch_obj = Batch.objects.filter(
+                                    year=student.year,
+                                    programme__in=pg_programmes,
+                                    running_batch=True
+                                ).first()
+
+                            if not batch_obj and programme_category == 'PG':
+                                batch_obj = Batch.objects.filter(
+                                    discipline=discipline,
+                                    programme__in=pg_programmes,
+                                    running_batch=True
+                                ).first()
+
+                            if not batch_obj and programme_category == 'PG':
+                                batch_obj = Batch.objects.filter(
+                                    programme__in=pg_programmes,
+                                    running_batch=True
+                                ).first()
+                            elif not batch_obj and programme_category == 'UG':
+                                from applications.programme_curriculum.models import Programme
+                                ug_programmes = Programme.objects.filter(category='UG')
+                                batch_obj = Batch.objects.filter(
+                                    year=student.year,
+                                    discipline=discipline,
+                                    programme__in=ug_programmes,
+                                    running_batch=True
+                                ).first()
+                                
+                                if not batch_obj:
+                                    batch_obj = Batch.objects.filter(
+                                        year=student.year,
+                                        programme__in=ug_programmes,
+                                        running_batch=True
+                                    ).first()
                                 
                         except Exception as e:
-                            return JsonResponse({
-                                'success': False,
-                                'message': f'Error finding batch: {str(e)}',
-                                'error_code': 'BATCH_MATCHING_ERROR',
-                                'required_action': 'Check batch configuration and try again'
-                            }, status=500)
-
-                        student_specific_curriculum = None
-                        if curriculum_assigned:
-                            try:
-                                student_specific_curriculum = Curriculum.objects.filter(
-                                    name=target_curriculum_name,
-                                    working_curriculum=True
+                            from applications.programme_curriculum.models import Programme
+                            if programme_category == 'PG':
+                                pg_programmes = Programme.objects.filter(category='PG')
+                                batch_obj = Batch.objects.filter(
+                                    programme__in=pg_programmes,
+                                    running_batch=True
                                 ).first()
-                            except Exception as e:
-                                pass
+                            elif programme_category == 'UG':
+                                ug_programmes = Programme.objects.filter(category='UG') 
+                                batch_obj = Batch.objects.filter(
+                                    programme__in=ug_programmes,
+                                    running_batch=True
+                                ).first()
+                            else:
+                                batch_obj = Batch.objects.filter(running_batch=True).first()
+                            transfer_message_addition = f" | Warning: Batch matching error: {str(e)}, using fallback batch"
 
                         transfer_message_addition = transfer_message_addition if 'transfer_message_addition' in locals() else ""
 
@@ -1589,10 +1694,14 @@ def update_student_status(request):
                         # USE EXISTING BATCH (NO AUTOMATIC BATCH CREATION)
                         final_batch = batch_obj
                         
-                        if student_specific_curriculum:
-                            transfer_message_addition += f" | Using batch: {final_batch.name} with assigned curriculum: {student_specific_curriculum.name}"
+                        final_batch = batch_obj
+
+                        if batch_created:
+                            transfer_message_addition += f" | Created new batch: {final_batch.name} with curriculum: {final_batch.curriculum.name}"
+                        elif final_batch.curriculum:
+                            transfer_message_addition += f" | Using batch: {final_batch.name} with curriculum: {final_batch.curriculum.name}"
                         else:
-                            transfer_message_addition += f" | Using batch: {final_batch.name} (no specific curriculum found)"
+                            transfer_message_addition += f" | Using batch: {final_batch.name} (no curriculum assigned to batch)"
 
                         academic_student, created = AcademicStudent.objects.get_or_create(
                             id=extra_info, 
@@ -1612,7 +1721,7 @@ def update_student_status(request):
                         )
                         
                         # IMPORTANT: Update ALL fields even if Student already existed
-                        if not created:
+                        if not created:                         
                             academic_student.specialization = specialization
                             academic_student.batch_id = final_batch
                             academic_student.programme = programme_name 
@@ -1621,14 +1730,22 @@ def update_student_status(request):
                             academic_student.mother_name = student.mother_name or '' 
                             academic_student.category = student.category or ''  
                             academic_student.curr_semester_no = current_semester 
-                            academic_student.save()
+                            from applications.academic_information.models import Constants
+                            valid_choices = [choice[0] for choice in Constants.MTechSpecialization]
                             
-                            # BATCH CURRICULUM IS ALREADY ASSIGNED VIA FORM - NO NEED TO MODIFY
                             try:
+                                academic_student.save()
+                            except Exception as save_error:
                                 pass
-                                    
-                            except Exception as e:
-                                pass
+                        else:
+                            pass
+
+                        academic_student.refresh_from_db()
+                            
+                        try:
+                            pass
+                        except Exception as e:
+                            pass
                         
                         # CREATE STUDENT DESIGNATION
                         try:
@@ -1717,13 +1834,6 @@ def update_student_status(request):
                         email_password = auto_generated_password or student.email_password
                         if email_password and not student.password_email_sent:
                             try:
-                                # Create email log entry
-                                email_log = PasswordEmailLog.objects.create(
-                                    student=student,
-                                    sent_to_email=student.institute_email or student.personal_email,
-                                    sent_by=request.user if hasattr(request, 'user') and request.user.is_authenticated else None,
-                                    email_status='PENDING'
-                                )
 
                                 email_sent, email_message = send_password_email_smtp(
                                     student_email=(student.institute_email or student.personal_email or '').lower(), 
@@ -1734,16 +1844,14 @@ def update_student_status(request):
                                 )
                                 
                                 if email_sent:
-                                    email_log.mark_as_sent(email_password)
                                     student.password_email_sent = True  
                                     student.save()
                                     transfer_message += f" | Email sent to {student.institute_email or student.personal_email}"
                                 else:
-                                    email_log.mark_as_failed(email_message)
                                     transfer_message += f" | Email failed: {email_message}"
                                     
                             except Exception as email_error:
-                                transfer_message += f" | Email error: {str(email_error)}"
+                                transfer_message += f" | Email error: {str(email_error)}"             
                     else:
                         transfer_message = "Transfer skipped: No roll number assigned"
                         
@@ -1842,14 +1950,6 @@ def update_student_status(request):
             if hasattr(request, 'user') and request.user.is_authenticated:
                 user = request.user
             
-            StudentStatusLog.objects.create(
-                student=student,
-                changed_by=user,
-                old_reported_status=old_status,
-                new_reported_status=reported_status,
-                change_reason=f'Status updated from {old_status} to {reported_status}',
-                ip_address=request.META.get('REMOTE_ADDR', 'unknown')
-            )
         except Exception:
             pass
         
@@ -2164,58 +2264,26 @@ def create_batch(request):
 
         from applications.programme_curriculum.models import Curriculum
 
-        # Handle multiple curriculums
-        curriculum_objs = []
-        curriculum_names = []
-        
+        curriculum_obj = None
         if curriculum_data:
-            # Handle different data formats for curriculum
-            curriculum_ids = []
+            curriculum_id = None
             
-            if isinstance(curriculum_data, list):
-                curriculum_ids = [str(cid) for cid in curriculum_data if cid]
+            if isinstance(curriculum_data, list) and curriculum_data:
+                curriculum_id = str(curriculum_data[0])  # Take first one for single selection
             elif isinstance(curriculum_data, str):
-                if ',' in curriculum_data:
-                    curriculum_ids = [cid.strip() for cid in curriculum_data.split(',') if cid.strip()]
-                else:
-                    curriculum_ids = [curriculum_data.strip()] if curriculum_data.strip() else []
+                curriculum_id = curriculum_data.strip()
             else:
-                curriculum_ids = [str(curriculum_data)]
+                curriculum_id = str(curriculum_data)
 
-            for cid in curriculum_ids:
-                if not cid or cid == 'null' or cid == 'undefined':
-                    continue
+            if curriculum_id and curriculum_id not in ['null', 'undefined', '']:
                 try:
-                    curriculum_obj = Curriculum.objects.get(id=int(cid), working_curriculum=True)
-                    curriculum_objs.append(curriculum_obj)
-                    curriculum_names.append(curriculum_obj.name)
+                    curriculum_obj = Curriculum.objects.get(id=int(curriculum_id), working_curriculum=True)
                 except (Curriculum.DoesNotExist, ValueError) as e:
                     return JsonResponse({
                         'success': False,
-                        'message': f'Invalid curriculum ID: {cid}. Curriculum not found or not working.',
+                        'message': f'Invalid curriculum ID: {curriculum_id}. Curriculum not found or not working.',
                         'validation_error': 'invalid_curriculum'
                     }, status=400)
-        
-        # Students will be assigned specific curriculums when they become REPORTED based on specialization
-        if programme in ['M.Tech', 'M.Des', 'Phd'] and len(curriculum_objs) > 1:
-            primary_curriculum = None  
-        elif len(curriculum_objs) == 1:
-            primary_curriculum = curriculum_objs[0]
-        elif len(curriculum_objs) == 0:
-            available_curriculums = Curriculum.objects.filter(working_curriculum=True)
-            if not available_curriculums.exists():
-                return JsonResponse({
-                    'success': False,
-                    'message': f'CURRICULUM REQUIRED: No working curriculums found. Please create a curriculum first before creating batches.',
-                    'validation_error': 'missing_curriculum'
-                }, status=400)
-            primary_curriculum = None
-        else:
-            return JsonResponse({
-                'success': False,
-                'message': f'Multiple curriculum assignment is currently only supported for PG programmes (M.Tech, M.Des, Phd).',
-                'validation_error': 'unsupported_multi_curriculum'
-            }, status=400)
         
         from applications.programme_curriculum.models import Discipline
         
@@ -2257,8 +2325,9 @@ def create_batch(request):
                 name=batch_name,
                 discipline=discipline_obj,
                 year=year,
-                curriculum=primary_curriculum,
-                total_seats=total_seats
+                curriculum=curriculum_obj,
+                total_seats=total_seats,
+                running_batch=True
             )
                 
         except Exception as batch_error:
@@ -2267,41 +2336,15 @@ def create_batch(request):
                 'message': f'Failed to create batch: {str(batch_error)}'
             }, status=500)
 
-        # Persist curriculum options for multi-curriculum batches (all PG programmes)
-        if programme in ['M.Tech', 'M.Des', 'Phd'] and len(curriculum_objs) > 1:
-            try:
-                batch.curriculum_options = [
-                    {'id': c.id, 'name': c.name, 'version': c.version} for c in curriculum_objs
-                ]
-                batch.save()
-            except Exception:
-                # Non-fatal: we already created the batch; just continue
-                pass
-        else:
-            # Clear any previous options for single-curriculum batches
-            try:
-                batch.curriculum_options = None
-                batch.save()
-            except Exception:
-                pass
-        if programme == 'M.Tech' and len(curriculum_objs) > 1:
-            success_message = f'Multi-curriculum M.Tech batch created! Students will be auto-assigned to curriculums based on their specialization.'
+        if curriculum_obj:
+            success_message = f'Batch created successfully with curriculum: {curriculum_obj.name}'
             curriculum_info = {
-                'multi_curriculum': True,
-                'curriculum_count': len(curriculum_objs),
-                'assignment_method': 'auto_assign_on_reported'
-            }
-        elif primary_curriculum:
-            success_message = 'Batch created successfully.'
-            curriculum_info = {
-                'multi_curriculum': False,
-                'curriculum': primary_curriculum.name,
-                'curriculum_id': primary_curriculum.id
+                'curriculum': curriculum_obj.name,
+                'curriculum_id': curriculum_obj.id
             }
         else:
-            success_message = 'Batch created successfully.'
+            success_message = 'Batch created successfully (no curriculum assigned)'
             curriculum_info = {
-                'multi_curriculum': False,
                 'curriculum': None,
                 'curriculum_id': None
             }
@@ -2770,11 +2813,25 @@ def get_curriculum_by_specialization(specialization, discipline_obj):
                     return curriculum.id
             except:
                 pass
+
+    elif 'mechatronics' in discipline_name or 'mt' in discipline_name:
+        mechatronics_patterns = ['mechatronics', 'robotics', 'automation']
+        if any(pattern in specialization_lower for pattern in mechatronics_patterns):
+            try:
+                curriculum = Curriculum.objects.filter(
+                    Q(name__icontains='MT PG') | Q(name__icontains='Mechatronics'),
+                    working_curriculum=True,
+                    programme__name__icontains='M.Tech'
+                ).first()
+                if curriculum:
+                    return curriculum.id
+            except Exception as e:
+                pass
     
     # M.Tech Mechanical Engineering (ME) specializations
     elif 'mechanical' in discipline_name or 'me' in discipline_name:
-        # Design patterns
-        design_patterns = ['design', 'product design', 'engineering design']
+        # Only match mechanical-specific design patterns, not generic "design"
+        design_patterns = ['product design', 'engineering design', 'mechanical design']
         if any(pattern in specialization_lower for pattern in design_patterns):
             try:
                 curriculum = Curriculum.objects.filter(
@@ -2828,45 +2885,31 @@ def get_curriculum_by_specialization(specialization, discipline_obj):
                     return curriculum.id
             except:
                 pass
-    
-    # M.Tech Mechatronics (MT) 
-    elif 'mechatronics' in discipline_name or 'mt' in discipline_name:
-        mechatronics_patterns = ['mechatronics', 'robotics', 'automation']
-        if any(pattern in specialization_lower for pattern in mechatronics_patterns):
-            try:
-                curriculum = Curriculum.objects.filter(
-                    name__icontains='Mechatronics',
-                    working_curriculum=True,
-                    programme__name__icontains='M.Tech'
-                ).first()
-                if curriculum:
-                    return curriculum.id
-            except:
-                pass
-    
-    # Design specializations
+    # Design specializations - Handle Design discipline with Design specialization
     elif 'design' in discipline_name:
         try:
             curriculum = Curriculum.objects.filter(
                 name__icontains='Design',
                 working_curriculum=True,
-                programme__name__icontains='M.Tech'
+                programme__name__icontains='M.Des',
+                programme__discipline=discipline_obj
+            ).first()
+            if curriculum:
+                return curriculum.id
+            # Fallback to M.Tech Design if M.Des not found
+            curriculum = Curriculum.objects.filter(
+                name__icontains='Design',
+                working_curriculum=True,
+                programme__name__icontains='M.Tech',
+                programme__discipline=discipline_obj
             ).first()
             if curriculum:
                 return curriculum.id
         except:
             pass
     
-    # Fallback: return first available curriculum for the discipline and programme
-    try:
-        fallback_curriculum = Curriculum.objects.filter(
-            working_curriculum=True,
-            programme__name__icontains='M.Tech',
-            programme__discipline=discipline_obj
-        ).first()
-        return fallback_curriculum.id if fallback_curriculum else None
-    except:
-        return None
+    # No fallback - only assign curriculum for exact specialization matches
+    return None
 
 
 def get_batch_name_from_discipline(discipline_name, programme_type):
@@ -3897,6 +3940,54 @@ def get_batch_students(request, batch_id):
                 'updated_at': student.updated_at.isoformat() if hasattr(student, 'updated_at') else '',
                 'source': getattr(student, 'source', 'unknown')  # Track actual source from model
             })
+
+        academic_students = []
+        try:
+            from applications.academic_information.models import Student as AcademicStudent
+            from applications.globals.models import ExtraInfo
+
+            academic_student_records = AcademicStudent.objects.filter(
+                batch=batch.year,
+                programme__icontains=programme_type.upper()
+            )
+
+            if batch.discipline:
+                academic_student_records = academic_student_records.filter(
+                    id__department__name__icontains=batch.discipline.name
+                )
+            
+            for academic_student in academic_student_records:
+                try:
+                    assigned_batch = academic_student.batch_id
+                    batch_info = {
+                        'name': assigned_batch.name if assigned_batch else 'No batch assigned',
+                        'curriculum': assigned_batch.curriculum.name if assigned_batch and assigned_batch.curriculum else 'No curriculum',
+                        'id': assigned_batch.id if assigned_batch else None
+                    }
+                    
+                    academic_students.append({
+                        'id': f"academic_{academic_student.id.id}",  # ExtraInfo ID
+                        'name': f"{academic_student.id.user.first_name} {academic_student.id.user.last_name}".strip(),
+                        'roll_number': academic_student.id.id,
+                        'institute_email': academic_student.id.user.email,
+                        'specialization': academic_student.specialization or '',
+                        'batch_assigned': batch_info,
+                        'programme': academic_student.programme,
+                        'batch_year': academic_student.batch,
+                        'cpi': academic_student.cpi,
+                        'curr_semester_no': academic_student.curr_semester_no,
+                        'reported_status': 'REPORTED',
+                        'status_display': 'Reported (Academic System)',
+                        'source': 'academic_system'
+                    })
+                except Exception as e:
+                    pass
+                    continue
+                    
+        except Exception as e:
+            pass
+
+        all_students = upload_students + academic_students
         
         response_data = {
             'success': True,
@@ -3907,26 +3998,26 @@ def get_batch_students(request, batch_id):
                 'year': batch.year,
                 'curriculum': batch.curriculum.name if batch.curriculum else None
             },
-            'students': upload_students, 
-            'total_students': len(upload_students),
-            'count': len(upload_students),
+            'students': all_students, 
+            'total_students': len(all_students),
+            'count': len(all_students),
 
             'uploadStudents': upload_students, 
             'upload_students': upload_students,  
-            'academicStudents': [],  
-            'academic_students': [],  
-            'combinedBeforeDedup': upload_students,
-            'combined_before_dedup': upload_students,  
-            'totalStudentsAfterDedup': len(upload_students), 
-            'total_students_after_dedup': len(upload_students), 
-            'totalCount': len(upload_students),  
-            'total_count': len(upload_students), 
+            'academicStudents': academic_students,  
+            'academic_students': academic_students,  
+            'combinedBeforeDedup': all_students,
+            'combined_before_dedup': all_students,  
+            'totalStudentsAfterDedup': len(all_students), 
+            'total_students_after_dedup': len(all_students), 
+            'totalCount': len(all_students),  
+            'total_count': len(all_students), 
 
-            'data': upload_students,
-            'results': upload_students,
-            'items': upload_students,
-            'student_list': upload_students,
-            'studentList': upload_students
+            'data': all_students,
+            'results': all_students,
+            'items': all_students,
+            'student_list': all_students,
+            'studentList': all_students
         }
         
         return JsonResponse(response_data)
@@ -4965,7 +5056,7 @@ def ensure_default_curriculum_exists(discipline_obj, programme_name):
         # Log the creation for audit purposes
         import logging
         logger = logging.getLogger(__name__)
-        logger.info(f"Created default curriculum: {default_curriculum.name} (ID: {default_curriculum.id}) for discipline {discipline_obj.name}")
+        pass
         
         return default_curriculum.id
         
@@ -4973,5 +5064,5 @@ def ensure_default_curriculum_exists(discipline_obj, programme_name):
         # Log the error but don't raise it to avoid breaking the student reporting process
         import logging
         logger = logging.getLogger(__name__)
-        logger.error(f"Failed to create default curriculum for {programme_name} {discipline_obj.name}: {str(e)}")
+        pass
         return None

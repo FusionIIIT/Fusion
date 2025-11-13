@@ -28,37 +28,35 @@ from .models_password_email import (
 )
 
 
-# =============================================================================
-# PASSWORD GENERATION AND EMAIL UTILITIES
-# =============================================================================
+def send_password_email_smtp(student_email, student_name, password, roll_number, student=None):
+    """
+    Send password email using SMTP configuration
+    """
+    @staticmethod
+    def generate_secure_password(length=12):
+        """Generate cryptographically secure password with enhanced security"""
+        import secrets
+        import string
+        
+        lowercase = string.ascii_lowercase
+        uppercase = string.ascii_uppercase
+        digits = string.digits
+        special = "!@#$%^&*"
 
-def generate_random_password(length=12):
-    """
-    Generate a secure random password
-    """
-    # Ensure password has at least one from each category
-    lowercase = string.ascii_lowercase
-    uppercase = string.ascii_uppercase
-    digits = string.digits
-    special = "!@#$%"
-    
-    # Generate password with guaranteed character variety
-    password = [
-        secrets.choice(lowercase),
-        secrets.choice(uppercase), 
-        secrets.choice(digits),
-        secrets.choice(special)
-    ]
-    
-    # Fill remaining length with random choices
-    all_chars = lowercase + uppercase + digits + special
-    for _ in range(length - 4):
-        password.append(secrets.choice(all_chars))
-    
-    # Shuffle the password list
-    secrets.SystemRandom().shuffle(password)
-    
-    return ''.join(password)
+        password = [
+            secrets.choice(lowercase),
+            secrets.choice(uppercase), 
+            secrets.choice(digits),
+            secrets.choice(special)
+        ]
+
+        all_chars = lowercase + uppercase + digits + special
+        for _ in range(length - 4):
+            password.append(secrets.choice(all_chars))
+
+        secrets.SystemRandom().shuffle(password)
+
+        return ''.join(password)
 
 
 def get_client_ip(request):
@@ -184,101 +182,40 @@ def send_password_email_smtp(student_email, student_name, password, roll_number,
         return False, str(e)
 
 
-# =============================================================================
-# PASSWORD EMAIL API ENDPOINTS
-# =============================================================================
-
-@csrf_exempt
-@login_required
-@require_http_methods(["POST"])
-def send_student_password(request):
+def send_bulk_password_emails(student_data_list):
     """
-    Send password email to individual student
+    Send password emails to multiple students
     """
-    try:
-        data = json.loads(request.body)
-        student_id = data.get('studentId')
-        student_email = data.get('studentEmail')
-        student_name = data.get('studentName')
-        
-        # Validate required fields
-        if not all([student_id, student_email, student_name]):
-            return JsonResponse({
-                'success': False, 
-                'error': 'Missing required fields: studentId, studentEmail, studentName'
-            })
-        
-        # Get student from database
-        try:
-            student = StudentBatchUpload.objects.get(id=student_id)
-        except StudentBatchUpload.DoesNotExist:
-            return JsonResponse({
-                'success': False, 
-                'error': f'Student with ID {student_id} not found'
-            })
-        
-        # Create email log entry
-        email_log = PasswordEmailLog.objects.create(
-            student=student,
-            sent_to_email=student_email,
-            sent_by=request.user,
-            email_status='PENDING',
-            ip_address=get_client_ip(request),
-            user_agent=request.META.get('HTTP_USER_AGENT', '')[:200]
-        )
-        
-        # Generate password and create/update user account
-        with transaction.atomic():
-            # Check if this is an initial password before creating/updating the account
-            is_initial_password = not student.has_user_account()
-            
-            # Use the student model's built-in user account creation
-            if student.has_user_account():
-                # User exists, generate new password
-                password = student.generate_secure_password()
-                student.update_user_password(password)
-                user = student.get_user_account()
-            else:
-                # Create new user account with hashed password in auth_user table
-                user, password = student.create_user_account()
-            
-            # Create password history record
-            StudentPasswordHistory.objects.create(
-                student=student,
-                password_hash=user.password,
-                created_by=request.user,
-                is_initial_password=is_initial_password,
-                is_active=True
-            )
-        
-        # Send email
+    success_count = 0
+    failed_count = 0
+    results = []
+    
+    for student_data in student_data_list:
         success, message = send_password_email_smtp(
-            student_email=student_email,
-            student_name=student_name,
-            password=password,
-            roll_number=student.roll_number or student.jee_app_no,
-            student=student
+            student_data['email'],
+            student_data['name'], 
+            student_data['password'],
+            student_data['roll_number'],
+            student_data.get('student')
         )
+        
+        results.append({
+            'student': student_data['name'],
+            'email': student_data['email'],
+            'success': success,
+            'message': message
+        })
         
         if success:
-            email_log.mark_as_sent(password)
-            return JsonResponse({
-                'success': True,
-                'message': f'Password sent successfully to {student_email}',
-                'email_log_id': email_log.id
-            })
+            success_count += 1
         else:
-            email_log.mark_as_failed(message)
-            return JsonResponse({
-                'success': False,
-                'error': f'Failed to send email: {message}',
-                'email_log_id': email_log.id
-            })
-            
-    except json.JSONDecodeError:
-        return JsonResponse({'success': False, 'error': 'Invalid JSON data'})
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)})
+            failed_count += 1
+    
+    return {
+        'success_count': success_count,
+        'failed_count': failed_count,
+        'results': results
+    }
 
 
 @csrf_exempt
@@ -295,14 +232,7 @@ def bulk_send_passwords(request):
         if not student_ids:
             return JsonResponse({'success': False, 'error': 'No students selected'})
         
-        # Create bulk operation record
         operation_id = str(uuid.uuid4())[:8]
-        bulk_operation = BulkPasswordEmailOperation.objects.create(
-            operation_id=operation_id,
-            initiated_by=request.user,
-            total_students=len(student_ids),
-            operation_status='IN_PROGRESS'
-        )
         
         results = []
         successful_sends = 0
@@ -324,14 +254,6 @@ def bulk_send_passwords(request):
                     failed_sends += 1
                     continue
                 
-                # Create email log
-                email_log = PasswordEmailLog.objects.create(
-                    student=student,
-                    sent_to_email=email_address,
-                    sent_by=request.user,
-                    email_status='PENDING',
-                    ip_address=get_client_ip(request)
-                )
                 
                 # Generate password and create user
                 with transaction.atomic():
@@ -348,13 +270,6 @@ def bulk_send_passwords(request):
                         # Create new user account with hashed password in auth_user table
                         user, password = student.create_user_account()
                     
-                    StudentPasswordHistory.objects.create(
-                        student=student,
-                        password_hash=user.password,  # Already hashed by Django
-                        created_by=request.user,
-                        is_initial_password=is_initial_password,
-                        is_active=True
-                    )
                 
                 # Send email
                 success, message = send_password_email_smtp(
@@ -366,7 +281,6 @@ def bulk_send_passwords(request):
                 )
                 
                 if success:
-                    email_log.mark_as_sent(password)
                     successful_sends += 1
                     results.append({
                         'student_id': student_id,
@@ -375,7 +289,7 @@ def bulk_send_passwords(request):
                         'message': f'Password sent to {email_address}'
                     })
                 else:
-                    email_log.mark_as_failed(message)
+                    # email_log.mark_as_failed(message) - DISABLED
                     failed_sends += 1
                     results.append({
                         'student_id': student_id,
@@ -399,10 +313,6 @@ def bulk_send_passwords(request):
                     'message': str(e)
                 })
         
-        # Update bulk operation
-        bulk_operation.emails_sent = successful_sends
-        bulk_operation.emails_failed = failed_sends
-        bulk_operation.mark_completed()
         
         return JsonResponse({
             'success': True,
@@ -475,10 +385,6 @@ def bulk_operation_status(request, operation_id):
         return JsonResponse({'success': False, 'error': 'Bulk operation not found'})
 
 
-# =============================================================================
-# EMAIL TEMPLATE MANAGEMENT
-# =============================================================================
-
 @csrf_exempt
 @login_required
 @require_http_methods(["GET", "POST"])
@@ -527,3 +433,76 @@ def manage_email_templates(request):
             
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
+
+@csrf_exempt
+@login_required
+@require_http_methods(["POST"])
+def send_student_password(request):
+    """
+    Send password email to individual student
+    """
+    try:
+        data = json.loads(request.body)
+        student_id = data.get('studentId')
+        student_email = data.get('studentEmail')
+        student_name = data.get('studentName')
+        
+        # Validate required fields
+        if not all([student_id, student_email, student_name]):
+            return JsonResponse({
+                'success': False, 
+                'error': 'Missing required fields: studentId, studentEmail, studentName'
+            })
+        
+        # Get student from database
+        try:
+            student = StudentBatchUpload.objects.get(id=student_id)
+        except StudentBatchUpload.DoesNotExist:
+            return JsonResponse({
+                'success': False, 
+                'error': f'Student with ID {student_id} not found'
+            })
+
+        # Generate password and create/update user account
+        with transaction.atomic():
+            # Check if this is an initial password before creating/updating the account
+            is_initial_password = not student.has_user_account()
+            
+            # Use the student model's built-in user account creation
+            if student.has_user_account():
+                # User exists, generate new password
+                password = student.generate_secure_password()
+                student.update_user_password(password)
+                user = student.get_user_account()
+            else:
+                # Create new user account with hashed password in auth_user table
+                user, password = student.create_user_account()
+        
+        # Send email
+        success, message = send_password_email_smtp(
+            student_email=student_email,
+            student_name=student_name,
+            password=password,
+            roll_number=student.roll_number or student.jee_app_no,
+            student=student
+        )
+        
+        if success:
+            # email_log.mark_as_sent(password) - DISABLED
+            return JsonResponse({
+                'success': True,
+                'message': f'Password sent successfully to {student_email}',
+                'email_log_id': None
+            })
+        else:
+            # email_log.mark_as_failed(message) - DISABLED
+            return JsonResponse({
+                'success': False,
+                'error': f'Failed to send email: {message}',
+                'email_log_id': None
+            })
+            
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON data'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})

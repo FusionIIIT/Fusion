@@ -40,6 +40,14 @@ COURSESLOT_TYPE_CHOICES = [
 BATCH_NAMES = [
     ('B.Tech', 'B.Tech'),
     ('M.Tech', 'M.Tech'),
+    ('M.Tech AI & ML', 'M.Tech AI & ML'),
+    ('M.Tech Data Science', 'M.Tech Data Science'),
+    ('M.Tech Communication and Signal Processing', 'M.Tech Communication and Signal Processing'),
+    ('M.Tech Nanoelectronics and VLSI Design', 'M.Tech Nanoelectronics and VLSI Design'),
+    ('M.Tech Power & Control', 'M.Tech Power & Control'),
+    ('M.Tech Design', 'M.Tech Design'),
+    ('M.Tech CAD/CAM', 'M.Tech CAD/CAM'),
+    ('M.Tech Manufacturing and Automation', 'M.Tech Manufacturing and Automation'),
     ('B.Des', 'B.Des'),
     ('M.Des', 'M.Des'),
     ('Phd', 'Phd')
