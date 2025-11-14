@@ -172,7 +172,7 @@ class StudentBatchUpload(models.Model):
     ]
     
     # Core identification fields
-    jee_app_no = models.CharField(max_length=50, unique=True, help_text="JEE App. No./CCMT Roll. No.")
+    jee_app_no = models.CharField(max_length=50, unique=True, blank=True, null=True, help_text="JEE App. No./CCMT Roll. No.")
     roll_number = models.CharField(max_length=20, unique=True, blank=True, null=True, help_text="Institute Roll Number")
     institute_email = models.EmailField(blank=True, null=True, help_text="Institute Email ID")
     
