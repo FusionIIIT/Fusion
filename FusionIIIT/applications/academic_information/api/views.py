@@ -362,16 +362,19 @@ def generate_xlsheet_api(request):
         academic_year = request.data.get('academic_year')
         semester_type = request.data.get('semester_type')
         list_type = request.data.get('list_type', '').strip()
+        programme_type = request.data.get('programme_type', '').strip()
         preview_only = request.data.get('preview_only', False)
 
         if not list_type:
             list_type = None
+        if not programme_type:
+            programme_type = None
         
         if not all([course_id, academic_year, semester_type]):
             return Response({
                 'error': 'Missing required parameters: course, academic_year, semester_type'
             }, status=status.HTTP_400_BAD_REQUEST)
-        cache_key = f"student_list_{course_id}_{academic_year.replace('-', '_')}_{semester_type.replace(' ', '_')}_{(list_type or 'all').replace(' ', '_')}"
+        cache_key = f"student_list_{course_id}_{academic_year.replace('-', '_')}_{semester_type.replace(' ', '_')}_{(list_type or 'all').replace(' ', '_')}_{(programme_type or 'all').replace(' ', '_')}"
         
         cached_data = cache.get(cache_key)
         if cached_data and not preview_only:
@@ -387,7 +390,8 @@ def generate_xlsheet_api(request):
                 u.email,
                 cr.registration_type,
                 c.code as course_code,
-                c.name as course_name
+                c.name as course_name,
+                s.programme
             FROM course_registration cr
             INNER JOIN globals_extrainfo ei ON cr.student_id_id = ei.id
             INNER JOIN auth_user u ON ei.user_id = u.id
@@ -408,6 +412,16 @@ def generate_xlsheet_api(request):
                     sql += " AND cr.registration_type = %s"
                     params.append(list_type)
             
+            # Add programme_type filter if specified
+            if programme_type:
+                if programme_type.upper() == 'UG':
+                    sql += " AND s.programme IN ('B.Tech', 'B.Des')"
+                elif programme_type.upper() == 'PG':
+                    sql += " AND s.programme IN ('M.Tech', 'M.Des', 'PhD')"
+                else:
+                    sql += " AND s.programme = %s"
+                    params.append(programme_type)
+            
             sql += " ORDER BY u.username"
             try:
                 with connection.cursor() as cursor:
@@ -426,7 +440,8 @@ def generate_xlsheet_api(request):
                             'full_name': data['full_name'],
                             'discipline': data['discipline'],
                             'email': data['email'],
-                            'registration_type': data['registration_type']
+                            'registration_type': data['registration_type'],
+                            'programme': data.get('programme', '')
                         })
                     
                     sql_time = time.time() - start_sql
@@ -458,6 +473,15 @@ def generate_xlsheet_api(request):
             list_type_display = "Backlog & Improvement Students"
         else:
             list_type_display = f"{list_type} Students"
+        
+        # Add programme type to display name
+        if programme_type:
+            if programme_type.upper() == 'UG':
+                list_type_display += " (UG Only)"
+            elif programme_type.upper() == 'PG':
+                list_type_display += " (PG Only)"
+            else:
+                list_type_display += f" ({programme_type} Only)"
         
         processing_time = time.time() - start_time
         if preview_only:
@@ -559,6 +583,14 @@ def generate_xlsheet_api(request):
             filename_suffix = "Backlog_Improvement_Students"
         else:
             filename_suffix = f"{list_type.replace(' ', '_')}_Students"
+
+        if programme_type:
+            if programme_type.upper() == 'UG':
+                filename_suffix += "_UG"
+            elif programme_type.upper() == 'PG':
+                filename_suffix += "_PG"
+            else:
+                filename_suffix += f"_{programme_type.replace(' ', '_')}"
         
         filename = f"{course_info['code']}_{filename_suffix}_CourseList.xlsx"
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
