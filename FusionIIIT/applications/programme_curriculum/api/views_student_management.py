@@ -216,32 +216,17 @@ def get_academic_year_from_batch_year(batch_year):
 
 def calculate_batch_filled_seats(batch):
     """
-    Centralized function to calculate filled seats for a batch using priority-based algorithm.
+    Calculate filled seats for a batch using curriculum-based counting only.
     """
     try:
         from applications.academic_information.models import Student
-        direct_count = Student.objects.filter(batch_id=batch).count()
-        if direct_count > 0:
-            return direct_count
+        if batch.curriculum:
+            curriculum_count = Student.objects.filter(
+                batch_id=batch
+            ).count()
+            return curriculum_count
         else:
-            discipline_name = batch.discipline.name if batch.discipline else ''
-            discipline_acronym = batch.discipline.acronym if batch.discipline else ''
-            discipline_count = Student.objects.filter(
-                batch=batch.year,
-                id__department__name__in=[discipline_acronym, discipline_name.split()[0] if discipline_name else '']
-            ).count() if discipline_name else 0
-            if discipline_count > 0:
-                return discipline_count
-            else:
-                if batch.name and batch.year:
-                    programme_count = Student.objects.filter(
-                        programme__icontains=batch.name.split()[0] if batch.name else '',
-                        batch=batch.year,
-                        id__department__name__in=[discipline_acronym] if discipline_acronym else []
-                    ).count()
-                    return programme_count
-                else:
-                    return 0
+            return 0
                     
     except Exception as e:
         return 0
@@ -1344,7 +1329,10 @@ def update_student_status(request):
                         branch_field = student.branch or ''
                         branch_upper = branch_field.upper()
 
-                        if 'COMPUTER SCIENCE' in branch_upper or 'CSE' in branch_upper:
+                        if 'MECHATRONICS' in branch_upper or student.specialization == 'Mechatronics':
+                            dept_name = 'MT'
+                            discipline_name = 'Mechatronics'
+                        elif 'COMPUTER SCIENCE' in branch_upper or 'CSE' in branch_upper:
                             dept_name = 'CSE'
                             discipline_name = 'Computer Science and Engineering'
                         elif 'ELECTRONICS' in branch_upper or 'ECE' in branch_upper:
@@ -1438,7 +1426,10 @@ def update_student_status(request):
                                 branch_field = student.branch or ''
                                 branch_upper = branch_field.upper()
 
-                                if 'COMPUTER SCIENCE' in branch_upper or 'CSE' in branch_upper:
+                                if 'MECHATRONICS' in branch_upper or (student.specialization and student.specialization == 'Mechatronics'):
+                                    dept_name = 'MT'
+                                    discipline_name = 'Mechatronics'
+                                elif 'COMPUTER SCIENCE' in branch_upper or 'CSE' in branch_upper:
                                     dept_name = 'CSE'
                                     discipline_name = 'Computer Science and Engineering'
                                 elif 'ELECTRONICS' in branch_upper or 'ECE' in branch_upper:
@@ -2973,7 +2964,8 @@ def get_or_create_discipline(discipline_name):
         'electronics and communication engineering': 'Electronics and Communication Engineering', 
         'mechanical engineering': 'Mechanical Engineering',
         'smart manufacturing': 'Smart Manufacturing',
-        'design': 'Design'
+        'design': 'Design',
+        'mechatronics': 'Mechatronics'
     }
 
     database_discipline_name = None
@@ -3003,7 +2995,8 @@ def get_discipline_acronym(discipline_name):
         'Electronics and Communication Engineering': 'ECE',
         'Mechanical Engineering': 'ME',
         'Smart Manufacturing': 'SM',
-        'Design': 'DES'
+        'Design': 'DES',
+        'Mechatronics': 'MT'
     }
     
     for full_name, acronym in discipline_mappings.items():
@@ -4203,11 +4196,11 @@ def admin_batches_unified(request):
 
                 'totalSeats': total_seats,
                 'total_seats': total_seats,
-                'filledSeats': actual_filled // 2,
+                'filledSeats': actual_filled,
                 'filled_seats': actual_filled,  
                 'availableSeats': available_seats,
                 'available_seats': available_seats,  
-                'student_count': actual_filled // 2, 
+                'student_count': actual_filled, 
 
                 'running_batch': batch.running_batch,
                 'status': 'READY' if (batch.curriculum or len(get_available_curriculums_for_batch(batch)) > 0) else 'NEEDS_CURRICULUM',
