@@ -60,30 +60,15 @@ class BatchConfiguration(models.Model):
         return f"{self.programme} - {self.discipline} ({self.year})"
     
     def calculate_seats(self):
-        """Calculate filled and available seats based on unique student count"""
+        """Calculate filled and available seats based on curriculum assignment"""
         try:
-            from django.db.models import Q
-            
-            discipline_q = Q()
-            discipline_q |= Q(branch__icontains=self.discipline)
-            
-            if self.discipline == 'Computer Science and Engineering':
-                discipline_q |= Q(branch__icontains='Computer Science') | Q(branch__icontains='CSE')
-            elif self.discipline == 'Electronics and Communication Engineering':
-                discipline_q |= Q(branch__icontains='Electronics') | Q(branch__icontains='ECE')
-            elif self.discipline == 'Mechanical Engineering':
-                discipline_q |= Q(branch__icontains='Mechanical') | Q(branch__icontains='ME')
-            elif self.discipline == 'Smart Manufacturing':
-                discipline_q |= Q(branch__icontains='Smart Manufacturing') | Q(branch__icontains='SM')
-            elif self.discipline == 'Design':
-                discipline_q |= Q(branch__icontains='Design') | Q(branch__icontains='Des')
-            
-            unique_students = StudentBatchUpload.objects.filter(
-                discipline_q,
-                year=self.year
-            ).values_list('roll_number', flat=True).distinct()
-            
-            student_count = len(unique_students)
+            from applications.programme_curriculum.models import Batch
+            batch = Batch.objects.filter(
+                name=self.programme,
+                discipline__name=self.discipline,
+                year=self.year,
+                running_batch=True
+            ).first()
             
             if self.filled_seats != student_count:
                 self.filled_seats = student_count
