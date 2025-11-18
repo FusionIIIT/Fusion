@@ -317,11 +317,32 @@ class UniqueRegistrationYearsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        programme_type = request.GET.get('programme_type', None)      
+        years_query = course_registration.objects.exclude(session__isnull=True)
+        
+        if programme_type:
+            if programme_type.upper() == 'UG':
+                programme_list = ['B.Tech', 'B.Des']
+            elif programme_type.upper() == 'PG':
+                programme_list = ['M.Tech', 'M.Des', 'PhD']
+            else:
+                programme_list = []
+                
+            if programme_list:
+                from applications.academic_information.models import Student
+                student_ids_with_programme = Student.objects.filter(
+                    programme__in=programme_list
+                ).values_list('id', flat=True)
+                
+                years_query = years_query.filter(
+                    student_id__in=student_ids_with_programme
+                )
+        
         years = (
-            course_registration.objects
+            years_query
             .values_list('session', flat=True)
             .distinct()
-            .order_by('session').exclude(session__isnull = True)
+            .order_by('session')
         )
         return Response({'academic_years': list(years)}, status=200)
 
@@ -342,6 +363,7 @@ def download_template(request):
     course = request.data.get('course')
     session_year = request.data.get('year')
     semester_type = request.data.get('semester_type')
+    programme_type = request.data.get('programme_type')
 
     if not role:
         return Response({"error": "Role parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
@@ -363,11 +385,32 @@ def download_template(request):
         User = get_user_model()
 
         # Filter course_registration records using course, session (academic year), and semester_type.
-        course_info = course_registration.objects.filter(
+        course_info_query = course_registration.objects.filter(
             course_id_id=course,
             session=session_year,
             semester_type=semester_type
-        ).order_by("student_id_id")
+        )
+        
+        # Apply programme type filter if specified
+        if programme_type:
+            if programme_type.upper() == 'UG':
+                programme_list = ['B.Tech', 'B.Des']
+            elif programme_type.upper() == 'PG':
+                programme_list = ['M.Tech', 'M.Des', 'PhD']
+            else:
+                programme_list = []
+                
+            if programme_list:
+                from applications.academic_information.models import Student
+                student_ids_with_programme = Student.objects.filter(
+                    programme__in=programme_list
+                ).values_list('id', flat=True)
+                
+                course_info_query = course_info_query.filter(
+                    student_id__in=student_ids_with_programme
+                )
+        
+        course_info = course_info_query.order_by("student_id_id")
 
         if not course_info.exists():
             return Response(
@@ -1468,6 +1511,7 @@ class SubmitGradesProfAPI(APIView):
         role = request.data.get("Role")
         academic_year = request.data.get("academic_year")
         semester_type = request.data.get("semester_type")
+        programme_type = request.data.get("programme_type")
         
         if role not in ["Associate Professor", "Professor", "Assistant Professor"]:
             return Response(
@@ -1492,10 +1536,35 @@ class SubmitGradesProfAPI(APIView):
             .annotate(course_id_int=Cast("course_id_id", IntegerField()))
         )
 
-        # Retrieve course details
-        courses_info = Courses.objects.filter(
+        # Retrieve course details with programme type filtering
+        courses_query = Courses.objects.filter(
             id__in=unique_course_ids.values_list("course_id_int", flat=True)
         )
+        
+        if programme_type:
+            if programme_type.upper() == 'UG':
+                programme_list = ['B.Tech', 'B.Des']
+            elif programme_type.upper() == 'PG':
+                programme_list = ['M.Tech', 'M.Des', 'PhD']
+            else:
+                programme_list = []
+                
+            if programme_list:
+                from applications.academic_information.models import Student
+                student_ids_with_programme = Student.objects.filter(
+                    programme__in=programme_list
+                ).values_list('id', flat=True)
+                
+                course_ids_with_programme = course_registration.objects.filter(
+                    course_id__in=courses_query.values_list('id', flat=True),
+                    student_id__in=student_ids_with_programme,
+                    session=academic_year,
+                    semester_type=semester_type
+                ).values_list('course_id', flat=True).distinct()
+                
+                courses_query = courses_query.filter(id__in=course_ids_with_programme)
+        
+        courses_info = courses_query
 
         return Response(
             {
