@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, HttpResponse
 from django.http import HttpResponse
 from django.http import JsonResponse
+from django.db import transaction
 from decimal import Decimal, ROUND_HALF_UP
 from applications.academic_procedures.models import(course_registration, course_replacement)
 from applications.programme_curriculum.models import Course as Courses ,  Batch, CourseInstructor
@@ -317,11 +318,32 @@ class UniqueRegistrationYearsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        programme_type = request.GET.get('programme_type', None)      
+        years_query = course_registration.objects.exclude(session__isnull=True)
+        
+        if programme_type:
+            if programme_type.upper() == 'UG':
+                programme_list = ['B.Tech', 'B.Des']
+            elif programme_type.upper() == 'PG':
+                programme_list = ['M.Tech', 'M.Des', 'PhD']
+            else:
+                programme_list = []
+                
+            if programme_list:
+                from applications.academic_information.models import Student
+                student_ids_with_programme = Student.objects.filter(
+                    programme__in=programme_list
+                ).values_list('id', flat=True)
+                
+                years_query = years_query.filter(
+                    student_id__in=student_ids_with_programme
+                )
+        
         years = (
-            course_registration.objects
+            years_query
             .values_list('session', flat=True)
             .distinct()
-            .order_by('session').exclude(session__isnull = True)
+            .order_by('session')
         )
         return Response({'academic_years': list(years)}, status=200)
 
@@ -338,42 +360,72 @@ def download_template(request):
       - year: Academic year (session) in the format "YYYY-YY" (e.g., "2023-24")
       - semester_type: Semester type (e.g., "Odd Semester", "Even Semester", "Summer Semester")
     """
-    role = request.data.get('Role')
-    course = request.data.get('course')
-    session_year = request.data.get('year')
-    semester_type = request.data.get('semester_type')
-
-    if not role:
-        return Response({"error": "Role parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
-    if not course or not session_year or not semester_type:
-        return Response(
-            {"error": "Course, academic year, and semester type are required."},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-    # Check access for allowed roles.
-    allowed_roles = [
-        "acadadmin", "Associate Professor", "Professor",
-        "Assistant Professor", "Dean Academic"
-    ]
-    if role not in allowed_roles:
-        return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
-
     try:
+        role = request.data.get('Role')
+        course = request.data.get('course')
+        session_year = request.data.get('year')
+        semester_type = request.data.get('semester_type')
+        programme_type = request.data.get('programme_type')
+
+        if not role:
+            return Response({"error": "Role parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
+        if not course or not session_year or not semester_type:
+            return Response(
+                {"error": "Course, academic year, and semester type are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        allowed_roles = [
+            "acadadmin", "Associate Professor", "Professor",
+            "Assistant Professor", "Dean Academic"
+        ]
+        if role not in allowed_roles:
+            return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
+
         User = get_user_model()
 
         # Filter course_registration records using course, session (academic year), and semester_type.
-        course_info = course_registration.objects.filter(
+        course_info_query = course_registration.objects.filter(
             course_id_id=course,
             session=session_year,
             semester_type=semester_type
-        ).order_by("student_id_id")
+        )
+        
+        # Apply programme type filter if specified
+        if programme_type:
+            if programme_type.upper() == 'UG':
+                programme_list = ['B.Tech', 'B.Des']
+            elif programme_type.upper() == 'PG':
+                programme_list = ['M.Tech', 'M.Des', 'PhD']
+            else:
+                return Response(
+                    {"error": "Invalid programme_type. Must be 'UG' or 'PG'."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+            from applications.academic_information.models import Student
+            student_ids_with_programme = Student.objects.filter(
+                programme__in=programme_list
+            ).values_list('id', flat=True)
+            
+            course_info_query = course_info_query.filter(
+                student_id__in=student_ids_with_programme
+            )
+        
+        course_info = course_info_query.order_by("student_id_id")
 
         if not course_info.exists():
-            return Response(
-                {"error": "No registration data found for the provided course, academic year, and semester type."},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            if programme_type:
+                programme_name = "Undergraduate" if programme_type.upper() == 'UG' else "Postgraduate"
+                return Response(
+                    {"error": f"No {programme_name} students found in this course for the selected academic year and semester."},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            else:
+                return Response(
+                    {"error": "No registration data found for the provided course, academic year, and semester type."},
+                    status=status.HTTP_404_NOT_FOUND
+                )
 
         # Get course information from the first matched registration.
         course_obj = course_info.first().course_id
@@ -400,7 +452,76 @@ def download_template(request):
         return response
 
     except Exception as e:
-        return Response({'error': 'An unexpected error occurred'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'error': f'An unexpected error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def check_course_students(request):
+    """
+    Lightweight API to check if a course has students for a specific programme type.
+    Returns boolean result without generating CSV.
+    """
+    try:
+        role = request.data.get('Role')
+        course = request.data.get('course')
+        session_year = request.data.get('year')
+        semester_type = request.data.get('semester_type')
+        programme_type = request.data.get('programme_type')
+
+        if not role:
+            return Response({"error": "Role parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
+        if not course or not session_year or not semester_type:
+            return Response(
+                {"error": "Course, academic year, and semester type are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        allowed_roles = [
+            "acadadmin", "Associate Professor", "Professor",
+            "Assistant Professor", "Dean Academic"
+        ]
+        if role not in allowed_roles:
+            return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
+
+        course_info_query = course_registration.objects.filter(
+            course_id_id=course,
+            session=session_year,
+            semester_type=semester_type
+        )
+
+        if programme_type:
+            if programme_type.upper() == 'UG':
+                programme_list = ['B.Tech', 'B.Des']
+            elif programme_type.upper() == 'PG':
+                programme_list = ['M.Tech', 'M.Des', 'PhD']
+            else:
+                return Response(
+                    {"error": "Invalid programme_type. Must be 'UG' or 'PG'."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+            from applications.academic_information.models import Student
+            student_ids_with_programme = Student.objects.filter(
+                programme__in=programme_list
+            ).values_list('id', flat=True)
+            
+            course_info_query = course_info_query.filter(
+                student_id__in=student_ids_with_programme
+            )
+        
+        has_students = course_info_query.exists()
+        student_count = course_info_query.count() if has_students else 0
+
+        return Response({
+            "has_students": has_students,
+            "student_count": student_count,
+            "course_id": course,
+            "programme_type": programme_type
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({'error': f'An unexpected error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 
 class SubmitGradesView(APIView):
@@ -1468,6 +1589,7 @@ class SubmitGradesProfAPI(APIView):
         role = request.data.get("Role")
         academic_year = request.data.get("academic_year")
         semester_type = request.data.get("semester_type")
+        programme_type = request.data.get("programme_type")
         
         if role not in ["Associate Professor", "Professor", "Assistant Professor"]:
             return Response(
@@ -1492,14 +1614,59 @@ class SubmitGradesProfAPI(APIView):
             .annotate(course_id_int=Cast("course_id_id", IntegerField()))
         )
 
-        # Retrieve course details
-        courses_info = Courses.objects.filter(
+        # Retrieve course details with programme type filtering
+        courses_query = Courses.objects.filter(
             id__in=unique_course_ids.values_list("course_id_int", flat=True)
         )
+        
+        student_ids_with_programme = None
+        if programme_type:
+            if programme_type.upper() == 'UG':
+                programme_list = ['B.Tech', 'B.Des']
+            elif programme_type.upper() == 'PG':
+                programme_list = ['M.Tech', 'M.Des', 'PhD']
+            else:
+                programme_list = []
+                
+            if programme_list:
+                from applications.academic_information.models import Student
+                student_ids_with_programme = Student.objects.filter(
+                    programme__in=programme_list
+                ).values_list('id', flat=True)
+                
+                course_ids_with_programme = course_registration.objects.filter(
+                    course_id__in=courses_query.values_list('id', flat=True),
+                    student_id__in=student_ids_with_programme,
+                    session=academic_year,
+                    semester_type=semester_type
+                ).values_list('course_id', flat=True).distinct()
+                
+                courses_query = courses_query.filter(id__in=course_ids_with_programme)
+        
+        courses_info = courses_query
+
+        courses_data = []
+        for course in courses_info.values():
+            course_registrations = course_registration.objects.filter(
+                course_id=course['id'],
+                session=academic_year,
+                semester_type=semester_type
+            )
+            
+            # Apply programme filter for counting
+            if programme_type and student_ids_with_programme is not None:
+                course_registrations = course_registrations.filter(
+                    student_id__in=student_ids_with_programme
+                )
+            
+            course['student_count'] = course_registrations.count()
+            course['has_students'] = course['student_count'] > 0
+            course['programme_type'] = programme_type
+            courses_data.append(course)
 
         return Response(
             {
-                "courses_info": list(courses_info.values()),
+                "courses_info": courses_data,
             },
             status=status.HTTP_200_OK,
         )
@@ -1542,6 +1709,7 @@ class UploadGradesProfAPI(APIView):
             course_id     = request.data.get("course_id")
             academic_year = request.data.get("academic_year")
             semester_type = request.data.get("semester_type")
+            programme_type = request.data.get("programme_type")
             if not (course_id and academic_year and semester_type):
                 return Response(
                     {"error": "Course ID, Academic Year, and Semester Type are required."},
@@ -1564,29 +1732,108 @@ class UploadGradesProfAPI(APIView):
                 return Response({"error": "Invalid course ID."},
                                 status=status.HTTP_400_BAD_REQUEST)
 
-            # 6) CHECK STUDENT REGISTRATIONS
+            # 6) CHECK STUDENT REGISTRATIONS & DETERMINE PROGRAMME FILTERING
             regs = course_registration.objects.filter(
                 course_id=course,
                 working_year=working_year,
                 semester_type=semester_type
             )
+            
             if not regs.exists():
                 return Response(
                     {"error": "NO STUDENTS REGISTERED IN THIS COURSE FOR THE SELECTED SEMESTER."},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # 7) DUPLICATE‐SUBMIT CHECK
-            existing = Student_grades.objects.filter(
+            from applications.academic_information.models import Student
+            ug_programmes = ['B.Tech', 'B.Des']
+            pg_programmes = ['M.Tech', 'M.Des', 'PhD']
+
+            ug_student_ids = Student.objects.filter(programme__in=ug_programmes).values_list('id', flat=True)
+            pg_student_ids = Student.objects.filter(programme__in=pg_programmes).values_list('id', flat=True)
+
+            course_has_ug = regs.filter(student_id__in=ug_student_ids).exists()
+            course_has_pg = regs.filter(student_id__in=pg_student_ids).exists()
+
+            if programme_type:
+                if programme_type.upper() == 'UG':
+                    if not course_has_ug:
+                        return Response(
+                            {"error": "No UG students registered in this course."},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                    regs = regs.filter(student_id__in=ug_student_ids)
+                elif programme_type.upper() == 'PG':
+                    if not course_has_pg:
+                        return Response(
+                            {"error": "No PG students registered in this course."},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                    regs = regs.filter(student_id__in=pg_student_ids)
+                else:
+                    return Response(
+                        {"error": "Invalid programme_type. Must be 'UG' or 'PG'."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            else:
+                if course_has_ug and course_has_pg:
+                    return Response(
+                        {
+                            "error": "This course has both UG and PG students. Please specify programme_type as 'UG' or 'PG'.",
+                            "course_info": {
+                                "course_code": course.code,
+                                "course_name": course.name,
+                                "has_ug": course_has_ug,
+                                "has_pg": course_has_pg,
+                                "total_registrations": regs.count()
+                            }
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                elif course_has_ug and not course_has_pg:
+                    programme_type = 'UG'
+                    regs = regs.filter(student_id__in=ug_student_ids)
+                elif course_has_pg and not course_has_ug:
+                    programme_type = 'PG'
+                    regs = regs.filter(student_id__in=pg_student_ids)
+
+            existing_query = Student_grades.objects.filter(
                 course_id=course_id,
                 academic_year=academic_year,
                 semester_type=semester_type
             )
-            if existing.exists() and not existing.first().reSubmit:
-                return Response(
-                    {"error": "THIS COURSE HAS ALREADY BEEN SUBMITTED."},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+            
+            if programme_type:
+                if programme_type.upper() == 'UG':
+                    ug_student_rolls = [reg.student_id_id for reg in regs]
+                    existing_ug_grades = existing_query.filter(roll_no__in=ug_student_rolls)
+
+                    if existing_ug_grades.exists():
+                        non_resubmit_ug = existing_ug_grades.filter(reSubmit=False)
+                        if non_resubmit_ug.exists():
+                            return Response(
+                                {"error": "THIS COURSE HAS ALREADY BEEN SUBMITTED FOR UG STUDENTS."},
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
+                            
+                elif programme_type.upper() == 'PG':
+                    pg_student_rolls = [reg.student_id_id for reg in regs]
+                    existing_pg_grades = existing_query.filter(roll_no__in=pg_student_rolls)
+
+                    if existing_pg_grades.exists():
+                        non_resubmit_pg = existing_pg_grades.filter(reSubmit=False)
+                        if non_resubmit_pg.exists():
+                            return Response(
+                                {"error": "THIS COURSE HAS ALREADY BEEN SUBMITTED FOR PG STUDENTS."},
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
+            else:
+                existing = existing_query.first()
+                if existing and not existing.reSubmit:
+                    return Response(
+                        {"error": "THIS COURSE HAS ALREADY BEEN SUBMITTED."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
             # 8) INSTRUCTOR‐OWNERSHIP CHECK
             if not CourseInstructor.objects.filter(
@@ -1612,12 +1859,22 @@ class UploadGradesProfAPI(APIView):
             # 10) ATOMIC PROCESSING
             errors = []
             with transaction.atomic():
-                # ─── Reset ALL reSubmit flags for this course/year/semester ───
-                Student_grades.objects.filter(
+                # ─── Reset reSubmit flags for this course/year/semester/programme ───
+                reset_query = Student_grades.objects.filter(
                     course_id_id=course_id,
                     academic_year=academic_year,
                     semester_type=semester_type
-                ).update(reSubmit=False)
+                )
+                
+                if programme_type:
+                    if programme_type.upper() == 'UG':
+                        ug_rolls = [reg.student_id_id for reg in regs]
+                        reset_query = reset_query.filter(roll_no__in=ug_rolls)
+                    elif programme_type.upper() == 'PG':
+                        pg_rolls = [reg.student_id_id for reg in regs]
+                        reset_query = reset_query.filter(roll_no__in=pg_rolls)
+                
+                reset_query.update(reSubmit=False)
 
                 # ─── Process each CSV row ───
                 for idx, row in enumerate(reader, start=1):
@@ -1633,17 +1890,32 @@ class UploadGradesProfAPI(APIView):
                         errors.append(f"Row {idx}: Student with roll_no {roll_no} does not exist.")
                         continue
 
-                    # b) STUDENT REGISTERED FOR COURSE?
-                    if not course_registration.objects.filter(
+                    student_reg = course_registration.objects.filter(
                         student_id=stud,
                         course_id=course,
                         semester_type=semester_type,
                         session=academic_year
-                    ).exists():
+                    )
+                    
+                    if not student_reg.exists():
                         errors.append(
                             f"Row {idx}: Student {roll_no} not registered for this course/semester."
                         )
                         continue
+                    
+                    # Check if student belongs to the specified programme type
+                    if programme_type:
+                        student_programme = stud.programme
+                        if programme_type.upper() == 'UG' and student_programme not in ug_programmes:
+                            errors.append(
+                                f"Row {idx}: Student {roll_no} is not a UG student (programme: {student_programme})."
+                            )
+                            continue
+                        elif programme_type.upper() == 'PG' and student_programme not in pg_programmes:
+                            errors.append(
+                                f"Row {idx}: Student {roll_no} is not a PG student (programme: {student_programme})."
+                            )
+                            continue
 
                     # c) VALID GRADE?
                     if grade not in ALLOWED_GRADES:
@@ -1686,8 +1958,9 @@ class UploadGradesProfAPI(APIView):
                     raise Exception(f"Upload failed with the following errors:\n{summary}")
 
             # 11) SUCCESS RESPONSE
+            programme_msg = f" for {programme_type.upper()} students" if programme_type else ""
             return Response(
-                {"message": "Grades uploaded successfully."},
+                {"message": f"Grades uploaded successfully{programme_msg}."},
                 status=status.HTTP_200_OK
             )
 
@@ -1706,6 +1979,7 @@ class DownloadGradesAPI(APIView):
             role = request.data.get("Role")
             academic_year = request.data.get("academic_year")
             semester_type = request.data.get("semester_type")
+            programme_type = request.data.get("programme_type")
 
             if role not in ["Associate Professor", "Professor", "Assistant Professor"]:
                 return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
@@ -1732,6 +2006,24 @@ class DownloadGradesAPI(APIView):
                 semester_type = semester_type,
                 course_id_id__in=unique_course_ids.values_list("course_id_int", flat=True)
             )
+            
+            # Apply programme type filter if specified
+            if programme_type:
+                if programme_type.upper() == 'UG':
+                    programme_list = ['B.Tech', 'B.Des']
+                elif programme_type.upper() == 'PG':
+                    programme_list = ['M.Tech', 'M.Des', 'PhD']
+                else:
+                    return Response(
+                        {"error": "Invalid programme_type. Must be 'UG' or 'PG'."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                    
+                student_ids_with_programme = Student.objects.filter(
+                    programme__in=programme_list
+                ).values_list('id', flat=True)
+                
+                grades_qs = grades_qs.filter(roll_no__in=student_ids_with_programme)
 
             course_ids = grades_qs.values_list("course_id_id", flat=True).distinct()
             courses_details = Courses.objects.filter(id__in=course_ids)
@@ -1764,6 +2056,7 @@ class GeneratePDFAPI(APIView):
             course_id     = request.data.get("course_id")
             academic_year = request.data.get("academic_year")
             semester_type = request.data.get("semester_type")
+            programme_type = request.data.get("programme_type")
 
             course_info     = get_object_or_404(Courses, id=course_id)
             working_year, _ = parse_academic_year(academic_year, semester_type)
@@ -1772,7 +2065,26 @@ class GeneratePDFAPI(APIView):
                 course_id_id=course_id,
                 academic_year=academic_year,
                 semester_type=semester_type
-            ).order_by("roll_no")
+            )
+
+            if programme_type:
+                if programme_type.upper() == 'UG':
+                    programme_list = ['B.Tech', 'B.Des']
+                elif programme_type.upper() == 'PG':
+                    programme_list = ['M.Tech', 'M.Des', 'PhD']
+                else:
+                    return Response(
+                        {"error": "Invalid programme_type. Must be 'UG' or 'PG'."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                    
+                student_ids_with_programme = Student.objects.filter(
+                    programme__in=programme_list
+                ).values_list('id', flat=True)
+                
+                grades = grades.filter(roll_no__in=student_ids_with_programme)
+            
+            grades = grades.order_by("roll_no")
 
             ci = CourseInstructor.objects.filter(
                 course_id_id=course_id,
@@ -2609,6 +2921,7 @@ class PreviewGradesAPI(APIView):
         course_id = request.data.get("course_id")
         academic_year = request.data.get("academic_year")  # e.g., "2023-24"
         semester_type = request.data.get("semester_type")
+        programme_type = request.data.get("programme_type")
         if not course_id or not academic_year or not semester_type:
             return Response(
                 {"error": "course_id, academic_year and semester_type are required."},
@@ -2630,6 +2943,24 @@ class PreviewGradesAPI(APIView):
             session=academic_year,
             semester_type=semester_type,
         )
+
+        if programme_type:
+            if programme_type.upper() == 'UG':
+                programme_list = ['B.Tech', 'B.Des']
+            elif programme_type.upper() == 'PG':
+                programme_list = ['M.Tech', 'M.Des', 'PhD']
+            else:
+                return Response(
+                    {"error": "Invalid programme_type. Must be 'UG' or 'PG'."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+                
+            student_ids_with_programme = Student.objects.filter(
+                programme__in=programme_list
+            ).values_list('id', flat=True)
+            
+            registrations = registrations.filter(student_id__in=student_ids_with_programme)
+        
         # Build a set of registered roll numbers for fast lookup.
         registered_rollnos = set()
         for reg in registrations.select_related("student_id"):

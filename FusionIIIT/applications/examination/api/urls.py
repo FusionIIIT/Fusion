@@ -7,6 +7,7 @@ urlpatterns = [
 
     url(r'^exam_view/', views.exam_view, name='exam_view'),
     url(r'^download_template/', views.download_template, name='download_template'),
+    url(r'^check_course_students/', views.check_course_students, name='check_course_students'),
     url(r'^submitGrades/', views.SubmitGradesView.as_view(), name='submitGrades'),
     url(r'^upload_grades/', views.UploadGradesAPI.as_view(), name='upload_grades'),
     url(r'^update_grades/', views.UpdateGradesAPI.as_view(), name='update_grades'),
