@@ -929,15 +929,32 @@ def import_calendar(request):
 @role_required(['acadadmin'])
 def available_courses(request):
     """
-    GET /api/available-courses/?academic_year=2024-25&semester_type=Odd+Semester
+    GET /api/available-courses/?academic_year=2024-25&semester_type=Odd+Semester&programme_type=UG
     Returns unique courses for which the student has registrations.
     """
     year = request.query_params.get('academic_year')
     sem  = request.query_params.get('semester_type')
+    programme_type = request.query_params.get('programme_type')  # Get programme_type filter
     if not year or not sem:
         return Response({"detail": "academic_year and semester_type required"}, status=400)
 
     regs = course_registration.objects.filter(session=year, semester_type=sem)
+
+    if programme_type:
+        programme_mapping = {
+            'UG': ['B.Tech', 'B.Des'],
+            'PG': ['M.Tech', 'M.Des', 'PhD']
+        }
+        
+        if programme_type in programme_mapping:
+            programmes = programme_mapping[programme_type]
+            from applications.academic_information.models import Student
+            student_ids_with_programme = Student.objects.filter(
+                programme__in=programmes
+            ).values_list('id', flat=True)
+            
+            regs = regs.filter(student_id__in=student_ids_with_programme)
+    
     course_ids = regs.values_list('course_id', flat=True).distinct()
     courses = Courses.objects.filter(id__in=course_ids)
     
