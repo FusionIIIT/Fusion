@@ -1284,19 +1284,25 @@ class GenerateResultAPI(APIView):
             )
 
 
-            # Setup header rows: S. No and Roll No in columns A and B.
+            # Setup header rows: S. No, Roll No and Name in columns A, B and C.
             ws["A1"] = "S. No"
             ws["B1"] = "Roll No"
+            ws["C1"] = "Name"
             for col in ("A", "B"):
                 cell = ws[col + "1"]
                 cell.alignment = Alignment(horizontal="center", vertical="center")
                 cell.font = Font(bold=True)
                 cell.fill = header_fill
+            cell = ws["C1"]
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            cell.font = Font(bold=True)
+            cell.fill = header_fill
             ws.column_dimensions[get_column_letter(1)].width = 12
             ws.column_dimensions[get_column_letter(2)].width = 18
+            ws.column_dimensions[get_column_letter(3)].width = 30
 
-            # Starting from column 3, add headers for each course (each course uses 2 columns for Grade and Remarks).
-            col_idx = 3
+            # Starting from column 4, add headers for each course (each course uses 2 columns for Grade and Remarks).
+            col_idx = 4
             for course in courses:
                 # Merge cells for the course code header.
                 ws.merge_cells(start_row=1, start_column=col_idx, end_row=1, end_column=col_idx+1)
@@ -1383,11 +1389,19 @@ class GenerateResultAPI(APIView):
 
             # Fill in student rows, starting from row 5.
             row_idx = 5
+            User = get_user_model()
             for idx, student in enumerate(students, start=1):
                 ws.cell(row=row_idx, column=1).value = idx
                 ws.cell(row=row_idx, column=2).value = student.id_id
-                for c in [1, 2]:
-                    ws.cell(row=row_idx, column=c).alignment = Alignment(horizontal="center", vertical="center")
+
+                try:
+                    student_user = User.objects.get(username=student.id_id)
+                    student_name = f"{student_user.first_name} {student_user.last_name}".strip() or student_user.username
+                except:
+                    student_name = student.id_id
+
+                ws.cell(row=row_idx, column=3).value = student_name
+                ws.cell(row=row_idx, column=3).alignment = Alignment(horizontal="left", vertical="center")
                 
                 # Get the student’s grade records for the current semester.
                 student_grades = Student_grades.objects.filter(
@@ -1397,7 +1411,7 @@ class GenerateResultAPI(APIView):
                     semester=semester
                 )
                 grades_map = {g.course_id_id: g for g in student_grades}
-                col_ptr = 3
+                col_ptr = 4
                 for course in courses:
                     grade_entry = grades_map.get(course.id)
                     grade_val = grade_entry.grade if grade_entry else '-'
