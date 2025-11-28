@@ -1150,6 +1150,7 @@ def add_single_student(request):
                     mother_mobile=sanitize_phone_number(data.get('mother_mobile', '') or data.get('Mother Mobile Number', '')),
 
                     branch=student_data.get('branch'),
+                    specialization=data.get('specialization', ''),
                     ai_rank=sanitize_rank_value(data.get('ai_rank') or data.get('AI rank')),
                     category_rank=sanitize_rank_value(data.get('category_rank') or data.get('Category Rank')),
 
