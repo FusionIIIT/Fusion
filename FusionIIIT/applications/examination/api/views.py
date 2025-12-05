@@ -3537,15 +3537,18 @@ class GenerateStudentResultPDFAPI(APIView):
             story.append(Spacer(1, 12))
             
             # Student Information Table
-            # Wrap long names in Paragraph to enable word wrapping
-            student_name = student_info.get('name', 'N/A')
-            if len(student_name) > 25:  # If name is too long, wrap it
-                student_name = Paragraph(student_name, ParagraphStyle('NameStyle', parent=styles['Normal'], fontSize=10, fontName='Times-Roman'))
-            
+            cell_style = ParagraphStyle(
+                'CellStyle',
+                parent=styles['Normal'],
+                fontSize=10,
+                fontName='Times-Roman',
+                wordWrap='CJK'
+            )
+
             student_data = [
-                ['Name of Student:', student_name, 'Roll No.:', student_info.get('rollNumber', student_info.get('roll_number', 'N/A'))],
-                ['Programme:', student_info.get('programme', 'N/A'), 'Branch:', student_info.get('branch', student_info.get('department', 'N/A'))],
-                ['Semester:', formatted_semester, 'Academic Year:', student_info.get('academicYear', student_info.get('academic_year', 'N/A'))]
+                [Paragraph('Name of Student:', cell_style), Paragraph(student_info.get('name', 'N/A'), cell_style), Paragraph('Roll No.:', cell_style), Paragraph(student_info.get('rollNumber', student_info.get('roll_number', 'N/A')), cell_style)],
+                [Paragraph('Programme:', cell_style), Paragraph(student_info.get('programme', 'N/A'), cell_style), Paragraph('Branch:', cell_style), Paragraph(student_info.get('branch', student_info.get('department', 'N/A')), cell_style)],
+                [Paragraph('Semester:', cell_style), Paragraph(formatted_semester, cell_style), Paragraph('Academic Year:', cell_style), Paragraph(student_info.get('academicYear', student_info.get('academic_year', 'N/A')), cell_style)]
             ]
             
             student_table = Table(student_data, colWidths=[1.75*inch, 1.75*inch, 1.75*inch, 1.75*inch])
