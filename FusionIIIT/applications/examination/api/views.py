@@ -3552,7 +3552,7 @@ class GenerateStudentResultPDFAPI(APIView):
                 [Paragraph('Semester:', cell_style), Paragraph(formatted_semester, cell_style), Paragraph('Academic Year:', cell_style), Paragraph(student_info.get('academicYear', student_info.get('academic_year', 'N/A')), cell_style)]
             ]
             
-            student_table = Table(student_data, colWidths=[1.75*inch, 1.75*inch, 1.75*inch, 1.75*inch])
+            student_table = Table(student_data, colWidths=[1.14*inch, 3.56*inch, 1.3*inch, 1.0*inch])
             student_table.setStyle(TableStyle([
                 ('FONTNAME', (0, 0), (-1, -1), 'Times-Roman'),
                 ('FONTSIZE', (0, 0), (-1, -1), 10),
