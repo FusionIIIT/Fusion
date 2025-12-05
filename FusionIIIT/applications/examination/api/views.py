@@ -2326,7 +2326,7 @@ class GeneratePDFAPI(APIView):
             
             subtitle_style = ParagraphStyle(
                 'Subtitle',
-                parent=styles['Normal'],
+                parent=styles['Heading2'],
                 fontSize=11,
                 spaceAfter=6,
                 alignment=1,  # Center
@@ -2334,8 +2334,8 @@ class GeneratePDFAPI(APIView):
             )
             
             # Institution Header
-            story.append(Paragraph("PDPM Indian Institute of Information Technology, Design &", title_style))
-            story.append(Paragraph("Manufacturing, Jabalpur", title_style))
+            story.append(Paragraph("PDPM Indian Institute of Information Technology,", title_style))
+            story.append(Paragraph("Design & Manufacturing, Jabalpur", title_style))
             story.append(Paragraph("(An Institute of National Importance under MoE, Govt. of India)", subtitle_style))
             story.append(Paragraph("Semester Grade Report / Marksheet", subtitle_style))
             story.append(Spacer(1, 20))
@@ -3474,7 +3474,8 @@ class GenerateStudentResultPDFAPI(APIView):
                 'Title',
                 parent=styles['Heading1'],
                 fontSize=14,
-                spaceAfter=8,
+                spaceAfter=2,
+                leading=18,
                 alignment=1,  # Center
                 fontName='Times-Bold'
             )
@@ -3501,10 +3502,10 @@ class GenerateStudentResultPDFAPI(APIView):
                     logo = Image(logo_path, width=0.8*inch, height=0.8*inch)
                     
                     # Create separate paragraphs for better text formatting
-                    title_para = Paragraph("PDPM Indian Institute of Information Technology, Design &", title_style)
-                    subtitle1_para = Paragraph("Manufacturing, Jabalpur", title_style)
+                    title_para = Paragraph("PDPM Indian Institute of Information Technology,", title_style)
+                    subtitle1_para = Paragraph("Design & Manufacturing, Jabalpur", title_style)
                     subtitle2_para = Paragraph("(An Institute of National Importance under MoE, Govt. of India)", subtitle_style)
-                    subtitle3_para = Paragraph("Semester Grade Report / Marksheet", subtitle_style)
+                    subtitle3_para = Paragraph("<b><u>Semester Grade Report / Marksheet</u></b>", subtitle_style)
                     
                     # Create header table with logo and text
                     header_table_data = [
@@ -3523,16 +3524,16 @@ class GenerateStudentResultPDFAPI(APIView):
                     story.append(header_table)
                 else:
                     # No logo, just text
-                    story.append(Paragraph("PDPM Indian Institute of Information Technology, Design &", title_style))
-                    story.append(Paragraph("Manufacturing, Jabalpur", title_style))
+                    story.append(Paragraph("PDPM Indian Institute of Information Technology,", title_style))
+                    story.append(Paragraph("Design & Manufacturing, Jabalpur", title_style))
                     story.append(Paragraph("(An Institute of National Importance under MoE, Govt. of India)", subtitle_style))
-                    story.append(Paragraph("Semester Grade Report / Marksheet", subtitle_style))
+                    story.append(Paragraph("<b><u>Semester Grade Report / Marksheet</u></b>", subtitle_style))
             except Exception as e:
                 # If logo fails, continue with text only
-                story.append(Paragraph("PDPM Indian Institute of Information Technology, Design &", title_style))
-                story.append(Paragraph("Manufacturing, Jabalpur", title_style))
+                story.append(Paragraph("PDPM Indian Institute of Information Technology,", title_style))
+                story.append(Paragraph("Design & Manufacturing, Jabalpur", title_style))
                 story.append(Paragraph("(An Institute of National Importance under MoE, Govt. of India)", subtitle_style))
-                story.append(Paragraph("Semester Grade Report / Marksheet", subtitle_style))
+                story.append(Paragraph("<b><u>Semester Grade Report / Marksheet</u></b>", subtitle_style))
             
             story.append(Spacer(1, 12))
             
@@ -3551,7 +3552,7 @@ class GenerateStudentResultPDFAPI(APIView):
                 [Paragraph('Semester:', cell_style), Paragraph(formatted_semester, cell_style), Paragraph('Academic Year:', cell_style), Paragraph(student_info.get('academicYear', student_info.get('academic_year', 'N/A')), cell_style)]
             ]
             
-            student_table = Table(student_data, colWidths=[1.75*inch, 1.75*inch, 1.75*inch, 1.75*inch])
+            student_table = Table(student_data, colWidths=[1.14*inch, 3.56*inch, 1.3*inch, 1.0*inch])
             student_table.setStyle(TableStyle([
                 ('FONTNAME', (0, 0), (-1, -1), 'Times-Roman'),
                 ('FONTSIZE', (0, 0), (-1, -1), 10),
