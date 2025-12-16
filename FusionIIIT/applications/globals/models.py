@@ -323,6 +323,7 @@ class ModuleAccess(models.Model):
     other_academics = models.BooleanField(default=False)
     spacs = models.BooleanField(default=False)
     department = models.BooleanField(default=False)
+    database = models.BooleanField(default=False)
     examinations = models.BooleanField(default=False)
     hr = models.BooleanField(default=False)
     iwd = models.BooleanField(default=False)
