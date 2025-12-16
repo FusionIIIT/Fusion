@@ -3660,3 +3660,90 @@ class GenerateStudentResultPDFAPI(APIView):
             
         except Exception as e:
             return JsonResponse({'error': f'PDF generation failed: {str(e)}'}, status=500)
+
+class GradeSummaryAPI(APIView):
+    """
+    API to get grade summary statistics for all courses in a given academic year and semester type.
+    Shows grade distribution (O, A+, A, B+, B, C+, C, D+, D, F, CD, S, X) for each course.
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        role = request.data.get("Role")
+        academic_year = request.data.get("academic_year") 
+        semester_type = request.data.get("semester_type")
+
+        if role not in ["acadadmin", "Dean Academic"]:
+            return Response(
+                {"success": False, "error": "Access denied."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        if not academic_year or not semester_type:
+            return Response(
+                {"error": "Academic year and semester type are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        try:
+            from django.db import connection
+
+            with connection.cursor() as cursor:
+                query = """
+                    SELECT 
+                        ROW_NUMBER() OVER (ORDER BY pc.code) as sno,
+                        pc.code as course_code,
+                        pc.name as course_name,
+                        STRING_AGG(DISTINCT TRIM(CONCAT(u.first_name, ' ', u.last_name)), ', ') as course_instructor,
+                        COUNT(CASE WHEN sg.grade = 'O' THEN 1 END) as grade_o,
+                        COUNT(CASE WHEN sg.grade = 'A+' THEN 1 END) as grade_a_plus,
+                        COUNT(CASE WHEN sg.grade = 'A' THEN 1 END) as grade_a,
+                        COUNT(CASE WHEN sg.grade = 'B+' THEN 1 END) as grade_b_plus,
+                        COUNT(CASE WHEN sg.grade = 'B' THEN 1 END) as grade_b,
+                        COUNT(CASE WHEN sg.grade = 'C+' THEN 1 END) as grade_c_plus,
+                        COUNT(CASE WHEN sg.grade = 'C' THEN 1 END) as grade_c,
+                        COUNT(CASE WHEN sg.grade = 'D+' THEN 1 END) as grade_d_plus,
+                        COUNT(CASE WHEN sg.grade = 'D' THEN 1 END) as grade_d,
+                        COUNT(CASE WHEN sg.grade = 'F' THEN 1 END) as grade_f,
+                        COUNT(CASE WHEN sg.grade = 'CD' THEN 1 END) as grade_cd,
+                        COUNT(CASE WHEN sg.grade = 'S' THEN 1 END) as grade_s,
+                        COUNT(CASE WHEN sg.grade = 'X' THEN 1 END) as grade_x,
+                        COUNT(sg.id) as total_students
+                    FROM 
+                        online_cms_student_grades sg
+                        INNER JOIN programme_curriculum_course pc ON sg.course_id_id = pc.id
+                        LEFT JOIN programme_curriculum_courseinstructor ci ON (
+                            ci.course_id_id = pc.id 
+                            AND ci.year = sg.year
+                        )
+                        LEFT JOIN auth_user u ON ci.instructor_id_id = u.username
+                    WHERE 
+                        sg.academic_year = %s
+                        AND sg.semester_type = %s
+                        AND sg.grade IS NOT NULL 
+                        AND sg.grade <> ''
+                    GROUP BY 
+                        pc.code, pc.name
+                    HAVING 
+                        COUNT(sg.id) > 0
+                    ORDER BY 
+                        pc.code
+                """
+                
+                cursor.execute(query, [academic_year, semester_type])
+                columns = [col[0] for col in cursor.description]
+                results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+            
+            return Response({
+                "success": True,
+                "grade_summary": results,
+                "academic_year": academic_year,
+                "semester_type": semester_type,
+                "total_courses": len(results)
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {"error": f"An error occurred: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
