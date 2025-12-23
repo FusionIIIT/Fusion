@@ -253,13 +253,14 @@ def spi_api(request):
 @role_required(['acadadmin'])
 def check_allocation_api(request):
     """
-    API to check the allocation status for a given batch, semester, and year.
+    API to check the allocation status for a given batch, semester, year, and programme_type.
     Uses the utility function to avoid code repetition.
     """
     try:
         batch = request.data.get('batch')
         sem = request.data.get('sem')
         year = request.data.get('year')
+        programme_type = request.data.get('programme_type')
 
         if not batch or not sem or not year:
             return Response(
@@ -276,7 +277,7 @@ def check_allocation_api(request):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        result = check_for_registration_complete(batch, sem, year)
+        result = check_for_registration_complete(batch, sem, year, programme_type)
 
         # Map status values to appropriate HTTP codes
         status_code_map = {
@@ -308,6 +309,7 @@ def start_allocation_api(request):
         batch = data.get("batch")
         semester = data.get("semester")
         year = data.get("year")
+        programme_type = data.get("programme_type")
 
         if not batch or not semester or not year:
             return JsonResponse({"error": "Missing required fields"}, status=400)
@@ -316,7 +318,7 @@ def start_allocation_api(request):
         semester = int(semester)
 
         mock_request = type('MockRequest', (), {})()
-        mock_request.POST = {'batch': batch, 'sem': semester, 'year': year}
+        mock_request.POST = {'batch': batch, 'sem': semester, 'year': year, 'programme_type': programme_type}
 
         return allocate(mock_request)
 
@@ -386,7 +388,7 @@ def generate_xlsheet_api(request):
                 u.first_name,
                 u.last_name,
                 CONCAT(u.first_name, ' ', u.last_name) as full_name,
-                COALESCE(s.specialization, 'General') as discipline,
+                COALESCE(d.acronym, 'General') as discipline,
                 u.email,
                 cr.registration_type,
                 c.code as course_code,
@@ -396,6 +398,8 @@ def generate_xlsheet_api(request):
             INNER JOIN globals_extrainfo ei ON cr.student_id_id = ei.id
             INNER JOIN auth_user u ON ei.user_id = u.id
             LEFT JOIN academic_information_student s ON ei.id = s.id_id
+            LEFT JOIN programme_curriculum_batch b ON s.batch_id_id = b.id
+            LEFT JOIN programme_curriculum_discipline d ON b.discipline_id = d.id
             INNER JOIN programme_curriculum_course c ON cr.course_id_id = c.id
             WHERE cr.session = %s 
                 AND cr.semester_type = %s 

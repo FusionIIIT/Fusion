@@ -15,7 +15,7 @@ import datetime
 import random
 from django.db import transaction
 time = timezone.now()
-def check_for_registration_complete(batch, sem, year):
+def check_for_registration_complete(batch, sem, year, programme_type):
     date = datetime.date.today()
     try:
         pre_registration_date = Calendar.objects.filter(description=f"Pre Registration {sem} {year}").first()
@@ -31,7 +31,7 @@ def check_for_registration_complete(batch, sem, year):
         if prd_start_date <= date <= prd_end_date:
             return {"status": -1, "message": "Registration is under process"}
 
-        if FinalRegistration.objects.filter(Q(semester_id__semester_no = sem) & Q(student_id__batch = batch)).exists() :
+        if FinalRegistration.objects.filter(Q(semester_id__semester_no = sem) & Q(student_id__batch = batch) & Q(student_id__batch_id__curriculum__programme__category=programme_type)).exists() :
             return {"status": 2, "message": "Courses already allocated"}
 
         return {"status": 1, "message": "Courses not yet allocated"}
@@ -40,8 +40,8 @@ def check_for_registration_complete(batch, sem, year):
         return {"status": -3, "message": f"Internal Server Error: {str(e)}"}
 
 @transaction.atomic
-def random_algo(batch,sem,year,course_slot) :
-    unique_course = InitialRegistration.objects.filter(Q(semester_id__semester_no = sem) & Q( course_slot_id__name = course_slot ) & Q(student_id__batch = batch)).values_list('course_id',flat=True).distinct()
+def random_algo(batch,sem,year,course_slot, programme_type) :
+    unique_course = InitialRegistration.objects.filter(Q(semester_id__semester_no = sem) & Q( course_slot_id__name = course_slot ) & Q(student_id__batch = batch) & Q(student_id__batch_id__curriculum__programme__category=programme_type)).values_list('course_id',flat=True).distinct()
     max_seats={}
     seats_alloted = {}
     present_priority = {}
@@ -54,7 +54,7 @@ def random_algo(batch,sem,year,course_slot) :
         present_priority[course] = []
         next_priority[course] = []
 
-    priority_1 = InitialRegistration.objects.filter(Q(semester_id__semester_no = sem) & Q( course_slot_id__name = course_slot ) & Q(student_id__batch = batch) & Q(priority=1))
+    priority_1 = InitialRegistration.objects.filter(Q(semester_id__semester_no = sem) & Q( course_slot_id__name = course_slot ) & Q(student_id__batch = batch) & Q(priority=1) & Q(student_id__batch_id__curriculum__programme__category=programme_type))
     rem=len(priority_1)
     if rem > total_seats :
         return -1
@@ -86,7 +86,7 @@ def random_algo(batch,sem,year,course_slot) :
                         seats_alloted[course] += 1
                         rem-=1
                     else :
-                        next = InitialRegistration.objects.get(Q(student_id__id__id = random_student_selected[0]) & Q( course_slot_id__name = course_slot ) & Q(semester_id__semester_no = sem) & Q(student_id__batch = batch) & Q(priority=p_priority+1))
+                        next = InitialRegistration.objects.get(Q(student_id__id__id = random_student_selected[0]) & Q( course_slot_id__name = course_slot ) & Q(semester_id__semester_no = sem) & Q(student_id__batch = batch) & Q(priority=p_priority+1) & Q(student_id__batch_id__curriculum__programme__category=programme_type))
                         next_priority[next.course_id.id].append([next.student_id.id.id,next.course_slot_id.id])
             p_priority+=1
             present_priority = next_priority
@@ -99,9 +99,10 @@ def allocate(request):
     batch = request.POST.get('batch')
     sem = request.POST.get('sem')
     year = request.POST.get('year')
+    programme_type = request.POST.get('programme_type')
 
     unique_course_slot = InitialRegistration.objects.filter(
-        Q(semester_id__semester_no=sem) & Q(student_id__batch=batch)
+        Q(semester_id__semester_no=sem) & Q(student_id__batch=batch) & Q(student_id__batch_id__curriculum__programme__category=programme_type)
     ).values('course_slot_id').distinct()
 
     unique_course_name = []
@@ -115,7 +116,7 @@ def allocate(request):
                     students = InitialRegistration.objects.filter(
                         Q(semester_id__semester_no=sem) &
                         Q(course_slot_id=course_slot_object) &
-                        Q(student_id__batch=batch)
+                        Q(student_id__batch=batch) & Q(student_id__batch_id__curriculum__programme__category=programme_type)
                     ).values_list('student_id', flat=True)
 
                     for student_id in students:
@@ -158,7 +159,7 @@ def allocate(request):
 
                 elif course_slot_object.type == "Open Elective":
                     if course_slot_object.name not in unique_course_name:
-                        stat = random_algo(batch, sem, year, course_slot_object.name)
+                        stat = random_algo(batch, sem, year, course_slot_object.name, programme_type)
                         unique_course_name.append(course_slot_object.name)
                         if stat == -1:
                             raise Exception(f"Seats not enough for course_slot {course_slot_object.name}")
