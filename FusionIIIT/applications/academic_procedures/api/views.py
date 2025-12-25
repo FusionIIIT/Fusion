@@ -2933,7 +2933,14 @@ def student_list_requests(request):
     current_user = request.user
     user_details = current_user.extrainfo
     student = Student.objects.get(id=user_details)
-    academic_year, semester_type = generate_current_session(datetime.datetime.now().year, student.curr_semester_no)
+    current_reg = course_registration.objects.filter(student_id=student, semester_id__semester_no=student.curr_semester_no).first()
+    
+    if current_reg:
+        academic_year = current_reg.session
+        semester_type = current_reg.semester_type
+    else:
+        academic_year, semester_type = generate_current_session(datetime.datetime.now().year, student.curr_semester_no)
+    
     qs = CourseReplacementRequest.objects.filter(student=student, academic_year=academic_year, semester_type = semester_type).order_by('-created_at')
     out = []
     for r in qs:
