@@ -39,6 +39,7 @@ from applications.academic_procedures.models import ( MTechGraduateSeminarReport
                                                      BranchChange , StudentRegistrationChecks, Semester , FeePayments , course_registration, course_replacement, AssistantshipClaim, Assignment, StipendRequest, CourseReplacementRequest, BatchChangeHistory, FeedbackQuestion, FeedbackResponse, FeedbackFilled, FeedbackOption)
 
 from applications.academic_information.models import (Curriculum_Instructor , Calendar)
+from applications.online_cms.models import Student_grades
 
 from applications.academic_procedures.views import (get_user_semester, get_acad_year,
                                                     get_currently_registered_courses,
@@ -236,7 +237,240 @@ def get_all_courses(request):
 #         print(e)
 #         return Response(data = str(e) , status= status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    
+# API for student to add BL courses
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['student'])
+def add_course(request):
+    try:
+        student = Student.objects.select_related('batch_id__curriculum').get(
+            id__user=request.user
+        )
+
+        course = Courses.objects.get(id=request.data.get('course_id'))
+        slot = CourseSlot.objects.get(id=request.data.get('slot_id'))
+
+        if not slot.name.startswith('BL'):
+            return Response({
+                'error': f'Only BL slots allowed. "{slot.name}" is not a BL slot.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        backlog_grades = ['F', 'X', 'CD']
+        improvement_grades = ['C', 'D+', 'D']
+        allowed_grades = backlog_grades + improvement_grades
+        
+        student_grade = Student_grades.objects.filter(
+            roll_no=request.user.username,
+            course_id=course
+        ).order_by('-year', '-semester').first()
+        
+        if not student_grade:
+            return Response({
+                'error': 'You can only register for BL courses if you have a grade below C+ in this course. No grade record found.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if student_grade.grade not in allowed_grades:
+            return Response({
+                'error': f'You can only register for BL courses with grades below C+. Your grade: {student_grade.grade}'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        registration_type = 'Backlog' if student_grade.grade in backlog_grades else 'Improvement'
+        current_semester = Semester.objects.get(
+            curriculum=student.batch_id.curriculum,
+            semester_no=student.curr_semester_no
+        )
+
+        current_year = datetime.datetime.now().year
+        session, semester_type = generate_current_session(current_year, student.curr_semester_no)
+
+        registration = course_registration.objects.create(
+            student_id=student,
+            course_id=course,
+            course_slot_id=slot,
+            semester_id=current_semester,
+            working_year=current_year,
+            session=session,
+            semester_type=semester_type,
+            registration_type=registration_type
+        )
+        
+        return Response({
+            'message': 'Course added successfully',
+            'data': serializers.CourseRegistrationSerializer(registration).data
+        }, status=status.HTTP_201_CREATED)
+        
+    except Student.DoesNotExist:
+        return Response({'error': 'Student not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Courses.DoesNotExist:
+        return Response({'error': 'Course not found'}, status=status.HTTP_404_NOT_FOUND)
+    except CourseSlot.DoesNotExist:
+        return Response({'error': 'Course slot not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Semester.DoesNotExist:
+        return Response({'error': 'Semester not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# API to get available course slots for student (only BL slots)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['student'])
+def get_student_add_course_slots(request):
+    try:
+        current_user = request.user
+        extra_info = ExtraInfo.objects.filter(user=current_user).first()
+        
+        if not extra_info:
+            return Response({
+                'error': 'User information not found'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        student = Student.objects.filter(id=extra_info.id).first()
+        
+        if not student:
+            return Response({
+                'error': 'Student information not found'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        batch = student.batch_id
+        if not batch or not batch.curriculum:
+            return Response({
+                'error': 'Student batch or curriculum not found'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        current_semester = Semester.objects.filter(
+            curriculum=batch.curriculum,
+            semester_no=student.curr_semester_no
+        ).first()
+        
+        if not current_semester:
+            return Response({
+                'error': 'Current semester not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        bl_slots = CourseSlot.objects.filter(
+            semester=current_semester,
+            name__startswith='BL'
+        )
+        
+        registered_slots = course_registration.objects.filter(
+            student_id=student,
+            semester_id=current_semester
+        ).values_list('course_slot_id', flat=True)
+        
+        available_slots = []
+        current_year = datetime.datetime.now().year
+        academic_year, semester_type = generate_current_session(current_year, student.curr_semester_no)
+        
+        for slot in bl_slots:
+            if slot.id not in registered_slots:
+                course_count = slot.courses.count()
+                
+                available_slots.append({
+                    'id': slot.id,
+                    'name': slot.name,
+                    'type': slot.type,
+                    'max_registration_limit': slot.max_registration_limit,
+                    'academic_year': academic_year,
+                    'semester_type': semester_type,
+                    'semester_no': student.curr_semester_no,
+                    'course_count': course_count
+                })
+        
+        return Response(available_slots, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# API to get available courses for a specific slot (only BL slots)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['student'])
+def get_student_add_courses(request):
+    try:
+        current_user = request.user
+        extra_info = ExtraInfo.objects.filter(user=current_user).first()
+        
+        if not extra_info:
+            return Response({
+                'error': 'User information not found'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        student = Student.objects.filter(id=extra_info.id).first()
+        
+        if not student:
+            return Response({
+                'error': 'Student information not found'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        batch = student.batch_id
+        if not batch or not batch.curriculum:
+            return Response({
+                'error': 'Student batch or curriculum not found'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        curriculum = batch.curriculum
+        current_sem_no = student.curr_semester_no
+        
+        current_semester = Semester.objects.filter(
+            curriculum=curriculum,
+            semester_no=current_sem_no
+        ).first()
+        
+        if not current_semester:
+            return Response({
+                'error': 'Current semester not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        slot_id = request.query_params.get('slot_id')
+
+        if slot_id:
+            bl_slots = CourseSlot.objects.filter(
+                id=slot_id,
+                semester=current_semester,
+                name__startswith='BL'
+            )
+        else:
+            bl_slots = CourseSlot.objects.filter(
+                semester=current_semester,
+                name__startswith='BL'
+            )
+        
+        courses_list = []
+        
+        for slot in bl_slots:
+            courses = slot.courses.all()
+            
+            for course in courses:
+                already_registered = course_registration.objects.filter(
+                    course_id=course,
+                    student_id=student
+                ).exists()
+                
+                courses_list.append({
+                    'id': course.id,
+                    'code': course.code,
+                    'name': course.name,
+                    'credit': course.credit,
+                    'slot': slot.name,
+                    'slot_id': slot.id,
+                    'already_registered': already_registered
+                })
+        
+        return Response(courses_list, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 # @api_view(['GET'])
 # @permission_classes([IsAuthenticated])
 # def drop_course(request):
@@ -441,7 +675,6 @@ def student_view_registration(request):
 def final_registration(request):
     try:
         with transaction.atomic():
-            print(request.data)
             current_user = request.user
             extra_info = current_user.extrainfo
             student = Student.objects.filter(id=extra_info).first()
@@ -578,7 +811,6 @@ def get_course_list(request):
     batch = request.data['batch']
 
     try : 
-        print(programme , branch , batch)
         obj = Curriculum.objects.filter(
             programme = request.data['programme'],
             branch = request.data['branch'],
@@ -620,7 +852,6 @@ def configure_pre_registration_date(request):
             semester = request.data.get('semester')
             current_year = date_time.date().year
             desc = "Pre Registration " + str(semester) +" " + str(current_year)
-            print(from_date , to_date , desc)
             from_date = from_date.split('-')
             from_date = [int(i) for i in from_date]
             from_date = datetime.datetime(*from_date).date()
@@ -654,7 +885,6 @@ def configure_final_registration_date(request):
             semester = request.data.get('semester')
             current_year = date_time.date().year
             desc = "Physical Reporting at the Institute"
-            print(from_date , to_date , desc)
             from_date = from_date.split('-')
             from_date = [int(i) for i in from_date]
             from_date = datetime.datetime(*from_date).date()
@@ -720,7 +950,6 @@ def faculty_assigned_courses(request):
         current_user = request.user
         curriculum_ids = Curriculum_Instructor.objects.filter(instructor_id=current_user.id).values_list('curriculum_id', flat=True)
         course_infos = []
-        print(current_user.id)
         for curriculum_id in curriculum_ids:
             course_info = Curriculum.objects.filter(curriculum_id=curriculum_id).values_list('course_code','course_type','programme','branch','sem','course_id_id').first()
             # course_infos.append(course_info)
@@ -814,7 +1043,6 @@ def get_next_sem_courses(request):
 @role_required(['acadadmin'])
 def verify_registration(request):
     data = json.loads(request.body)
-    print(data)
     if data.get('status_req') == "accept" :
         student_id = data.get('student_id')
         student = Student.objects.get(id = student_id)
@@ -2806,7 +3034,6 @@ def registered_slots(request):
                     {"id": c.id, "code": c.code, "name": c.name, "seats_available": max(c.max_seats - (course_registration.objects.filter(course_id=c, session = session, semester_type = semester_type).exclude(course_slot_id__name__startswith = 'BL').count()), 0)} for c in others
                 ],
             })
-        print(payload)
         return JsonResponse(payload, safe=False)   
     except Student.DoesNotExist:
         return Response({"error": "Student profile not found"}, status=400)
