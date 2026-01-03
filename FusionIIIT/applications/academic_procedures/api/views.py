@@ -250,6 +250,14 @@ def add_course(request):
             id__user=request.user
         )
 
+        eligibility_resp = get_add_drop_replace_registration_eligibility(
+            timezone.now().date(), 
+            student.curr_semester_no, 
+            datetime.datetime.now().year
+        )
+        if isinstance(eligibility_resp, JsonResponse):
+            return eligibility_resp
+
         course = Courses.objects.get(id=request.data.get('course_id'))
         slot = CourseSlot.objects.get(id=request.data.get('slot_id'))
 
@@ -361,6 +369,14 @@ def get_student_add_course_slots(request):
             return Response({
                 'error': 'Student information not found'
             }, status=status.HTTP_400_BAD_REQUEST)
+
+        eligibility_resp = get_add_drop_replace_registration_eligibility(
+            timezone.now().date(), 
+            student.curr_semester_no, 
+            datetime.datetime.now().year
+        )
+        if isinstance(eligibility_resp, JsonResponse):
+            return eligibility_resp
         
         batch = student.batch_id
         if not batch or not batch.curriculum:
