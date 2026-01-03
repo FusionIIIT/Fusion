@@ -869,6 +869,92 @@ class CourseReplacementRequest(models.Model):
         return f"{self.old_course.code}→{self.new_course.code} [{self.status}]"
     
 
+class CourseDropRequest(models.Model):
+    STATUS_CHOICES = [
+        ("Pending",  "Pending"),
+        ("Approved", "Approved"),
+        ("Rejected", "Rejected"),
+    ]
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    academic_year = models.CharField(max_length=9)
+    semester_type = models.CharField(
+        max_length=20,
+        choices=[
+            ("Odd Semester",    "Odd Semester"),
+            ("Even Semester",   "Even Semester"),
+            ("Summer Semester", "Summer Semester"),
+        ],
+    )
+    course_slot = models.ForeignKey(CourseSlot, on_delete=models.CASCADE)
+    course = models.ForeignKey(
+        Courses,
+        related_name='drop_course_reqs',
+        on_delete=models.CASCADE,
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="Pending",
+    )
+    created_at = models.DateTimeField(default=timezone.now)
+    processed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = (
+            'student',
+            'course_slot',
+            'academic_year',
+            'semester_type',
+        )
+
+    def __str__(self):
+        return f"{self.course.code} Drop [{self.status}]"
+
+
+class CourseAddRequest(models.Model):
+    STATUS_CHOICES = [
+        ("Pending",  "Pending"),
+        ("Approved", "Approved"),
+        ("Rejected", "Rejected"),
+    ]
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    academic_year = models.CharField(max_length=9)
+    semester_type = models.CharField(
+        max_length=20,
+        choices=[
+            ("Odd Semester",    "Odd Semester"),
+            ("Even Semester",   "Even Semester"),
+            ("Summer Semester", "Summer Semester"),
+        ],
+    )
+    course_slot = models.ForeignKey(CourseSlot, on_delete=models.CASCADE)
+    course = models.ForeignKey(
+        Courses,
+        related_name='add_course_reqs',
+        on_delete=models.CASCADE,
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="Pending",
+    )
+    created_at = models.DateTimeField(default=timezone.now)
+    processed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = (
+            'student',
+            'course_slot',
+            'academic_year',
+            'semester_type',
+        )
+
+    def __str__(self):
+        return f"{self.course.code} Add [{self.status}]"
+
+
 class BatchChangeHistory(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     old_batch = models.ForeignKey(Batch, on_delete=models.PROTECT, related_name="history_old")
