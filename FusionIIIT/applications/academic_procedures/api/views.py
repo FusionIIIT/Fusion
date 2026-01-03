@@ -1,9 +1,11 @@
 import datetime
 import random
+import logging
 from collections import defaultdict, deque, OrderedDict
 from functools import wraps
 from datetime import date
 from django.utils import timezone
+logger = logging.getLogger(__name__)
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, redirect
 from django.db import transaction
@@ -36,9 +38,10 @@ from applications.programme_curriculum.models import ( CourseInstructor, CourseS
 
 from applications.academic_procedures.models import ( MTechGraduateSeminarReport, PhDProgressExamination, Student, Curriculum , ThesisTopicProcess, InitialRegistrations,
                                                      FinalRegistration, SemesterMarks,backlog_course,
-                                                     BranchChange , StudentRegistrationChecks, Semester , FeePayments , course_registration, course_replacement, AssistantshipClaim, Assignment, StipendRequest, CourseReplacementRequest, BatchChangeHistory, FeedbackQuestion, FeedbackResponse, FeedbackFilled, FeedbackOption)
+                                                     BranchChange , StudentRegistrationChecks, Semester , FeePayments , course_registration, course_replacement, AssistantshipClaim, Assignment, StipendRequest, CourseReplacementRequest, CourseDropRequest, CourseAddRequest, BatchChangeHistory, FeedbackQuestion, FeedbackResponse, FeedbackFilled, FeedbackOption)
 
 from applications.academic_information.models import (Curriculum_Instructor , Calendar)
+from applications.online_cms.models import Student_grades
 
 from applications.academic_procedures.views import (get_user_semester, get_acad_year,
                                                     get_currently_registered_courses,
@@ -236,7 +239,274 @@ def get_all_courses(request):
 #         print(e)
 #         return Response(data = str(e) , status= status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    
+# API for student to add BL courses
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['student'])
+def add_course(request):
+    try:
+        student = Student.objects.select_related('batch_id__curriculum').get(
+            id__user=request.user
+        )
+
+        course = Courses.objects.get(id=request.data.get('course_id'))
+        slot = CourseSlot.objects.get(id=request.data.get('slot_id'))
+
+        if not slot.name.startswith('BL'):
+            return Response({
+                'error': f'Only BL slots allowed. "{slot.name}" is not a BL slot.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        backlog_grades = ['F', 'X', 'CD']
+        improvement_grades = ['C', 'D+', 'D']
+        allowed_grades = backlog_grades + improvement_grades
+        
+        student_grade = Student_grades.objects.filter(
+            roll_no=request.user.username,
+            course_id=course
+        ).order_by('-year', '-semester').first()
+        
+        if not student_grade:
+            return Response({
+                'error': 'You can only register for BL courses if you have a grade below C+ in this course. No grade record found.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if student_grade.grade not in allowed_grades:
+            return Response({
+                'error': f'You can only register for BL courses with grades below C+. Your grade: {student_grade.grade}'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        current_year = datetime.datetime.now().year
+        session, semester_type = generate_current_session(current_year, student.curr_semester_no)
+
+
+        existing_request = CourseAddRequest.objects.filter(
+            student=student,
+            course=course,
+            course_slot=slot,
+            academic_year=session,
+            semester_type=semester_type,
+            status__in=['Pending', 'Approved']
+        ).first()
+        
+        if existing_request:
+            return Response({
+                'error': f'You already have a {existing_request.status.lower()} request for this slot in the current semester.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            add_request = CourseAddRequest.objects.create(
+                student=student,
+                course=course,
+                course_slot=slot,
+                academic_year=session,
+                semester_type=semester_type,
+                status='Pending'
+            )
+        except Exception as create_error:
+            import logging
+            logger = logging.getLogger(__name__)
+            error_msg = str(create_error)
+            if 'duplicate' in error_msg.lower() or 'unique constraint' in error_msg.lower():
+                return Response({
+                    'error': 'You have already submitted a request for this slot in the current semester.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                logger.error(f"Error creating add course request: {error_msg}", exc_info=True)
+                return Response({
+                    'error': 'Failed to submit course add request. Please try again or contact support.'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        return Response({
+            'message': 'Course add request submitted successfully. Awaiting Academic approval.',
+            'data': {
+                'id': add_request.id,
+                'course': course.code,
+                'course_name': course.name,
+                'slot': slot.name,
+                'status': add_request.status,
+                'created_at': add_request.created_at.isoformat()
+            }
+        }, status=status.HTTP_201_CREATED)
+        
+    except Student.DoesNotExist:
+        return Response({'error': 'Student not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Courses.DoesNotExist:
+        return Response({'error': 'Course not found'}, status=status.HTTP_404_NOT_FOUND)
+    except CourseSlot.DoesNotExist:
+        return Response({'error': 'Course slot not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# API to get available course slots for student (only BL slots)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['student'])
+def get_student_add_course_slots(request):
+    try:
+        current_user = request.user
+        extra_info = ExtraInfo.objects.filter(user=current_user).first()
+        
+        if not extra_info:
+            return Response({
+                'error': 'User information not found'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        student = Student.objects.filter(id=extra_info.id).first()
+        
+        if not student:
+            return Response({
+                'error': 'Student information not found'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        batch = student.batch_id
+        if not batch or not batch.curriculum:
+            return Response({
+                'error': 'Student batch or curriculum not found'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        current_semester = Semester.objects.filter(
+            curriculum=batch.curriculum,
+            semester_no=student.curr_semester_no
+        ).first()
+        
+        if not current_semester:
+            return Response({
+                'error': 'Current semester not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        bl_slots = CourseSlot.objects.filter(
+            semester=current_semester,
+            name__startswith='BL'
+        )
+        
+        registered_slots = course_registration.objects.filter(
+            student_id=student,
+            semester_id=current_semester
+        ).values_list('course_slot_id', flat=True)
+
+        current_year = datetime.datetime.now().year
+        academic_year, semester_type = generate_current_session(current_year, student.curr_semester_no)
+
+        pending_request_slots = CourseAddRequest.objects.filter(
+            student=student,
+            academic_year=academic_year,
+            semester_type=semester_type,
+            status='Pending'
+        ).values_list('course_slot_id', flat=True)
+        
+        available_slots = []
+        
+        for slot in bl_slots:
+            if slot.id not in registered_slots and slot.id not in pending_request_slots:
+                course_count = slot.courses.count()
+                
+                available_slots.append({
+                    'id': slot.id,
+                    'name': slot.name,
+                    'type': slot.type,
+                    'max_registration_limit': slot.max_registration_limit,
+                    'academic_year': academic_year,
+                    'semester_type': semester_type,
+                    'semester_no': student.curr_semester_no,
+                    'course_count': course_count
+                })
+        
+        return Response(available_slots, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# API to get available courses for a specific slot (only BL slots)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['student'])
+def get_student_add_courses(request):
+    try:
+        current_user = request.user
+        extra_info = ExtraInfo.objects.filter(user=current_user).first()
+        
+        if not extra_info:
+            return Response({
+                'error': 'User information not found'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        student = Student.objects.filter(id=extra_info.id).first()
+        
+        if not student:
+            return Response({
+                'error': 'Student information not found'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        batch = student.batch_id
+        if not batch or not batch.curriculum:
+            return Response({
+                'error': 'Student batch or curriculum not found'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        curriculum = batch.curriculum
+        current_sem_no = student.curr_semester_no
+        
+        current_semester = Semester.objects.filter(
+            curriculum=curriculum,
+            semester_no=current_sem_no
+        ).first()
+        
+        if not current_semester:
+            return Response({
+                'error': 'Current semester not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        slot_id = request.query_params.get('slot_id')
+
+        if slot_id:
+            bl_slots = CourseSlot.objects.filter(
+                id=slot_id,
+                semester=current_semester,
+                name__startswith='BL'
+            )
+        else:
+            bl_slots = CourseSlot.objects.filter(
+                semester=current_semester,
+                name__startswith='BL'
+            )
+        
+        courses_list = []
+        
+        for slot in bl_slots:
+            courses = slot.courses.all()
+            
+            for course in courses:
+                already_registered = course_registration.objects.filter(
+                    course_id=course,
+                    student_id=student
+                ).exists()
+                
+                courses_list.append({
+                    'id': course.id,
+                    'code': course.code,
+                    'name': course.name,
+                    'credit': course.credit,
+                    'slot': slot.name,
+                    'slot_id': slot.id,
+                    'already_registered': already_registered
+                })
+        
+        return Response(courses_list, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 # @api_view(['GET'])
 # @permission_classes([IsAuthenticated])
 # def drop_course(request):
@@ -441,7 +711,6 @@ def student_view_registration(request):
 def final_registration(request):
     try:
         with transaction.atomic():
-            print(request.data)
             current_user = request.user
             extra_info = current_user.extrainfo
             student = Student.objects.filter(id=extra_info).first()
@@ -578,7 +847,6 @@ def get_course_list(request):
     batch = request.data['batch']
 
     try : 
-        print(programme , branch , batch)
         obj = Curriculum.objects.filter(
             programme = request.data['programme'],
             branch = request.data['branch'],
@@ -620,7 +888,6 @@ def configure_pre_registration_date(request):
             semester = request.data.get('semester')
             current_year = date_time.date().year
             desc = "Pre Registration " + str(semester) +" " + str(current_year)
-            print(from_date , to_date , desc)
             from_date = from_date.split('-')
             from_date = [int(i) for i in from_date]
             from_date = datetime.datetime(*from_date).date()
@@ -654,7 +921,6 @@ def configure_final_registration_date(request):
             semester = request.data.get('semester')
             current_year = date_time.date().year
             desc = "Physical Reporting at the Institute"
-            print(from_date , to_date , desc)
             from_date = from_date.split('-')
             from_date = [int(i) for i in from_date]
             from_date = datetime.datetime(*from_date).date()
@@ -720,7 +986,6 @@ def faculty_assigned_courses(request):
         current_user = request.user
         curriculum_ids = Curriculum_Instructor.objects.filter(instructor_id=current_user.id).values_list('curriculum_id', flat=True)
         course_infos = []
-        print(current_user.id)
         for curriculum_id in curriculum_ids:
             course_info = Curriculum.objects.filter(curriculum_id=curriculum_id).values_list('course_code','course_type','programme','branch','sem','course_id_id').first()
             # course_infos.append(course_info)
@@ -814,7 +1079,6 @@ def get_next_sem_courses(request):
 @role_required(['acadadmin'])
 def verify_registration(request):
     data = json.loads(request.body)
-    print(data)
     if data.get('status_req') == "accept" :
         student_id = data.get('student_id')
         student = Student.objects.get(id = student_id)
@@ -1506,7 +1770,6 @@ def final_registration_page(request):
             'final_registration_flag': final_registration_flag,
             'final_registration': final_registration,
         }
-        print(resp)
         return Response(data=resp, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -1521,7 +1784,6 @@ def student_list(request):
         excel_export = request.GET.get("excel_export", "false")
         data = json.loads(request.body)
         batch = data.get('batch')
-        print(batch)
         
         year = demo_date.year
         month = demo_date.month
@@ -1531,7 +1793,6 @@ def student_list(request):
 
         batch_id = Batch.objects.get(id=batch)
         student_obj = FeePayments.objects.all().select_related('student_id').filter(student_id__batch_id=batch_id)
-        print(student_obj)
 
         if excel_export == "false":
             if student_obj:
@@ -1861,7 +2122,7 @@ def allot_courses(request):
                         semester_type = sem_type
                     ))
                 except Exception as e:
-                    print(e, "-----", roll_no, slot_name, code)
+                    pass  # Handle error silently or log it
 
             StudentRegistrationChecks.objects.bulk_create(checks, ignore_conflicts=True)
             InitialRegistration.objects.bulk_create(pre_regs, ignore_conflicts=True)
@@ -1876,7 +2137,6 @@ def allot_courses(request):
     except xlrd.XLRDError:
         return Response({'error': 'Invalid Excel format.'}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
-        print(e)
         return Response({'error': f'Processing error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -1909,7 +2169,6 @@ def student_next_sem_courses(request):
 
     # Serialize the data (using DRF serializers is highly recommended)
     course_slot = CourseSlot.objects.all().filter(semester_id = next_sem_id).prefetch_related(Prefetch('courses', queryset=Courses.objects.all()))
-    print(course_slot[0].courses)
     serializer = serializers.CourseSlotSerializer(course_slot, many=True) # Assuming you have a CourseSerializer
     courses_list_data = serializer.data
 
@@ -2357,7 +2616,6 @@ def submit_swayam_registration(request):
         course_id = reg.get("course_id")
         selected_option = reg.get("selected_option")
         remark = reg.get("remark")
-        print(selected_option, course_id, remark)
         try:
             course = Courses.objects.get(id=course_id)
         except Courses.DoesNotExist:
@@ -2460,7 +2718,6 @@ def upload_excel_replacement(request):
         sem_old = roman_to_int(old_rom)
         if sem_old is None:
             msg = f'Row {idx+2} Invalid Roman numeral {old_rom}'
-            print(msg)
             failed_rows.append(msg)
             continue
 
@@ -2468,7 +2725,6 @@ def upload_excel_replacement(request):
             student = Student.objects.get(id_id=sid)
         except Student.DoesNotExist:
             msg = f'Row {idx+2} Student {sid} not found'
-            print(msg)
             failed_rows.append(msg)
             continue
 
@@ -2480,7 +2736,6 @@ def upload_excel_replacement(request):
             )
         except course_registration.DoesNotExist:
             msg = f'Row {idx+2} Old registration not found: {sid}, {old_code}, {sem_old}'
-            print(msg)
             failed_rows.append(msg)
             continue
 
@@ -2492,7 +2747,6 @@ def upload_excel_replacement(request):
             )
         except course_registration.DoesNotExist:
             msg = f'Row {idx+2} New registration not found: {sid}, {new_code}, {new_sem}'
-            print(msg)
             failed_rows.append(msg)
             continue
 
@@ -2806,7 +3060,6 @@ def registered_slots(request):
                     {"id": c.id, "code": c.code, "name": c.name, "seats_available": max(c.max_seats - (course_registration.objects.filter(course_id=c, session = session, semester_type = semester_type).exclude(course_slot_id__name__startswith = 'BL').count()), 0)} for c in others
                 ],
             })
-        print(payload)
         return JsonResponse(payload, safe=False)   
     except Student.DoesNotExist:
         return Response({"error": "Student profile not found"}, status=400)
@@ -3086,37 +3339,93 @@ def drop_course(request):
     """
     POST /api/student/drop-course/
     Body: { "registration_id": <int> }
-    Deletes that registration if it belongs to the student.
+    Creates a drop request instead of directly dropping the course.
+    Validates eligibility before creating the request.
     """
-    current_user = request.user
-    user_details = current_user.extrainfo
-    student = Student.objects.get(id=user_details)
-    eligibility_resp = get_add_drop_replace_registration_eligibility(timezone.now().date(), student.curr_semester_no, datetime.datetime.now().year)
-    if isinstance(eligibility_resp, JsonResponse):
-        return eligibility_resp
-    reg_id = request.data.get('registration_id')
-    if not reg_id:
-        return Response(
-            {'error': 'registration_id is required'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
     try:
+        current_user = request.user
+        user_details = getattr(current_user, 'extrainfo', None)
+        if not user_details:
+            return Response(
+                {'error': 'User profile not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        student = Student.objects.select_related('id__user', 'batch_id').get(id=user_details)
+
+        eligibility_resp = get_add_drop_replace_registration_eligibility(
+            timezone.now().date(), 
+            student.curr_semester_no, 
+            datetime.datetime.now().year
+        )
+        if isinstance(eligibility_resp, JsonResponse):
+            return eligibility_resp
+
+        reg_id = request.data.get('registration_id')
+        if not reg_id:
+            return Response(
+                {'error': 'registration_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            reg_id = int(reg_id)
+        except (ValueError, TypeError):
+            return Response(
+                {'error': 'Invalid registration_id format'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         with transaction.atomic():
-            reg = course_registration.objects.get(id=reg_id, student_id=student)
-            reg.delete()
+            reg = course_registration.objects.select_related(
+                'course_id', 'course_slot_id'
+            ).get(id=reg_id, student_id=student)
+
+            drop_request, created = CourseDropRequest.objects.get_or_create(
+                student=student,
+                course_slot=reg.course_slot_id,
+                academic_year=reg.session,
+                semester_type=reg.semester_type,
+                defaults={'course': reg.course_id}
+            )
+            
+            if not created:
+                if drop_request.status == "Pending":
+                    return Response(
+                        {'error': 'Drop request already pending for this slot'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                drop_request.course = reg.course_id
+                drop_request.status = "Pending"
+                drop_request.processed_at = None
+                drop_request.save(update_fields=['course', 'status', 'processed_at'])
+            
+            return Response(
+                {
+                    'status': 'pending',
+                    'request_id': drop_request.id,
+                    'registration_id': reg_id,
+                    'message': 'Drop request submitted successfully. Waiting for Academic approval.'
+                },
+                status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
+            )
+            
+    except Student.DoesNotExist:
         return Response(
-            {'status': 'dropped', 'registration_id': reg_id},
-            status=status.HTTP_200_OK
+            {'error': 'Student profile not found'},
+            status=status.HTTP_404_NOT_FOUND
         )
     except course_registration.DoesNotExist:
         return Response(
-            {'error': 'Registration not found'},
+            {'error': 'Course registration not found or does not belong to you'},
             status=status.HTTP_404_NOT_FOUND
         )
     except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Drop course error for user {request.user.username}: {str(e)}", exc_info=True)
         return Response(
-            {'error': f'Internal error: {str(e)}'},
+            {'error': 'An error occurred while processing your request'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
     
@@ -3136,6 +3445,467 @@ def student_calendar_view(request):
     ]
 
     return Response({"calendar_events": result})
+
+# List all drop requests for the logged-in student for current semester
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@role_required(['student'])
+def student_list_drop_requests(request):
+    try:
+        current_user = request.user
+        user_details = getattr(current_user, 'extrainfo', None)
+        if not user_details:
+            return JsonResponse({'error': 'User profile not found'}, status=404)
+        
+        student = Student.objects.select_related('id__user').get(id=user_details)
+        
+        current_reg = course_registration.objects.filter(
+            student_id=student,
+            semester_id__semester_no=student.curr_semester_no
+        ).only('session', 'semester_type').first()
+        
+        if current_reg:
+            academic_year = current_reg.session
+            semester_type = current_reg.semester_type
+        else:
+            academic_year, semester_type = generate_current_session(
+                datetime.datetime.now().year,
+                student.curr_semester_no
+            )
+
+        qs = CourseDropRequest.objects.filter(
+            student=student,
+            academic_year=academic_year,
+            semester_type=semester_type
+        ).select_related('course', 'course_slot').order_by('-created_at')
+
+        out = [
+            {
+                'id': r.id,
+                'slot': r.course_slot.name,
+                'course': r.course.code,
+                'course_name': r.course.name,
+                'status': r.status,
+                'academic_year': r.academic_year,
+                'semester_type': r.semester_type,
+                'created_at': r.created_at.isoformat(),
+                'processed_at': r.processed_at.isoformat() if r.processed_at else None,
+            }
+            for r in qs
+        ]
+        
+        return JsonResponse(out, safe=False)
+        
+    except Student.DoesNotExist:
+        return JsonResponse({'error': 'Student profile not found'}, status=404)
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error listing drop requests for {request.user.username}: {str(e)}", exc_info=True)
+        return JsonResponse({'error': 'An error occurred while fetching requests'}, status=500)
+
+ # Lists all course drop requests with optional filtering
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def admin_list_drop_requests(request):
+    try:
+        qs = CourseDropRequest.objects.select_related(
+            'student__id__user',
+            'course',
+            'course_slot'
+        ).all().order_by('-created_at')
+
+        year = request.GET.get('academic_year', '').strip()
+        sem = request.GET.get('semester_type', '').strip()
+        
+        if year:
+            qs = qs.filter(academic_year=year)
+        if sem:
+            qs = qs.filter(semester_type=sem)
+
+        qs = qs[:500]
+
+        out = [
+            {
+                'id': r.id,
+                'student': r.student.id.user.username,
+                'student_name': f"{r.student.id.user.first_name} {r.student.id.user.last_name}".strip(),
+                'slot': r.course_slot.name,
+                'course': r.course.code,
+                'course_name': r.course.name,
+                'status': r.status,
+                'academic_year': r.academic_year,
+                'semester_type': r.semester_type,
+                'created_at': r.created_at.isoformat(),
+                'processed_at': r.processed_at.isoformat() if r.processed_at else None,
+            }
+            for r in qs
+        ]
+        
+        return JsonResponse(out, safe=False)
+        
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error listing drop requests for admin: {str(e)}", exc_info=True)
+        return JsonResponse({'error': 'An error occurred while fetching requests'}, status=500)
+
+# Processes multiple drop requests in batch
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@transaction.atomic
+@role_required(['acadadmin'])
+def approve_drop_requests(request):
+    import json
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        body = json.loads(request.body)
+        request_ids = body.get('request_ids', [])
+        action = body.get('action', 'approve').lower().strip()
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON format'}, status=400)
+    except Exception as e:
+        logger.error(f"Error parsing request body: {str(e)}")
+        return JsonResponse({'error': 'Invalid request format'}, status=400)
+
+    if not request_ids or not isinstance(request_ids, list):
+        return JsonResponse({'error': 'request_ids must be a non-empty array'}, status=400)
+    
+    if action not in ['approve', 'reject']:
+        return JsonResponse({'error': 'action must be either "approve" or "reject"'}, status=400)
+
+    if len(request_ids) > 100:
+        return JsonResponse({'error': 'Cannot process more than 100 requests at once'}, status=400)
+
+    results = []
+    success_count = 0
+    error_count = 0
+    
+    for req_id in request_ids:
+        try:
+            req_id = int(req_id)
+
+            drop_request = CourseDropRequest.objects.select_for_update().select_related(
+                'student', 'course', 'course_slot'
+            ).get(id=req_id)
+
+            if drop_request.status != "Pending":
+                results.append({
+                    'id': req_id,
+                    'status': 'already_processed',
+                    'current_status': drop_request.status
+                })
+                continue
+            
+            if action == 'approve':
+                try:
+                    reg = course_registration.objects.get(
+                        student_id=drop_request.student,
+                        course_slot_id=drop_request.course_slot,
+                        course_id=drop_request.course,
+                        session=drop_request.academic_year,
+                        semester_type=drop_request.semester_type
+                    )
+                    reg.delete()
+                    drop_request.status = "Approved"
+                    drop_request.processed_at = timezone.now()
+                    drop_request.save(update_fields=['status', 'processed_at'])
+                    results.append({'id': req_id, 'status': 'approved'})
+                    success_count += 1
+                    logger.info(f"Approved drop request {req_id} for student {drop_request.student.id}")
+                except course_registration.DoesNotExist:
+                    drop_request.status = "Approved"
+                    drop_request.processed_at = timezone.now()
+                    drop_request.save(update_fields=['status', 'processed_at'])
+                    results.append({'id': req_id, 'status': 'approved', 'note': 'registration_not_found'})
+                    success_count += 1
+                    logger.warning(f"Approved drop request {req_id} but registration not found")
+            else:  # reject
+                drop_request.status = "Rejected"
+                drop_request.processed_at = timezone.now()
+                drop_request.save(update_fields=['status', 'processed_at'])
+                results.append({'id': req_id, 'status': 'rejected'})
+                success_count += 1
+                logger.info(f"Rejected drop request {req_id}")
+                
+        except (ValueError, TypeError):
+            results.append({'id': req_id, 'status': 'error', 'detail': 'Invalid ID format'})
+            error_count += 1
+        except CourseDropRequest.DoesNotExist:
+            results.append({'id': req_id, 'status': 'not_found'})
+            error_count += 1
+        except Exception as e:
+            logger.error(f"Error processing drop request {req_id}: {str(e)}", exc_info=True)
+            results.append({'id': req_id, 'status': 'error', 'detail': 'Processing error'})
+            error_count += 1
+    
+    return JsonResponse({
+        'results': results,
+        'summary': {
+            'total': len(request_ids),
+            'success': success_count,
+            'errors': error_count
+        }
+    }, safe=False)
+
+
+# ===================== COURSE ADD REQUEST APIs =====================
+
+# Lists all add course requests for the current student's active semester
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@role_required(['student'])
+def student_list_add_requests(request):
+    try:
+        current_user = request.user
+        user_details = getattr(current_user, 'extrainfo', None)
+        if not user_details:
+            return JsonResponse({'error': 'User profile not found'}, status=404)
+        
+        student = Student.objects.select_related('id__user').get(id=user_details)
+        
+        current_reg = course_registration.objects.filter(
+            student_id=student,
+            semester_id__semester_no=student.curr_semester_no
+        ).only('session', 'semester_type').first()
+        
+        if current_reg:
+            academic_year = current_reg.session
+            semester_type = current_reg.semester_type
+        else:
+            academic_year, semester_type = generate_current_session(
+                datetime.datetime.now().year,
+                student.curr_semester_no
+            )
+
+        qs = CourseAddRequest.objects.filter(
+            student=student,
+            academic_year=academic_year,
+            semester_type=semester_type
+        ).select_related('course', 'course_slot').order_by('-created_at')
+
+        out = [
+            {
+                'id': r.id,
+                'slot': r.course_slot.name,
+                'course': r.course.code,
+                'course_name': r.course.name,
+                'status': r.status,
+                'academic_year': r.academic_year,
+                'semester_type': r.semester_type,
+                'created_at': r.created_at.isoformat(),
+                'processed_at': r.processed_at.isoformat() if r.processed_at else None,
+            }
+            for r in qs
+        ]
+        
+        return JsonResponse(out, safe=False)
+        
+    except Student.DoesNotExist:
+        return JsonResponse({'error': 'Student profile not found'}, status=404)
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error listing add requests for {request.user.username}: {str(e)}", exc_info=True)
+        return JsonResponse({'error': 'An error occurred while fetching requests'}, status=500)
+
+# Lists all course add requests with optional filtering
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def admin_list_add_requests(request):
+    try:
+        qs = CourseAddRequest.objects.select_related(
+            'student__id__user',
+            'course',
+            'course_slot'
+        ).all().order_by('-created_at')
+
+        year = request.GET.get('academic_year', '').strip()
+        sem = request.GET.get('semester_type', '').strip()
+        
+        if year:
+            qs = qs.filter(academic_year=year)
+        if sem:
+            qs = qs.filter(semester_type=sem)
+
+        qs = qs[:500]
+
+        out = [
+            {
+                'id': r.id,
+                'student': r.student.id.user.username,
+                'student_name': f"{r.student.id.user.first_name} {r.student.id.user.last_name}".strip(),
+                'slot': r.course_slot.name,
+                'course': r.course.code,
+                'course_name': r.course.name,
+                'status': r.status,
+                'academic_year': r.academic_year,
+                'semester_type': r.semester_type,
+                'created_at': r.created_at.isoformat(),
+                'processed_at': r.processed_at.isoformat() if r.processed_at else None,
+            }
+            for r in qs
+        ]
+        
+        return JsonResponse(out, safe=False)
+        
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error listing add requests for admin: {str(e)}", exc_info=True)
+        return JsonResponse({'error': 'An error occurred while fetching requests'}, status=500)
+
+# Processes multiple add requests in batch
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@transaction.atomic
+@role_required(['acadadmin'])
+def approve_add_requests(request):
+    import json
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        body = json.loads(request.body)
+        request_ids = body.get('request_ids', [])
+        action = body.get('action', 'approve').lower().strip()
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON format'}, status=400)
+    except Exception as e:
+        logger.error(f"Error parsing request body: {str(e)}")
+        return JsonResponse({'error': 'Invalid request format'}, status=400)
+
+    if not request_ids or not isinstance(request_ids, list):
+        return JsonResponse({'error': 'request_ids must be a non-empty array'}, status=400)
+    
+    if action not in ['approve', 'reject']:
+        return JsonResponse({'error': 'action must be either "approve" or "reject"'}, status=400)
+
+    if len(request_ids) > 100:
+        return JsonResponse({'error': 'Cannot process more than 100 requests at once'}, status=400)
+
+    results = []
+    success_count = 0
+    error_count = 0
+    
+    for req_id in request_ids:
+        try:
+            req_id = int(req_id)
+
+            add_request = CourseAddRequest.objects.select_related(
+                'student', 'course', 'course_slot', 'student__batch_id'
+            ).select_for_update(of=('self',)).get(id=req_id)
+
+            if add_request.status != "Pending":
+                results.append({
+                    'id': req_id,
+                    'status': 'already_processed',
+                    'current_status': add_request.status
+                })
+                continue
+            
+            if action == 'approve':
+                existing = course_registration.objects.filter(
+                    student_id=add_request.student,
+                    course_id=add_request.course,
+                    session=add_request.academic_year,
+                    semester_type=add_request.semester_type
+                ).exists()
+                
+                if existing:
+                    add_request.status = "Rejected"
+                    add_request.processed_at = timezone.now()
+                    add_request.save(update_fields=['status', 'processed_at'])
+                    results.append({'id': req_id, 'status': 'error', 'detail': 'Already registered'})
+                    error_count += 1
+                    continue
+
+                try:
+                    semester = Semester.objects.get(
+                        curriculum=add_request.student.batch_id.curriculum,
+                        semester_no=add_request.student.curr_semester_no
+                    )
+                except Semester.DoesNotExist:
+                    add_request.status = "Rejected"
+                    add_request.processed_at = timezone.now()
+                    add_request.save(update_fields=['status', 'processed_at'])
+                    results.append({'id': req_id, 'status': 'error', 'detail': 'Semester not found'})
+                    error_count += 1
+                    continue
+
+                registration_type = 'Regular'
+                try:
+                    student_grade = Student_grades.objects.filter(
+                        roll_no=add_request.student.id.user.username,
+                        course_id=add_request.course
+                    ).order_by('-year', '-semester').first()
+                    
+                    if student_grade and student_grade.grade:
+                        backlog_grades = ['F', 'X', 'CD']
+                        improvement_grades = ['C', 'D+', 'D']
+                        
+                        if student_grade.grade in backlog_grades:
+                            registration_type = 'Backlog'
+                        elif student_grade.grade in improvement_grades:
+                            registration_type = 'Improvement'
+                except Exception as grade_error:
+                    logger.warning(f"Could not determine registration type for request {req_id}: {str(grade_error)}")
+
+                try:
+                    reg = course_registration(
+                        student_id=add_request.student,
+                        course_id=add_request.course,
+                        course_slot_id=add_request.course_slot,
+                        semester_id=semester,
+                        session=add_request.academic_year,
+                        semester_type=add_request.semester_type,
+                        working_year=datetime.datetime.now().year,
+                        registration_type=registration_type
+                    )
+                    reg.save()
+                    
+                    add_request.status = "Approved"
+                    add_request.processed_at = timezone.now()
+                    add_request.save(update_fields=['status', 'processed_at'])
+                    results.append({'id': req_id, 'status': 'approved'})
+                    success_count += 1
+                    logger.info(f"Approved add request {req_id} for student {add_request.student.id}")
+                except Exception as reg_error:
+                    logger.error(f"Error creating registration for request {req_id}: {str(reg_error)}", exc_info=True)
+                    results.append({'id': req_id, 'status': 'error', 'detail': f'Registration failed: {str(reg_error)}'})
+                    error_count += 1
+            else:  # reject
+                add_request.status = "Rejected"
+                add_request.processed_at = timezone.now()
+                add_request.save(update_fields=['status', 'processed_at'])
+                results.append({'id': req_id, 'status': 'rejected'})
+                success_count += 1
+                logger.info(f"Rejected add request {req_id}")
+                
+        except (ValueError, TypeError):
+            results.append({'id': req_id, 'status': 'error', 'detail': 'Invalid ID format'})
+            error_count += 1
+        except CourseAddRequest.DoesNotExist:
+            results.append({'id': req_id, 'status': 'not_found'})
+            error_count += 1
+        except Exception as e:
+            logger.error(f"Error processing add request {req_id}: {str(e)}", exc_info=True)
+            results.append({'id': req_id, 'status': 'error', 'detail': f'Processing error: {str(e)}'})
+            error_count += 1
+    
+    return JsonResponse({
+        'results': results,
+        'summary': {
+            'total': len(request_ids),
+            'success': success_count,
+            'errors': error_count
+        }
+    }, safe=False)
+
 
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
@@ -3218,7 +3988,6 @@ def student_registration_semesters_view(request):
     except Student.DoesNotExist:
         return JsonResponse({"success": False, "error": "Student not found."}, status=404)
     except Exception as e:
-        print(e)
         return JsonResponse({"success": False, "error": str(e)}, status=500)
     
 
