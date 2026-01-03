@@ -533,7 +533,12 @@ def generate_xlsheet_api(request):
         ws['A2'].alignment = Alignment(horizontal="center")
         
         # Get instructor information
-        year_int = int(academic_year.split('-')[0])
+        year_parts = academic_year.split('-')
+        if semester_type == "Even Semester":
+            year_int = int(year_parts[0]) + 1 
+        else:
+            year_int = int(year_parts[0])
+        
         instructor_name = "TBA"
         course_instructor = CourseInstructor.objects.filter(course_id=course_id, year=year_int, semester_type=semester_type).first()
         if course_instructor:
@@ -963,7 +968,12 @@ def available_courses(request):
     courses = Courses.objects.filter(id__in=course_ids)
     
     data = []
-    year_int = int(year.split('-')[0])
+    # Calculate correct year based on semester type
+    year_parts = year.split('-')
+    if sem == "Even Semester":
+        year_int = int(year_parts[0]) + 1  # Even semester is in second year (e.g., 2026 for 2025-26)
+    else:
+        year_int = int(year_parts[0])  # Odd/Summer semester is in first year (e.g., 2025 for 2025-26)
     
     for c in courses:
         instructor_name = "TBA"
