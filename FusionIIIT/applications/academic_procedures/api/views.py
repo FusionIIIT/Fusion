@@ -288,6 +288,10 @@ def add_course(request):
         current_year = datetime.datetime.now().year
         session, semester_type = generate_current_session(current_year, student.curr_semester_no)
 
+        old_course_reg = course_registration.objects.filter(
+            student_id=student,
+            course_id=course
+        ).order_by('-working_year', '-semester_id__semester_no').first()
 
         existing_request = CourseAddRequest.objects.filter(
             student=student,
@@ -310,6 +314,7 @@ def add_course(request):
                 course_slot=slot,
                 academic_year=session,
                 semester_type=semester_type,
+                old_course_registration=old_course_reg,
                 status='Pending'
             )
         except Exception as create_error:
@@ -1264,6 +1269,10 @@ def verify_course(request):
     year = today.year
     semflag = 1 if today.month >= 7 else 2
     yearr = f"{year}-{year+1}"
+    if today.month >= 7:
+        current_semester_type = "Odd Semester"
+    else:
+        current_semester_type = "Even Semester"
 
     return Response({
         "details": details,
@@ -1272,6 +1281,10 @@ def verify_course(request):
         "semester_list": semester_list,
         "courseslot_list": courseslot_list,
         "date": {"year": yearr, "semflag": semflag},
+        "current_semester": {
+            "semester_no": student.curr_semester_no,
+            "semester_type": current_semester_type
+        }
     })
 
 
@@ -3335,7 +3348,7 @@ def student_registrations_for_drop(request):
     eligibility_resp = get_add_drop_replace_registration_eligibility(timezone.now().date(), student.curr_semester_no, datetime.datetime.now().year)
     if isinstance(eligibility_resp, JsonResponse):
         return eligibility_resp
-    regs = course_registration.objects.filter(student_id=student, semester_id__semester_no = student.curr_semester_no )
+    regs = course_registration.objects.filter(student_id=student, semester_id__semester_no = student.curr_semester_no ).order_by('course_slot_id__name')
     out = []
     for reg in regs:
         out.append({
@@ -3883,6 +3896,13 @@ def approve_add_requests(request):
                         registration_type=registration_type
                     )
                     reg.save()
+
+                    if add_request.old_course_registration:
+                        course_replacement.objects.create(
+                            old_course_registration=add_request.old_course_registration,
+                            new_course_registration=reg
+                        )
+                        logger.info(f"Created course_replacement for request {req_id}: {add_request.old_course_registration.id} -> {reg.id}")
                     
                     add_request.status = "Approved"
                     add_request.processed_at = timezone.now()

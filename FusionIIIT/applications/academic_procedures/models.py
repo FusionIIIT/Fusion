@@ -935,6 +935,13 @@ class CourseAddRequest(models.Model):
         related_name='add_course_reqs',
         on_delete=models.CASCADE,
     )
+    old_course_registration = models.ForeignKey(
+        course_registration,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        help_text="Reference to the previous course registration being replaced (for backlog/improvement)"
+    )
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
