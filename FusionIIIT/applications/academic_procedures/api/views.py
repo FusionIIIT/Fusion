@@ -250,7 +250,7 @@ def add_course(request):
             id__user=request.user
         )
 
-        eligibility_resp = get_add_drop_replace_registration_eligibility(
+        eligibility_resp = get_add_registration_eligibility(
             timezone.now().date(), 
             student.curr_semester_no, 
             datetime.datetime.now().year
@@ -375,7 +375,7 @@ def get_student_add_course_slots(request):
                 'error': 'Student information not found'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        eligibility_resp = get_add_drop_replace_registration_eligibility(
+        eligibility_resp = get_add_registration_eligibility(
             timezone.now().date(), 
             student.curr_semester_no, 
             datetime.datetime.now().year
@@ -2281,20 +2281,47 @@ def course_registration_view(request):
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-def get_add_drop_replace_registration_eligibility(current_date, user_sem, year = datetime.datetime.now().year):
+def get_add_registration_eligibility(current_date, user_sem, year = datetime.datetime.now().year):
     try:
-        add_drop_date = Calendar.objects.get(description=f"Add/Drop/Replace {user_sem} {year}")
-        add_drop_start_date = add_drop_date.from_date
-        add_drop_end_date = add_drop_date.to_date
-        if current_date<add_drop_start_date:
-            return JsonResponse({f"error": "Add/Drop/Replace will start from {add_drop_start_date} to {add_drop_end_date}"}, status=400)
-        elif current_date > add_drop_end_date:
-            return JsonResponse({f"error": "Add/Drop/Replace has ended"}, status=400)
+        add_date = Calendar.objects.get(description=f"Add {user_sem} {year}")
+        add_start_date = add_date.from_date
+        add_end_date = add_date.to_date
+        if current_date<add_start_date:
+            return JsonResponse({f"error": f"Add course will start from {add_start_date} to {add_end_date}"}, status=400)
+        elif current_date > add_end_date:
+            return JsonResponse({f"error": "Add course period has ended"}, status=400)
     except Calendar.DoesNotExist:
-        return JsonResponse({f"error": "Add/Drop/Replace Date is not yet Decided"}, status=400)
+        return JsonResponse({f"error": "Add course date is not yet decided"}, status=400)
     except Exception as e:
-        pass
+        return JsonResponse({f"error": str(e)}, status=400)
 
+def get_drop_registration_eligibility(current_date, user_sem, year = datetime.datetime.now().year):
+    try:
+        drop_date = Calendar.objects.get(description=f"Drop {user_sem} {year}")
+        drop_start_date = drop_date.from_date
+        drop_end_date = drop_date.to_date
+        if current_date<drop_start_date:
+            return JsonResponse({f"error": f"Drop course will start from {drop_start_date} to {drop_end_date}"}, status=400)
+        elif current_date > drop_end_date:
+            return JsonResponse({f"error": "Drop course period has ended"}, status=400)
+    except Calendar.DoesNotExist:
+        return JsonResponse({f"error": "Drop course date is not yet decided"}, status=400)
+    except Exception as e:
+        return JsonResponse({f"error": str(e)}, status=400)
+
+def get_replace_registration_eligibility(current_date, user_sem, year = datetime.datetime.now().year):
+    try:
+        replace_date = Calendar.objects.get(description=f"Replace {user_sem} {year}")
+        replace_start_date = replace_date.from_date
+        replace_end_date = replace_date.to_date
+        if current_date<replace_start_date:
+            return JsonResponse({f"error": f"Replace course will start from {replace_start_date} to {replace_end_date}"}, status=400)
+        elif current_date > replace_end_date:
+            return JsonResponse({f"error": "Replace course period has ended"}, status=400)
+    except Calendar.DoesNotExist:
+        return JsonResponse({f"error": "Replace course date is not yet decided"}, status=400)
+    except Exception as e:
+        return JsonResponse({f"error": str(e)}, status=400)
 
 def get_pre_registration_eligibility(current_date, user_sem, year = datetime.datetime.now().year):
     try:
@@ -2549,20 +2576,19 @@ def get_swayam_registration_data(request):
         user_details = current_user.extrainfo  # assuming extrainfo holds the student id/reference
         student = Student.objects.get(id=user_details)
         semester_no = student.curr_semester_no
-        next_sem_no = semester_no + 1  # adjust if needed (e.g. semester_no+1)
         try:
-            next_semester = Semester.objects.get(
+            current_semester = Semester.objects.get(
                 curriculum=student.batch_id.curriculum, 
-                semester_no=next_sem_no
+                semester_no=semester_no
             )
         except Semester.DoesNotExist:
             return JsonResponse({"error": "Not Eligible for Swayam Registration"}, status=400)
 
-        eligibility_resp = get_swayam_registration_eligibility(timezone.now().date(), next_sem_no)
+        eligibility_resp = get_swayam_registration_eligibility(timezone.now().date(), semester_no)
         if isinstance(eligibility_resp, JsonResponse):
             return eligibility_resp
         # For Swayam registration, fetch only those course slots whose name starts with "SW".
-        course_slots = CourseSlot.objects.filter(semester=next_semester, name__startswith="SW")
+        course_slots = CourseSlot.objects.filter(semester=current_semester, name__startswith="SW")
         data = []
         for slot in course_slots:
             courses = slot.courses.all()
@@ -2579,7 +2605,7 @@ def get_swayam_registration_data(request):
                 "sno": slot.id,
                 "slot_name": slot.name,
                 "slot_type": slot.type,
-                "semester": next_sem_no,
+                "semester": semester_no,
                 "course_choices": course_choices,
             })
         return JsonResponse(data, safe=False)
@@ -2625,38 +2651,68 @@ def submit_swayam_registration(request):
         user_details = current_user.extrainfo
         student = Student.objects.get(id=user_details)
         semester_no = student.curr_semester_no
-        next_sem_no = semester_no + 1
         try:
             semester = Semester.objects.get(
                 curriculum=student.batch_id.curriculum, 
-                semester_no=next_sem_no
+                semester_no=semester_no
             )
         except Semester.DoesNotExist:
             return JsonResponse({"error": "Not Eligible for Swayam Registration"}, status=400)
     except Student.DoesNotExist:
         return Response({"error": "Student not found"}, status=404)
     
-    eligibility_resp = get_swayam_registration_eligibility(timezone.now().date(), next_sem_no)
+    eligibility_resp = get_swayam_registration_eligibility(timezone.now().date(), semester_no)
     if isinstance(eligibility_resp, JsonResponse):
         return eligibility_resp
+    
     registrations = payload.get("registrations", [])
+    errors = []
+    success_count = 0
+    
     for reg in registrations:
         slot_id = reg.get("slot_id")
         course_id = reg.get("course_id")
         selected_option = reg.get("selected_option")
         remark = reg.get("remark")
+        
         try:
             course = Courses.objects.get(id=course_id)
         except Courses.DoesNotExist:
+            errors.append(f"Course with ID {course_id} does not exist")
             continue
         
-        course_registration.objects.create(
+        # Check if already registered for this course
+        existing_registration = course_registration.objects.filter(
             course_id=course,
-            semester_id_id=semester.id,
-            student_id=student,
-            course_slot_id_id=slot_id, 
-        )
-    return JsonResponse({"status": "success"}, status=201)
+            semester_id=semester,
+            student_id=student
+        ).first()
+        
+        if existing_registration:
+            errors.append(f"Already registered for course: {course.code} - {course.name}")
+            continue
+        
+        try:
+            course_registration.objects.create(
+                course_id=course,
+                semester_id_id=semester.id,
+                student_id=student,
+                course_slot_id_id=slot_id
+            )
+            success_count += 1
+        except Exception as e:
+            errors.append(f"Failed to register for {course.code}: {str(e)}")
+    
+    if errors and success_count == 0:
+        return JsonResponse({"error": ", ".join(errors)}, status=400)
+    elif errors:
+        return JsonResponse({
+            "status": "partial_success",
+            "message": f"Registered {success_count} course(s) successfully",
+            "errors": errors
+        }, status=200)
+    
+    return JsonResponse({"status": "success", "message": f"Successfully registered {success_count} course(s)"}, status=201)
 
 
 @api_view(['GET'])
@@ -3070,7 +3126,7 @@ def registered_slots(request):
         user_details = current_user.extrainfo
         student = Student.objects.get(id=user_details)
         session, semester_type = generate_current_session(datetime.datetime.now().year, student.curr_semester_no) 
-        eligibility_resp = get_add_drop_replace_registration_eligibility(timezone.now().date(), student.curr_semester_no, datetime.datetime.now().year)
+        eligibility_resp = get_replace_registration_eligibility(timezone.now().date(), student.curr_semester_no, datetime.datetime.now().year)
         if isinstance(eligibility_resp, JsonResponse):
             return eligibility_resp
         regs = course_registration.objects.filter(student_id=student, semester_id__semester_no = student.curr_semester_no).exclude(course_slot_id__name__startswith='SW').exclude(course_slot_id__name__startswith='BL')
@@ -3103,7 +3159,7 @@ def batch_create_requests(request):
         current_user = request.user
         user_details = current_user.extrainfo
         student = Student.objects.get(id=user_details)
-        eligibility_resp = get_add_drop_replace_registration_eligibility(timezone.now().date(), student.curr_semester_no, datetime.datetime.now().year)
+        eligibility_resp = get_replace_registration_eligibility(timezone.now().date(), student.curr_semester_no, datetime.datetime.now().year)
         if isinstance(eligibility_resp, JsonResponse):
             return eligibility_resp
         data = json.loads(request.body).get('requests', [])
@@ -3345,7 +3401,7 @@ def student_registrations_for_drop(request):
     current_user = request.user
     user_details = current_user.extrainfo
     student = Student.objects.get(id=user_details)
-    eligibility_resp = get_add_drop_replace_registration_eligibility(timezone.now().date(), student.curr_semester_no, datetime.datetime.now().year)
+    eligibility_resp = get_drop_registration_eligibility(timezone.now().date(), student.curr_semester_no, datetime.datetime.now().year)
     if isinstance(eligibility_resp, JsonResponse):
         return eligibility_resp
     regs = course_registration.objects.filter(student_id=student, semester_id__semester_no = student.curr_semester_no ).order_by('course_slot_id__name')
@@ -3382,7 +3438,7 @@ def drop_course(request):
         
         student = Student.objects.select_related('id__user', 'batch_id').get(id=user_details)
 
-        eligibility_resp = get_add_drop_replace_registration_eligibility(
+        eligibility_resp = get_drop_registration_eligibility(
             timezone.now().date(), 
             student.curr_semester_no, 
             datetime.datetime.now().year
