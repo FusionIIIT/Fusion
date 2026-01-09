@@ -430,23 +430,37 @@ def download_template(request):
         # Get course information from the first matched registration.
         course_obj = course_info.first().course_id
         response = HttpResponse(content_type="text/csv")
-        filename = f"{course_obj.code}_template_{session_year}.csv"
+        course_name_clean = course_obj.name.replace(' ', '_').replace('/', '-')[:50]
+        semester_type_clean = semester_type.replace(' ', '_')
+        filename = f"{course_name_clean}_{semester_type_clean}_{session_year}.csv"
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
         writer = csv.writer(response)
-        writer.writerow(["roll_no", "name", "grade", "remarks", "semester"])
+        writer.writerow(["roll_no", "name", "branch", "grade", "remarks", "semester"])
 
         # Write a CSV row for each student registration.
         for entry in course_info:
             student_entry = entry.student_id
-            # Assuming student_entry.id_id is the student's roll number.
             student_user = User.objects.get(username=student_entry.id_id)
+            branch_acronym = ""
+            if student_entry.batch_id:
+                try:
+                    branch_acronym = student_entry.batch_id.discipline.acronym
+                except AttributeError:
+                    pass
+            if not branch_acronym and student_entry.id.department:
+                branch_acronym = student_entry.id.department.name
+            semester_no = ""
+            if entry.course_slot_id and entry.course_slot_id.semester:
+                semester_no = entry.course_slot_id.semester.semester_no
+                
             writer.writerow([
                 student_entry.id_id,
                 f"{student_user.first_name} {student_user.last_name}",
+                branch_acronym,
                 "",
                 "",
-                ""
+                semester_no
             ])
 
         return response
@@ -3010,10 +3024,11 @@ class PreviewGradesAPI(APIView):
             # Check if the current roll number is registered.
             is_registered = roll_no in registered_rollnos
 
-            # Add additional data (e.g. name, grades, remarks, semester) as in CSV
+            # Add additional data (e.g. name, grades, remarks, semester, branch) as in CSV
             preview_rows.append({
                 "roll_no": roll_no,
                 "name": row["name"],
+                "branch": row.get("branch", ""),
                 "grades": row["grade"],
                 "remarks": row["remarks"],
                 "semester": row["semester"],

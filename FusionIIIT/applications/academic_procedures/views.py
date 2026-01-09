@@ -894,22 +894,55 @@ def approve_branch_change(request):
                     choices.append(values[i])
                 else:
                     continue
+        
+        from applications.programme_curriculum.models import Discipline, Batch
+        
         changed_branch = []
+        changed_students = []
+        
         for i in range(len(branches)):
-            get_student = ExtraInfo.objects.all().select_related('user','department').filter(id=choices[i][:7])
-            get_student = get_student[0]
-            branch = DepartmentInfo.objects.all().filter(name=branches[i])
-            get_student.department = branch[0]
+            get_student = ExtraInfo.objects.select_related('user','department').filter(id=choices[i][:7]).first()
+            if not get_student:
+                continue
+                
+            branch = DepartmentInfo.objects.filter(name=branches[i]).first()
+            if not branch:
+                continue
+                
+            get_student.department = branch
             changed_branch.append(get_student)
-            student = Student.objects.all().select_related('id','id__user','id__department').filter(id=choices[i][:7]).first()
-            change = BranchChange.objects.select_related('branches','user','user__id','user__id__user','user__id__department').all().filter(user=student)
-            change = change[0]
-            change.delete()
+            
+            # Update Student batch_id to match new discipline
+            student = Student.objects.select_related('id','id__user','id__department','batch_id').filter(id=choices[i][:7]).first()
+            if student and student.batch_id:
+                try:
+                    new_discipline = Discipline.objects.filter(name=branches[i]).first()
+                    if new_discipline:
+                        new_batch = Batch.objects.filter(
+                            year=student.batch_id.year,
+                            name=student.batch_id.name,
+                            discipline=new_discipline
+                        ).first()
+                        if new_batch:
+                            student.batch_id = new_batch
+                            changed_students.append(student)
+                except Exception as e:
+                    pass
+
+            if student:
+                change = BranchChange.objects.filter(user=student).first()
+                if change:
+                    change.delete()
+        
         try:
-            ExtraInfo.objects.bulk_update(changed_branch,['department'])
+            if changed_branch:
+                ExtraInfo.objects.bulk_update(changed_branch, ['department'])
+            if changed_students:
+                Student.objects.bulk_update(changed_students, ['batch_id'])
             messages.info(request, 'Apply for branch change successfull')
-        except:
+        except Exception as e:
             messages.info(request, 'Unable to proceed, we will get back to you very soon')
+        
         return HttpResponseRedirect('/academic-procedures/main')
 
     else:

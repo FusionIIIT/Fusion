@@ -3279,14 +3279,16 @@ def student_list_requests(request):
     else:
         academic_year, semester_type = generate_current_session(datetime.datetime.now().year, student.curr_semester_no)
     
-    qs = CourseReplacementRequest.objects.filter(student=student, academic_year=academic_year, semester_type = semester_type).order_by('-created_at')
+    qs = CourseReplacementRequest.objects.filter(student=student, academic_year=academic_year, semester_type = semester_type).select_related('old_course', 'new_course', 'course_slot').order_by('-created_at')
     out = []
     for r in qs:
         out.append({
             'id': r.id,
             'slot': r.course_slot.name,
             'old_course': r.old_course.code,
+            'old_course_name': r.old_course.name,
             'new_course': r.new_course.code,
+            'new_course_name': r.new_course.name,
             'status': r.status,
             'academic_year': r.academic_year,
             'semester_type': r.semester_type,
@@ -3404,13 +3406,14 @@ def student_registrations_for_drop(request):
     eligibility_resp = get_drop_registration_eligibility(timezone.now().date(), student.curr_semester_no, datetime.datetime.now().year)
     if isinstance(eligibility_resp, JsonResponse):
         return eligibility_resp
-    regs = course_registration.objects.filter(student_id=student, semester_id__semester_no = student.curr_semester_no ).order_by('course_slot_id__name')
+    regs = course_registration.objects.filter(student_id=student, semester_id__semester_no = student.curr_semester_no ).select_related('course_id', 'course_slot_id').order_by('course_slot_id__name')
     out = []
     for reg in regs:
         out.append({
             'id': reg.id,
             'slot': reg.course_slot_id.name,
             'course': reg.course_id.code,
+            'course_name': reg.course_id.name,
             'academic_year': reg.session,
             'semester_type': reg.semester_type,
         })
