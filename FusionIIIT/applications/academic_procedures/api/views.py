@@ -3129,7 +3129,26 @@ def registered_slots(request):
         eligibility_resp = get_replace_registration_eligibility(timezone.now().date(), student.curr_semester_no, datetime.datetime.now().year)
         if isinstance(eligibility_resp, JsonResponse):
             return eligibility_resp
-        regs = course_registration.objects.filter(student_id=student, semester_id__semester_no = student.curr_semester_no).exclude(course_slot_id__name__startswith='SW').exclude(course_slot_id__name__startswith='BL')
+        
+        # Exclude slots with pending drop requests
+        pending_drop_slots = CourseDropRequest.objects.filter(
+            student=student,
+            academic_year=session,
+            semester_type=semester_type,
+            status='Pending'
+        ).values_list('course_slot_id', flat=True)
+        
+        regs = course_registration.objects.filter(
+            student_id=student, 
+            semester_id__semester_no=student.curr_semester_no
+        ).exclude(
+            course_slot_id__name__startswith='SW'
+        ).exclude(
+            course_slot_id__name__startswith='BL'
+        ).exclude(
+            course_slot_id__in=pending_drop_slots
+        )
+        
         payload = []
         for reg in regs:
             slot = reg.course_slot_id
@@ -3239,7 +3258,10 @@ def batch_create_requests(request):
 @permission_classes([IsAuthenticated])
 @role_required(['acadadmin'])
 def admin_list_requests(request):
-    qs = CourseReplacementRequest.objects.all().order_by('-created_at')
+    qs = CourseReplacementRequest.objects.select_related(
+        'student', 'student__id__user', 'course_slot', 'old_course', 'new_course'
+    ).all().order_by('-created_at')
+    
     year = request.GET.get('academic_year')
     sem  = request.GET.get('semester_type')
     if year:
@@ -3251,14 +3273,18 @@ def admin_list_requests(request):
     for r in qs:
         out.append({
             'id': r.id,
-            'student': r.student_id,
+            'student': r.student.id.user.username,
+            'student_name': r.student.id.user.get_full_name() or r.student.id.user.username,
             'slot': r.course_slot.name,
             'old_course': r.old_course.code,
+            'old_course_name': r.old_course.name,
             'new_course': r.new_course.code,
+            'new_course_name': r.new_course.name,
             'status': r.status,
             'academic_year': r.academic_year,
             'semester_type': r.semester_type,
             'created_at': r.created_at.isoformat(),
+            'processed_at': r.processed_at.isoformat() if r.processed_at else None,
         })
     return JsonResponse(out, safe=False)
 
@@ -3399,6 +3425,7 @@ def student_registrations_for_drop(request):
     """
     GET /api/student/registrations/
     List all active registrations for the logged-in student.
+    Excludes courses with pending replacement requests.
     """
     current_user = request.user
     user_details = current_user.extrainfo
@@ -3406,7 +3433,34 @@ def student_registrations_for_drop(request):
     eligibility_resp = get_drop_registration_eligibility(timezone.now().date(), student.curr_semester_no, datetime.datetime.now().year)
     if isinstance(eligibility_resp, JsonResponse):
         return eligibility_resp
-    regs = course_registration.objects.filter(student_id=student, semester_id__semester_no = student.curr_semester_no ).select_related('course_id', 'course_slot_id').order_by('course_slot_id__name')
+    
+    current_year = datetime.datetime.now().year
+    academic_year, semester_type = generate_current_session(current_year, student.curr_semester_no)
+    
+    # Exclude slots with pending replacement or drop requests
+    pending_replacement_slots = CourseReplacementRequest.objects.filter(
+        student=student,
+        academic_year=academic_year,
+        semester_type=semester_type,
+        status='Pending'
+    ).values_list('course_slot_id', flat=True)
+    
+    pending_drop_slots = CourseDropRequest.objects.filter(
+        student=student,
+        academic_year=academic_year,
+        semester_type=semester_type,
+        status='Pending'
+    ).values_list('course_slot_id', flat=True)
+    
+    regs = course_registration.objects.filter(
+        student_id=student, 
+        semester_id__semester_no=student.curr_semester_no
+    ).exclude(
+        course_slot_id__in=pending_replacement_slots
+    ).exclude(
+        course_slot_id__in=pending_drop_slots
+    ).select_related('course_id', 'course_slot_id').order_by('course_slot_id__name')
+    
     out = []
     for reg in regs:
         out.append({
