@@ -3418,6 +3418,103 @@ def allocate_all(request):
 
     return JsonResponse(results, safe=False)
 
+
+# Change replacement request status back to pending
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@transaction.atomic
+@role_required(['acadadmin'])
+def revert_replacement_to_pending(request):
+    import json
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        body = json.loads(request.body)
+        request_ids = body.get('request_ids', [])
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON format'}, status=400)
+    except Exception as e:
+        logger.error(f"Error parsing request body: {str(e)}")
+        return JsonResponse({'error': 'Invalid request format'}, status=400)
+
+    if not request_ids or not isinstance(request_ids, list):
+        return JsonResponse({'error': 'request_ids must be a non-empty array'}, status=400)
+
+    reverted_count = 0
+    errors = []
+    
+    for req_id in request_ids:
+        try:
+            req_id = int(req_id)
+            replacement_request = CourseReplacementRequest.objects.get(id=req_id)
+            
+            if replacement_request.status != 'Rejected':
+                errors.append({'id': req_id, 'error': f'Cannot revert request with status: {replacement_request.status}'})
+                continue
+            
+            replacement_request.status = 'Pending'
+            replacement_request.processed_at = None
+            replacement_request.save(update_fields=['status', 'processed_at'])
+            reverted_count += 1
+            
+        except CourseReplacementRequest.DoesNotExist:
+            errors.append({'id': req_id, 'error': 'Request not found'})
+        except Exception as e:
+            logger.error(f"Error reverting replacement request {req_id}: {str(e)}")
+            errors.append({'id': req_id, 'error': str(e)})
+    
+    return JsonResponse({
+        'reverted': reverted_count,
+        'total': len(request_ids),
+        'errors': errors
+    })
+
+
+# Delete replacement requests
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@transaction.atomic
+@role_required(['acadadmin'])
+def delete_replacement_requests(request):
+    import json
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        body = json.loads(request.body)
+        request_ids = body.get('request_ids', [])
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON format'}, status=400)
+    except Exception as e:
+        logger.error(f"Error parsing request body: {str(e)}")
+        return JsonResponse({'error': 'Invalid request format'}, status=400)
+
+    if not request_ids or not isinstance(request_ids, list):
+        return JsonResponse({'error': 'request_ids must be a non-empty array'}, status=400)
+
+    deleted_count = 0
+    errors = []
+    
+    for req_id in request_ids:
+        try:
+            req_id = int(req_id)
+            replacement_request = CourseReplacementRequest.objects.get(id=req_id)
+            replacement_request.delete()
+            deleted_count += 1
+        except CourseReplacementRequest.DoesNotExist:
+            errors.append({'id': req_id, 'error': 'Request not found'})
+        except Exception as e:
+            logger.error(f"Error deleting replacement request {req_id}: {str(e)}")
+            errors.append({'id': req_id, 'error': str(e)})
+    
+    return JsonResponse({
+        'deleted': deleted_count,
+        'total': len(request_ids),
+        'errors': errors
+    })
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @role_required(['student'])
@@ -3719,9 +3816,6 @@ def approve_drop_requests(request):
     if action not in ['approve', 'reject']:
         return JsonResponse({'error': 'action must be either "approve" or "reject"'}, status=400)
 
-    if len(request_ids) > 100:
-        return JsonResponse({'error': 'Cannot process more than 100 requests at once'}, status=400)
-
     results = []
     success_count = 0
     error_count = 0
@@ -3792,6 +3886,50 @@ def approve_drop_requests(request):
             'errors': error_count
         }
     }, safe=False)
+
+
+# Delete drop course requests
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@transaction.atomic
+@role_required(['acadadmin'])
+def delete_drop_requests(request):
+    import json
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        body = json.loads(request.body)
+        request_ids = body.get('request_ids', [])
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON format'}, status=400)
+    except Exception as e:
+        logger.error(f"Error parsing request body: {str(e)}")
+        return JsonResponse({'error': 'Invalid request format'}, status=400)
+
+    if not request_ids or not isinstance(request_ids, list):
+        return JsonResponse({'error': 'request_ids must be a non-empty array'}, status=400)
+
+    deleted_count = 0
+    errors = []
+    
+    for req_id in request_ids:
+        try:
+            req_id = int(req_id)
+            drop_request = CourseDropRequest.objects.get(id=req_id)
+            drop_request.delete()
+            deleted_count += 1
+        except CourseDropRequest.DoesNotExist:
+            errors.append({'id': req_id, 'error': 'Request not found'})
+        except Exception as e:
+            logger.error(f"Error deleting drop request {req_id}: {str(e)}")
+            errors.append({'id': req_id, 'error': str(e)})
+    
+    return JsonResponse({
+        'deleted': deleted_count,
+        'total': len(request_ids),
+        'errors': errors
+    })
 
 
 # ===================== COURSE ADD REQUEST APIs =====================
@@ -3927,9 +4065,6 @@ def approve_add_requests(request):
     if action not in ['approve', 'reject']:
         return JsonResponse({'error': 'action must be either "approve" or "reject"'}, status=400)
 
-    if len(request_ids) > 100:
-        return JsonResponse({'error': 'Cannot process more than 100 requests at once'}, status=400)
-
     results = []
     success_count = 0
     error_count = 0
@@ -4054,6 +4189,50 @@ def approve_add_requests(request):
             'errors': error_count
         }
     }, safe=False)
+
+
+# Delete add course requests
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@transaction.atomic
+@role_required(['acadadmin'])
+def delete_add_requests(request):
+    import json
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        body = json.loads(request.body)
+        request_ids = body.get('request_ids', [])
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON format'}, status=400)
+    except Exception as e:
+        logger.error(f"Error parsing request body: {str(e)}")
+        return JsonResponse({'error': 'Invalid request format'}, status=400)
+
+    if not request_ids or not isinstance(request_ids, list):
+        return JsonResponse({'error': 'request_ids must be a non-empty array'}, status=400)
+
+    deleted_count = 0
+    errors = []
+    
+    for req_id in request_ids:
+        try:
+            req_id = int(req_id)
+            add_request = CourseAddRequest.objects.get(id=req_id)
+            add_request.delete()
+            deleted_count += 1
+        except CourseAddRequest.DoesNotExist:
+            errors.append({'id': req_id, 'error': 'Request not found'})
+        except Exception as e:
+            logger.error(f"Error deleting add request {req_id}: {str(e)}")
+            errors.append({'id': req_id, 'error': str(e)})
+    
+    return JsonResponse({
+        'deleted': deleted_count,
+        'total': len(request_ids),
+        'errors': errors
+    })
 
 
 @api_view(['POST'])
