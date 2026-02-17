@@ -2,26 +2,20 @@
 
 **FusionIIIT** is the automation of various functionalities, modules and tasks of/for **PDPM Indian Institute of Information Technology, Design and Manufacturing, Jabalpur** being developed in `python3.8` and using `Django` Webframework.
 
-## Critical Prerequisites
+## Critical Prerequisites & Software Requirements
 
 **You MUST strictly use the following versions:**
 
 * Python `3.8.10`
 * pip `21.1.1`
 * PostgreSQL `14`
+* Git
 
 ## System Configuration
 
 * Ubuntu `20.04` **(Recommended)**
 * *OR* WSL for Windows `10` \(Follow the guide below\) :[Windows Subsystem for Linux Installation Guide for Windows 10](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
 * *OR* Windows `7/8/8.1/10`
-
-## Software Requirements
-
-* Python `3.8.10`
-* pip `21.1.1`
-* PostgreSQL `14`
-* Git
 
 ## Module-Wise Sync Targets
 
