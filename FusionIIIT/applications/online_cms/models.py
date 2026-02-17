@@ -2,7 +2,7 @@ from django.db import models
 #import models used from academic procedure and academic information  modules and globals
 from applications.academic_information.models import Student, Curriculum
 from applications.programme_curriculum.models import Course as Courses, CourseInstructor
-from applications.globals.models import ExtraInfo
+from applications.globals.models import ExtraInfo, Faculty
 
 #the modules for containing course content
 class Modules(models.Model):
@@ -19,7 +19,7 @@ class CourseDocuments(models.Model):
     upload_time = models.DateTimeField(auto_now=True)
     description = models.CharField(max_length=100)
     document_name = models.CharField(max_length=40)
-    document_url = models.CharField(max_length=100, null=True)
+    document_url = models.FileField(upload_to='course_documents/')
 
     def __str__(self):
         return '{} - {}'.format(self.course_id, self.document_name)
@@ -173,7 +173,7 @@ class StudentAssignment(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     assignment_id = models.ForeignKey(Assignment, on_delete=models.CASCADE)
     upload_time = models.DateTimeField(auto_now=True)
-    upload_url = models.TextField(max_length=200)
+    upload_url = models.FileField(upload_to='assignments/')
     score = models.IntegerField(null=True)        #score is submitted by faculty 
     feedback = models.CharField(max_length=100, null=True)  #feedback by the faculty for the solution of the assignment submitted
     assign_name = models.CharField(max_length=100) 
@@ -291,7 +291,7 @@ class Attendance(models.Model):
     student_id = models.ForeignKey(Student,on_delete=models.CASCADE)
 #    course_id = models.ForeignKey(Course)
 #    attend = models.CharField(max_length=6, choices=Constants.ATTEND_CHOICES)
-    instructor_id = models.ForeignKey(CourseInstructor, on_delete=models.CASCADE)
+    instructor_id = models.ForeignKey(Faculty, on_delete=models.CASCADE)
 #    curriculum_id = models.ForeignKey(Curriculum, on_delete=models.CASCADE)
     date = models.DateField()
     present = models.IntegerField(default=0)
