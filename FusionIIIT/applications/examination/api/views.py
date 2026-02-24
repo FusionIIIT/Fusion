@@ -2416,7 +2416,7 @@ class GeneratePDFAPI(APIView):
             
             # Summary Table
             summary_data = [
-                ['Total Credits Registered:', str(tu), 'Semester Credits Earned:', str(su)],
+                ['Total Credits Earned:', str(tu), 'Semester Credits Earned:', str(su)],
                 ['SPI:', f"{spi:.1f}", 'CPI:', f"{cpi:.1f}"]
             ]
             
@@ -3617,7 +3617,7 @@ class GenerateStudentResultPDFAPI(APIView):
             
             # Summary Table
             summary_data = [
-                ['Total Credits Registered:', str(tu), 'Semester Credits Earned:', str(su)],
+                ['Total Credits Earned:', str(tu), 'Semester Credits Earned:', str(su)],
                 ['SPI:', f"{spi:.1f}", 'CPI:', f"{cpi:.1f}"]
             ]
             
