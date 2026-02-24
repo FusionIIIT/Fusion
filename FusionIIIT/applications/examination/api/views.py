@@ -2855,10 +2855,11 @@ class CheckResultView(APIView):
                 status=404,
             )
 
-        # Find the announcement for this batch, number and type
+        # Find the announcement for this batch + semester + semester_type
         ann = ResultAnnouncement.objects.filter(
             batch=student.batch_id,
             semester=semester_no,
+            semester_type=semester_type,
         ).first()
 
         if not ann or not ann.announced:
@@ -3061,6 +3062,11 @@ class ResultAnnouncementListAPI(APIView):
             # Compute the batch label.
             batch = ann.batch
             batch_label = f"{batch.name} - {batch.discipline.acronym} {batch.year}"
+            sem_type = ann.semester_type or ""
+            if sem_type == "Summer Semester":
+                sem_label = f"Summer {ann.semester // 2}"
+            else:
+                sem_label = f"Semester {ann.semester}"
             ann_data.append({
                 "id": ann.id,
                 "batch": {
@@ -3071,17 +3077,20 @@ class ResultAnnouncementListAPI(APIView):
                     "label": batch_label
                 },
                 "semester": ann.semester,
+                "semester_type": sem_type,
+                "semester_label": sem_label,
                 "announced": ann.announced,
                 "created_at": ann.created_at,
             })
         
-        # Fetch available batches (running batches)
-        batch_objs = Batch.objects.filter(running_batch=True)
-        batch_options = []
-        for b in batch_objs:
-            # Compute a label exactly as above.
-            label = f"{b.name} - {b.discipline.acronym} {b.year}"
-            batch_options.append({"id": b.id, "label": label})
+        batch_objs = sorted(
+            Batch.objects.filter(running_batch=True),
+            key=lambda b: (b.name, -b.year, b.discipline.acronym),
+        )
+        batch_options = [
+            {"id": b.id, "label": f"{b.name} - {b.discipline.acronym} {b.year}"}
+            for b in batch_objs
+        ]
         
         return Response({"announcements": ann_data, "batches": batch_options}, status=status.HTTP_200_OK)
 
@@ -3132,8 +3141,11 @@ class CreateAnnouncementAPI(APIView):
 
             batch_id = request.data.get("batch")
             semester = request.data.get("semester")
+            semester_type = request.data.get("semester_type", "")
             if not batch_id or not semester:
                 return Response({"error": "Batch and Semester are required."}, status=status.HTTP_400_BAD_REQUEST)
+            if semester_type not in ("Odd Semester", "Even Semester", "Summer Semester"):
+                return Response({"error": "Invalid semester_type. Must be 'Odd Semester', 'Even Semester', or 'Summer Semester'."}, status=status.HTTP_400_BAD_REQUEST)
 
             batch_obj = Batch.objects.filter(id=batch_id).first()
             if not batch_obj:
@@ -3143,14 +3155,21 @@ class CreateAnnouncementAPI(APIView):
             ann, created = ResultAnnouncement.objects.get_or_create(
                 batch=batch_obj,
                 semester=semester,
+                semester_type=semester_type,
                 defaults={"announced": False}
             )
 
             batch_label = f"{batch_obj.name} - {batch_obj.discipline.acronym} {batch_obj.year}"
+            if semester_type == "Summer Semester":
+                sem_label = f"Summer {semester // 2}"
+            else:
+                sem_label = f"Semester {semester}"
             data = {
                 "id": ann.id,
                 "batch": {"id": batch_obj.id, "label": batch_label},
                 "semester": ann.semester,
+                "semester_type": ann.semester_type,
+                "semester_label": sem_label,
                 "announced": ann.announced,
                 "created_at": ann.created_at,
             }
@@ -3398,6 +3417,7 @@ class GenerateStudentResultPDFAPI(APIView):
                 ann = ResultAnnouncement.objects.filter(
                     batch=student.batch_id,
                     semester=semester_no,
+                    semester_type=semester_type,
                 ).first()
 
                 if not ann or not ann.announced:
