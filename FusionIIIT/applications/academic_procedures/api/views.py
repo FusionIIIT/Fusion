@@ -2670,6 +2670,10 @@ def swayam_replace_check(request):
         except Semester.DoesNotExist:
             return JsonResponse({"error": "Invalid semester"}, status=400)
 
+        eligibility_resp = get_swayam_registration_eligibility(timezone.now().date(), semester_no)
+        if isinstance(eligibility_resp, JsonResponse):
+            return eligibility_resp
+
         existing_request = SwayamReplacementRequest.objects.filter(
             student=student,
             request_type='Swayam_Replace',
