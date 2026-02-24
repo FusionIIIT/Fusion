@@ -867,6 +867,87 @@ class CourseReplacementRequest(models.Model):
 
     def __str__(self):
         return f"{self.old_course.code}→{self.new_course.code} [{self.status}]"
+
+class SwayamReplacementRequest(models.Model):
+    """
+    Model for Swayam course registration requests (Extra Credits and Replace modes).
+    Separate from CourseReplacementRequest which is for regular replacement allocation.
+    """
+    REQUEST_TYPE_CHOICES = [
+        ('Extra_Credits', 'Extra Credits'),
+        ('Swayam_Replace', 'Swayam Replace'),
+    ]
+    
+    STATUS_CHOICES = [
+        ("Pending",  "Pending"),
+        ("Approved", "Approved"),
+        ("Rejected", "Rejected"),
+    ]
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    academic_year = models.CharField(max_length=9)
+    semester_type = models.CharField(
+        max_length=20,
+        choices=[
+            ("Odd Semester",    "Odd Semester"),
+            ("Even Semester",   "Even Semester"),
+            ("Summer Semester", "Summer Semester"),
+        ],
+    )
+    request_type = models.CharField(
+        max_length=20,
+        choices=REQUEST_TYPE_CHOICES,
+        default='Extra_Credits',
+    )
+
+    old_course = models.ForeignKey(
+        Courses,
+        related_name='swayam_old_course_reqs',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+
+    new_course = models.ForeignKey(
+        Courses,
+        related_name='swayam_new_course_reqs',
+        on_delete=models.CASCADE,
+    )
+
+    course_slot = models.ForeignKey(
+        CourseSlot,
+        related_name='swayam_course_slot_reqs',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+
+    new_course_slot = models.ForeignKey(
+        CourseSlot,
+        related_name='swayam_new_course_slot_reqs',
+        on_delete=models.CASCADE,
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="Pending",
+    )
+    is_current_semester = models.BooleanField(
+        default=False,
+        help_text="True if the old course is an SW course in an OE slot in the current semester (DROP + REGISTER on approval)"
+    )
+    submitted_at = models.DateTimeField(default=timezone.now)
+    processed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'academic_procedures_swayamreplacementrequest'
+        ordering = ['-submitted_at']
+
+    def __str__(self):
+        if self.old_course:
+            return f"Swayam Replace: {self.old_course.code}→{self.new_course.code} [{self.status}]"
+        return f"Swayam Extra: {self.new_course.code} [{self.status}]"
     
 
 class CourseDropRequest(models.Model):

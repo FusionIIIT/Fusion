@@ -1,6 +1,7 @@
 import datetime
 import random
 import logging
+import traceback
 from collections import defaultdict, deque, OrderedDict
 from functools import wraps
 from datetime import date
@@ -38,7 +39,7 @@ from applications.programme_curriculum.models import ( CourseInstructor, CourseS
 
 from applications.academic_procedures.models import ( MTechGraduateSeminarReport, PhDProgressExamination, Student, Curriculum , ThesisTopicProcess, InitialRegistrations,
                                                      FinalRegistration, SemesterMarks,backlog_course,
-                                                     BranchChange , StudentRegistrationChecks, Semester , FeePayments , course_registration, course_replacement, AssistantshipClaim, Assignment, StipendRequest, CourseReplacementRequest, CourseDropRequest, CourseAddRequest, BatchChangeHistory, FeedbackQuestion, FeedbackResponse, FeedbackFilled, FeedbackOption)
+                                                     BranchChange , StudentRegistrationChecks, Semester , FeePayments , course_registration, course_replacement, AssistantshipClaim, Assignment, StipendRequest, CourseReplacementRequest, SwayamReplacementRequest, CourseDropRequest, CourseAddRequest, BatchChangeHistory, FeedbackQuestion, FeedbackResponse, FeedbackFilled, FeedbackOption)
 
 from applications.academic_information.models import (Curriculum_Instructor , Calendar)
 from applications.online_cms.models import Student_grades
@@ -1709,66 +1710,7 @@ def verify_course(request):
 
 #--------------------------------------- New APIs Made for React ----------------------------------------------------------
 
-# @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
-# @authentication_classes([TokenAuthentication])
-# def student_next_sem_courses(request):
-#     """
-#     REST API endpoint to return the courses_list as JSON.  Uses DRF authentication.
-#     """
 
-#     user_details = ExtraInfo.objects.select_related('user', 'department').get(user=request.user) # Changed to user=request.user
-#     des = HoldsDesignation.objects.all().select_related().filter(user=request.user).first()
-
-#     if str(des.designation) != "student":
-#         return Response({"error": "User is not a student"}, status=status.HTTP_403_FORBIDDEN)  # 403 Forbidden - DRF style
-
-#     obj = Student.objects.select_related('id', 'id__user', 'id__department').get(id=user_details.id)
-#     batch = obj.batch_id
-#     curr_id = batch.curriculum
-
-#     try:
-#         semester_no = obj.curr_semester_no
-#         sem_no = semester_no + 1
-#         next_sem_id = Semester.objects.get(curriculum=curr_id, semester_no=sem_no)
-#     except Semester.DoesNotExist:  # Handle the case where next semester doesn't exist.
-#         return Response({"error": "Next semester not found"}, status=status.HTTP_404_NOT_FOUND)
-
-
-#     # Serialize the data (using DRF serializers is highly recommended)
-#     course_slot = CourseSlot.objects.all().filter(semester_id = next_sem_id).prefetch_related(Prefetch('courses', queryset=Courses.objects.all()))
-#     print(course_slot[0].courses)
-#     serializer = serializers.CourseSlotSerializer(course_slot, many=True) # Assuming you have a CourseSerializer
-#     courses_list_data = serializer.data
-
-#     return Response({"courses_list": courses_list_data}, status=status.HTTP_200_OK)
-
-# @api_view(['GET'])
-# @authentication_classes([TokenAuthentication])
-# @permission_classes([IsAuthenticated])
-# def current_courseregistration(request):
-#     try:
-#         current_user = request.user
-#         user_details = current_user.extrainfo
-
-#         student = Student.objects.get(id=user_details)
-
-#         current_semester = student.curr_semester_no
-
-#         current_courses = course_registration.objects.filter(
-#             student_id=student, semester_id__semester_no=current_semester
-#         )
-#         print(current_courses)
-
-#         serializer = serializers.CourseRegistrationSerializer(current_courses, many=True)
-#         print(serializer.data)
-#         return Response(serializer.data, status=status.HTTP_200_OK)
-
-#     except Student.DoesNotExist:
-#         return Response({"error": "Student profile not found"}, status=status.HTTP_404_NOT_FOUND)
-#     except Exception as e:
-#         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -2203,39 +2145,6 @@ def student_next_sem_courses(request):
 
     return Response({"courses_list": courses_list_data}, status=status.HTTP_200_OK)
 
-# @api_view(['GET'])
-# @authentication_classes([TokenAuthentication])
-# @permission_classes([IsAuthenticated])
-# def current_courseregistration(request):
-#     try:
-#         current_user = request.user
-#         user_details = current_user.extrainfo
-
-#         student = Student.objects.get(id=user_details)
-
-#         current_semester = student.curr_semester_no
-#         print(current_semester)
-
-#         try:
-#             semester = Semester.objects.get(curriculum=student.batch_id.curriculum, semester_no=current_semester)
-#         except Semester.DoesNotExist:
-#             return JsonResponse({"error": "semester not found."}, status=404)
-
-#         print(student)
-#         current_courses = course_registration.objects.filter(
-#             student_id=student, semester_id=semester
-#         )
-#         print(current_courses)
-
-#         serializer = serializers.CourseRegistrationSerializer(current_courses, many=True)
-#         print(serializer.data)
-#         return Response(serializer.data, status=status.HTTP_200_OK)
-
-#     except Student.DoesNotExist:
-#         return Response({"error": "Student profile not found"}, status=status.HTTP_404_NOT_FOUND)
-#     except Exception as e:
-#         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -2569,11 +2478,11 @@ def get_swayam_registration_data(request):
     Returns the list of course slots available for Swayam registration for the student's next semester,
     along with the list of courses available in each slot.
     (Only course slots whose name starts with "SW" are returned.
-    No registration check is performed.)
+    Excludes slots already used in pending/approved Extra Credits or Swayam_Replace requests.)
     """
     try:
         current_user = request.user
-        user_details = current_user.extrainfo  # assuming extrainfo holds the student id/reference
+        user_details = current_user.extrainfo
         student = Student.objects.get(id=user_details)
         semester_no = student.curr_semester_no
         try:
@@ -2587,11 +2496,33 @@ def get_swayam_registration_data(request):
         eligibility_resp = get_swayam_registration_eligibility(timezone.now().date(), semester_no)
         if isinstance(eligibility_resp, JsonResponse):
             return eligibility_resp
-        # For Swayam registration, fetch only those course slots whose name starts with "SW".
-        course_slots = CourseSlot.objects.filter(semester=current_semester, name__startswith="SW")
+        
+        # Exclude slots used in ANY request of either type (all statuses)
+        used_slot_ids = list(SwayamReplacementRequest.objects.filter(
+            student=student,
+            request_type__in=['Extra_Credits', 'Swayam_Replace']
+        ).values_list('new_course_slot__id', flat=True))
+
+        registered_slot_ids = list(course_registration.objects.filter(
+            student_id=student,
+            semester_id=current_semester
+        ).exclude(course_slot_id__isnull=True).values_list('course_slot_id__id', flat=True))
+
+        all_excluded_slot_ids = used_slot_ids + registered_slot_ids
+
+        course_slots = CourseSlot.objects.filter(
+            semester=current_semester,
+            name__startswith="SW"
+        ).exclude(id__in=all_excluded_slot_ids)
+
+        used_replace_course_ids = set(SwayamReplacementRequest.objects.filter(
+            student=student,
+            request_type='Swayam_Replace'
+        ).values_list('new_course__id', flat=True))
+
         data = []
         for slot in course_slots:
-            courses = slot.courses.all()
+            courses = slot.courses.exclude(id__in=used_replace_course_ids)
             course_choices = [
                 {
                     "id": course.id,
@@ -2621,24 +2552,9 @@ def get_swayam_registration_data(request):
 @role_required(['student'])
 def submit_swayam_registration(request):
     """
-    Accepts a POST request with JSON data for Swayam registration.
-    
-    Expected payload structure:
-    {
-         "registrations": [
-              {
-                 "slot_id": <slot id>,
-                 "course_id": <course id>,
-                 "selected_option": "<selected option string>",
-                 "remark": "<remark>"
-              },
-              ...
-         ]
-    }
-    
-    For each registration entry, a record is created in InitialRegistrations.
-    Since Swayam courses are not tied to a course slot in the same way as other courses,
-    the fields course_slot_id and priority are set to None.
+    Accepts a POST request with JSON data for Swayam Extra Credits registration.
+    For each registration entry, a SwayamReplacementRequest record is created with
+    request_type='Extra_Credits' and status='Pending' for admin approval.
     """
     if request.method != "POST":
         return JsonResponse({"error": "Invalid method"}, status=400)
@@ -2664,6 +2580,9 @@ def submit_swayam_registration(request):
     eligibility_resp = get_swayam_registration_eligibility(timezone.now().date(), semester_no)
     if isinstance(eligibility_resp, JsonResponse):
         return eligibility_resp
+
+    current_year = timezone.now().year
+    academic_year, semester_type = generate_current_session(current_year, semester_no)
     
     registrations = payload.get("registrations", [])
     errors = []
@@ -2672,16 +2591,17 @@ def submit_swayam_registration(request):
     for reg in registrations:
         slot_id = reg.get("slot_id")
         course_id = reg.get("course_id")
-        selected_option = reg.get("selected_option")
-        remark = reg.get("remark")
         
         try:
             course = Courses.objects.get(id=course_id)
+            course_slot = CourseSlot.objects.get(id=slot_id)
         except Courses.DoesNotExist:
             errors.append(f"Course with ID {course_id} does not exist")
             continue
-        
-        # Check if already registered for this course
+        except CourseSlot.DoesNotExist:
+            errors.append(f"Course slot with ID {slot_id} does not exist")
+            continue
+
         existing_registration = course_registration.objects.filter(
             course_id=course,
             semester_id=semester,
@@ -2692,12 +2612,28 @@ def submit_swayam_registration(request):
             errors.append(f"Already registered for course: {course.code} - {course.name}")
             continue
         
+        existing_request = SwayamReplacementRequest.objects.filter(
+            student=student,
+            new_course_slot=course_slot,
+            status__in=['Pending', 'Approved']
+        ).first()
+        
+        if existing_request:
+            errors.append(f"Already have a pending/approved request for slot {course_slot.name}")
+            continue
+        
         try:
-            course_registration.objects.create(
-                course_id=course,
-                semester_id_id=semester.id,
-                student_id=student,
-                course_slot_id_id=slot_id
+            SwayamReplacementRequest.objects.create(
+                student=student,
+                semester=semester,
+                academic_year=academic_year,
+                semester_type=semester_type,
+                request_type='Extra_Credits',
+                old_course=None,
+                new_course=course,
+                course_slot=None,
+                new_course_slot=course_slot,
+                status='Pending'
             )
             success_count += 1
         except Exception as e:
@@ -2708,11 +2644,958 @@ def submit_swayam_registration(request):
     elif errors:
         return JsonResponse({
             "status": "partial_success",
-            "message": f"Registered {success_count} course(s) successfully",
+            "message": f"Submitted {success_count} Extra Credits request(s) successfully. Pending Academic Admin approval.",
             "errors": errors
         }, status=200)
     
-    return JsonResponse({"status": "success", "message": f"Successfully registered {success_count} course(s)"}, status=201)
+    return JsonResponse({"message": f"Extra Credits request submitted successfully. Pending Academic Admin approval."}, status=201)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['student'])
+def swayam_replace_check(request):
+    try:
+        current_user = request.user
+        user_details = current_user.extrainfo
+        student = Student.objects.get(id=user_details)
+        semester_no = student.curr_semester_no
+        
+        try:
+            current_semester = Semester.objects.get(
+                curriculum=student.batch_id.curriculum,
+                semester_no=semester_no
+            )
+        except Semester.DoesNotExist:
+            return JsonResponse({"error": "Invalid semester"}, status=400)
+
+        existing_request = SwayamReplacementRequest.objects.filter(
+            student=student,
+            request_type='Swayam_Replace',
+            status__in=['Pending', 'Approved']
+        ).first()
+        
+        if existing_request:
+            return JsonResponse({
+                "has_existing": False,
+                "has_pending_request": True,
+                "request_status": existing_request.status,
+            })
+        
+        existing_sw = course_registration.objects.filter(
+            student_id=student,
+            semester_id=current_semester,
+            course_id__code__startswith="SW",
+            course_slot_id__name__startswith="OE"
+        ).select_related('course_id', 'course_slot_id').first()
+        
+        if existing_sw:
+            all_sw_slots = CourseSlot.objects.filter(
+                semester=current_semester,
+                name__startswith="SW"
+            )
+            all_sw_slots = all_sw_slots.exclude(id=existing_sw.course_slot_id.id)
+
+            # Exclude slots used in ANY request of either type (all statuses)
+            used_slot_ids = list(SwayamReplacementRequest.objects.filter(
+                student=student,
+                request_type__in=['Swayam_Replace', 'Extra_Credits']
+            ).values_list('new_course_slot__id', flat=True))
+
+            all_sw_slots = all_sw_slots.exclude(id__in=used_slot_ids)
+
+            target_slots = [
+                {
+                    "id": slot.id,
+                    "name": slot.name
+                }
+                for slot in all_sw_slots
+            ]
+            
+            return JsonResponse({
+                "has_existing": True,
+                "has_pending_request": False,
+                "is_current_semester": True,
+                "single_slot_allowed": False,
+                "existing_course": {
+                    "id": existing_sw.course_id.id,
+                    "code": existing_sw.course_id.code,
+                    "name": existing_sw.course_id.name,
+                    "semester": existing_sw.semester_id.semester_no,
+                    "slot": existing_sw.course_slot_id.name,
+                    "slot_id": existing_sw.course_slot_id.id,
+                    "credits": existing_sw.course_id.credit
+                },
+                "target_slots": target_slots
+            })
+
+        available_semesters = []
+        # Only show semesters up to current_semester - 1
+        if semester_no >= 3:
+            for sem_no in range(3, semester_no):
+                try:
+                    sem = Semester.objects.get(
+                        curriculum=student.batch_id.curriculum,
+                        semester_no=sem_no
+                    )
+
+                    has_oe_courses = course_registration.objects.filter(
+                        student_id=student,
+                        semester_id=sem,
+                        course_slot_id__name__startswith="OE"
+                    ).exists()
+                    
+                    if has_oe_courses:
+                        available_semesters.append({
+                            "semester_no": sem_no,
+                            "label": f"Semester {sem_no}"
+                        })
+                except Semester.DoesNotExist:
+                    continue
+
+        all_sw_slots = CourseSlot.objects.filter(
+            semester=current_semester,
+            name__startswith="SW"
+        )
+
+        has_sw_slots = all_sw_slots.exists()
+        
+        if has_sw_slots:
+            used_slot_ids = list(SwayamReplacementRequest.objects.filter(
+                student=student,
+                request_type__in=['Swayam_Replace', 'Extra_Credits']
+            ).values_list('new_course_slot__id', flat=True))
+
+            all_sw_slots = all_sw_slots.exclude(id__in=used_slot_ids)
+
+            target_slots = [
+                {
+                    "id": slot.id,
+                    "name": slot.name
+                }
+                for slot in all_sw_slots
+            ]
+        else:
+            target_slots = []
+        
+        return JsonResponse({
+            "has_existing": False,
+            "has_pending_request": False,
+            "is_current_semester": False,
+            "single_slot_allowed": False,
+            "available_semesters": available_semesters,
+            "target_slots": target_slots,
+            "has_sw_in_current": has_sw_slots,
+            "message": "No auto-lockable course found. Please select semester, slot, and course manually."
+        })
+        
+    except Student.DoesNotExist:
+        return JsonResponse({"error": "Student profile not found. Please contact the administrator."}, status=404)
+    except Exception as e:
+        logger.error(f"Error in swayam_replace_check: {str(e)}", exc_info=True)
+        return JsonResponse({
+            "error": "Unable to check Swayam replacement eligibility. Please contact the administrator if this issue persists."
+        }, status=500)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['student'])
+def swayam_replace_slots(request):
+    try:
+        semester_no = request.GET.get('semester_no')
+        if not semester_no:
+            return JsonResponse({"error": "semester_no parameter required"}, status=400)
+        
+        semester_no = int(semester_no)
+        current_user = request.user
+        user_details = current_user.extrainfo
+        student = Student.objects.get(id=user_details)
+        
+        try:
+            semester = Semester.objects.get(
+                curriculum=student.batch_id.curriculum,
+                semester_no=semester_no
+            )
+        except Semester.DoesNotExist:
+            return JsonResponse({"error": "Invalid semester"}, status=400)
+
+        registered_slots = course_registration.objects.filter(
+            student_id=student,
+            semester_id=semester,
+            course_slot_id__name__startswith="OE"
+        ).values_list('course_slot_id', flat=True).distinct()
+        
+        slots = CourseSlot.objects.filter(
+            id__in=registered_slots
+        ).values('id', 'name')
+        
+        return JsonResponse(list(slots), safe=False)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['student'])
+def swayam_target_slots(request):
+    try:
+        semester_no = request.GET.get('semester_no')
+        if not semester_no:
+            return JsonResponse({"error": "semester_no parameter required"}, status=400)
+        
+        semester_no = int(semester_no)
+        current_user = request.user
+        user_details = current_user.extrainfo
+        student = Student.objects.get(id=user_details)
+        
+        try:
+            semester = Semester.objects.get(
+                curriculum=student.batch_id.curriculum,
+                semester_no=semester_no
+            )
+        except Semester.DoesNotExist:
+            return JsonResponse({"error": "Invalid semester"}, status=400)
+        
+        registered_sw_slots = course_registration.objects.filter(
+            student_id=student,
+            semester_id=semester,
+            course_id__code__startswith="SW"
+        ).values_list('course_slot_id', flat=True).distinct()
+        
+        slots = CourseSlot.objects.filter(
+            id__in=registered_sw_slots
+        ).values('id', 'name')
+        
+        return JsonResponse(list(slots), safe=False)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['student'])
+def swayam_replace_courses(request):
+    try:
+        slot_id = request.GET.get('slot_id')
+        semester_no = request.GET.get('semester_no')
+        
+        if not slot_id:
+            return JsonResponse({"error": "slot_id parameter required"}, status=400)
+        if not semester_no:
+            return JsonResponse({"error": "semester_no parameter required"}, status=400)
+        
+        semester_no = int(semester_no)
+        current_user = request.user
+        user_details = current_user.extrainfo
+        student = Student.objects.get(id=user_details)
+        
+        try:
+            semester = Semester.objects.get(
+                curriculum=student.batch_id.curriculum,
+                semester_no=semester_no
+            )
+        except Semester.DoesNotExist:
+            return JsonResponse({"error": "Invalid semester"}, status=400)
+
+        registrations = course_registration.objects.filter(
+            student_id=student,
+            semester_id=semester,
+            course_slot_id=slot_id
+        ).select_related('course_id')
+
+        # Exclude courses where student already has a satisfactory grade (not eligible for replacement)
+        # Grades are stored in online_cms_student_grades (Student_grades model) by roll_no (username)
+        blocked_grades = ['O', 'A+', 'A', 'B+', 'B', 'C+']
+        roll_no = current_user.username
+        courses_list = []
+        for reg in registrations:
+            course = reg.course_id
+            # Check if this course has a published good grade in Student_grades
+            has_good_grade = Student_grades.objects.filter(
+                roll_no=roll_no,
+                course_id=course,
+                grade__in=blocked_grades
+            ).exists()
+            if has_good_grade:
+                continue  # Skip — this course has a satisfactory grade and cannot be replaced
+            courses_list.append({
+                'id': course.id,
+                'code': course.code,
+                'name': course.name,
+                'credit': course.credit
+            })
+        
+        return JsonResponse(courses_list, safe=False)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['student'])
+def swayam_target_courses(request):
+    try:
+        slot_id = request.GET.get('slot_id')
+        semester_no = request.GET.get('semester_no')
+        
+        if not slot_id:
+            return JsonResponse({"error": "slot_id parameter required"}, status=400)
+        if not semester_no:
+            return JsonResponse({"error": "semester_no parameter required"}, status=400)
+        
+        semester_no = int(semester_no)
+        current_user = request.user
+        user_details = current_user.extrainfo
+        student = Student.objects.get(id=user_details)
+        
+        try:
+            semester = Semester.objects.get(
+                curriculum=student.batch_id.curriculum,
+                semester_no=semester_no
+            )
+        except Semester.DoesNotExist:
+            return JsonResponse({"error": "Invalid semester"}, status=400)
+
+        courses = course_registration.objects.filter(
+            student_id=student,
+            semester_id=semester,
+            course_slot_id=slot_id,
+            course_id__code__startswith="SW"
+        ).select_related('course_id').values(
+            'course_id__id', 'course_id__code', 'course_id__name', 'course_id__credit'
+        )
+        
+        courses_list = []
+        for c in courses:
+            courses_list.append({
+                'id': c['course_id__id'],
+                'code': c['course_id__code'],
+                'name': c['course_id__name'],
+                'credit': c['course_id__credit']
+            })
+        
+        return JsonResponse(courses_list, safe=False)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['student'])
+def swayam_current_courses(request):
+    try:
+        slot_id = request.GET.get('slot_id')
+        
+        if not slot_id:
+            return JsonResponse({"error": "slot_id parameter required"}, status=400)
+        
+        current_user = request.user
+        user_details = current_user.extrainfo
+        student = Student.objects.get(id=user_details)
+        semester_no = student.curr_semester_no
+        
+        try:
+            current_semester = Semester.objects.get(
+                curriculum=student.batch_id.curriculum,
+                semester_no=semester_no
+            )
+        except Semester.DoesNotExist:
+            return JsonResponse({"error": "Invalid current semester"}, status=400)
+
+        try:
+            slot = CourseSlot.objects.get(id=slot_id, semester=current_semester)
+
+            # Exclude courses already used in any Extra_Credits or Swayam_Replace request (any status)
+            used_course_ids = set(SwayamReplacementRequest.objects.filter(
+                student=student,
+                request_type__in=['Extra_Credits', 'Swayam_Replace']
+            ).values_list('new_course__id', flat=True))
+
+            courses = slot.courses.filter(code__startswith="SW").exclude(id__in=used_course_ids).values(
+                'id', 'code', 'name', 'credit'
+            )
+
+            courses_list = [
+                {'id': c['id'], 'code': c['code'], 'name': c['name'], 'credit': c['credit']}
+                for c in courses
+            ]
+
+            return JsonResponse(courses_list, safe=False)
+        except CourseSlot.DoesNotExist:
+            return JsonResponse({"error": "Invalid slot for current semester"}, status=400)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['student'])
+def swayam_replace_submit(request):
+    try:
+        current_user = request.user
+        user_details = current_user.extrainfo
+        student = Student.objects.get(id=user_details)
+        semester_no = student.curr_semester_no
+
+        current_year = datetime.datetime.now().year
+        academic_year, semester_type = generate_current_session(current_year, semester_no)
+        
+        try:
+            current_semester = Semester.objects.get(
+                curriculum=student.batch_id.curriculum,
+                semester_no=semester_no
+            )
+        except Semester.DoesNotExist:
+            return JsonResponse({"error": "Invalid semester"}, status=400)
+        
+        data = request.data
+        source_semester_no = data.get('source_semester')
+        old_course_id = data.get('source_course')
+        new_course_id_1 = data.get('target_course')
+        new_course_slot_id_1 = data.get('target_slot')
+        new_course_id_2 = data.get('target_course_2')
+        new_course_slot_id_2 = data.get('target_slot_2')
+        is_current_semester = data.get('is_current_semester', False)
+        
+        # Basic validation - at least first course is required
+        if not all([source_semester_no, old_course_id, new_course_id_1, new_course_slot_id_1]):
+            return JsonResponse({"error": "Source semester, old course, and at least one new course with slot are required"}, status=400)
+
+        try:
+            source_semester = Semester.objects.get(
+                curriculum=student.batch_id.curriculum,
+                semester_no=int(source_semester_no)
+            )
+        except Semester.DoesNotExist:
+            return JsonResponse({"error": "Invalid source semester"}, status=400)
+
+        try:
+            old_course = Courses.objects.get(id=old_course_id)
+            new_course_1 = Courses.objects.get(id=new_course_id_1)
+            new_course_slot_1 = CourseSlot.objects.get(id=new_course_slot_id_1)
+
+            new_course_2 = None
+            new_course_slot_2 = None
+            if new_course_id_2 and new_course_slot_id_2:
+                new_course_2 = Courses.objects.get(id=new_course_id_2)
+                new_course_slot_2 = CourseSlot.objects.get(id=new_course_slot_id_2)
+
+            old_course_reg = course_registration.objects.get(
+                student_id=student,
+                semester_id=source_semester,
+                course_id=old_course
+            )
+            old_course_slot = old_course_reg.course_slot_id
+            
+        except (Courses.DoesNotExist, CourseSlot.DoesNotExist) as e:
+            return JsonResponse({"error": f"Invalid course or slot: {str(e)}"}, status=400)
+        except course_registration.DoesNotExist:
+            return JsonResponse({"error": "Old course registration not found in the selected semester"}, status=400)
+
+        if old_course_id == new_course_id_1 or (new_course_id_2 and old_course_id == new_course_id_2):
+            return JsonResponse({
+                "error": "New course selection must be different from the course being replaced."
+            }, status=400)
+
+        if new_course_id_2 and new_course_id_1 == new_course_id_2:
+            return JsonResponse({
+                "error": "You must select two different new courses."
+            }, status=400)
+
+        if new_course_slot_id_2 and new_course_slot_id_1 == new_course_slot_id_2:
+            return JsonResponse({
+                "error": "You must select two different new slots."
+            }, status=400)
+
+        if not new_course_2:
+            return JsonResponse({
+                "error": "Both slots are required. You must select two new Swayam courses for the replacement request."
+            }, status=400)
+        
+        # Validate grade: source course must NOT have a satisfactory grade (O, A+, A, B+, B, C+)
+        blocked_grades = ['O', 'A+', 'A', 'B+', 'B', 'C+', 'S']
+        roll_no = current_user.username
+        has_blocked_grade = Student_grades.objects.filter(
+            roll_no=roll_no,
+            course_id=old_course,
+            grade__in=blocked_grades
+        ).exists()
+        
+        if has_blocked_grade:
+            return JsonResponse({
+                "error": "You are not eligible for replacement of this course. Replacement is only allowed for courses with unsatisfactory grades."
+            }, status=400)
+
+        if is_current_semester:
+            request_type = 'Swayam_Replace'
+        else:
+            request_type = 'Swayam_Replace'
+
+        SwayamReplacementRequest.objects.create(
+            student=student,
+            semester=source_semester,
+            academic_year=academic_year,
+            semester_type=semester_type,
+            request_type=request_type,
+            old_course=old_course,
+            new_course=new_course_1,
+            course_slot=old_course_slot,
+            new_course_slot=new_course_slot_1,
+            status='Pending',
+            is_current_semester=is_current_semester
+        )
+
+        if new_course_2 and new_course_slot_2:
+            SwayamReplacementRequest.objects.create(
+                student=student,
+                semester=source_semester,
+                academic_year=academic_year,
+                semester_type=semester_type,
+                request_type=request_type,
+                old_course=old_course,
+                new_course=new_course_2,
+                course_slot=old_course_slot,
+                new_course_slot=new_course_slot_2,
+                status='Pending',
+                is_current_semester=is_current_semester
+            )
+            message = "Replacement request submitted successfully (2 courses). Pending Academic Admin approval."
+        else:
+            message = "Replacement request submitted successfully (1 course). Pending Academic Admin approval."
+        
+        if is_current_semester:
+            message += " Note: Current semester course will be DROPPED and new course(s) will be REGISTERED."
+        
+        return JsonResponse({"message": message}, status=201)
+    
+    except Student.DoesNotExist:
+        return JsonResponse({"error": "Student not found"}, status=404)
+    except Semester.DoesNotExist:
+        return JsonResponse({"error": "Invalid semester"}, status=400)
+    except Exception as e:
+        logger.error(f"Error in swayam_replace_submit: {str(e)}", exc_info=True)
+        logger.error(traceback.format_exc())
+        return JsonResponse({"error": f"Failed to submit: {str(e)}"}, status=500)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['student'])
+def student_swayam_requests(request):
+    try:
+        current_user = request.user
+        user_details = current_user.extrainfo
+        student = Student.objects.get(id=user_details)
+
+        request_type = request.GET.get('request_type')
+        requests_query = SwayamReplacementRequest.objects.filter(student=student)
+        
+        if request_type:
+            requests_query = requests_query.filter(request_type=request_type)
+        
+        requests = requests_query.select_related(
+            'old_course',
+            'new_course',
+            'new_course_slot',
+            'semester'
+        ).order_by('-submitted_at')
+        
+        requests_data = []
+        for req in requests:
+            requests_data.append({
+                'id': req.id,
+                'request_type': req.request_type,
+                'old_course': {
+                    'id': req.old_course.id,
+                    'code': req.old_course.code,
+                    'name': req.old_course.name
+                } if req.old_course else None,
+                'new_course': {
+                    'id': req.new_course.id,
+                    'code': req.new_course.code,
+                    'name': req.new_course.name
+                },
+                'slot': {
+                    'id': req.new_course_slot.id,
+                    'name': req.new_course_slot.name
+                },
+                'status': req.status,
+                'submitted_at': req.submitted_at.isoformat() if req.submitted_at else None,
+                'processed_at': req.processed_at.isoformat() if req.processed_at else None,
+                'academic_year': req.academic_year,
+                'semester_type': req.semester_type
+            })
+        
+        return JsonResponse({'requests': requests_data}, status=200)
+    
+    except Student.DoesNotExist:
+        return JsonResponse({"error": "Student not found"}, status=404)
+    except Exception as e:
+        logger.error(f"Error in student_swayam_requests: {str(e)}", exc_info=True)
+        return JsonResponse({"error": "Failed to fetch requests"}, status=500)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def admin_swayam_list_requests(request):
+    try:
+        request_type = request.GET.get('request_type')
+        status_filter = request.GET.get('status')
+        academic_year = request.GET.get('academic_year')
+        semester_type = request.GET.get('semester_type')
+        
+        queryset = SwayamReplacementRequest.objects.select_related(
+            'student',
+            'student__id__user',
+            'old_course',
+            'new_course',
+            'new_course_slot',
+            'semester'
+        ).order_by('-submitted_at')
+
+        count_queryset = SwayamReplacementRequest.objects.all()
+        
+        if request_type:
+            count_queryset = count_queryset.filter(request_type=request_type)
+        if academic_year:
+            count_queryset = count_queryset.filter(academic_year=academic_year)
+        if semester_type:
+            count_queryset = count_queryset.filter(semester_type=semester_type)
+
+        counts = {
+            'pending': count_queryset.filter(status='Pending').count(),
+            'approved': count_queryset.filter(status='Approved').count(),
+            'rejected': count_queryset.filter(status='Rejected').count(),
+            'total': count_queryset.count()
+        }
+
+        if request_type:
+            queryset = queryset.filter(request_type=request_type)
+        
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        
+        if academic_year:
+            queryset = queryset.filter(academic_year=academic_year)
+        
+        if semester_type:
+            queryset = queryset.filter(semester_type=semester_type)
+        
+        requests_data = []
+        for req in queryset:
+            requests_data.append({
+                'id': req.id,
+                'student': {
+                    'id': req.student.id.id,
+                    'name': f"{req.student.id.user.first_name} {req.student.id.user.last_name}",
+                    'roll_no': req.student.id.id,
+                    'batch': req.student.batch_id.name if req.student.batch_id else 'N/A'
+                },
+                'request_type': req.request_type,
+                'old_course': {
+                    'id': req.old_course.id,
+                    'code': req.old_course.code,
+                    'name': req.old_course.name
+                } if req.old_course else None,
+                'new_course': {
+                    'id': req.new_course.id,
+                    'code': req.new_course.code,
+                    'name': req.new_course.name
+                },
+                'slot': {
+                    'id': req.new_course_slot.id,
+                    'name': req.new_course_slot.name
+                },
+                'status': req.status,
+                'submitted_at': req.submitted_at.isoformat() if req.submitted_at else None,
+                'processed_at': req.processed_at.isoformat() if req.processed_at else None,
+                'academic_year': req.academic_year,
+                'semester_type': req.semester_type,
+                'semester': {
+                    'id': req.semester.id,
+                    'semester_no': req.semester.semester_no
+                }
+            })
+        
+        return JsonResponse({
+            'requests': requests_data,
+            'counts': counts
+        }, status=200)
+    
+    except Exception as e:
+        logger.error(f"Error in admin_swayam_list_requests: {str(e)}", exc_info=True)
+        return JsonResponse({"error": "Failed to fetch requests"}, status=500)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def admin_swayam_approve(request):
+    try:
+        request_id = request.data.get('request_id')
+        if not request_id:
+            return JsonResponse({"error": "request_id is required"}, status=400)
+        
+        req_obj = SwayamReplacementRequest.objects.get(id=request_id)
+        
+        if req_obj.status != 'Pending':
+            return JsonResponse({"error": "Only pending requests can be approved"}, status=400)
+
+        if req_obj.request_type == 'Extra_Credits':
+            existing_reg = course_registration.objects.filter(
+                student_id=req_obj.student,
+                semester_id=req_obj.semester,
+                course_id=req_obj.new_course
+            ).first()
+            
+            if not existing_reg:
+                course_registration.objects.create(
+                    student_id=req_obj.student,
+                    semester_id=req_obj.semester,
+                    course_id=req_obj.new_course,
+                    course_slot_id=req_obj.new_course_slot,
+                    registration_type='Extra Credits',
+                    session=req_obj.academic_year,
+                    semester_type=req_obj.semester_type
+                )
+        
+        elif req_obj.request_type == 'Swayam_Replace':
+            paired_request = SwayamReplacementRequest.objects.filter(
+                student=req_obj.student,
+                old_course=req_obj.old_course,
+                request_type='Swayam_Replace',
+                status='Pending'
+            ).exclude(id=req_obj.id).first()
+
+            old_reg = course_registration.objects.filter(
+                student_id=req_obj.student,
+                semester_id=req_obj.semester,
+                course_id=req_obj.old_course
+            ).first()
+
+            roll_no = req_obj.student.id.user.username
+            if req_obj.is_current_semester:
+                new_registration_type = 'Extra Credits'
+            else:
+                backlog_grades = ['F', 'CD', 'X']
+                improvement_grades = ['D', 'D+', 'C']
+                src_grade_obj = Student_grades.objects.filter(
+                    roll_no=roll_no,
+                    course_id=req_obj.old_course
+                ).first()
+                if src_grade_obj and src_grade_obj.grade in backlog_grades:
+                    new_registration_type = 'Backlog'
+                elif src_grade_obj and src_grade_obj.grade in improvement_grades:
+                    new_registration_type = 'Improvement'
+                else:
+                    new_registration_type = 'Improvement'
+
+            if req_obj.is_current_semester:
+                # DROP + REGISTER mode 
+                existing_new = course_registration.objects.filter(
+                    student_id=req_obj.student,
+                    semester_id=req_obj.semester,
+                    course_id=req_obj.new_course
+                ).first()
+                if not existing_new:
+                    course_registration.objects.create(
+                        student_id=req_obj.student,
+                        semester_id=req_obj.semester,
+                        course_id=req_obj.new_course,
+                        course_slot_id=req_obj.new_course_slot,
+                        registration_type=new_registration_type,
+                        session=req_obj.academic_year,
+                        semester_type=req_obj.semester_type
+                    )
+
+                if paired_request:
+                    existing_new_2 = course_registration.objects.filter(
+                        student_id=paired_request.student,
+                        semester_id=paired_request.semester,
+                        course_id=paired_request.new_course
+                    ).first()
+                    if not existing_new_2:
+                        course_registration.objects.create(
+                            student_id=paired_request.student,
+                            semester_id=paired_request.semester,
+                            course_id=paired_request.new_course,
+                            course_slot_id=paired_request.new_course_slot,
+                            registration_type=new_registration_type,
+                            session=paired_request.academic_year,
+                            semester_type=paired_request.semester_type
+                        )
+                    paired_request.status = 'Approved'
+                    paired_request.processed_at = timezone.now()
+                    paired_request.save()
+
+                # Drop the old course registration AFTER both new ones are registered
+                if old_reg:
+                    old_reg.delete()
+
+            else:
+                # REPLACE mode (previous semester)
+                student_obj = req_obj.student
+                current_semester_no = student_obj.curr_semester_no
+                try:
+                    current_semester = Semester.objects.get(
+                        curriculum=student_obj.batch_id.curriculum,
+                        semester_no=current_semester_no
+                    )
+                except Semester.DoesNotExist:
+                    return JsonResponse({"error": "Could not determine student's current semester."}, status=400)
+
+                new_reg_1 = course_registration.objects.filter(
+                    student_id=student_obj,
+                    semester_id=current_semester,
+                    course_id=req_obj.new_course
+                ).first()
+
+                if not new_reg_1:
+                    new_reg_1 = course_registration.objects.create(
+                        student_id=student_obj,
+                        semester_id=current_semester,
+                        course_id=req_obj.new_course,
+                        course_slot_id=req_obj.new_course_slot,
+                        registration_type=new_registration_type,
+                        session=req_obj.academic_year,
+                        semester_type=req_obj.semester_type
+                    )
+
+                if old_reg and new_reg_1:
+                    course_replacement.objects.get_or_create(
+                        old_course_registration=old_reg,
+                        new_course_registration=new_reg_1
+                    )
+
+                if paired_request:
+                    paired_request.status = 'Approved'
+                    paired_request.processed_at = timezone.now()
+                    paired_request.save()
+
+                    new_reg_2 = course_registration.objects.filter(
+                        student_id=student_obj,
+                        semester_id=current_semester,
+                        course_id=paired_request.new_course
+                    ).first()
+                    if not new_reg_2:
+                        new_reg_2 = course_registration.objects.create(
+                            student_id=student_obj,
+                            semester_id=current_semester,
+                            course_id=paired_request.new_course,
+                            course_slot_id=paired_request.new_course_slot,
+                            registration_type=new_registration_type,
+                            session=paired_request.academic_year,
+                            semester_type=paired_request.semester_type
+                        )
+
+                    if old_reg and new_reg_2:
+                        course_replacement.objects.get_or_create(
+                            old_course_registration=old_reg,
+                            new_course_registration=new_reg_2
+                        )
+
+        req_obj.status = 'Approved'
+        req_obj.processed_at = timezone.now()
+        req_obj.save()
+        
+        return JsonResponse({"message": "Request approved successfully"}, status=200)
+    
+    except SwayamReplacementRequest.DoesNotExist:
+        return JsonResponse({"error": "Request not found"}, status=404)
+    except Exception as e:
+        logger.error(f"Error in admin_swayam_approve: {str(e)}", exc_info=True)
+        logger.error(traceback.format_exc())
+        return JsonResponse({"error": f"Failed to approve request: {str(e)}"}, status=500)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def admin_swayam_reject(request):
+    try:
+        request_id = request.data.get('request_id')
+        if not request_id:
+            return JsonResponse({"error": "request_id is required"}, status=400)
+        
+        req_obj = SwayamReplacementRequest.objects.get(id=request_id)
+        
+        if req_obj.status != 'Pending':
+            return JsonResponse({"error": "Only pending requests can be rejected"}, status=400)
+        
+        req_obj.status = 'Rejected'
+        req_obj.processed_at = timezone.now()
+        req_obj.save()
+        
+        return JsonResponse({"message": "Request rejected successfully"}, status=200)
+    
+    except SwayamReplacementRequest.DoesNotExist:
+        return JsonResponse({"error": "Request not found"}, status=404)
+    except Exception as e:
+        logger.error(f"Error in admin_swayam_reject: {str(e)}", exc_info=True)
+        return JsonResponse({"error": "Failed to reject request"}, status=500)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def admin_swayam_revert(request):
+    try:
+        request_id = request.data.get('request_id')
+        if not request_id:
+            return JsonResponse({"error": "request_id is required"}, status=400)
+        
+        req_obj = SwayamReplacementRequest.objects.get(id=request_id)
+        
+        if req_obj.status != 'Rejected':
+            return JsonResponse({"error": "Only rejected requests can be reverted"}, status=400)
+        
+        req_obj.status = 'Pending'
+        req_obj.processed_at = None
+        req_obj.save()
+        
+        return JsonResponse({"message": "Request reverted to pending successfully"}, status=200)
+    
+    except SwayamReplacementRequest.DoesNotExist:
+        return JsonResponse({"error": "Request not found"}, status=404)
+    except Exception as e:
+        logger.error(f"Error in admin_swayam_revert: {str(e)}", exc_info=True)
+        return JsonResponse({"error": "Failed to revert request"}, status=500)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def admin_swayam_delete(request):
+    try:
+        request_id = request.data.get('request_id')
+        if not request_id:
+            return JsonResponse({"error": "request_id is required"}, status=400)
+        
+        req_obj = SwayamReplacementRequest.objects.get(id=request_id)
+        req_obj.delete()
+        
+        return JsonResponse({"message": "Request deleted successfully"}, status=200)
+    
+    except SwayamReplacementRequest.DoesNotExist:
+        return JsonResponse({"error": "Request not found"}, status=404)
+    except Exception as e:
+        logger.error(f"Error in admin_swayam_delete: {str(e)}", exc_info=True)
+        return JsonResponse({"error": "Failed to delete request"}, status=500)
 
 
 @api_view(['GET'])
@@ -3275,11 +4158,11 @@ def admin_list_requests(request):
             'id': r.id,
             'student': r.student.id.user.username,
             'student_name': r.student.id.user.get_full_name() or r.student.id.user.username,
-            'slot': r.course_slot.name,
-            'old_course': r.old_course.code,
-            'old_course_name': r.old_course.name,
-            'new_course': r.new_course.code,
-            'new_course_name': r.new_course.name,
+            'slot': r.course_slot.name if r.course_slot else 'N/A',
+            'old_course': r.old_course.code if r.old_course else 'N/A',
+            'old_course_name': r.old_course.name if r.old_course else 'N/A',
+            'new_course': r.new_course.code if r.new_course else 'N/A',
+            'new_course_name': r.new_course.name if r.new_course else 'N/A',
             'status': r.status,
             'academic_year': r.academic_year,
             'semester_type': r.semester_type,
@@ -3310,11 +4193,11 @@ def student_list_requests(request):
     for r in qs:
         out.append({
             'id': r.id,
-            'slot': r.course_slot.name,
-            'old_course': r.old_course.code,
-            'old_course_name': r.old_course.name,
-            'new_course': r.new_course.code,
-            'new_course_name': r.new_course.name,
+            'slot': r.course_slot.name if r.course_slot else 'N/A',
+            'old_course': r.old_course.code if r.old_course else 'N/A',
+            'old_course_name': r.old_course.name if r.old_course else 'N/A',
+            'new_course': r.new_course.code if r.new_course else 'N/A',
+            'new_course_name': r.new_course.name if r.new_course else 'N/A',
             'status': r.status,
             'academic_year': r.academic_year,
             'semester_type': r.semester_type,
