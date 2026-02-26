@@ -53,9 +53,9 @@
                 <a class = "item disabled" href="/gymkhana">
                     <h4> Gymkhana Module </h4>
                 </a>
-				<a class="item disabled" href="/iwdModuleV2">
-                                <h4>IWD Module</h4>
-                            </a>
+				<a class="item" href="/iwdModuleV2">
+                    <h4>IWD Module</h4>
+                </a>
                 {% if request.user.extrainfo.user_type == 'faculty' or request.user.extrainfo.user_type == 'staff' %}
                 <a class = "item disabled" href="{% url 'establishment:establishment' %}">
                     <h4> Establishment Module </h4>
