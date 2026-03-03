@@ -2077,7 +2077,7 @@ class GeneratePDFAPI(APIView):
                 return self.generate_student_result_pdf(request)
             
             # Faculty role check for course grade sheets
-            if role not in ["Associate Professor", "Professor", "Assistant Professor"]:
+            if role not in ["Associate Professor", "Professor", "Assistant Professor", "acadadmin"]:
                 return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
 
             # Existing faculty course grade sheet logic
@@ -2114,17 +2114,30 @@ class GeneratePDFAPI(APIView):
             
             grades = grades.order_by("roll_no")
 
-            ci = CourseInstructor.objects.filter(
-                course_id_id=course_id,
-                year=working_year,
-                semester_type=semester_type,
-                instructor_id_id=request.user.username
-            )
+            if role == "acadadmin":
+                ci = CourseInstructor.objects.filter(
+                    course_id_id=course_id,
+                    year=working_year,
+                    semester_type=semester_type,
+                )
+            else:
+                ci = CourseInstructor.objects.filter(
+                    course_id_id=course_id,
+                    year=working_year,
+                    semester_type=semester_type,
+                    instructor_id_id=request.user.username
+                )
             if not ci.exists():
                 return Response({"success": False, "error": "Course not found."}, status=404)
 
             # semester   = ci.first().semester_no
-            instructor = f"{request.user.first_name} {request.user.last_name}"
+            if role == "acadadmin":
+                _User = get_user_model()
+                ci_obj = ci.first()
+                instr_user = _User.objects.filter(username=ci_obj.instructor_id_id).first()
+                instructor = f"{instr_user.first_name} {instr_user.last_name}" if instr_user else str(ci_obj.instructor_id_id)
+            else:
+                instructor = f"{request.user.first_name} {request.user.last_name}"
 
             # count grades
             all_grades   = ["O","A+","A","B+","B","C+","C","D+","D","F","S","X","CD"]
