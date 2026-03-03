@@ -18,7 +18,7 @@ import csv
 from io import StringIO, BytesIO
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
-from django.db.models import IntegerField
+from django.db.models import IntegerField, Sum
 from django.db.models.functions import Cast
 from rest_framework.parsers import MultiPartParser, FormParser
 from openpyxl import Workbook
@@ -3695,6 +3695,269 @@ class GenerateStudentResultPDFAPI(APIView):
             
         except Exception as e:
             return JsonResponse({'error': f'PDF generation failed: {str(e)}'}, status=500)
+
+class GenerateGradeSheetData(APIView):
+    """
+    API endpoint to fetch student grades for a given semester
+    Dedicated to the Grade Sheet
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        des = request.data.get("Role")
+        student_id = request.data.get("student")
+        raw_semester = request.data.get("semester")
+
+        if des != "acadadmin":
+            return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
+
+        if not student_id or not raw_semester:
+            return Response({"error": "Student ID and Semester are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            semester = json.loads(raw_semester)
+            semester_number = semester.get('no')
+            semester_type = semester.get('type')
+            if semester_number is None or not semester_type:
+                return Response({"error": "Invalid semester format."}, status=status.HTTP_400_BAD_REQUEST)
+        except (json.JSONDecodeError, TypeError, AttributeError):
+            return Response({"error": "Invalid semester data."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            student = Student.objects.get(id_id=student_id)
+            cpi, tu, _ = calculate_cpi_for_student(student, semester_number, semester_type)
+            spi, su, _ = calculate_spi_for_student(student, semester_number, semester_type)
+        except Student.DoesNotExist:
+            return Response({"error": "Student ID does not exist."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": f"Error fetching student data: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        course_grades = {}
+        courses_registered = Student_grades.objects.filter(
+            roll_no=student_id, semester=semester_number, semester_type=semester_type
+        ).select_related('course_id')
+
+        if not courses_registered.exists():
+            courses_registered = Student_grades.objects.filter(
+                roll_no=student_id, semester=semester_number
+            ).select_related('course_id')
+
+        academic_year = None
+        if courses_registered.exists():
+            academic_year = courses_registered.first().academic_year
+
+        # Build special-symbol map: course.id → 'R' (backlog/improvement), 'S' (substituted), or ''
+        course_reg_map = {}
+        try:
+            student_regs = course_registration.objects.filter(
+                student_id=student,
+                semester_id__semester_no=semester_number,
+            ).select_related('course_id')
+
+            substituted_ids = set(
+                course_replacement.objects.filter(
+                    new_course_registration__in=student_regs
+                ).values_list('new_course_registration_id', flat=True)
+            )
+
+            for creg in student_regs:
+                cid = creg.course_id.id
+                if creg.id in substituted_ids:
+                    course_reg_map[cid] = 'S'
+                elif creg.registration_type in ('Backlog', 'Improvement'):
+                    course_reg_map[cid] = 'R'
+        except Exception:
+            pass
+
+        for reg in courses_registered:
+            course = reg.course_id
+            course_grades[course.id] = {
+                "course_name": course.name,
+                "course_code": course.code,
+                "credit": course.credit,
+                "grade": reg.grade,
+                "points": Decimal(str(grade_conversion.get(reg.grade, 0) * 10)).quantize(
+                    Decimal('0.1'), rounding=ROUND_HALF_UP),
+                "special_symbol": course_reg_map.get(course.id, ''),
+            }
+
+        programme_full = {
+            "B.Tech": "Bachelor of Technology",
+            "B.Des": "Bachelor of Design",
+            "M.Tech": "Master of Technology",
+            "M.Des": "Master of Design",
+            "PhD": "Doctor of Philosophy",
+        }.get(student.programme, student.programme)
+
+        discipline_full = ""
+        try:
+            if student.batch_id and hasattr(student.batch_id, 'discipline'):
+                discipline_full = student.batch_id.discipline.name
+        except Exception:
+            pass
+        if not discipline_full:
+            discipline_full = student.id.department.name if student.id.department else ""
+
+        batch_name = ""
+        try:
+            if student.batch_id:
+                batch_name = student.batch_id.name
+        except Exception:
+            pass
+        if batch_name and batch_name != student.programme:
+            programme_display = programme_full
+            if batch_name.startswith("M.Tech ") and student.programme == "M.Tech":
+                programme_display = "Master of Technology"
+                discipline_suffix = batch_name.replace("M.Tech ", "")
+                if discipline_suffix and discipline_suffix not in discipline_full:
+                    discipline_full = f"{discipline_full} ({discipline_suffix})" if discipline_full else discipline_suffix
+        else:
+            programme_display = programme_full
+
+        student_info = {
+            "name": f"{student.id.user.first_name} {student.id.user.last_name}".strip(),
+            "student_name": f"{student.id.user.first_name} {student.id.user.last_name}".strip(),
+            "rollNumber": student.id.user.username,
+            "roll_number": student.id.user.username,
+            "programme": programme_display,
+            "batch": str(student.batch_id) if student.batch_id else str(student.batch),
+            "branch": discipline_full,
+            "department": discipline_full,
+            "discipline": discipline_full,
+            "semester": student.curr_semester_no,
+            "academicYear": academic_year or "",
+            "academic_year": academic_year or ""
+        }
+
+        # Build per-semester SPI/CPI history (all semesters from 1 up to current)
+        semester_history = []
+        try:
+            distinct_semesters = (
+                Student_grades.objects
+                .filter(roll_no=student_id)
+                .values('semester', 'semester_type')
+                .distinct()
+                .order_by('semester', 'semester_type')
+            )
+
+            NON_CREDIT_GRADES = {'F', 'I', 'X', 'AU', 'CD'}
+            credits_per_sem = {}
+            try:
+                sem_credit_qs = (
+                    Student_grades.objects
+                    .filter(roll_no=student_id)
+                    .exclude(grade__isnull=True)
+                    .exclude(grade__in=NON_CREDIT_GRADES)
+                    .values('semester', 'semester_type')
+                    .annotate(sem_credits=Sum('course_id__credit'))
+                )
+                for row in sem_credit_qs:
+                    if row['semester'] is not None:
+                        credits_per_sem[(row['semester'], row['semester_type'])] = row['sem_credits'] or 0
+            except Exception:
+                pass
+
+            running_credits = 0
+            for sem in distinct_semesters:
+                s_no = sem['semester']
+                s_type = sem['semester_type']
+                is_summer = bool(s_type and 'summer' in str(s_type).lower())
+                running_credits += credits_per_sem.get((s_no, s_type), 0)
+                try:
+                    s_spi, _, _ = calculate_spi_for_student(student, s_no, s_type)
+                    s_cpi, _, _ = calculate_cpi_for_student(student, s_no, s_type)
+                    semester_history.append({
+                        "semester": s_no,
+                        "spi": float(s_spi) if s_spi else 0,
+                        "cpi": float(s_cpi) if s_cpi else 0,
+                        "cumulative_credits": running_credits,
+                        "is_summer": is_summer,
+                    })
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+        response_data = {
+            "name": f"{student.id.user.first_name} {student.id.user.last_name}".strip(),
+            "student_name": f"{student.id.user.first_name} {student.id.user.last_name}".strip(),
+            "roll_number": student.id.user.username,
+            "programme": programme_display,
+            "department": discipline_full,
+            "branch": discipline_full,
+            "discipline": discipline_full,
+            "academic_year": academic_year or "",
+            "student_info": student_info,
+            "courses_grades": course_grades,
+            "spi": spi,
+            "cpi": cpi,
+            "tu": tu,
+            "su": su,
+            "semester_history": semester_history,
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
+
+class GenerateGradeSheetForm(APIView):
+    """
+    API endpoint to fetch form options (batches, specializations) and student lists for grade sheet generation
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        role = request.GET.get("role")
+        if not role or role != "acadadmin":
+            return Response(
+                {"error": "Access denied. Invalid or missing role."},
+                status=status.HTTP_403_FORBIDDEN)
+
+        batches_queryset = Batch.objects.filter(running_batch=True)
+        batch_list = [
+            {"id": batch.id, "label": f"{batch.name} - {batch.discipline} {batch.year}"}
+            for batch in batches_queryset
+        ]
+
+        programmes = Student.objects.values_list('programme', flat=True).distinct()
+        specializations = (Student.objects
+            .exclude(specialization__isnull=True)
+            .exclude(specialization__exact="")
+            .values_list('specialization', flat=True)
+            .distinct())
+
+        return Response({
+            "programmes": list(programmes),
+            "batches": batch_list,
+            "specializations": list(specializations),
+        }, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        role = request.data.get("Role")
+        if not role or role != "acadadmin":
+            return Response(
+                {"error": "Access denied. Invalid or missing role."},
+                status=status.HTTP_403_FORBIDDEN)
+
+        batch = request.data.get('batch')
+        specialization = request.data.get('specialization')
+        semester = request.data.get('semester')
+
+        if not batch or not semester:
+            return Response(
+                {"error": "batch, and semester are required fields."},
+                status=status.HTTP_400_BAD_REQUEST)
+
+        if specialization:
+            students = Student.objects.filter(
+                batch_id=batch, specialization=specialization).order_by('id')
+        else:
+            students = Student.objects.filter(batch_id=batch).order_by('id')
+
+        return Response({
+            "students": list(students.values()),
+            "semester": semester
+        }, status=status.HTTP_200_OK)
+
 
 class GradeSummaryAPI(APIView):
     """
