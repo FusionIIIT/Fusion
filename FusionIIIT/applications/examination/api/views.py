@@ -1,8 +1,6 @@
 from django.db.models.query_utils import Q
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, HttpResponse
-from django.http import HttpResponse
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404
 from django.db import transaction
 from decimal import Decimal, ROUND_HALF_UP
 from applications.academic_procedures.models import(course_registration, course_replacement)
@@ -18,7 +16,7 @@ import csv
 from io import StringIO, BytesIO
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
-from django.db.models import IntegerField, Sum
+from django.db.models import IntegerField, Sum, Case, When
 from django.db.models.functions import Cast
 from rest_framework.parsers import MultiPartParser, FormParser
 from openpyxl import Workbook
@@ -34,7 +32,16 @@ from reportlab.lib.colors import HexColor
 from reportlab.lib.units import inch
 from django.core.exceptions import ObjectDoesNotExist
 from collections import defaultdict
-from django.db.models import Case, When, IntegerField
+import re
+
+
+def _safe_filename(name: str, extension: str = "") -> str:
+    """Strip/replace characters unsafe in HTTP Content-Disposition filenames."""
+    safe = re.sub(r'[^\w\s\-.]', '_', str(name)).strip()
+    safe = re.sub(r'\s+', '_', safe)
+    safe = safe[:100]
+    return f"{safe}{extension}" if extension else safe
+
 
 grade_conversion = {
     "O": 1.0, "A+": 1.0, "A": 0.9, "B+": 0.8, "B": 0.7,
@@ -78,21 +85,9 @@ def format_semester_display(semester_no, semester_type=None, semester_label=None
         return str(semester_no)
 
 def round_from_last_decimal(number, decimal_places=1):
+    """Round a number to `decimal_places` using ROUND_HALF_UP."""
     d = Decimal(str(number))
     return Decimal(d).quantize(Decimal('0.1'), rounding=ROUND_HALF_UP)
-    # d = Decimal(str(number))
-    # current_places = abs(d.as_tuple().exponent)
-
-    # # Keep rounding from the last decimal place until we reach the desired one
-    # while current_places > decimal_places:
-    #     quantize_str = '0.' + '0' * (current_places - 1) + '1'
-    #     d = d.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-    #     current_places -= 1
-
-    # # Final rounding to target place
-    # final_quantize = '0.' + '0' * (decimal_places - 1) + '1'
-    # return float(d.quantize(Decimal(final_quantize), rounding=ROUND_HALF_UP))
-    
 
 def calculate_spi_for_student(student, selected_semester, semester_type):
     semester_unit = Decimal('0')
@@ -217,8 +212,9 @@ def calculate_cpi_for_student(student, selected_semester, semester_type):
 def parse_academic_year(academic_year, semester_type):
     """
     Parse academic_year string (e.g., "2024-25") and determine the working_year based on semester type.
-    For Odd Semester, working_year = first part (e.g., 2024).
-    For Even Semester, working_year = second part prefixed by '20' (e.g., 2025 if academic_year is "2024-25").
+    For Odd Semester,  working_year = first part (e.g., 2024).
+    For Even/Summer, working_year = second part, expanded to 4 digits when only 2 are given
+                                     (e.g., "25" → 2025 for "2024-25").
     The session is set to the academic_year string.
     """
     parts = academic_year.split("-")
@@ -226,13 +222,16 @@ def parse_academic_year(academic_year, semester_type):
         raise ValueError("Invalid academic year format. Expected format like '2024-25'.")
     first_year = parts[0].strip()
     second_year = parts[1].strip()
+    if not first_year.isdigit() or not second_year.isdigit():
+        raise ValueError("Academic year parts must be numeric.")
     if semester_type == "Odd Semester":
         working_year = int(first_year)
-    elif semester_type == "Even Semester":
-        working_year = int("20" + second_year)
     else:
-        # For any other semester type (e.g., Summer Semester) use the first year by default.
-        working_year = int("20"+second_year)
+        if len(second_year) == 2:
+            century = (int(first_year) // 100) * 100
+            working_year = century + int(second_year)
+        else:
+            working_year = int(second_year)
     session = academic_year  # Use the complete academic year string as session.
     return working_year, session
 
@@ -430,9 +429,10 @@ def download_template(request):
         # Get course information from the first matched registration.
         course_obj = course_info.first().course_id
         response = HttpResponse(content_type="text/csv")
-        course_name_clean = course_obj.name.replace(' ', '_').replace('/', '-')[:50]
-        semester_type_clean = semester_type.replace(' ', '_')
-        filename = f"{course_name_clean}_{semester_type_clean}_{session_year}.csv"
+        filename = _safe_filename(
+            f"{course_obj.name}_{semester_type}_{session_year}",
+            extension=".csv"
+        )
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
         writer = csv.writer(response)
@@ -441,7 +441,10 @@ def download_template(request):
         # Write a CSV row for each student registration.
         for entry in course_info:
             student_entry = entry.student_id
-            student_user = User.objects.get(username=student_entry.id_id)
+            try:
+                student_user = User.objects.get(username=student_entry.id_id)
+            except User.DoesNotExist:
+                student_user = None
             branch_acronym = ""
             if student_entry.batch_id:
                 try:
@@ -454,9 +457,13 @@ def download_template(request):
             if entry.course_slot_id and entry.course_slot_id.semester:
                 semester_no = entry.course_slot_id.semester.semester_no
                 
+            full_name = (
+                f"{student_user.first_name} {student_user.last_name}".strip()
+                if student_user else student_entry.id_id
+            )
             writer.writerow([
                 student_entry.id_id,
-                f"{student_user.first_name} {student_user.last_name}",
+                full_name,
                 branch_acronym,
                 "",
                 "",
@@ -588,7 +595,6 @@ class SubmitGradesView(APIView):
         )
 
 
-from django.db import transaction
 class UploadGradesAPI(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
@@ -985,28 +991,42 @@ class ModerateStudentGradesAPI(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Update or create grades
-        for student_id, semester_id, course_id, grade,remark in zip(
-            student_ids, semester_ids, course_ids, grades,remarks
-        ):
+        for student_id, course_id, grade in zip(student_ids, course_ids, grades):
             try:
-                grade_of_student = Student_grades.objects.get(
-                    course_id=course_id, roll_no=student_id, semester=semester_id
+                course_obj = Courses.objects.get(id=course_id)
+            except Courses.DoesNotExist:
+                return Response(
+                    {"error": f"Course ID {course_id} does not exist."},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
-                grade_of_student.remarks=remark
-                grade_of_student.grade = grade
-                grade_of_student.verified = True
-                if allow_resubmission.upper() == "YES":
-                    grade_of_student.reSubmit = True
-                grade_of_student.save()
-            except Student_grades.DoesNotExist:
-                # Create a new hidden grade if the student grade doesn't exist
-                hidden_grades.objects.create(
-                    course_id=course_id,
-                    student_id=student_id,
-                    semester_id=semester_id,
-                    grade=grade,
+            if not is_valid_grade(grade, course_obj.code):
+                allowed_list = ", ".join(sorted(ALLOWED_GRADES))
+                return Response(
+                    {"error": f"Invalid grade '{grade}' for course '{course_obj.code}'. Allowed: {allowed_list}."},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
+
+        with transaction.atomic():
+            for student_id, semester_id, course_id, grade, remark in zip(
+                student_ids, semester_ids, course_ids, grades, remarks
+            ):
+                try:
+                    grade_of_student = Student_grades.objects.get(
+                        course_id=course_id, roll_no=student_id, semester=semester_id
+                    )
+                    grade_of_student.remarks = remark
+                    grade_of_student.grade = grade
+                    grade_of_student.verified = True
+                    if allow_resubmission.upper() == "YES":
+                        grade_of_student.reSubmit = True
+                    grade_of_student.save()
+                except Student_grades.DoesNotExist:
+                    hidden_grades.objects.create(
+                        course_id=course_id,
+                        student_id=student_id,
+                        semester_id=semester_id,
+                        grade=grade,
+                    )
 
         # Generate CSV file as the response
         response = HttpResponse(content_type="text/csv")
@@ -1075,8 +1095,10 @@ class GenerateTranscript(APIView):
             student = Student.objects.get(id_id=student_id)
             cpi, tu, _ = calculate_cpi_for_student(student, semester_number, semester_type)
             spi, su, _ = calculate_spi_for_student(student, semester_number, semester_type)
-        except:
-            return Response({"error": "Student ID does not exist."}, status=status.HTTP_400_BAD_REQUEST)
+        except Student.DoesNotExist:
+            return Response({"error": "Student ID does not exist."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": f"Error computing grades: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         course_grades = {}
         courses_registered = Student_grades.objects.filter(roll_no=student_id, semester=semester_number, semester_type = semester_type)
@@ -1411,7 +1433,7 @@ class GenerateResultAPI(APIView):
                 try:
                     student_user = User.objects.get(username=student.id_id)
                     student_name = f"{student_user.first_name} {student_user.last_name}".strip() or student_user.username
-                except:
+                except Exception:
                     student_name = student.id_id
 
                 ws.cell(row=row_idx, column=3).value = student_name
@@ -1946,10 +1968,10 @@ class UploadGradesProfAPI(APIView):
                             continue
 
                     # c) VALID GRADE?
-                    if grade not in ALLOWED_GRADES:
+                    if not is_valid_grade(grade, course.code):
                         allowed = ", ".join(sorted(ALLOWED_GRADES))
                         errors.append(
-                            f"Row {idx}: Invalid grade '{grade}'. Allowed: {allowed}."
+                            f"Row {idx}: Invalid grade '{grade}' for course '{course.code}'. Allowed: {allowed}."
                         )
                         continue
 
@@ -2145,7 +2167,7 @@ class GeneratePDFAPI(APIView):
 
             # prepare PDF response
             response = HttpResponse(content_type="application/pdf")
-            response["Content-Disposition"] = f'attachment; filename="{course_info.code}_grades.pdf"'
+            response["Content-Disposition"] = f'attachment; filename="{_safe_filename(course_info.code)}_grades.pdf"'
 
             # Create PDF metadata to fix "(anonymous)" title issue
             pdf_title = f"Course Grades - {course_info.code} - {course_info.name}"
@@ -2470,13 +2492,14 @@ class GeneratePDFAPI(APIView):
             
             response = HttpResponse(pdf_data, content_type='application/pdf')
             # Create filename with formatted semester for clarity
-            semester_suffix = formatted_semester.replace(' ', '_').replace(':', '').lower() 
-            filename = f"result_{student_info.get('rollNumber', student_info.get('roll_number', 'student'))}_{semester_suffix}.pdf"
+            semester_suffix = re.sub(r'\s+', '_', formatted_semester.replace(':', '')).lower()
+            roll = student_info.get('rollNumber', student_info.get('roll_number', 'student'))
+            filename = _safe_filename(f"result_{roll}_{semester_suffix}", extension=".pdf")
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             response['Content-Length'] = len(pdf_data)
-            
+
             return response
-            
+
         except Exception as e:
             return JsonResponse({'error': f'PDF generation failed: {str(e)}'}, status=500)
 
@@ -3700,7 +3723,8 @@ class GenerateStudentResultPDFAPI(APIView):
             
             # Choose prefix based on document type
             prefix = "transcript_" if is_transcript else "result_"
-            filename = f"{prefix}{student_info.get('rollNumber', student_info.get('roll_number', 'student'))}_{semester_suffix}.pdf"
+            roll = student_info.get('rollNumber', student_info.get('roll_number', 'student'))
+            filename = _safe_filename(f"{prefix}{roll}_{semester_suffix}", extension=".pdf")
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             response['Content-Length'] = len(pdf_data)
             
@@ -3747,13 +3771,8 @@ class GenerateGradeSheetData(APIView):
 
         course_grades = {}
         courses_registered = Student_grades.objects.filter(
-            roll_no=student_id, semester=semester_number, semester_type=semester_type
+            roll_no=student_id, semester=semester_number, semester_type=semester_type,
         ).select_related('course_id')
-
-        if not courses_registered.exists():
-            courses_registered = Student_grades.objects.filter(
-                roll_no=student_id, semester=semester_number
-            ).select_related('course_id')
 
         academic_year = None
         if courses_registered.exists():
@@ -3765,6 +3784,7 @@ class GenerateGradeSheetData(APIView):
             student_regs = course_registration.objects.filter(
                 student_id=student,
                 semester_id__semester_no=semester_number,
+                semester_type=semester_type,
             ).select_related('course_id')
 
             substituted_ids = set(
