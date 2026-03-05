@@ -3787,17 +3787,28 @@ class GenerateGradeSheetData(APIView):
                 semester_type=semester_type,
             ).select_related('course_id')
 
-            substituted_ids = set(
+            swayam_reg_ids = set(
                 course_replacement.objects.filter(
                     new_course_registration__in=student_regs
                 ).values_list('new_course_registration_id', flat=True)
             )
 
+            prev_graded_course_ids = set(
+                Student_grades.objects.filter(
+                    roll_no=student_id,
+                    semester__lt=semester_number,
+                )
+                .exclude(grade__isnull=True)
+                .exclude(grade='')
+                .values_list('course_id', flat=True)
+            )
+
             for creg in student_regs:
                 cid = creg.course_id.id
-                if creg.id in substituted_ids:
+                course_code = (creg.course_id.code or '').upper()
+                if creg.id in swayam_reg_ids and course_code.startswith('SW'):
                     course_reg_map[cid] = 'S'
-                elif creg.registration_type in ('Backlog', 'Improvement'):
+                elif cid in prev_graded_course_ids:
                     course_reg_map[cid] = 'R'
         except Exception:
             pass
