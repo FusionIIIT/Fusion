@@ -2721,7 +2721,7 @@ def swayam_replace_check(request):
                 "has_existing": True,
                 "has_pending_request": False,
                 "is_current_semester": True,
-                "single_slot_allowed": False,
+                "single_slot_allowed": True,
                 "existing_course": {
                     "id": existing_sw.course_id.id,
                     "code": existing_sw.course_id.code,
@@ -3119,7 +3119,7 @@ def swayam_replace_submit(request):
                 "error": "You must select two different new slots."
             }, status=400)
 
-        if not new_course_2:
+        if not new_course_2 and not is_current_semester:
             return JsonResponse({
                 "error": "Both slots are required. You must select two new Swayam courses for the replacement request."
             }, status=400)
