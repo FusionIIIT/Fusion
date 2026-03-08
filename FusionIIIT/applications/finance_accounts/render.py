@@ -10,6 +10,7 @@ class Render:
     def render(path: str, params: dict):
         template = get_template(path)
         html = template.render(params)
+        # hello this is my new commit
 
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = 'attachment; filename="salary.pdf"'
