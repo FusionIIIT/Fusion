@@ -1,4 +1,5 @@
 from Fusion.settings.common import *
+import os
 
 DEBUG = True
 TEMPLATE_DEBUG = True 
@@ -16,6 +17,8 @@ DATABASES = {
     }
 }
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

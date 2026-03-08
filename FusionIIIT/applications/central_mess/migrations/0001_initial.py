@@ -149,17 +149,17 @@ class Migration(migrations.Migration):
                 ('student_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='academic_information.student')),
             ],
         ),
-        migrations.CreateModel(
-            name='Payments',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('amount_paid', models.IntegerField(default=0)),
-                ('payment_month', models.CharField(default=applications.central_mess.models.current_month, max_length=20)),
-                ('payment_year', models.IntegerField(default=applications.central_mess.models.current_year)),
-                ('payment_date', models.DateField(default=datetime.date(2024, 6, 19))),
-                ('student_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='academic_information.student')),
-            ],
-        ),
+        # migrations.CreateModel(
+        #     name='Payments',
+        #     fields=[
+        #         ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+        #         ('amount_paid', models.IntegerField(default=0)),
+        #         ('payment_month', models.CharField(default=applications.central_mess.models.current_month, max_length=20)),
+        #         ('payment_year', models.IntegerField(default=applications.central_mess.models.current_year)),
+        #         ('payment_date', models.DateField(default=datetime.date(2024, 6, 19))),
+        #         ('student_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='academic_information.student')),
+        #     ],
+        # ),
         migrations.CreateModel(
             name='Mess_minutes',
             fields=[
