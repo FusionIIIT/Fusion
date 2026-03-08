@@ -199,7 +199,11 @@
                         <div class="field">
                             <label>Forward To:
 
-                                    <input type ="search" id="input_search" list = "input_list" name = "receiver">
+                                    <select name="receiver" id="forward_to">
+                                        {% for option in forwardto %}
+                                        <option value="{{ option.username }}">{{ option.username }}</option>
+                                        {% endfor %}
+                                    </select>
                                     <datalist  id="input_list">
 
                                     </datalist>
@@ -209,10 +213,9 @@
 
                             <div class="field">
                             <label>Receiver Designation:
-                                <input type ="search" id="input_search1" list = "input_list1" name = "recieve">
-                                    <datalist  id="input_list1">
-
-                                    </datalist>
+                                <select name="receive" id="receiver_design">
+                                    <option value="{{ receiver }}">{{ receiver }}</option>
+                                </select>
 
 
                                
