@@ -24,42 +24,20 @@
 
                 <div class="fields">
 
-                    <div class="eight wide field">
-                        <label>Workers Type<sup><i class="small red asterisk icon"></i></sup></label>
+                    <div class="eight wide field" >
+                        <label>Worker Type<sup><i class="small red asterisk icon"></i></sup></label>
                         <!-- selection drop down list -->
-                        <div class="ui selection dropdown">
-                            <input name="complaint_type" type="hidden" required="True">
-                            <i class="dropdown icon"></i>
 
-                            <div class="default text">Select Worker Type</div>
-
-                            <div class="menu" >
-                                <div class="item" data-value="Electricity" >
-                                    Electricity
-                                </div>
-
-                                <div class="item" data-value="carpenter" >
-                                    Carpenter
-                                </div>
-
-                                <div class="item" data-value="plumber">
-                                    Plumber
-                                </div>
-                                <div class="item" data-value="garbage" >
-                                    Garbage
-                                </div>
-                                <div class="item" data-value="dustbin" >
-                                    Dustbin
-                                </div>
-                                <div class="item" data-value="internet" >
-                                    Internet
-                                </div>
-                                <div class="item" data-value="other" >
-                                    Other
-                                </div>
-                            </div>
-
-                        </div>
+                        <select name="complaint_type" class="ui dropdown" required="True">
+                            <option selected disabled value="">Select Worker Type</option>
+                            <option data-value="Electricity" value="Electricity">Electricity</option>
+                            <option data-value="carpenter" value="carpenter">Carpenter</option>
+                            <option data-value="plumber" value="plumber">Plumber</option>
+                            <option data-value="garbage" value="garbage">Garbage</option>
+                            <option data-value="dustbin" value="dustbin">Dustbin</option>
+                            <option data-value="internet" value="internet">Internet</option>
+                            <option data-value="other" value="other">Other</option>
+                        </select>
                     </div>
 
             </div>
@@ -78,7 +56,7 @@
                 </div>
                 <div class="field">
                     <label>AGE <sup><i class="small red asterisk icon"></i></sup> </label>
-                    <input type="number" rows="1" name="age" required="True"></input>
+                    <input type="number" rows="1" name="age" required="True" PLACEHOLDER="AGE"></input>
                 </div>
 
 

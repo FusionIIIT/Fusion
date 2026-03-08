@@ -103,19 +103,26 @@ Complaint
                                 <br>
                                 {% if num == 1 %}
                                 <div class="eight wide field">
-                                    <h3><label><b>View Image :</b></label>
-                                        <a href="/media/{{detail2.upload_complaint}}" class="header" target="_"><i
-                                                class="extra large image outline icon"></i></a>
+                                    <h3><label><b>View Complainer Image :</b></label>
+                                        <a href="/media/{{detail2.upload_complaint}}" class="header" target="_"><i class="extra large image outline icon"></i></a>
                                     </h3>
                                 </div>
                                 {% else%}
                                 <div class="eight wide field">
-                                    <h3><label><b>View Image : No Image available</b></label>
-
-                                    </h3>
+                                    <h3><label><b>View Complainer Image : No Image available</b></label></h3>
                                 </div>
                                 {% endif %}
-
+                                {% if num2 == 1 %}
+                                <div class="eight wide field">
+                                    <h3><label><b>View Caretaker Image :</b></label>
+                                        <a href="/media/{{detail2.upload_resolved}}" class="header" target="_"><i class="extra large image outline icon"></i></a>
+                                    </h3>
+                                </div>
+                                {% else%}
+                                <div class="eight wide field">
+                                    <h3><label><b>View Caretaker Image : No Image available</b></label></h3>
+                                </div>
+                                {% endif %}
 
                             </div>
                         </div>
