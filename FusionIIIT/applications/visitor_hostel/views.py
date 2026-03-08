@@ -21,6 +21,7 @@ from applications.globals.models import *
 from applications.visitor_hostel.forms import *
 from applications.visitor_hostel.models import *
 from applications.complaint_system.models import Caretaker
+
 # from notification.views import visitor_hostel_caretaker_notif
 import numpy as np
 from django.contrib.auth.models import User
@@ -348,7 +349,6 @@ def request_booking(request):
         print(sys.getsizeof(booking_from))
         print(sys.getsizeof(purpose_of_visit))
         print(sys.getsizeof(bill_to_be_settled_by))
-
         care_taker = HoldsDesignation.objects.select_related('user','working','designation').filter(designation__name = "VhCaretaker")
         care_taker = care_taker[1]
         care_taker = care_taker.user
@@ -365,6 +365,7 @@ def request_booking(request):
                                                      #remark=remarks_during_booking_request,
                                                      number_of_rooms=number_of_rooms,
                                                      bill_to_be_settled_by=bill_to_be_settled_by)
+
         # visitor_hostel_caretaker_notif(request.user,care_taker,"Submitted")
         # print (bookingObject)
         # print("Hello")

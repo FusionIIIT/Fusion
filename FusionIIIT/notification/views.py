@@ -129,13 +129,12 @@ def healthcare_center_notif(sender, recipient, type):
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
-
-def file_tracking_notif(sender, recipient,title):
-    url='filetracking:inward'
+def file_tracking_notif(sender, recipient, type):
+    url=''
     module='File Tracking'
     sender = sender
     recipient = recipient
-    verb = title
+    verb = ''
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
@@ -365,9 +364,21 @@ def office_module_DeanRSPC_notif(sender, recipient, type):
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
+def visitor_hostel_caretaker_notif(sender, recipient, type):
+    url='visitor_hostel:visitorhostel'
+    module='Visitor Hostel Module'
+    sender = sender
+    recipient = recipient
+    verb = ""
+
+    if type == 'Submitted':
+        verb = "A new request is submitted"
+
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
+
 
 def research_procedures_notif(sender,recipient,type):
-    url = 'research_procedures:patent_registration'
+    url = 'research_procedures:IPR'
     module = 'Research Procedures'
     sender = sender
     recipient = recipient
