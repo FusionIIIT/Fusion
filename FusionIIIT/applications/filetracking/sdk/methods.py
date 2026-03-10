@@ -1,23 +1,24 @@
 from amqp import NotFound
 from django.contrib.auth.models import User
 from applications.filetracking.models import Tracking, File
-from applications.globals.models import Designation, HoldsDesignation, ExtraInfo
+from applications.globals.models import Designation, HoldsDesignation, ExtraInfo, DepartmentInfo
 from applications.filetracking.api.serializers import FileSerializer, FileHeaderSerializer, TrackingSerializer
 from django.core.exceptions import ValidationError
 from typing import Any
 
 
 def create_file(
-        uploader: str,
         uploader_designation: str,
         receiver: str,
         receiver_designation: str,
-        subject: str = "", 
-        description: str = "", 
-        src_module: str = "filetracking",
-        src_object_id: str = "",
+        src_module: str = "",
         file_extra_JSON: dict = {},
-        attached_file: Any = None) -> int:
+        uploader: str = "",
+        subject: str = "",
+        description: str = "",
+        src_object_id: str = "",
+        attached_file: Any = None,
+        remarks: str = "") -> int:
     '''
     This function is used to create a file object corresponding to any object of a module that needs to be tracked
     '''
@@ -29,7 +30,7 @@ def create_file(
     if both complete then return id of file
     else raise error
 
-    also, delete file object if tracking isnt created
+    also, delete file object if tracking isn't created
     '''
     uploader_user_obj = get_user_object_from_username(uploader)
     uploader_extrainfo_obj = get_ExtraInfo_object_from_username(uploader)
@@ -41,18 +42,16 @@ def create_file(
 
     new_file = File.objects.create(
         uploader=uploader_extrainfo_obj,
-        subject=subject, 
+        subject=subject,
         description=description,
         designation=uploader_designation_obj,
         src_module=src_module,
         src_object_id=src_object_id,
         file_extra_JSON=file_extra_JSON,
     )
-    
 
-    if attached_file is not None: 
+    if attached_file is not None:
         new_file.upload_file.save(attached_file.name, attached_file, save=True)
-
     uploader_holdsdesignation_obj = HoldsDesignation.objects.get(
         user=uploader_user_obj, designation=uploader_designation_obj)
 
@@ -63,7 +62,7 @@ def create_file(
         receiver_id=receiver_obj,
         receive_design=receiver_designation_obj,
         tracking_extra_JSON=file_extra_JSON,
-        remarks=f"File with id:{str(new_file.id)} created by {uploader} and sent to {receiver}"
+        remarks=remarks,
         # upload_file = None, dont add file for first tracking
     )
     if new_tracking is None:
@@ -81,9 +80,17 @@ def view_file(file_id: int) -> dict:
         requested_file = File.objects.get(id=file_id)
         serializer = FileSerializer(requested_file)
         file_details = serializer.data
+        non_basic_dept_id = Designation.objects.get(id=file_details['designation']).dept_if_not_basic_id
+        if non_basic_dept_id is not None:
+            file_details['branch'] = DepartmentInfo.objects.get(id=non_basic_dept_id).name
+        else:
+            file_details['branch'] = User.objects.get(username = file_details['uploader']).extrainfo.department.name
+        file_details['uploader_designation'] = Designation.objects.get(id=file_details['designation']).name
         return file_details
     except File.DoesNotExist:
         raise NotFound("File Not Found with provided ID")
+    except Exception as e:
+        print(e)
 
 
 def delete_file(file_id: int) -> bool:
@@ -108,7 +115,7 @@ def view_inbox(username: str, designation: str, src_module: str) -> list:
         receiver_id=recipient_object,
         receive_design=user_designation,
         file_id__src_module=src_module,
-        file_id__is_read=False).order_by('-receive_date');
+        file_id__is_read=False).order_by('-receive_date')
     received_files = [tracking.file_id for tracking in received_files_tracking]
 
     # remove duplicate file ids (from sending back and forth)
@@ -120,7 +127,16 @@ def view_inbox(username: str, designation: str, src_module: str) -> list:
     for file in received_files_serialized: 
         file['sent_by_user'] = get_last_file_sender(file['id']).username
         file['sent_by_designation'] = get_last_file_sender_designation(file['id']).name
-    return received_files_serialized
+        non_basic_dept_id = Designation.objects.get(id=file['designation']).dept_if_not_basic_id
+        if non_basic_dept_id is not None:
+            file['branch'] = DepartmentInfo.objects.get(id=non_basic_dept_id).name
+        else:
+            file['branch'] = User.objects.get(username = file['uploader']).extrainfo.department.name
+        file['uploader_designation'] = Designation.objects.get(id=file['designation']).name
+    filtered_files = [
+        file for file in received_files_serialized if get_current_file_owner(file['id']).username == username
+    ]
+    return filtered_files
 
 
 def view_outbox(username: str, designation: str, src_module: str) -> list:
@@ -142,8 +158,22 @@ def view_outbox(username: str, designation: str, src_module: str) -> list:
     # remove duplicate file ids (from sending back and forth)
     sent_files_unique = uniqueList(sent_files)
 
-    sent_files_serialized = FileHeaderSerializer(sent_files_unique, many=True)
-    return sent_files_serialized.data
+    sent_files_serialized = list(FileHeaderSerializer(
+        sent_files_unique, many=True).data)
+    for file in sent_files_serialized:
+        non_basic_dept_id = Designation.objects.get(id=file['designation']).dept_if_not_basic_id
+        if non_basic_dept_id is not None:
+            file['branch'] = DepartmentInfo.objects.get(id=non_basic_dept_id).name
+        else:
+            file['branch'] = User.objects.get(username = file['uploader']).extrainfo.department.name
+        file['receiver'] = get_current_file_owner(file['id']).username
+        file['receiver_designation'] = get_current_file_owner_designation(file['id']).name
+        file['uploader_designation'] = Designation.objects.get(id=file['designation']).name
+
+    filtered_files = [
+        file for file in sent_files_serialized if get_current_file_owner(file['id']).username != username
+    ]
+    return filtered_files
 
 
 
@@ -174,8 +204,14 @@ def view_archived(username: str, designation: str, src_module: str) -> dict:
 
     # remove duplicate file ids (from sending back and forth)
     archived_files_unique = uniqueList(archived_files)
-
     archived_files_serialized = FileHeaderSerializer(archived_files_unique, many=True)
+    for file in archived_files_serialized.data:
+        non_basic_dept_id = Designation.objects.get(id=file['designation']).dept_if_not_basic_id
+        if non_basic_dept_id is not None:
+            file['branch'] = DepartmentInfo.objects.get(id=non_basic_dept_id).name
+        else:
+            file['branch'] = User.objects.get(username = file['uploader']).extrainfo.department.name
+        file['uploader_designation'] = Designation.objects.get(id=file['designation']).name
     return archived_files_serialized.data
 
 
@@ -205,7 +241,7 @@ def unarchive_file(file_id: int) -> bool:
 def create_draft(
         uploader: str,
         uploader_designation: str,
-        src_module: str = "filetracking",
+        src_module: str = "",
         src_object_id: str = "",
         file_extra_JSON: dict = {},
         attached_file: Any = None) -> int:
@@ -214,10 +250,12 @@ def create_draft(
     It is similar to create_file but is not sent to anyone
     Later this file can be sent to someone by forward_file by using draft file_id
     '''
+    uploader_user_obj = get_user_object_from_username(uploader)
     uploader_extrainfo_obj = get_ExtraInfo_object_from_username(uploader)
     uploader_designation_obj = Designation.objects.get(
         name=uploader_designation)
-
+    if file_extra_JSON is None:
+        file_extra_JSON = {}
     new_file = File.objects.create(
         uploader=uploader_extrainfo_obj,
         designation=uploader_designation_obj,
@@ -246,7 +284,7 @@ def forward_file(
         file_id: int,
         receiver: str,
         receiver_designation: str,
-        file_extra_JSON: dict,
+        file_extra_JSON: dict = {}, #optional
         remarks: str = "",
         file_attachment: Any = None) -> int:
     '''
@@ -280,6 +318,8 @@ def forward_file(
     if tracking_entry.is_valid():
         tracking_entry.save()
         return tracking_entry.instance.id
+    elif len(remarks) > 1000:
+        raise(ValidationError('Remarks are too long'))
     else:
         raise ValidationError('forward data is incomplete')
 
