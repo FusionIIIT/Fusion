@@ -1,5 +1,5 @@
 from rest_framework import serializers #type:ignore
-from applications.ps1.models import IndentFile, File ,StockEntry,StockItem,StockTransfer
+from applications.ps1.models import IndentFile, File ,StockEntry,StockItem,StockTransfer,IndentItem
 from applications.globals.models import ExtraInfo, HoldsDesignation
 from applications.filetracking.models import Tracking
 
@@ -8,10 +8,24 @@ class FileSerializer(serializers.ModelSerializer):
         model = File
         fields = '__all__'
 
+# class IndentFileSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = IndentFile
+#         fields = '__all__'
+
+# arun__________start______
+class IndentItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IndentItem
+        fields = '__all__'
+
 class IndentFileSerializer(serializers.ModelSerializer):
+    items = IndentItemSerializer(many=True, read_only=True)  # Nested serializer for related items
+
     class Meta:
         model = IndentFile
         fields = '__all__'
+# arun__________end______
 
 class ExtraInfoSerializer(serializers.ModelSerializer):
     class Meta:
