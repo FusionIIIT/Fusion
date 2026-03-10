@@ -4,7 +4,14 @@ from rest_framework import serializers
 from applications.placement_cell.models import (Achievement, Course, Education,
                                                 Experience, Has, Patent,
                                                 Project, Publication, Skill,
-                                                PlacementStatus, NotifyStudent)
+                                                PlacementStatus, NotifyStudent , PlacementSchedule)
+
+
+class PlacementScheduleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PlacementSchedule
+        fields = '__all__'
+
 
 class SkillSerializer(serializers.ModelSerializer):
 
