@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 from rest_framework import serializers
 from notifications.models import Notification
-from applications.complaint_system.models import Caretaker, StudentComplain, Supervisor, Workers
+from applications.complaint_system.models import Caretaker, StudentComplain, ServiceProvider, Workers
 from applications.globals.models import ExtraInfo,User
 
 class StudentComplainSerializers(serializers.ModelSerializer):
@@ -21,9 +21,9 @@ class CaretakerSerializers(serializers.ModelSerializer):
         model = Caretaker
         fields=('__all__')
 
-class SupervisorSerializers(serializers.ModelSerializer):
+class ServiceProviderSerializers(serializers.ModelSerializer):
     class Meta:
-        model=Supervisor
+        model=ServiceProvider
         fields=('__all__')
 
 class ExtraInfoSerializers(serializers.ModelSerializer):

@@ -21,9 +21,9 @@ urlpatterns = [
     url(r'^removecaretaker/(?P<c_id>[0-9]+)',views.edit_caretaker_api,name='caretaker-delete-api'),
     url(r'^updatecaretaker/(?P<c_id>[0-9]+)',views.edit_caretaker_api,name='caretaker-put-api'),
     
-    url(r'^supervisors',views.supervisor_api,name='supervisor-get-api'),
-    url(r'^addsupervisor',views.supervisor_api,name='supervisor-post-api'),
-    url(r'^removesupervisor/(?P<s_id>[0-9]+)',views.edit_supervisor_api,name='supervisor-delete-api'),
-    url(r'^updatesupervisor/(?P<s_id>[0-9]+)',views.edit_supervisor_api,name='supervisor-put-api'),
+    url(r'^service_providers',views.service_provider_api,name='service_provider-get-api'),
+    url(r'^addservice_provider',views.service_provider_api,name='service_provider-post-api'),
+    url(r'^removeservice_provider/(?P<s_id>[0-9]+)',views.edit_service_provider_api,name='service_provider-delete-api'),
+    url(r'^updateservice_provider/(?P<s_id>[0-9]+)',views.edit_service_provider_api,name='service_provider-put-api'),
     
 ]

@@ -130,7 +130,7 @@ $(document).ready(function(){
 
                     // alert("Complaint successfully lodged");
                     setTimeout(function() {
-                window.location.replace('http://localhost:8000/complaint/supervisor');
+                window.location.replace('http://localhost:8000/complaint/service_provider');
             }, 1500);
 
                     
