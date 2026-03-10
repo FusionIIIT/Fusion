@@ -283,7 +283,7 @@ class Feedback(models.Model):
 class Registration_Request(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     Txn_no =models.CharField(max_length=20)
-    img = models.ImageField(upload_to='images/',default=None)
+    img = models.ImageField(upload_to='mess/images/registration_request/%Y/%m/%d/',default=None)
     amount=models.IntegerField(default=0)
     status=models.CharField(max_length=10,default='pending')
     registration_remark=models.CharField(max_length=50,default='NA')
