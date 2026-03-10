@@ -23,7 +23,7 @@ def copy_data():
             programme=student_instance.programme,
             batch=student_instance.batch,
             room_num=student_instance.room_no,
-            hall_no=student_instance.hall_no,
+            hall_id=student_instance.hall_id,
             specialization=student_instance.specialization,
             # parent_contact=student_instance.parent_contact,
             # address=student_instance.address
