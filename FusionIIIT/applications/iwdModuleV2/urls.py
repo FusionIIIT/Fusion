@@ -1,40 +1,37 @@
-from django.conf.urls import url
-
+from django.urls import path, include
 from . import views
 
-app_name = 'iwdModuleV2'
+app_name = "iwdModuleV2"
 
 urlpatterns = [
 
+    # Dashboard
+    path("", views.dashboard, name="dashboard"),
 
-    url(r'^$', views.dashboard, name='IWD Dashboard'),
-    url(r'^page1_1/$', views.page1_1, name='IWD Page1.1'),
-    url(r'page2_1/$', views.page2_1, name='IWD Page2.1'),
-    url(r'corrigendumInput/$', views.corrigendumInput, name='Corrigendum Input'),
-    url(r'addendumInput/$', views.addendumInput, name='Addendum Input'),
-    url(r'milestoneForm/$', views.milestonesForm, name='Milestone Form'),
-    url(r'technicalBidForm/$', views.TechnicalBidForm, name='Technical Bid Form'),
-    url(r'extensionForm/$', views.ExtensionOfTimeForm, name='Extension Form'),
-    url(r'letterOfIntent/$', views.letterOfIntent, name='Letter Of Intent Input'),
-    url(r'workOrderForm/$', views.workOrderForm, name='Work Order Form'),
-    url(r'agreement/$', views.AgreementInput, name='Agreement Input'),
-    url(r'page3_1/$', views.page3_1, name='IWD Page 3.1'),
-    url(r'noOfEntriesTechnicalBid/$', views.noOfEntriesTechnicalBid, name='IWD Technical Bid'),
-    url(r'noOfEntriesFinancialBid/$', views.noOfEntriesFinancialBid, name='IWD Financial Bid'),
-    url(r'page1View/$', views.page1View, name='Page 1 Views'),
-    url(r'page2View/$', views.page2View, name='Page 2 View'),
-    url(r'page3View/$', views.page3View, name='Page 3 View'),
-    url(r'extensionFormView/$', views.extensionFormView, name='Extension Form'),
-    url(r'AESView/$', views.AESView, name='AES View'),
-    url(r'financialBidView/$', views.financialBidView, name='Financial Bid View'),
-    url(r'preBidForm/$', views.PreBidForm, name='Pre Bid Form'),
-    url(r'AESForm/$', views.AESForm, name='AESForm'),
-    url('workOrderFormView/$', views.workOrderFormView, name='Work Order Form View'),
-    url(r'letterOfIntentView', views.letterOfIntentView, name='Letter Of Intent View'),
-    url(r'preBidDetailsView/$', views.preBidDetailsView, name='Pre Bid Details View'),
-    url(r'technicalBidView/$', views.technicalBidView, name='Technical Bid View'),
-    url(r'milestoneView/$', views.milestoneView, name='Milestones'),
-    url(r'addendumView/$', views.addendumView, name='Addendum View'),
-    url('agreementView/$', views.agreementView, name='Agreement VIew'),
-    url(r'corrigendumView/$', views.corrigendumView, name='Corrigendum View')
+    # API Versioning
+    path("api/v1/iwd/", include("applications.iwdModuleV2.api.urls")),
+
+    # Web views
+    path("requests/", views.requestsView, name="requests"),
+    path("created-requests/", views.createdRequests, name="created-requests"),
+
+    path("engineer-processed-requests/", views.engineerProcessedRequests, name="engineer-processed-requests"),
+    path("dean-processed-requests/", views.deanProcessedRequests, name="dean-processed-requests"),
+
+    path("rejected-requests/", views.rejectedRequests, name="rejected-requests"),
+
+    path("requests-status/", views.requestsStatus, name="requests-status"),
+
+    path("work-orders/", views.workOrder, name="work-orders"),
+    path("issue-work-order/", views.issueWorkOrder, name="issue-work-order"),
+
+    path("requests-in-progress/", views.requestsInProgess, name="requests-in-progress"),
+    path("work-completed/", views.workCompleted, name="work-completed"),
+
+    path("budget/", views.budget, name="budget"),
+    path("budget/view/", views.viewBudget, name="view-budget"),
+    path("budget/add/", views.addBudget, name="add-budget"),
+    path("budget/edit/", views.editBudget, name="edit-budget"),
+
+    path("files/<int:id>/<str:url>/", views.view_file, name="view-file"),
 ]
