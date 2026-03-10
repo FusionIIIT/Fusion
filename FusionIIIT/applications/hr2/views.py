@@ -1,2514 +1,2320 @@
 import json
+import logging
 from django.shortcuts import render, get_object_or_404
 from .models import *
 from applications.globals.models import ExtraInfo
 from applications.globals.models import *
 from django.db.models import Q
 from django.http import Http404
-from .forms import EditDetailsForm, EditConfidentialDetailsForm, EditServiceBookForm, NewUserForm, AddExtraInfo
+# from .forms import EditDetailsForm, EditConfidentialDetailsForm, EditServiceBookForm, NewUserForm, AddExtraInfo
 from django.contrib import messages
 from applications.eis.models import *
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, JsonResponse
 from applications.establishment.models import *
 from applications.establishment.views import *
 from applications.eis.models import *
-from applications.globals.models import ExtraInfo, HoldsDesignation, DepartmentInfo, Designation
-
-from html import escape
-from io import BytesIO
-import re
-from rest_framework import status
-from decimal import Decimal
-
-
-from django.contrib.auth.models import User
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import (get_object_or_404, redirect, render,
-                              render)
-from django.http import JsonResponse
+from applications.globals.models import ExtraInfo, HoldsDesignation, DepartmentInfo, Designation, ModuleAccess
+from django.views.decorators.http import require_http_methods
+from rest_framework.decorators import api_view, permission_classes,authentication_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+from decimal import Decimal, InvalidOperation
+from datetime import datetime, timedelta
+from .models import LeaveBalance, LeavePerYear, EmpConfidentialDetails , Employee, LeaveForm
+from applications.globals.models import ExtraInfo
 from applications.filetracking.sdk.methods import *
-from django.core.files.base import File as DjangoFile
-from django.views.decorators.csrf import csrf_exempt
+
+# Configure a logger for your module
+logger = logging.getLogger(__name__)
 
 
-def edit_employee_details(request, id):
-    """ Views for edit details"""
-    template = 'hr2Module/editDetails.html'
 
-    try:
-        employee = ExtraInfo.objects.get(user__id=id)
-    except:
-        raise Http404("Post does not exist")
-
-    if request.method == "POST":
-        for e in request.POST:
-            print(e)
-        print('--------------')
-        form = EditDetailsForm(request.POST)
-        conf_form = EditConfidentialDetailsForm(request.POST, request.FILES)
-        print("f1", form.is_valid())
-        print("f2", conf_form.is_valid())
-        if form.is_valid() and conf_form.is_valid():
-            form.save()
-            conf_form.save()
-            try:
-                ee = ExtraInfo.objects.get(pk=id)
-                ee.user_status = "PRESENT"
-                ee.save()
-
-            except:
-                pass
-            messages.success(request, "Employee details edited successfully")
-        else:
-            messages.warning(request, "Error in submitting form")
-            pass
-    else:
-        print("Failed")
-
-    form = EditDetailsForm(initial={'extra_info': employee.id})
-    conf_form = EditConfidentialDetailsForm(initial={'extra_info': employee})
-    context = {'form': form, 'confForm': conf_form, 'employee': employee}
-
-    return render(request, template, context)
-
-
-def hr_admin(request):
-    """ Views for HR2 Admin page """
-
-    user = request.user
-    # extra_info = ExtraInfo.objects.select_related().get(user=user)
-    designat = HoldsDesignation.objects.select_related().get(user=user)
-    print(designat)
-    if designat.designation.name == 'hradmin':
-        template = 'hr2Module/hradmin.html'
-        # searched employee
-        query = request.GET.get('search')
-        if(request.method == "GET"):
-            if(query != None):
-                emp = ExtraInfo.objects.filter(
-                    Q(user__first_name__icontains=query) |
-                    Q(user__last_name__icontains=query) |
-                    Q(id__icontains=query)
-                ).distinct()
-                emp = emp.filter(user_type="faculty")
-            else:
-                emp = ExtraInfo.objects.all()
-                emp = emp.filter(user_type="faculty")
-        else:
-            emp = ExtraInfo.objects.all()
-            emp = emp.filter(user_type="faculty")
-        empPresent = emp.filter(user_status="PRESENT")
-        empNew = emp.filter(user_status="NEW")
-        context = {'emps': emp, "empPresent": empPresent, "empNew": empNew}
-        print(context)
-        return render(request, template, context)
-    else:
-        return HttpResponse('Unauthorized', status=401)
-
-
-def service_book(request):
+def check_hr_access(request):
     """
-    Views for service book page
+    Check if the authenticated user has HR module access.
+    Returns:
+        - True if the user has HR access.
+        - False if the user does not have HR access or an error occurs.
     """
     user = request.user
-    extra_info = ExtraInfo.objects.select_related().get(user=user)
 
-    lien_service_book = ForeignService.objects.filter(
-        extra_info=extra_info).filter(service_type="LIEN").order_by('-start_date')
-    deputation_service_book = ForeignService.objects.filter(
-        extra_info=extra_info).filter(service_type="DEPUTATION").order_by('-start_date')
-    other_service_book = ForeignService.objects.filter(
-        extra_info=extra_info).filter(service_type="OTHER").order_by('-start_date')
-    appraisal_form = EmpAppraisalForm.objects.filter(
-        extra_info=extra_info).order_by('-year')
-    pf = extra_info.id
-    workAssignemnt = WorkAssignemnt.objects.filter(
-        extra_info_id=pf).order_by('-start_date')
-
-    empprojects = emp_research_projects.objects.filter(
-        pf_no=pf).order_by('-start_date')
-    visits = emp_visits.objects.filter(pf_no=pf).order_by('-entry_date')
-    conferences = emp_confrence_organised.objects.filter(
-        pf_no=pf).order_by('-date_entry')
-    template = 'hr2Module/servicebook.html'
-    awards = emp_achievement.objects.filter(pf_no=pf).order_by('-date_entry')
-    thesis = emp_mtechphd_thesis.objects.filter(
-        pf_no=pf).order_by('-date_entry')
-    context = {'lienServiceBooks': lien_service_book, 'deputationServiceBooks': deputation_service_book, 'otherServiceBooks': other_service_book,
-               'appraisalForm': appraisal_form,
-               'empproject': empprojects,
-               'visits': visits,
-               'conferences': conferences,
-               'awards': awards,
-               'thesis': thesis,
-               'extrainfo': extra_info,
-               'workAssignment': workAssignemnt,
-               'awards': awards
-               }
-
-    return HttpResponseRedirect("/eis/profile/")
-    # return render(request, template, context)
-
-
-def view_employee_details(request, id):
-    """ Views for edit details"""
-    extra_info = ExtraInfo.objects.get(user__id=id)
-    context = {}
-    try:
-        emp = Employee.objects.get(extra_info=extra_info)
-        context['emp'] = emp
-    except:
-        print("Personal details not found")
-    # try:
-        
-    # except:
-    #     extra_info = ExtraInfo.objects.get(pk=id)
-        # print("caught error")
-        # return
-    lien_service_book = ForeignService.objects.filter(
-        extra_info=extra_info).filter(service_type="LIEN").order_by('-start_date')
-    deputation_service_book = ForeignService.objects.filter(
-        extra_info=extra_info).filter(service_type="DEPUTATION").order_by('-start_date')
-    other_service_book = ForeignService.objects.filter(
-        extra_info=extra_info).filter(service_type="OTHER").order_by('-start_date')
-    appraisal_form = EmpAppraisalForm.objects.filter(
-        extra_info=extra_info).order_by('-year')
-    pf = extra_info.user.id
-    print(pf)
-    workAssignemnt = WorkAssignemnt.objects.filter(
-        extra_info_id=pf).order_by('-start_date')
-
-    empprojects = emp_research_projects.objects.filter(
-        pf_no=pf).order_by('-start_date')
-    visits = emp_visits.objects.filter(pf_no=pf).order_by('-entry_date')
-    conferences = emp_confrence_organised.objects.filter(
-        pf_no=pf).order_by('-date_entry')
-    awards = emp_achievement.objects.filter(pf_no=pf).order_by('-date_entry')
-    thesis = emp_mtechphd_thesis.objects.filter(
-        pf_no=pf).order_by('-date_entry')
-
-    response = {}
-    # Check if establishment variables exist, if not create some fields or ask for them
-    response.update(initial_checks(request))
-    if is_eligible(request) and request.method == "POST":
-        handle_appraisal(request)
-
-    if is_eligible(request):
-        response.update(generate_appraisal_lists(request))
-
-    # If user has designation "HOD"
-    if is_hod(request):
-        response.update(generate_appraisal_lists_hod(request))
-
-    # If user has designation "Director"
-    if is_director(request):
-        response.update(generate_appraisal_lists_director(request))
-
-    response.update({'cpda': False, 'ltc': False,
-                     'appraisal': True, 'leave': False})
-    # designat = HoldsDesignation.objects.get(user=request.user).designation
-    template = 'hr2Module/viewdetails.html'
-    context.update({'lienServiceBooks': lien_service_book, 'deputationServiceBooks': deputation_service_book, 'otherServiceBooks': other_service_book, 'user': extra_info.user, 'extrainfo': extra_info,
-               'appraisalForm': appraisal_form,
-               'empproject': empprojects,
-               'visits': visits,
-               'conferences': conferences,
-               'awards': awards,
-               'thesis': thesis,
-               'workAssignment': workAssignemnt,
-            #    'designat':designat,
-                
-               })
-    context.update(response)
-
-    return render(request, template, context)
-
-
-def edit_employee_servicebook(request, id):
-    """ Views for edit Service Book details"""
-    template = 'hr2Module/editServiceBook.html'
-
-    try:
-        employee = ExtraInfo.objects.get(user__id=id)
-    except:
-        raise Http404("Post does not exist")
-
-    if request.method == "POST":
-        form = EditServiceBookForm(request.POST, request.FILES)
-
-        if form.is_valid():
-            form.save()
-            messages.success(
-                request, "Employee Service Book details edited successfully")
-        else:
-            messages.warning(request, "Error in submitting form")
-            pass
-
-    form = EditServiceBookForm(initial={'extra_info': employee.id})
-    context = {'form': form, 'employee': employee
-               }
-
-    return render(request, template, context)
-
-
-def administrative_profile(request, username=None):
-    user = get_object_or_404(
-        User, username=username) if username else request.user
-    extra_info = get_object_or_404(ExtraInfo, user=user)
-    if extra_info.user_type != 'faculty' and extra_info.user_type != 'staff':
-        return redirect('/')
-    pf = extra_info.id
-
-    lien_service_book = ForeignService.objects.filter(
-        extra_info=extra_info).filter(service_type="LIEN").order_by('-start_date')
-    deputation_service_book = ForeignService.objects.filter(
-        extra_info=extra_info).filter(service_type="DEPUTATION").order_by('-start_date')
-    other_service_book = ForeignService.objects.filter(
-        extra_info=extra_info).filter(service_type="OTHER").order_by('-start_date')
-
-    response = {}
-
-    response.update(initial_checks(request))
-    if is_eligible(request) and request.method == "POST":
-        handle_appraisal(request)
-
-    if is_eligible(request):
-        response.update(generate_appraisal_lists(request))
-
-    # If user has designation "HOD"
-    if is_hod(request):
-        response.update(generate_appraisal_lists_hod(request))
-
-    # If user has designation "Director"
-    if is_director(request):
-        response.update(generate_appraisal_lists_director(request))
-
-    response.update({'cpda': False, 'ltc': False,
-                     'appraisal': True, 'leave': False})
-    workAssignemnt = WorkAssignemnt.objects.filter(
-        extra_info_id=pf).order_by('-start_date')
-
-    context = {'user': user,
-               'pf': pf,
-               'lienServiceBooks': lien_service_book, 'deputationServiceBooks': deputation_service_book, 'otherServiceBooks': other_service_book,
-               'extrainfo': extra_info,
-               'workAssignment': workAssignemnt
-               }
-
-    context.update(response)
-    template = 'hr2Module/dashboard_hr.html'
-    return render(request, template, context)
-
-def chkValidity(password):
-    flag = 0
-    while True:  
-        if (len(password)<8):
-            flag = -1
-            break
-        elif not re.search("[a-z]", password):
-            flag = -1
-            break
-        elif not re.search("[0-9]", password):
-            flag = -1
-            break
-        elif not re.search("[_@$]", password):
-            flag = -1
-            break
-        elif re.search("\s", password):
-            flag = -1
-            break
-        else:
-            return True
-            break
-    
-    if flag ==-1:
+    # Check if the user is authenticated
+    if not user.is_authenticated:
         return False
 
-def add_new_user(request):
-    """ Views for edit Service Book details"""
-    template = 'hr2Module/add_new_employee.html'
-
-    if request.method == "POST":
-        form = NewUserForm(request.POST)
-        eform = AddExtraInfo(request.POST)
-      
-        if form.is_valid():
-            user = form.save()
-            messages.success(request, "New User added Successfully")
-        else:
-            t_pass = '0000'
-            if 'password1' in request.POST:
-                t_pass = request.POST['password1']
-            # messages.error(request,str(type(t_pass)))
-            if chkValidity(t_pass):
-                messages.error(request,"User already exists")
-            elif not t_pass == '0000':
-                messages.error(request,"Use Stronger Password")
-            else:
-                messages.error(request,"User already exists")
-                
-
-        if eform.is_valid():
-            eform.save()
-            messages.success(request, "Extra info of user saved successfully")
-        elif not eform.is_valid:
-            messages.error(request,"Some error occured")
-
-    form = NewUserForm
-    eform = AddExtraInfo
-
+    # Get the user's current designation
     try:
-        employee = ExtraInfo.objects.all().first()
-    except:
-        raise Http404("Post does not exist")
+        # Fetch the user's current designation from HoldsDesignation
+        
 
-    
-    context = {'employee': employee, "register_form": form, "eform": eform
-               }
-
-    return render(request, template, context)
-
-
-
-def ltc_pre_processing(request):
-    data = {}
-    detailsOfFamilyMembersAlreadyDone = ""
-
-    for memeber in request.POST.getlist('detailsOfFamilyMembersAlreadyDone'):
-        if(memeber == ""):
-            detailsOfFamilyMembersAlreadyDone  = detailsOfFamilyMembersAlreadyDone + 'None' + ','
-        else:
-            detailsOfFamilyMembersAlreadyDone  = detailsOfFamilyMembersAlreadyDone + memeber + ','
-
-    data['detailsOfFamilyMembersAlreadyDone'] = detailsOfFamilyMembersAlreadyDone.rstrip(',')
-
-
-    detailsOfFamilyMembersAboutToAvail = ""
-
-    for i in range(1,4):
-        for j in range(1,4):
-            key_is = f'info_{i}_{j}'
-            
-            if(request.POST.get(key_is) == ""):
-                detailsOfFamilyMembersAboutToAvail = detailsOfFamilyMembersAboutToAvail + 'None' + ','
-            else:
-                detailsOfFamilyMembersAboutToAvail = detailsOfFamilyMembersAboutToAvail + request.POST.get(key_is) + ','
-    
-    data['detailsOfFamilyMembersAboutToAvail'] = detailsOfFamilyMembersAboutToAvail.rstrip(',')
-
-
-    detailsOfDependents = ""
-    
-    for i in range(1,7):
-        for j in range(1,5):
-            key_is = f'd_info_{i}_{j}'
-            if(request.POST.get(key_is) == ""):
-                detailsOfDependents = detailsOfDependents + 'None' + ','
-            else:
-                detailsOfDependents = detailsOfDependents + request.POST.get(key_is) + ','
-    
-    data['detailsOfDependents'] = detailsOfDependents.rstrip(',')
-
-    return data
-
-
-def reverse_ltc_pre_processing(data):
-    reversed_data = {}
-
-    # Copying over simple key-value pairs
-    simple_keys = [
-        'blockYear',
-    'pfNo',
-    'basicPaySalary',
-    'name',
-    'designation',
-    'departmentInfo',
-    'leaveRequired',
-    'leaveStartDate',
-    'leaveEndDate',
-    'dateOfDepartureForFamily',
-    'natureOfLeave',
-    'purposeOfLeave',
-    'hometownOrNot',
-    'placeOfVisit',
-    'addressDuringLeave',
-    'amountOfAdvanceRequired',
-    'certifiedThatFamilyDependents',
-    'certifiedThatAdvanceTakenOn',
-    'adjustedMonth',
-    'submissionDate',
-    'phoneNumberForContact'
-    ]
-
-  
-    for key in simple_keys:
-        value = getattr(data, key)
-        reversed_data[key] = value if value != 'None' else ''
-
-    # Reversing array-like values
-    reversed_data['detailsOfFamilyMembersAlreadyDone'] = getattr(data,'detailsOfFamilyMembersAlreadyDone').split(',')
-    
-    detailsOfFamilyMembersAboutToAvail = getattr(data,'detailsOfFamilyMembersAboutToAvail').split(',')
-    for index, value in enumerate(detailsOfFamilyMembersAboutToAvail):
-        detailsOfFamilyMembersAboutToAvail[index] = value if value != 'None' else ''
-    
-    reversed_data['info_1_1'] = detailsOfFamilyMembersAboutToAvail[0]
-    reversed_data['info_1_2'] = detailsOfFamilyMembersAboutToAvail[1]
-    reversed_data['info_1_3'] = detailsOfFamilyMembersAboutToAvail[2]
-    reversed_data['info_2_1'] = detailsOfFamilyMembersAboutToAvail[3]
-    reversed_data['info_2_2'] = detailsOfFamilyMembersAboutToAvail[4]
-    reversed_data['info_2_3'] = detailsOfFamilyMembersAboutToAvail[5]
-    reversed_data['info_3_1'] = detailsOfFamilyMembersAboutToAvail[6]
-    reversed_data['info_3_2'] = detailsOfFamilyMembersAboutToAvail[7]
-    reversed_data['info_3_3'] = detailsOfFamilyMembersAboutToAvail[8]
-
-    # # Reversing details_of_dependents
-    detailsOfDependents = getattr(data,'detailsOfDependents').split(',')
-    for i in range(1, 7):
-        for j in range(1, 5):
-            key = f'd_info_{i}_{j}'
-            value = detailsOfDependents.pop(0)
-            reversed_data[key] = value if value != 'None' else ''
-
-    return reversed_data
-
-def get_designation_by_user_id(user_id):
-    try:
-        # Query HoldsDesignation model to get the user's designation
-        designation_objs = HoldsDesignation.objects.filter(user=user_id)
-        return designation_objs.first().designation
-    except ExtraInfo.DoesNotExist:
-        return None
-    except HoldsDesignation.DoesNotExist:
-        return None
-
-def search_employee(request):
-    search_text = request.GET.get('search', '')
-    data = {'designation': 'Assistant Professor'}
-    try:
-
-        employee = User.objects.get(username = search_text)
-  
-    
-        holds_designation = HoldsDesignation.objects.filter(user=employee)
-        holds_designation = list(holds_designation)
+        
 
 
         
-        data['designation'] = str(holds_designation[0].designation)
-    except ExtraInfo.DoesNotExist:
-        data = {'error': "Employee doesn't exist"}
+        
 
-    return JsonResponse(data)
-
-def ltc_form(request, id):
-    """ Views for edit details"""
-    try:
-        employee = ExtraInfo.objects.get(user__id=id)
-    except:
-        raise Http404("Employee does not exist! id doesnt exist")
-    user_id = id
-    creator = User.objects.get(id = user_id)
-    
-    if(employee.user_type == 'faculty' or employee.user_type == 'staff' or employee.user_type == 'student'):
-        template = 'hr2Module/ltc_form.html'
-
-        if request.method == "POST":
-            try:
-
-                data = ltc_pre_processing(request)
+        extra_info = get_object_or_404(ExtraInfo, user=user)
+        last_selected_role=extra_info.last_selected_role
+        if not last_selected_role:
             
+            designations = HoldsDesignation.objects.filter(user=user)
+            if designations.exists():
+                last_selected_role = designations.last().designation.name
+                print(last_selected_role)
+                extra_info.last_selected_role = last_selected_role
+                extra_info.save()
+                last_selected_role=extra_info.last_selected_role
+            else:
+                return JsonResponse({'error': 'Designation not found'}, status=404)
+        request.session['currentDesignationSelected'] = last_selected_role
+        ##print(last_selected_role)
+        # fetch designation of name last_selected_role
+        designation = Designation.objects.filter(name=last_selected_role).first()
+        
+        
+        
+        if not designation:
+            return False
+        # find holdsdesignation of user and designation
+        current_designation = HoldsDesignation.objects.filter(working=user, designation=designation).first()
+        #print(f"Current Designation: {current_designation.designation.name if current_designation else None}")  # Debugging
+        if not current_designation:
+            return False
+        
+        
+        # Fetch the ModuleAccess for the user's designation
+        module_access = ModuleAccess.objects.filter(designation=current_designation.designation.name).first()
+        #print(module_access.hr)
+        if not module_access:
+            return False
 
-                form1 = {
-                    'employeeId': id,
-                    'name': request.POST.get('name'),
-                    'blockYear': request.POST.get('blockYear'),
-                    'basicPaySalary': request.POST.get('basicPaySalary'),
-                    'designation': request.POST.get('designation'),
-                    'pfNo': request.POST.get('pfNo'),
-                    'departmentInfo': request.POST.get('departmentInfo'),
-                    'leaveRequired': request.POST.get('leaveRequired'),
-                    'leaveStartDate': request.POST.get('leaveStartDate'),
-                    'leaveEndDate': request.POST.get('leaveEndDate'),
-                    'dateOfDepartureForFamily': request.POST.get('dateOfDepartureForFamily'),
-                    'natureOfLeave': request.POST.get('natureOfLeave'),
-                    'purposeOfLeave': request.POST.get('purposeOfLeave'),
-                    'hometownOrNot': request.POST.get('hometownOrNot'),
-                    'placeOfVisit': request.POST.get('placeOfVisit'),
-                    'addressDuringLeave': request.POST.get('addressDuringLeave'),
-                    'detailsOfFamilyMembersAlreadyDone': data['detailsOfFamilyMembersAlreadyDone'],
-                    'detailsOfFamilyMembersAboutToAvail': data['detailsOfFamilyMembersAboutToAvail'],
-                    'detailsOfDependents': data['detailsOfDependents'],
-                    'amountOfAdvanceRequired': request.POST.get('amountOfAdvanceRequired'),
-                    'certifiedThatFamilyDependents': request.POST.get('certifiedThatFamilyDependents'),
-                    'certifiedThatAdvanceTakenOn': request.POST.get('certifiedThatAdvanceTakenOn'),
-                    'adjustedMonth': request.POST.get('adjustedMonth'),
-                    'submissionDate': request.POST.get('submissionDate'),
-                    'phoneNumberForContact': request.POST.get('phoneNumberForContact'),
-                    'username_employee': request.POST.get('username_employee'),
-                    'designation_employee': request.POST.get('designation_employee'),
-                    'created_by' : creator,
-                             }
+        # Check if HR module access is granted
+        return module_access.hr
+
+    except Exception as e:
+        # Handle any unexpected errors
+        #print(f"Error in check_hr_access: {str(e)}")  # Debugging
+        return False
+    
 
 
-                try:
-                    ltc_form = LTCform.objects.create(
-                        employeeId=id,
-                        name=request.POST.get('name'),
-                        blockYear=request.POST.get('blockYear'),
-                        pfNo=request.POST.get('pfNo'),
-                        basicPaySalary=request.POST.get('basicPaySalary'),
-                        designation=request.POST.get('designation'),
-                        departmentInfo=request.POST.get('departmentInfo'),
-                        leaveRequired=request.POST.get('leaveAvailability'),
-                        leaveStartDate=request.POST.get('leaveStartDate'),
-                        leaveEndDate=request.POST.get('leaveEndDate'),
-                        dateOfDepartureForFamily=request.POST.get('dateOfLeaveForFamily'),
-                        natureOfLeave=request.POST.get('natureOfLeave'),
-                        purposeOfLeave=request.POST.get('purposeOfLeave'),
-                        hometownOrNot=request.POST.get('hometownOrNot'),
-                        placeOfVisit=request.POST.get('placeOfVisit'),
-                        addressDuringLeave=request.POST.get('addressDuringLeave'),
-                        detailsOfFamilyMembersAlreadyDone=data['detailsOfFamilyMembersAlreadyDone'],
-                        detailsOfFamilyMembersAboutToAvail=data['detailsOfFamilyMembersAboutToAvail'],
-                        detailsOfDependents=data['detailsOfDependents'],
-                        amountOfAdvanceRequired=request.POST.get('amountOfAdvanceRequired'),
-                        certifiedThatFamilyDependents=request.POST.get('certifiedThatFamilyDependents'),
-                        certifiedThatAdvanceTakenOn=request.POST.get('certifiedThatAdvanceTakenOn'),
-                        adjustedMonth=request.POST.get('adjustedMonth'),
-                        submissionDate=request.POST.get('submissionDate'),
-                        phoneNumberForContact=request.POST.get('phoneNumberForContact'),
-                        created_by=creator,
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def test(request):
+    """
+    Test view to check HR access and perform additional actions.
+    """
+    user = request.user
+
+    # Check if the user is authenticated
+    if not user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+
+    # Check if the user has HR access
+    if check_hr_access(request):
+        # Perform additional actions if HR access is granted
+        #print("User has HR access. Performing additional actions...")  # Debugging
+        # Add your additional logic here
+        return JsonResponse({'message': 'You have HR access. Additional actions performed.'}, status=200)
+    else:
+        # Return a response if HR access is not granted
+        return JsonResponse({'error': 'HR access required'}, status=403)
+    
+
+
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def get_leave_balance(request):
+    """
+    API endpoint to retrieve the leave balance for the authenticated user.
+    Returns:
+        - A JSON response containing the leave balance for each leave type.
+    """
+    user = request.user
+
+    # Check if the user is authenticated
+    if not user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+
+
+
+    # check if the user has HR access
+    if not check_hr_access(request):
+        return JsonResponse({'error': 'HR access required'}, status=403)
+    
+    try:
+        # Fetch the ExtraInfo object for the user
+        extra_info = ExtraInfo.objects.get(user=user)
+
+        # Fetch the leave balance for the user
+        #print("1")
+        leave_balance = LeaveBalance.objects.filter(empid__id=user.id).first()
+        leave_per_year = LeavePerYear.objects.filter(empid__id=user.id).first()
+        #print("2")
+        if not leave_balance or not leave_per_year:
+            return JsonResponse({'error': 'Leave balance data not found'}, status=404)
+        #print("3")
+
+        # Prepare the response data
+        leave_data = {
+            'casual_leave': {
+                'allotted': leave_per_year.casual_leave,
+                'taken': leave_balance.casual_leave_taken,
+                'balance': leave_per_year.casual_leave - leave_balance.casual_leave_taken,
+            },
+            'special_casual_leave': {
+                'allotted': leave_per_year.special_casual_leave,
+                'taken': leave_balance.special_casual_leave_taken,
+                'balance': leave_per_year.special_casual_leave - leave_balance.special_casual_leave_taken,
+            },
+            'earned_leave': {
+                'allotted': leave_per_year.earned_leave,
+                'taken': leave_balance.earned_leave_taken,
+                'balance': leave_per_year.earned_leave - leave_balance.earned_leave_taken,
+            },
+            'half_pay_leave': {
+                'allotted': leave_per_year.half_pay_leave,
+                'taken': leave_balance.half_pay_leave_taken,
+                'balance': leave_per_year.half_pay_leave - leave_balance.half_pay_leave_taken,
+            },
+            'maternity_leave': {
+                'allotted': leave_per_year.maternity_leave,
+                'taken': leave_balance.maternity_leave_taken,
+                'balance': leave_per_year.maternity_leave - leave_balance.maternity_leave_taken,
+            },
+            'child_care_leave': {
+                'allotted': leave_per_year.child_care_leave,
+                'taken': leave_balance.child_care_leave_taken,
+                'balance': leave_per_year.child_care_leave - leave_balance.child_care_leave_taken,
+            },
+            'paternity_leave': {
+                'allotted': leave_per_year.paternity_leave,
+                'taken': leave_balance.paternity_leave_taken,
+                'balance': leave_per_year.paternity_leave - leave_balance.paternity_leave_taken,
+            },
+            'leave_encashment': {
+                'allotted': leave_per_year.leave_encashment,
+                'taken': leave_balance.leave_encashment_taken,
+                'balance': leave_per_year.leave_encashment - leave_balance.leave_encashment_taken,
+            }
+        }
+        #print("4")
+        # Return the leave balance data
+        return JsonResponse({'leave_balance': leave_data}, status=200)
+
+    except ExtraInfo.DoesNotExist:
+        return JsonResponse({'error': 'User details not found'}, status=404)
+    except Exception as e:
+        # Handle any unexpected errors
+        return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)    
+    
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def search_employees(request):
+    """
+    API endpoint to search for employees based on the given search query.
+    Returns:
+        - A JSON response containing the list of employees matching the search query.
+    """
+    user = request.user
+   
+
+    # Check if the user has HR access
+    if not check_hr_access(request):
+        return JsonResponse({'error': 'HR access required'}, status=403)
+
+    try:
+        search_text = request.GET.get("search_text", "").strip()
+
+        if not search_text:
+            return JsonResponse({"error": "Search text is required"}, status=400)
+
+        users = User.objects.filter(username__icontains=search_text)
+        user_list = []
+    
+
+        for user in users:
+        
+            # Fetch designations from HoldsDesignation model
+            designations = HoldsDesignation.objects.filter(user=user)
+
+            if not designations.exists():
+                continue  # Skip users without designations
+
+            for hd in designations:
+                
+                user_list.append({
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                    "designation": hd.designation.name,  # Assuming designation has a 'name' field
+                })
+
+        return JsonResponse({"employees": user_list}, status=200)
+
+    except Exception as e:
+        return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
+    
+
+# get my form initials name, last_selected_role, and department, pfno
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def get_form_initials(request):
+    """
+    API endpoint to get the form initials for the authenticated user.
+    Returns:
+        - A JSON response containing the form initials for the authenticated user.
+    """
+    user = request.user
+
+    # Check if the user is authenticated
+    if not user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+
+    try:
+        # fecth employee
+        employee = Employee.objects.filter(id=user)
+        if not employee.exists():
+            return JsonResponse({'error': 'Employee not found'}, status=404)
+        employee = employee.first()
+        # fetch extra info
+        extra_info = ExtraInfo.objects.filter(user=user)
+        if not extra_info.exists():
+            return JsonResponse({'error': 'ExtraInfo not found'}, status=404)
+        extra_info = extra_info.first()
+
+        Empconfidential=EmpConfidentialDetails.objects.filter(empid=employee)
+        if not Empconfidential.exists():
+            return JsonResponse({'error': 'EmpConfidentialDetails not found'}, status=404)
+        Empconfidential=Empconfidential.first()
+        dpt=extra_info.department
+
+        
+        return JsonResponse({
+             
+            'name': user.first_name+" "+user.last_name,
+            'last_selected_role': extra_info.last_selected_role,
+            'pfno': Empconfidential.personal_file_number,
+            'department': dpt.name if dpt else None,
+
+
+        }, status=200)
+    except Exception as e:
+        return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
+
+
+
+
+
+
+
+
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def submit_leave_form(request):
+    """
+    API endpoint to submit a leave form for the authenticated user.
+    """
+    user = request.user
+
+    if not user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+
+    try:
+        form_data = request.POST
+        files = request.FILES
+
+        # Validate required fields first
+        required_fields = [
+            'name', 'designation', 'pfno', 'department', 
+            'leaveStartDate', 'leaveEndDate', 'purpose', 'forwardTo'
+        ]
+        missing_fields = [field for field in required_fields if not form_data.get(field)]
+        if missing_fields:
+            return JsonResponse(
+                {'error': f'Missing required fields: {", ".join(missing_fields)}'},
+                status=400
+            )
+
+        # Extract all form data
+        data = {
+            'name': form_data.get('name'),
+            'designation': form_data.get('designation'),
+            'pfno': form_data.get('pfno'),
+            'submissionDate': form_data.get('date'),
+            'department': form_data.get('department'),
+            'leave_start_date': form_data.get('leaveStartDate'),
+            'leave_end_date': form_data.get('leaveEndDate'),
+            'purpose': form_data.get('purpose'),
+            'casual_leave': int(form_data.get('casualLeave', 0)),
+            'vacation_leave': int(form_data.get('vacationLeave', 0)),
+            'earned_leave': int(form_data.get('earnedLeave', 0)),
+            'commuted_leave': int(form_data.get('commutedLeave', 0)),
+            'special_casual_leave': int(form_data.get('specialCasualLeave', 0)),
+            'restricted_holiday': int(form_data.get('restrictedHoliday', 0)),
+            'half_pay_leave': int(form_data.get('halfPayLeave', 0)),
+            'maternity_leave': int(form_data.get('maternityLeave', 0)),
+            'child_care_leave': int(form_data.get('childCareLeave', 0)),
+            'paternity_leave': int(form_data.get('paternityLeave', 0)),
+            'remarks': form_data.get('remarks', 'N/A'),
+            'station_leave': form_data.get('stationLeave', 'false').lower() == 'true',
+            'station_leave_start_date': form_data.get('stationLeaveStartDate'),
+            'station_leave_end_date': form_data.get('stationLeaveEndDate'),
+            'station_leave_address': form_data.get('stationLeaveAddress'),
+            'academic_responsibility_id': form_data.get('academicResponsibility'),
+            'academic_responsibility_designation': form_data.get('academicResponsibility_designation'),
+            'administrative_responsibility_id': form_data.get('administrativeResponsibility'),
+            'administrative_responsibility_designation': form_data.get('administrativeResponsibility_designation'),
+            'first_received_by_id': form_data.get('forwardTo'),
+            'first_received_designation': form_data.get('forwardTo_designation'),
+            'attached_pdf': files.get('attached_pdf')
+        }
+
+        # Validate dates
+        try:
+            data['leave_start_date'] = datetime.strptime(data['leave_start_date'], "%Y-%m-%d").date()
+            data['leave_end_date'] = datetime.strptime(data['leave_end_date'], '%Y-%m-%d').date()
+            if data['leave_end_date'] < data['leave_start_date']:
+                return JsonResponse(
+                    {'error': 'Leave end date cannot be before start date'},
+                    status=400
+                )
+        except ValueError:
+            return JsonResponse(
+                {'error': 'Invalid leave date format. Use YYYY-MM-DD'},
+                status=400
+            )
+
+        # Validate station leave
+        if data['station_leave']:
+            if not all([data['station_leave_start_date'], data['station_leave_end_date'], data['station_leave_address']]):
+                return JsonResponse(
+                    {'error': 'Station leave details are required when station leave is checked'},
+                    status=400
+                )
+            try:
+                data['station_leave_start_date'] = datetime.strptime(data['station_leave_start_date'], '%Y-%m-%d').date()
+                data['station_leave_end_date'] = datetime.strptime(data['station_leave_end_date'], '%Y-%m-%d').date()
+                if data['station_leave_end_date'] < data['station_leave_start_date']:
+                    return JsonResponse(
+                        {'error': 'Station leave end date cannot be before start date'},
+                        status=400
                     )
-                    
-                except Exception as e:
-                   
-                    print("An error occurred while creating the LTC form:", e)
+            except ValueError:
+                return JsonResponse(
+                    {'error': 'Invalid station leave date format. Use YYYY-MM-DD'},
+                    status=400
+                )
+        else:
+            data['station_leave_start_date'] = None
+            data['station_leave_end_date'] = None
+            data['station_leave_address'] = None
 
+        # Get employee
+        try:
+            employee = Employee.objects.get(id=user.id)
+        except Employee.DoesNotExist:
+            return JsonResponse({'error': 'Employee not found'}, status=404)
 
-
-
-                uploader = employee.user
-                uploader_designation = 'Assistant Professor'
-
-                get_designation = get_designation_by_user_id(employee.user)
-                if(get_designation):
-                    uploader_designation = get_designation
-
-                receiver = request.POST.get('username_employee')
-                receiver_designation = request.POST.get('designation_employee')
-                src_module = "HR"
-                src_object_id = str(ltc_form.id)
-                file_extra_JSON = {"type": "LTC"}
-
-
-                # Create a file representing the LTC form and send it to HR admin
-                file_id = create_file(
-                    uploader=uploader,
-                    uploader_designation=uploader_designation,
-                    receiver=receiver,
-                    receiver_designation=receiver_designation,
-                    src_module=src_module,
-                    src_object_id=src_object_id,
-                    file_extra_JSON=file_extra_JSON,
-                    attached_file=None  # Attach any file if necessary
+        # Handle academic responsibility (optional)
+        academic_responsibility = None
+        if data['academic_responsibility_id']:
+            try:
+                academic_responsibility = {
+                    'user': Employee.objects.get(id=data['academic_responsibility_id']),
+                    'designation': Designation.objects.get(name=data['academic_responsibility_designation'])
+                }
+            except (Employee.DoesNotExist, Designation.DoesNotExist):
+                return JsonResponse(
+                    {'error': 'Academic Responsibility user or designation not found'},
+                    status=404
                 )
 
+        # Handle administrative responsibility (optional)
+        administrative_responsibility = None
+        if data['administrative_responsibility_id']:
+            try:
+                administrative_responsibility = {
+                    'user': Employee.objects.get(id=data['administrative_responsibility_id']),
+                    'designation': Designation.objects.get(name=data['administrative_responsibility_designation'])
+                }
+            except (Employee.DoesNotExist, Designation.DoesNotExist):
+                return JsonResponse(
+                    {'error': 'Administrative Responsibility user or designation not found'},
+                    status=404
+                )
 
-                messages.success(request, "Ltc form filled successfully!")
+        # Get first received by (required)
+        try:
+            first_received_by = {
+                'user': Employee.objects.get(id=data['first_received_by_id']),
+                'designation': Designation.objects.get(name=data['first_received_designation'])
+            }
+        except (Employee.DoesNotExist, Designation.DoesNotExist):
+            return JsonResponse(
+                {'error': 'First Received By user or designation not found'},
+                status=404
+            )
 
+        # Handle PDF attachment
+        pdf_data = None
+        if data['attached_pdf']:
+            pdf_data = {
+                'binary': data['attached_pdf'].read(),
+                'name': data['attached_pdf'].name
+            }
 
-                return redirect(request.path_info)
+        # Create leave form first (without file_id)
+        leave_form = LeaveForm(
+            employee=employee,
+            name=data['name'],
+            designation=data['designation'],
+            personalfileNo=data['pfno'],
+            submissionDate=data['submissionDate'],
+            departmentInfo=data['department'],
+            leaveStartDate=data['leave_start_date'],
+            leaveEndDate=data['leave_end_date'],
+            Purpose_of_leave=data['purpose'],
+            Noof_CasualLeave=data['casual_leave'],
+            Noof_vacationLeave=data['vacation_leave'],
+            Noof_earnedLeave=data['earned_leave'],
+            Noof_commutedLeave=data['commuted_leave'],
+            Noof_specialCasualLeave=data['special_casual_leave'],
+            Noof_restrictedHoliday=data['restricted_holiday'],
+            Noof_halfPayLeave=data['half_pay_leave'],
+            Noof_maternityLeave=data['maternity_leave'],
+            Noof_childCareLeave=data['child_care_leave'],
+            Noof_paternityLeave=data['paternity_leave'],
+            Remarks=data['remarks'],
+            LeavingStation=data['station_leave'],
+            StationLeave_startdate=data['station_leave_start_date'],
+            StationLeave_enddate=data['station_leave_end_date'],
+            Address_During_StationLeave=data['station_leave_address'],
+            AcademicResponsibility_user=academic_responsibility['user'] if academic_responsibility else None,
+            AcademicResponsibility_designation=academic_responsibility['designation'] if academic_responsibility else None,
+            AcademicResponsibility_status='Pending' if academic_responsibility else 'Accepted',
+            AdministrativeResponsibility_user=administrative_responsibility['user'] if administrative_responsibility else None,
+            AdministrativeResponsibility_designation=administrative_responsibility['designation'] if administrative_responsibility else None,
+            AdministrativeResponsibility_status='Pending' if administrative_responsibility else 'Accepted',
+            first_recieved_by=first_received_by['user'],
+            first_recieved_designation=first_received_by['designation'],
+            status='Pending',
+            attached_pdf=pdf_data['binary'] if pdf_data else None,
+            attached_pdf_name=pdf_data['name'] if pdf_data else None,
+            file_id=None  # Initialize as None, will be updated later
+        )
+        leave_form.save()
 
+        # Create file tracking if no responsibilities assigned
+        file_id = None
+        if not academic_responsibility and not administrative_responsibility:
+            try:
+                file_id = create_file(
+                    uploader=employee.id,
+                    uploader_designation=data['designation'],
+                    receiver=first_received_by['user'].id.username,
+                    receiver_designation=first_received_by['designation'].name,
+                    src_module="HR",
+                    src_object_id=str(leave_form.id),
+                    file_extra_JSON={"type": "Leave"},
+                    attached_file=None
+                )
+                # Update the leave form with the file_id
+                leave_form.file_id = file_id
+                leave_form.save()
             except Exception as e:
-                messages.warning(request, "Fill not correctly")
-                context = {'employee': employee}
-                return render(request, template, context)
+                return JsonResponse(
+                    {'error': f'Failed to create file tracking: {str(e)}'},
+                    status=500
+                )
 
+        return JsonResponse(
+            {
+                'message': 'Leave form submitted successfully',
+                'form_id': leave_form.id,
+                'file_id': file_id
+            },
+            status=201
+        )
+
+    except ValidationError as e:
+        return JsonResponse(
+            {'error': f'Validation error: {str(e)}'},
+            status=400
+        )
+    except Exception as e:
+        return JsonResponse(
+            {'error': f'An unexpected error occurred: {str(e)}'},
+            status=500
+        )
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def get_leave_requests(request):
+    """
+    API endpoint to get the leave requests for the authenticated user.
+    """
+    user = request.user
+
+    if not user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+
+    try:
+        # Get the employee associated with the user
+        employee = Employee.objects.filter(id=user)
+        
+
+        if not employee.exists():
+            return JsonResponse({'error': 'Employee not found'}, status=404)
+        employee = employee.first()
+        query_date=request.GET.get('date')
+        if not query_date:
+            # set 1 year back date
+            query_date = datetime.now().date() - timedelta(days=365)
+        else:
+            query_date = datetime.strptime(query_date, '%Y-%m-%d').date()
+        # Get the leave forms for the employee
+        leave_forms = LeaveForm.objects.filter(employee=employee, submissionDate__gte=query_date)
+
+        # Prepare the response data
+        leave_requests = []
+        # send only id submissionDate, status, leaveStartDate, leaveEndDate,
+        for form in leave_forms:
+            leave_requests.append({
+                'id': form.id,
+                'name': form.name,
+                'submissionDate': form.submissionDate,
+                'status': form.status,
+                'leaveStartDate': form.leaveStartDate,
+                'leaveEndDate': form.leaveEndDate,
+            })
+        
+        return JsonResponse({'leave_requests': leave_requests}, status=200)
+    except Exception as e:
+        return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
     
 
-         # Query all LTC requests
-        ltc_requests = LTCform.objects.filter(employeeId=id)
 
-        username = employee.user
-        uploader_designation = 'Assistant Professor'
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def get_leave_form_by_id(request, form_id):
+    """
+    API endpoint to get the leave form by ID.
+    """
+    user = request.user
 
-      
-        designation = get_designation_by_user_id(employee.user)
-        if(designation):
-            uploader_designation = designation
+    if not user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+
+    try:
+        # print("0")
+        # Get the employee associated with the user
+        
+        
+
+        # print("1")
+        # Get the leave form by ID
+        leave_form = LeaveForm.objects.filter(id=form_id)
+        if not leave_form.exists():
+            return JsonResponse({'error': 'Leave form not found'}, status=404)
+        leave_form = leave_form.first()
+        
+        employee = leave_form.employee
+        
+        # get leave balance of employee
+        leave_balance = LeaveBalance.objects.filter(empid=employee).first()
+        if not leave_balance:
+            return JsonResponse({'error': 'Leave balance not found'}, status=404)
+        # get leave per year of employee
+        leave_per_year = LeavePerYear.objects.filter(empid=employee).first()
+        if not leave_per_year:
+            return JsonResponse({'error': 'Leave per year not found'}, status=404)
+
+
+
+
+        # print("2")
+        academic_responsibility_employee=None
+        academic_responsibility_user=None
+        academic_responsibility_name=None
+        academic_responsibility_designation=None
+        if(leave_form.AcademicResponsibility_user):
+            # Access the AcademicResponsibility_user (Employee object) only if is not null else set None
+            academic_responsibility_employee = leave_form.AcademicResponsibility_user
+
+            # Access the User object from the Employee object
+            academic_responsibility_user = academic_responsibility_employee.id
+            
+            # access name of academic_responsibility_user
+            academic_responsibility_name = academic_responsibility_user.first_name + " " + academic_responsibility_user.last_name
+            #print(academic_responsibility_name)
+
+            # Access designations of academic_responsibility_user
+            academic_responsibility_designation = leave_form.AcademicResponsibility_designation.name
+        
+        # print("hi")
+
+        administrative_responsibility_employee=None
+        administrative_responsibility_user=None
+        administrative_responsibility_name=None
+        administrative_responsibility_designation=None,
+        if(leave_form.AdministrativeResponsibility_user):
+            # Access the AdministrativeResponsibility_user (Employee object)
+            administrative_responsibility_employee = leave_form.AdministrativeResponsibility_user
+
+            # Access the User object from the Employee object
+            administrative_responsibility_user = administrative_responsibility_employee.id
+
+            # access name of administrative_responsibility_user
+            administrative_responsibility_name = administrative_responsibility_user.first_name + " " + administrative_responsibility_user.last_name
+
+            # Access designations of administrative_responsibility_user
+            administrative_responsibility_designation = leave_form.AdministrativeResponsibility_designation.name
+        
+        # print("hi2")
+
+        # Access the first_recieved_by (Employee object)
+        first_recieved_by_employee = leave_form.first_recieved_by
+        first_recieved_by_user=None
+        first_recieved_by_name=None
+        first_recieved_by_designation=None
+
+        if(leave_form.first_recieved_by):
+             
+            first_recieved_by_user = first_recieved_by_employee.id
+
+
+            # access name of first_recieved_by_user
+            first_recieved_by_name = first_recieved_by_user.first_name + " " + first_recieved_by_user.last_name
+
+            # Access designations of first_recieved_by_user
+            first_recieved_by_designation = leave_form.first_recieved_designation.name
 
         
-        inbox = view_inbox(username = username, designation = uploader_designation, src_module = "HR")
-        archived_files = view_archived(username = username, designation = uploader_designation, src_module = "HR")
-        filtered_inbox = []
-        for i in inbox:
-            item = i.get('file_extra_JSON', {})  
-            if item.get('type') == 'LTC':
-                filtered_inbox.append(i)
 
-        filtered_archived_files = []
-        for i in archived_files:
-            item = i.get('file_extra_JSON', {})  
-            if item.get('type') == 'LTC':
-                filtered_archived_files.append(i)
+        # print("2.5")
 
 
-       
+        # attcahed file name only
+        attached_pdf_name = None
+        if leave_form.attached_pdf:
+            attached_pdf_name = leave_form.attached_pdf_name
+        
+    #     #  if status is accepeted send aproved date and and approve by and approved by designationapprovedDate = models.DateField(auto_now_add=True, null=True)
+    # approved_by = models.ForeignKey(Employee, on_delete=models.CASCADE, null=True, related_name='leave_approved_by')
+    # approved_by_designation=models.ForeignKey(Designation, on_delete=models.CASCADE, null=True, related_name='leave_approved_by_designation')
 
+        if (leave_form.status=='Accepetd' and leave_form.approved_by):
+            approved_by_employee = leave_form.approved_by
+            approved_by_user = approved_by_employee.id
+            approved_by_name = approved_by_user.first_name + " " + approved_by_user.last_name
+            approved_by_designation = leave_form.approved_by_designation.name
+            approved_date = leave_form.approvedDate
+        else:
+            approved_by_name = None
+            approved_by_designation = None
+            approved_date = None 
 
-
-        context = {'employee': employee, 'ltc_requests': ltc_requests, 'inbox': filtered_inbox , 'designation':designation, 'archived_files': filtered_archived_files , 'user_id': user_id}
-
-        return render(request, template, context)
-    else:
-        return render(request, 'hr2Module/edit.html')
+        # print("z")
+        leave_form_data = {
+            'id': leave_form.id,
+            'name': leave_form.name,
+            'designation': leave_form.designation,
+            'pfno': leave_form.personalfileNo,
+            'submissionDate': leave_form.submissionDate,
+            'department': leave_form.departmentInfo,
+            'leaveStartDate': leave_form.leaveStartDate,
+            'leaveEndDate': leave_form.leaveEndDate,
+            'purpose': leave_form.Purpose_of_leave,
+            'casualLeave': leave_form.Noof_CasualLeave,
+            'vacationLeave': leave_form.Noof_vacationLeave,
+            'earnedLeave': leave_form.Noof_earnedLeave,
+            'commutedLeave': leave_form.Noof_commutedLeave,
+            'specialCasualLeave': leave_form.Noof_specialCasualLeave,
+            'restrictedHoliday': leave_form.Noof_restrictedHoliday,
+            'maternityLeave':leave_form.Noof_maternityLeave,
+            'childCareLeave':leave_form.Noof_childCareLeave,
+            'paternityLeave':leave_form.Noof_paternityLeave,
+            'halfPayLeave':leave_form.Noof_halfPayLeave,
+            'casualLeaveBalance':leave_per_year.casual_leave - leave_balance.casual_leave_taken,
+            'special_casual_leaveBalance':leave_per_year.special_casual_leave - leave_balance.special_casual_leave_taken,
+            'earned_leaveBalance':leave_per_year.earned_leave - leave_balance.earned_leave_taken,
+            'half_pay_leaveBalance':leave_per_year.half_pay_leave - leave_balance.half_pay_leave_taken,
+            'maternity_leaveBalance':leave_per_year.maternity_leave - leave_balance.maternity_leave_taken,
+            'child_care_leaveBalance':leave_per_year.child_care_leave - leave_balance.child_care_leave_taken,
+            'paternity_leaveBalance':leave_per_year.paternity_leave - leave_balance.paternity_leave_taken,
+            'remarks': leave_form.Remarks,
+            'stationLeave': leave_form.LeavingStation,
+            'stationLeaveStartDate': leave_form.StationLeave_startdate,
+            'stationLeaveEndDate': leave_form.StationLeave_enddate,
+            'stationLeaveAddress': leave_form.Address_During_StationLeave,
+            'academicResponsibility': academic_responsibility_name,
+            'academicResponsibilityDesignation': academic_responsibility_designation,
+            'academicResponsibilityStatus': leave_form.AcademicResponsibility_status,
+            'administrativeResponsibility': administrative_responsibility_name,
+            'administrativeResponsibilityDesignation': administrative_responsibility_designation,
+            'administrativeResponsibilityStatus': leave_form.AdministrativeResponsibility_status,
+            'firstRecievedBy': first_recieved_by_name,
+            'firstRecievedByDesignation': first_recieved_by_designation,
+            'status': leave_form.status,
+            'attachedPdfName': attached_pdf_name,
+            'approvedBy': approved_by_name,
+            'approvedByDesignation': approved_by_designation,
+            'approvedDate': approved_date,
+            'file_id': leave_form.file_id,
+            'application_type': leave_form.application_type,
+        }
+        # #print("3") 
+        # #print(leave_form_data)
+        return JsonResponse({'leave_form': leave_form_data}, status=200)
+    except Exception as e:
+        return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
     
-def form_view_ltc(request , id):
-    ltc_request = get_object_or_404(LTCform, id=id)
-
-    user_id = ltc_request.created_by.id
-
-    from_user = request.GET.get('param1')
-    from_designation = request.GET.get('param2')
-    file_id = request.GET.get('param3')
-
-    template = 'hr2Module/view_ltc_form.html'
-    ltc_request = reverse_ltc_pre_processing(ltc_request)
     
-    context = {'ltc_request' : ltc_request , "button" : 1 , "file_id" : file_id, "from_user" :from_user , "from_designation" : from_designation ,"id" : id, "user_id" : user_id}
 
-    return render(request , template , context)
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def handle_leave_academic_responsibility(request, form_id):
+    """
+    API endpoint to handle the academic responsibility of a leave form.
+    """
+    user = request.user
+    #print("0")
+    if not user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
 
-def track_file(request, id):
-    # Assuming file_history is a list of dictionaries
-    template = 'hr2Module/ltc_form_trackfile.html'
+    try:
+        
+        # get employee of user
+        employee = Employee.objects.filter(id=user)
+        if not employee.exists():
+            return JsonResponse({'error': 'Employee not found'}, status=404)
+        
+        
+        # get last selected role of user
+        extra_info = ExtraInfo.objects.filter(user=user)
+        if not extra_info.exists():
+            return JsonResponse({'error': 'ExtraInfo not found'}, status=404)
+        extra_info = extra_info.first()
+
+        last_selected_role = extra_info.last_selected_role
+        if not last_selected_role:
+            
+            designations = HoldsDesignation.objects.filter(user=user)
+            if designations.exists():
+                last_selected_role = designations.last().designation.name
+                print(last_selected_role)
+                extra_info.last_selected_role = last_selected_role
+                extra_info.save()
+                last_selected_role=extra_info.last_selected_role
+            else:
+                return JsonResponse({'error': 'Designation not found'}, status=404)
+
+        # get leave form by id
+        leave_form = LeaveForm.objects.filter(id=form_id)
+
+        # check if leave form exists
+        if not leave_form.exists():
+            return JsonResponse({'error': 'Leave form not found'}, status=404)
+        
+        leave_form = leave_form.first()
+
+        # check if user has access to handle academic responsibility
+        
+
+        if user != leave_form.AcademicResponsibility_user.id:
+            return JsonResponse({'error': 'You do not have access to handle academic responsibility for this leave form'}, status=403)
+        #print("2")
+        #get designation of academic responsibility user
+        academic_responsibility_designation = leave_form.AcademicResponsibility_designation
+
+        # check if user has access to handle academic responsibility
+        if last_selected_role!=academic_responsibility_designation.name:
+            return JsonResponse({'error': 'You do not have access to handle academic responsibility for this leave form'}, status=403)
+        
+        # get action
+        data = json.loads(request.body)
+        action = data.get('action')
+        #print(action)
+        # check if action is valid
+        if action not in ['accept', 'reject']:
+            return JsonResponse({'error': 'Invalid action'}, status=400)
+        
+        # handle reject
+        if action == 'reject':
+            leave_form.AcademicResponsibility_status = 'Rejected'
+            leave_form.status = 'Rejected'
+            leave_form.save()
+            return JsonResponse({'message': 'Academic responsibility rejected successfully'}, status=200)
+        
+        # handle accept
+        leave_form.AcademicResponsibility_status = 'Accepted'
+        # check if administrative responsibility is pending or rejected
+        if leave_form.AdministrativeResponsibility_status == 'Pending' or leave_form.AdministrativeResponsibility_status == 'Rejected':
+            leave_form.save()
+            return JsonResponse({'message': 'Academic responsibility accepted successfully'}, status=200)
+        
+        # check if administrative responsibility is accepted
+        if leave_form.AdministrativeResponsibility_status == 'Accepted':
+            uploader_employee = leave_form.employee
+            # get user of uploader employee
+            uploader = uploader_employee.id
+            uploader_designation=leave_form.designation
+
+            first_recieved_by_employee = leave_form.first_recieved_by
+            first_recieved_by_user = first_recieved_by_employee.id
+            # get username of first_recieved_by_user
+            receiver = first_recieved_by_user.username
+            # get designation of first recieved by user
+            receiver_designation = leave_form.first_recieved_designation
+            src_module = "HR"
+            src_object_id = str(leave_form.id)
+            file_extra_JSON = {"type": "Leave"}
+
+            file_id = create_file(
+                uploader=uploader,
+                uploader_designation=uploader_designation,
+                receiver=receiver,
+                receiver_designation=receiver_designation,
+                src_module=src_module,
+                src_object_id=src_object_id,
+                file_extra_JSON=file_extra_JSON,
+                attached_file=None  # Attach any file if necessary
+            )
+            leave_form.file_id = file_id
+            leave_form.save()
+            return JsonResponse({'message': 'Academic responsibility accepted successfully'}, status=200)
+    except Exception as e:
+        return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
+    
+
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def handle_leave_administrative_responsibility(request, form_id):
+    """
+    API endpoint to handle the administrative responsibility of a leave form.
+    """
+    user = request.user
+
+    if not user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+
+    try:
+        # get employee of user
+        employee = Employee.objects.filter(id=user)
+        if not employee.exists():
+            return JsonResponse({'error': 'Employee not found'}, status=404)
+        
+        # get last selected role of user
+        extra_info = ExtraInfo.objects.filter(user=user)
+        if not extra_info.exists():
+            return JsonResponse({'error': 'ExtraInfo not found'}, status=404)
+        extra_info = extra_info.first()
+
+        last_selected_role = extra_info.last_selected_role
+        if not last_selected_role:
+            
+            designations = HoldsDesignation.objects.filter(user=user)
+            if designations.exists():
+                last_selected_role = designations.last().designation.name
+                print(last_selected_role)
+                extra_info.last_selected_role = last_selected_role
+                extra_info.save()
+                last_selected_role=extra_info.last_selected_role
+            else:
+                return JsonResponse({'error': 'Designation not found'}, status=404)
+
+        # get leave form by id
+        leave_form = LeaveForm.objects.filter(id=form_id)
+
+        # check if leave form exists
+        if not leave_form.exists():
+            return JsonResponse({'error': 'Leave form not found'}, status=404)
+        
+        leave_form = leave_form.first()
+
+        # check if user has access to handle administrative responsibility
+        if user != leave_form.AdministrativeResponsibility_user.id:
+            return JsonResponse({'error': 'You do not have access to handle administrative responsibility for this leave form'}, status=403)
+        #get designation of administrative responsibility user
+        administrative_responsibility_designation = leave_form.AdministrativeResponsibility_designation
+
+        # check if user has access to handle administrative responsibility
+        if last_selected_role!=administrative_responsibility_designation.name:
+            return JsonResponse({'error': 'You do not have access to handle administrative responsibility for this leave form'}, status=403)
+        
+        # get action
+        data = json.loads(request.body)
+        action = data.get('action')
+        #print(action)
+
+        # check if action is valid
+        if action not in ['accept', 'reject']:
+            return JsonResponse({'error': 'Invalid action'}, status=400)
+        
+        # handle reject
+        if action == 'reject':
+            leave_form.AdministrativeResponsibility_status = 'Rejected'
+            leave_form.status = 'Rejected'
+            leave_form.save()
+            return JsonResponse({'message': 'Administrative responsibility rejected successfully'}, status=200)
+        
+        # handle accept
+        leave_form.AdministrativeResponsibility_status = 'Accepted'
+        # check if academic responsibility is pending or rejected
+        if leave_form.AcademicResponsibility_status == 'Pending' or leave_form.AcademicResponsibility_status == 'Rejected':
+            leave_form.save()
+            return JsonResponse({'message': 'Administrative responsibility accepted successfully'}, status=200)
+
+        
+        # check if academic responsibility is accepted
+        if leave_form.AcademicResponsibility_status == 'Accepted':
+            uploader_employee = leave_form.employee
+            # get user of uploader employee
+            uploader = uploader_employee.id
+            uploader_designation=leave_form.designation
+            
+            first_recieved_by_employee = leave_form.first_recieved_by
+            first_recieved_by_user = first_recieved_by_employee.id
+            
+            # get username of first_recieved_by_user
+            receiver = first_recieved_by_user.username
+            # get designation of first recieved by user
+            
+            receiver_designation = leave_form.first_recieved_designation 
+            
+            src_module = "HR"
+            src_object_id = str(leave_form.id)
+            file_extra_JSON = {"type": "Leave"}
+            
+            file_id = create_file(
+                uploader=uploader,
+                uploader_designation=uploader_designation,
+                receiver=receiver,
+                receiver_designation=receiver_designation,
+                src_module=src_module,
+                src_object_id=src_object_id,
+                file_extra_JSON=file_extra_JSON,
+                attached_file=None  # Attach any file if necessary
+            )
+            #print(file_id)
+            leave_form.file_id = file_id
+            
+            leave_form.save()
+            return JsonResponse({'message': 'Administrative responsibility accepted successfully'}, status=200)
+    except Exception as e:
+        return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
+
+
+# def get_leave_inbox get leave forms where acdemic responsibility or administrative responsibility
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def get_leave_inbox(request):
+    """
+    API endpoint to get the leave inbox for the authenticated user.
+    """
+    user = request.user
+
+    if not user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+
+    try:
+        # Get the employee associated with the user
+        employee = Employee.objects.filter(id=user)
+        if not employee.exists():
+            return JsonResponse({'error': 'Employee not found'}, status=404)
+        employee = employee.first()
+        # get last selected role of user
+        query_date=request.GET.get('date')
+        
+        # if date in not set date is 1 year back
+        if not query_date:
+            # set 1 year back date
+            query_date = datetime.now().date() - timedelta(days=365)
+        else:
+            query_date = datetime.strptime(query_date, '%Y-%m-%d').date()
+        extra_info = ExtraInfo.objects.filter(user=user)
+        if not extra_info.exists():
+            return JsonResponse({'error': 'ExtraInfo not found'}, status=404)
+        extra_info = extra_info.first()
+
+        last_selected_role = extra_info.last_selected_role
+        
+        # print(type(last_selected_role))
+
+        # if last selected role is none then set it to employee designation
+
+        if not last_selected_role:
+            
+            designations = HoldsDesignation.objects.filter(user=user)
+            if designations.exists():
+                last_selected_role = designations.last().designation.name
+                print(last_selected_role)
+                extra_info.last_selected_role = last_selected_role
+                extra_info.save()
+                last_selected_role=extra_info.last_selected_role
+            else:
+                return JsonResponse({'error': 'Designation not found'}, status=404)
+
+        
+
+        # print(1)
+        # get academic responsibility forms till query date
+        academic_responsibility_forms = LeaveForm.objects.filter(AcademicResponsibility_user=employee, submissionDate__gte=query_date)
+        # filter by last selected role
+        # print(2)
+        academic_responsibility_forms = [form for form in academic_responsibility_forms if form.AcademicResponsibility_designation.name == last_selected_role]
+
+        # get administrative responsibility forms
+        administrative_responsibility_forms = LeaveForm.objects.filter(AdministrativeResponsibility_user=employee, submissionDate__gte=query_date)
+        # filter by last selected role
+        administrative_responsibility_forms = [form for form in administrative_responsibility_forms if form.AdministrativeResponsibility_designation.name == last_selected_role]
+
+        # Prepare the academic res response data
+        academic_res_inbox = []
+        # send only id submissionDate, status, leaveStartDate, leaveEndDate,
+        for form in academic_responsibility_forms:
+            academic_res_inbox.append({
+                'id': form.id,
+                'name': form.name,
+                'designation': form.designation,
+                'submissionDate': form.submissionDate,
+                'status': form.AcademicResponsibility_status,
+                'leaveStartDate': form.leaveStartDate,
+                'leaveEndDate': form.leaveEndDate,
+            })
+        
+        # Prepare the administrative res response data
+        administrative_res_inbox = []
+        # send only id submissionDate, status, leaveStartDate, leaveEndDate,
+        for form in administrative_responsibility_forms:
+            administrative_res_inbox.append({
+                'id': form.id,
+                'name': form.name,
+                'designation': form.designation,
+                'submissionDate': form.submissionDate,
+                'status': form.AdministrativeResponsibility_status,
+                'leaveStartDate': form.leaveStartDate,
+                'leaveEndDate': form.leaveEndDate,
+            })
+
+        
+
+        # get leave file 
+        user_id = ExtraInfo.objects.get(user=user).user_id
+        ext= ExtraInfo.objects.get(user__id=user_id)
+        username = ext.user
+        designation = ext.last_selected_role
+        if not last_selected_role:
+            
+            designations = HoldsDesignation.objects.filter(user=user)
+            if designations.exists():
+                last_selected_role = designations.last().designation.name
+                print(last_selected_role)
+                ext.last_selected_role = last_selected_role
+                ext.save()
+                ext=extra_info.last_selected_role
+            else:
+                return JsonResponse({'error': 'Designation not found'}, status=404)
+        reciever_designation = None
+        if designation:
+            reciever_designation = designation
+        #print("9")
+        #print(username,designation)
+        
+        inbox = view_inbox(username=str(username), designation=reciever_designation, src_module="HR")
+        #print("inbox",inbox)
+        
+        # type== leave and upload_date> query date
+        filtered_inbox = [
+            i for i in inbox
+            if i['file_extra_JSON']['type'] == "Leave" and
+            datetime.strptime(i['upload_date'], "%Y-%m-%dT%H:%M:%S.%f").date() >= query_date ]
+
+        # in fileterd_inbox  get designation name by designatetion id and fetch status of each leave form by src_object_id
+        #print("x")
+        for i in filtered_inbox:
+            if i['designation']:
+                designation = Designation.objects.get(id=i['designation'])
+                i['designation'] = designation.name
+                #print(i['designation'])
+            src_object_id = i['src_object_id']
+            leave_form = LeaveForm.objects.get(id=src_object_id)
+            i['status'] = leave_form.status
+        
+        #print("10")
+        
+
+        return JsonResponse({
+            'leave_inbox': filtered_inbox,
+            'academic_res_inbox': academic_res_inbox,
+            'administrative_res_inbox': administrative_res_inbox
+        }, status=200)
+    except Exception as e:
+        return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
+
+# download attached pdf for leave form
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def download_leave_form_pdf(request, form_id):
+    """
+    API endpoint to download the attached PDF for a leave form.
+    """
+    user = request.user
+
+    if not user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+
+    try:
+        # Get the leave form by ID
+        leave_form = LeaveForm.objects.filter(id=form_id)
+        if not leave_form.exists():
+            return JsonResponse({'error': 'Leave form not found'}, status=404)
+        leave_form = leave_form.first()
+
+
+
+        # Check if the leave form has an attached PDF
+        if not leave_form.attached_pdf:
+            return JsonResponse({'error': 'No attached PDF found for this leave form'}, status=404)
+
+        # convert binary to file
+        attached_pdf = leave_form.attached_pdf
+        attached_pdf_name = leave_form.attached_pdf_name
+        response = HttpResponse(attached_pdf, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{attached_pdf_name}"'
+        return response
+    except Exception as e:
+        return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
+    
+
+# {'file_history': [OrderedDict([('id', 490), ('receive_date', '2025-03-11T16:53:15.057424'), ('forward_date', '2025-03-11T16:53:15.057424'), ('remarks', 'File with id:635 created by vkjain and sent to vkjain'), ('upload_file', None), ('is_read', False), ('tracking_extra_JSON', {'type': 'Leave'}), ('file_id', 635), ('current_id', 'vkjain'), ('current_design', 4354), ('receiver_id', 5350), ('receive_design', 15)])]}
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def track_file_react(request, id):
+    # Fetching the file history as a list of dictionaries
+    user=request.user
     file_history = view_history(file_id=id)
-
-
-    context = {'file_history': file_history}
-
-    # Create a JSON response
-    return render(request ,template , context)
-
-def get_current_file_owner(file_id: int) -> User:
-    '''
-    This functions returns the current owner of the file.
-    The current owner is the latest recipient of the file
-    '''
-    latest_tracking = Tracking.objects.filter(
-        file_id=file_id).order_by('-receive_date').first()
-    latest_recipient = latest_tracking.receiver_id
-    return latest_recipient
-
-def file_handle_leave(request):
-    if request.method == 'POST':
-        form_data2 = request.POST
-        form_data=request.POST.get('context')
-        action = form_data2.get('action')
+    #print(user.id)
+    # Create a JSON response for React
+    response_data = {
+        'file_history': file_history
+    }
+    # for each designation id get designation name
+    for i in response_data['file_history']:
         
-        form_data=json.loads(form_data)
-        form_id = form_data['form_id']
-        file_id = form_data['file_id']
-        from_user = form_data['from_user']
-        from_designation = form_data['from_designation']
-        username_employee = form_data['username_employee']
-        designation_employee = form_data['designation_employee']
+        
 
-        remark = form_data['remark_id']
+        if i['receiver_id']:
+            user = User.objects.get(id=i['receiver_id'])
+            if user:
+                i['receiver_id'] = user.first_name + " " + user.last_name 
+        if i['receive_design']:
+            designation = Designation.objects.get(id=i['receive_design'])
+            if designation:
+                i['receive_design'] = designation.name
+
+    
+    return JsonResponse(response_data)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def handle_leave_file(request, form_id):
+    user=request.user
+    data = json.loads(request.body)
+    action = data.get('action')
+    remarks = data.get('fileRemarks')
+    forwardtouser=data.get('forwardTo')
+    forwardToDesignation=data.get('forwardToDesignation')
+    
+    
+    if not user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+    try:
+        # get employee of user
+        employee = Employee.objects.filter(id=user)
+        if not employee.exists():
+            return JsonResponse({'error': 'Employee not found'}, status=404)
+        
+        # get last selected role of user
+        extra_info = ExtraInfo.objects.filter(user=user)
+        if not extra_info.exists():
+            return JsonResponse({'error': 'ExtraInfo not found'}, status=404)
+        extra_info = extra_info.first()
+
+        last_selected_role = extra_info.last_selected_role
+        if not last_selected_role:
+            
+            designations = HoldsDesignation.objects.filter(user=user)
+            if designations.exists():
+                last_selected_role = designations.last().designation.name
+                print(last_selected_role)
+                extra_info.last_selected_role = last_selected_role
+                extra_info.save()
+                last_selected_role=extra_info.last_selected_role
+            else:
+                return JsonResponse({'error': 'Designation not found'}, status=404)
+
+        # get leave form by form id
+        leave_form = LeaveForm.objects.filter(id=form_id)
+        if not leave_form.exists():
+            return JsonResponse({'error': 'Leave form not found'}, status=404)
+        
+        file_id=leave_form.first().file_id
+
        
+        current_owner = get_current_file_owner(file_id)
+        current_owner_designation=get_current_file_owner_designation(file_id)
 
-        #database
-        leave_form = LeaveForm.objects.get(id=form_id)
+        
+        #print(current_owner)
+        #print(current_owner_designation)
+        # match user's username with current owner
+        
+
+        if user.username != current_owner.username:
+            return JsonResponse({'error': 'You do not have access to handle this file'}, status=403)
+        
+        if last_selected_role != current_owner_designation.name:
+            return JsonResponse({'error': 'You do not have access to handle this file'}, status=403)
+        # get action
+        if action not in ['forward', 'reject', 'accept']:
+            return JsonResponse({'error': 'Invalid action'}, status=400)
+        
+        if action == 'reject':
+            # reject the file
+            remarks = f"Rejected by {current_owner} with remarks: {remarks}"
+            # get uploader of form
+            uploader_employee = leave_form.first().employee
+            uploader = uploader_employee.id
+            uploader_designation=leave_form.first().designation
+            #print(uploader)
+            #print(uploader_designation)
+            
+            track_id = forward_file(
+                file_id=file_id,
+                receiver=uploader,
+                receiver_designation=uploader_designation,
+                remarks=remarks,
+                file_extra_JSON=None
+            )
+            # change status of leave form
+            #print(leave_form.first().status)
+            leave_instance = leave_form.first()
+            leave_instance.status = 'Rejected'
+            leave_instance.save()
+            return JsonResponse({'message': 'File rejected successfully'}, status=200)
+        
+        if action =='forward':
+            # forward the file
+            remarks = f"Forwarded by {current_owner} with remarks: {remarks}"
+            # get forward to user
+            
+            #print(forwardtouser)
+            # get username with user id
+            forwardtouser = User.objects.get(id=forwardtouser).username
+           
+            
+            forward_to_designation = Designation.objects.get(name=forwardToDesignation)
+            track_id = forward_file(
+                file_id=file_id,
+                receiver=forwardtouser,
+                receiver_designation=forward_to_designation,
+                remarks=remarks,
+                file_extra_JSON=None
+            )
+            return JsonResponse({'message': 'File forwarded successfully'}, status=200)
+        
+        if action == 'accept':
+            # accept the file
+            remarks = f"Accepted by {current_owner} with remarks: {remarks}"
+            
+            # get employee of leave form
+            leave_instance = leave_form.first()
+            leave_instance.status = 'Accepted'
+            approvedDate = datetime.now().date()
+            approved_by_employee = Employee.objects.get(id=user)
+            # get approved_by_designation
+            approved_by_designation = Designation.objects.get(name=last_selected_role)
+            leave_instance.approved_by = approved_by_employee
+            leave_instance.approved_by_designation = approved_by_designation
+            leave_instance.approvedDate = approvedDate
+           
+            uploader_employee = leave_instance.employee
+            # get leave balance of employee
+            leave_balance = LeaveBalance.objects.filter(empid=uploader_employee).first()
+            if not leave_balance:
+                return JsonResponse({'error': 'Leave balance not found'}, status=404)
+            # update the leave taken in leave balance
+            #print("hi  1 ")
+            
+            leave_balance.casual_leave_taken += leave_instance.Noof_CasualLeave
+            leave_balance.special_casual_leave_taken += leave_instance.Noof_specialCasualLeave
+            leave_balance.earned_leave_taken += (leave_instance.Noof_earnedLeave+2*leave_instance.Noof_vacationLeave)
+            leave_balance.half_pay_leave_taken += (leave_instance.Noof_halfPayLeave +2*leave_instance.Noof_commutedLeave)
+            leave_balance.maternity_leave_taken += leave_instance.Noof_maternityLeave
+            leave_balance.child_care_leave_taken += leave_instance.Noof_childCareLeave
+            leave_balance.paternity_leave_taken += leave_instance.Noof_paternityLeave
+            leave_balance.restricted_holiday_taken += leave_instance.Noof_restrictedHoliday
+            
+
+
+
+            
+            # return JsonResponse({'message': 'File accepted successfully'}, status=200)
+            # verify leave form save
+            leave_balance.save()
+            #print(leave_balance.casual_leave_taken)
+            leave_instance.save() 
+            track_id = forward_file(
+                file_id=file_id,
+                receiver=current_owner,
+                receiver_designation=current_owner_designation,
+                remarks=remarks,
+                file_extra_JSON=None
+            )
+            return JsonResponse({'message': 'File accepted successfully'}, status=200)
+
+        return JsonResponse({'error': 'Invalid action'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
+
+
+
+
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def admin_get_leave_balance(request, empid):
+    try:
+        user = request.user
+
+        # Validate user authentication
+        if not user.is_authenticated:
+            return JsonResponse({'error': 'Authentication required'}, status=401)
+
+        # Get the user's last selected role
+        extra_info = ExtraInfo.objects.filter(user=user)
+        if not extra_info.exists():
+            return JsonResponse({'error': 'ExtraInfo not found'}, status=404)
+        extra_info = extra_info.first()
+
+        
+        
+        if extra_info.last_selected_role != 'SectionHead_HR':
+            return JsonResponse({'error': 'You do not have access to get leave balance'}, status=403)
+
+        
+        # Fetch the employee data based on empid
+        try:
+            emp_user = User.objects.get(id=empid)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User not found'}, status=404)
+        
+        try:
+            employee = Employee.objects.get(id=emp_user)
+        except Employee.DoesNotExist:
+            return JsonResponse({'error': 'Employee not found'}, status=404)
+        
+        # Retrieve leave balance and leave per year for the employee
+        try:
+            leave_balance = LeaveBalance.objects.get(empid=employee)
+        except LeaveBalance.DoesNotExist:
+            return JsonResponse({'error': 'Leave balance not found'}, status=404)
+        
+        try:
+            leave_per_year = LeavePerYear.objects.get(empid=employee)
+        except LeavePerYear.DoesNotExist:
+            return JsonResponse({'error': 'Leave per year not found'}, status=404)
+
+        
+        # Prepare leave balance data
+        leave_balance_data = {
+            'casual_leave_allotted': leave_per_year.casual_leave,
+            'casual_leave_taken': leave_balance.casual_leave_taken,
+            
+            'earned_leave_allotted': leave_per_year.earned_leave,
+            'earned_leave_taken': leave_balance.earned_leave_taken,
+            
+            'special_casual_leave_allotted': leave_per_year.special_casual_leave,
+            'special_casual_leave_taken': leave_balance.special_casual_leave_taken,
+            'restricted_holiday_allotted': leave_per_year.restricted_holiday,
+            'restricted_holiday_taken': leave_balance.restricted_holiday_taken,
+
+            'half_pay_leave_allotted': leave_per_year.half_pay_leave,
+            'half_pay_leave_taken': leave_balance.half_pay_leave_taken,
+
+            'maternity_leave_allotted': leave_per_year.maternity_leave,
+            'maternity_leave_taken': leave_balance.maternity_leave_taken,
+
+            'child_care_leave_allotted': leave_per_year.child_care_leave,
+            'child_care_leave_taken': leave_balance.child_care_leave_taken,
+
+            'paternity_leave_allotted': leave_per_year.paternity_leave,
+            'paternity_leave_taken': leave_balance.paternity_leave_taken,
+
+            'leave_encashment_allotted': leave_per_year.leave_encashment,
+            'leave_encashment_taken': leave_balance.leave_encashment_taken,
+            
+        }
+
+        return JsonResponse({'leave_balance': leave_balance_data}, status=200)
+    except Exception as e:
+        # Log the error message (consider using logging here for production)
+        return JsonResponse({'error': f'An unexpected error occurred: {str(e)}'}, status=500)
+
+
+
+# create a function to get department of employee
+def get_department(emp):
+    department = None
+    # get userid then get extrainfo then get department
+    user_id = emp.id
+    ext= ExtraInfo.objects.get(user__id=user_id)
+    department = ext.department
+    return department
+
+
+
+
+
+
+
+# @api_view(['GET'])
+# @authentication_classes([TokenAuthentication])
+# @permission_classes([IsAuthenticated])
+# def admin_get_all_leave_balances(request):
+#     try:
+#         user = request.user
+
+#         if not user.is_authenticated:
+#             return JsonResponse({'error': 'Authentication required'}, status=401)
+
+#         # Get the user's ExtraInfo record
+#         extra_info = ExtraInfo.objects.filter(user=user).first()
+#         if not extra_info:
+#             return JsonResponse({'error': 'ExtraInfo not found'}, status=404)
+
+#         # Validate the HR role
+#         if extra_info.last_selected_role != 'SectionHead_HR':
+#             return JsonResponse({'error': 'You do not have access to get leave balance'}, status=403)
+
+#         # Accumulate leave balance data for all employees
+#         employee_leave_list = []
+#         employees = Employee.objects.all()  # Adjust this query if HR should only access certain employees
+
+#         for employee in employees:
+#             # Since the 'id' field in Employee is a OneToOneField with User, use it to extract user info
+#             employee_data = {
+#                 'employee_id': employee.id.pk,  # primary key of the related User
+#                 'employee_username': employee.id.username,
+#                 'employee_fullname': employee.id.get_full_name(),  # if defined; otherwise, adjust as needed
+#             }
+
+#             # Fetch related leave data based on employee instance
+#             leave_balance = LeaveBalance.objects.filter(empid=employee).first()
+#             leave_per_year = LeavePerYear.objects.filter(empid=employee).first()
+
+#             if not leave_balance or not leave_per_year:
+#                 missing_fields = []
+#                 if not leave_balance:
+#                     missing_fields.append('LeaveBalance')
+#                 if not leave_per_year:
+#                     missing_fields.append('LeavePerYear')
+#                 employee_data['error'] = f"Missing record(s): {', '.join(missing_fields)}."
+#             else:
+#                 employee_data.update({
+#                     'casual_leave_allotted': leave_per_year.casual_leave_allotted,
+#                     'casual_leave_taken': leave_balance.casual_leave_taken,
+#                     'vacation_leave_allotted': leave_per_year.vacation_leave_allotted,
+#                     'vacation_leave_taken': leave_balance.vacation_leave_taken,
+#                     'earned_leave_allotted': leave_per_year.earned_leave_allotted,
+#                     'earned_leave_taken': leave_balance.earned_leave_taken,
+#                     'commuted_leave_allotted': leave_per_year.commuted_leave_allotted,
+#                     'commuted_leave_taken': leave_balance.commuted_leave_taken,
+#                     'special_casual_leave_allotted': leave_per_year.special_casual_leave_allotted,
+#                     'special_casual_leave_taken': leave_balance.special_casual_leave_taken,
+#                     'restricted_holiday_allotted': leave_per_year.restricted_holiday_allotted,
+#                     'restricted_holiday_taken': leave_balance.restricted_holiday_taken,
+#                 })
+
+#             employee_leave_list.append(employee_data)
+
+#         return JsonResponse({'leave_balances': employee_leave_list}, status=200)
+    
+#     except Exception as e:
+#         logger.exception("Unexpected error in admin_get_all_leave_balances view")
+#         return JsonResponse({'error': f'An unexpected error occurred: {str(e)}'}, status=500)
+
+
+
+
+
+
+
+
+
+
+
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def admin_get_all_leave_balances(request):
+    try:
+        user = request.user
+
+        if not user.is_authenticated:
+            return JsonResponse({'error': 'Authentication required'}, status=401)
+
+        # Get the user's ExtraInfo record
+        extra_info = ExtraInfo.objects.filter(user=user).first()
+        if not extra_info:
+            return JsonResponse({'error': 'ExtraInfo not found'}, status=404)
+
+        # Validate the HR role
+        if extra_info.last_selected_role != 'SectionHead_HR':
+            return JsonResponse({'error': 'You do not have access to get leave balance'}, status=403)
+
+        # Accumulate leave balance data for all employees
+        employee_leave_list = []
+        employees = Employee.objects.all()  # Adjust this query if HR should only access certain employees
+
+        for employee in employees:
+            # Employee.id is a OneToOneField linking to the related User instance
+            user_inst = employee.id
+
+            # Fetch related ExtraInfo for department details (like in get_hr_employees)
+            emp_extra_info = ExtraInfo.objects.filter(user=user_inst).first()
+            department = emp_extra_info.department.name if emp_extra_info and emp_extra_info.department else None
+
+            # Prepare base employee data including department
+            employee_data = {
+                'employee_id': user_inst.id,  # primary key of the User model
+                'employee_username': user_inst.username,
+                'employee_fullname': user_inst.get_full_name(),  # if defined; otherwise, adjust as needed
+                'department': department,
+            }
+
+            # Fetch related leave data based on employee instance
+            leave_balance = LeaveBalance.objects.filter(empid=employee).first()
+            leave_per_year = LeavePerYear.objects.filter(empid=employee).first()
+
+            if not leave_balance or not leave_per_year:
+                missing_fields = []
+                if not leave_balance:
+                    missing_fields.append('LeaveBalance')
+                if not leave_per_year: 
+                    missing_fields.append('LeavePerYear')
+                employee_data['error'] = f"Missing record(s): {', '.join(missing_fields)}."
+            else:
+                employee_data.update({
+                    
+                    'casual_leave_allotted': leave_per_year.casual_leave,
+                    'casual_leave_taken': leave_balance.casual_leave_taken,
+                    
+                    'earned_leave_allotted': leave_per_year.earned_leave,
+                    'earned_leave_taken': leave_balance.earned_leave_taken,
+                    
+                    'special_casual_leave_allotted': leave_per_year.special_casual_leave,
+                    'special_casual_leave_taken': leave_balance.special_casual_leave_taken,
+                    'restricted_holiday_allotted': leave_per_year.restricted_holiday,
+                    'restricted_holiday_taken': leave_balance.restricted_holiday_taken,
+
+                    'half_pay_leave_allotted': leave_per_year.half_pay_leave,
+                    'half_pay_leave_taken': leave_balance.half_pay_leave_taken,
+
+                    'maternity_leave_allotted': leave_per_year.maternity_leave,
+                    'maternity_leave_taken': leave_balance.maternity_leave_taken,
+
+                    'child_care_leave_allotted': leave_per_year.child_care_leave,
+                    'child_care_leave_taken': leave_balance.child_care_leave_taken,
+
+                    'paternity_leave_allotted': leave_per_year.paternity_leave,
+                    'paternity_leave_taken': leave_balance.paternity_leave_taken,
+
+                    'leave_encashment_allotted': leave_per_year.leave_encashment,
+                    'leave_encashment_taken': leave_balance.leave_encashment_taken,
+                    
+                
+                })
+
+            employee_leave_list.append(employee_data)
+
+        return JsonResponse({'leave_balances': employee_leave_list}, status=200)
+
+    except Exception as e:
+        logger.exception("Unexpected error in admin_get_all_leave_balances view")
+        return JsonResponse({'error': f'An unexpected error occurred: {str(e)}'}, status=500)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@api_view(['PUT'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def admin_update_leave_balance(request, empid):
+    """
+    Update leave balance and leave per year for a specified employee.
+    The request JSON may include any of the following numeric fields:
+    
+    For LeaveBalance:
+      - casual_leave_taken
+      - vacation_leave_taken
+      - earned_leave_taken
+      - commuted_leave_taken
+      - special_casual_leave_taken
+      - restricted_holiday_taken
+      
+    For LeavePerYear:
+      - casual_leave_allotted
+      - vacation_leave_allotted
+      - earned_leave_allotted
+      - commuted_leave_allotted
+      - special_casual_leave_allotted
+      - restricted_holiday_allotted
+      
+    Only users with the "SectionHead_HR" role can perform this update.
+    """
+    try:
+        user = request.user
+
+        # Validate user authentication (redundant if using IsAuthenticated but explicit check adds clarity)
+        if not user.is_authenticated:
+            return JsonResponse({'error': 'Authentication required'}, status=401)
+
+        # Get the user's ExtraInfo record to verify role
+        extra_info_qs = ExtraInfo.objects.filter(user=user)
+        if not extra_info_qs.exists():
+            return JsonResponse({'error': 'ExtraInfo not found'}, status=404)
+        extra_info = extra_info_qs.first()
+
+        # Permission check based on last selected role
+        if extra_info.last_selected_role != 'SectionHead_HR':
+            return JsonResponse({'error': 'You do not have access to update leave balances'}, status=403)
+
+        # Fetch the employee using the provided empid
+        try:
+            emp_user = User.objects.get(id=empid)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User not found'}, status=404)
+
+        try:
+            employee = Employee.objects.get(id=emp_user)
+        except Employee.DoesNotExist:
+            return JsonResponse({'error': 'Employee not found'}, status=404)
+
+        # Retrieve existing records for leave balance and leave per year for the employee
+        try:
+            leave_balance = LeaveBalance.objects.get(empid=employee)
+        except LeaveBalance.DoesNotExist:
+            return JsonResponse({'error': 'Leave balance not found'}, status=404)
+
+        try:
+            leave_per_year = LeavePerYear.objects.get(empid=employee)
+        except LeavePerYear.DoesNotExist:
+            return JsonResponse({'error': 'Leave per year record not found'}, status=404)
+
+        # Define the fields for each model that can be updated.
+        leave_balance_fields = [
+            'casual_leave_taken',
+            'vacation_leave_taken',
+            'earned_leave_taken',
+            'commuted_leave_taken',
+            'special_casual_leave_taken',
+            'restricted_holiday_taken'
+        ]
+
+        leave_per_year_fields = [
+            'casual_leave_allotted',
+            'vacation_leave_allotted',
+            'earned_leave_allotted',
+            'commuted_leave_allotted',
+            'special_casual_leave_allotted',
+            'restricted_holiday_allotted'
+        ]
+
+        input_data = request.data  # expect JSON payload
+
+        # Update LeaveBalance fields if provided in the payload.
+        for field in leave_balance_fields:
+            if field in input_data:
+                try:
+                    # It's a good idea to cast to float (or int) based on your model definition.
+                    setattr(leave_balance, field, float(input_data[field]))
+                except (ValueError, TypeError):
+                    return JsonResponse({'error': f'Invalid value for {field}'}, status=400)
+
+        # Update LeavePerYear fields if provided.
+        for field in leave_per_year_fields:
+            if field in input_data:
+                try:
+                    setattr(leave_per_year, field, float(input_data[field]))
+                except (ValueError, TypeError):
+                    return JsonResponse({'error': f'Invalid value for {field}'}, status=400)
+
+        # Save changes to both models.
+        leave_balance.save()
+        leave_per_year.save()
+
+        return JsonResponse({'message': 'Leave balance and leave per year updated successfully!'}, status=200)
+
+    except Exception as e:
+        # Consider logging the error in a production environment.
+        return JsonResponse({'error': f'An unexpected error occurred: {str(e)}'}, status=500)
+
+
+
+
+# create an api to get leave_requests of employee with empid with date filter if none then 1 year back
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def admin_get_leave_requests(request, empid):
+    """
+    API endpoint to get all leave requests for a specified employee.
+    """
+    user = request.user
+
+    if not user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+
+    try:
+        # Get the user's ExtraInfo record to verify role
+        extra_info_qs = ExtraInfo.objects.filter(user=user)
+        if not extra_info_qs.exists():
+            return JsonResponse({'error': 'ExtraInfo not found'}, status=404)
+        extra_info = extra_info_qs.first()
+
+        # Permission check based on last selected role
+        if extra_info.last_selected_role != 'SectionHead_HR':
+            return JsonResponse({'error': 'You do not have access to get leave requests'}, status=403)
+
+        # Fetch the employee using the provided empid
+        try:
+            emp_user = User.objects.get(id=empid)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User not found'}, status=404)
+
+        try:
+            employee = Employee.objects.get(id=emp_user)
+        except Employee.DoesNotExist:
+            return JsonResponse({'error': 'Employee not found'}, status=404)
+
+        # Fetch leave requests for the employee
+        query_date = request.GET.get('date')
+        if not query_date:
+            query_date = datetime.now().date() - timedelta(days=365)
+        else:
+            query_date = datetime.strptime(query_date, '%Y-%m-%d').date()
+
+        leave_requests = LeaveForm.objects.filter(employee=employee, submissionDate__gte=query_date)
+
+        # Prepare the response data
+        leave_requests_data = []
+        for leave_request in leave_requests:
+            leave_requests_data.append({
+                'id': leave_request.id,
+                'submissionDate': leave_request.submissionDate,
+                'status': leave_request.status,
+                'leaveStartDate': leave_request.leaveStartDate,
+                'leaveEndDate': leave_request.leaveEndDate,
+            })
+
+        return JsonResponse({'leave_requests': leave_requests_data}, status=200)
+
+    except Exception as e:
+        return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
+
+
+
+# @api_view(['GET'])
+# @authentication_classes([TokenAuthentication])
+# @permission_classes([IsAuthenticated])
+# def get_hr_employees(request):
+#     """
+#     API endpoint to retrieve all HR-access employees (faculty + staff).
+
+#     For each employee (from the Employee model):
+#       - Fetch the related user (a OneToOne relation via the `id` field).
+#       - Using ExtraInfo, get the department (if available), else keep it null.
+#       - Using HoldsDesignation, return one entry per designation.
+#         If no designation exists for the employee, a single entry with designation as null is returned.
+
+#     Returns:
+#         A JSON response (list) of entries with the following keys:
+#         - id
+#         - name (concatenated first and last name)
+#         - username
+#         - designation
+#         - department
+#     """
+#     # Check if the user has HR access
+#     if not check_hr_access(request):
+#         return JsonResponse({'error': 'HR access required'}, status=403)
+
+#     try:
+#         # Get all employees (this table already contains only HR-access employees)
+#         employees = Employee.objects.all()
+#         results = []
+
+#         for emp in employees:
+#             # Employee.id is a OneToOneField to the User model.
+#             user_inst = emp.id
+
+#             # Fetch extra info similar to get_form_initials.
+#             # If no ExtraInfo exists (or no department is set), department is kept as None.
+#             extra_info = ExtraInfo.objects.filter(user=user_inst).first()
+#             department = extra_info.department.name if extra_info and extra_info.department else None
+
+#             # Fetch designations from HoldsDesignation model
+#             designations_qs = HoldsDesignation.objects.filter(user=user_inst)
+#             if designations_qs.exists():
+#                 # Return one record per designation.
+#                 for hd in designations_qs:
+#                     results.append({
+#                         "id": user_inst.id,
+#                         "name": f"{user_inst.first_name} {user_inst.last_name}",
+#                         "username": user_inst.username,
+#                         "designation": hd.designation.name,  # Assuming the designation has a 'name' field.
+#                         "department": department,
+#                     })
+#             else:
+#                 # If no designation exists, include the employee with designation set to None.
+#                 results.append({
+#                     "id": user_inst.id,
+#                     "name": f"{user_inst.first_name} {user_inst.last_name}",
+#                     "username": user_inst.username,
+#                     "designation": None,
+#                     "department": department,
+#                 })
+
+#         return JsonResponse(results, safe=False, status=200)
+
+#     except Exception as e:
+#         return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
+
+
+
+
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def get_hr_employees(request):
+    """
+    API endpoint to retrieve all HR-access employees (faculty + staff)
+    with a single entry per employee. For each employee (from the Employee model):
+      - Fetch the related user (a OneToOne relation via the `id` field).
+      - Using ExtraInfo, get the department (if available), else keep it null.
+    
+    Returns:
+        A JSON response (list) of entries with the following keys:
+        - id
+        - name (concatenated first and last name)
+        - username
+        - department
+    """
+
+    # Check if the user has HR access.
+    if not check_hr_access(request):
+        return JsonResponse({'error': 'HR access required'}, status=403)
+
+    try:
+        # Get all employees (the Employee model already includes only those with HR access).
+        employees = Employee.objects.all()
+        results = []
+
+        for emp in employees:
+            # Employee.id is a OneToOneField to the User model.
+            user_inst = emp.id
+
+            # Fetch extra info (for department information) similar to get_form_initials.
+            extra_info = ExtraInfo.objects.filter(user=user_inst).first()
+            department = extra_info.department.name if extra_info and extra_info.department else None
+
+            # Append a single entry per employee.
+            results.append({
+                "id": user_inst.id,
+                "name": f"{user_inst.first_name} {user_inst.last_name}",
+                "username": user_inst.username,
+                "department": department,
+            })
+
+        return JsonResponse(results, safe=False, status=200)
+
+    except Exception as e:
+        return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
+
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def offline_leave_form(request):
+    """
+    API endpoint to handle offline leave form submission.
+    Automatically approves the leave and updates the leave balance.
+    """
+    user = request.user
+
+    if not user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+    
+    # checking hr access
+    if not check_hr_access(request):
+        return JsonResponse({'error': 'HR access required'}, status=403)
+    
+    # checking if user is admin or not
+    try:
+        extra_info = ExtraInfo.objects.get(user=user)
+        if extra_info.last_selected_role != 'SectionHead_HR':
+            return JsonResponse({'error': 'You do not have access to this API'}, status=403)
+    except ExtraInfo.DoesNotExist:
+        return JsonResponse({'error': 'ExtraInfo not found'}, status=404)
+    
+
+
+    try:
+        form_data = request.POST
+        files = request.FILES
+        print("Form Data:", form_data)  # Debugging
+        print(1)
+
+        # Parse and validate complex fields
+        try:
+            employee_details = json.loads(form_data.get('employeeDetails', '{}'))
+            leave_details = json.loads(form_data.get('leaveDetails', '{}'))
+            station_leave = json.loads(form_data.get('stationLeave', '{}'))
+            responsibility_transfer = json.loads(form_data.get('responsibilityTransfer', '{}'))
+            forward_to = json.loads(form_data.get('forwardTo', '{}'))
+        except json.JSONDecodeError as e:
+            return JsonResponse({'error': f'Invalid JSON format in one of the fields: {str(e)}'}, status=400)
+
+        print(2)
+
+        print("Parsed Employee Details:", employee_details)
+        print("Parsed Leave Details:", leave_details)
+        print("Parsed Station Leave:", station_leave)
+        print("Parsed Responsibility Transfer:", responsibility_transfer)
+        print("Parsed Forward To:", forward_to)
+
+        # Validate required fields
+        required_fields = [
+            'leaveStartDate', 'leaveEndDate', 'purpose'
+        ]
+        missing_fields = [field for field in required_fields if field not in leave_details]
+        if missing_fields:
+            return JsonResponse(
+                {'error': f"Missing required fields: {', '.join(missing_fields)}"},
+                status=400
+            )
+
+        # Validate forwardTo field
+        if 'id' not in forward_to:
+            return JsonResponse(
+                {'error': "Missing required field: forwardTo"},
+                status=400
+            )
+
+        print(3)
+
+        # Validate dates
+        try:
+            leave_start_date = datetime.strptime(leave_details.get('leaveStartDate'), "%Y-%m-%d").date()
+            leave_end_date = datetime.strptime(leave_details.get('leaveEndDate'), "%Y-%m-%d").date()
+            if leave_end_date < leave_start_date:
+                return JsonResponse(
+                    {'error': 'Leave end date cannot be before start date'},
+                    status=400
+                )
+        except ValueError:
+            return JsonResponse(
+                {'error': 'Invalid leave date format. Use YYYY-MM-DD'},
+                status=400
+            )
+
+        print(4)
+
+        # Use employee details from the parsed data
+        employee_id = employee_details.get('id')
+        if not employee_id:
+            return JsonResponse({'error': 'Employee ID is required in employeeDetails'}, status=400)
+
+        employee_name = employee_details.get('name')
+        if not employee_name:
+            return JsonResponse({'error': 'Employee name is required in employeeDetails'}, status=400)
+
+        employee_designation = employee_details.get('designation')
+        if not employee_designation:
+            return JsonResponse({'error': 'Employee designation is required in employeeDetails'}, status=400)
+
+        employee_pfno = employee_details.get('pfno')
+        if not employee_pfno:
+            return JsonResponse({'error': 'Employee PF number is required in employeeDetails'}, status=400)
+
+        print(5)
+
+        # Validate and fetch academic responsibility
+        academic_responsibility_user = None
+        academic_responsibility_designation = None
+        if responsibility_transfer.get('academicResponsibility'):
+            try:
+                academic_responsibility_user = Employee.objects.get(id=responsibility_transfer['academicResponsibility']['id'])
+                academic_responsibility_designation = Designation.objects.get(name=responsibility_transfer['academicResponsibility']['designation'])
+                
+            except (Employee.DoesNotExist, Designation.DoesNotExist):
+                return JsonResponse({'error': 'Invalid academic responsibility details'}, status=400)
+
+        # Validate and fetch administrative responsibility
+        administrative_responsibility_user = None
+        administrative_responsibility_designation = None
+        if responsibility_transfer.get('administrativeResponsibility'):
+            try:
+                administrative_responsibility_user = Employee.objects.get(id=responsibility_transfer['administrativeResponsibility']['id'])
+                administrative_responsibility_designation = Designation.objects.get(name=responsibility_transfer['administrativeResponsibility']['designation'])
+            except (Employee.DoesNotExist, Designation.DoesNotExist):
+                return JsonResponse({'error': 'Invalid administrative responsibility details'}, status=400)
+
+        print(6)
+        
+        # get forward_designation Designation object by name
+
+        try:
+            forward_designation = Designation.objects.get(name=forward_to['designation'])
+        except Designation.DoesNotExist:
+            return JsonResponse({'error': 'Invalid forwardTo designation'}, status=400)
+        
+        print(7)
+        print(forward_to['id'])
+        print(forward_designation)
+    
+
+        # Create leave form
+        leave_form = LeaveForm(
+            employee=Employee.objects.get(id=employee_id),  # Use employee ID from parsed data
+            name=employee_name,  # Use name from employeeDetails
+            designation=employee_designation,
+            personalfileNo=employee_pfno,
+            submissionDate=datetime.now().date(),
+            departmentInfo=employee_details.get('department', 'N/A'),
+            leaveStartDate=leave_start_date,
+            leaveEndDate=leave_end_date,
+            Purpose_of_leave=leave_details.get('purpose'),
+            Noof_CasualLeave=int(leave_details.get('casualLeave', 0)),
+            Noof_vacationLeave=int(leave_details.get('vacationLeave', 0)),
+            Noof_earnedLeave=int(leave_details.get('earnedLeave', 0)),
+            Noof_commutedLeave=int(leave_details.get('commutedLeave', 0)),
+            Noof_specialCasualLeave=int(leave_details.get('specialCasualLeave', 0)),
+            Noof_restrictedHoliday=int(leave_details.get('restrictedHoliday', 0)),
+            Noof_halfPayLeave=int(leave_details.get('halfPayLeave', 0)),
+            Noof_maternityLeave=int(leave_details.get('maternityLeave', 0)),
+            Noof_childCareLeave=int(leave_details.get('childCareLeave', 0)),
+            Noof_paternityLeave=int(leave_details.get('paternityLeave', 0)),
+            Remarks=leave_details.get('remarks', 'N/A'),
+            LeavingStation=station_leave.get('isStationLeave', False),
+            StationLeave_startdate=station_leave.get('stationLeaveStartDate'),
+            StationLeave_enddate=station_leave.get('stationLeaveEndDate'),
+            Address_During_StationLeave=station_leave.get('stationLeaveAddress'),
+            status='Accepted',
+            AcademicResponsibility_user=academic_responsibility_user,
+            AcademicResponsibility_designation=academic_responsibility_designation,
+            AcademicResponsibility_status='Accepted',
+            AdministrativeResponsibility_user=administrative_responsibility_user,
+            AdministrativeResponsibility_designation=administrative_responsibility_designation,
+            AdministrativeResponsibility_status='Accepted',
+            approved_by=Employee.objects.get(id=forward_to['id']),
+            approved_by_designation=forward_designation,
+            approvedDate=datetime.now().date(),
+            first_recieved_by=Employee.objects.get(id=forward_to['id']),
+            first_recieved_designation=forward_designation,
+            
+            attached_pdf=files.get('attachedPdf').read() if files.get('attachedPdf') else None,
+            attached_pdf_name=files.get('attachedPdf').name if files.get('attachedPdf') else None,
+            application_type='Offline'  # Explicitly set to Offline
+        )
+        print(86977)
         
         leave_form.save()
 
-        #database
+        print(8)
+
+
+
+        # Create file tracking
         try:
-            leave_form = LeaveForm.objects.get(id=form_id)
-        except LeaveForm.DoesNotExist:
-            return JsonResponse({"error": "LeaveForm object with the provided ID does not exist"}, status=404)
-        
+            # Fetch the Employee object using employee_id
+            print("emp_id", employee_id)  # Debugging
+            uploader_employee = Employee.objects.get(id=employee_id)
+            print("uploader_employee", uploader_employee)  # Debugging
 
+            # Fetch the receiver's username
+            receiver_employee = Employee.objects.get(id=forward_to['id'])
+            receiver_username = receiver_employee.id.username  # Get the username of the receiver
 
-        current_owner =  get_current_file_owner(file_id)
+            # Log inputs to create_file
+            print("uploader:", uploader_employee.id.username)
+            print("uploader_designation:", employee_designation)
+            print("receiver:", receiver_username)  # Use the username of the receiver
+            print("receiver_designation:", forward_to['designation'])
+            print("src_module:", "HR")
+            print("src_object_id:", str(leave_form.id))
 
-         #  if action value is 0 then forward the file
-        #  if action value is 1 then reject the file
-        #  if action value is 3 then approve the file
-        #  otherwise archive the file
-
-        if(action == '0'):
-            if(remark == ""):
-                track_id = forward_file(file_id = file_id, receiver = username_employee, receiver_designation = designation_employee,remarks = f"Forwarded by {current_owner} to {username_employee}", file_extra_JSON = "None")
-            else:
-                track_id = forward_file(file_id = file_id, receiver = username_employee, receiver_designation = designation_employee,remarks = f"Forwarded by {current_owner} to {username_employee}, Reason : {remark}", file_extra_JSON = "None")               
-            messages.success(request, "File forwarded successfully")
-        elif(action == '1'):
-            if(remark == ""):
-                track_id = forward_file(file_id = file_id, receiver = leave_form.name, receiver_designation = leave_form.designation, remarks = f"Rejected by {current_owner}", file_extra_JSON = "None")
-            else:
-                track_id = forward_file(file_id = file_id, receiver = leave_form.name, receiver_designation = leave_form.designation, remarks = f"Rejected by {current_owner}, Reason : {remark}", file_extra_JSON = "None")
-            messages.success(request, "File rejected successfully")
-        elif(action == '2'):
-            if(remark == ""):
-                track_id = forward_file(file_id = file_id, receiver = leave_form.name, receiver_designation = leave_form.designation, remarks = f"Approved by {current_owner}", file_extra_JSON = "None")
-            else:
-                track_id = forward_file(file_id = file_id, receiver = leave_form.name, receiver_designation = leave_form.designation, remarks = f"Approved by {current_owner}, Reason : {remark}", file_extra_JSON = "None")
-            leave_form.approved = True
-            leave_form.approvedDate = timezone.now()
-            leave_form.approved_by = current_owner
+            # Call create_file
+            file_id = create_file(
+                uploader=uploader_employee.id.username,
+                uploader_designation=employee_designation,
+                receiver=receiver_username,  # Pass the username of the receiver
+                receiver_designation=forward_to['designation'],
+                src_module="HR",
+                src_object_id=str(leave_form.id),
+                file_extra_JSON={"type": "Leave"},
+                attached_file=None
+            )
+             # Update the leave form with the file_id
+            leave_form.file_id = file_id
             leave_form.save()
-            messages.success(request, "File approved successfully")
-        else:
-            is_archived = archive_file(file_id=file_id)
-            if( is_archived ):
-                messages.error(request, "Error in file archived")
-            else:
-                messages.success(request, "Success in file archived")
+            print(file_id)
+            current_owner = get_current_file_owner(file_id)
+            current_owner_designation=get_current_file_owner_designation(file_id)
+            remarks = f"Accepted by {current_owner} "
+            track_id=forward_file(
+                file_id=file_id,
+                receiver=current_owner,
+                receiver_designation=current_owner_designation,
+                remarks=remarks,
+                file_extra_JSON=None
+            )
 
-        
-        return HttpResponse("Success")
-    else:
-       
-        return HttpResponse("Failure")
+            # Approve the file
+            
+
+            print(9)  # Debugging
+           
+        except Exception as e:
+            print(f"Error in create_file: {str(e)}")  # Debugging
+            return JsonResponse(
+                {'error': f'Failed to create file tracking: {str(e)}'},
+                status=500
+            )
+
+        # Update leave balance
+        leave_balance = LeaveBalance.objects.get(empid=Employee.objects.get(id=employee_id))
+        leave_balance.casual_leave_taken += leave_form.Noof_CasualLeave
+        leave_balance.special_casual_leave_taken += leave_form.Noof_specialCasualLeave
+        leave_balance.earned_leave_taken += (leave_form.Noof_earnedLeave + 2 * leave_form.Noof_vacationLeave)
+        leave_balance.half_pay_leave_taken += (leave_form.Noof_halfPayLeave + 2 * leave_form.Noof_commutedLeave)
+        leave_balance.maternity_leave_taken += leave_form.Noof_maternityLeave
+        leave_balance.child_care_leave_taken += leave_form.Noof_childCareLeave
+        leave_balance.paternity_leave_taken += leave_form.Noof_paternityLeave
+        leave_balance.restricted_holiday_taken += leave_form.Noof_restrictedHoliday
+        leave_balance.save()
+
+        return JsonResponse(
+            {
+                'message': 'Offline leave form submitted and approved successfully',
+                'form_id': leave_form.id,
+                'file_id': file_id
+            },
+            status=201
+        )
+
+    except Exception as e:
+        return JsonResponse({'error': f'An unexpected error occurred: {str(e)}'}, status=500)
     
 
-def file_handle_cpda(request):
-    if request.method == 'POST':
-        form_data2 = request.POST
-        form_data=request.POST.get('context')
-        action = form_data2.get('action')
-        
-        form_data=json.loads(form_data)
-        form_id = form_data['form_id']
-        file_id = form_data['file_id']
-        from_user = form_data['from_user']
-        from_designation = form_data['from_designation']
-        username_employee = form_data['username_employee']
-        designation_employee = form_data['designation_employee']
-
-        advanceAmountPDA = form_data['advanceAmountPDA']
-        balanceAvailable = form_data['balanceAvailable']
-        amountCheckedInPDA = form_data['amountCheckedInPDA']
-
-        remark = form_data['remark_id']
-        #change
-
-
-        #database
-        try:
-            cpda_form = CPDAAdvanceform.objects.get(id=form_id)
-        except CPDAAdvanceform.DoesNotExist:
-            return JsonResponse({"error": "CPDAform object with the provided ID does not exist"}, status=404)
-        
-
-        if advanceAmountPDA == "":
-           advanceAmountPDA = None 
-        else:
-          advanceAmountPDA = Decimal(advanceAmountPDA)
-
-        if balanceAvailable == "":
-          balanceAvailable = None  
-        else:
-           balanceAvailable = Decimal(balanceAvailable)
-
-        if amountCheckedInPDA == "":
-           amountCheckedInPDA = None       
-        else:
-         amountCheckedInPDA = Decimal(amountCheckedInPDA)
-  
-
-
-        
-        # Update the attribute
-        setattr(cpda_form, "advanceAmountPDA", advanceAmountPDA)
-        setattr(cpda_form, "balanceAvailable", balanceAvailable)
-        setattr(cpda_form, "amountCheckedInPDA", amountCheckedInPDA)
-        cpda_form.save()
-
-        #database
-        try:
-            cpda_form = CPDAAdvanceform.objects.get(id=form_id)
-        except CPDAAdvanceform.DoesNotExist:
-            return JsonResponse({"error": "CPDAform object with the provided ID does not exist"}, status=404)
-        
-
-        current_owner =  get_current_file_owner(file_id)
-     
-         #  if action value is 0 then forward the file
-        #  if action value is 1 then reject the file
-        #  if action value is 3 then approve the file
-        #  otherwise archive the file
-
-        if(action == '0'):
-            if(remark == ""):
-                track_id = forward_file(file_id = file_id, receiver = username_employee, receiver_designation = designation_employee,remarks = f"Forwarded by {current_owner} to {username_employee}", file_extra_JSON = "None")
-            else:
-                track_id = forward_file(file_id = file_id, receiver = username_employee, receiver_designation = designation_employee,remarks = f"Forwarded by {current_owner} to {username_employee}, Reason : {remark}", file_extra_JSON = "None")               
-            messages.success(request, "File forwarded successfully")
-        elif(action == '1'):
-            if(remark == ""):
-                track_id = forward_file(file_id = file_id, receiver = cpda_form.name, receiver_designation = cpda_form.designation, remarks = f"Rejected by {current_owner}", file_extra_JSON = "None")
-            else:
-                track_id = forward_file(file_id = file_id, receiver = cpda_form.name, receiver_designation = cpda_form.designation, remarks = f"Rejected by {current_owner}, Reason : {remark}", file_extra_JSON = "None")
-            messages.success(request, "File rejected successfully")
-        elif(action == '2'):
-            if(remark == ""):
-                track_id = forward_file(file_id = file_id, receiver = cpda_form.name, receiver_designation = cpda_form.designation, remarks = f"Approved by {current_owner}", file_extra_JSON = "None")
-            else:
-                track_id = forward_file(file_id = file_id, receiver = cpda_form.name, receiver_designation = cpda_form.designation, remarks = f"Approved by {current_owner}, Reason : {remark}", file_extra_JSON = "None")
-            cpda_form.approved = True
-            cpda_form.approvedDate = timezone.now()
-            cpda_form.approved_by = current_owner
-            cpda_form.save()
-            messages.success(request, "File approved successfully")
-        else:
-            is_archived = archive_file(file_id=file_id)
-            if( is_archived ):
-                messages.error(request, "Error in file archived")
-            else:
-                messages.success(request, "Success in file archived")
-
-        
-        return HttpResponse("Success")
-    else:
-       
-        return HttpResponse("Failure")
-
-    
-
-def file_handle_cpda_reimbursement(request):
-    if request.method == 'POST':
-        form_data2 = request.POST
-        form_data=request.POST.get('context')
-        action = form_data2.get('action')
-        
-        form_data=json.loads(form_data)
-        form_id = form_data['form_id']
-        file_id = form_data['file_id']
-        from_user = form_data['from_user']
-        from_designation = form_data['from_designation']
-        username_employee = form_data['username_employee']
-        designation_employee = form_data['designation_employee']
-
-        advanceDueAdjustment = form_data['advanceDueAdjustment']
-        balanceAvailable = form_data['balanceAvailable']
-        amountCheckedInPDA = form_data['amountCheckedInPDA']
-
-        remark = form_data['remark_id']
-        #change
-
-
-        #database
-        try:
-            cpda_form = CPDAReimbursementform.objects.get(id=form_id)
-        except CPDAReimbursementform.DoesNotExist:
-            return JsonResponse({"error": "CPDAReimbursementform object with the provided ID does not exist"}, status=404)
-        
-
-        if advanceDueAdjustment == "":
-           advanceDueAdjustment = None 
-        else:
-          advanceDueAdjustment = Decimal(advanceDueAdjustment)
-
-        if balanceAvailable == "":
-          balanceAvailable = None  
-        else:
-           balanceAvailable = Decimal(balanceAvailable)
-
-        if amountCheckedInPDA == "":
-           amountCheckedInPDA = None       
-        else:
-         amountCheckedInPDA = Decimal(amountCheckedInPDA)
-  
-
-        # Update the attribute
-        setattr(cpda_form, "advanceDueAdjustment", advanceDueAdjustment)
-        setattr(cpda_form, "balanceAvailable", balanceAvailable)
-        setattr(cpda_form, "amountCheckedInPDA", amountCheckedInPDA)
-        cpda_form.save()
-
-        #database
-        try:
-            cpda_form = CPDAReimbursementform.objects.get(id=form_id)
-        except CPDAReimbursementform.DoesNotExist:
-            return JsonResponse({"error": "CPDAReimbursementform object with the provided ID does not exist"}, status=404)
-        
-
-        current_owner =  get_current_file_owner(file_id)
-      
-        #  if action value is 0 then forward the file
-        #  if action value is 1 then reject the file
-        #  if action value is 3 then approve the file
-        #  otherwise archive the file
-
-        if(action == '0'):
-            if(remark == ""):
-                track_id = forward_file(file_id = file_id, receiver = username_employee, receiver_designation = designation_employee,remarks = f"Forwarded by {current_owner} to {username_employee}", file_extra_JSON = "None")
-            else:
-                track_id = forward_file(file_id = file_id, receiver = username_employee, receiver_designation = designation_employee,remarks = f"Forwarded by {current_owner} to {username_employee}, Reason : {remark}", file_extra_JSON = "None")               
-            messages.success(request, "File forwarded successfully")
-        elif(action == '1'):
-            if(remark == ""):
-                track_id = forward_file(file_id = file_id, receiver = cpda_form.name, receiver_designation = cpda_form.designation, remarks = f"Rejected by {current_owner}", file_extra_JSON = "None")
-            else:
-                track_id = forward_file(file_id = file_id, receiver = cpda_form.name, receiver_designation = cpda_form.designation, remarks = f"Rejected by {current_owner}, Reason : {remark}", file_extra_JSON = "None")
-            messages.success(request, "File rejected successfully")
-        elif(action == '2'):
-            if(remark == ""):
-                track_id = forward_file(file_id = file_id, receiver = cpda_form.name, receiver_designation = cpda_form.designation, remarks = f"Approved by {current_owner}", file_extra_JSON = "None")
-            else:
-                track_id = forward_file(file_id = file_id, receiver = cpda_form.name, receiver_designation = cpda_form.designation, remarks = f"Approved by {current_owner}, Reason : {remark}", file_extra_JSON = "None")
-            cpda_form.approved = True
-            cpda_form.approvedDate = timezone.now()
-            cpda_form.approved_by = current_owner
-            cpda_form.save()
-            messages.success(request, "File approved successfully")
-        else:
-            is_archived = archive_file(file_id=file_id)
-            if( is_archived ):
-                messages.error(request, "Error in file archived")
-            else:
-                messages.success(request, "Success in file archived")
-
-        
-        return HttpResponse("Success")
-    else:
-       
-        return HttpResponse("Failure")
-    
-
-
-
-def file_handle_ltc(request):
-    if request.method == 'POST':
-        form_data2 = request.POST
-        form_data=request.POST.get('context')
-        action = form_data2.get('action')
-        
-        form_data=json.loads(form_data)
-        form_id = form_data['form_id']
-        file_id = form_data['file_id']
-        from_user = form_data['from_user']
-        from_designation = form_data['from_designation']
-        username_employee = form_data['username_employee']
-        designation_employee = form_data['designation_employee']
-
-        remark = form_data['remark_id']
-        #change
-
-
-        #database
-        try:
-            ltc_form = LTCform.objects.get(id=form_id)
-        except LTCform.DoesNotExist:
-            return JsonResponse({"error": "LTCform object with the provided ID does not exist"}, status=404)
-        
-
-        ltc_form.save()
-        
-
-        current_owner =  get_current_file_owner(file_id)
-
-
-        #  if action value is 0 then forward the file
-        #  if action value is 1 then reject the file
-        #  if action value is 3 then approve the file
-        #  otherwise archive the file
-
-        if(action == '0'):
-            if(remark == ""):
-                track_id = forward_file(file_id = file_id, receiver = username_employee, receiver_designation = designation_employee,remarks = f"Forwarded by {current_owner} to {username_employee}", file_extra_JSON = "None")
-            else:
-                track_id = forward_file(file_id = file_id, receiver = username_employee, receiver_designation = designation_employee,remarks = f"Forwarded by {current_owner} to {username_employee}, Reason : {remark}", file_extra_JSON = "None")               
-            messages.success(request, "File forwarded successfully")
-        elif(action == '1'):
-            if(remark == ""):
-                track_id = forward_file(file_id = file_id, receiver = ltc_form.name, receiver_designation = ltc_form.designation, remarks = f"Rejected by {current_owner}", file_extra_JSON = "None")
-            else:
-                track_id = forward_file(file_id = file_id, receiver = ltc_form.name, receiver_designation = ltc_form.designation, remarks = f"Rejected by {current_owner}, Reason : {remark}", file_extra_JSON = "None")
-            messages.success(request, "File rejected successfully")
-        elif(action == '2'):
-            if(remark == ""):
-                track_id = forward_file(file_id = file_id, receiver = ltc_form.name, receiver_designation = ltc_form.designation, remarks = f"Approved by {current_owner}", file_extra_JSON = "None")
-            else:
-                track_id = forward_file(file_id = file_id, receiver = ltc_form.name, receiver_designation = ltc_form.designation, remarks = f"Approved by {current_owner}, Reason : {remark}", file_extra_JSON = "None")
-            ltc_form.approved = True
-            ltc_form.approvedDate = timezone.now()
-            ltc_form.approved_by = current_owner
-            ltc_form.save()
-            messages.success(request, "File approved successfully")
-        else:
-            is_archived = archive_file(file_id=file_id)
-            if( is_archived ):
-                messages.error(request, "Error in file archived")
-            else:
-                messages.success(request, "Success in file archived")
-
-        
-        return HttpResponse("Success")
-    else:
-       
-        return HttpResponse("Failure")
-
-def file_handle_appraisal(request):
-    if request.method == 'POST':
-        form_data2 = request.POST
-        form_data=request.POST.get('context')
-        action = form_data2.get('action')
-        
-        form_data=json.loads(form_data)
-        form_id = form_data['form_id']
-        file_id = form_data['file_id']
-        from_user = form_data['from_user']
-        from_designation = form_data['from_designation']
-        username_employee = form_data['username_employee']
-        designation_employee = form_data['designation_employee']
-               
-
-        remark = form_data['remark_id']
-        try:
-            appraisal_form = Appraisalform.objects.get(id=form_id)
-        except Appraisalform.DoesNotExist:
-            return JsonResponse({"error": "Appraisalform object with the provided ID does not exist"}, status=404)      
-
-        
-        # Update the attribute
-        setattr(appraisal_form, "form_id", form_id)   
-       
-        appraisal_form.save()
-
-        current_owner =  get_current_file_owner(file_id)
-        
-        #database
-        try:
-            appraisal_form = Appraisalform.objects.get(id=form_id)
-        except Appraisalform.DoesNotExist:
-            return JsonResponse({"error": "Appraisalform object with the provided ID does not exist"}, status=404)
-        
-         
-        #  if action value is 0 then forward the file
-        #  if action value is 1 then reject the file
-        #  if action value is 3 then approve the file
-        #  otherwise archive the file
-
-        if(action == '0'):
-            if(remark == ""):
-                track_id = forward_file(file_id = file_id, receiver = username_employee, receiver_designation = designation_employee,remarks = f"Forwarded by {current_owner} to {username_employee}", file_extra_JSON = "None")
-            else:
-                track_id = forward_file(file_id = file_id, receiver = username_employee, receiver_designation = designation_employee,remarks = f"Forwarded by {current_owner} to {username_employee}, Reason : {remark}", file_extra_JSON = "None")               
-            messages.success(request, "File forwarded successfully")
-        elif(action == '1'):
-            if(remark == ""):
-                track_id = forward_file(file_id = file_id, receiver = appraisal_form.name, receiver_designation = appraisal_form.designation, remarks = f"Rejected by {current_owner}", file_extra_JSON = "None")
-            else:
-                track_id = forward_file(file_id = file_id, receiver = appraisal_form.name, receiver_designation = appraisal_form.designation, remarks = f"Rejected by {current_owner}, Reason : {remark}", file_extra_JSON = "None")
-            messages.success(request, "File rejected successfully")
-        elif(action == '2'):
-            if(remark == ""):
-                track_id = forward_file(file_id = file_id, receiver = appraisal_form.name, receiver_designation = appraisal_form.designation, remarks = f"Approved by {current_owner}", file_extra_JSON = "None")
-            else:
-                track_id = forward_file(file_id = file_id, receiver = appraisal_form.name, receiver_designation = appraisal_form.designation, remarks = f"Approved by {current_owner}, Reason : {remark}", file_extra_JSON = "None")
-            appraisal_form.approved = True
-            appraisal_form.approvedDate = timezone.now()
-            appraisal_form.approved_by = current_owner
-            appraisal_form.save()
-            messages.success(request, "File approved successfully")
-        else:
-            is_archived = archive_file(file_id=file_id)
-            if( is_archived ):
-                messages.error(request, "Error in file archived")
-            else:
-                messages.success(request, "Success in file archived")
-
-        
-        return HttpResponse("Success")
-    else:
-       
-        return HttpResponse("Failure")
-
-
-def view_ltc_form(request, id):
-    ltc_request = get_object_or_404(LTCform, id=id)
-    
-    ltc_request = reverse_ltc_pre_processing(ltc_request)
-
-
-    context = {
-        'ltc_request': ltc_request
-    }
-    return render(request,'hr2Module/view_ltc_form.html',context)
-
-def form_mangement_ltc(request):
-    if(request.method == "GET"):
-        username = "21BCS185"
-        designation = "hradmin"
-        inbox = view_inbox(username = username, designation = designation, src_module = "HR")
-
-
-        # Extract src_object_id values
-        src_object_ids = [item['src_object_id'] for item in inbox]
-        
-        ltc_requests = []
-
-        for src_object_id in src_object_ids:
-            ltc_request = get_object_or_404(LTCform, id=src_object_id)
-            ltc_requests.append(ltc_request)
-
-        context= {
-            'ltc_requests' : ltc_requests,
-            'hr' : "1",
-        }
-
-
-        return render(request, 'hr2Module/ltc_form.html',context)
-    
-
-def form_mangement_ltc_hr(request,id):
-    uploader = "21BCS183"
-    uploader_designation = "student"
-    receiver = "21BCS181"
-    receiver_designation = "HOD"
-    src_module = "HR"
-    src_object_id = id,
-    file_extra_JSON = {"key": "value"}
-
-    # Create a file representing the LTC form and send it to HR admin
-    file_id = create_file(
-        uploader=uploader,
-        uploader_designation=uploader_designation,
-        receiver=receiver,
-        receiver_designation=receiver_designation,
-        src_module=src_module,
-        src_object_id=src_object_id,
-        file_extra_JSON=file_extra_JSON,
-        attached_file=None  # Attach any file if necessary
-    )
-
-
-    messages.success(request, "Ltc form filled successfully")
-
-    return HttpResponse("Sucess")
-
-def form_mangement_ltc_hod(request):
-    if(request.method == "GET"):
-        username = "21BCS181"
-        designation = "HOD"
-        inbox = view_inbox(username = username, designation = designation, src_module = "HR")
-
-
-        # Extract src_object_id values
-        src_object_ids = [item['src_object_id'] for item in inbox]
-        
-        ltc_requests = []
-
-        for src_object_id in src_object_ids:
-            ltc_request = get_object_or_404(LTCform, id=src_object_id)
-            ltc_requests.append(ltc_request)
-
-        context= {
-            'ltc_requests' : ltc_requests,
-            'hr' : "1",
-        }
-
-
-        return render(request, 'hr2Module/ltc_form.html',context)
-
-
-
-@login_required(login_url='/accounts/login')
-def dashboard(request):
-    user = request.user
-
-    user_id = ExtraInfo.objects.get(user=user).user_id
-    context = {'user_id': user_id}
-    return render(request, 'hr2Module/dashboard.html',context)
-
-
-# cpda form -----------------------------------------------------------
-
-def reverse_cpda_pre_processing(data):
-    reversed_data = {}
-
-    simple_keys = [
-        'name', 'designation', 'pfNo', 'purpose', 'amountRequired', 'advanceDueAdjustment',
-        'submissionDate',
-        'balanceAvailable', 'advanceAmountPDA' ,'amountCheckedInPDA',
-    ]
-
-  
-    for key in simple_keys:
-        value = getattr(data, key)
-        reversed_data[key] = value if value != 'None' else ''
-
-    return reversed_data
-
-
-def cpda_form(request, id):
-    """ Views for edit details"""
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def get_employee_initials(request,empid):
+    """
+    API endpoint to get the details for an employee.
+    If a query parameter "id" is provided, it fetches data for that employee.
+    Otherwise, it returns the details for the logged-in user.
+    """
+    # Check if an employee id is provided in the query parameters
+    employee_id = empid
+    print(employee_id)
     try:
-        employee = ExtraInfo.objects.get(user__id=id)
-    except:
-        raise Http404("Employee does not exist! id doesnt exist")
-    
-    user_id = id
-    creator = User.objects.get(id = user_id)
-     
-    if(employee.user_type == 'faculty' or employee.user_type == 'staff' or employee.user_type == 'student' ):
-        template = 'hr2Module/cpda_form.html'
-
-        if request.method == "POST":
-            try:
-                advanceAmountPDA = request.POST.get('advanceAmountPDA')
-                if advanceAmountPDA == "":
-                   advanceAmountPDA = None 
-                else:
-                   advanceAmountPDA = Decimal(advanceAmountPDA)
-
-                balanceAvailable = request.POST.get('balanceAvailable')
-                if balanceAvailable == "":
-                   balanceAvailable = None  
-                else:
-                    balanceAvailable = Decimal(balanceAvailable)
-
-                amountCheckedInPDA = request.POST.get('amountCheckedInPDA')
-                if amountCheckedInPDA == "":
-                    amountCheckedInPDA = None       
-                else:
-                    amountCheckedInPDA = Decimal(amountCheckedInPDA)
-
-
-                form_2 = {
-                    'employeeId' : id,
-                    'name' : request.POST.get('name'),
-                    'designation' :  request.POST.get('designation'),
-                    'pfNo' : request.POST.get('pfNo'),
-                    'purpose' : request.POST.get('purpose'),
-                    'amountRequired' : request.POST.get('amountRequired'),
-                    'advanceDueAdjustment' : request.POST.get('advanceDueAdjustment'),
-                    'submissionDate' : request.POST.get('submissionDate'),
-                    'balanceAvailable' : request.POST.get('balanceAvailable'),
-                    'advanceAmountPDA' : request.POST.get('advanceAmountPDA'),
-                    'amountCheckedInPDA' : request.POST.get('amountCheckedInPDA'),
-                    'created_by' : creator,
-                }
-                
-                cpda_form = CPDAAdvanceform.objects.create(
-                    employeeId = id, 
-                    name = request.POST.get('name'),
-                    designation = request.POST.get('designation'),
-                    pfNo = request.POST.get('pfNo'), 
-                    purpose = request.POST.get('purpose'),
-                    amountRequired = request.POST.get('amountRequired'),  
-                    advanceDueAdjustment = request.POST.get('advanceDueAdjustment'),  
-                    submissionDate = request.POST.get('submissionDate'),  
-                    balanceAvailable = request.POST.get('balanceAvailable'),  
-                    advanceAmountPDA = request.POST.get('advanceAmountPDA'), 
-                    amountCheckedInPDA = request.POST.get('amountCheckedInPDA'),  
-                    created_by=creator,
-
-                )
-
-
-                uploader = employee.user
-                uploader_designation = 'Assistant Professor'
-
-                get_designation = get_designation_by_user_id(employee.user)
-                if(get_designation):
-                    uploader_designation = get_designation
-
-                receiver = request.POST.get('username_employee')
-                receiver_designation = request.POST.get('designation_employee')
-                src_module = "HR" #dikkat 
-                src_object_id = str(cpda_form.id)
-                file_extra_JSON = {"type": "CPDAAdvance"}
-
-                # Create a file representing the CPDA form 
-                file_id = create_file(
-                    uploader=uploader,
-                    uploader_designation=uploader_designation,
-                    receiver=receiver,
-                    receiver_designation=receiver_designation,
-                    src_module=src_module,
-                    src_object_id=src_object_id,
-                    file_extra_JSON=file_extra_JSON,
-                    attached_file=None  # Attach any file if necessary
-                )
-
-             
-
-                messages.success(request, "CPDA form filled successfully")
-
-                return redirect(request.path_info)
-
-            except Exception as e:
-                messages.warning(request, "Fill not correctly")
-                context = {'employee': employee}
-                return render(request, template, context)
-
-        cpda_requests = CPDAAdvanceform.objects.filter(employeeId=id)
-
-        username = employee.user
-        uploader_designation = 'Assistant Professor'
-
-
-        designation = get_designation_by_user_id(employee.user)
-        if(designation):
-            uploader_designation = designation
-
-        
-        inbox = view_inbox(username = username, designation = uploader_designation, src_module = "HR")
-
-        archived_files = view_archived(username = username, designation = uploader_designation, src_module = "HR")
-
-        filtered_inbox = []
-        for i in inbox:
-            item = i.get('file_extra_JSON', {})  
-            if item.get('type') == 'CPDAAdvance':
-                filtered_inbox.append(i)
-
-        filtered_archived_files = []
-        for i in archived_files:
-            item = i.get('file_extra_JSON', {})  
-            if item.get('type') == 'CPDAAdvance':
-                filtered_archived_files.append(i)
-
-        context = {'employee': employee, 'cpda_requests': cpda_requests, 'inbox': filtered_inbox , 'designation':designation, 'archived_files': filtered_archived_files,'user_id':user_id}
-
-
-        messages.success(request, "CPDA form filled successfully!")
-        return render(request, template, context)
-    else:
-        return render(request, 'hr2Module/edit.html')
-    
-
-def form_view_cpda(request , id):
-    cpda_request = get_object_or_404(CPDAAdvanceform, id=id)
-    user_id = cpda_request.created_by.id
-    from_user = request.GET.get('param1')
-    from_designation = request.GET.get('param2')
-    file_id = request.GET.get('param3')
-
-
-
-    template = 'hr2Module/view_cpda_form.html'
-    cpda_request = reverse_cpda_pre_processing(cpda_request)
-    
-    context = {'cpda_request' : cpda_request , "button" : 1 , "file_id" : file_id, "from_user" :from_user , "from_designation" : from_designation,"id":id,"user_id":user_id}
-
-    return render(request , template , context)
-
-
-def view_cpda_form(request, id):
-    cpda_request = get_object_or_404(CPDAAdvanceform, id=id)
-   
-    cpda_request = reverse_cpda_pre_processing(cpda_request)
-
-
-    context = {
-        'cpda_request': cpda_request
-    }
-    return render(request,'hr2Module/view_cpda_form.html',context)
-
-
-def form_mangement_cpda(request):
-    if(request.method == "GET"):
-        username = "21BCS185"
-        designation = "hradmin"
-        inbox = view_inbox(username = username, designation = designation, src_module = "HR")
-
-
-        # Extract src_object_id values
-        src_object_ids = [item['src_object_id'] for item in inbox]
-
-        
-        cpda_requests = []
-
-        for src_object_id in src_object_ids:
-            cpda_request = get_object_or_404(CPDAAdvanceform, id=src_object_id)
-            cpda_requests.append(cpda_request)
-
-        context= {
-            'cpda_requests' : cpda_requests,
-            'hr' : "1",
-        }
-
-
-        return render(request, 'hr2Module/cpda_form.html',context)
-    
-def form_mangement_cpda_hr(request,id):
-    uploader = "21BCS183"
-    uploader_designation = "student"
-    receiver = "21BCS181"
-    receiver_designation = "HOD"
-    src_module = "HR"
-    src_object_id = id,
-    file_extra_JSON = {"key": "value"}
-
-    # Create a file representing the CPDA form and send it to HR admin
-    file_id = create_file(
-        uploader=uploader,
-        uploader_designation=uploader_designation,
-        receiver=receiver,
-        receiver_designation=receiver_designation,
-        src_module=src_module,
-        src_object_id=src_object_id,
-        file_extra_JSON=file_extra_JSON,
-        attached_file=None  # Attach any file if necessary
-    )
-
-
-    messages.success(request, "CPda form filled successfully")
-
-
-    return HttpResponse("Success")
-
-
-def form_mangement_cpda_hod(request):
-    if(request.method == "GET"):
-        username = "21BCS181"
-        designation = "HOD"
-        inbox = view_inbox(username = username, designation = designation, src_module = "HR")
-
-
-        # Extract src_object_id values
-        src_object_ids = [item['src_object_id'] for item in inbox]
-
-        
-        cpda_requests = []
-
-        for src_object_id in src_object_ids:
-            cpda_request = get_object_or_404(CPDAAdvanceform, id=src_object_id)
-            cpda_requests.append(cpda_request)
-
-        context= {
-            'cpda_requests' : cpda_requests,
-            'hr' : "1",
-        }
-
-
-        return render(request, 'hr2Module/cpda_form.html',context)
-    
-
-#  Leave form -------------------------------------------------------------
-    
-def reverse_leave_pre_processing(data):
-    reversed_data = {}
-
-    # Copying over simple key-value pairs
-    simple_keys = [
-        'name', 'designation', 'submissionDate', 'pfNo', 'departmentInfo', 'natureOfLeave',
-        'leaveStartDate', 'leaveEndDate', 'purposeOfLeave', 'addressDuringLeave', 'academicResponsibility',
-        'addministrativeResponsibiltyAssigned'
-    ]
-
-  
-    for key in simple_keys:
-        value = getattr(data, key)
-        reversed_data[key] = value if value != 'None' else ''
-
-    return reversed_data
-
-    
-def leave_form(request, id):
-    """ Views for edit details"""
+        if employee_id:
+            # Fetch the employee based on the provided id
+            employee = Employee.objects.get(id=employee_id)
+        else:
+            # Fall back to the logged-in user
+            employee = Employee.objects.get(id=request.user.id)
+    except Employee.DoesNotExist:
+        return JsonResponse({'error': 'Employee not found'}, status=404)
+    print(0)
     try:
-        employee = ExtraInfo.objects.get(user__id=id)
-    except:
-        raise Http404("Employee does not exist! id doesnt exist")
-
-    user_id = id
-    creator = User.objects.get(id = user_id)
-    
-    if(employee.user_type == 'faculty' or employee.user_type == 'student' or employee.user_type == 'staff'):
-        template = 'hr2Module/leave_form.html'
-
-        if request.method == "POST":
-            try:
-
-
-                form_3 = {
-                    'employeeId' : id,
-                    'name' : request.POST.get('name'),
-                    'designation' :  request.POST.get('designation'),
-                    'submissionDate' : request.POST.get('submissionDate'),
-                    'pfNo' : request.POST.get('pfNo'),
-                    'departmentInfo' : request.POST.get('departmentInfo'),
-                    'natureOfLeave' : request.POST.get('natureOfLeave'),
-                    'leaveStartDate' : request.POST.get('leaveStartDate'),
-                    'leaveEndDate' : request.POST.get('leaveEndDate'),
-                    'purposeOfLeave' : request.POST.get('purposeOfLeave'),
-                    'addressDuringLeave' : request.POST.get('addressDuringLeave'),
-                    'academicResponsibility' : request.POST.get('academicResponsibility'),
-                    'addministrativeResponsibiltyAssigned' : request.POST.get('addministrativeResponsibiltyAssigned'),
-                    'created_by' : creator,
-                }
-                
-                leave_form = LeaveForm.objects.create(
-                    employeeId = id,
-                    name = request.POST.get('name'),
-                    designation =  request.POST.get('designation'),
-                    submissionDate = request.POST.get('submissionDate'),
-                    pfNo = request.POST.get('pfNo'),
-                    departmentInfo = request.POST.get('departmentInfo'),
-                    leaveStartDate = request.POST.get('leaveStartDate'),
-                    leaveEndDate = request.POST.get('leaveEndDate'),
-                    natureOfLeave = request.POST.get('natureOfLeave'),
-                    purposeOfLeave = request.POST.get('purposeOfLeave'),
-                    addressDuringLeave = request.POST.get('addressDuringLeave'),
-                    academicResponsibility = request.POST.get('academicResponsibility'),
-                    addministrativeResponsibiltyAssigned = request.POST.get('addministrativeResponsibiltyAssigned'),
-                    created_by=creator,
-                )
+        # Fetch extra info associated with the employee (adjust if Employee and User differ)
+        extra_info = ExtraInfo.objects.filter(user=employee.id).first()
+        if not extra_info:
+            return JsonResponse({'error': 'ExtraInfo not found'}, status=404)
+        print(1)
+        # get user of employee
+        user = User.objects.filter(id=employee_id).first()
+        print(user)
+        emp_confidential = EmpConfidentialDetails.objects.filter(empid=employee).first()
+        if not emp_confidential:
+            return JsonResponse({'error': 'EmpConfidentialDetails not found'}, status=404)
+        print(2)
+        department_name = extra_info.department.name if extra_info.department else None
+        print(3)
+        print(user)
+        print(emp_confidential.personal_file_number)
+        print(department_name)
+        return JsonResponse({
+            'name': user.first_name + " " + user.last_name,
             
-
-                uploader = employee.user
-                uploader_designation = 'Assistant Professor'
-
-
-                get_designation = get_designation_by_user_id(employee.user)
-                if(get_designation):
-                    uploader_designation = get_designation
-
-                receiver = request.POST.get('username_employee')
-                receiver_designation = request.POST.get('designation_employee')
-                src_module = "HR"
-                src_object_id = str(leave_form.id)
-                file_extra_JSON = {"type": "Leave"}
-
-
-                # Create a file representing the CPDA form 
-                file_id = create_file(
-                    uploader=uploader,
-                    uploader_designation=uploader_designation,
-                    receiver=receiver,
-                    receiver_designation=receiver_designation,
-                    src_module=src_module,
-                    src_object_id=src_object_id,
-                    file_extra_JSON=file_extra_JSON,
-                    attached_file=None  # Attach any file if necessary
-                )
-
-
-                messages.success(request, "Leave form filled successfully")
-
-                return redirect(request.path_info)
-
-            except Exception as e:
-                messages.warning(request, "Fill not correctly")
-                context = {'employee': employee}
-                return render(request, template, context)
-
-         # Query all Leave requests
-        leave_requests = LeaveForm.objects.filter(employeeId=id)
-
-        username = employee.user
-        uploader_designation = 'Assistant Professor'
-
-        designation = get_designation_by_user_id(employee.user)
-        if(designation):
-            uploader_designation = designation
-
-        
-        inbox = view_inbox(username = username, designation = uploader_designation, src_module = "HR")
-
-        archived_files = view_archived(username = username, designation = uploader_designation, src_module = "HR")
-
-        filtered_inbox = []
-        for i in inbox:
-            item = i.get('file_extra_JSON', {})  
-            if item.get('type') == 'Leave':
-                filtered_inbox.append(i)
-
-        filtered_archived_files = []
-        for i in archived_files:
-            item = i.get('file_extra_JSON', {})  
-            if item.get('type') == 'Leave':
-                filtered_archived_files.append(i)
-
-
-
-        context = {'employee': employee, 'leave_requests': leave_requests, 'inbox': filtered_inbox , 'designation':designation, 'archived_files': filtered_archived_files,'user_id':user_id}
-
-        messages.success(request, "Leave form filled successfully!")
-        return render(request, template, context)
-    else:
-        return render(request, 'hr2Module/edit.html')
-
-
-
-def form_view_leave(request , id):
-
-    leave_request = get_object_or_404(LeaveForm, id=id)
-    user_id = leave_request.created_by.id
-    from_user = request.GET.get('param1')
-    from_designation = request.GET.get('param2')
-    file_id = request.GET.get('param3')
-
-
-    template = 'hr2Module/view_leave_form.html'
-    leave_request = reverse_leave_pre_processing(leave_request)
-    
-    context = {'leave_request' : leave_request , "button" : 1 , "file_id" : file_id, "from_user" :from_user , "from_designation" : from_designation, "id" : id,"user_id":user_id}
-
-    return render(request , template , context)
-
-# ek or bna lena
-def view_leave_form(request, id):
-    leave_request = get_object_or_404(LeaveForm, id=id)
-
-    
-    
-    leave_request = reverse_leave_pre_processing(leave_request)
-
-
-    context = {
-        'leave_request': leave_request
-    }
-    return render(request,'hr2Module/view_leave_form.html',context)
-
-
-def form_mangement_leave(request):
-    if(request.method == "GET"):
-        username = "21BCS185"
-        designation = "hradmin"
-        inbox = view_inbox(username = username, designation = designation, src_module = "HR")
-
-
-        # Extract src_object_id values
-        src_object_ids = [item['src_object_id'] for item in inbox]
-
-        leave_requests = []
-
-        for src_object_id in src_object_ids:
-            leave_request = get_object_or_404(LeaveForm, id=src_object_id)
-            leave_requests.append(leave_request)
-
-        context= {
-            'leave_requests' : leave_requests,
-            'hr' : "1",
-        }
-
-
-        return render(request, 'hr2Module/leave_form.html',context)
-    
-
-def form_mangement_leave_hr(request,id):
-    uploader = "21BCS183"
-    uploader_designation = "student"
-    receiver = "21BCS181"
-    receiver_designation = "HOD"
-    src_module = "HR"
-    src_object_id = id,
-    file_extra_JSON = {"key": "value"}
-
-    # Create a file representing the Leave form and send it to HR admin
-    file_id = create_file(
-        uploader=uploader,
-        uploader_designation=uploader_designation,
-        receiver=receiver,
-        receiver_designation=receiver_designation,
-        src_module=src_module,
-        src_object_id=src_object_id,
-        file_extra_JSON=file_extra_JSON,
-        attached_file=None  # Attach any file if necessary
-    )
-
-
-    messages.success(request, "Leave form filled successfully")
-
-    return HttpResponse("Sucess")
-
-def form_mangement_leave_hod(request):
-    if(request.method == "GET"):
-        username = "21BCS181"
-        designation = "HOD"
-        inbox = view_inbox(username = username, designation = designation, src_module = "HR")
-
-
-        # Extract src_object_id values
-        src_object_ids = [item['src_object_id'] for item in inbox]
-
-        
-        leave_requests = []
-
-        for src_object_id in src_object_ids:
-            leave_request = get_object_or_404(LeaveForm, id=src_object_id)
-            leave_requests.append(leave_request)
-
-        context= {
-            'leave_requests' : leave_requests,
-            'hr' : "1",
-        }
-
-
-        return render(request, 'hr2Module/leave_form.html',context)
-    
-
-    
-def appraisal_form(request, id):
-    """ Views for edit details"""
-    try:
-        employee = ExtraInfo.objects.get(user__id=id)
-    except:
-        raise Http404("Employee does not exist! id doesnt exist")
-
-    user_id = id
-    creator = User.objects.get(id = user_id)
-    
-    if(employee.user_type == 'faculty' or employee.user_type == 'staff' or employee.user_type == 'student'):
-        template = 'hr2Module/appraisal_form.html'
-
-        if request.method == "POST":
-            try:
-
-                data = appraisal_pre_processing(request)
-               
-
-                form_4 = {
-                    'employeeId': id,
-                    'name': request.POST.get('name'),
-                    'designation': request.POST.get('designation'),
-                    'disciplineInfo': request.POST.get('disciplineInfo'),
-                    'specificFieldOfKnowledge': request.POST.get('specificFieldOfKnowledge'),
-                    'currentResearchInterests': request.POST.get('currentResearchInterests'),
-                    'coursesTaught': data['coursesTaught'],
-                    'newCoursesIntroduced': data['newCoursesIntroduced'],
-                    'newCoursesDeveloped': data['newCoursesDeveloped'],
-                    'otherInstructionalTasks': request.POST.get('otherInstructionalTasks'),
-                    'thesisSupervision': data['thesisSupervision'],
-                    'sponsoredReseachProjects': data['sponsoredReseachProjects'],
-                    'otherResearchElement': request.POST.get('otherResearchElement'),
-                    'publication': request.POST.get('publication'),
-                    'referredConference': request.POST.get('referredConference'),
-                    'conferenceOrganised': request.POST.get('conferenceOrganised'),
-                    'membership': request.POST.get('membership'),
-                    'honours ' :   request.POST.get('honours'),
-                    'editorOfPublications':  request.POST.get('editorOfPublications'),
-                    'expertLectureDelivered': request.POST.get('expertLectureDelivered'),
-                    'membershipOfBOS': request.POST.get('membershipOfBOS'),
-                    'otherExtensionTasks': request.POST.get('otherExtensionTasks'),
-                    'administrativeAssignment': request.POST.get('administrativeAssignment'),
-                    'serviceToInstitute': request.POST.get('serviceToInstitute'),
-                    'otherContribution': request.POST.get('otherContribution'),
-                    'performanceComments' : request.POST.get('performanceComments'),
-                    'submissionDate' : request.POST.get('submissionDate'),
-                    'approved' : request.POST.get('approved'),
-                    'approvedDate' : request.POST.get('approvedDate'),
-                    'created_by' : creator,
-                    
-                }
-
-
-                appraisal_form = Appraisalform.objects.create(
-                    employeeId= id,
-                    name= request.POST.get('name'),
-                    designation= request.POST.get('designation'),
-                    disciplineInfo= request.POST.get('disciplineInfo'),
-                    specificFieldOfKnowledge= request.POST.get('specificFieldOfKnowledge'),
-                    currentResearchInterests= request.POST.get('currentResearchInterests'),
-                    coursesTaught= data['coursesTaught'],
-                    newCoursesIntroduced= data['newCoursesIntroduced'],
-                    newCoursesDeveloped= data['newCoursesDeveloped'],
-                    otherInstructionalTasks= request.POST.get('otherInstructionalTasks'),
-                    thesisSupervision= data['thesisSupervision'],
-                    sponsoredReseachProjects= data['sponsoredReseachProjects'],
-                    otherResearchElement= request.POST.get('otherResearchElement'),
-                    publication= request.POST.get('publication'),
-                    referredConference= request.POST.get('referredConference'),
-                    conferenceOrganised= request.POST.get('conferenceOrganised'),
-                    membership= request.POST.get('membership'),
-                    honours  = request.POST.get('honours'),
-                    editorOfPublications= request.POST.get('editorOfPublications'),
-                    expertLectureDelivered= request.POST.get('expertLectureDelivered'),
-                    membershipOfBOS= request.POST.get('membershipOfBOS'),
-                    otherExtensionTasks= request.POST.get('otherExtensionTasks'),
-                    administrativeAssignment= request.POST.get('administrativeAssignment'),
-                    serviceToInstitute= request.POST.get('serviceToInstitute'),
-                    otherContribution= request.POST.get('otherContribution'),
-                    performanceComments = request.POST.get('performanceComments'),
-                    submissionDate = request.POST.get('submissionDate'),
-                    approved = request.POST.get('approved'),
-                    approvedDate = request.POST.get('approvedDate'),
-                    created_by=creator,
-                      
-                
-                )
-
-                uploader = employee.user
-                uploader_designation = 'Assistant Professor'
-
-                get_designation = get_designation_by_user_id(employee.user)
-                if(get_designation):
-                    uploader_designation = get_designation
-
-                receiver = request.POST.get('username_employee')
-                receiver_designation = request.POST.get('designation_employee')
-                src_module = "HR"
-                src_object_id = str(appraisal_form.id)
-                file_extra_JSON = {"type": "Appraisal"}
-
-               
-                # Create a file representing the AppraisL form and send it to HR admin
-                file_id = create_file(
-                    uploader=uploader,
-                    uploader_designation=uploader_designation,
-                    receiver=receiver,
-                    receiver_designation=receiver_designation,
-                    src_module=src_module,
-                    src_object_id=src_object_id,
-                    file_extra_JSON=file_extra_JSON,
-                    attached_file=None  # Attach any file if necessary
-                )
-
-
-                messages.success(request, "Appraisal form filled successfully")
-
-                return redirect(request.path_info)
-
-            except Exception as e:
-                messages.warning(request, "Fill not correctly")
-                context = {'employee': employee}
-                return render(request, template, context)
-
-    
-
-        appraisal_requests = Appraisalform.objects.filter(employeeId=id)
-
-        username = employee.user
-        uploader_designation = 'Assistant Professor'
-
-       
-
-        designation = get_designation_by_user_id(employee.user)
-        if(designation):
-            uploader_designation = designation
-
-        
-        inbox = view_inbox(username = username, designation = uploader_designation, src_module = "HR")
-
-        archived_files = view_archived(username = username, designation = uploader_designation, src_module = "HR")
-
-        filtered_inbox = []
-        for i in inbox:
-            item = i.get('file_extra_JSON', {})  
-            if item.get('type') == 'Appraisal':
-                filtered_inbox.append(i)
-
-        filtered_archived_files = []
-        for i in archived_files:
-            item = i.get('file_extra_JSON', {})  
-            if item.get('type') == 'Appraisal':
-                filtered_archived_files.append(i)
-
-
-        context = {'employee': employee, 'appraisal_requests': appraisal_requests, 'inbox': filtered_inbox , 'designation':designation, 'archived_files': filtered_archived_files,'user_id':user_id}
-
-        messages.success(request, "Appraisal form filled successfully!")
-        return render(request, template, context)
-    else:
-        return render(request, 'hr2Module/edit.html')
-    
-
-   
-def form_view_appraisal(request , id):
-    appraisal_request = get_object_or_404(Appraisalform, id=id)
-    user_id = appraisal_request.created_by.id
-    from_user = request.GET.get('param1')
-    from_designation = request.GET.get('param2')
-    file_id = request.GET.get('param3')
-
-
-    template = 'hr2Module/view_appraisal_form.html'
-    appraisal_request = reverse_appraisal_pre_processing(appraisal_request)
-    
-    context = {'appraisal_request' : appraisal_request , "button" : 1 , "file_id" : file_id, "from_user" :from_user , "from_designation" : from_designation,"id":id,"user_id":user_id}
-
-    return render(request , template , context)
-
-
-def view_appraisal_form(request, id):
-    appraisal_request = get_object_or_404(Appraisalform, id=id)
-    
-   
-    appraisal_request = reverse_appraisal_pre_processing(appraisal_request)
-
-    context = {
-        'appraisal_request': appraisal_request
-    }
-    return render(request,'hr2Module/view_appraisal_form.html',context)
-
-
-
-def form_mangement_appraisal(request):
-    if(request.method == "GET"):
-        username = "21BCS185"
-        designation = "hradmin"
-        inbox = view_inbox(username = username, designation = designation, src_module = "HR")
-
-       
-        src_object_ids = [item['src_object_id'] for item in inbox]
-        
-        appraisal_requests = []
-
-        for src_object_id in src_object_ids:
-            appraisal_request = get_object_or_404(Appraisalform, id=src_object_id)
-            appraisal_requests.append(appraisal_request)
-
-        context= {
-            'appraisal_requests' : appraisal_requests,
-            'hr' : "1",
-        }
-
-
-        return render(request, 'hr2Module/appraisal_form.html',context)
-
-
-def form_mangement_appraisal_hr(request,id):
-    uploader = "21BCS183"
-    uploader_designation = "student"
-    receiver = "21BCS181"
-    receiver_designation = "HOD"
-    src_module = "HR"
-    src_object_id = id,
-    file_extra_JSON = {"key": "value"}
-
-    # Create a file representing the Appraisal form and send it to HR admin
-    file_id = create_file(
-        uploader=uploader,
-        uploader_designation=uploader_designation,
-        receiver=receiver,
-        receiver_designation=receiver_designation,
-        src_module=src_module,
-        src_object_id=src_object_id,
-        file_extra_JSON=file_extra_JSON,
-        attached_file=None  # Attach any file if necessary
-    )
-
-
-    messages.success(request, "Appraisal form filled successfully")
-
-    return HttpResponse("Sucess")    
-
-
-    
-def appraisal_pre_processing(request):
-    data = {}
-    
-
-    coursesTaught = ""
-
-    for i in range(1,3):
-        for j in range(1,8):
-            key_is = f'info_{i}_{j}'
-            
-            if(request.POST.get(key_is) == ""):
-                coursesTaught = coursesTaught + 'None' + ','
-            else:
-                coursesTaught = coursesTaught + request.POST.get(key_is) + ','
-    
-    data['coursesTaught'] = coursesTaught.rstrip(',')
-
-    newCoursesIntroduced = ""
-
-    for i in range(3,5):
-        for j in range(1,4):
-            key_is = f'info_{i}_{j}'
-            
-            if(request.POST.get(key_is) == ""):
-                newCoursesIntroduced = newCoursesIntroduced + 'None' + ','
-            else:
-                newCoursesIntroduced = newCoursesIntroduced + request.POST.get(key_is) + ','
-    
-    data['newCoursesIntroduced'] = newCoursesIntroduced.rstrip(',')
-
-
-    newCoursesDeveloped = ""
-
-    for i in range(5,7):
-        for j in range(1,5):
-            key_is = f'info_{i}_{j}'
-            
-            if(request.POST.get(key_is) == ""):
-                newCoursesDeveloped = newCoursesDeveloped + 'None' + ','
-            else:
-                newCoursesDeveloped = newCoursesDeveloped + request.POST.get(key_is) + ','
-    
-    data['newCoursesDeveloped'] = newCoursesDeveloped.rstrip(',')
-
-    thesisSupervision = ""
-
-    for i in range(7,9):
-        for j in range(1,6):
-            key_is = f'info_{i}_{j}'
-            
-            if(request.POST.get(key_is) == ""):
-                thesisSupervision = thesisSupervision + 'None' + ','
-            else:
-                thesisSupervision = thesisSupervision + request.POST.get(key_is) + ','
-    
-    data['thesisSupervision'] = thesisSupervision.rstrip(',')
-
-
-
-    sponsoredReseachProjects = ""
-
-    for i in range(9,10):
-        for j in range(1,8):
-            key_is = f'info_{i}_{j}'
-            
-            if(request.POST.get(key_is) == ""):
-                sponsoredReseachProjects = sponsoredReseachProjects + 'None' + ','
-            else:
-                sponsoredReseachProjects = sponsoredReseachProjects + request.POST.get(key_is) + ','
-    
-    data['sponsoredReseachProjects'] = sponsoredReseachProjects.rstrip(',')
-
-
-    return data
-
-
-
-
-def reverse_appraisal_pre_processing(data):
-    reversed_data = {}
-
-    # Copying over simple key-value pairs
-    simple_keys = [
-        'name', 'designation', 'disciplineInfo', 'specificFieldOfKnowledge', 'designation', 'currentResearchInterests',
-        'otherInstructionalTasks', 'otherResearchElement', 'publication', 'referredConference',
-        'conferenceOrganised', 'membership', 'honours', 'editorOfPublications', 
-        'expertLectureDelivered', 'membershipOfBOS', 'otherExtensionTasks',
-        'administrativeAssignment', 'serviceToInstitute', 'otherContribution', 'performanceComments',
-        'submissionDate'
-    ]
-
-  
-    for key in simple_keys:
-        value = getattr(data, key)
-        reversed_data[key] = value if value != 'None' else ''
-    
-    courses_taught = getattr(data,'coursesTaught').split(',')
-    for index, value in enumerate(courses_taught):
-        courses_taught[index] = value if value != 'None' else ''
-    
-    reversed_data['info_1_1'] = courses_taught[0]
-    reversed_data['info_1_2'] = courses_taught[1]
-    reversed_data['info_1_3'] = courses_taught[2]
-    reversed_data['info_1_4'] = courses_taught[3]
-    reversed_data['info_1_5'] = courses_taught[4]
-    reversed_data['info_1_6'] = courses_taught[5]
-    reversed_data['info_1_7'] = courses_taught[6]
-    reversed_data['info_2_1'] = courses_taught[7]
-    reversed_data['info_2_2'] = courses_taught[8]
-    reversed_data['info_2_3'] = courses_taught[9]
-    reversed_data['info_2_4'] = courses_taught[10]
-    reversed_data['info_2_5'] = courses_taught[11]
-    reversed_data['info_2_6'] = courses_taught[12]
-    reversed_data['info_2_7'] = courses_taught[13]
-
-    # # Reversing details_of_dependents
-    new_courses_introduced = getattr(data,'newCoursesIntroduced').split(',')
-    for i in range(3, 5):
-        for j in range(1, 4):
-            key = f'info_{i}_{j}'
-            value = new_courses_introduced.pop(0)
-            reversed_data[key] = value if value != 'None' else ''
-        
-
-        
-    newCoursesDeveloped = getattr(data,'newCoursesDeveloped').split(',')
-    for i in range(5, 7):
-        for j in range(1, 5):
-            key = f'info_{i}_{j}'
-            value = newCoursesDeveloped.pop(0)
-            reversed_data[key] = value if value != 'None' else ''
-
-
-
-    thesis_reasearch = getattr(data,'otherResearchElement').split(',')
-    for i in range(7, 9):
-        for j in range(1, 6):
-            key = f'info_{i}_{j}'
-            if thesis_reasearch:
-               value = thesis_reasearch.pop()
-            else:
-    # Handle the case where the list is empty
-                print("The list is empty, cannot pop from it.")
-            # value = thesis_reasearch.pop(0)
-            reversed_data[key] = value if value != 'None' else ''
-
-
-
-    sponsored_research = getattr(data,'sponsoredReseachProjects').split(',')
-    for i in range(9, 10):
-        for j in range(1, 8):
-            key = f'info_{i}_{j}'
-            value = sponsored_research.pop(0)
-            reversed_data[key] = value if value != 'None' else ''
-
-    return reversed_data
-
-
-
-def reverse_cpda_reimbursement_pre_processing(data):
-    reversed_data = {}
-
-    simple_keys = [
-        'name', 'designation', 'pfNo', 'purpose', 'advanceTaken', 'adjustmentSubmitted',
-        'submissionDate',
-        'balanceAvailable', 'advanceDueAdjustment', 'amountCheckedInPDA', 
-    ]
-
-  
-    for key in simple_keys:
-        value = getattr(data, key)
-        reversed_data[key] = value if value != 'None' else ''
-
-    return reversed_data
-
-
-def cpda_reimbursement_form(request, id):
-    """ Views for edit details"""
-    try:
-        employee = ExtraInfo.objects.get(user__id=id)
-    except:
-        raise Http404("Employee does not exist! id doesnt exist")
-    
-    user_id = id
-    creator = User.objects.get(id = user_id)
-
-    if(employee.user_type == 'faculty' or employee.user_type == 'staff' or employee.user_type == 'student' ):
-        template = 'hr2Module/cpda_reimbursement_form.html'
-
-        if request.method == "POST":
-            try:
-
-                form_2 = {
-                    'employeeId' : id,
-                    'name' : request.POST.get('name'),
-                    'designation' :  request.POST.get('designation'),
-                    'pfNo' : request.POST.get('pfNo'),
-                    'purpose' : request.POST.get('purpose'),
-                    'advanceTaken' : request.POST.get('advanceTaken'),
-                    'advanceDueAdjustment' : request.POST.get('advanceDueAdjustment'),
-                    'submissionDate' : request.POST.get('submissionDate'),
-                    'balanceAvailable' : request.POST.get('balanceAvailable'),
-                    'adjustmentSubmitted' : request.POST.get('adjustmentSubmitted'),
-                    'amountCheckedInPDA' : request.POST.get('amountCheckedInPDA'),
-                    'created_by' : creator,
-                }
-                
-                cpda_form = CPDAReimbursementform.objects.create(
-                    employeeId = id, 
-                    name = request.POST.get('name'),
-                    designation = request.POST.get('designation'),
-                    pfNo = request.POST.get('pfNo'), 
-                    purpose = request.POST.get('purpose'),
-                    advanceTaken = request.POST.get('advanceTaken'),  
-                    advanceDueAdjustment = request.POST.get('advanceDueAdjustment'),  
-                    submissionDate = request.POST.get('submissionDate'),  
-                    balanceAvailable = request.POST.get('balanceAvailable'),  
-                    adjustmentSubmitted = request.POST.get('adjustmentSubmitted'), 
-                    amountCheckedInPDA = request.POST.get('amountCheckedInPDA'),  
-                    created_by=creator,
-
-                )
-
-
-                uploader = employee.user
-                uploader_designation = 'Assistant Professor'
-
-                get_designation = get_designation_by_user_id(employee.user)
-                if(get_designation):
-                    uploader_designation = get_designation
-
-                receiver = request.POST.get('username_employee')
-                receiver_designation = request.POST.get('designation_employee')
-                src_module = "HR" 
-                src_object_id = str(cpda_form.id)
-                file_extra_JSON = {"type": "CPDAReimbursement"}
-
-                # Create a file representing the CPDA form 
-                file_id = create_file(
-                    uploader=uploader,
-                    uploader_designation=uploader_designation,
-                    receiver=receiver,
-                    receiver_designation=receiver_designation,
-                    src_module=src_module,
-                    src_object_id=src_object_id,
-                    file_extra_JSON=file_extra_JSON,
-                    attached_file=None  # Attach any file if necessary
-                )
-
-                messages.success(request, "cpdareimbursement form filled successfully")
-
-                return redirect(request.path_info)
-
-            except Exception as e:
-                messages.warning(request, "Fill not correctly")
-                context = {'employee': employee}
-                return render(request, template, context)
-
-        cpda_reimbursement_requests = CPDAReimbursementform.objects.filter(employeeId=id)
-
-        username = employee.user
-        uploader_designation = 'Assistant Professor'
-
-
-        designation = get_designation_by_user_id(employee.user)
-        if(designation):
-            uploader_designation = designation
-
-        
-        inbox = view_inbox(username = username, designation = uploader_designation, src_module = "HR")
-
-        archived_files = view_archived(username = username, designation = uploader_designation, src_module = "HR")
-
-        filtered_inbox = []
-        for i in inbox:
-            item = i.get('file_extra_JSON', {})  
-            if item.get('type') == 'CPDAReimbursement':
-                filtered_inbox.append(i)
-
-        filtered_archived_files = []
-        for i in archived_files:
-            item = i.get('file_extra_JSON', {})  
-            if item.get('type') == 'CPDAReimbursement':
-                filtered_archived_files.append(i)
-
-
-        context = {'employee': employee, 'cpda_reimbursement_requests': cpda_reimbursement_requests, 'inbox': filtered_inbox , 'designation':designation, 'archived_files': filtered_archived_files,'user_id':user_id}
-
-
-        messages.success(request, "cpdareimbursement form filled successfully!")
-        return render(request, template, context)
-    else:
-        return render(request, 'hr2Module/edit.html')
-    
-
-
-
-def form_view_cpda_reimbursement(request , id):
-    cpda_reimbursement_request = get_object_or_404(CPDAReimbursementform, id=id)
-    user_id = cpda_reimbursement_request.created_by.id
-    # isko recheck krna h
-    from_user = request.GET.get('param1')
-    from_designation = request.GET.get('param2')
-    file_id = request.GET.get('param3')
-
-    template = 'hr2Module/view_cpda_reimbursement_form.html'
-    cpda_reimbursement_request = reverse_cpda_reimbursement_pre_processing(cpda_reimbursement_request)
-    
-    context = {'cpda_reimbursement_request' : cpda_reimbursement_request , "button" : 1 , "file_id" : file_id, "from_user" :from_user , "from_designation" : from_designation,"id":id,"user_id":user_id}
-
-    return render(request , template , context)
-
-
-def view_cpda_reimbursement_form(request, id):
-    cpda_reimbursement_request = get_object_or_404(CPDAReimbursementform, id=id)
-   
-    cpda_reimbursement_request = reverse_cpda_reimbursement_pre_processing(cpda_reimbursement_request)
-
-    context = {
-        'cpda_reimbursement_request': cpda_reimbursement_request
-    }
-    return render(request,'hr2Module/view_cpda_reimbursement_form.html',context)
-
-
-
-def form_mangement_cpda_reimbursement(request):
-    if(request.method == "GET"):
-        username = "21BCS185"
-        designation = "hradmin"
-        inbox = view_inbox(username = username, designation = designation, src_module = "HR")
-
-
-        # Extract src_object_id values
-        src_object_ids = [item['src_object_id'] for item in inbox]
-
-        
-        cpda_reimbursement_requests = []
-
-        for src_object_id in src_object_ids:
-            cpda_reimbursement_request = get_object_or_404(CPDAReimbursementform, id=src_object_id)
-            cpda_reimbursement_requests.append(cpda_reimbursement_request)
-
-        context= {
-            'cpda_reimbursement_requests' : cpda_reimbursement_requests,
-            'hr' : "1",
-        }
-
-
-        return render(request, 'hr2Module/cpda_reimbursement_form.html',context)
-    
-def form_mangement_cpda_reimbursement_hr(request,id):
-    uploader = "21BCS183"
-    uploader_designation = "student"
-    receiver = "21BCS181"
-    receiver_designation = "HOD"
-    src_module = "HR"
-    src_object_id = id,
-    file_extra_JSON = {"key": "value"}
-
-    # Create a file representing the CPDA form and send it to HR admin
-    file_id = create_file(
-        uploader=uploader,
-        uploader_designation=uploader_designation,
-        receiver=receiver,
-        receiver_designation=receiver_designation,
-        src_module=src_module,
-        src_object_id=src_object_id,
-        file_extra_JSON=file_extra_JSON,
-        attached_file=None  # Attach any file if necessary
-    )
-
-
-    messages.success(request, "CPda form filled successfully")
-
-
-    return HttpResponse("Success")
-
-
-def form_mangement_cpda_reimbursement_hod(request):
-    if(request.method == "GET"):
-        username = "21BCS181"
-        designation = "HOD"
-        inbox = view_inbox(username = username, designation = designation, src_module = "HR")
-
-
-        # Extract src_object_id values
-        src_object_ids = [item['src_object_id'] for item in inbox]
-
-        
-        cpda_reimbursement_requests = []
-
-        for src_object_id in src_object_ids:
-            cpda_reimbursement_request = get_object_or_404(CPDAReimbursementform, id=src_object_id)
-            cpda_reimbursement_requests.append(cpda_reimbursement_request)
-
-        context= {
-            'cpda_reimbursement_requests' : cpda_reimbursement_requests,
-            'hr' : "1",
-        }
-
-
-        return render(request, 'hr2Module/cpda_reimbursement_form.html',context)
-    
-
-def getform(request):
-    form_type = request.GET.get("type")
-    id = request.GET.get("id")
-
-    if form_type == "LTC":
-        try:
-            forms = LTCform.objects.filter(created_by=id)
-            
-            form_data = []
-            for form in forms:
-                form_data.append({
-                    'id': form.id,
-                    'name': form.name,
-                    'designation': form.designation,
-                    'submissionDate': form.submissionDate.strftime("%Y-%m-%d") if form.submissionDate else None,
-                    'is_approved' : form.approved,
-                    
-                })
-
-            return JsonResponse(form_data, safe=False)  # Return JSON response
-        except LTCform.DoesNotExist:
-            return JsonResponse({"message": "No LTC forms found."}, status=404)
-        
-def getformcpdaAdvance(request):
-    form_type = request.GET.get("type")
-    id = request.GET.get("id")
-
-    if form_type == "CPDAAdvance":
-        try:
-            forms = CPDAAdvanceform.objects.filter(created_by=id)
-            form_data = []
-            for form in forms:
-                form_data.append({
-                    'id': form.id,
-                    'name': form.name,
-                    'designation': form.designation,
-                    'submissionDate': form.submissionDate.strftime("%Y-%m-%d") if form.submissionDate else None,
-                    'is_approved' : form.approved,
-                })
-
-            return JsonResponse(form_data, safe=False)  # Return JSON response
-        except CPDAAdvanceform.DoesNotExist:
-            return JsonResponse({"message": "No CPDAAdvance forms found."}, status=404)        
-        
-
-def getformLeave(request):
-    form_type = request.GET.get("type")
-    id = request.GET.get("id")
-
-    if form_type == "Leave":
-        try:
-            forms = LeaveForm.objects.filter(created_by=id)
-            form_data = []
-            for form in forms:
-                form_data.append({
-                    'id': form.id,
-                    'name': form.name,
-                    'designation': form.designation,
-                    'submissionDate': form.submissionDate.strftime("%Y-%m-%d") if form.submissionDate else None,
-                    'is_approved' : form.approved,
-                    # Add other fields as needed
-                })
-
-            return JsonResponse(form_data, safe=False)  # Return JSON response
-        except LeaveForm.DoesNotExist:
-            return JsonResponse({"message": "No Leave forms found."}, status=404)    
-
-
-def getformAppraisal(request):
-    form_type = request.GET.get("type")
-    id = request.GET.get("id")
-
-    if form_type == "Appraisal":
-        try:
-            forms = Appraisalform.objects.filter(created_by=id)
-            form_data = []
-            for form in forms:
-                form_data.append({
-                    'id': form.id,
-                    'name': form.name,
-                    'designation': form.designation,
-                    'submissionDate': form.submissionDate.strftime("%Y-%m-%d") if form.submissionDate else None,
-                    'is_approved' : form.approved,
-                })
-
-            return JsonResponse(form_data, safe=False)  # Return JSON response
-        except Appraisalform.DoesNotExist:
-            return JsonResponse({"message": "No Appraisal forms found."}, status=404)        
-        
-
-
-def getformcpdaReimbursement(request):
-    form_type = request.GET.get("type")
-    id = request.GET.get("id")
-
-    if form_type == "CPDAReimbursement":
-        try:
-            forms = CPDAReimbursementform.objects.filter(created_by=id)
-            form_data = []
-            for form in forms:
-                form_data.append({
-                    'id': form.id,
-                    'name': form.name,
-                    'designation': form.designation,
-                    'submissionDate': form.submissionDate.strftime("%Y-%m-%d") if form.submissionDate else None,
-                    'is_approved' : form.approved,
-                    # Add other fields as needed
-                })
-
-            return JsonResponse(form_data, safe=False)  # Return JSON response
-        except CPDAReimbursementform.DoesNotExist:
-            return JsonResponse({"message": "No CPDAReimbursement forms found."}, status=404)        
-
-
-
+            'pfno': emp_confidential.personal_file_number,
+            'department': department_name,
+        }, status=200)
+    except Exception as e:
+        return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
