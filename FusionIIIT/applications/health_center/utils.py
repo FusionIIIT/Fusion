@@ -12,7 +12,7 @@ from notification.views import  healthcare_center_notif
 from .models import ( Doctor, Stock_entry,Present_Stock,All_Medicine, 
                      Doctors_Schedule,Pathologist_Schedule,
                     Pathologist, medical_relief, MedicalProfile,All_Prescription,All_Prescribed_medicine,
-                    Prescription_followup,files,Required_medicine)
+                    Prescription_followup,files,Required_medicine,Announcements,Complaint)
 from applications.filetracking.sdk.methods import *
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
@@ -42,27 +42,6 @@ def compounder_view_handler(request):
         data = {'feedback': feedback}
         for cmp in comp_id:
                 healthcare_center_notif(request.user, cmp.user, 'feedback_res','')
-        return JsonResponse(data)
-
-    elif 'end' in request.POST:
-        pk = request.POST.get('id')
-        Ambulance_request.objects.select_related('user_id','user_id__user','user_id__department').filter(id=pk).update(end_date=datetime.now())
-        amb=Ambulance_request.objects.select_related('user_id','user_id__user','user_id__department').filter(id=pk)
-        for f in amb:
-            dateo=f.end_date
-        data={'datenow':dateo}
-        return JsonResponse(data)
-
-    # return expired medicine and update db
-    elif 'returned' in request.POST:                                     
-        pk = request.POST.get('id')
-        Expiry.objects.select_related('medicine_id').filter(id=pk).update(returned=True,return_date=datetime.now())
-        qty=Expiry.objects.select_related('medicine_id').get(id=pk).quantity
-        med=Expiry.objects.select_related('medicine_id').get(id=pk).medicine_id.id
-        quantity=Stock.objects.get(id=med).quantity
-        quantity=quantity-qty
-        Stock.objects.filter(id=med).update(quantity=quantity)
-        data={'status':1}
         return JsonResponse(data)
 
     # updating new doctor info in db    
@@ -110,17 +89,7 @@ def compounder_view_handler(request):
         doc=Pathologist.objects.get(id=doctor).pathologist_name
         data={'status':1, 'id':doctor, 'doc':doc}
         return JsonResponse(data)
-
-    # discharge patients
-    elif 'discharge' in request.POST:                                        
-        pk = request.POST.get('discharge')
-        Hospital_admit.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').filter(id=pk).update(discharge_date=datetime.now())
-        hosp=Hospital_admit.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').filter(id=pk)
-        for f in hosp:
-            dateo=f.discharge_date
-        data={'datenow':dateo, 'id':pk}
-        return JsonResponse(data)
-
+    
     elif 'add_stock' in request.POST:
         try:
             medicine = request.POST.get('medicine_id')
@@ -253,14 +222,11 @@ def compounder_view_handler(request):
 
     elif 'add_medicine' in request.POST:
         medicine = request.POST.get('new_medicine')
-        # quantity = request.POST.get('new_quantity')
         threshold = request.POST.get('threshold')
         brand_name = request.POST.get('brand_name')
         constituents = request.POST.get('constituents')
         manufacture_name = request.POST.get('manufacture_name')
         packsize = request.POST.get('packsize')
-        # new_supplier = request.POST.get('new_supplier')
-        # new_expiry_date = request.POST.get('new_expiry_date')
         tot_rows = All_Medicine.objects.all().count()
         All_Medicine.objects.create(
             id = tot_rows+1,
@@ -271,69 +237,9 @@ def compounder_view_handler(request):
             manufacturer_name=manufacture_name,
             pack_size_label=packsize
         )
-        # Stock.objects.create(
-        #     medicine_name=medicine,
-        #     quantity=quantity,
-        #     threshold=threshold
-        # )
-        # medicine_id = Stock.objects.get(medicine_name=medicine)
-        # Expiry.objects.create(
-        #     medicine_id=medicine_id,
-        #     quantity=quantity,
-        #     supplier=new_supplier,
-        #     expiry_date=new_expiry_date,
-        #     returned=False,
-        #     return_date=None,
-        #     date=datetime.now()
-        # )
         data = {'medicine':  medicine, 'threshold': threshold,}
         return JsonResponse(data)
 
-    elif 'admission' in request.POST:
-        user = request.POST.get('user_id')
-        user_id = ExtraInfo.objects.select_related('user','department').get(id=user)
-        doctor = request.POST.get('doctor_id')
-        doctor_id = Doctor.objects.get(id=doctor)
-        admission_date = request.POST.get('admission_date')
-        reason = request.POST.get('description')
-        hospital_doctor = request.POST.get('hospital_doctor')
-        hospital_id = request.POST.get('hospital_name')
-        hospital_name = Hospital.objects.get(id=hospital_id)
-        Hospital_admit.objects.create(
-                user_id=user_id,
-                doctor_id=doctor_id,
-                hospital_name=hospital_name,
-                admission_date=admission_date,
-                hospital_doctor=hospital_doctor,
-                discharge_date=None,
-                reason=reason
-            )
-        user=user_id.user
-        data={'status':1}
-        return JsonResponse(data)
-
-    # elif 'medicine_name' in request.POST:
-    #     app = request.POST.get('user')
-    #     user = Appointment.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','schedule','schedule__doctor_id').get(id=app).user_id
-    #     quantity = int(request.POST.get('quantity'))
-    #     days = int(request.POST.get('days'))
-    #     times = int(request.POST.get('times'))
-    #     medicine_id = request.POST.get('medicine_name')
-    #     medicine = Stock.objects.get(id=medicine_id)
-    #     Medicine.objects.create(
-    #         patient=user,
-    #         medicine_id=medicine,
-    #         quantity=quantity,
-    #         days=days,
-    #         times=times
-    #     )
-    #     user_medicine = Medicine.objects.filter(patient=user)
-    #     list = []
-    #     for med in user_medicine:
-    #         list.append({'medicine': med.medicine_id.medicine_name, 'quantity': med.quantity,
-    #                         'days': med.days, 'times': med.times})
-    #     sches = json.dumps(list, default=datetime_handler)
-    #     return HttpResponse(sches, content_type='json')
     elif 'get_stock' in request.POST:
         try:
             medicine_name_and_id = request.POST.get('medicine_name_for_stock')
@@ -392,76 +298,6 @@ def compounder_view_handler(request):
         if quantity>qty : status=0
         return JsonResponse({"status":status,"med_name":med_name,"id":id})
     
-    # elif 'doct' in request.POST:
-    #     doctor_id = request.POST.get('doct')
-    #     schedule = Schedule.objects.select_related('doctor_id').filter(doctor_id=doctor_id)
-    #     list = []
-    #     for s in schedule:
-    #         list.append({'room': s.room, 'id': s.id, 'doctor': s.doctor_id.doctor_name,
-    #                         'day': s.get_day_display(), 'from_time': s.from_time,
-    #                         'to_time': s.to_time})
-
-    #     sches = json.dumps(list, default=datetime_handler)
-    #     return HttpResponse(sches, content_type='json')
-
-    elif 'prescribe' in request.POST:
-        app_id = request.POST.get('user')
-        details = request.POST.get('details')
-        tests = request.POST.get('tests')
-        appointment = Appointment.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','schedule','schedule__doctor_id').get(id=app_id)
-        user=appointment.user_id
-        doctor=appointment.doctor_id
-        Prescription.objects.create(
-            user_id=user,
-            doctor_id=doctor,
-            details=details,
-            date=datetime.now(),
-            test=tests,
-            appointment=appointment
-        )
-        query = Medicine.objects.select_related('patient','patient__user','patient__department').objects.filter(patient=user)
-        prescribe = Prescription.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','appointment','appointment__user_id','appointment__user_id__user','appointment__user_id__department','appointment__doctor_id','appointment__schedule','appointment__schedule__doctor_id').objects.all().last()
-        for medicine in query:
-            medicine_id = medicine.medicine_id
-            quantity = medicine.quantity
-            days = medicine.days
-            times = medicine.times
-            Prescribed_medicine.objects.create(
-                prescription_id=prescribe,
-                medicine_id=medicine_id,
-                quantity=quantity,
-                days=days,
-                times=times
-            )
-            today=datetime.now()
-            expiry=Expiry.objects.select_related('medicine_id').filter(medicine_id=medicine_id,quantity__gt=0,returned=False,expiry_date__gte=today).order_by('expiry_date')
-            stock=Stock.objects.get(medicine_name=medicine_id).quantity
-            if stock>quantity:
-                for e in expiry:
-                    q=e.quantity
-                    em=e.id
-                    if q>quantity:
-                        q=q-quantity
-                        Expiry.objects.select_related('medicine_id').filter(id=em).update(quantity=q)
-                        qty = Stock.objects.get(medicine_name=medicine_id).quantity
-                        qty = qty-quantity
-                        Stock.objects.filter(medicine_name=medicine_id).update(quantity=qty)
-                        break
-                    else:
-                        quan=Expiry.objects.select_related('medicine_id').get(id=em).quantity
-                        Expiry.objects.select_related('medicine_id').filter(id=em).update(quantity=0)
-                        qty = Stock.objects.get(medicine_name=medicine_id).quantity
-                        qty = qty-quan
-                        Stock.objects.filter(medicine_name=medicine_id).update(quantity=qty)
-                        quantity=quantity-quan
-                status = 1
-            else:
-                status = 0
-            Medicine.objects.select_related('patient','patient__user','patient__department').all().delete()
-
-        healthcare_center_notif(request.user, user.user, 'presc','')
-        data = {'status': status, 'stock': stock}
-        return JsonResponse(data)
     elif 'user_for_dependents' in request.POST:
         user = request.POST.get('user_for_dependents')
         if not User.objects.filter(username__iexact = user).exists():
@@ -497,9 +333,7 @@ def compounder_view_handler(request):
             new_file=files.objects.create(
                 file_data=f
             )
-            fid=new_file.id
-        # with open(uploaded_file.name, 'wb+') as destination:   
-        #         destination.write(f)  
+            fid=new_file.id  
         if is_dependent == "self":
             pres=All_Prescription.objects.create(
                 user_id = user_id,
@@ -521,20 +355,6 @@ def compounder_view_handler(request):
                 dependent_relation = request.POST.get('dependent_relation'),
                 file_id=fid
             )
-        # designation=request.POST.get('user')
-        # d = HoldsDesignation.objects.get(user__username=designation)
-        # send_file_id = create_file(
-        #     uploader=request.user.username,
-        #     uploader_designation=request.session['currentDesignationSelected'],
-        #     receiver=designation,
-        #     receiver_designation=d.designation,
-        #     src_module="health_center",
-        #     src_object_id=str(pres.id),
-        #     file_extra_JSON={"value": 2},
-        #     attached_file=uploaded_file  
-        # )
-        # pres.file_id=send_file_id
-        # pres.save()
 
         pre_medicine = request.POST.get('pre_medicine')
 
@@ -582,75 +402,9 @@ def compounder_view_handler(request):
                     else :
                         Required_medicine.objects.create(
                             medicine_id = med_id,
-                            quantiy = qty,
+                            quantity = qty,
                             threshold = med_id.threshold
                         )
-        # pre_medicine = request.POST.get_json('pre_medicine')
-        # print(pre_medicine)
-        # details = request.POST.get('details')
-        # tests = request.POST.get('tests')
-        # # app = Appointment.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','schedule','schedule__doctor_id').filter(user_id=user_id,date=datetime.now())
-        # # if app:
-        # #     appointment = Appointment.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','schedule','schedule__doctor_id').get(user_id=user_id,date=datetime.now())
-        # # else:
-        # #     appointment = None
-        # form_object=Prescription(
-        #     user_id=user,
-        #     doctor_id=doctor,
-        #     details=details,
-        #     date=datetime.now(),
-        #     test=tests,          
-        #     # appointment=appointment
-        # )
-        # form_object.save()
-
-        # request_object.save()
-        
-        # query = Medicine.objects.select_related('patient','patient__user','patient__department').filter(patient=user)
-        # prescribe = Prescription.objects.select_related('user_id','user_id__user','user_id__department','doctor_id').all().last()
-        # for medicine in query:
-        #     medicine_id = medicine.medicine_id
-        #     quantity = medicine.quantity
-        #     days = medicine.days
-        #     times = medicine.times
-        #     Prescribed_medicine.objects.create(
-        #         prescription_id=prescribe,
-        #         medicine_id=medicine_id,
-        #         quantity=quantity,
-        #         days=days,
-        #         times=times
-        #     )
-        #     today=datetime.now()
-        #     expiry=Expiry.objects.select_related('medicine_id').filter(medicine_id=medicine_id,quantity__gt=0,returned=False,expiry_date__gte=today).order_by('expiry_date')
-        #     stock=Stock.objects.get(medicine_name=medicine_id).quantity
-        #     if stock>quantity:
-        #         for e in expiry:
-        #             q=e.quantity
-        #             em=e.id
-        #             if q>quantity:
-        #                 q=q-quantity
-        #                 Expiry.objects.select_related('medicine_id').filter(id=em).update(quantity=q)
-        #                 qty = Stock.objects.get(medicine_name=medicine_id).quantity
-        #                 qty = qty-quantity
-        #                 Stock.objects.filter(medicine_name=medicine_id).update(quantity=qty)
-        #                 break
-        #             else:
-        #                 quan=Expiry.objects.select_related('medicine_id').get(id=em).quantity
-        #                 Expiry.objects.select_related('medicine_id').filter(id=em).update(quantity=0)
-        #                 qty = Stock.objects.get(medicine_name=medicine_id).quantity
-        #                 qty = qty-quan
-        #                 Stock.objects.filter(medicine_name=medicine_id).update(quantity=qty)
-        #                 quantity=quantity-quan
-        #         status = 1
-
-        #     else:
-        #         status = 0
-            # Medicine.objects.select_related('patient','patient__user','patient__department').all().delete()
-          
-
-        # healthcare_center_notif(request.user, user.user, 'presc','')
-        # data = {'status': status}
-        # return JsonResponse(data)
         return JsonResponse({"status":1})
     
     elif 'presc_followup' in request.POST:
@@ -810,15 +564,6 @@ def compounder_view_handler(request):
         except Exception as e:
             return JsonResponse({"status":0})
 
-    elif 'cancel_presc' in request.POST:
-        presc_id = request.POST.get('cancel_presc')
-        prescription=Prescription.objects.get(pk=presc_id)       
-        is_deleted = delete_file(file_id=prescription.file_id)
-        prescription.delete()
-        
-        
-        data = {'status': 1}
-        return JsonResponse(data)
     elif 'medicine' in request.POST:
         med_id = request.POST.get('medicine')
         try:
@@ -847,6 +592,17 @@ def compounder_view_handler(request):
         healthcare_center_notif(request.user,user.user,'rel_approve','')      
         data = {'status': 1}
         return JsonResponse(data)
+    elif 'compounder_reject' in request.POST:
+        file_id = request.POST.get('file_id')
+        relief = medical_relief.objects.get(file_id=file_id)
+        relief.compounder_reject_flag = True
+        relief.save()
+        rejected_user = request.POST.get('rejected_user')
+        user=User.objects.get(username__iexact = rejected_user)
+        rejected_user_info = ExtraInfo.objects.get(user_id = user)
+        healthcare_center_notif(request.user,rejected_user_info.user,'reject_relief','')
+        data = {'status': 1}
+        return JsonResponse(data)
     elif 'comp_announce' in request.POST:
         usrnm = get_object_or_404(User, username=request.user.username)
         user_info = ExtraInfo.objects.all().select_related('user','department').filter(user=usrnm).first()
@@ -861,7 +617,9 @@ def compounder_view_handler(request):
         formObject. upload_announcement = request.FILES.get('upload_announcement')       
         formObject.ann_date = date.today()     
         formObject.save()
-        healthcare_center_notif(usrnm, recipients , 'new_announce',formObject.message ) 
+        print("before")
+        healthcare_center_notif(usrnm, recipients , 'new_announce',formObject.message )
+        print("after")
         data = {'status': 1}
         return JsonResponse(data)
     elif 'datatype' in request.POST and request.POST['datatype'] == 'patientlog':
@@ -1106,77 +864,9 @@ def compounder_view_handler(request):
     return JsonResponse({'status':1,'stocks':stocks})
 
 def student_view_handler(request):
-    if 'amb_submit' in request.POST:
-        user_id = ExtraInfo.objects.select_related('user','department').get(user=request.user)
-        comp_id = ExtraInfo.objects.select_related('user','department').filter(user_type='compounder')
-        reason = request.POST.get('reason')
-        start_date = request.POST.get('start_date')
-        end_date = request.POST.get('end_date')
-        if end_date == '':
-            end_date = None
-        Ambulance_request.objects.create(
-                user_id=user_id,
-                date_request=datetime.now(),
-                start_date=start_date,
-                end_date=end_date,
-                reason=reason
-            )
-        data = {'status': 1}
-        healthcare_center_notif(request.user, request.user, 'amb_request','')
-        for cmp in comp_id:
-                healthcare_center_notif(request.user, cmp.user, 'amb_req','')
-
-        return JsonResponse(data)
-    elif "amb_submit1" in request.POST:
-        user_id = ExtraInfo.objects.select_related('user','department').get(user=request.user)
-        comp_id = ExtraInfo.objects.select_related('user','department').filter(user_type='compounder')
-        doctor_id = request.POST.get('doctor')
-        doctor = Doctor.objects.get(id=doctor_id)
-        date = request.POST.get('date')
-        schedule = Schedule.objects.select_related('doctor_id').get(id=date)
-        datei = schedule.date
-        app_time = schedule.to_time
-        description = request.POST.get('description')
-        Appointment.objects.create(
-            user_id=user_id,
-            doctor_id=doctor,
-            description=description,
-            schedule=schedule,
-            date=datei
-        )
-        data = {
-                'app_time': app_time, 'dt': datei , 'status' : 1
-                }
-        healthcare_center_notif(request.user, request.user, 'appoint','')
-        for cmp in comp_id:
-                healthcare_center_notif(request.user, cmp.user, 'appoint_req','')
-
-        return JsonResponse(data)
     
     
-    elif 'doctor' in request.POST:
-        doctor_id = request.POST.get('doctor')
-        days =Dotors_Schedule.objects.select_related('doctor_id').filter(doctor_id=doctor_id).values('day')
-        today = datetime.today()
-        time = datetime.today().time()
-        sch = Doctors_Schedule.objects.select_related('doctor_id').filter(date__gte=today)
-
-        for day in days:
-            for i in range(0, 7):
-                date = (datetime.today()+timedelta(days=i)).date()
-                dayi = date.weekday()
-                d = day.get('day')
-                if dayi == d:
-
-                    Doctors_Schedule.objects.select_related('doctor_id').filter(doctor_id=doctor_id, day=dayi).update(date=date)
-
-        sch.filter(date=today, to_time__lt=time).delete()
-        schedule = sch.filter(doctor_id=doctor_id).order_by('date')
-        schedules = serializers.serialize('json', schedule)
-        return HttpResponse(schedules, content_type='json')
-    
-    
-    elif 'feed_submit' in request.POST:
+    if 'feed_submit' in request.POST:
         user_id = ExtraInfo.objects.select_related('user','department').get(user=request.user)
         feedback = request.POST.get('feedback')
         Complaint.objects.create(
@@ -1188,17 +878,7 @@ def student_view_handler(request):
         healthcare_center_notif(request.user, request.user,'feedback_submitted','')
         
         return JsonResponse(data)
-    
-    elif 'cancel_amb' in request.POST:
-        amb_id = request.POST.get('cancel_amb')
-        Ambulance_request.objects.select_related('user_id','user_id__user','user_id__department').filter(pk=amb_id).delete()
-        data = {'status': 1}
-        return JsonResponse(data)
-    elif 'cancel_app' in request.POST:
-        app_id = request.POST.get('cancel_app')
-        Appointment.objects.select_related('user_id','user_id__user','user_id__department','doctor_id','schedule','schedule__doctor_id').filter(pk=app_id).delete()
-        data = {'status': 1}
-        return JsonResponse(data)
+
     elif 'medical_relief_submit' in request.POST:
         designation = request.POST.get('designation')
         # print("# #")
@@ -1224,6 +904,7 @@ def student_view_handler(request):
         # Retrieve HoldsDesignation instances
         d = HoldsDesignation.objects.get(user__username=designation)
         d1 = HoldsDesignation.objects.get(user__username=request.user)
+        print(request.session['currentDesignationSelected'])
 
         # Create a file entry using the create_file utility function
         send_file_id = create_file(
@@ -1278,3 +959,76 @@ def student_view_handler(request):
         MedicalProfile.objects.select_related('user_id','user_id__user','user_id__department', 'date_of_birth', 'gender', 'blood_type', 'height', 'weight').filter(pk=user_id).delete()
         data = {'status': 1}
         return JsonResponse({'status':1})
+    elif 'datatype' in request.POST and request.POST['datatype'] == 'patientlog':
+                 search = request.POST.get('search_patientlog')
+                 print("patient")
+                 page_size = 2
+                 new_current_page = int(request.POST.get('page'))
+                 new_offset = (new_current_page - 1) * page_size
+                 new_report = []
+                 new_prescriptions = All_Prescription.objects.filter(Q(user_id__iexact = request.user.extrainfo.id) & Q( Q(user_id__icontains = search) | Q(details__icontains = search) | (Q(dependent_name__icontains = search)))).order_by('-date', '-id')[new_offset:new_offset + page_size]
+                 total_count = All_Prescription.objects.filter(Q(user_id__iexact = request.user.extrainfo.id) & Q( Q(user_id__icontains = search) | Q(details__icontains = search) | (Q(dependent_name__icontains = search)))).count()
+                 total_pages = (total_count + page_size - 1) // page_size
+                 for pre in new_prescriptions:
+                      doc = None
+                      if pre.doctor_id != None : doc=pre.doctor_id.doctor_name 
+                      dic = {
+                          'id': pre.pk,
+                          'user_id': pre.user_id,
+                          'date': pre.date,
+                          'doctor_id':doc,
+                          'details': pre.details,
+                          'test': pre.test,
+                          'file_id': pre.file_id,
+                          'dependent_name':pre.dependent_name
+                          # 'file': view_file(file_id=pre.file_id)['upload_file'] if pre.file_id else None
+                      }
+                      new_report.append(dic)
+                 return JsonResponse({
+                         'report': new_report,
+                         'page': new_current_page,
+                         'total_pages': total_pages,
+                         'has_previous': new_current_page > 1,
+                         'has_next': new_current_page < total_pages,
+                         'previous_page_number': new_current_page - 1 if new_current_page > 1 else None,
+                         'next_page_number': new_current_page + 1 if new_current_page < total_pages else None,
+                         })
+    elif 'search_patientlog' in request.POST:
+        search = request.POST.get('search_patientlog')
+        current_page = 1
+        page_size_prescription = 2  # Default to 2 if not specified
+        offset = (current_page - 1) * page_size_prescription
+        prescriptions = All_Prescription.objects.filter(Q(user_id__iexact = request.user.extrainfo.id) & Q( Q(user_id__icontains = search) | Q(details__icontains = search) | (Q(dependent_name__icontains = search)))).order_by('-date', '-id')[offset:offset + page_size_prescription]
+            
+        report = []
+        for pre in prescriptions:
+            doc = None
+            if pre.doctor_id != None : doc=pre.doctor_id.doctor_name
+            dic = {
+                'id': pre.pk,
+                'user_id': pre.user_id,
+                'doctor_id': doc,
+                'date': pre.date,
+                'details': pre.details,
+                'test': pre.test,
+                'file_id': pre.file_id,
+                'dependent_name':pre.dependent_name
+                    # 'file': view_file(file_id=pre.file_id)['upload_file'] if pre.file_id else None
+                }
+            report.append(dic)
+            # Handle total count for pagination context
+        total_count = All_Prescription.objects.filter(Q(user_id__iexact = request.user.extrainfo.id) & Q( Q(user_id__icontains = search) | Q(details__icontains = search) | (Q(dependent_name__icontains = search)))).count()
+            # Calculate total number of pages
+        total_pages = (total_count + page_size_prescription - 1) // page_size_prescription  # This ensures rounding up
+        prescContext = {
+            'count': total_pages,
+            'page': {
+                'object_list': report,
+                'number': current_page,
+                'has_previous': current_page > 1,
+                'has_next': current_page < total_pages,
+                'previous_page_number': current_page - 1 if current_page > 1 else None,
+                'next_page_number': current_page + 1 if current_page < total_pages else None,
+            }
+        }
+        return JsonResponse({'status':1,"presc_context":prescContext})

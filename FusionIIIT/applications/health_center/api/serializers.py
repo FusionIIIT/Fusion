@@ -1,20 +1,20 @@
-# from django.contrib.auth import get_user_model
-# from rest_framework.authtoken.models import Token
-# from rest_framework import serializers
-# from applications.health_center.models import *
+from django.contrib.auth import get_user_model
+from rest_framework.authtoken.models import Token
+from rest_framework import serializers
+from applications.health_center.models import *
 
 
-# class DoctorSerializer(serializers.ModelSerializer):
+class DoctorSerializer(serializers.ModelSerializer):
     
-#     class Meta:
-#         model=Doctor
-#         fields=('__all__')
+    class Meta:
+        model=Doctor
+        fields=('__all__')
         
-# class PathologistSerializer(serializers.ModelSerializer):
+class PathologistSerializer(serializers.ModelSerializer):
     
-#     class Meta:
-#         model=Pathologist
-#         fields=('__all__')
+    class Meta:
+        model=Pathologist
+        fields=('__all__')
 
 # class ComplaintSerializer(serializers.ModelSerializer):
 
@@ -47,25 +47,45 @@
 #         model=Expiry
 #         fields=('__all__')
 
-# class DoctorsScheduleSerializer(serializers.ModelSerializer):
+class DoctorsScheduleSerializer(serializers.ModelSerializer):
     
-#     class Meta:
-#         model=Doctors_Schedule
-#         fields=('__all__')
-# class PathologistScheduleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Doctors_Schedule
+        fields=('__all__')
+class PathologistScheduleSerializer(serializers.ModelSerializer):
     
-#     class Meta:
-#         model=Pathologist_Schedule
-#         fields=('__all__')
+    class Meta:
+        model=Pathologist_Schedule
+        fields=('__all__')
 
-
-        
-        
-# class AnnouncementSerializer(serializers.ModelSerializer):
+class PrescriptionSerializer(serializers.ModelSerializer):
     
-#     class Meta:
-#         model=Announcements
-#         fields=('__all__')
+    class Meta:
+        model=All_Prescription
+        fields=('__all__')
+        
+class followupSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model=Prescription_followup
+        fields=('__all__')
+        
+class prescmedSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model=All_Prescribed_medicine
+        fields=('__all__')
+class ComplaintSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model=Complaint
+        fields=('__all__')
+        
+class AnnouncementSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model=Announcements
+        fields=['message']
 
 
 # class CounterSerializer(serializers.ModelSerializer):
@@ -107,8 +127,8 @@
 #         model=Hospital_admit
 #         fields=('__all__')
 
-# class MedicalReliefSerializer(serializers.ModelSerializer):
+class MedicalReliefSerializer(serializers.ModelSerializer):
     
-#     class Meta:
-#         model=medical_relief
-#         fields=('__all__')
+    class Meta:
+        model=medical_relief
+        fields=('__all__')
