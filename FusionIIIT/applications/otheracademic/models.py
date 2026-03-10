@@ -9,39 +9,39 @@ from django.core.exceptions import ValidationError
 
 
 class LeaveFormTable(models.Model):
-    """
-    Records information related to student leave requests.
-
-    'leave_from' and 'leave_to' store the start and end date of the leave request.
-    'date_of_application' stores the date when the leave request was applied.
-    'related_document' stores any related documents or notes for the leave request.
-    'place' stores the location where the leave is requested.
-    'reason' stores the reason for the leave request.
-    'leave_type' stores the type of leave from a dropdown.
-    """
     LEAVE_TYPES = (
         ('Casual', 'Casual'),
         ('Medical', 'Medical'),
-        
     )
-    
+
+    STATUS_CHOICES = (
+        ('Pending', 'Pending'),
+        ('Approved', 'Approved'),
+        ('Rejected', 'Rejected'),
+    )
 
     student_name = models.CharField(max_length=100)
     roll_no = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     date_from = models.DateField()
     date_to = models.DateField()
     date_of_application = models.DateField()
-    upload_file = models.FileField(blank=True)
+    upload_file = models.FileField(upload_to='leave_documents/', blank=True, null=True)
     address = models.CharField(max_length=100)
     purpose = models.TextField()
     leave_type = models.CharField(max_length=20, choices=LEAVE_TYPES)
-    approved = models.BooleanField()
-    rejected = models.BooleanField()
-    hod= models.CharField(max_length=100)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    hod = models.CharField(max_length=100)
+    stud_mobile_no = models.CharField(max_length=15, null=True, blank=True)
+    parent_mobile_no = models.CharField(max_length=15, null=True, blank=True)
+    leave_mobile_no = models.CharField(max_length=15, null=True, blank=True)
+    curr_sem=models.IntegerField(null=True)
 
     class Meta:
-        db_table='LeaveFormTable'
-        
+        db_table = 'LeaveFormTable'
+
+    def clean(self):
+        if self.date_from > self.date_to:
+            raise ValidationError('The start date of leave cannot be later than the end date.')
 
 class LeavePG(models.Model):
     """
@@ -61,39 +61,38 @@ class LeavePG(models.Model):
         ('Duty', 'Duty')
         
     )
-    
 
+    STATUS_CHOICES = (
+        ('Pending', 'Pending'),
+        ('Approved', 'Approved'),
+        ('Rejected', 'Rejected'),
+    )
 
     student_name = models.CharField(max_length=100)
     roll_no = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
-    programme = models.CharField(max_length=100)
-    discipline = models.CharField(max_length=100)
-    Semester = models.CharField(max_length=100)
     date_from = models.DateField()
     date_to = models.DateField()
     date_of_application = models.DateField()
-    upload_file = models.FileField(blank=True)
+    upload_file = models.FileField(upload_to='leave_documents/', blank=True, null=True)
     address = models.CharField(max_length=100)
     purpose = models.TextField()
     leave_type = models.CharField(max_length=20, choices=LEAVE_TYPES)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    hod = models.CharField(max_length=100)
     ta_supervisor = models.CharField(max_length=100)
-    mobile_no = models.CharField(max_length=100)
-    parent_mobile_no = models.CharField(max_length=100)
-    alt_mobile_no = models.CharField(max_length=100)
-    ta_approved = models.BooleanField()
-    ta_rejected = models.BooleanField()
-    thesis_approved = models.BooleanField()
-    thesis_rejected = models.BooleanField()
-    hod_approved = models.BooleanField()
-    hod_rejected = models.BooleanField()
-    ta_supervisor=models.CharField(max_length=100)
-    thesis_supervisor=models.CharField(max_length=100)
-    hod=models.CharField(max_length=100)
+    thesis_supervisor = models.CharField(max_length=100)
+    stud_mobile_no = models.CharField(max_length=15, null=True, blank=True)
+    parent_mobile_no = models.CharField(max_length=15, null=True, blank=True)
+    leave_mobile_no = models.CharField(max_length=15, null=True, blank=True)
+    curr_sem=models.IntegerField(null=True)
     
 
     class Meta:
         db_table='LeavePG'
-
+        
+    def clean(self):
+        if self.date_from > self.date_to:
+            raise ValidationError('The start date of leave cannot be later than the end date.')
 
 
 
@@ -160,7 +159,11 @@ class GraduateSeminarFormTable(models.Model):
 
 class BonafideFormTableUpdated(models.Model):
    
-    
+    STATUS_CHOICES = (
+        ('Pending', 'Pending'),
+        ('Approved', 'Approved'),
+        ('Rejected', 'Rejected'),
+    )
 
     student_names = models.CharField(max_length=100)
     roll_nos = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
@@ -168,9 +171,10 @@ class BonafideFormTableUpdated(models.Model):
     semester_types = models.CharField(max_length=20)
     purposes = models.TextField()
     date_of_applications= models.DateField()
-    approve = models.BooleanField()
-    reject = models.BooleanField()
-    download_file = models.FileField(upload_to='Bonafide',default="not available")
+    approve = models.BooleanField(default=False)  # Make sure this exists
+    reject = models.BooleanField(default=False)   # Ensu
+    # status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    download_file = models.CharField(max_length=20,  default='unavailable')
    
     
 
@@ -220,7 +224,7 @@ class AssistantshipClaimFormStatusUpd(models.Model):
     dateTo = models.DateField()
 
     bank_account = models.CharField(max_length=100)
-    student_signature = models.FileField(upload_to='student_signatures/')
+    student_signature = models.CharField(max_length=255) 
     dateApplied = models.DateField()
     ta_supervisor = models.CharField(max_length=100)
     thesis_supervisor = models.CharField(max_length=100)
@@ -233,8 +237,12 @@ class AssistantshipClaimFormStatusUpd(models.Model):
     Ths_rejected = models.BooleanField()
     HOD_approved = models.BooleanField()
     HOD_rejected = models.BooleanField()
-    Acad_approved = models.BooleanField()
-    Acad_rejected = models.BooleanField()
+    Dean_approved = models.BooleanField(default=False)
+    Dean_rejected = models.BooleanField(default=False)
+    Director_approved = models.BooleanField(default=False)
+    Director_rejected = models.BooleanField(default=False)
+    AcadAdmin_approved = models.BooleanField(default=False)
+    AcadAdmin_rejected = models.BooleanField(default=False)
 
     amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
