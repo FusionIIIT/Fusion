@@ -36,7 +36,7 @@ urlpatterns = [
     url(r'^estate/', include('applications.estate_module.urls')),
     url(r'^dep/', include('applications.department.urls')),
     url(r'^programme_curriculum/',include('applications.programme_curriculum.urls')),
-    url(r'^iwdModuleV2/', include('applications.iwdModuleV2.urls')),
+    url(r'^iwdModuleV2/api/', include('applications.iwdModuleV2.api.urls')),
     url(r'^__debug__/', include(debug_toolbar.urls)),
     url(r'^research_procedures/', include('applications.research_procedures.urls')),
     url(r'^accounts/', include('allauth.urls')),
