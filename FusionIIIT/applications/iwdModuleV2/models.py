@@ -1,162 +1,129 @@
 from django.db import models
+from datetime import date
+from django.contrib.auth.models import User
+from applications.filetracking.models import File
 
 
-# Create your models here.
+class RequestStatus(models.TextChoices):
+    CREATED = "CREATED", "Created"
+    ENGINEER_PROCESSED = "ENGINEER_PROCESSED", "Engineer Processed"
+    ADMIN_APPROVED = "ADMIN_APPROVED", "Admin Approved"
+    DIRECTOR_APPROVED = "DIRECTOR_APPROVED", "Director Approved"
+    DEAN_PROCESSED = "DEAN_PROCESSED", "Dean Processed"
+    WORK_ORDER_ISSUED = "WORK_ORDER_ISSUED", "Work Order Issued"
+    WORK_COMPLETED = "WORK_COMPLETED", "Work Completed"
+    BILL_GENERATED = "BILL_GENERATED", "Bill Generated"
+    BILL_PROCESSED = "BILL_PROCESSED", "Bill Processed"
+    BILL_SETTLED = "BILL_SETTLED", "Bill Settled"
 
 
-class Projects(models.Model):
-    id = models.CharField(primary_key=True, max_length=200)
+class ProposalStatus(models.TextChoices):
+    PENDING = "Pending", "Pending"
+    APPROVED = "Approved", "Approved"
+    REJECTED = "Rejected", "Rejected"
 
 
-class PageOneDetails(models.Model):
-    id = models.ForeignKey(Projects, on_delete=models.CASCADE, primary_key=True)
-    aESFile = models.FileField(null=True)
-    dASA = models.DateField(null=True)
-    nitNiqNo = models.IntegerField(null=True)
-    proTh = models.CharField(null=True, max_length=200)
-    emdDetails = models.CharField(null=True, max_length=200)
-    preBidDate = models.DateField(null=True, max_length=200)
-    technicalBidDate = models.DateField(null=True)
-    financialBidDate = models.DateField(null=True)
+class BillType(models.IntegerChoices):
+    PARTIAL = 0, "Partial"
+    FINAL = 1, "Final"
 
 
-class AESDetails(models.Model):
-    key = models.ForeignKey(Projects, on_delete=models.CASCADE)
-    sNo = models.CharField(max_length=100)
-    descOfItems = models.CharField(max_length=200)
-    unit = models.CharField(max_length=200)
-    quantity = models.IntegerField()
-    rate = models.IntegerField()
-    amount = models.IntegerField()
+class BaseModel(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        abstract = True
+
+    def delete(self, *args, **kwargs):
+        self.is_active = False
+        self.save()
 
 
-class PageTwoDetails(models.Model):
-    id = models.ForeignKey(Projects, on_delete=models.CASCADE, primary_key=True)
-    corrigendum = models.FileField(null=True)
-    addendum = models.FileField(null=True)
-    preBidMeetingDetails = models.FileField(null=True)
-    technicalBidMeetingDetails = models.FileField(null=True)
-    technicallyQualifiedAgencies = models.CharField(null=True, max_length=200)
-    financialBidMeetingDetails = models.FileField(null=True)
-    nameOfLowestAgency = models.CharField(null=True, max_length=200)
-    letterOfIntent = models.FileField(null=True)
-    workOrder = models.FileField(null=True)
-    agreementLetter = models.FileField(null=True)
-    milestones = models.FileField(null=True)
-
-
-class CorrigendumTable(models.Model):
-    key = models.ForeignKey(Projects, on_delete=models.CASCADE, unique=True)
-    issueDate = models.DateField()
-    nitNo = models.IntegerField()
+class Request(BaseModel):
     name = models.CharField(max_length=200)
-    lastDate = models.DateField(null=True)
-    lastTime = models.TimeField()
-    env1BidOpeningDate = models.DateField()
-    env1BidOpeningTime = models.TimeField()
-    env2BidOpeningDate = models.DateField()
-    env2BidOpeningTime = models.TimeField()
+    description = models.CharField(max_length=1000)
+    area = models.CharField(max_length=200)
+    requestCreatedBy = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_requests", db_index=True)
+    status = models.CharField(max_length=50, choices=RequestStatus.choices, default=RequestStatus.CREATED)
+    activeProposal = models.IntegerField(null=True, blank=True)
 
 
-class Addendum(models.Model):
-    key = models.ForeignKey(Projects, on_delete=models.CASCADE, unique=True)
-    issueDate = models.DateField()
-    nitNiqNo = models.IntegerField()
+class WorkOrder(BaseModel):
+    request = models.ForeignKey(Request, on_delete=models.CASCADE, db_index=True)
     name = models.CharField(max_length=200)
-    openDate = models.DateField()
-    openTime = models.TimeField()
+    date = models.DateField(default=date.today)
+    estimate_budget = models.DecimalField(default=0, max_digits=10, decimal_places=2)
+    alloted_time = models.CharField(max_length=200)
+    start_date = models.DateField()
+    completion_date = models.DateField(null=True, blank=True)
+    work_issuer = models.CharField(max_length=200)
+    amount_spent = models.DecimalField(default=0, max_digits=10, decimal_places=2)
 
 
-class PreBidDetails(models.Model):
-    key = models.ForeignKey(Projects, on_delete=models.CASCADE, unique=True)
-    sNo = models.CharField(max_length=200)
-    nameOfParticipants = models.CharField(max_length=200)
-    issuesRaised = models.CharField(max_length=200)
-    responseDecision = models.CharField(max_length=200)
-
-
-class TechnicalBidDetails(models.Model):
-    key = models.ForeignKey(Projects, on_delete=models.CASCADE, unique=True)
-    sNo = models.CharField(max_length=200)
-    requirements = models.CharField(max_length=200)
-
-
-class TechnicalBidContractorDetails(models.Model):
-    key = models.ForeignKey(TechnicalBidDetails, on_delete=models.CASCADE)
+class Vendor(BaseModel):
+    work = models.ForeignKey(WorkOrder, on_delete=models.CASCADE, db_index=True)
     name = models.CharField(max_length=200)
-    description = models.CharField(max_length=200)
+    itemdata = models.FileField(null=True, blank=True, upload_to='iwd/vendors/')
+    finalbill = models.BooleanField(default=False)
+    total_amount = models.DecimalField(default=0, max_digits=10, decimal_places=2)
+    contact_number = models.CharField(max_length=20, blank=True, null=True)
+    email_address = models.CharField(null=True, blank=True, max_length=200)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["work", "name"], name="unique_vendor_per_work")
+        ]
 
 
-class FinancialBidDetails(models.Model):
-    key = models.ForeignKey(Projects, on_delete=models.CASCADE, unique=True)
-    sNo = models.CharField(max_length=200)
-    description = models.CharField(max_length=200)
+class Bills(BaseModel):
+    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, db_index=True)
+    file = models.FileField(upload_to='iwd/bills/', null=True, blank=True)
+    audit = models.BooleanField(default=False)
+    settle = models.BooleanField(default=False)
+    total_amount = models.DecimalField(default=0, max_digits=10, decimal_places=2)
+    billtype = models.IntegerField(choices=BillType.choices, default=BillType.PARTIAL)
+
+    def clean(self):
+        if self.billtype == BillType.FINAL:
+            exists = Bills.objects.filter(vendor=self.vendor, billtype=BillType.FINAL).exclude(id=self.id).exists()
+            if exists:
+                raise ValueError("Final bill already exists for this vendor.")
 
 
-class FinancialContractorDetails(models.Model):
-    key = models.ForeignKey(FinancialBidDetails, on_delete=models.CASCADE)
+class BillItems(BaseModel):
+    bill = models.ForeignKey(Bills, on_delete=models.CASCADE, db_index=True)
+    name = models.CharField(max_length=100)
+    description = models.CharField(max_length=100)
+    quantity = models.IntegerField(default=0)
+    price = models.DecimalField(default=0, max_digits=10, decimal_places=2)
+
+
+class Budget(BaseModel):
+    request = models.ForeignKey(Request, on_delete=models.CASCADE, db_index=True)
     name = models.CharField(max_length=200)
-    estimatedCost = models.IntegerField()
-    percentageRelCost = models.IntegerField()
-    perFigures = models.IntegerField()
-    totalCost = models.IntegerField()
+    budgetIssued = models.BooleanField(default=False)
 
 
-class LetterOfIntentDetails(models.Model):
-    key = models.ForeignKey(Projects, on_delete=models.CASCADE, unique=True)
-    nitNiqNo = models.IntegerField()
-    dateOfOpening = models.DateField()
-    agency = models.CharField(max_length=200)
-    name = models.CharField(max_length=200)
-    tenderValue = models.IntegerField()
+class Proposal(BaseModel):
+    request = models.ForeignKey(Request, on_delete=models.CASCADE, related_name='proposals', db_index=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    proposal_budget = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+    supporting_documents = models.FileField(upload_to='iwd/proposals/', null=True, blank=True)
+    status = models.CharField(max_length=20, choices=ProposalStatus.choices, default=ProposalStatus.PENDING)
 
 
-class WorkOrderForm(models.Model):
-    key = models.ForeignKey(Projects, on_delete=models.CASCADE, unique=True)
-    issueDate = models.DateField()
-    nitNiqNo = models.IntegerField()
-    agency = models.CharField(max_length=200)
-    name = models.CharField(max_length=200)
-    amount = models.IntegerField()
-    time = models.IntegerField()
-    monthDay = models.IntegerField()
-    startDate = models.DateField()
-    completionDate = models.DateField()
-    deposit = models.IntegerField()
-    contractDay = models.IntegerField()
+class Item(BaseModel):
+    proposal = models.ForeignKey('Proposal', on_delete=models.CASCADE, related_name='items', db_index=True)
+    name = models.CharField(default=" ", max_length=255)
+    description = models.TextField(default=" ")
+    unit = models.CharField(default=" ", max_length=50)
+    price_per_unit = models.DecimalField(default=0, max_digits=10, decimal_places=2)
+    quantity = models.IntegerField(default=0)
+    total_price = models.DecimalField(default=0, max_digits=10, decimal_places=2)
+    docs = models.FileField(upload_to='iwd/items/', null=True, blank=True)
 
-
-class Agreement(models.Model):
-    key = models.ForeignKey(Projects, on_delete=models.CASCADE, unique=True)
-    date = models.DateField()
-    agencyName = models.CharField(max_length=200)
-    workName = models.CharField(max_length=200)
-    fdrSum = models.IntegerField()
-
-
-class Milestones(models.Model):
-    key = models.ForeignKey(Projects, on_delete=models.CASCADE)
-    sNo = models.CharField(max_length=200)
-    description = models.CharField(max_length=200)
-    timeAllowed = models.IntegerField()
-    amountWithheld = models.IntegerField()
-
-
-class PageThreeDetails(models.Model):
-    id = models.ForeignKey(Projects, on_delete=models.CASCADE, primary_key=True)
-    extensionOfTime = models.FileField()
-    actualCostOfBuilding = models.IntegerField()
-
-
-class ExtensionOfTimeDetails(models.Model):
-    key = models.ForeignKey(Projects, on_delete=models.CASCADE)
-    sNo = models.CharField(max_length=200)
-    hindrance = models.CharField(max_length=200)
-    periodOfHindrance = models.IntegerField()
-    periodOfExtension = models.IntegerField()
-
-
-class NoOfTechnicalBidTimes(models.Model):
-    key = models.ForeignKey(Projects, on_delete=models.CASCADE, unique=True)
-    number = models.IntegerField()
-
+    def save(self, *args, **kwargs):
+        self.total_price = self.price_per_unit * self.quantity
+        super().save(*args, **kwargs)
