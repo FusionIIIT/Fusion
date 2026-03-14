@@ -32,4 +32,3 @@ admin.site.register(Calendar)
 admin.site.register(Holiday)
 admin.site.register(Curriculum,CurriculumAdmin)
 
-#Hello!

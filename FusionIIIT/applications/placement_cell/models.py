@@ -1,6 +1,4 @@
-# imports
 import datetime
-
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -56,6 +54,7 @@ class Constants:
         ('CSE', 'CSE'),
         ('ME','ME'),
         ('ECE','ECE'),
+          ('SM','SM'),
     )
 
     BDES_DEP = (

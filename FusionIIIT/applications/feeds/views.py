@@ -689,6 +689,7 @@ def profile(request, string):
         string- user's username
     @variables
     """
+    print("user is this", request)
     if request.method == "POST":
         profile = Profile.objects.select_related().all().filter(user=request.user)
         Pr = None

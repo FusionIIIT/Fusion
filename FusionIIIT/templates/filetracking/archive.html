@@ -2,52 +2,44 @@
 {% load static %}
 
 {% block filetracking_tab %}
+{% if designations != global_var %}
+  <script>window.location.href = "{% url 'filetracking:draft_design' %}";</script>
+{% endif %}
     <div class="ui pointing secondary menu">
         <h3>
-            <a class="active item" data-tab="inward">
-            Archived Files 
+            <a class="active item" data-tab="archive">
+            Archived Files  <i>&nbsp;for&nbsp;{{request.user.extrainfo.user}} - {{designations}}</i>
             </a>
         </h3>
-
     </div>
 
     <div class="ui divider"></div>
 
-    <table class="ui very basic celled sortable table">
+    <table class="ui sortable very basic celled table">
         <thead>
         <tr>
-            <th>Created By</th>
             <th>File ID</th>
+            <th>Created By</th>
             <th>Subject</th>
-            <th>Date</th>
-            <th>View File</th>
-            <th>Forward</th>
-          
+            <!-- <th>Date Created</th> -->
+            <th>View Archived File</th>
         </tr>
         </thead>
         <tbody>
-        {% for j in draft %}
-          {% ifequal designations j.designation|stringformat:'s' %}
-             <tr>
-                 <td>{{j.uploader.user}} - {{j.designation}}</td>
-                 <td>{{request.user.extrainfo.department.name}}-{{j.upload_date.year}}-{{j.upload_date.month}}-#{{j.id}}</td>
-                 <td>{{j.subject}}</td>
-                 <td>{{j.upload_date}}</td>
-                 <td><a href="{% url 'filetracking:archive_finish' j.id %}"><button class="ui primary button">
-                              View
-                    </button></a></td>
-                    <td><a href="{% url 'filetracking:forward' j.id %}"><button class="ui primary button">
-                        Forward
-              </button></a></td>
-
-                
-              </tr>
-          {% endifequal %}
-        {% endfor %}
+            {% for f in archive_files %}
+                <tr>
+                    <td>{{f.uploader_department}}-{{f.upload_date.year}}-{{f.upload_date.month}}-#{{f.id}}</td>
+                    <td>{{f.uploader}}-{{f.designation}}</td>
+                    <td>{{f.subject|default:"None"}}</td>
+                    {% comment %} <td>{{f.upload_date}}</td> {% endcomment %}
+                    <td>
+                        <a href="{% url 'filetracking:view_file_view' f.id %}"
+                        ><button class="ui primary button">View</button></a
+                        >
+                    </td>
+                </tr>
+            {% endfor %}
         </tbody>
-
     </table>
-
     <br>
-
 {% endblock %}

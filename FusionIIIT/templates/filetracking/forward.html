@@ -23,194 +23,105 @@
         </div>
 
             <form class="ui large form" method="POST" enctype="multipart/form-data" id="form1">
-
             {% csrf_token %}
 
-                    <div class="ui fluid card">
-                        <div class="content">
-                            <center><span class="ui header"><b>Subject-  {{file.subject}}</b></span></center>
-                            <div class="ui divider"></div>
+                <div class="ui fluid card">
+                    <div class="content">
+                        <center><span class="ui header"><b>Subject-  {{file.subject}}</b></span></center>
+                        <div class="ui divider"></div>
 
-                            <div class="content" style=" padding-left: 18px; padding-top: 0.1px; height: auto; overflow-y: auto;">
+                        <div class="content" style=" padding-left: 18px; padding-top: 0.1px; height: auto; overflow-y: auto;">
 
-                                <div class="item">
+                            <div class="item">
 
-                                    <div class="description">
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';">{{file.description}}</pre>
-                                        <div class="ui divider"></div>
-                                    </div>
-
-                                    {% for t in track %}
-                                    <div class="ui comments">
-                                        <div class="comment">
-                                             <div class="content">
-                                                 <a class="author">{{t.current_design}}
-                                                     <a class="metadata">
-                                                         <span class="date">{{t.forward_date}}</span>
-                                                     </a>
-                                                 </a>
-
-                                                 <div class="right floated" style="font-color: black;">
-                                                     <b>Received by:</b>&nbsp{{t.receiver_id}}-{{t.receive_design}}
-                                                 </div>
-
-                                                 <div class="text">
-                                                     <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';">
-                                                        {% if t.remarks %}
-                                                            {{t.remarks}}
-                                                        {% else %}
-                                                            <span class="meta">No Remarks</span>
-                                                        {% endif %}
-
-                                                     </pre>
-                                                 </div>
-                                             </div>
-                                        </div>
-                                    </div>
-                                    {% endfor %}
-
+                                <div class="description">
+                                    <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';">{{file.description}}</pre>
                                     <div class="ui divider"></div>
-
                                 </div>
 
-                                <br>
+                                {% for t in track %}
+                                <div class="ui comments" style="max-width: 100%;">
+                                    <div class="comment" style="max-width: 100%;">
+                                            <div class="content">
+                                                <a class="author">{{t.current_design}}
+                                                    <a class="metadata">
+                                                        <span class="date">{{t.forward_date}}</span>
+                                                    </a>
+                                                </a>
 
-                                <div class="field">
-                                    <label>Remarks:<textarea rows="2" name="remarks"></textarea></label>
-                                </div>
+                                                <div class="right floated" style="font-color: black;">
+                                                    <b>Received by:</b>&nbsp{{t.receiver_id}}-{{t.receive_design}}
+                                                </div>
 
-                                <br>
+                                                <div class="text">
+                                                    <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';">
+                                                    {% if t.remarks %}
+                                                        {{t.remarks}}
+                                                    {% else %}
+                                                        <span class="meta">No Remarks</span>
+                                                    {% endif %}
 
-                                <div class="field">
-                                    <label>Send as:
-                                        <select required class="ui fluid search selection dropdown" name="sender">
-                                            <option selected hidden>Select</option>
-
-                                            {% for designations in designations %}
-                                            <option value="{{designations.id}}">{{designations}}</option>
-                                            {% endfor %}
-
-                                        </select>
-                                    </label>
-                                </div>
-
-                                <br>
-
-                               <!--  <div class="field">
-                                    <label>Forward To:
-                                        <select required class="ui fluid search selection dropdown" name="receiver">
-                                            <option required selected hidden>Select</option>
-
-                                            {% for extrainfo in extrainfo %}
-                                            <option value="{{extrainfo.id}}">{{extrainfo.user}}</option>
-                                            {% endfor %}
-
-                                        </select>
-                                    </label>
-                                </div>
- -->
-                                <br>
-
-                                <!-- <div class="field">
-                                    <label>Receiver Designation:
-                                        <select required class="ui fluid search selection dropdown" name="receive">
-                                            <option required selected hidden>Select</option>
-
-                                            {% for holdsdesignations in holdsdesignations %}
-                                            <option value="{{holdsdesignations.id}}">{{holdsdesignations}}</option>
-                                            {% endfor %}
-
-                                        </select>
-                                    </label>
-                                </div> -->
-
-
-                        <div class="field">
-                            <label>Forward To:
-
-                                    <input type ="search" id="input_search" list = "input_list" name = "receiver">
-                                    <datalist  id="input_list">
-
-                                    </datalist>
-                               
-                            </label>
-                        </div>
-
-                            <div class="field">
-                            <label>Receiver Designation:
-                                <input type ="search" id="input_search1" list = "input_list1" name = "recieve">
-                                    <datalist  id="input_list1">
-
-                                    </datalist>
-
-
-                               
-                            </label>
-                        </div>
-                                <br>
-
-
-
-
-                                <!--<div class="field">
-                                    <label>Forward To:
-                                        <select required class="ui fluid search selection dropdown" name="receiver">
-                                            <option selected hidden>Select</option>
-
-                                            {% for holdsdesignations in holdsdesignations %}
-                                            <option value="{{holdsdesignations.user.id}}">{{holdsdesignations}}</option>
-                                            {% endfor %}
-
-                                        </select>
-                                    </label>
-                                </div>-->
-
-                                <div class="field">
-                                    <label for="file">Attach Files: (Maximum File Size 10 MB) </label>
-                                    <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" >
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-
-                    <br>                      <!--  <a href="/media/" target="_">
-                                                <span class="header" style="color: #1B1C1D"><b>Attachments :&nbsp&nbsp</b><u></u></span>
-                                            </a>-->
-
-                        <!--    <div class="content" style="text-indent: 5em">
-
-                                                        <a class="download icon">
-                                                            <a href="/media/{{t.upload_file}}" class="header" target="_">
-                                                                <span>Attachments -</span>
-                                                                <u class="meta" style="color: #1B1C1D"></u>
-                                                            </a>
-                                                        </a>
-                                                        <br>
-                                                        <div class="ui divider"></div>
-
-
-                                            <center style="color: dimgrey">FileFlow is possible only when file is forwarded to other employee.</center
+                                                    </pre>
                                                 </div>
                                             </div>
-                                        </div>
-                               </div>
-                        </div>-->
+                                    </div>
+                                </div>
+                                {% endfor %}
 
+                                <div class="ui divider"></div>
 
+                            </div>
+
+                            <br>
+
+                            <div class="field">
+                                <label>Remarks:<textarea rows="2" name="remarks"></textarea></label>
+                            </div>
+
+                            <br>
+
+                            <div class="field">
+                                <label> Send as: {{ designation_name }}</label>
+                                <input type="hidden" name="sender" value="{{ designation_id }}">
+                            </div>
+
+                            <br>
+                            <br>
+
+                            <div class="field">
+                                <label>Forward To:
+                                        <input type ="search" id="input_search" list = "input_list" name = "receiver">
+                                        <datalist  id="input_list">
+                                        </datalist>
+                                </label>
+                            </div>
+                            
+                            <div class="field">
+                                <label>Receiver Designation:
+                                    <select id="receiver_dropdown" name="receive">
+                                        <!-- Dropdown options will be dynamically populated here -->
+                                    </select>
+                                </label>
+                            </div>
+                        </div>
+                        <br>
+                        <div class="field">
+                            <label for="file">Attach Files: (Maximum File Size 10 MB) </label>
+                            <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png, .zip" >
+                        </div>
+
+                        <button type="submit" name="send" class="ui large right floated primary button" style = "margin-top: 30px; float: right;">
+                            Send<i class="ui send icon right floated"></i>
+                        </button>
+
+                    </div>
+
+ 
+                </div>
 
                 <br>
 
-
-            <br>
-            <br>
-             <button type="submit" name="send" class="ui large right floated primary button" style = "float: right;">
-                                Send<i class="ui send icon right floated"></i>
-                            </button>
-
             </form>
-
-            <br>
     </div>
 
     <div class="ui tab" data-tab="attachments">
@@ -252,8 +163,8 @@
 <!--                                    </div>-->
 
                                     {% for t in track %}
-                                    <div class="ui comments">
-                                        <div class="comment">
+                                    <div class="ui comments" style="max-width: 100%;">
+                                        <div class="comment" style="max-width: 100%;">
 
                                             <div class="content">
                                                  <a class="paperclip icon">
@@ -358,6 +269,38 @@
             console.log("dsfagdfdshadf");
         });
     </script>
+
+<script>
+    $(document).ready(function() {
+        $('#input_search').on('blur', function() {
+            var inputValue = $(this).val();
+            fetchDropdownValues(inputValue);
+        });
+        
+        function fetchDropdownValues(inputValue) {
+            $.ajax({
+                url: `/filetracking/getdesignations/${inputValue}/`,
+                method: 'GET',
+                success: function(data) {
+                    populateDropdown(data);
+                },
+                error: function() {
+                    console.error('Error fetching dropdown values');
+                }
+            });
+        }
+        
+        function populateDropdown(values) {
+            console.log(values)
+            var dropdown = $('#receiver_dropdown');
+            dropdown.empty();
+            $.each(values, function(index, value) {
+                dropdown.append($('<option>').text(value).val(value));
+            });
+        }
+    });
+</script>
+
 
 
 {% endblock %}

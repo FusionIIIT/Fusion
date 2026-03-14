@@ -3,11 +3,12 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Fusion!
+    <title>Fusion! 
         {% block title %}{% endblock %}
     </title>
-
     {% load static %}
+    <link rel="icon" href="{% static 'globals/img/fusion.png' %}">
+
 
     {% block override_base_links %}
     <link rel="stylesheet" type="text/css" href="{% static 'semantic/dist/components/reset.css' %}">
@@ -95,7 +96,7 @@
     <script>
         function newNotification() {
 
-            console.log('A new Notification added!');
+            // console.log('A new Notification added!');
 
             var notifactionName = document.createTextNode("Kanishka Munshi");
             var notificationEmail = document.createTextNode("gmail@zlatan.com");

@@ -1,22 +1,22 @@
-{% load static %}
+<!-- {% load static %}
 {% block overduesuper %}
 
     {% comment %}The tab menu starts here!{% endcomment %}
-    <div class="ui pointing secondary menu">
+    <div class="ui pointing secondary menu"> -->
 
         <!-- <a class="active item" data-tab="complainthistory">
             Resolved Complaints
         </a> -->
-        <a class="active item" data-tab="overduecomplaint">
+        <!-- <a class="active item" data-tab="overduecomplaint">
             OverDue Complaints
         </a>
 
     </div>
     <div class="ui active tab" data-tab="overduecomplaint">
-        <div class="ui vertical segment" style="height: 700px;overflow-y: auto";>
+        <div class="ui vertical segment" style="height: 700px;overflow-y: auto";> -->
             
           <!--  <div class="ui divider"></div>-->
-            Location of all these complaint is : <b>{{ area }}</b>
+            <!-- Location of all these complaint is : <b>{{ area }}</b>
              <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%;
                                                           padding-right: 2.5%;
@@ -45,14 +45,14 @@
                     </td>
                     <td class="four wide column">
                         <b>Delay</b>
-                    </td>
+                    </td> -->
                     <!-- <th class="two wide column">
                         status
                     </th> -->
-                    <td class="four large column">
+                    <!-- <td class="four large column">
                        <b> Worker <br> Name </b>
-                    </td>
-                </tr>
+                    </td> -->
+                <!-- </tr>
                 </thead>
 
                 {% for a in overduecomplaint %}
@@ -91,7 +91,7 @@
                     </td>
                     <td>
                         {{ a.delay.days }} days
-                    </td>
+                    </td> -->
 
                     <!-- <td>
                         {% if a.status == 0 %}
@@ -109,11 +109,11 @@
                         {% endif %}
 
                     </td> -->
-                    <td>
+                    <!-- <td>
                         {% if a.worker_id == NULL %}
                             NOT ASSIGN
                         {% else %}
-                            {{ a.worker_id.name }}
+                            {{ a.worker_id.name }} -->
                           <!--  <td>
                             <div class="ui secondary menu">
                                 <div class="ui dropdown item ">
@@ -127,10 +127,10 @@
                                   </div>
                             </div>
                             </td>-->
-                        {% endif %}
-                    </td>
+                        <!-- {% endif %}
+                    </td> -->
 
-                </tr>
+                <!-- </tr>
 
 
                 </tbody>
@@ -142,4 +142,4 @@
             <br>
          </div>
     </div>
-    {%endblock%}
+    {%endblock%} -->

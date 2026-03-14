@@ -2,8 +2,6 @@
 {% load static %}
 
 {% block filetracking_tab %}
-    {% comment %}the compounder prescription tab starts here {% endcomment %}
-
 
     <div class="ui pointing secondary menu">
         <h3>
@@ -12,138 +10,76 @@
             </a>
         </h3>
     </div>
-    {% comment %}the ambulance schedule tab starts here {% endcomment %}
+
     <div class="ui active tab" data-tab="composefile">
         <div class="ui vertical stripe team segment" style="padding-left: 3.5%;
                 padding-right: 3.5%;">
 
             <form class="ui large form" method="POST" enctype="multipart/form-data" id="form1">
             {% csrf_token %}
+                <div class="content">
 
-                <!--<div class="field">
-                    <label>File ID.</label>
-                    <div class="ui fluid input">
-                        <input type="number" min="1" max="9999" size="4" name="fileid" required>
-                    </div>
-                </div>
-                {% if IntegrityError %}
-                    <span>FileID already exists</span>
-                {% endif %}-->
-
-                <!--<div class="field">
-                    <label>Designation</label>
-                    <select class="ui fluid search selection dropdown" name="receiver">
-                        <option selected hidden>Select</option>
-
-                    </select>
-                </div>-->
-
-                <div class="field">
+                    <div class="field">
                         <label>Title of File</label>
-                        <textarea rows="1" name="title" required></textarea>
-                </div>
+                        <textarea rows="1" name="title"></textarea>
+                    </div>
 
+                    <div class="field">
+                        <label>Description</label>
+                        <textarea rows="3" name="desc"></textarea>
+                    </div>
 
+                    <div class="field" style="margin-top: 30px">
+                        <label>Create as: {{ designation_name }}</label>
+                        <input type="hidden" name="design" value="{{ designation_id }}">
+                    </div>
 
-                <div class="field">
-                    <label>Description</label>
-                    <textarea rows="3" name="desc" required></textarea>
-                </div>
+                    <div class="field" style="margin-top: 25px">
+                        <label for="remarks" >Remarks</label>
+                        <textarea rows="2" name="remarks"></textarea>
+                    </div>
 
-                <div class="field">
-                    <label>Create as:
-                        <select required class="ui fluid search selection dropdown" name="design">
-                           <option selected hidden>Select</option>
+                    <div class="left floated item" style="margin-top: 30px">
+                        <label for="file">Attach Files  ( PDF, JPEG, PNG, JPG, ZIP ) (Maximum Size Allowed 10 MB)</label>
+                        <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png, .zip" >
+                    </div>
 
-                           <!--  {% for designations in designations %}
-                            <option value="{{designations.designation.name}}">{{designations.designation.name}}</option>
-                            {% endfor %} -->
-
-                             {% for designations in designations %}
-                            <option value="{{designations.id}}">{{designations}}</option>
-                            {% endfor %}
-
-                        </select>
-                    </label>
-                </div>
-
-                <br>
-
-                <div class = "left floated item">
-                      <label for="file">Attach Files  ( PDF, JPEG, PNG, JPG ) (Maximum Size Allowed 10 MB)</label>
-                      <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" >
-                </div>
-
-                <br>
-
-                <div>
-                    <a class="right floated item">
-
+                    <div class="field" style="margin-top:30px">
                         <button type="submit" name="save" class="ui large right floated primary button">
                             Save to drafts<i class="ui save icon right floated"></i>
                         </button>
-                    </a>
-                </div>
+                    </div>
 
-                <br>
-                <br>
-                <div class="field">
-                            <label>Remarks:<textarea rows="2" name="remarks"></textarea></label>
-                </div>
+                    <div class="field">
+                        <label>Forward To:
+                                <input type ="search" id="input_search" list = "input_list" name = "receiver">
+                                <datalist  id="input_list">
+                                </datalist>
+                        </label>
+                    </div>
 
-                <div class="field">
-                            <label>Forward To:
+                    <div class="field">
+                        <label>Receiver Designation:
+                            <select id="receiver_dropdown" name="receive">
+                                <!-- Dropdown options will be dynamically populated here -->
+                            </select>
+                        </label>
+                    </div>
 
-                                    <input type ="search" id="input_search" list = "input_list" name = "receiver">
-                                    <datalist  id="input_list">
-
-                                    </datalist>
-                               
-                            </label>
-                </div>
-
-                <div class="field">
-                    <label>Receiver Designation:
-                        <input type ="search" id="input_search1" list = "input_list1" name = "recieve">
-                            <datalist  id="input_list1">
-
-                            </datalist>
-
-
-                       
-                    </label>
-                </div>
-
-
-                <div>
-                    <a class="right floated item">
-
+                    <div class="field" style="margin-top:30px">
                         <button type="submit" name="send" class="ui large right floated primary button" style = "float: right;">
-                                Send<i class="ui send icon right floated"></i>
-                            </button>
-                    </a>
+                            Send<i class="ui send icon right floated"></i>
+                        </button>
+                    </div>
+
+                    <br>
                 </div>
-
-
-
             </form>
-
-            <br>
-
         </div>
-
-        <br>
-        <div class="extra content"></div>
     </div>
-    {% comment %}the compounder prescription tab ends here {% endcomment %}
-
 
 <script type="text/javascript">
-
-
         $('#input_search1').keyup(function(){
-
-            console.log('asdasd');
             value = $('#input_search1').val();
 
               $.ajax({
@@ -155,12 +91,8 @@
                 },
                 dataType: 'json',
                 success: function(response){
-                    console.log('coming-----------------------');
-
-                    console.log(response.holds[0]);
 
                     all_designations = JSON.parse(response.holds);
-                    console.log(all_designations[0].fields.name);
                     app = []
                     $('#input_list1').html('');
                     for(var i=0;i<all_designations.length;i++){
@@ -171,14 +103,12 @@
                     console.log('error-------');
                 },
             });
-            console.log("dsfagdfdshadf");
         });
     </script>
 
     <script type="text/javascript">
         $('#input_search').keyup(function(){
 
-            console.log('asdasd');
             value = $('#input_search').val();
 
               $.ajax({
@@ -190,12 +120,8 @@
                 },
                 dataType: 'json',
                 success: function(response){
-                    console.log('coming-----------------------');
-
-
 
                     all_users = JSON.parse(response.users);
-                    console.log(all_users[0].fields.username);
                     app = []
                     $('#input_list').html('');
                     for(var i=0;i<all_users.length;i++){
@@ -206,18 +132,75 @@
                     console.log('error-------');
                 },
             });
-            console.log("dsfagdfdshadf");
         });
 </script>
 
-{% endblock %}
+<script>
+    $(document).ready(function() {
+        $('#input_search').on('blur', function() {
+            var inputValue = $(this).val();
+            fetchDropdownValues(inputValue);
+        });
+        
+        function fetchDropdownValues(inputValue) {
+            $.ajax({
+                url: `/filetracking/getdesignations/${inputValue}/`,
+                method: 'GET',
+                success: function(data) {
+                    populateDropdown(data);
+                },
+                error: function() {
+                    console.error('Error fetching dropdown values');
+                }
+            });
+        }
+        
+        function populateDropdown(values) {
+            var dropdown = $('#receiver_dropdown');
+            dropdown.empty();
+            $.each(values, function(index, value) {
+                dropdown.append($('<option>').text(value).val(value));
+            });
+        }
+    });
 
-<script type="text/javascript">
-    function ShowHideDiv() {
-        var chkAddress = document.getElementById("chkAddress");
-        var leaveAddress = document.getElementById("leaveAddress");
-        leaveAddress.style.display = chkAddress.checked ? "block" : "none";
+    function preventUnsavedUnload(e) {
+        if (formIsModified() && notSaving(e)) { 
+            e.preventDefault();
+        } 
+    };
+
+    document.getElementById('form1').addEventListener('submit', function(event) {
+        window.removeEventListener('beforeunload', preventUnsavedUnload);
+    });
+
+    window.addEventListener('beforeunload', preventUnsavedUnload);
+
+    function notSaving(event) { 
+        if(event.target.tagName == "BUTTON" && event.target.hasAttribute('name')) {
+            if(event.target.getAttribute('name') == 'send' || event.target.getAttribute('name') == 'save')
+                return false;    
+            else    
+                return true;
+        } else {
+            return true;
+        } 
+    } 
+    
+    function formIsModified() {
+        var formInputs = document.querySelectorAll('input, textarea');
+        var hasValue = false;
+        const input_names = ['title', 'description', 'remarks', 'receiver', 'myfile']
+        
+        formInputs.forEach(function(input) {
+            if (input.hasAttribute('name') && input_names.includes(input.getAttribute('name')) && input.value.trim() !== '') { 
+                hasValue = true;
+                return;
+            }   
+        });
+        return hasValue;
     }
+    
 </script>
 
-
+{% endblock %}

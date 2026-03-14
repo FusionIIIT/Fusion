@@ -1,0 +1,322 @@
+{% load static %}
+
+<script>
+    let addCourseButton = document.querySelector(".addCourseButton");
+    addCourseButton.addEventListener("click",()=>
+        { 
+            $('.ui.addCourseForm.modal')
+            .modal('show')
+            ;
+        });  
+</script>
+
+
+<div class="ui active tab" data-tab="complainthistory">
+    <div class="ui vertical segment">
+        {% if dict2 %}
+        <B>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            Name = {{ dict2.firstname }}&nbsp;{{ dict2.lastname }}
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            Roll No = {{ dict2.roll_no }}
+        </B>
+        {% endif %}
+        {% if details %}
+        <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+            <thead>
+                
+                
+                <tr>
+                    <th>
+                        Reg ID#
+                    </th>
+
+                    <th>
+                        Course ID
+                    </th>
+
+                    <th>
+                        Course Name
+                    </th>
+
+                    <th>
+                        Credits
+                    </th>
+                    <th>
+                        Semester
+                    </th>
+                    <th>
+                        Replace Course
+                    </th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                
+                {% for items in details %}
+
+                <tr class="{{ items.rid }}">
+                    <td>
+                        {{ items.rid }}
+                    </td>
+                    <td>
+                        {{ items.course_id }}
+                    </td>
+                    <td>
+                        {{ items.course_name }}
+                    </td>
+                    <td>
+                        {{ items.credits }}
+                    </td>
+                    <td>
+                        {{ items.sem }}
+                    </td>
+                    <!-- <td>
+                        {{ items.eletive_id }}
+                    </td> -->
+                    
+                    <td>
+                        <button
+                          type="submit"
+                          onclick="replaceWithSwayam('{{ items.eletive_id }}','{{items.course_name}}')"
+                        >
+                          Replace with Swayam
+                        </button>
+                      </td>
+
+                </tr>
+
+                {% endfor %}
+                
+            </tbody>
+        </table>
+        <div class="ui vertical segment" id="swayam_r" style="display: none;" >
+            <div id="course_replace_name">
+
+            </div>
+            <!-- <center><b>Available Swayam Courses To re</b></center> -->
+            
+            <form method="POST" id="swayam_r_form" action="/academic-procedures/acad_person/swayam_replace/">
+                {% csrf_token %} 
+            <table
+              class="ui very basic collapsing celled sortable table"
+              style="
+                padding-left: 2.5%;
+                padding-right: 2.5%;
+                padding-top: 1%;
+                padding-bottom: 1.5%;
+                margin: auto;
+              "
+            >
+              <thead>
+                
+                <tr>
+                  <th>Sl No.</th>
+                  <th>Course Type</th>
+                  <th>Course Code</th>
+                  <th>Course Name</th>
+                  <th>Credits</th>
+                  <th>Select</th>
+                </tr>
+                
+              </thead>
+              <tbody>
+                
+                  
+                      {% for course_slot in current_sem_swayam %}
+                                    
+                                        {% for course_choice in course_slot.courses.all %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}</td>
+                                                <td>{{ course_slot.type }}</td>
+                                                <td>{{ course_choice.code }}</td>
+                                                <td>{{ course_choice.name }}</td>
+                                                <!-- <td>{{ course_choice.id }}</td> -->
+                                                <td>{{ course_choice.credit }}</td>
+                                                <!-- <td>{{ course_slot.semester_id }}</td>
+                                                <td>{{ course_slot.id }}</td> -->
+                                                <td>
+                                                    <input type="checkbox"
+                                                     name="Swayam_course" 
+                                                     value="{{ course_choice.code }}" 
+                                                     data-semester-reg-id="{{ course_slot.semester_id }}" 
+                                                     data-course-slot-reg-id="{{ course_slot.id }}" 
+                                                     data-course-reg-id="{{ course_choice.id }}" 
+                                                     data-course-credit="{{ course_choice.credit }}" 
+                                                     onclick="handleCheckboxClickReg(this)">
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                {% endfor %}
+
+
+                      
+                      <input type="text" name='user' value='{{roll_no}}' hidden="True">
+                      <input type="text" name='swayam_course_code' id="swayam_course_code"  hidden="True">
+                      <input type="text" name='swayam_semester_id' id="swayam_semester_id"  hidden="True">
+                      <input type="text" name='swayam_course_slot_id' id="swayam_course_slot_id"  hidden="True">
+                      <input type="text" name='swayam_course_id' id="swayam_course_id" hidden="True">
+                      </tbody>
+                    </table>
+                    <div class="" style="text-align: center;">
+                      <button type="button" class="ui primary button" onclick="submittForm()">Replace Courses</button>
+                  </div>
+                </form>
+                    </div>
+                    
+                    
+                
+              
+            
+          </div>
+
+        <br>
+        {% else %}
+        <br>
+        <br> <br> <br>
+        <CENTER>
+            <B> NO RECORDS FOUND </B>
+        </center>
+        {% endif %}
+
+        <div class="ui divider"></div>
+        {% comment %} <button class="ui fluid positive button addCourseButton">Add Course</button> {% endcomment %}
+        
+        <div class="ui modal addCourseForm">
+            <p>Fill details for the Course you want to add</p>
+            <form class="ui form" action = "/academic-procedures/acad_person/addCourse/" method = "post">
+                {% csrf_token %}
+                <div class="field">
+                    <label>Course </label>
+                    <select class="ui fluid dropdown" name = "course_id">
+                        <option value="">Select</option>
+                        {% for course in course_list %}
+                            <option value="{{course.id}}">{{course.code}} - {{course.name}}</option>
+                        {% endfor%}
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Semester Id</label>
+                    <select class="ui fluid dropdown" name = "semester_id">
+                        <option value="">Select</option>
+                        {% for sem in semester_list %}
+                            <option value="{{sem.id}}">{{sem.curriculum.name}}, sem - {{sem.semester_no}}</option>
+                        {% endfor%}
+                    </select>
+                </div>
+
+                <input type = "text" value = {{dict2.roll_no}} name="roll_no" hidden/>
+                <button class="ui fluid positive button" type="submit" name = "AddCourse" value = "submit">Add Course</button>
+                
+            </form>
+          </div>
+
+        
+    </div>
+</div>
+
+<script
+    type="text/javascript"
+    src="{% static 'globals/js/jquery.min.js' %}"
+  ></script>
+  <script type="text/javascript">
+    function replaceWithSwayam(course_slot_name,course_name) {
+      console.log("clicked");
+      document.getElementById("swayam_r").style = "display:block";
+      document.getElementById('course_replace_name').innerHTML= '<center><b>Available Swayam Courses To replace '+ course_name +' </b></center>'
+      
+  
+      var swayam_course_form = document.getElementById('swayam_r_form');
+      
+      // Remove existing course_slot_nameInput if present
+      var existingInput = document.getElementById('course_slot_name_input');
+      if (existingInput) {
+        existingInput.remove();
+      }
+  
+      // Create and append new course_slot_nameInput
+      var course_slot_nameInput = document.createElement('input');
+      course_slot_nameInput.type = "hidden";
+      course_slot_nameInput.name = "course_id";
+      course_slot_nameInput.value = course_slot_name;
+      course_slot_nameInput.id = "course_slot_name_input"; // Add id to identify this input
+      swayam_course_form.appendChild(course_slot_nameInput);
+  
+      
+      // Implement your logic here to replace the course with Swayam
+    }
+  
+  
+  
+    function handleCheckboxClickReg(checkbox) {
+    var selectedCourseCode = document.getElementById('swayam_course_code');
+    var selectedSwayamCourseIds = document.getElementById('swayam_course_id');
+    var selectedSemesterIds = document.getElementById('swayam_semester_id');
+    var selectedCourseSlotIds = document.getElementById('swayam_course_slot_id');
+
+    // Get the data attributes of the clicked checkbox
+    var swayamCourseCode = checkbox.value;
+    var swayamCourseId = checkbox.getAttribute('data-course-reg-id');
+    var semesterId = checkbox.getAttribute('data-semester-reg-id');
+    var courseSlotId = checkbox.getAttribute('data-course-slot-reg-id');
+    // console.log(swayamCourseCode);
+    // console.log(semesterId);
+    // console.log(courseSlotId);
+    // console.log(swayamCourseId);
+
+    // Update hidden input fields based on checkbox state
+    if (checkbox.checked) {
+        selectedCourseCode.value += swayamCourseCode + ',';
+        selectedSwayamCourseIds.value += swayamCourseId + ',';
+        selectedSemesterIds.value += semesterId + ',';
+        selectedCourseSlotIds.value += courseSlotId + ',';
+    } else {
+        // Remove swayamCourseId, semesterId, and courseSlotId from the hidden input values
+        selectedCourseCode.value = selectedCourseCode.value.replace(swayamCourseCode + ',', '');
+        selectedSwayamCourseIds.value = selectedSwayamCourseIds.value.replace(swayamCourseId + ',', '');
+        selectedSemesterIds.value = selectedSemesterIds.value.replace(semesterId + ',', '');
+        selectedCourseSlotIds.value = selectedCourseSlotIds.value.replace(courseSlotId + ',', '');
+    }
+    console.log(selectedCourseCode.value);
+    console.log(selectedCourseSlotIds.value);
+    console.log(selectedSemesterIds.value);
+    console.log(selectedSwayamCourseIds.value);s
+
+    
+}
+
+function submittForm() {
+    // Calculate total credits before submitting the form
+    var totalCredits = 0;
+    var checkboxes = document.querySelectorAll('input[name="Swayam_course"]:checked');
+    checkboxes.forEach(function(checkbox) {
+        totalCredits += parseFloat(checkbox.dataset.courseCredit);
+    });
+
+    // Check if total credits are 3 or 4 before submitting the form
+    if (totalCredits !== 3 && totalCredits !== 4) {
+        alert('Total credits must be either 3 or 4');
+        return false; // Prevent form submission
+    }
+
+    // If total credits are 3 or 4, submit the form
+    document.getElementById('swayam_r_form').submit();
+}
+
+
+
+  
+  
+  
+  
+  </script>

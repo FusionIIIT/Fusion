@@ -1,0 +1,122 @@
+{% extends 'programme_curriculum/faculty/common.html' %}
+{% block content %}
+<div class="ui bottom attached tab segment active" data-tab="afirst">
+    <div class="content">
+        <div class="description" style="overflow: auto; height: 680px">
+            <table class="ui large celled definition medium table">
+            <thead>
+                <tr style="font-size: medium;
+                background-color: aliceblue;">
+                    <td colspan="3"><h2>{{ course.code }} - {{ course.name }}-v{{course.version}}</h2>
+                    </td>
+                </tr>
+                {% if course.disciplines.all %}
+                <tr style="font-size: medium;
+                background-color: aliceblue;">
+                    <td colspan="3">Discipline
+                        {% for discipline in course.disciplines.all %}
+                            <h3>{{ discipline }}</h3>
+                        {% endfor %}
+
+                    </td>
+                </tr>
+                {% endif %}
+            </thead>
+            <tbody>
+                <tr class="collapsing">
+                    <td class="collapsing" colspan="2"><B>Course Code</B></td>
+                    <td>{{ course.code }}</td>
+                </tr>
+                <tr>
+                    <td colspan="2"  class="collapsing"><B>Course Name</B></td>
+                    <td>{{ course.name }}</td>
+                </tr>
+                <tr>
+                    <td rowspan="6"  class="collapsing"><B>Contact hours</B></td>
+                </tr>
+                <tr>
+                    <td colspan="1" class="left aligned collapsing">Lecture</td>
+                    <td colspan="1">{{ course.lecture_hours }}hrs</td>
+                </tr>
+                <tr>
+                    <td colspan="1" class="left aligned collapsing">Tutorial</td>
+                    <td colspan="1">{{ course.tutorial_hours }}hrs</td>
+                </tr>
+                <tr>
+                    <td colspan="1" class="left aligned collapsing">Lab</td>
+                    <td colspan="1">{{ course.pratical_hours }}hrs</td>
+                </tr>
+                <tr>
+                    <td colspan="1" class="left aligned collapsing">Discussion</td>
+                    <td colspan="1">{{ course.discussion_hours }}hrs</td>
+                </tr>
+                <tr>
+                    <td colspan="1" class="left aligned collapsing">Project</td>
+                    <td colspan="1">{{ course.project_hours }}hrs</td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="collapsing"><B>Credits</B></td>
+                    <td>{{ course.credit }}</td>
+                </tr>
+                <tr>
+                    <td rowspan="3" class="collapsing"><B>Pre-requisits</B></td>
+                </tr>
+                <tr>
+                    <td class="left aligned collapsing">Info</td>
+                    <td colspan="1">{{ course.pre_requisits|linebreaks }}</td>
+                </tr>
+                <tr>
+                    <td class="left aligned collapsing">Courses</td>
+                    <td colspan="1">
+                        <p>
+                        {% for p_course in course.pre_requisit_courses.all %}
+                            <a href="{% url 'programme_curriculum:view_a_course' p_course.id %}">{{ p_course }}</a>,<br>
+                        {% endfor %}
+                        </p>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="collapsing"><B>Syllabus</B></td>
+                    <td>{{ course.syllabus|linebreaks }}</td>
+                </tr>
+                <tr>
+                    <td rowspan="8" class="collapsing"><B>Evaluation Schema</B></td>
+                </tr>
+                <tr>
+                    <td colspan="1" class="left aligned collapsing">Quiz 1</td>
+                    <td colspan="1">{{ course.percent_quiz_1 }} %</td>
+                </tr>
+                <tr>
+                    <td colspan="1" class="left aligned collapsing">Mid-Sem Exam</td>
+                    <td colspan="1">{{ course.percent_midsem }} %</td>
+                </tr>
+                <tr>
+                    <td colspan="1" class="left aligned collapsing">Quiz 2</td>
+                    <td colspan="1">{{ course.percent_quiz_2 }} %</td>
+                </tr>
+                <tr>
+                    <td colspan="1" class="left aligned collapsing">End-Sem Exam</td>
+                    <td colspan="1">{{ course.percent_endsem }} %</td>
+                </tr>
+                <tr>
+                    <td colspan="1" class="left aligned collapsing">Project</td>
+                    <td colspan="1">{{ course.percent_project }} %</td>
+                </tr>
+                <tr>
+                    <td colspan="1" class="left aligned collapsing">Lab Evaluation</td>
+                    <td colspan="1">{{ course.percent_lab_evaluation }} %</td>
+                </tr>
+                <tr>
+                    <td colspan="1" class="left aligned collapsing">Course Attendance</td>
+                    <td colspan="1">{{ course.percent_course_attendance }} %</td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="collapsing"><B>References & Books</B></td>
+                    <td>{{ course.ref_books|linebreaks }}</td>
+                </tr>
+            </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

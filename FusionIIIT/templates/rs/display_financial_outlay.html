@@ -1,0 +1,60 @@
+
+{% load static %}
+
+{% block title %}
+
+{% endblock %}
+
+{% block body %}
+   
+
+    <script>
+       
+    </script>
+    <style>
+        .active-row:hover {
+            background-color: #f4f4f4; /* Change to whatever color you want for active row */
+        }
+    </style>
+
+   <div class="ui pointing secondary menu" style="font-size: 20px;">
+  <label style="text-transform: uppercase;" class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
+    Financial Outlay Details for Project: &nbsp;<span class="ui blue text header">{{ project_name }}</span>
+  </label>
+    </div>
+
+    {% for year in years %}
+    <div style="padding: 20px;" style="width: 100%"> 
+    <table class="ui celled striped table" style="width: 100%; border-collapse: collapse; ">
+        <thead>
+            <tr>
+                <th colspan="5" style="text-align: center;">
+                YEAR - {{year}} 
+                 </th>
+            </tr>
+            <tr style=" text-align: center;"  >
+                <th style="background-color:grey; color:white;text-transform: uppercase">Category</th>
+                <th style="background-color:grey; color:white;text-transform: uppercase" >Subcategory</th>
+                <th style="background-color:grey; color:white;text-transform: uppercase" >Alloted Amount</th>
+                <th style="background-color:grey; color:white;text-transform: uppercase" >Amount Utilised</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for category, subcategory_data in category_data.items %}
+            {% for item in subcategory_data %}
+                {% if item.year == year %}
+                        <tr style="text-align: center;">
+                            <td>{{ item.category }}</td>
+                            <td>{{ item.sub_category }}</td>
+                            <td>{{ item.amount }}</td>
+                            <td>{{ item.utilized_amount }}</td>
+                        </tr>
+                {% endif %}
+            {% endfor %}
+    {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endfor %}
+   
+{% endblock %}

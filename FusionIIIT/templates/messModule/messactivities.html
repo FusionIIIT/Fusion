@@ -3,127 +3,108 @@
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui secondary point menu">
-        <a class="ui active item" data-tab="" id="mm">
+        <!-- <a class="ui active item" data-tab="mess committee" id="mm">
             Mess Committee
+        </a> -->
+        {% for d in desig %}
+        {% if d.designation.name == 'mess_manager' %}
+        <a class="ui {% for d in desig %} {% if d.designation.name == 'mess_manager' %} active {% endif %} {% endfor %} item item" data-tab="monthly bill">
+
+            Bill Base and Excel Upload
+
         </a>
-        <a class="ui item" data-tab="" id="mb">
-            Monthly Bill
+        <a class="ui item" data-tab="Update Bill">
+            Update Bill 
         </a>
-        <a class="ui item" data-tab="" id="mr">
-            Mess Registration
+        {% endif %}
+        {% endfor %}
+        <a class="ui {% for d in desig %} {% if d.designation.name == 'mess_warden' %} active {% endif %} {% endfor %} item" data-tab="View Student Bills">
+            View Students Bills
         </a>
     </div>
 
-        <div class="ui active tab" data-tab="" id="mms">
-            <div class="ui vertical segment">
-                <table class="ui very basic collapsing celled large sortable table" style="margin: auto;">
-                    <thead>
-                    <td>
-                        <strong>
-                            Mess 1
-                        </strong>
-                    </td>
-                    <td>
-                        <strong>
-                            Mess 2
-                        </strong>
-                    </td>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td>
-                            {% for items in members %}
-                                {% if items.designation.name == "mess_committee_mess1" or items.designation.name == "mess_convener_mess1" %}
-                                    <p> {{ items.user|truncatechars:7 }} - {{ items.user.first_name|title }} {{ items.user.last_name|title }}
-                                        {% if items.designation.name == "mess_convener_mess1" %}
-                                            (Mess Convener)
-                                        {% endif %}
-                                    </p>
-                                {% endif %}
-                            {% endfor %}
-                        </td>
-                        <td>
-                            {% for items in members %}
+        
 
-                                {% if items.designation.name == "mess_committee_mess2" or items.designation.name == "mess_convener_mess2" %}
-                                    <p> {{ items.user|truncatechars:7 }} - {{ items.user.first_name|title }} {{ items.user.last_name|title }}
-                                        {% if items.designation.name == "mess_convener_mess2" %}
-                                            (Mess Convener)
-                                        {% endif %}
-                                    </p>
-                                {% endif %}
-                            {% endfor %}
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-
-                <br>
-                <button class="ui primary button right floated" onclick="addMessCommittee()">
-                    Add
-                </button>
-
-                <button class="ui primary button right floated" onclick="removeMessMember()">
-                    Remove
-                </button>
-
-                <button class="ui primary button right floated" onclick="selectConvenerMessModal()">
-                    Select Mess Convener
-                </button>
-                <br>
-
-            </div>
+        <div class="ui tab {% for d in desig %} {% if d.designation.name == 'mess_warden' %} active {% endif %} {% endfor %}" data-tab="View Student Bills">
+      
+            {% block reg_list_bills %}
+            {% include 'messModule/view_payments_bills.html' %}
+            {% endblock %}
         </div>
 
-        <div class="ui tab" data-tab="mess_registration" id="mrs">
+        <div class="ui tab" data-tab="Update Bill" style="min-height:45vh;">
             <div class="ui vertical segment">
+                <form method="post" action="{% url 'mess:updateBill' %}">
+                    {% csrf_token %}
+                    <div class="ui form" style="padding: 8px; padding-left: 12px; padding-right: 12px;">
+                        <div class ="one field">
+                            <div class= "field" style="width:100%;">
+                                    <label for="rollNo">Roll No.</label>                                       
+                                    <input type="text" name="rollNo" placeholder="Roll_No of Student" style="border:1px solid black;" required="true" id="rollNo">
 
-                {% comment %}Form Tag starts here!{% endcomment %}
-
-                {% if current_date < mess_reg.end_reg %}
-                    <strong>Registration ongoing till {{ mess_reg.end_reg }}</strong>
-                {% else %}
-                    {#            <form method="post" action="{% url 'mess:startmessregistration' %}">#}
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
-                            <div class="two fields">
-                                <div class="field">
-                                    <label>Choose Sem:</label>
-                                    <select class="ui search fluid dropdown" name="sem" id="reg_sem">
-                                        <option value="1">1</option>
-                                        <option value="2">2</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="field">
-                                <label>Start date:</label>
-                                <input type="date" name="start_date" id="reg_start_date">
-                            </div>
-
-                            <div class="field">
-                                <label>End date:</label>
-                                <input type="date" name="end_date" id="reg_end_date">
-                            </div>
-
-                            <div class="field">
-                                <button class="ui primary button right floated" type="submit" name="submit"
-                                        onclick="return start_registration()">
-                                    Submit
-                                </button>
                             </div>
                         </div>
-                    </form>
+                        <div class ="one field">
+                            <div class= "field" style="width:100%;">  
+                                    <label for="new_amount">New Amount</label>                                  
+                                    <input type="text" name="new_amount" placeholder="New amount for this month bill" style="border:1px solid black;" required="true" id="new_amount">
 
-                {% endif %}
-                {% comment %}Form Tag ends here!{% endcomment %}
-                <br>
+                            </div>
+                        </div>
+                        <div class ="two fields">
+                            <div class= "field" style="width:100%;">
+                                <label for="Month">Month</label>   
+                                {% comment %} <input type="text" name="Month" placeholder="Month of bill update" style="border:1px solid black;" required="true" id="Month"> {% endcomment %}
+                                <select name="Month" class="ui fluid dropdown" required="true" id="Month">
+                                    <option value="january">January</option>
+                                    <option value="february">February</option>
+                                    <option value="march">March</option>
+                                    <option value="april">April</option>
+                                    <option value="may">May</option>
+                                    <option value="june">June</option>
+                                    <option value="july">July</option>
+                                    <option value="august">August</option>
+                                    <option value="september">September</option>
+                                    <option value="october">October</option>
+                                    <option value="november">November</option>
+                                    <option value="december">December</option>
+                            </select>
+                            </div>
+                            <div class= "field" style="width:100%;">
+                                <label for="Year">Year</label>   
+                                {% comment %} <input type="text" name="Month" placeholder="Month of bill update" style="border:1px solid black;" required="true" id="Month"> {% endcomment %}
+                                <select name="Year" class="ui fluid dropdown" required="true" id="Year">
+                                    <option value="2020">2020</option>
+                                    <option value="2021">2021</option>
+                                    <option value="2022">2022</option>
+                                    <option value="2023">2023</option>
+                                    <option value="2024">2024</option>
+                                    
+                            </select>
+                            </div>
+                            
+                        </div>
+                        {% comment %} <div class ="two fields">
+                            <div class= "field" style="width:100%;">
+                                <label for="RebateCount">Rebate Count</label>   
+                                <input type="number" name="RebateCount" placeholder="Rebate count for this month" style="border:1px solid black;" required="true" id="RebateCount">
+                            </div>
+                            <div class= "field" style="width:100%;">
+                                <label for="RebateAmount">Rebate Amount</label>   
+                                <input type="number" name="RebateAmount" placeholder="Rebate amount for this month" style="border:1px solid black;" required="true" id="RebateAmount">
+                            </div>
+                        </div> {% endcomment %}
+                    </div>
+                    <div class=" one field">
+                        <button class="ui primary button right floated" type="submit" name="submit">Update
+                        </button>
+                    </div>
+                </form>
+                
             </div>
         </div>
 
-
-        <div class="ui tab" data-tab="monthly_bill" id="mbs">
+        <div class="ui tab {% for d in desig %} {% if d.designation.name == 'mess_manager' %} active {% endif %} {% endfor %}" data-tab="monthly bill" id="mbs">
             <div class="ui vertical segment">
 
                 <form method="post">
@@ -145,7 +126,7 @@
                 </form>
                 <hr>
 
-                <div class="ui form" style="padding: 8px; padding-left: 12px; padding-right: 12px;">
+                <!-- <div class="ui form" style="padding: 8px; padding-left: 12px; padding-right: 12px;">
                     <form method="post" onclick="generatemessbill()">
                         {% csrf_token %}
                         <br>
@@ -157,133 +138,54 @@
                         <br>
                     </form>
                     <br>
-                    <!--
-                    <form method="post" target="_blank" action="{% url 'mess:billdownload' %}">
-                        {% csrf_token %}
-                        <button type="submit" class="ui primary button right floated">
-                            Download Bill
-                        </button>
-                        <br>
-                    </form>
-                    -->
-                </div>
-                <!--
-        <form method="post">
-            {% csrf_token %}
-            <div class="ui form" style="padding: 8px; padding-left: 12px; padding-right: 12px;">
-                <div class="two field">
-                    <div class="field">
-                    <label>Year-Month</label>
-                    <input>
-                    </div>
-
-                    <div class="field">
-                        <button class="ui primary button right floated" type="submit" name="submit" id="bill_dwn">
-                            Download
-                        </button>
-                        <br>
-                    </div>
-                </div>
+                    
+                </div> -->
+                
 
             </div>
-        </form>
-        -->
 
+            <div class="ui form" style="margin-top: 10px;">
+                <form
+                    method="POST"
+                    action="/mess/updatemonthlybill"
+                    enctype="multipart/form-data"
+                  >
+                    {% csrf_token %}
+                    <div class="field">
+                      <div class="ui label" style="display: block;">Update Monthly bill by uploading Excel</div>
+                      <input
+                        type="file"
+                        title="Upload excel file"
+                        name="excel_file_bill"
+                        accept=".xlsx,.xls"
+                        style="max-width: 15rem; margin-bottom: 1rem"
+                        required
+                      />
+                      <br />
+                    </div>
+                    <div class="field">
+                      <button
+                        class="ui primary fluid button"
+                        style="max-width: 10rem"
+                        type="submit"
+                        name="excelUpload1"
+                      >
+                        <i class="upload icon"></i>
+                        Update bills
+                      </button>
+                      <ul>
+                        <li>
+                          The excel sheet should contain seven columns including the heading - Roll no, month of bill, year of bill, amount without rebate,rebate count, rebate amount, final bill
+                        </li>
+                        <li>File should be in .xlsx or .xls format.</li>
+                        <li>This registration will update the Students bill for the provided month and year.</li>
+                      </ul>
+                    </div>
+                  </form>
             </div>
         </div>
         {% comment %} Committee sections starts here {% endcomment %}
 
-
-
-        <div class="ui tab" data-tab="members_action">
-            <button class="ui primary fluid button" onclick="addMessCommittee()">
-                Add to Mess Committee
-            </button>
-            <br>
-            <button class="ui primary fluid button" onclick="removeMessMember()">
-                Remove from Mess Committee
-            </button>
-            <br>
-            <button class="ui primary fluid button" onclick="selectConvenerMessModal()">
-                Select Mess Convener
-            </button>
-        </div>
-
-
-        <div class="ui modal" id="addMember" style="padding: 2.5%;">
-            <div class="header">Add To Mess Committee</div>
-            <div class="ui vertical segment">
-                <div class="ui form">
-                    <form method="POST">
-                        {% csrf_token %}
-                        <div class="field">
-                            <label>Roll Number*</label>
-                            <input type="number" placeholder="Student Roll Number Here" id="roll_number">
-                        </div>
-                        <div class="field">
-                            <button class="ui primary fluid button" onclick="addMess()"> Add</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-        {% comment %} Modal for Adding mess committee end here {% endcomment %}
-
-
-        {% comment %} MOdal for Removing Mess Committee meber starts here {% endcomment %}
-        <div class="ui modal" id="removeMember" style="padding: 2.5%;">
-            <div class="header">Remove from Mess Committee</div>
-            <div class="ui vertical segment">
-                <div class="ui form">
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="field">
-                            <label>Select Member*</label>
-                            <select class="ui search fluid dropdown" name="member" id="member_id">
-                                {% for item in members %}
-                                    <option value='{{item.designation}}-{{item.user}}' id='{{ item.pk }}'>
-                                        {{ item.user.first_name }} {{ item.user.last_name }} : {{ item.user }}
-                                        - {{ item.designation }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <div class="field">
-                            <button class="ui primary fluid button" onclick="removeMess()"> Remove</button>
-                        </div>
-                    </form>
-                </div>
-
-            </div>
-        </div>
-        {% comment %} Modal for Removing Mess Committee ends here {% endcomment %}
-        <div class="ui modal" id="selectmessconvener" style="padding: 1.5%">
-            <div class="ui vertical segment">
-                <div class="ui form">
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="field">
-                            <label>Select Member*</label>
-                            <select class="ui search fluid dropdown" name="member" id="member_id2">
-                                {% for item1 in members %}
-                                    {% if item1.designation.name == 'mess_committee_mess1' or item1.designation.name == 'mess_committee_mess2' %}
-                                        <option value='{{ item1.designation }}-{{ item1.user }}' id='{{ item1.pk }}'>
-                                            {{ item1.user.first_name }} {{ item1.user.last_name }} : {{ item1.user }}
-                                            - {{ item1.designation }}
-                                        </option>
-                                    {% endif %}
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <div class="field">
-                            <button class="ui primary fluid button" onclick="selectMessConvener()"> Select</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
 
         <div class="ui small modal" style="padding: 2.5%" id="donotbill">
             <div>
@@ -297,46 +199,10 @@
 {% block javacript %}
     <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
     <script>
-        $(document).ready(function () {
-            $('#mm').on('click', function () {
-                $(this).addClass('active');
-                $('#mb').removeClass('active');
-                $('#mr').removeClass('active');
-                $('#mms').show();
-                $('#mbs').hide();
-                $('#mrs').hide();
-            });
-
-        });
-        $(document).ready(function () {
-            $('#mb').on('click', function () {
-                $(this).addClass('active');
-                $('#mr').removeClass('active');
-                $('#mm').removeClass('active');
-                $('#mms').hide();
-                $('#mbs').show();
-                $('#mrs').hide();
-            });
-
-        });
-        $(document).ready(function () {
-            $('#mr').on('click', function () {
-                $(this).addClass('active');
-                $('#mb').removeClass('active');
-                $('#mm').removeClass('active');
-                $('#mms').hide();
-                $('#mbs').hide();
-                $('#mrs').show();
-            });
-
-        });
-
-    </script>
-    <script>
         document.getElementById('bill_dwn').addEventListener('click', download);
 
         function download() {
-
+            
         }
 
         function required_check_registration() {
@@ -423,118 +289,6 @@
                 }
             });
             return false;
-        }
-
-        function addMessCommittee() {
-            {#$('#mess_student').style.visibility = 'hidden';#}
-            $('#addMember').modal('show');
-            {#$('#mess').hide();#}
-            {#$('#mess').style.display = "none";#}
-
-        }
-
-        function removeMessMember() {
-            $('#removeMember').modal('show');
-        }
-
-        function selectConvenerMessModal() {
-            $('#selectmessconvener').modal('show')
-        }
-
-        function addMess() {
-            $.ajax(
-                {
-                    type: 'POST',
-                    url: 'addmesscommittee/',
-                    dataType: 'json',
-                    data: {
-                        'csrfmiddlewaretoken': '{{ csrf_token }}',
-                        'rollnumber': $("#roll_number").val(),
-                    },
-                    success: function (data) {
-                        if (data.status === 1) {
-                            {#$('#mess_student').style.visibility = 'visible';#}
-                            alert(data.message);
-                            ("#mess_committee_tab").load(location.href + " #mess_committee_tab>*", "");
-                            {#$('#mess').style.display = "block";#}
-                            {#$('#mess').show();#}
-                            {#$("#mess_committee_tab").load(location.href+" #mess_committee_tab>*","")#}
-                        }
-                        else if (data.status === 2) {
-                            alert(data.message);
-                            ("#mess_committee_tab").load(location.href + " #mess_committee_tab>*", "");
-                        }
-                    },
-                    error: function (data, err) {
-                        alert(err.message);
-                        ("#mess_committee_tab").load(location.href + " #mess_committee_tab>*", "");
-
-                    }
-                }
-            );
-        }
-
-        function removeMess() {
-            $.ajax(
-                {
-                    type: 'POST',
-                    url: 'removemesscommittee/',
-                    dataType: 'json',
-                    data: {
-                        'csrfmiddlewaretoken': '{{ csrf_token }}',
-                        'member_id': $("#member_id").val(),
-                    },
-                    success: function (data) {
-                        if (data.status === 1) {
-                            {#$('#mess_student').style.visibility = 'visible';#}
-                            alert(data.message);
-                            ("#mess_committee_tab").load(location.href + " #mess_committee_tab>*", "");
-                            {#$('#mess').style.display = "block";#}
-                            {#$('#mess').show();#}
-                            {#$("#mess_committee_tab").load(location.href+" #mess_committee_tab>*","")#}
-                        }
-                        else if (data.status === 2) {
-                            alert(data.message);
-                            ("#mess_committee_tab").load(location.href + " #mess_committee_tab>*", "")
-                        }
-                    },
-                    error: function (data, err) {
-                        alert(err.message);
-                        ("#mess_committee_tab").load(location.href + " #mess_committee_tab>*", "")
-
-                    }
-                }
-            );
-        }
-
-        function selectMessConvener() {
-            $.ajax(
-                {
-                    type: 'POST',
-                    url: 'selectmessconvener/',
-                    dataType: 'json',
-                    data: {
-                        'csrfmiddlewaretoken': '{{ csrf_token }}',
-                        'member_id_add': $("#member_id2").val(),
-                    },
-                    success: function (data) {
-                        if (data.status === 1) {
-                            {#$('#mess_student').style.visibility = 'visible';#}
-                            alert(data.message);
-                            {#$('#mess').style.display = "block";#}
-                            {#$('#mess').show();#}
-                            {#$("#mess_committee_tab").load(location.href+" #mess_committee_tab>*","")#}
-                        }
-                        else if (data.status === 2) {
-                            alert(data.message);
-                        }
-                    },
-                    error: function (data, err) {
-                        alert(err.message);
-
-                    }
-                }
-            );
         }
 
 

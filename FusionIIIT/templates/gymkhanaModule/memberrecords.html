@@ -1,25 +1,26 @@
 {% load static %} {% block memberrecords %} {% comment %}The tab menu starts
 here!{% endcomment %}
 <div class="ui pointing secondary menu">
-  <a class="active item" data-tab="memberrecords"> Member Records </a>
+  <a class="active item" data-tab="memberrecords">Member Records</a>
 </div>
-
 <script type="text/javascript">
-  function display() {
+  function display1() {
     // body...
     var data = document.getElementById("club_name").value;
-    // alert(data);
+    //alert(data);
     $("#record_table tbody tr").prop("hidden", true);
     $(".clubname-" + data).removeAttr("hidden");
     //alert("dd");
   }
-  window.onclick = function(e){
-            if(document.activeElement != document.querySelector('[data-tab="memberrecords"] input.search')){
-                $('div[data-tab="memberrecords"] .dropdown').dropdown('hide');
-            }
-        }
+  window.onclick = function (e) {
+    if (
+      document.activeElement !=
+      document.querySelector('[data-tab="memberrecords"] input.search')
+    ) {
+      $('div[data-tab="memberrecords"] .dropdown').dropdown("hide");
+    }
+  };
 </script>
-
 <div class="ui active tab" data-tab="memberrecords">
   <div class="ui vertical segment">
     <form class="ui form" style="padding-left: 32px; padding-right: 32px">
@@ -28,7 +29,7 @@ here!{% endcomment %}
         <select
           class="ui search fluid dropdown"
           id="club_name"
-          onchange="display();"
+          onchange="display1();"
           required
         >
           <option value="">Select</option>
@@ -38,16 +39,13 @@ here!{% endcomment %}
         </select>
       </div>
     </form>
-
     <br />
-
     <h4
       class="ui dividing header"
       style="margin-left: 32px; margin-right: 32px"
     >
       Members
     </h4>
-
     <table
       class="ui very basic collapsing celled sortable table"
       style="
@@ -62,19 +60,13 @@ here!{% endcomment %}
       <thead>
         <tr>
           <th class="four wide column">
-            <center>Name</center>
+            <center>Roll No.</center>
           </th>
-
-          <th>Roll No.</th>
-
-          <th>Club Name</th>
-
+          <th>Role</th>
           <th>Category</th>
-
           <th class="six wide column">Achievements</th>
         </tr>
       </thead>
-
       <tbody>
         {% for i in Club_member %} {% if i.status == "confirmed" %}
         <tr class="clubname-{{ i.club.club_name }}" hidden="true">
@@ -87,22 +79,21 @@ here!{% endcomment %}
               <div class="content">{{ i.member.id.id }}</div>
             </h4>
           </td>
-
-          <td>{{ i.member.id.user.username}}</td>
-
-          <td>{{ i.club.club_name}}</td>
-
+          {% if i.member == i.club.co_ordinator %}
+          <td>Coordinator</td>
+          {% elif i.member == i.club.co_coordinator %}
+          <td>Co-Coordinator</td>
+          {% else %}
+          <td>Member</td>
+          {% endif %}
           <td>{{ i.club.category }}</td>
-
           <td>{{ i.description }}</td>
         </tr>
         {% endif %} {% endfor %}
       </tbody>
     </table>
-
     <br />
     <div class="ui divider"></div>
   </div>
 </div>
-
 {% endblock %}

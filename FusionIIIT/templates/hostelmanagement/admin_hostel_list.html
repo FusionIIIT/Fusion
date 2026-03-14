@@ -1,0 +1,63 @@
+
+{% block View_Hostels %}
+        <h2 align="center">Hostel List</h2>
+        <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: auto;">
+        <table class ="ui table">
+            <thead>
+                <tr>
+                    <th>Hall ID</th>
+                    <th>Hall Name</th>
+                    <th>Seater Type</th>
+                    <th>Max Accommodation</th>
+                    <th>Occupied</th>
+                    <th>Vacant Seats</th>
+                    <th>Assigned Batch</th>
+                    <th>Assigned Caretaker</th>
+                    <th>Assigned Warden</th>
+                    <!-- <th>Action</th> -->
+                </tr>
+            </thead>
+            <tbody>
+                {% for detail in hostel_details %}
+                <tr>
+                    <td>{{ detail.hall_id }}</td>
+                    <td>{{ detail.hall_name }}</td>
+                    <td>{{ detail.seater_type}}</td>
+                    <td>{{ detail.max_accomodation }}</td>
+                    <td>{{ detail.number_students }}</td>
+                    <td>{{ detail.vacant_seat}}
+                    <td>{{ detail.assigned_batch }}</td>
+                    <td>{{ detail.assigned_caretaker }}</td>
+                    <td>{{ detail.assigned_warden }}</td>
+                    <!-- <td> -->
+                        <!-- Add a delete button with a link to delete_hostel view -->
+                       
+                        <!-- <a href="{% url 'hostelmanagement:delete_hostel' hall_id=detail.hall_id %}" class="btn btn-danger btn-sm">Delete</a> -->
+                        <!-- <a href="{% url 'hostelmanagement:delete_hostel' hall_id=detail.hall_id %}" class="btn btn-danger btn-sm">Delete</a> -->
+                        <!-- <button class="ui negative button tiny" onclick="if(confirmDelete()) window.location.href='{% url 'hostelmanagement:delete_hostel' hall_id=detail.hall_id %}' >Delete</button> -->
+                        <!-- <a href="{% url 'hostelmanagement:delete_hostel' hall_id=detail.hall_id %}" class="btn btn-danger btn-sm" onclick="return confirmDelete()">Delete</a> -->
+
+                        
+                    <!-- </td> -->
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+
+    </div>
+    <!-- <script>
+        function confirmDelete() {
+            var result = confirm("Are you sure you want to delete this hostel?");
+            if (result) {
+                // User clicked OK, proceed with the deletion
+                return true;
+            } else {
+                // User clicked Cancel, prevent the deletion
+                return false;
+            }
+        }
+    </script> -->
+
+
+{% endblock %}

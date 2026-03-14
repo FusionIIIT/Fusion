@@ -1,0 +1,129 @@
+{% block inventory_list %}
+
+
+    <h2 align="center">Hostel Inventory List</h2>
+    <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: auto;">
+    <table class="ui table" border="1">
+        <thead>
+            <tr>
+                <th>Hall ID</th>
+                <th>Inventory ID</th>
+                <th>Inventory Name</th>
+                <th>Cost</th>
+                <th>Quantity</th>
+                <!-- <th>Edit</th> -->
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for inventory in inventories %}
+            <tr>
+                <td>{{ inventory.hall_id }}</td>
+                <td>{{ inventory.inventory_id }}</td>
+                <td>{{ inventory.inventory_name }}</td>
+                <td>{{ inventory.cost }}</td>
+                <td>{{ inventory.quantity }}</td>
+                <!-- <td><button onclick="editInventory('{{ inventory.inventory_id }}')">Edit</button></td>  -->
+                <td><button onclick="deleteInventory('{{ inventory.inventory_id }}')">Delete</button></td>
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+    <script>
+        
+
+        // function editInventory(inventoryId) {
+        //     var selectedHallId = document.getElementById("hall_select").value;
+        //     window.location.href = "/hostelmanagement/inventory/edit_inventory/" + inventoryId + "/";
+        // }
+
+        // function deleteInventory(inventoryId) {
+        //     var selectedHallId = document.getElementById("hall_select").value;
+        //     fetch("/hostelmanagement/inventory/" + inventoryId + "/delete/", {
+        //         method: "DELETE",
+        //     })
+        //     .then(response => {
+        //         if (response.ok) {
+        //             alert("Inventory deleted successfully");
+        //             window.location.reload(); // Refresh the page to reflect changes
+        //         } 
+        //         // else {
+        //         //     // alert("Failed to delete inventory");
+        //         //     alert("You are not authorized to access this page"); 
+        //         //     window.location.href = "/hostelmanagement/"
+        //         // }
+        //     })
+        //     .catch(error => {
+        //         console.error("Error:", error);
+        //         alert("An error occurred while deleting the inventory");
+        //     });
+        // }
+
+
+        function deleteInventory(inventoryId) {
+            // console.log("hiiiiiiiiii");
+            console.log(inventoryId)
+            // var selectedHallId = document.getElementById("hall_select").value;
+            var csrfToken = getCookie("csrftoken"); // Function to retrieve the CSRF token
+            // console.log(selectedHallId);
+            console.log("hiiiiiiiiii");
+            fetch("/hostelmanagement/inventory/" + inventoryId + "/delete/", {
+                method: "DELETE",
+                headers: {
+                    "X-CSRFToken": csrfToken
+                },
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Inventory deleted successfully");
+                    window.location.reload(); // Refresh the page to reflect changes
+                } 
+                else {
+                    // alert("Failed to delete inventory");
+                    alert("You are not authorized to access this page"); 
+                    window.location.href = "/hostelmanagement/"
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("An error occurred while deleting the inventory");
+            });
+        }
+
+        // Function to retrieve the CSRF token from cookies
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+
+        // Set selected option in dropdown list on page load
+        // window.onload = function() {
+        //     // Get the hall ID from the URL
+        //     var pathSegments = window.location.pathname.split('/');
+        //     var hallIdFromUrl = pathSegments[pathSegments.length - 2]; // Assuming the hall ID is the second-to-last segment
+        //     // console.log("Hall ID from URL:", hallIdFromUrl);
+        //     localStorage.setItem("selectedHallId", hallIdFromUrl);
+            
+        //     var selectedHallId = localStorage.getItem("selectedHallId");
+        //     if (selectedHallId) {
+        //         document.getElementById("hall_select").value = selectedHallId;
+        //     }
+
+        // };
+    </script>
+{% endblock %}

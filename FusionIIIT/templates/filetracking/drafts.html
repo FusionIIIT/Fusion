@@ -1,30 +1,48 @@
 {% extends 'filetracking/filetracking.html' %}
 {% load static %}
-
 {% block filetracking_tab %}
+{% if designations != global_var %}
+  <script>window.location.href = "{% url 'filetracking:draft_design' %}";</script>
+{% endif %}
     <div class="ui pointing secondary menu">
         <h3>
-            <a class="active item" data-tab="inward">
-            Drafts
+            <a class="active item" data-tab="drafts">
+            Drafts  <i>&nbsp;for&nbsp;{{request.user.extrainfo.user}} - {{designations}}</i>
             </a>
         </h3>
-
     </div>
-<table class="ui very basic celled sortable table">
-<div class="field">
-                    <label>Select designation:
-<!--                        <select required class="ui fluid search selection dropdown" name="designation">-->
-<!--                           <option selected hidden>Select</option>-->
-<!--                         <form action="/filetracking/fileview/" method="get">-->
-                             {% for designation in designation %}
-                             <td> <a href="{% url 'filetracking:fileview' designation.id %}"><button class="ui primary button">
-                                 {{designation}}
-                             </button></a></td>
-                            {% endfor %}
-<!--                         </form>-->
-                        </select>
-                    </label>
-                </div>
-</table>
 
+    <div class="ui divider"></div>
+
+    <table class="ui sortable very basic celled table">
+        <thead>
+            <tr>
+                <th>File ID</th>
+                <th>Subject</th>
+                <th>Date Created</th>
+                <th>View Draft</th>
+                <th>Delete Draft</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for draft in draft_files %}
+                <tr>
+                    <td>{{ draft.uploader_department }}-{{ draft.upload_date.year }}-{{ draft.upload_date.month }}-#{{ draft.id }}</td>
+                    <td>{{ draft.subject|default:"None" }}</td>
+                    <td>{{ draft.upload_date }}</td>
+                    <td>
+                        <a href="{% url 'filetracking:edit_draft' draft.id %}">
+                            <button class="ui primary button">Edit</button>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="{% url 'filetracking:confirm_delete' draft.id %}">
+                            <button class="ui red button">Delete</button>
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br>
 {% endblock %}

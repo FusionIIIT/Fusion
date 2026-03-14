@@ -1,0 +1,45 @@
+{% block Add_hostel %}
+<form class="ui form" action="{% url 'hostelmanagement:add_hostel' %}" method="post" enctype="multipart/form-data">
+    <h2 align="center">Add Hostel</h2>
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% csrf_token %}
+    {{ add_hostel_form.as_p }}
+    <button type="submit" class="ui primary button">Add Hostel</button>
+</form>
+
+<script>
+    document.getElementById('id_hall_id').onblur = function() {
+        // Get the current value of the hall_id input
+        var hallId = this.value;
+        console.log('Hall ID:', hallId);
+
+        // Check if the hall_id is not empty
+        if (hallId.trim() !== '') {
+            // Perform the AJAX request to check if the hall_id exists
+            fetch(`http://0.0.0.0:8000/hostelmanagement/check-hall-exists/?hall_id=${hallId}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Display a message to the user or update the UI accordingly
+                    if (data.exists) {
+                       alert(`Hall with ID ${hallId} already exists. Please choose a different hall ID.`);
+                        // Disable the next input field
+                        document.getElementById('id_next_field').disabled = true;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+    };
+</script>
+
+
+
+
+{% endblock %}

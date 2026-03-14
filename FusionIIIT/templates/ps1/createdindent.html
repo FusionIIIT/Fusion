@@ -2,6 +2,20 @@
 {% load static %}
 
 {% block filetracking_tab %}
+<script>
+function limitToOneFile(input) {
+    if (input.files.length > 1) {
+        // Get the first file from the list
+        var file = input.files[0];
+        // Create a new FileList containing only the first file
+        var fileList = new DataTransfer();
+        fileList.items.add(file);
+        // Replace the input files with the new FileList
+        input.files = fileList.files;
+    }
+}
+</script>
+
 
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="notesheet">
@@ -36,69 +50,114 @@
                                 <div class="item">
 
                                     <div class="description">
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';">{{file.description}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Name:</b> {{indent.item_name}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Quantity:</b> {{indent.quantity}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Present Stock:</b> {{indent.present_stock}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Estimated Cost:</b> {{indent.estimated_cost}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Purpose:</b> {{indent.purpose}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Specification:</b> {{indent.specification}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Type:</b> {{indent.indent_type}}</pre>
-                                        
-                                        {% if indent.nature == True %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Item Nature: </b>Consumable</pre>
-                                        {% else %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Item Nature: </b>Non Consumable</pre>
-                                        {% endif %}
-                                        
-                                        {% if indent.indigenous == True %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Indigenous:</b> Yes</pre>
-                                        {% else %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Indigenous:</b> No</pre>
-                                        {% endif %}
-                                        
-                                        {% if indent.replaced == True %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Replaced:</b> Yes</pre>
-                                        {% else %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Replaced:</b> No</pre>
-                                        {% endif %}
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Budgetary Head:</b> {{indent.budgetary_head}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Expected Delivery:</b> {{indent.expected_delivery}}</pre>
-                                        
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Sources of Supply:</b> {{indent.sources_of_supply}}</pre>
-                                        
-                                        {% if indent.head_approval == True %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Head Approval:</b> Yes</pre>
-                                        {% else %}
-                                         <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Head Approval:</b> No</pre>
-                                        {% endif %}
+                                        <div class="ui two item menu">
+                                            <a class="item"><b>description :-</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.description}}</b></a>
 
-                                        {% if indent.director_approval == True %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Director Approval:</b> Yes</pre>
-                                        {% else %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Director Approval:</b> No</pre>
-                                        {% endif %}
+                                            <a class="item"><b>Name :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{indent.item_name}}</b></a>
+                                        </div>
 
-                                        {% if indent.financial_approval == True %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Financial Approval:</b> Yes</pre>
-                                        {% else %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Financial Approval:</b> No</pre>
-                                        {% endif %}
+                                        <div class="ui two item menu">
+                                            <a class="item"><b>Quantity :-</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{indent.quantity}}</b></a>
 
-                                        {% if indent.purchased == True %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Purchased:</b> Yes</pre>
-                                        {% else %}
-                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Purchased:</b> No</pre>
-                                        {% endif %}
+                                            <a class="item"><b>SubType </b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{indent.item_subtype}}</b></a>
+                                        </div>
+
+                                        <div class="ui two item menu">
+                                            <a class="item"><b>Estimated Cost:</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> {{indent.estimated_cost}}</b></a>
+
+                                            <a class="item"><b>Purpose:</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{indent.purpose}}</b></a>
+                                        </div>
+
+                                        <div class="ui two item menu">
+                                            <a class="item"><b>Specification:</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> {{indent.specification}}</b></a>
+
+                                            <a class="item"><b>Type :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{indent.item_type}}</b></a>
+                                        </div>
+
+
+                                        <div class="ui two item menu">
+
+                                            {% if indent.nature == True %}
+
+                                            <a class="item"><b>Item Nature :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> Consumable</b></a>
+                                            {% else %}
+
+                                            <a class="item"><b>Item Nature :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">Non Consumable</b></a>
+                                            {% endif %}
+
+                                            {% if indent.indigenous == True %}
+
+                                            <a class="item"><b>Indigenous :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> Yes</b></a>
+                                            {% else %}
+
+                                            <a class="item"><b>Indigenous :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> No </b></a>
+                                            {% endif %}
+
+                                        </div>
+
+                                        <div class="ui two item menu">
+
+                                            {% if indent.replaced == True %}
+
+                                            <a class="item"><b>Replaced :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> Yes</b></a>
+                                            {% else %}
+
+                                            <a class="item"><b>Replaced :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> No </b></a>
+                                            {% endif %}
+
+                                            <a class="item"><b>Budgetary Head:</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> {{indent.budgetary_head}}</b></a>
+
+
+                                        </div>
+
+                                        <div class="ui two item menu">
+                                            <a class="item"><b>Expected Delivery:</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{indent.expected_delivery}}</b></a>
+
+                                            <a class="item"><b>Sources of Supply :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{indent.sources_of_supply}}</b></a>
+                                        </div>
+
+
+
+                                        <div class="ui two item menu">
+
+                                            {% if indent.head_approval == True%}
+
+                                            <a class="item"><b>Head Approval:</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> Yes</b></a>
+                                            {% else %}
+
+                                            <a class="item"><b>Head Approval:</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> No </b></a>
+                                            {% endif %}
+
+                                            {% if indent.director_approval == True %}
+
+                                            <a class="item"><b>Director Approval :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> Yes</b></a>
+                                            {% else %}
+
+                                            <a class="item"><b>Director Approval :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> No </b></a>
+                                            {% endif %}
+
+                                        </div>
+
+                                        <div class="ui two item menu">
+
+                                            {% if indent.financial_approval == True%}
+
+                                            <a class="item"><b>Financial Approval:</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> Yes</b></a>
+                                            {% else %}
+
+                                            <a class="item"><b>Financial Approval:</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> No </b></a>
+                                            {% endif %}
+
+                                            {% if indent.purchased == True %}
+
+                                            <a class="item"><b>Purchased :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> Yes</b></a>
+                                            {% else %}
+
+                                            <a class="item"><b>Purchased :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;"> No </b></a>
+                                            {% endif %}
+
+                                        </div>
+
 
                                         <div class="ui divider"></div>
                                     </div>
@@ -113,7 +172,7 @@
                                                      </a>
                                                  </a>
 
-                                                 <div class="right floated" style="font-color: black;">
+                                                 <div class="right floated" style="font: black;">
                                                      <b>Received by:</b>&nbsp{{t.receiver_id}}-{{t.receive_design}}
                                                  </div>
 
@@ -199,12 +258,13 @@
 
                             <div class="field">
                             <label>Receiver Designation:
-                                <input type ="search" id="input_search1" list = "input_list1" name = "recieve">
+                                <!-- <input type ="search" id="input_search1" list = "input_list1" name = "recieve">
                                     <datalist  id="input_list1">
 
-                                    </datalist>
+                                    </datalist> -->
 
-
+                                <select id="receiver_dropdown" name="recieve">
+                                </select>
                                
                             </label>
                         </div>
@@ -225,9 +285,12 @@
                                 </div>-->
 
                                 <div class="field">
-                                    <label for="file">Attach Files: </label>
-                                    <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" >
+                                    <label for="file">Attach File: </label>
+                                    <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" onchange="limitToOneFile(this)">
                                 </div>
+                                
+                                
+                                
 
                             </div>
                         </div>
@@ -282,30 +345,30 @@
                             <div class="content" style=" padding-left: 18px; padding-top: 0.1px; height: auto; overflow-y: auto;">
 
                                 <div class="item">
-<!--                                    <div class="ui comments">-->
-<!--                                        <div class="comment">-->
+                                    <div class="ui comments">
+                                        <div class="comment">
 
-<!--                                            <div class="content">-->
-<!--                                    <a class="paperclip icon">-->
-<!--                                                     {% if file.upload_file %}-->
-<!--                                                     <a href="/media/{{file.upload_file}}" class="header" target="_"><u class="meta" style="color: #1B1C1D">{{file.upload_file}}</u>-->
-<!--                                                     </a>-->
-<!--                                                     {% else %}-->
-<!--                                                     <span class="meta">No Attachment</span>-->
-<!--                                                     {% endif %}-->
-<!--                                    </a>-->
+                                            <div class="content">
+                                    <a class="paperclip icon">
+                                                     {% if file.upload_file %}
+                                                     <a href="/media/{{file.upload_file}}" class="header" target="_"><u class="meta" style="color: #1B1C1D">{{file.upload_file}}</u>
+                                                     </a>
+                                                     {% else %}
+                                                     <span class="meta">No Attachment</span>
+                                                     {% endif %}
+                                    </a>
 
-<!--                                    <div class="right floated content">-->
-<!--                                                     <a class="author">{{file.uploader.user}}-->
-<!--                                                         <a class="metadata">-->
-<!--                                                            <span class="date">{{file.upload_date}}</span>-->
-<!--                                                         </a>-->
-<!--                                                     </a>-->
-<!--                                    </div>-->
-<!--                                                </div>-->
+                                    <div class="right floated content">
+                                                     <a class="author">{{file.uploader.user}}
+                                                         <a class="metadata">
+                                                            <span class="date">{{file.upload_date}}</span>
+                                                         </a>
+                                                     </a>
+                                    </div>
+                                                </div>
 
-<!--                                        </div>-->
-<!--                                    </div>-->
+                                        </div>
+                                    </div>
 
                                     {% for t in track %}
                                     <div class="ui comments">
@@ -344,38 +407,34 @@
     </div>
 
 
-    <script type="text/javascript">
-        $('#input_search1').keyup(function(){
-
-            console.log('asdasd');
-            value = $('#input_search1').val();
-
-              $.ajax({
-                type: 'POST',
-                url: '/filetracking/ajax/',
-                data: {
-                    'value': value,
-                    'csrfmiddlewaretoken': '{{csrf_token}}'
-                },
-                dataType: 'json',
-                success: function(response){
-                    console.log('coming-----------------------');
-
-                    console.log(response.holds[0]);
-
-                    all_designations = JSON.parse(response.holds);
-                    console.log(all_designations[0].fields.name);
-                    app = []
-                    $('#input_list1').html('');
-                    for(var i=0;i<all_designations.length;i++){
-                       $('#input_list1').append('<option value="'+all_designations[i].fields.name+'">'+all_designations[i].fields.name+'</option>');
-                    }
-                },
-                error: function(rs, e){
-                    console.log('error-------');
-                },
+    <script>
+        $(document).ready(function() {
+            $('#input_search').on('blur', function() {
+                var inputValue = $(this).val();
+                fetchDropdownValues(inputValue);
             });
-            console.log("dsfagdfdshadf");
+            
+            function fetchDropdownValues(inputValue) {
+                $.ajax({
+                    url: `/filetracking/getdesignations/${inputValue}/`,
+                    method: 'GET',
+                    success: function(data) {
+                        populateDropdown(data);
+                    },
+                    error: function() {
+                        console.error('Error fetching dropdown values');
+                    }
+                });
+            }
+            
+            function populateDropdown(values) {
+                console.log(values)
+                var dropdown = $('#receiver_dropdown');
+                dropdown.empty();
+                $.each(values, function(index, value) {
+                    dropdown.append($('<option>').text(value).val(value));
+                });
+            }
         });
     </script>
 

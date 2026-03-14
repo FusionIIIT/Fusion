@@ -1,0 +1,139 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+Academic
+{% endblock %}
+
+
+{% block body %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
+
+<div class="ui stackable doubling grid">
+
+    {% comment %}The left-margin segment!{% endcomment %}
+    <div class="column"></div>
+
+    {% comment %}The left-rail segment starts here!{% endcomment %}
+    <div class="three wide column">
+        {% comment %}The user image card starts here!{% endcomment %}
+        {% block usercard %}
+        {% include 'globals/usercard.html' %}
+        {% endblock %}
+        {% comment %}The user image card ends here!{% endcomment %}
+
+        <div class="ui divider"></div>
+
+        {% comment %}The Tab-Menu ends here!{% endcomment %}
+    </div>
+    {% comment %}
+    The left-rail segment ends here!
+    {% endcomment %}
+
+    {% comment %}
+    The central-rail segment starts here!
+    {% endcomment %}
+    <div class="eight wide column">
+
+
+
+        {% load static %}
+        {% comment %}the main tab starts here {% endcomment %}
+        <div>
+            <a href="{% url 'iwdModuleV2:IWD Dashboard' %}"><button class="ui button back-button">Go to
+                    Dashboard</button></a>
+        </div>
+        <div class="ui header">
+            Request from Inventory
+        </div>
+        <form class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;" , method="post"
+            action="{% url 'iwdModuleV2:Edit-Inventory-After-Request' %}">{% csrf_token %}
+            <div class="field">
+                <label for="id">Request Id</i></sup></label>
+                <div class="ui fluid input">
+                    <input type="number" name="id" required="true" disabled="true" value="{{req.0.0}}">
+                </div>
+            </div>
+
+            <input type="hidden" name="id" value="{{ req.0.0 }}">
+
+            <br>
+
+            <div class="field">
+                <label for="name">Request</i></sup></label>
+                <div class="ui fluid input">
+                    <input type="text" name="name" required="true" disabled="true" value="{{req.0.1}}">
+                </div>
+            </div>
+
+            <br>
+
+            <div class="field">
+                <label for="item">Items</i></sup></label>
+                <div class="ui fluid input">
+                    {% csrf_token %}
+                    <input type="hidden" name="selected_item_id" id="selected_item_id" value="">
+                    <select name="designation">
+                        {% for queryset in items %}
+                        <option value="{{ queryset.0 }}" data-extra="{{ queryset.2 }}">{{ queryset.1 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+            </div>
+
+            <br>
+
+            <div class="field">
+                <label for="quantity">Quantity</i></sup></label>
+                <div class="ui fluid input">
+                    <input type="number" name="quantity" required="true" min="0">
+                </div>
+            </div>
+
+            <div class="field">
+                <label><br></label>
+                <div>
+                    <input type="submit" name="Submit" value="Submit" class="ui small right floated primary button" />
+                </div>
+            </div>
+        </form>
+    </div>
+    {% comment %}The central-rail segment ends here!{% endcomment %}
+
+    {% comment %}The right-rail segment starts here!{% endcomment %}
+    <div class="three wide column">
+        <div class="row">
+            {% comment %}
+            TODO: the right rail!
+            {% endcomment %}
+        </div>
+    </div>
+    {% comment %}The right-rail segment ends here!{% endcomment %}
+
+    {% comment %}The right-margin segment!{% endcomment %}
+    <div class="column"></div>
+
+</div>
+{% comment %}The grid ends here!{% endcomment %}
+
+{% endblock %}
+
+{% block javascript %}
+<script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+<script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+<script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+<script>
+    $(document).ready(function () {
+        $('select[name="designation"]').change(function () {
+            var selectedItem = $(this).find(':selected');
+            var extraValue = selectedItem.data('extra');
+            $('input[name="quantity"]').attr('max', extraValue);
+            $('#selected_item_id').val(selectedItem.val());
+        });
+    });
+</script>    
+{% endblock %}

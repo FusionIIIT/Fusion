@@ -1,0 +1,73 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+{% block body %}
+{% block updateSemdates %}
+
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="" id="usd">
+        Update Sem dates
+    </a>
+</div>
+<div class="ui active tab" data-tab="semdates" id="semdates">
+    <div class="ui vertical segment">
+        <form method="post" action="{% url 'mess:updatesemdates' %}">
+            {% csrf_token %}
+            <div class="ui form" style="padding: 8px; padding-left: 12px; padding-right: 12px;">
+                {#                <p style="text-align:center;"><strong>Update </strong></p>#}
+                <div class="three fields">
+                    <div class="field">
+                        <label for="semstart_date">Start Date*</label>
+                        <div class="ui calendar" id="semstart">
+                            <div>
+                                <input name="semstart_date" type="date" placeholder="From" required="true"
+                                    id="semstart_date">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="semend_date">End Date*</label>
+                        <div class="ui calendar" id="semend">
+                            <div class="ui input left icon">
+                                <input name="semend_date" type="date" placeholder="To" required="true"
+                                        id="semend_date">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <button class="ui primary button right floated" type="submit" name="submit">Update
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    function updateSemdates() {
+
+            start_date = document.getElementById('semstart_date').value
+            end_date = document.getElementById('semend_date').value
+            $.ajax({
+                type: 'POST',
+                url: 'updatesemdates',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',
+                        'start_date': start_date,
+                        'end_date': end_date,
+                },
+                success: function (data) {
+                    // if (data.status==1) {
+                    alert(data.message);
+                    location.reload()
+                    // }
+                },
+                error: function (data, err) {
+                    alert(err.message);
+                }
+            });
+            return false;
+        }
+</script>
+{% endblock %}
+{% endblock %}

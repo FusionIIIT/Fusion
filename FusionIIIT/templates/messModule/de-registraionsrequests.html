@@ -1,0 +1,384 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+{% block body %}
+{% block de-registraionsrequests %}
+
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="reg-req">
+        Registration Request
+    </a>
+    <a class="item" data-tab="dreg-req">
+        Deregistration Requests
+    </a>
+    <a class="item" data-tab="update-pay-req">
+        update Payment Requests
+    </a>
+</div>
+<div class="ui active tab" data-tab="reg-req">
+    <div class="ui vertical strip segment" style="overflow-y:scroll;">
+
+            <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+              <thead>
+                <tr>
+                  <!-- <th>Date</th> -->
+                  <th>Student Id</th>
+                  <th>Transaction No</th>
+                  <th>Image</th>
+                  <th>Amount</th>
+                  <th>Start Date</th>
+                  <th>Payment Date</th>
+                  <th>Remark</th>
+                  <th>Mess</th>
+                  <th>Accept/Reject</th>
+                </tr>
+              </thead>
+              <tbody>
+                  {% for var in reg_request %}
+                <tr id="accpt1-{{var.pk}}">
+                    <th class="two wide">
+                        {{var.student_id}}
+                    </th>
+                    <td class="two wide">
+                        {{var.Txn_no}}
+                    </td>
+                    <td class="one wide">
+                        <a href="media/{{var.img}}" target="_blank">
+                            Receipt
+
+                        </a>
+                    </td>
+                    <td class="one wide">
+                        {{var.amount}}
+                    </td>
+                    <td class="one wide">
+                        {{var.start_date}}
+                    </td>
+                    <td class="one wide">
+                        {{var.payment_date}}
+                    </td>
+                    <td class="one wide">
+                        <textarea rows="2" class="remark" name="remark" required="true" placeholder="Write your remark..."></textarea>
+                    </td>
+
+                    <td class="one wide">
+                        <!-- <div class="ui selection dropdown">
+                            <input type="hidden" name="gender">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Select Mess</div>
+                            <div class="menu">
+                              <div class="item" data-value="mess1">Mess1</div>
+                              <div class="item" data-value="mess2">Mess2</div>
+                            </div>
+                        </div> -->
+
+                        <select name="messno" id="messno-{{var.pk}}">
+                            <option value="mess1">Mess1</option>
+                            <option value="mess2">Mess2</option>
+                        </select>
+                    </td>
+                    
+                    <td>
+                            <div class="ui buttons">
+                                    <button class="btn-req ui positive button" name="submit" value="accept"  data-var ="{{var.pk}}" onclick="acceptReq({{var.pk}})">A</button>
+                        <div class="or"></div>
+              <button class="btn-rj ui negative button" name="submit" value="reject" data-va ="{{var.pk}}" onclick="rejectReq({{var.pk}})" >R</button>
+                        </div>
+                        <!--<form action="{{var.pk}}/specialrequestresponse/" method="POST">-->
+                        <!--{% csrf_token %}-->
+                        <!--<div class="ui buttons">-->
+                                    <!--<button class="acbtn ui positive button" name="submit" value="approve" onclick="acceptSplReq({{var.pk}})">A</button>-->
+
+                        <!--<div class="or"></div>-->
+              <!--<button class="ui negative button" name="submit" value="reject" >R</button>-->
+                        <!--</div>-->
+                        <!--</form>-->
+                    </td>
+                </tr>
+                {% endfor %}
+
+              </tbody>
+            </table>
+    </div>
+</div>
+
+<div class="ui tab" data-tab="dreg-req">
+    <div class="ui vertical strip segment">
+
+            <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+              <thead>
+                <tr>
+                  <th>Student Id</th>
+                  <th>End Date</th>
+                  <th>Remark</th>
+                  <th>Accept/Reject</th>
+                </tr>
+              </thead>
+              <tbody>
+                  {% for var in de_reg_request %}
+                <tr id="dreg-{{var.pk}}">
+                    <td class="two wide">
+                        {{var.student_id}}
+                    </td>
+                    <td class="dreg-{{var.pk}}">
+                        {{var.end_date}}
+                    </td>
+                    <td class="one wide">
+                        <textarea rows="2" class="remark" name="remark" required="true" placeholder="Write your remark..."></textarea>
+                    </td>
+                    <td>
+                        <div class="ui buttons">
+                                <button class="btn-req ui positive button" name="submit" value="approve"  data-var ="{{var.pk}}" onclick="accptDReq({{var.pk}})">A</button>
+                            <div class="or"></div>
+                            <button class="btn-rj ui negative button" name="submit" value="reject" data-va ="{{var.pk}}" onclick="rejectDReq({{var.pk}})" >R</button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+
+              </tbody>
+            </table>
+    </div>
+</div>
+<div class="ui tab" data-tab="update-pay-req">
+    <div class="ui vertical strip segment" style="overflow-y:scroll;">
+
+            <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+              <thead>
+                <tr>
+                  <th>Student Id</th>
+                  <th>Transaction No</th>
+                  <th>Image</th>
+                  <th>Amount</th>
+                  <th>Payment Date</th>
+                  <th>Remark</th>
+                  <th>Accept/Reject</th>
+                </tr>
+              </thead>
+              <tbody>
+                  {% for var in update_pay_request %}
+                <tr id="update1-{{var.pk}}">
+                    <th class="two wide">
+                        {{var.student_id}}
+                    </th>
+                    <td class="two wide">
+                        {{var.Txn_no}}
+                    </td>
+                    <td class="one wide">
+                        <a href="media/{{var.img}}" target="_blank">
+                            Receipt
+
+                        </a>
+                    </td>
+                    <td class="one wide">
+                        {{var.amount}}
+                    </td>
+                    <td class="one wide">
+                        {{var.payment_date}}
+                    </td>
+                    <td class="one wide">
+                        <textarea rows="2" class="remark" name="remark" required="true" placeholder="Write your remark..."></textarea>
+                    </td>
+                    
+                    <td>
+                            <div class="ui buttons">
+                                    <button class="btn-req ui positive button" name="submit" value="accept"  data-var ="{{var.pk}}" onclick="acceptPaymentReq({{var.pk}})">A</button>
+                        <div class="or"></div>
+              <button class="btn-rj ui negative button" name="submit" value="reject" data-va ="{{var.pk}}" onclick="rejectPaymentReq({{var.pk}})" >R</button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+
+              </tbody>
+            </table>
+    </div>
+</div>
+
+
+
+
+<script>
+    $(document).ready(function(){
+        $('#rlr').on('click',function(){
+           $(this).addClass('active');
+            $('#rvr').removeClass('active');
+            $('#rlrtab').show();
+            $('#rvrtab').hide();
+   
+        });
+        
+    });
+    $(document).ready(function(){
+        $('#rvr').on('click',function(){
+            $(this).addClass('active');
+            $('#rlr').removeClass('active');
+           $('#rlrtab').hide();
+           $('#rvrtab').show();
+           
+        });
+        
+    });
+   </script>
+<script>
+
+function acceptReq(id){
+    document.getElementById('accpt1-'+id).style.display="none";
+    var messno=document.getElementById('messno-'+id).value;
+   
+            $.ajax({
+                   type: 'POST',
+                   url: 'respond_to_reg_req',
+                   dataType: 'json',
+                   data: {
+                       'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                       'id_reg':id,
+                       'type':'reg',
+                       'status':'accept',
+                       'remark':$(`tr${'#accpt1-'+id} td.one.wide textarea`).val(),
+                       'mess_no':messno,
+                   },
+                   success: function(data) {
+
+                           alert(data.message);
+   
+   
+                   },
+                   error: function(data, err) {
+                       alert(err.message);
+                   }
+               });
+   
+            }
+            
+            function rejectReq(id){
+            document.getElementById('accpt1-'+id).style.display="none";
+            $.ajax({
+                type: 'POST',
+                url: 'respond_to_reg_req',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                    'id_reg':id,
+                    'type':'reg',
+                    'status':'reject',
+                    'remark':$(`tr${'#accpt1-'+id} td.one.wide textarea`).val(),
+                    'mess_no':'no-mess'
+                },
+                success: function(data) {
+
+                        alert(data.message);
+
+
+                },
+                error: function(data, err) {
+                    alert(err.message);
+                }
+            });
+
+        }
+
+        function accptDReq(id){
+    document.getElementById('dreg-'+id).style.display="none";
+   
+            $.ajax({
+                   type: 'POST',
+                   url: 'respond_to_reg_req',
+                   dataType: 'json',
+                   data: {
+                       'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                       'id_reg':id,
+                       'type':'dreg',
+                       'status':'accept',
+                       'remark':$(`tr${'#dreg-'+id} td.one.wide textarea`).val(),
+                   },
+                   success: function(data) {
+
+                           alert(data.message);
+   
+   
+                   },
+                   error: function(data, err) {
+                       alert(err.message);
+                   }
+               });
+   
+            }
+
+            function rejectDReq(id){
+            document.getElementById('dreg-'+id).style.display="none";
+            $.ajax({
+                type: 'POST',
+                url: 'respond_to_reg_req',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                    'id_reg':id,
+                    'type':'dreg',
+                    'status':'reject',
+                    'remark':$(`tr${'#dreg-'+id} td.one.wide textarea`).val(),
+                },
+                success: function(data) {
+
+                        alert(data.message);
+
+
+                },
+                error: function(data, err) {
+                    alert(err.message);
+                }
+            });
+
+        }
+        function acceptPaymentReq(id){
+    document.getElementById('update1-'+id).style.display="none";
+   
+            $.ajax({
+                   type: 'POST',
+                   url: 'respond_to_updatePayment',
+                   dataType: 'json',
+                   data: {
+                       'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                       'id_reg':id,
+                       'status':'accept',
+                       'remark':$(`tr${'#update1-'+id} td.one.wide textarea`).val(),
+                   },
+                   success: function(data) {
+
+                           alert(data.message);
+   
+   
+                   },
+                   error: function(data, err) {
+                       alert(err.message);
+                   }
+               });
+   
+            }
+            function rejectPaymentReq(id){
+            document.getElementById('update1-'+id).style.display="none";
+            $.ajax({
+                type: 'POST',
+                url: 'respond_to_updatePayment',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                    'id_reg':id,
+                    'status':'reject',
+                    'remark':$(`tr${'#update1-'+id} td.one.wide textarea`).val(),
+                },
+                success: function(data) {
+
+                        alert(data.message);
+
+
+                },
+                error: function(data, err) {
+                    alert(err.message);
+                }
+            });
+
+        }
+            
+   </script>
+    {% endblock %}
+    {% endblock %}

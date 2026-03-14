@@ -1,0 +1,34 @@
+{% block My_fine %}
+<h2 align="center">My Fine</h2>
+<div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: hidden;">
+<table class="ui table " border="1">
+  <thead>
+    <tr>
+      <th>Hall</th>
+      <th>Amount</th>
+      <th>Status</th>
+      <th>Reason</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for fine in student_fines %}
+    <tr>
+      <td>{{ fine.hall }}</td>
+      <td>{{ fine.amount }}</td>
+      <td>{{ fine.status }}</td>
+      <td>{{ fine.reason }}</td>
+      <td>
+        <button class="ui positive button" onclick="PayFine('{{ fine.fine_id }}')">Pay</button>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<script>
+  function PayFine(fineId) {
+    window.location.href = `https://payments.google.com/gp/w/u/0/home/signup?sctid=8038222432357075`;
+}
+</script>
+</div>
+{% endblock %}

@@ -22,6 +22,39 @@
     }
 
 </style>
+
+<style>
+    .dashboard-container {
+        margin: 0 3rem;
+        display: grid;
+        gap: 3rem;
+        grid-template-columns: 1fr;
+    }
+
+    .card-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    @media (min-width:800px) {
+        .dashboard-container {
+            grid-template-columns: 3fr 7fr;
+        }
+        .module-container {
+            grid-column: 1/-1;
+        }
+    }
+
+    @media (min-width:1200px) {
+        .dashboard-container {
+            grid-template-columns: 3fr 7fr 3fr;
+        }
+        .module-container {
+            grid-column:auto;
+        }
+    }
+</style>
 {% endblock css %}
 
 
@@ -30,13 +63,12 @@
         {% include 'dashboard/navbar.html' %}
     {% endblock %}
 
-    <div class="ui stackable doubling grid">
+    <div class="dashboard-container">
 
-        {% comment %}The left-margin segment!{% endcomment %}
-        <div class="column"></div>
+        
 
         {% comment %}The left-rail segment starts here!{% endcomment %}
-        <div class="three wide column">
+        <div class="card-container">
             {% comment %}The user image card starts here!{% endcomment %}
             {% block usercard %}
                 {% include 'globals/usercard.html' %}
@@ -46,8 +78,8 @@
             <div class="ui divider"></div>
 
             {% comment %}The Tab-Menu starts here!{% endcomment %}
-            <div class="ui huge fluid vertical pointing menu" id="vtab" 
-                 style="max-width: 320px;">
+            <div class="ui huge fluid vertical pointing menu" style="max-width: 25rem;">
+
                 {% if student_flag %}
                     <a class="active item" data-tab="one">
                         <B>Current Semester</B>
@@ -104,9 +136,9 @@
                             <i class="right floated chevron right icon"></i>
                         </a>
                     {% endif %}
-                    <a class="item" data-tab="Miscellaneous">Miscellaneous
+                    <!-- <a class="item" data-tab="Miscellaneous">Miscellaneous
                         <i class="right floated chevron right icon"></i>
-                    </a>
+                    </a> -->
                     <a class="item" data-tab="eight" style="display: none;">
                         Apply for Leave
                         <i class="right floated chevron right icon"></i>
@@ -136,14 +168,20 @@
             </div>
             <div class="ui  tab segment" data-tab="miscellaneous_1">
                 <div class="ui pointing secondary menu">
-                    <a class=" active item" data-tab="next_courses" style="width: 33%;">
+                    <a class=" active item" data-tab="next_courses" style="width: 20%;">
                         Courses
                     </a>
-                    <a class="item" data-tab="pre_registration" style="width: 33%;">
+                    <a class="item" data-tab="pre_registration" style="width: 20%;">
                         Pre-Registration
                     </a>
-                    <a class=" item" data-tab="final_registration" style="width: 33%;">
+                    <a class=" item" data-tab="final_registration" style="width: 20%;">
                         Final-Registration
+                    </a>
+                    <a class=" item" data-tab="swayam_registration" style="width: 20%;">
+                        Swayam-Registration
+                    </a>
+                    <a class="item" data-tab="add_drop_course" style="width: 20%;" >
+                        drop courses
                     </a>
                 </div>
             
@@ -151,13 +189,36 @@
                     {%  include 'academic_procedures/registeredCourse.html' %}
                 </div>
                 <div class="ui tab segment" data-tab="pre_registration">
-                    {%  include 'academic_procedures/register.html' %}
+                    {%  include 'academic_procedures/auto_pre_registration.html' %}
                 </div>
                 <div class="ui tab segment" data-tab="final_registration">
                     {%  include 'academic_procedures/finalregister.html' %}
                 </div>
+                <div class="ui tab segment" data-tab="swayam_registration">
+                    {%  include 'academic_procedures/swayamregister.html' %}
+                </div>
+                <div class="ui tab segment" data-tab="add_drop_course" style="width: 100%">
+                    <div class="ui pointing secondary menu">
+                        <!-- <a class="active item" data-tab="add_courses" style="width: 37%;">
+                            <p style="margin-left: 30%;">Add Course</p>
+                        </a> -->
+                        <a class="active item" data-tab="drop_courses" style="width: 38%;">
+                            <p style="margin-left: 35%;">Drop Course</p>
+                        </a>
+                        <!-- <p class="item"  style="width: 25%;text-align: right; font-weight:bold;color:green">
+                            Current Credits :  {{current_credits}}
+                        </p> -->
+                    </div>
+                    <!-- <div class="ui active tab segment" data-tab="add_courses" >
+                        {%  include 'academic_procedures/addCourse.html' %}
+                    </div> -->
+                    <div class="ui active tab segment" data-tab="drop_courses">
+                        {%  include 'academic_procedures/dropCourse.html' %}
+                    </div>                
+                </div>
             </div>
             
+            {% comment %}
             <div class="ui tab segment" data-tab="Miscellaneous" style="width: 110%"  >
                 <div class="ui pointing secondary menu">
                     <a class=" active item" data-tab="miscellaneous_2" >
@@ -169,10 +230,12 @@
                     <a class="item" data-tab="miscellaneous_4">
                         Check Attendance
                     </a>
-                    <a class="item" data-tab="miscellaneous_5" >
-                        Add/drop courses
+                    <a class="item" data-tab="miscellaneous_6" >
+                        Backlogs
                     </a>
-                    
+                    <a class="item" data-tab="miscellaneous_7" >
+                        Replace
+                    </a>
                 </div>
                 <div class="ui active tab segment " data-tab="miscellaneous_2" >
                     <div class="ui pointing secondary menu">
@@ -218,29 +281,14 @@
                 <div class="ui tab segment" data-tab="miscellaneous_4" >
                     {%  include 'academic_procedures/check_attendance.html' %}
                 </div>
-
-                <div class="ui tab segment" data-tab="miscellaneous_5" style="width: 100%">
-                    <div class="ui pointing secondary menu">
-                        <a class="active item" data-tab="add_courses" style="width: 37%;">
-                            <p style="margin-left: 30%;">Add Course</p>
-                        </a>
-                        <a class="item" data-tab="drop_courses" style="width: 38%;">
-                            <p style="margin-left: 35%;">Drop Course</p>
-                        </a>
-                        <p class="item"  style="width: 25%;text-align: right; font-weight:bold;color:green">
-                            Current Credits :  {{current_credits}}
-                        </p>
-                    </div>
-                    <div class="ui active tab segment" data-tab="add_courses" >
-                        {%  include 'academic_procedures/addCourse.html' %}
-                    </div>
-                    <div class="ui tab segment" data-tab="drop_courses">
-                        {%  include 'academic_procedures/dropCourse.html' %}
-                    </div>                
-                </div>
+                <div class="ui tab segment" data-tab="miscellaneous_6" >
+                    {%  include 'academic_procedures/backlog.html' %}
+                </div>  
+                <div class="ui tab segment" data-tab="miscellaneous_7" >
+                    {%  include 'academic_procedures/replace.html' %}
+                </div>  
                 
-                
-            </div>
+            </div> {% endcomment %}
             
             
             <div class="ui tab segment" data-tab="four">
@@ -293,6 +341,9 @@
                 {% comment %}
                     TODO: the right rail!
                 {% endcomment %}
+                {% block sidepanel%} 
+                {% include 'notifications/academic_procedures_sidepanel.html' %} 
+                {% endblock %}
             </div>
         </div>
         {% comment %}The right-rail segment ends here!{% endcomment %}
@@ -342,9 +393,7 @@
 {% endblock %}
 
 {% block javascript %}
-<script>
-    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
-    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
-    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
-</script>
+<script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+<script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+<script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
 {% endblock %}

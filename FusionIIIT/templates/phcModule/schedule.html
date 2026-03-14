@@ -3,15 +3,22 @@
     {% comment %}the main tab starts here {% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="viewschedule">
-            View Schedule
+            View Doctor Schedule
         </a>
 
         <a class="item" data-tab="editschedule">
-            Edit Schedule
+            Edit Doctor Schedule
+        </a>
+        <a class=" item" data-tab="viewpathoschedule">
+            View Pathologist Schedule
+        </a>
+
+        <a class="item" data-tab="editpathoschedule">
+            Edit Pathologist Schedule
         </a>
     </div>
 
-    {% comment %}the doctor appointment tab starts here {% endcomment %}
+    {% comment %}the view doctor schedule tab starts here {% endcomment %}
     <div class="ui active tab" data-tab="viewschedule">
         <div class="ui vertical segment">
             <button type="button"  id="pr_sch" name="PDF" value="PDF" class="ui primary button left floated">
@@ -56,9 +63,9 @@
 
                         <tr>
                           <td style="font-weight:bold;color:black;">Doctor</td>
-                          {% for d in doct %}
+                          {% for d in doctors %}
                           {{count.doctor_count}}
-                          <td style="font-weight:bold;color:black; word-wrap:break-word;" > {{d}} </td>
+                          <td style="font-weight:bold;color:black; word-wrap:break-word;" > {{d.doctor_name}} </td>
                           {% endfor %}
                         <tr>
                             <tr>
@@ -77,8 +84,9 @@
                             {% for d in doctors %}
                             {{count.empty_fine}}
                             {% for s in schedule %}
-                            {% if s.day == p %}
-                            {% if d.id == s.doctor_id.id %}
+                            {% if s.day == day %}
+                            
+                            {% if d.id == s.doctor_id_id %}
                             <td style="white-space:nowrap;">{{s.from_time}}--{{s.to_time}}</td>
                             {{count.increment}}
                             {% else %}
@@ -97,8 +105,9 @@
         </div>
       </div>
     </div>
-    {% comment %}the view schedule tab ends here {% endcomment %}
-    {% comment %}the edit schedule tab starts here {% endcomment %}
+    {% comment %}the view doctor schedule tab ends here {% endcomment %}
+
+    {% comment %}the edit doctor schedule tab starts here {% endcomment %}
     <div class="ui tab" data-tab="editschedule">
       <div class="ui vertical segment">
         <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
@@ -119,7 +128,7 @@
                     <select id="day_a" class="ui search fluid dropdown" name="day" required="true">
                       <option value="" disabled selected>--SELECT--</option>
 			                   {% for p,day in days %}
-                        <option value="{{p}}">{{day}}</option>
+                        <option value="{{day}}">{{day}}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -146,11 +155,11 @@
 
                         <div class="field">
                     <label> </label>  <br> <label></label> <br> <label></label>
-                      <input type="button" id="edit" name="edit" value="Add" class="ui large right floated primary button" />
+                      <input type="button" id="edit_1" name="edit_1" value="Add" class="ui large right floated primary button" />
+
+                  </div>
 
                 </div>
-
-                    </div>
 
                 </div>
               </div>
@@ -158,82 +167,317 @@
 
 
          <script type="text/javascript">
-                     $('#edit').click(function(e){
-                                                         var doc = document.getElementById('doctor_a').value;
-                                                         var day = document.getElementById('day_a').value;
-                                                         var time_in = document.getElementById('time_in').value;
-                                                         var time_out = document.getElementById('time_out').value;
-                                                         var room = document.getElementById('room').value;
-                                                         if(doc == "" || day == "" || time_in == ""|| room == "" || time_out == "")
-                                                         {
-                                                         $('#valid_sche').html("Enter Valid Information");
-                                                         return false;
-                                                         }
-                                                             $.ajax({
-                                                               type:'post',
-                                                               url:'/healthcenter/compounder/',
-                                                               data: {
-                                                               csrfmiddlewaretoken: '{{ csrf_token }}',
-                                                               doctor:$("#doctor_a").val(),
-                                                               day:$("#day_a").val(),
-                                                               room:$("#room").val(),
-                                                               time_in:$("#time_in").val(),
-                                                               time_out:$("#time_out").val(),
-                                                               edit:$("#edit").val()
-                                                             },
-                                                               success: function(data){
-                                                                   alert("edited schedule");
-                                                                   document.getElementById("doctor_a").value="";
-                                                                   document.getElementById("day_a").value="";
-                                                                   document.getElementById("room").value="";
-                                                                   document.getElementById("time_in").value="";
-                                                                   document.getElementById("time_out").value="";
-                                                                   window.location.reload();
-                                                                  $('#valid_sche').html("");
+            $('#edit_1').click(function(e){
+              alert("ok")
+          var doc = document.getElementById('doctor_a').value;
+          var day = document.getElementById('day_a').value;
+          var time_in = document.getElementById('time_in').value;
+          var time_out = document.getElementById('time_out').value;
+          var room = document.getElementById('room').value;
+
+          if(doc == "" || day == "" || time_in == ""|| room == "" || time_out == "")
+          {
+          $('#valid_sche').html("Enter Valid Information");
+          return false;
+          }
+              $.ajax({
+                type:'post',
+                url:'/healthcenter/compounder/',
+                data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+                doctor:doc,
+                day:day,
+                room:room,
+                time_in:time_in,
+                time_out:time_out,
+                edit_1:$("#edit_1").val()
+              },
+                success: function(data){
+                    alert("edited schedule");
+                    document.getElementById("doctor_a").value="";
+                    document.getElementById("day_a").value="";
+                    document.getElementById("room").value="";
+                    document.getElementById("time_in").value="";
+                    document.getElementById("time_out").value="";
+                    window.location.reload();
+                  $('#valid_sche').html("");
 
 
-                                                             },
-                                                           });
-                                                           });
+              },
+            });
+            });
 
+      $('#rmv').click(function(e){
+        var doc = document.getElementById('doctor_a').value;
+        var day = document.getElementById('day_a').value;
 
-                           $('#rmv').click(function(e){
-                                                         var doc = document.getElementById('doctor_a').value;
-                                                         var day = document.getElementById('day_a').value;
+        if(doc == "" || day == "" )
+        {
+        $('#valid_sche').html("Enter Valid Information");
+        return false;
+        }
+            $.ajax({
+              type:'post',
+              url:'/healthcenter/compounder/',
+              data: {
+              csrfmiddlewaretoken: '{{ csrf_token }}',
+              doctor:$("#doctor_a").val(),
+              day:$("#day_a").val(),
+              rmv:$("#rmv").val()
+            },
+              success: function(data){
+                alert("Removed schedule");
+                document.getElementById("doctor_a").value="";
+                document.getElementById("day_a").value="";
+                document.getElementById("room").value="";
+                document.getElementById("time_in").value="";
+                document.getElementById("time_out").value="";
+                window.location.reload();
+                $('#valid_sche').html("");
 
-                                                          if(doc == "" || day == "" )
-                                                         {
-                                                         $('#valid_sche').html("Enter Valid Information");
-                                                         return false;
-                                                         }
-                                                             $.ajax({
-                                                               type:'post',
-                                                               url:'/healthcenter/compounder/',
-                                                               data: {
-                                                               csrfmiddlewaretoken: '{{ csrf_token }}',
-                                                               doctor:$("#doctor_a").val(),
-                                                               day:$("#day_a").val(),
-                                                               rmv:$("#rmv").val()
-                                                             },
-                                                               success: function(data){
-                                                                   alert("Removed schedule");
-                                                                   document.getElementById("doctor_a").value="";
-                                                                   document.getElementById("day_a").value="";
-                                                                   document.getElementById("room").value="";
-                                                                   document.getElementById("time_in").value="";
-                                                                   document.getElementById("time_out").value="";
-                                                                   window.location.reload();
-                                                                   $('#valid_sche').html("");
-
-                                                             },
-                                                           });
-                                                           });
-                       </script>
+            },
+          });
+          });
+    </script>
 
 
     </div>
     </div>
 
 
-    {% comment %}the ambulance appointment tab ends here {% endcomment %}
+    {% comment %}the edit doctor schedule tab ends here {% endcomment %}
+
+    {% comment %}the view pathologist schedule tab starts here {% endcomment %}
+    <div class="ui tab" data-tab="viewpathoschedule">
+        <div class="ui vertical segment">
+            <button type="button"  id="pr_patho1" name="PDF" value="PDF" class="ui primary button left floated">
+                    <i class="ui download icon right floated"></i>
+            </button>
+
+            <script>
+         $('#pr_patho1').click(function(e){
+        var sTable = document.getElementById('patho1_sc').innerHTML;
+
+        var style = "<style>";
+        style = style + "table {width: 100%;font: 17px Calibri;}";
+        style = style + "table, th, td {border: solid 1px #DDD; border-collapse: collapse;";
+        style = style + "padding: 2px 3px;text-align: center;}";
+        style = style + "</style>";
+
+        // CREATE A WINDOW OBJECT.
+        var win = window.open('', '', 'height=700,width=700');
+
+        win.document.write('<html><head>');
+        win.document.write('<title>PHC Pathologist Schedule</title>');   // <title> FOR PDF HEADER.
+        win.document.write(style);          // ADD STYLE INSIDE THE HEAD TAG.
+        win.document.write('</head>');
+        win.document.write('<body>');
+        win.document.write(sTable);         // THE TABLE CONTENTS INSIDE THE BODY TAG.
+        win.document.write('</body></html>');
+
+        win.document.close(); 	// CLOSE THE CURRENT WINDOW.
+
+        win.print();    // PRINT THE CONTENTS.
+    });
+
+</script>
+            <div id="patho1_sc" class="field">
+                  <table  border=1 class="ui definition padded table" style="margin: auto;">
+                  </br>
+                      </br>
+                         </br>
+                      <thead>
+
+                        <tr>
+                          <td style="font-weight:bold;color:black;">Pathologist 
+                            
+                          </td>
+                          {% for d in pathologists %}
+                          {{count.pathologist_count}}
+                          <td style="font-weight:bold;color:black; word-wrap:break-word;" > {{d.pathologist_name}} </td>
+                          {% endfor %}
+                        <tr>
+                            <tr>
+                      <td>Specialization</td>
+                      {% for d in pathologists %}
+                      {{count.pathologist_count}}
+                      <td style="word-wrap:break-word;">{{d.specialization}}</td>
+                      {% endfor %}
+                    </tr>
+
+                    {% comment %} {% for s in schedule  %}
+                    <h1>{{s.day}}</h1>
+                    {% endfor %} {% endcomment %}
+
+                          {% for p,day in days %}
+                          {{count.empty_fine}}
+                          <tr>
+                            <td>{{day}}</td>
+
+                            {% for d1 in pathologists %}
+                            {{ count.empty_fine }}
+                            {% for s1 in schedule1 %}
+                            {% if s1.day == day %}
+                            {% comment %} {{ s1.doctor_id.id }} {% endcomment %}
+                            
+                            {% if d1.id == s1.pathologist_id_id %}
+                            <td style="white-space:nowrap;">{{s1.from_time}}--{{s1.to_time}}</td>
+                            {{ count.increment }}
+                            {% endif %}
+                            {% endif %}
+                            {% endfor %}
+                            {% if count.count == 0 %}
+                              <td></td>
+                            {% endif %}
+                          {% endfor %}
+                          </tr>
+
+                          {% endfor %}
+                      </thead>
+                  </table>
+        </div>
+      </div>
+    </div>
+    {% comment %}the view pathologist schedule tab ends here {% endcomment %}
+
+    {% comment %}the edit pathologist schedule tab starts here {% endcomment %}
+    <div class="ui tab" data-tab="editpathoschedule">
+      <div class="ui vertical segment">
+        <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
+            <div class="field"> <p id="valid_patho1" />
+              <div class="three fields">
+                <div class="field">
+                    <label>Pathologist</label>
+                    <select id="pathologist_a" class="ui search fluid dropdown" name="pathologist" required="true">
+                      <option value="" disabled selected>--SELECT--</option>
+                      {% for pathologist in pathologists %}
+                      <option value="{{pathologist.id}}">{{pathologist.pathologist_name}}</option>
+                      {% endfor %}
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Day</label>
+                    <!-- on selection of pathologist few days should be displayed -->
+                    <select id="day_a1" class="ui search fluid dropdown" name="day1" required="true">
+                      <option value="" disabled selected>--SELECT--</option>
+			                   {% for p,day in days %}
+                        <option value="{{day}}">{{day}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                   <div class="field">
+                       <label></label>  <br> <label></label>
+                      <input type="button" id="rmv1" name="rmv1" value="Remove" class="ui red button" />
+                   </div>
+
+              </div>
+              <div class="three fields">
+                <div class="field">
+                        <label>Time In</label>
+                        <input type="time" name="time_in1" id="time_in1" required="true">
+                        <!-- enter the time in  -->
+                    </div>
+
+                    <div class="field">
+                        <label>Time out </label>
+                        <input type="time" name="time_out1" id="time_out1" required="true">
+                    </div>
+                    <div class="field">
+                        <label>Room No</label>
+                        <input type="text" name="room1" id="room1" required="true">
+
+                        <div class="field">
+                    <label> </label>  <br> <label></label> <br> <label></label>
+                      <input type="button" id="edit12" name="edit12" value="Add" class="ui large right floated primary button" />
+
+                  </div>
+
+                </div>
+
+                </div>
+              </div>
+          </form>
+
+
+         <script type="text/javascript">
+            $('#edit12').click(function(e){
+          var doc = document.getElementById('pathologist_a').value;
+          var day = document.getElementById('day_a1').value;
+          var time_in = document.getElementById('time_in1').value;
+          var time_out = document.getElementById('time_out1').value;
+          var room = document.getElementById('room1').value;
+          
+
+          if(doc == "" || day == "" || time_in == ""|| room == "" || time_out == "")
+          {
+          $('#valid_patho1').html("Enter Valid Information");
+          return false;
+          }
+              $.ajax({
+                type:'post',
+                url:'/healthcenter/compounder/',
+                data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+                pathologist:doc,
+                day:day,
+                room:room,
+                time_in:time_in,
+                time_out:time_out,
+                edit12:$("#edit12").val()
+              },
+                success: function(data){
+                    alert("edited schedule");
+                    document.getElementById("pathologist_a").value="";
+                    document.getElementById("day_a1").value="";
+                    document.getElementById("room1").value="";
+                    document.getElementById("time_in1").value="";
+                    document.getElementById("time_out1").value="";
+                    window.location.reload();
+                  $('#valid_patho1').html("");
+
+
+              },
+            });
+            });
+
+      $('#rmv1').click(function(e){
+        var doc = document.getElementById('pathologist_a').value;
+        var day = document.getElementById('day_a1').value;
+
+        if(doc == "" || day == "" )
+        {
+        $('#valid_patho2').html("Enter Valid Information");
+        return false;
+        }
+            $.ajax({
+              type:'post',
+              url:'/healthcenter/compounder/',
+              data: {
+              csrfmiddlewaretoken: '{{ csrf_token }}',
+              pathologist:$("#pathologist_a").val(),
+              day:$("#day_a1").val(),
+              rmv:$("#rmv1").val()
+            },
+              success: function(data){
+                alert("Removed schedule");
+                document.getElementById("pathologist_a").value="";
+                document.getElementById("day_a1").value="";
+                document.getElementById("room1").value="";
+                document.getElementById("time_in1").value="";
+                document.getElementById("time_out1").value="";
+                window.location.reload();
+                $('#valid_patho2').html("");
+
+            },
+          });
+          });
+    </script>
+
+
+    </div>
+    </div>
+
+
+    {% comment %}the edit pathologist schedule tab ends here {% endcomment %}
+
 {% endblock %}

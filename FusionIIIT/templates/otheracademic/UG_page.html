@@ -1,0 +1,48 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+    Bonafide Form
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <div class="ui stackable doubling grid">
+        <div class="column"></div>
+        <div class="three wide column">
+            <div class="row">
+                <!-- User image card -->
+                {% block usercard %}
+                    {% include 'globals/usercard.html' %}
+                {% endblock %}
+            </div>
+            <div class="ui divider"></div>
+            <div class="row">
+                <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+                    <a href="/otheracademic/leaveform" class="active item">Leave
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a href="/otheracademic/bonafide" class="item">Bonafide
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a href="/otheracademic/nodues_apply/" class="item">No Dues
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="twelve wide column">
+            <div class="ui segment">
+                
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
+    <!-- You may include JavaScript files here if needed -->
+{% endblock %}

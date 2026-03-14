@@ -2,8 +2,8 @@
 {% load humanize %}
 {% block comments %}
 
-<div class="ui segment comments" style="height:45em;overflow:scroll;overflow-x:hidden;">
-    <h3 class="ui dividing header">Comments</h3>
+<div class="ui segment comments" id="comments_refresh" style="height:68vh; overflow:auto;overflow-x:hidden;">
+    <h3 class="ui dividing header">Announcements</h3>
     {% for key, value in answers.items %}
     <div class="question" id="question{{key.pk}}">
         <div class="comment comment_q" id="comment{{key.pk}}">
@@ -15,7 +15,6 @@
                 <div class="metadata">
                     <span class="date">{{key.comment_time | naturaltime }}</span>
                 </div>
-
                 <div class="text">
                     <p>{{key.comment}}</p>
                 </div>
@@ -23,8 +22,9 @@
                     <a class="reply remove_q" data-user="{{key.commenter_id.user.pk}}" data-pk="{{key.pk}}" id="remove{{key.pk}}" name="remove{{key.pk}}">Remove</a>
                 </div>
             </div>
+            <br>
         </div>
-        <div class="comments answer" style="padding-left:10px;padding-bottom:10px">
+        <!-- <div class="comments answer" style="padding-left:10px;padding-bottom:10px">
             {% for v in value %}
             <div class="comment comment_r" id="comment{{v.forum_reply.pk}}">
                 <a class="avatar">
@@ -44,25 +44,27 @@
                 </div>
             </div>
             {% endfor %}
-            <form class="ui form" id="{{key.pk}}" data-pk="{{key.pk}}" method="post">
+            {% comment %} <form class="ui form" id="{{key.pk}}" data-pk="{{key.pk}}" method="post">
                 {% csrf_token %}
                 <div class="field">
-                    <input type="text" name="comment{{key.pk}}" placeholder="Enter Your Comment">
+                    <input type="text" name="comment{{key.pk}}" placeholder="Enter Your Announcement">
                 </div>
                 <input type="submit" class="ui blue submit button submit_r" data-pk="{{key.pk}}" name="submit" value="Reply" />
-            </form>
-        </div>
+            </form> {% endcomment %}
+        </div> -->
     </div>
     {% endfor %}
+    
+</div>
+{% if Lecturer == 1%}
     <form class="ui form" id="new" method="post" style="margin-bottom:10px">
         {% csrf_token %}
         <div class="field">
-            <input type="text" name="new_comment" placeholder="Enter Your Comment">
+            <input type="text" name="new_comment" placeholder="Enter Your Announcement">
         </div>
-        <input type="submit" class="ui blue submit button submit_new" data-pk="{{key.pk}}" name="submit" value="Comment">
+        <input type="submit" class="ui blue submit button submit_new" data-pk="{{key.pk}}" name="submit" value="Send">
     </form>
-</div>
-
+{% endif %}
 
 
 {% endblock %}

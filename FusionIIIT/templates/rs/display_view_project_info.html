@@ -1,0 +1,251 @@
+
+
+{% load static %}
+
+{% block title %}
+
+{% endblock %}
+
+{% block project_info %}
+
+{% block body %}
+   
+    
+
+    <script>
+       
+            
+    </script>
+    <div class="ui pointing secondary menu" style="font-size: 25px;">
+  <label style="text-transform: uppercase;" class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
+    &nbsp;<span class="ui blue text header">{{ project.project_name }}</span>
+  </label>
+</div>
+
+
+    <style>
+        .header{
+            font-size:20px;
+            padding-top:10px;
+        }
+        .description{
+            padding-top:20px;
+            padding-bottom:20px;
+        }
+        .flexy{
+            display:flex;
+            width: 100%;
+        }
+        #width-half{
+            width: 50%;
+        }
+        .ui.small.grey.equal-size-button.button:hover{
+        background-color:black;
+       }
+        .ui.small.equal-size-button.button:hover{
+            background-color:#0307fc;
+        }
+        .ui.small.grey.equal-size-button.button{
+        width:80px;
+       }
+        .ui.small.equal-size-button.button{
+            width:80px;
+        }
+    </style>
+    
+ <body>
+    <div class="ui container" style="margin-bottom:120px;width:100%" >
+        <div class="ui segments">
+            <div class="ui segment">
+                <div class="ui relaxed divided list">
+       
+                    <div class="item"  >
+                        <div class="flexy">
+                            <div class="content" id="width-half"> 
+                                <div class="header" >PROJECT INVESTIGATOR ID</div>
+                                <div class="description" >{{ project.project_investigator_id }}</div>
+                            </div>
+                            <div class="content" id="width-half" > 
+                                <div class="header " >CO-PROJECT INVESTIGATORS</div>
+                                <div style="display: flex;">
+
+                                    {% for copi in copis %}                   
+                                    <div class="description" >{{ copi.co_pi.username }},&nbsp; </div>
+                                    {% endfor %}
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="item" >
+                        <div class="flexy">
+                        <div class="content" id="width-half">
+                            <div class="header" >PROJECT TYPE</div>
+                            <div class="description" >{{ project.project_type }}</div>
+                        </div>
+                        <div class="content" id="width-half" >
+                            <div class="header" >SPONSORED AGENCY</div>
+                            <div class="description" >{{ project.sponsored_agency }}</div>
+                        </div>
+                        </div>
+                    </div>
+
+                    <div class="item" >
+                        <div class="flexy">
+                            <div class="content" id="width-half">
+                                <div class="header" >YEARS</div>
+                                <div class="description" >{{ project.years }} years</div>
+                            </div>
+                            <div class="content" id="width-half" >
+                                <div class="header" >PROJECT STATUS</div>
+                                <br>
+                                {% if project.status == 0 %}
+                                <div class="ui teal label">OnGoing</div>
+                                {% endif %}
+                                {% if project.status == 1 %}
+                                <div class="ui teal label">Completed</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="item" >
+                        <div class="flexy">
+                        <div class="content" id="width-half">
+                            <div class="header" >START DATE</div>
+                            <div class="description" >{{ project.start_date }}</div>
+                        </div>
+                        <div class="content" id="width-half" >
+                            <div class="header" >FINISH DATE</div>
+                            <div class="description" >{{ project.finish_date }}</div>
+                        </div>
+                        </div>
+                    </div>
+
+                    <div class="item" >
+                        <div class="flexy">
+                        <div class="content" id="width-half">
+                            <div class="header"  >FINANCIAL OUTLAY</div>
+                            <div class="description"  >
+                                {% if project.financial_outlay_status == 0 and request.user.extrainfo.user_type == "staff" %}
+                                <button id="fhello{{ project.project_id }}" class="ui small grey equal-size-button button"onmouseover="changeText('fhello{{ project.project_id }}')" onmouseout="restoreText('fhello{{ project.project_id }}')" onclick="window.location='/research_procedures/financial_outlay/{{project.project_id}}'"><i class="plus icon"></i></button>
+                                {% endif %}
+                                {% if project.financial_outlay_status == 0  and request.user.extrainfo.user_type != "staff" %}
+                                <div class="ui red label">Not yet added</div>
+                                {% endif %}
+                                {% if project.financial_outlay_status == 1 %}
+                                <button id="vhello{{ project.project_id }}" class="ui small grey equal-size-button button"onmouseover="changeText('vhello{{ project.project_id }}')" onmouseout="restoreText('vhello{{ project.project_id }}')"  onclick="window.location='/research_procedures/view_financial_outlay/{{project.project_id}}'"><i class="eye icon"></i></button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="content" >
+                            <div class="header"  >STAFF ALLOTMENT</div>
+                            <div class="description"  >
+                                {% if request.user.extrainfo.user_type == "staff" %}
+                                <button id="{{ project.project_id }}" class="ui small grey equal-size-button button" onmouseover="changeText({{ project.project_id }})" onmouseout="restoreText({{ project.project_id }})"  onclick="window.location='/research_procedures/add_staff_details/{{ project.project_id }}'"><i class="plus icon"></i></button>
+                                {% endif %}
+                                <button id="hello{{ project.project_id }}" class="ui small grey equal-size-button button"onmouseover="changeText('hello{{ project.project_id }}')" onmouseout="restoreText('hello{{ project.project_id }}')" onclick="window.location='/research_procedures/view_staff_details/{{project.project_id}}'"><i class="eye icon"></i></button>
+                            </div>
+                        </div>
+                        
+                        </div>
+                    </div>
+                   
+                    <div class="item">
+                        <div class="flexy">
+                        <div class="content" id="width-half" >
+                            <div class="header">PROJECT INFORMATION FILE</div>
+                            <div class="description"  >
+                               <a class="ui small grey equal-size-button button " id="k{{ project.project_id }}" onmouseover="changeText('k{{ project.project_id }}')" onmouseout="restoreText('k{{ project.project_id }}')" href="{{ project.project_info_file.url }}"><i class="eye icon"></i> </a>
+                            </div>
+                        </div>
+                        {% if global_var == "rspc_admin" and project.financial_outlay_status == 1 %}              
+                        {% comment %} <div class="item"> {% endcomment %}
+                            <div class="content" >
+                                <div class="header"  >UPDATE FINANCIAL OUTLAY</div>
+                                <div class="description"  >
+                                    <button class="ui small grey equal-size-button button" id="n{{ project.project_id }}" onmouseover="changeText('n{{ project.project_id }}')" onmouseout="restoreText('n{{ project.project_id }}')" onclick="window.location='/research_procedures/update_financial_outlay/{{ project.project_id }}'" ><i class="edit icon"></i> </button>
+                                </div>
+                            </div>
+                            {% comment %} </div> {% endcomment %}
+                        {% endif %}  
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- <div class="item"> -->
+
+            {% if global_var == "faculty" or global_var == "Professor" or global_var == "Assistant Professor" %}
+            <div style=" font-size:22px; padding:8px; font-weight:bold"> Raise Staff / Expenditure request  </div>
+            <form class="ui form" action="{% url 'research_procedures:add_staff_request' project.project_id %}"  method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="fields" style="margin-left:10px">
+                    <div class="four wide field">
+                        <label  for="receiver">Select a role:</label>
+                        <select id="receiver" name="receiver" class="ui selection dropdown">
+                            <option value="dean_rspc">RSPC Dean</option>
+                            <option value="rspc_admin">RSPC Admin</option>
+                            <option value="HOD (CSE)">HOD (CSE)</option>
+                            <option value="HOD (ME)">HOD (ME)</option>
+                            <option value="HOD (ECE)">HOD (ECE)</option>
+                            <option value="HOD (Design)">HOD (Design)</option>
+                            <option value="HOD (NS)">HOD (NS)</option>
+                            <option value="Director">Director</option>
+                        </select>
+                    </div>
+                    <div class="four wide field">
+                        <label  for="file_to_forward">Choose a file:</label>
+                        <input type="file" id="file_to_forward" name="file_to_forward" required >
+                    </div> 
+                    <div class="four wide field">
+                        <label  for="subject">Add Subject</label>
+                        <input type="text" id="subject" name="subject" required >
+                    </div> 
+                    <div class="four wide field">   
+                        <br>
+                        <input class="submit-button" style="background-color: #007bff; color: #fff;border-radius:5px; border: none; padding: 10px 20px;margin-top:5px; cursor: pointer; width: 100%; transition: background-color 0.3s;"onmouseover="this.style.backgroundColor='#0056b3'" onmouseout="this.style.backgroundColor='#007bff'" type="submit">
+                    </div>
+                </div>
+            </form> 
+        <!-- </div> -->
+        
+        </div>
+        
+        {% endif %}
+        
+        <form action="{% url 'research_procedures:download_project_pdf' project.project_id %}" method="get">
+            {% csrf_token %}
+            <button class="ui small grey large-size-button button" style=" margin: 0.5rem " type="submit">GENERATE PROJECT SUMMARY</button>
+        </form>
+<script>
+  function changeText(pid) {
+    if(pid[0]=='h'){
+        document.getElementById(pid).innerHTML = "View";
+    }
+    else if(pid[0]=='f')document.getElementById(pid).innerHTML = "Add";
+    else if(pid[0]=='v')document.getElementById(pid).innerHTML = "View";
+    else if(pid[0]=='k')document.getElementById(pid).innerHTML = "View";
+    else if(pid[0]=='n')document.getElementById(pid).innerHTML = "Update";
+    else document.getElementById(pid).innerHTML = "Add";
+  }
+
+  function restoreText(pid) {
+    if(pid[0]=='h'){
+
+        document.getElementById(pid).innerHTML = '<i class="eye icon"></i>';
+    }
+    else if(pid[0]=='f')document.getElementById(pid).innerHTML = '<i class="plus icon"></i>';
+    else if(pid[0]=='v')document.getElementById(pid).innerHTML = '<i class="eye icon"></i>';
+    else if(pid[0]=='k')document.getElementById(pid).innerHTML = '<i class="eye icon"></i>';
+    else if(pid[0]=='n')document.getElementById(pid).innerHTML = '<i class="edit icon"></i>';
+    else document.getElementById(pid).innerHTML = '<i class="plus icon"></i>';
+  }
+</script>
+</body>
+
+{% endblock %}
+
+{% endblock %}

@@ -1,0 +1,60 @@
+{% block book_guest_room_status %}
+    {% for user_request in user_guest_room_requests %} 
+    <div class="ui secondary segment">
+        <div class="ui segment">
+            <div class="ui container">
+              <h2 class="ui center aligned header">Room for {{user_request.total_guest}} in {{user_request.hall.hall_id}}</h2>
+              <div class="ui grid">
+                <div class="16 wide column">
+                  <div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: auto;">
+                  <table class="ui celled table">
+                    <thead>
+                      <tr>
+                        <th>Requested For</th>
+                        <th>Contact</th>
+                        <th>Arrival</th>
+                        <th>Departure</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>{{user_request.guest_name}}</td>
+                        <td>{{user_request.guest_phone}}</td>
+                        <td>{{user_request.arrival_date}}</td>
+                        <td>{{user_request.departure_date}}</td>
+                        {% if user_request.status == 'Accepted' %}
+                        <td class="positive">{{user_request.status}}</td>
+                        {% elif user_request.status == 'Rejected' %}
+                        <td class="negative">{{user_request.status}}</td>
+                        {% else %}
+                        <td>{{user_request.status}}</td>
+                        {% endif %}
+                        <!-- <td>{{user_request.status}}</td> -->
+                      </tr>
+                      <tr>
+                        <td colspan="6">
+                          <div class="ui styled accordion" style="width : 650px">
+                            <div class="title">
+                              <i class="dropdown icon"></i>
+                              Reason
+                            </div>
+                            <div class="content">
+                              <h3 style="color:grey;">Description</h3>
+                              <h4 class="transition hidden" style="color:black;">{{user_request.purpose}}</h4>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+           
+            <br>
+        </div>
+    </div>
+    {% endfor %}
+{% endblock %}

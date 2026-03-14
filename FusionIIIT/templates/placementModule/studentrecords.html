@@ -140,12 +140,12 @@
                     <i class="right floated chevron right icon"></i>
                 </a>
                 {% endif %}
-                {% if current1 %}
+                <!-- {% if current1 %}
                 <a class="{% if add_visit_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:add_placement_visit' %}">
                     Add Chairman Visit
                     <i class="right floated chevron right icon"></i>
                 </a>
-                {% endif %}
+                {% endif %} -->
 
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
@@ -561,7 +561,7 @@
                     <div id = "B.TechSend" class="dept field">
                       {{ form13.dep_btech.errors }}
                         <label>
-                            Department
+                            B.Tech
                         </label>
                         {{ form13.dep_btech }}
                     </div>
@@ -569,7 +569,7 @@
                    <div id = "B.DesSend" class="dept field">
                       {{ form13.dep_bdes.errors }}
                         <label>
-                            Department
+                            B.Des
                         </label>
                         {{ form13.dep_bdes }}
                     </div>
@@ -577,7 +577,7 @@
                     <div id = "M.TechSend" class="dept field">
                       {{ form13.dep_mtech.errors }}
                         <label>
-                            Department
+                            M.Tech
                         </label>
                         {{ form13.dep_mtech }}
                     </div>
@@ -585,7 +585,7 @@
                     <div id = "M.DesSend" class="dept field">
                       {{ form13.dep_mdes.errors }}
                         <label>
-                            Department
+                           M.Des
                         </label>
                         {{ form13.dep_mdes }}
                     </div>
@@ -593,7 +593,7 @@
                     <div id = "PhDSend" class="dept field">
                       {{ form13.dep_phd.errors }}
                         <label>
-                            Department
+                           Phd
                         </label>
                         {{ form13.dep_phd }}
                     </div>
@@ -773,7 +773,7 @@
 
                             <tbody>
                               {% for student in placementstatus_placement %}
-                                {% if student.notify_id.placement_type == 'PLACEMENT' %}
+                                {% if student.notify_id.placement_type == 'PLACEMENT' and student.invitation == "ACCEPTED" %}
                                 <tr>
                                     <td>
                                         <h4 class="ui image header">

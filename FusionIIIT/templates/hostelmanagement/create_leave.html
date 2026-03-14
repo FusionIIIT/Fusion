@@ -1,0 +1,88 @@
+{% block create_leave %}
+<h2 class="ui header" align="center">Leave Form</h2>
+<form id="createLeaveForm" method="POST" action="{% url 'hostelmanagement:create_hostel_leave' %}" class="ui form" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="field">
+        <label for="student_name">Student Name:</label>
+        <input type="text" id="student_name" name="student_name"
+            value="{{ request.user.first_name }} {{ request.user.last_name }}" required readonly><br><br>
+    </div>
+    <div class="field">
+        <label for="roll_num">Roll Number:</label>
+        <input type="text" id="roll_num" name="roll_num" value="{{ request.user.username}}" required readonly><br><br>
+    </div>
+    <div class="field">
+        <label for="phone_number">Phone Number:</label>
+        <input type="number" id="phone_number" name="phone_number" required><br><br>  <!-- New field for phone number -->
+    </div>
+    <div class="field">
+        <label for="reason">Reason:</label>
+        <textarea id="reason" name="reason" rows="4" cols="50" required></textarea><br><br>
+    </div>
+    <div class="field">
+        <label for="start_date">Start Date:</label>
+        <input type="date" id="start_date" name="start_date" min="" required><br><br>
+    </div>
+    <div class="field">
+        <label for="end_date">End Date:</label>
+        <input type="date" id="end_date" name="end_date" min="" required><br><br>
+    </div>
+    <div class="leave-form-btn">
+        <button class="ui primary button" type="submit" id="submitBtn">Submit</button>
+    </div>
+</form>
+<script>
+    // Get today's date in YYYY-MM-DD format
+    var today = new Date().toISOString().split('T')[0];
+    document.getElementById("start_date").value = "";
+    document.getElementById("end_date").value = "";
+    document.getElementById("start_date").min = today;
+    document.getElementById("start_date").addEventListener("change", function () {
+        document.getElementById("end_date").min = document.getElementById("start_date").value;
+    });
+
+    document.getElementById("createLeaveForm").addEventListener("submit", function (event) {
+        event.preventDefault(); // Prevent default form submission
+        
+        var phoneNumber = document.getElementById("phone_number").value;
+        if (!phoneNumber || !/^\d{10}$/.test(phoneNumber)) {
+            alert('Phone number must not be empty, contain only digits, and be a maximum of 10 digits.');
+            return; // Prevent form submission if validation fails
+        }
+        
+        var form = this;
+        var formData = new FormData(form);
+
+        formData.append("phone_number", phoneNumber);
+
+        // Send AJAX POST request
+        fetch(form.action, {
+            method: "POST",
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(data);
+                // Handle successful response
+                alert(data.message);
+                // Optionally, reset form fields
+                form.reset();
+                window.location.href = "/hostelmanagement/";
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+                // Handle error
+                alert('An error occurred while submitting the form.');
+            });
+    });
+
+</script>
+{% endblock %}

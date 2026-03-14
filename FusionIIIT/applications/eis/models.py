@@ -26,7 +26,7 @@ class emp_visits(models.Model):
 
 class emp_techtransfer(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
-    pf_no = models.IntegerField()
+    pf_no = models.CharField(max_length=20)
     details = models.CharField(max_length=500, default=" ")
     date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
     start_date = models.DateField(null=True,blank=True)
@@ -35,7 +35,7 @@ class emp_techtransfer(models.Model):
 
 class emp_session_chair(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
-    pf_no = models.IntegerField()
+    pf_no = models.CharField(max_length=20)
     name = models.CharField(max_length=500, default=" ")
     event = models.TextField(max_length=2500, default=" ")
     YEAR_CHOICES = []
@@ -57,7 +57,7 @@ class emp_session_chair(models.Model):
 
 class emp_research_projects(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
-    pf_no = models.IntegerField()
+    pf_no = models.CharField(max_length=20)
     ptype = models.CharField(max_length=100, default="Research")
     pi = models.CharField(max_length=1000, default=" ")
     co_pi = models.CharField(max_length=1500, default=" ")
@@ -82,7 +82,7 @@ class emp_research_projects(models.Model):
 
 class emp_research_papers(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
-    pf_no = models.IntegerField()
+    pf_no = models.CharField(max_length=20)
     R_TYPE_CHOICES = (
         ('Journal', 'Journal'),
         ('Conference', 'Conference'),
@@ -133,7 +133,7 @@ class emp_research_papers(models.Model):
 
 class emp_published_books(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
-    pf_no = models.IntegerField()
+    pf_no = models.CharField(max_length=20)
     PTYPE_TYPE_CHOICES = (
         ('Book', 'Book'),
         ('Monograph', 'Monograph'),
@@ -158,7 +158,7 @@ class emp_published_books(models.Model):
 
 class emp_patents(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
-    pf_no = models.IntegerField()
+    pf_no = models.CharField(max_length=20)
     p_no = models.CharField(max_length=150)
     title = models.CharField(max_length=1500)
     earnings = models.IntegerField(default=0)
@@ -186,7 +186,7 @@ class emp_patents(models.Model):
 
 class emp_mtechphd_thesis(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
-    pf_no = models.IntegerField()
+    pf_no = models.CharField(max_length=20)
     degree_type = models.IntegerField(default=1)
     title = models.CharField(max_length=250)
     supervisors = models.CharField(max_length=250)
@@ -219,7 +219,7 @@ class emp_mtechphd_thesis(models.Model):
 
 class emp_keynote_address(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
-    pf_no = models.IntegerField()
+    pf_no = models.CharField(max_length=20)
     KEYNOTE_TYPE_CHOICES = (
         ('Keynote', 'Keynote'),
         ('Plenary Address', 'Plenary Address'),
@@ -248,7 +248,7 @@ class emp_keynote_address(models.Model):
 
 class emp_expert_lectures(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
-    pf_no = models.IntegerField()
+    pf_no = models.CharField(max_length=20)
     LECTURE_TYPE_CHOICES = (
         ('Expert Lecture', 'Expert Lecture'),
         ('Invited Talk', 'Invited Talk'),
@@ -273,7 +273,7 @@ class emp_expert_lectures(models.Model):
 
 class emp_event_organized(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
-    pf_no = models.IntegerField()
+    pf_no = models.CharField(max_length=20)
     TYPE_CHOICES = (
         ('Training Program', 'Training Program'),
         ('Seminar', 'Seminar'),
@@ -301,7 +301,7 @@ class emp_event_organized(models.Model):
 
 class emp_consultancy_projects(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
-    pf_no = models.IntegerField()
+    pf_no = models.CharField(max_length=20)
     consultants = models.CharField(max_length=150)
     title = models.CharField(max_length=1000)
     client = models.CharField(max_length=1000)
@@ -323,7 +323,7 @@ class emp_consultancy_projects(models.Model):
 
 class emp_confrence_organised(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
-    pf_no = models.IntegerField()
+    pf_no = models.CharField(max_length=20)
     name = models.CharField(max_length=500)
     venue = models.CharField(max_length=500)
     YEAR_CHOICES = []
@@ -353,7 +353,7 @@ class emp_confrence_organised(models.Model):
 
 class emp_achievement(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True,null=True)
-    pf_no = models.IntegerField()
+    pf_no = models.CharField(max_length=20)
     A_TYPE_CHOICES = (
         ('Award', 'Award'),
         ('Honour', 'Honour'),

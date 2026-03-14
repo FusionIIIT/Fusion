@@ -65,7 +65,7 @@
                           <td>Corrigendum</td>
                           <td>  <div style="display:flex;justify-content: space-between;">
                             <div><a href="">Download</a></div>
-                              <div ><a href="http://172.27.16.216/iwdModuleV2/corrigendumView">i</a></div>
+                              <div ><a href="{% url 'iwdModuleV2:Corrigendum View'%}">i</a></div>
                       </div>
                           </td>
                       </tr>
@@ -73,7 +73,8 @@
                         <td>Addendum</td>
                         <td>  <div style="display:flex;justify-content: space-between;">
                           <div><a href="">Download</a></div>
-                            <div><a href="http://172.27.16.216/iwdModuleV2/addendumView">i</a></div>
+ 
+                            <div ><a href="{% url 'iwdModuleV2:Addendum View'%}">i</a></div>
                     </div>
                         </td>
                       </tr>
@@ -81,7 +82,8 @@
                           <td>Pre-bid meeting details</td>
                           <td>  <div style="display:flex;justify-content: space-between;">
                             <div><a href="">Download</a></div>
-                              <div><a href="http://172.27.16.216/iwdModuleV2/preBidDetailsView">i</a></div>
+                               
+                              <div ><a href="{% url 'iwdModuleV2:Pre Bid Details View'%}">i</a></div>
                       </div>
                           </td>
                       </tr>
@@ -89,7 +91,8 @@
                           <td>Technical-bid meeting details</td>
                           <td>  <div style="display:flex;justify-content: space-between;">
                             <div><a href="">Download</a></div>
-                              <div><a href="http://172.27.16.216/iwdModuleV2/technicalBidView">i</a></div>
+                              
+                              <div ><a href="{% url 'iwdModuleV2:Technical Bid View'%}">i</a></div>
                       </div>
                           </td>
                       </tr>
@@ -101,7 +104,8 @@
                           <td>Financial-bid meeting details</td>
                           <td>  <div style="display:flex;justify-content: space-between;">
                             <div><a href="">Download</a></div>
-                              <div><a href="http://172.27.16.216/iwdModuleV2/financialBidView">i</a></div>
+                              
+                              <div ><a href="{% url 'iwdModuleV2:Financial Bid View'%}">i</a></div>
                       </div>
                           </td>
                       </tr>
@@ -113,7 +117,8 @@
                           <td>Letter of intent</td>
                           <td>  <div style="display:flex;justify-content: space-between;">
                             <div><a href="">Download</a></div>
-                              <div><a href="http://172.27.16.216/iwdModuleV2/letterOfIntentView">i</a></div>
+                              
+                              <div ><a href="{% url 'iwdModuleV2:Letter Of Intent View'%}">i</a></div>
                       </div>
                           </td>
                       </tr>
@@ -121,7 +126,8 @@
                         <td>Work order</td>
                         <td>  <div style="display:flex;justify-content: space-between;">
                           <div><a href="">Download</a></div>
-                            <div><a href="http://172.27.16.216/iwdModuleV2/workOrderFormView">i</a></div>
+                            
+                            <div ><a href="{% url 'iwdModuleV2:Work Order Form View'%}">i</a></div>
                     </div>
                         </td>
                     </tr>
@@ -129,7 +135,8 @@
                       <td>Agreement Letter</td>
                       <td>  <div style="display:flex;justify-content: space-between;">
                           <div><a href="">Download</a></div>
-                          <div><a href="http://172.27.16.216/iwdModuleV2/agreementView">i</a></div>
+                         
+                          <div ><a href="{% url 'iwdModuleV2:Agreement VIew'%}">i</a></div>
                   </div>
                       </td>
                   </tr>
@@ -137,13 +144,15 @@
                     <td>Milestones</td>
                     <td>  <div style="display:flex;justify-content: space-between;">
                       <div><a href="">Download</a></div>
-                        <div><a href="http://172.27.16.216/iwdModuleV2/milestoneView">i</a></div>
+                       
+                        <div ><a href="{% url 'iwdModuleV2:Milestones'%}">i</a></div>
                 </div>
                     </td>
                 </tr>
                   </tbody>
               </table>
-              <a href="http://172.27.16.216/iwdModuleV2/page3View/">Next</a>
+              <a class="ui small left floated primary button" href="{% url 'iwdModuleV2:Page 1 Views' %}">Prev</a>
+              <a class="ui small right floated primary button" href="{% url 'iwdModuleV2:Page 3 View'%}">Next</a>
           </div>
       </div>
   </div>

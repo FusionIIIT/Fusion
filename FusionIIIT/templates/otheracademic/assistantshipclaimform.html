@@ -1,0 +1,112 @@
+
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+
+    Assistantship Claim Form
+
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <div class="ui stackable doubling grid">
+        <div class="column"></div>
+
+        <div class="three wide column">
+
+            {% include 'globals/usercard.html' %}
+
+            <div class="ui divider"></div>
+
+            <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+
+                <a href="/otheracademic/assistantship" class="active item">Assistantship Form
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/otheracademic/assistantship_status" class="item">Assistantship Status
+                    <i class="right floated chevron right icon"></i>
+                </a>
+            </div>
+        </div>
+
+
+        <div class="ten wide column">
+            <div class="ui active tab segment" data-tab="assistantship_form" id="assistantship_form">
+                <h2>Assistantship Form</h2>
+                <form id="assistantshipclaimform" method="POST" enctype="multipart/form-data" action="{% url 'otheracademic:assistantship_form_submission' %}">
+                    {% csrf_token %}
+                    <div class="ui form">
+                       
+                        <div class="field">
+                            <label>Discipline</label>
+                            <input type="text" name="discipline" required>
+                        </div>
+                        <div class="fields">
+                            <div class="field">
+                                <label>Date From</label>
+                                <input type="date" id="datefrom" name="date_from" style="display: inline-block; width: auto;" required>
+                            </div>
+                            <div class="field">
+                                <label>Date To</label>
+                                <input type="date" id="dateto" name="date_to" style="display: inline-block; width: auto;" required>
+                               
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Student Bank A/C No.</label>
+                            <input type="text" name="bank_account_no" required>
+                        </div>
+                        <div class="field">
+                            <label>Signature</label>
+                            <input type="file" name="signature" accept=".pdf, .jpg, .jpeg, .png" required>
+                        </div>
+                        <div class="field">
+                            <label>Applicability</label>
+                            <input type="text" name="applicability"  required>
+                        </div>
+                        <div class="field">
+                            <label>TA Supervisor</label>
+                            <input type="text" name="ta_supervisor" required>
+                        </div>
+                        <div class="field">
+                            <label>Thesis Supervisor</label>
+                            <input type="text" name="thesis_supervisor" required>
+                        </div>
+
+                        <div class="field">
+                            <label>HOD Credential</label>
+                            <input type="text" name="hod_credential" required>
+                        </div>
+
+                        <button class="ui primary button" type="submit">Submit</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+        <div class="three wide column">
+            <!-- Right rail content -->
+        </div>
+
+        <div class="column"></div>
+    </div>
+
+    <script>
+        document.getElementById('assistantshipclaimform').addEventListener('submit', function(event) {
+            var dateFrom = document.getElementById('datefrom').value;
+            var dateTo = document.getElementById('dateto').value;
+        
+            if (dateTo <= dateFrom) {
+                alert('End date must be later than start date');
+                event.preventDefault();  // Prevent form submission
+            }
+        });
+    </script>
+{% endblock %}
+
+

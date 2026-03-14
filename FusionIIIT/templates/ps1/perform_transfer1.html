@@ -1,0 +1,162 @@
+{% extends 'ps1/ps2.html' %}
+{% load static %}
+
+{% block filetracking_tab %}
+
+
+<div class="ui pointing secondary menu">
+    <h3>
+        <a class="active item" data-tab="composefile">
+            Stocks present in database
+        </a>
+    </h3>
+</div>
+<div class="ui divider"></div>
+
+<div class="ui active tab" data-tab="composefile">
+    <div class="ui vertical stripe team segment" style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+        <div class="ui pointing secondary menu">
+            <h3>
+                <a class="active item" data-tab="inward">
+                    Procuremented stock entry view
+                </a>
+            </h3>
+
+        </div>
+        <div class="ui divider"></div>
+
+        <div class="ui divider"></div>
+        {% if sto %}
+        <table class="ui very basic celled sortable table" style="overflow-x: scroll;max-height: 500px;  overflow-y: scroll;">
+            <thead>
+                <tr>
+                    <th>item_id</th>
+                    <th>Stock_Name</th>
+                    <th>Quantity </th>
+                    <th>dealing assistant id</th>
+                    <th>Department/Section</th>
+                    <th>Transfer stocks </th>
+
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in sto %}
+                {% if s.item_id.purchased %}
+                <tr>
+                    <td> {{s.item_id.file_info.id}}</td>
+                    <td>{{s.item_name}}</td>
+
+                    <td>{{s.current_stock}}</td>
+                    <td>{{s.dealing_assistant_id}}</td>
+                    <td>{{s.item_id.file_info.uploader.department.name}}</td>
+
+                    <td>
+                        <form action="/purchase-and-store/stock_transfer/" method="POST" id="item_id">{% csrf_token %}
+                            <input hidden name='id' value="{{ s.item_id.file_info.id }}">
+                            <button class="ui primary button">Transfer</button>
+                        </form>
+                    </td>
+
+
+
+
+                </tr>
+                {% endif %}
+
+                {% endfor %}
+            </tbody>
+
+        </table>
+
+        <br>
+        {% else %}
+        <h4>No Records present in database</h4>
+        {% endif %}
+
+
+
+
+
+    </div>
+    <script type="text/javascript">
+
+
+        $('#input_search1').keyup(function () {
+
+            console.log('asdasd');
+            value = $('#input_search1').val();
+
+            $.ajax({
+                type: 'POST',
+                url: '/filetracking/ajax/',
+                data: {
+                    'value': value,
+                    'csrfmiddlewaretoken': '{{csrf_token}}'
+                },
+                dataType: 'json',
+                success: function (response) {
+                    console.log('coming-----------------------');
+
+                    console.log(response.holds[0]);
+
+                    all_designations = JSON.parse(response.holds);
+                    console.log(all_designations[0].fields.name);
+                    app = []
+                    $('#input_list1').html('');
+                    for (var i = 0; i < all_designations.length; i++) {
+                        $('#input_list1').append('<option value="' + all_designations[i].fields.name + '">' + all_designations[i].fields.name + '</option>');
+                    }
+                },
+                error: function (rs, e) {
+                    console.log('error-------');
+                },
+            });
+            console.log("dsfagdfdshadf");
+        });
+    </script>
+
+    <script type="text/javascript">
+        $('#input_search').keyup(function () {
+
+            console.log('asdasd');
+            value = $('#input_search').val();
+
+            $.ajax({
+                type: 'POST',
+                url: '/filetracking/ajax_dropdown/',
+                data: {
+                    'value': value,
+                    'csrfmiddlewaretoken': '{{csrf_token}}'
+                },
+                dataType: 'json',
+                success: function (response) {
+                    console.log('coming-----------------------');
+
+
+
+                    all_users = JSON.parse(response.users);
+                    console.log(all_users[0].fields.username);
+                    app = []
+                    $('#input_list').html('');
+                    for (var i = 0; i < all_users.length; i++) {
+                        $('#input_list').append('<option value="' + all_users[i].fields.username + '">' + all_users[i].fields.username + '</option>');
+                    }
+                },
+                error: function (rs, e) {
+                    console.log('error-------');
+                },
+            });
+            console.log("dsfagdfdshadf");
+        });
+    </script>
+
+    {% endblock %}
+
+    <script type="text/javascript">
+        function ShowHideDiv() {
+            var chkAddress = document.getElementById("chkAddress");
+            var leaveAddress = document.getElementById("leaveAddress");
+            leaveAddress.style.display = chkAddress.checked ? "block" : "none";
+        }
+    </script>

@@ -1,0 +1,221 @@
+{% load static %}
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'semantic/dist/components/semantic-ui-alerts.css' %}">
+
+{% endblock %}
+{% block manageEval %}
+<div style="height:55em;width:100%;">
+    <h3 class="ui dividing header">Manage Evaluations</h3>
+    <p>(Please Click on Generate button before uploading)</p>
+    <form class="ui form" id="manageEval" method="post" action="/ocms/{{ course.code }}/{{course.version}}/submit_marks">
+        {% csrf_token %}
+        
+        <div style="height:45em;width:100%;overflow:auto;overflow-x:hidden;">
+            <!-- <div class="ui fluid input">
+                <input type="text" id="usernameSearchInput" placeholder="Search by Roll No." onkeyup="searchByUsername()">
+            </div> -->
+            <table class="ui fixed single line celled table" id="grading_table">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%;">Roll No</th>
+                            <th style="width: 25%;">Total Marks (%)</th>
+                            <th style="width: 25%;">
+                                <div style="float:left; margin-top:8px;">Grade</div>
+                                <div class="ui button green" style="float:right;" id="generate_btn"> Generate </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="grade_table">
+                        {% if student_grades %}
+                        {% for row in student_grades %}
+                        <tr>
+                            <td>
+                                <input type="text" readonly name="stu_marks" id="roll_no{{forloop.counter}}" value="{{row.roll_no}}" />
+                            </td>
+                            <td>
+                                <input type="number" name="stu_marks" id="total_marks{{forloop.counter}}" value="{{row.total_marks}}" placeholder="Enter total marks" />
+                            </td>
+                            <td>
+                                <input name="stu_marks" id="grade{{forloop.counter}}" value="{{row.grade}}" placeholder="Add manually" />
+                            </td>
+                        </tr> 
+                        {% endfor %} 
+                        {% else%}
+                        {% for stu in registered_students %}
+                            {% if marks_with_roll %}
+                            {% for roll, marks in marks_with_roll.items %}
+                            {% if stu.student_id.id.id == roll %}
+                        <tr>
+                            <td>
+                                <input type="text" readonly name="stu_marks" id="roll_no{{forloop.counter}}" value="{{stu.student_id.id.user.username}}" />
+                            </td>
+                            <td>
+                                <input type="number" name="stu_marks" id="total_marks{{forloop.counter}}" value="{{marks}}" placeholder="Enter total marks" />
+                            </td>
+                            <td>
+                                <input name="stu_marks" id="grade{{forloop.counter}}" value="" placeholder="Add manually" />
+                            </td>
+                        </tr> 
+                        
+                        {% endif %}
+                        {% endfor %} 
+                        {% else %}
+                        <tr>
+                            <td>
+                                <input type="text" readonly name="stu_marks" id="roll_no{{forloop.counter}}" value="{{stu.student_id.id.user.username}}" />
+                            </td>
+                            <td>
+                                <input type="number" name="stu_marks" id="total_marks{{forloop.counter}}" value="0" placeholder="Enter total marks" />
+                            </td>
+                            <td>
+                                <input name="stu_marks" id="grade{{forloop.counter}}" value="" placeholder="Add manually" />
+                            </td>
+                        </tr> 
+                        {% endif %}
+                        {% endfor %} 
+                        {% endif %}                     
+                    </tbody>
+                </table>
+            </div>
+            <div style="float: left;">
+                <div class="load" id="load_submit_grades" style="display:none">
+                    <span>Please wait...Grades are being saved!</span>
+                </div>
+                <br>
+                <input type="button" class="ui primary button" id="submit_grades" style="float: left;" value="Upload">
+            </div>
+        </form>
+</div>
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'globals/js/semantic.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'semantic/dist/components/semantic-ui-alerts.js' %}"></script>
+
+<script type="text/javascript">
+    let O_Lower = {{gradingscheme_grades.O_Lower}};
+    let O_Upper = {{gradingscheme_grades.O_Upper}};
+    let A_Lower = {{gradingscheme_grades.A_Lower}};
+    let A_Upper = {{gradingscheme_grades.A_Upper}};
+    let A_plus_Lower = {{gradingscheme_grades.A_plus_Lower}};
+    let A_plus_Upper = {{gradingscheme_grades.A_plus_Upper}};
+    let B_Lower = {{gradingscheme_grades.B_Lower}};
+    let B_Upper = {{gradingscheme_grades.B_Upper}};
+    let B_plus_Lower = {{gradingscheme_grades.B_plus_Lower}};
+    let B_plus_Upper = {{gradingscheme_grades.B_plus_Upper}};
+    let C_Lower = {{gradingscheme_grades.C_Lower}};
+    let C_Upper = {{gradingscheme_grades.C_Upper}};
+    let C_plus_Lower = {{gradingscheme_grades.C_plus_Lower}};
+    let C_plus_Upper = {{gradingscheme_grades.C_plus_Upper}};
+    let D_Lower = {{gradingscheme_grades.D_Lower}};
+    let D_Upper = {{gradingscheme_grades.D_Upper}};
+    let D_plus_Lower = {{gradingscheme_grades.D_plus_Lower}};
+    let D_plus_Upper = {{gradingscheme_grades.D_plus_Upper}};
+    let F_Lower = {{gradingscheme_grades.F_Lower}};
+    let F_Upper = {{gradingscheme_grades.F_Upper}};
+    
+    const generate_btn = document.getElementById('generate_btn');
+    generate_btn.addEventListener('click', function() {
+        // Your code to execute when the input is clicked
+        let num = 1;
+        while (document.getElementById('total_marks'+num.toString())) {
+            let marks = document.getElementById('total_marks'+num.toString());
+            let grade = document.getElementById('grade'+num.toString());
+            if (marks.value >= O_Lower && marks.value <= O_Upper) {
+                grade.value = "O";
+            } 
+            else if (marks.value >= A_plus_Lower && marks.value <= A_plus_Upper) {
+                grade.value = "A+";
+            }
+            else if (marks.value >= A_Lower && marks.value <= A_Upper) {
+                grade.value = "A";
+            }
+            else if (marks.value >= B_plus_Lower && marks.value <= B_plus_Upper) {
+                grade.value = "B+";
+            }
+            else if (marks.value >= B_Lower && marks.value <= B_Upper) {
+                grade.value = "B";
+            }
+            else if (marks.value >= C_plus_Lower && marks.value <= C_plus_Upper) {
+                grade.value = "C+";
+            }
+            else if (marks.value >= C_Lower && marks.value <= C_Upper) {
+                grade.value = "C";
+            }
+            else if (marks.value >= D_plus_Lower && marks.value <= D_plus_Upper) {
+                grade.value = "D+";
+            }
+            else if (marks.value >= D_Lower && marks.value <= D_Upper) {
+                grade.value = "D";
+            }
+            else if (marks.value >= F_Lower && marks.value <= F_Upper) {
+                grade.value = "F";
+            }
+            
+            num = num + 1;
+        }
+    });
+
+    function successAlert(data){
+      $.suiAlert({
+      title: 'Success',
+      description: data,
+      type: 'success',
+      time: '3',
+      position: 'top-center',
+      });
+    }
+    
+
+    $(document).ready(function(){
+        $('#grading_table th').click(function(){
+            if ($(this).index() == 0) {
+                var table = $(this).parents('table').eq(0);
+                var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()));
+                this.asc = !this.asc;
+                if (!this.asc){rows = rows.reverse()}
+                for (var i = 0; i < rows.length; i++){table.append(rows[i])}
+            }
+        });
+        function comparer(index) {
+            return function(a, b) {
+                var valA = getCellValue(a, index), valB = getCellValue(b, index);
+                return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.toString().localeCompare(valB);
+            };
+        }
+        function getCellValue(row, index){
+            // Get input value of the specified column
+            return $(row).find('input').eq(index).val();
+        }
+    });
+
+    // Function to handle form submission
+    function submitForm() {
+        var form = document.getElementById("manageEval");
+        var formData = new FormData(form);
+        
+        var xhr = new XMLHttpRequest();
+        xhr.open(form.method, form.action, true);
+        $('#load_submit_grades').show();
+        xhr.onload = function () {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                successAlert('Success: ' + xhr.responseText); // Display success message
+                $('#load_submit_grades').hide();
+            } else {
+                alert('Error: ' + xhr.statusText); // Display error message
+                $('#load_submit_grades').hide();
+            }
+        };
+        xhr.onerror = function () {
+            alert('Request failed'); // Display request failure message
+            $('#load_submit_grades').hide();
+        };
+        xhr.send(formData);
+    }
+
+    // Attach submitForm function to the click event of the submit button
+    document.getElementById("submit_grades").addEventListener("click", submitForm);
+</script>
+
+
+
+{% endblock %}

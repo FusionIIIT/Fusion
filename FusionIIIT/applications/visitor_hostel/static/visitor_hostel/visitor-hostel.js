@@ -294,31 +294,41 @@ function request_booking (event) {
 
 // Meal Record
 
-$('.bookameal-submit').click(function(event){
+function bookameal_submit(event, htmlElement){
+    console.log('hii')
     event.preventDefault();
-    var pk = $(this).attr('data-pk');
-    var food = []
-    $('input[name=food'+pk+']:checked').each(function(){
-        food.push($(this).val());
-    });
+    var pk = $(htmlElement).attr('data-pk');
+    var booking_id = $(htmlElement).attr('booking_id')
+    // 'numberofpeople': $('input[name="numberofpeople-meal"]').val(),
+    console.log(pk);
+    var jsondata = {
+            'pk' : pk,
+            'booking' : booking_id,
+        'm_tea': $(`input[name="m_tea${booking_id}"]`).val(),
+        'breakfast': $(`input[name="breakfast${booking_id}"]`).val(),
+        'lunch': $(`input[name="lunch${booking_id}"]`).val(),
+        'eve_tea': $(`input[name="eve_tea${booking_id}"]`).val(),
+        'dinner': $(`input[name="dinner${booking_id}"]`).val(),
+            
+            'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
+    }
+    console.log(jsondata)
     $.ajax({
         type: 'POST',
         url: '/visitorhostel/record-meal/',
-        data: {
-            'pk' : pk,
-            'booking' : $('input[name="meal-booking-id"]').val(),
-            'numberofpeople': $('input[name="numberofpeople-meal"]').val(),
-            'food':food,
-            'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
-        },
+        data: jsondata,
         success: function(data) {
             alertModal('Great! Meals recorded successfully');
+            setTimeout(function() {
+                location.reload();
+             }, 1500);
+            
         },
-        error: function(data, err) {
-            alertModal('Something missing! Please refill the form');
+        error: function (data, err) {
+            alertModal('Something missing! Please refill the form ');
         }
     });
-});
+};
 
 // Update Inventory
 
@@ -356,49 +366,75 @@ function submit_inventory_form(id){
 
 // Adding more items to inventory
 
-$('#add-more-items-inventory').click(function(event){
+// $('#add-more-items-inventory').click(function(event){
 
+//     $.ajax({
+//         type: 'POST',
+//         url: '/visitorhostel/add-to-inventory/',
+//         data: {
+//             'item' : $('.reset-this-form')[0].children[2].children[0].children[1].children[0].value,
+//             'quantity' : $('.reset-this-form')[0].children[2].children[1].children[1].children[0].value,
+//             'amount' : $('.reset-this-form')[0].children[2].children[2].children[1].children[0].value,
+//             'consumable' : $('.reset-this-form')[0].children[2].children[3].children[1].children[0].value,
+//             'csrfmiddlewaretoken': '{{csrf_token}}'
+//         },
+//         success: function(data) {
+//             $('.reset-this-form')[0].children[2].children[0].children[1].children[0].value = "";
+//             $('.reset-this-form')[0].children[2].children[1].children[1].children[0].value = "";
+//             $('.reset-this-form')[0].children[2].children[2].children[1].children[0].value = "";
+//         },
+//         error: function(data, err) {
+//             alertModal('Something missing! Please refill the form');
+//         }
+//     });
+
+// });
+
+function add_inventory_item(event) {
+    event.preventDefault();
+    jsondata = {
+        'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
+        'item_name' : $('input[name="item_name"]').val(),
+        'quantity' : $('input[name="quantity_add"]').val(),
+        'cost' : $('input[name="cost"]').val(),
+        'consumable': ($('input[name="consumable"]:checked').val())?true:false,
+        'bill_number' : $('input[name="bill_number"]').val()
+    }
+    console.log(jsondata)
     $.ajax({
         type: 'POST',
         url: '/visitorhostel/add-to-inventory/',
-        data: {
-            'item' : $('.reset-this-form')[0].children[2].children[0].children[1].children[0].value,
-            'quantity' : $('.reset-this-form')[0].children[2].children[1].children[1].children[0].value,
-            'amount' : $('.reset-this-form')[0].children[2].children[2].children[1].children[0].value,
-            'consumable' : $('.reset-this-form')[0].children[2].children[3].children[1].children[0].value,
-            'csrfmiddlewaretoken': '{{csrf_token}}'
-        },
+        data: jsondata,
         success: function(data) {
-            $('.reset-this-form')[0].children[2].children[0].children[1].children[0].value = "";
-            $('.reset-this-form')[0].children[2].children[1].children[1].children[0].value = "";
-            $('.reset-this-form')[0].children[2].children[2].children[1].children[0].value = "";
+            // $('.reset-this-form')[0].children[2].children[0].children[1].children[0].value = "";
+            // $('.reset-this-form')[0].children[2].children[1].children[1].children[0].value = "";
+            // $('.reset-this-form')[0].children[2].children[2].children[1].children[0].value = "";
+            alertModal('Great! Item added successfully');
+            setTimeout(function() {
+                location.reload();
+             }, 1500);
         },
-        error: function(data, err) {
+        error: function(xhr, data, err) {
             alertModal('Something missing! Please refill the form');
         }
+
     });
-
-});
-
-$('#add-item-form-submit').click(function(event){
+}
+$('.add-item-form-submit').click(function(event){
     event.preventDefault();
-    if($('input[name="consumable"]:checked')){
-        consumable = 'True';
+    jsondata = {
+        'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
+        'item_name' : $('input[name="item_name"]').val(),
+        'quantity' : $('input[name="quantity_add"]').val(),
+        'cost' : $('input[name="cost"]').val(),
+        'consumable': ($('input[name="consumable"]:checked').val())?true:false,
+        'bill_number' : $('input[name="bill_number"]').val()
     }
-    else{
-        consumable = 'False';
-    }
+    console.log(jsondata)
     $.ajax({
         type: 'POST',
         url: '/visitorhostel/add-to-inventory/',
-        data: {
-            'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
-            'item_name' : $('input[name="item-name"]').val(),
-            'quantity' : $('input[name="quantity_add"]').val(),
-            'cost' : $('input[name="cost"]').val(),
-            'consumable' : consumable,
-            'bill_number' : $('input[name="bill_number"]').val()
-        },
+        data: jsondata,
         success: function(data) {
             $('.reset-this-form')[0].children[2].children[0].children[1].children[0].value = "";
             $('.reset-this-form')[0].children[2].children[1].children[1].children[0].value = "";
@@ -614,12 +650,20 @@ function forward_booking (id) {
     previous_category = $('input[name=category-'+id+']').val();
     modified_category = $('input[name=modified-category-'+id+']').val();
     rooms = $('select[name=alloted-rooms-'+id+']').val();
-
+    rem = $('input[name=cancellation-remarks-' + id + ']').val();
+    console.log("TExt rem: ", rem);
     // if (previous_category == 0) {
     //     alertModal("Please fill the category to confirm.");
     //     return;
     // }
+    console.log("Rooms: ", rooms);
+    remark = "";
+    for (x in rooms) {
+        remark += rooms[x] + " ";
+    }
+    remark += "can be alloted";
 
+    console.log("remarks: ", remark);
     if (modified_category == 0) {
         modified_category = previous_category;
     }
@@ -637,7 +681,8 @@ function forward_booking (id) {
             'csrfmiddlewaretoken': csrfmiddlewaretoken,
             'previous_category' : previous_category,
             'modified_category' : modified_category,
-            'rooms' : rooms,
+            'rooms': rooms,
+            'remark': remark,
         },
         success: function(data) {
             alertModal("This booking has been forwarded");
@@ -684,28 +729,28 @@ function cancel_active_booking (id, booking_from) {
 
 // Edit Inventory
 
-$("#edit-inventory").click(function(e){
-    $(".inventory-item").slideToggle();
-    $(".inventory-form").slideToggle();
-    $("#update-inventory-submit").slideToggle();
-});
-$("#update-inventory-submit").click(function(e){
-    event.preventDefault();
-    $.ajax({
-        type: 'POST',
-        url: '/visitorhostel/bookaroom/',
-        data: {
-            'csrfmiddlewaretoken' : '{{csrf_token}}',
-            'data' : data
-        },
-        success: function(data) {
-            alertModal("Congratulations! Inventory is updated successfully");
-        },
-        error: function(data, err) {
-            alertModal('Something missing! PLease refill the form');
-        }
-    });
-});
+// $("#edit-inventory").click(function(e){
+//     $(".inventory-item").slideToggle();
+//     $(".inventory-form").slideToggle();
+//     $("#update-inventory-submit").slideToggle();
+// });
+// $("#update-inventory-submit").click(function(e){
+//     event.preventDefault();
+//     $.ajax({
+//         type: 'POST',
+//         url: '/visitorhostel/bookaroom/',
+//         data: {
+//             'csrfmiddlewaretoken' : '{{csrf_token}}',
+//             'data' : data
+//         },
+//         success: function(data) {
+//             alertModal("Congratulations! Inventory is updated successfully");
+//         },
+//         error: function(data, err) {
+//             alertModal('Something missing! PLease refill the form');
+//         }
+//     });
+// });
 
 // Submit Visitor Details
 
@@ -787,7 +832,7 @@ function submit_visitor_details (id) {
 
 // Check Out
 
-function check_out (id , mess_bill , room_bill) {
+function check_out(id, mess_bill, room_bill) {
     $.ajax({
         type: 'POST',
         url: '/visitorhostel/check-out/',
@@ -813,10 +858,10 @@ function check_out (id , mess_bill , room_bill) {
 
 function bill_between_date_range() {
 
-    start_date = $('input[name=start').val();
-    end_date = $('input[name=end]').val();
-
-    if(new Date(start_date)>new Date(end_date))
+    start = $('input[name=start]').val();
+    end = $('input[name=end]').val();
+    
+    if(new Date(start)>new Date(end))
     {
         alertModal('Please check start date and end date.')
         return;
@@ -824,24 +869,21 @@ function bill_between_date_range() {
 
     $.ajax({
         type: 'POST',
-        url: '/visitorhostel/bill_between_date_range/',
+        url: '/visitorhostel/bill_between_dates/',
         data: {
             'csrfmiddlewaretoken' : $('input[name="csrf"]').val(),
 
-            'start_date' : start_date,
-            'end_date' : end_date,
+            'start_date' : start,
+            'end_date' : end,
 
         },
         success: function(data) {
             $('#replace-this-div-booking-bw-dates').html(data);
             console.log("winning");
-            console.log(start_date);
             // alert('Bookings Between range are ..');
         },
         error: function(data, err) {
-            alertModal ('Error !');
-            console.log(start_date);
-            console.log(end_date);
+            alertModal ('Error !', data, err);
             // alertModal('Something missing! Please refill the form');
         }
     });
@@ -850,14 +892,12 @@ function bill_between_date_range() {
 // finding available room's list between date range
 
 function find_available_rooms ( available_rooms ) {
-    start_date = $('input[name=start-date').val();
+    start_date = $('input[name=start-date]').val();
     end_date = $('input[name=end-date]').val();
     if (new Date(start_date) > new Date(end_date)) {
         alertModal ('Please check start date and end date!');
         return;
     }
-    console.log(start_date);
-            console.log(end_date);
 
     $.ajax({
         type: 'POST',

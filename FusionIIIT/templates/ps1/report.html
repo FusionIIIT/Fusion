@@ -1,0 +1,246 @@
+
+{% extends 'ps1/ps2.html' %}
+{% load static %}
+
+{% block filetracking_tab %}
+
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="notesheet">
+            Note Sheet
+        </a>
+
+        <a class="item" data-tab="attachments">
+            Attachments
+        </a>
+
+
+    </div>
+
+    <div class="ui active tab" data-tab="notesheet">
+
+        <div class="ui two item menu">
+            {% comment %} <a class="item"><b>Created By :-</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.user}}-{{file.designation}}</b></a> {% endcomment %}
+            <a class="item"><b>Report/File ID :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.department.name}}-{{file.upload_date.year}}-{{file.upload_date.month}}-#{{file.id}}</b></a>
+        </div>
+
+            <form class="ui large form" method="POST" enctype="multipart/form-data" id="form1">
+
+            {% csrf_token %}
+
+                    <div class="ui fluid card">
+                        <div class="content">
+                            <center><span class="ui header"><b>Report -  {{file.subject}}</b></span></center>
+                            <div class="ui divider"></div>
+
+                            <div class="content" style=" padding-left: 18px; padding-top: 0.1px; height: auto; overflow-y: auto;">
+
+                                <div class="item">
+
+                                    <div class="description">
+                                        {% comment %} <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';">{{file.description}}</pre> {% endcomment %}
+                                        
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Stock Name:</b> {{indent.item_name}}</pre>
+                                        
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Stock Quantity Received:</b> {{indent.quantity}}</pre>
+                                        
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Present Stock:</b> {{total_stock}}</pre>
+                                        
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Estimated Cost:</b> {{indent.estimated_cost}}</pre>
+                                        
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Purpose:</b> {{indent.purpose}}</pre>
+                                        
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Specification:</b> {{indent.specification}}</pre>
+                                        
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Stock Type:</b> {{indent.item_type}}</pre>
+
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Vendor:</b> {{sto.vendor}}</pre>
+                                        
+                                        {% if indent.nature == True %}
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Item Nature: </b>Consumable</pre>
+                                        {% else %}
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Item Nature: </b>Non Consumable</pre>
+                                        {% endif %}
+                                        
+                                        {% if indent.indigenous == True %}
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Indigenous:</b> Yes</pre>
+                                        {% else %}
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Indigenous:</b> No</pre>
+                                        {% endif %}
+                                        
+                                        {% if indent.replaced == True %}
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Replaced:</b> Yes</pre>
+                                        {% else %}
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Replaced:</b> No</pre>
+                                        {% endif %}
+                                        
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Budgetary Head:</b> {{indent.budgetary_head}}</pre>
+                                        
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Received Date:</b> {{sto.recieved_date}}</pre>
+                                        
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Indent Sources of Supply:</b> {{indent.sources_of_supply}}</pre>
+                                        
+
+                                        <div class="ui divider"></div>
+                                    </div>
+
+
+                                    <div class="ui divider"></div>
+
+                                </div>
+
+                                <br>
+
+                                <br>
+
+                                <div class="field">
+                                    <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';"><b>Bill:</b> {{sto.bill}}</pre>
+                                    {% comment %} <a href="{% url '/purchase-and-store/view_bill/' stock_entry_id=s.item_id.file_info.id %}" target="_blank">View Bill</a> {% endcomment %}
+                                    {% comment %} <a href="{% url '/purchase-and-store/view_bill/604' %}" target="_blank">View Bill</a> {% endcomment %}
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <br>                                                           
+
+                <br>
+
+            <br>
+    </div>
+
+    <div class="ui tab" data-tab="attachments">
+
+        <div class="ui two item menu">
+            <a class="item"><b>Created By :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.user}}-{{file.designation}}</b></a>
+            <a class="item"><b>File ID :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.department.name}}-{{file.upload_date.year}}-{{file.upload_date.month}}-#{{file.id}}</b></a>
+        </div>
+
+        <div class="ui fluid card">
+                        <div class="content">
+
+                            <div class="content" style=" padding-left: 18px; padding-top: 0.1px; height: auto; overflow-y: auto;">
+
+                                <div class="item">
+
+
+                                    {% for t in track %}
+                                    <div class="ui comments">
+                                        <div class="comment">
+
+                                            <div class="content">
+                                                 <a class="paperclip icon">
+                                                     {% if t.upload_file %}
+                                                     <a href="/media/{{t.upload_file}}" class="header" target="_">
+                                                         <u class="meta" style="color: #1B1C1D">{{t.upload_file}}</u>
+                                                     </a>
+                                                     {% else %}
+                                                     <span class="meta">No Attachment</span>
+                                                     {% endif %}
+                                                 </a>
+
+                                                 <div class="right floated content">
+                                                     <a class="author">{{t.current_design}}
+                                                         <a class="metadata">
+                                                            <span class="date">{{t.forward_date}}</span>
+                                                         </a>
+                                                     </a>
+                                                 </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+
+                                    <div class="ui divider"></div>
+
+                                </div>
+                            </div>
+                        </div>
+        </div>
+    </div>
+
+
+    <script type="text/javascript">
+        $('#input_search1').keyup(function(){
+
+            console.log('asdasd');
+            value = $('#input_search1').val();
+
+              $.ajax({
+                type: 'POST',
+                url: '/filetracking/ajax/',
+                data: {
+                    'value': value,
+                    'csrfmiddlewaretoken': '{{csrf_token}}'
+                },
+                dataType: 'json',
+                success: function(response){
+                    console.log('coming-----------------------');
+
+                    console.log(response.holds[0]);
+
+                    all_designations = JSON.parse(response.holds);
+                    console.log(all_designations[0].fields.name);
+                    app = []
+                    $('#input_list1').html('');
+                    for(var i=0;i<all_designations.length;i++){
+                       $('#input_list1').append('<option value="'+all_designations[i].fields.name+'">'+all_designations[i].fields.name+'</option>');
+                    }
+                },
+                error: function(rs, e){
+                    console.log('error-------');
+                },
+            });
+            console.log("dsfagdfdshadf");
+        });
+    </script>
+
+
+    <script type="text/javascript">
+        $('#input_search').keyup(function(){
+
+            console.log('asdasd');
+            value = $('#input_search').val();
+
+              $.ajax({
+                type: 'POST',
+                url: '/filetracking/ajax_dropdown/',
+                data: {
+                    'value': value,
+                    'csrfmiddlewaretoken': '{{csrf_token}}'
+                },
+                dataType: 'json',
+                success: function(response){
+                    console.log('coming-----------------------');
+
+
+
+                    all_users = JSON.parse(response.users);
+                    console.log(all_users[0].fields.username);
+                    app = []
+                    $('#input_list').html('');
+                    for(var i=0;i<all_users.length;i++){
+                       $('#input_list').append('<option value="'+all_users[i].fields.username+'">'+all_users[i].fields.username+'</option>');
+                    }
+                },
+                error: function(rs, e){
+                    console.log('error-------');
+                },
+            });
+            console.log("dsfagdfdshadf");
+        });
+    </script>
+
+
+{% endblock %}
+
+
+<!-- <script type="text/javascript">
+    function ShowHideDiv() {
+        var chkAddress = document.getElementById("chkAddress");
+        var leaveAddress = document.getElementById("leaveAddress");
+        leaveAddress.style.display = chkAddress.checked ? "block" : "none";
+    }
+</script>
+ -->

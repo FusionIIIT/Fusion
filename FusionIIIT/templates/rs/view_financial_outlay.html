@@ -1,0 +1,124 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+IPR
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+    {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+   
+
+    <script>
+        
+    </script>
+
+{% comment %}The grid starts here!{% endcomment %}
+<div class="ui stackable doubling grid">
+
+    {% comment %}The left-margin segment!{% endcomment %}
+    <div class="column"></div>
+
+    {% comment %}
+    The left-rail segment starts here!
+    {% endcomment %}
+    <div class="three wide column">
+
+        {% comment %}The user image card starts here!{% endcomment %}
+        {% block usercard %}
+        {% include 'globals/usercard.html' %}
+        {% endblock %}
+        {% comment %}The user image card ends here!{% endcomment %}
+
+        <div class="ui divider"></div>
+
+        {% comment %}The Tab-Menu starts here!{% endcomment %}
+        <div class="ui huge fluid vertical pointing menu"
+             style="max-width: 320px;">
+            {% block menucard %}
+                {% include 'rs/menu_card.html' with user_extra_info=user_extra_info designations=user_designations %}
+            {% endblock %}
+
+        </div>
+        {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+    </div>
+    <!--Closing tag 3 wid column-->
+    {% comment %}
+    The left-rail segment ends here!
+    {% endcomment %}
+
+    {% comment %}
+    The central-rail segment starts here!
+    {% endcomment %}
+
+   
+
+    <div class="eight wide column">
+        <div >
+            {% block view_financial_outlay %}
+            {% include 'rs/display_financial_outlay.html' %}
+            {% endblock %}
+            </div>
+
+        {% comment %} <div class="ui tab segment" data-tab="fourth">
+            {% block views %}
+            {% include 'rs/patent.html' %}
+            {% endblock %}
+        </div> {% endcomment %}
+
+        <div class="ui tab segment" data-tab="second">
+            
+        </div>
+
+       
+
+
+        {% comment %} <div class="ui tab segment" data-tab="second">
+            {% block view_groups %}
+                {% include 'rs/research_groups.html' %}
+            {% endblock %}
+        </div>
+        <div class="ui tab segment" data-tab="third">
+            {% block create_reseach_groups %}
+                {% include 'rs/research_group_form.html' %}
+            {% endblock %}
+        </div> {% endcomment %}
+
+
+    </div>
+    <!--closing tag of 8 wide column-->
+    {% comment %}The central-rail segment ends here!{% endcomment %}
+
+    {% comment %}The right-rail segment starts here!{% endcomment %}
+    <div class="three wide column">
+        <div class="row">
+            {% comment %}
+            TODO: the right rail!
+            {% endcomment %}
+        </div>
+    </div>
+    {% comment %}The right-rail segment ends here!{% endcomment %}
+
+    {% comment %}The right-margin segment!{% endcomment %}
+    <div class="column"></div>
+
+</div>
+
+{% comment %}The grid ends here!{% endcomment %}
+
+{% endblock %}
+
+{% block javascript %}
+<script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+<script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+<script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.js"></script>
+<script type="text/javascript" src="{% static 'globals/js/chartjs/src/chart.js' %}"></script>
+
+{% endblock %}

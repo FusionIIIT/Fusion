@@ -12,17 +12,18 @@
     <br>
     <div class="ui active tab" data-tab="viewinventory">
         <div class="ui vertical segment">
+            Consumable Inventory
             <table class="ui structured celled sortable table" style="margin-bottom: 16px;">
                 <thead>
                 <tr>
                     <th>Item</th>
                     <th>Quantity</th>
-                    <th>Consumable</th>
                 </tr>
                 </thead>
 
                 <tbody>
                     {% for item in inventory %}
+                    {% if item.consumable %}
                     <tr class="inventory-item">
                         <td>
                             {{ item.item_name }}
@@ -31,7 +32,7 @@
                         <td>
                             <div class="field" style="display: none" id=select-{{item.id}}>
                                 <div class="ui input">
-                                    <input name="quantity" type="number" onchange='submit_inventory_form("{{ item.id}}")' id="input-{{item.id}}">
+                                    <input name="quantity" type="number" min ="0" placeholder={{item.quantity}} onchange='submit_inventory_form("{{ item.id}}")' id="input-{{item.id}}">
                                 </div>
                             </div>
 
@@ -39,15 +40,47 @@
                                 {{ item.quantity }}
                             </span>
                             <i class="edit icon" onclick="update_inventory_form('{{ item.id }}')" style="float: right;" id="submit-{{item.id}}"></i>
+                            <!-- <i class="delete icon" onclick="update_inventory_form('{{ item.id }}')" style="float: right;" id="submit-{{item.id}}"></i> -->
                         </td>
-
-                        <td>
-                            {% if item.consumable %}
-                                <i class="large green checkmark icon"></i>
-                            {% endif %}
-                        </td>
-
                     </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+            Non-Consumable Inventory
+            <table class="ui structured celled sortable table" style="margin-bottom: 16px;">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Quantity</th>
+                    </tr>
+                </thead>
+            
+                <tbody>
+                    {% for item in inventory %}
+                    {% if item.consumable == False %}
+                    <tr class="inventory-item">
+                        <td>
+                            {{ item.item_name }}
+                        </td>
+            
+                        <td>
+                            <div class="field" style="display: none" id=select-{{item.id}}>
+                                <div class="ui input">
+                                    <input name="quantity" type="number" min="0" placeholder={{item.quantity}}
+                                        onchange='submit_inventory_form("{{ item.id}}")' id="input-{{item.id}}">
+                                </div>
+                            </div>
+            
+                            <span style="display: inline;" id=show-{{item.id}}>
+                                {{ item.quantity }}
+                            </span>
+                            <i class="edit icon" onclick="update_inventory_form('{{ item.id }}')" style="float: right;"
+                                id="submit-{{item.id}}"></i>
+                            <!-- <i class="delete icon" onclick="update_inventory_form('{{ item.id }}')" style="float: right;" id="submit-{{item.id}}"></i> -->
+                        </td>
+                    </tr>
+                    {% endif %}
                     {% endfor %}
                 </tbody>
             </table>
@@ -57,7 +90,7 @@
             <br>
             <div class="ui divider"></div>
         </div>
-
+    </div>
 
 <div class="ui modal" id="addItemModal">
   <div class="header">Add Items</div>

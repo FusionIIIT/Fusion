@@ -1,0 +1,182 @@
+
+<style>
+.disabled-dropdown {
+    opacity: 0.5; /* Example: Reduce opacity to visually indicate disabled */
+    pointer-events: none; /* Disable pointer events to prevent interaction */
+}
+</style>
+
+
+{% load static %}
+{% block complainthistory %}
+
+{% comment %}The tab menu starts here!{% endcomment %}
+<center><b>Replace Course(s)</b></center>
+ 
+<div class="ui vertical segment">
+    {% if adc_date_flag %}
+    {% if details.cpi >= 0.0 %}
+    {% if replace_courses_options %}
+    <form id='replace_course_form' action='/academic-procedures/replaceCourse/'> {% csrf_token %}
+        <input type="text" hidden="true" id="credit_count" value="{{current_credits}}">
+        <input type="text" hidden="true" id="req_credit_count" value="{{ requested_credits }}">
+        <h5></h5>
+        <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%;
+                                               padding-right: 2.5%;
+                                               padding-top: 1%;
+                                               padding-bottom: 1.5%;
+                                               margin: auto;">
+
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Slot name</th>
+                    <th>Slot type</th>
+                    <th>Semester</th>
+                    <th>Credits</th>
+                    <th>Alloted Course</th>
+                    <th>Replace</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for item in replace_courses_options %}
+                <input type="text" name='slot[{{forloop.counter}}]' value='{{ item.0.id }}' hidden="True">
+                <tr>
+                    <td>{{forloop.counter}}.</td>
+                    <td>{{item.0.name}}</td>
+                    <td>{{item.0.type}}</td>
+                    <td>{{curr_sem.semester_no}}
+                        <input type="text" name='semester' value='{{ curr_sem.id }}' hidden="True">
+                    </td>
+                    <td>{{item.0.courses.all.0.credit}} </td>
+                    <td>{{item.1}}</td>
+                    <td>
+                        <select class="ui dropdown replaceitems" required="True" name="choice[{{forloop.counter}}]" data-value-slot-id='{{ item.0.id }}'>
+                            <option value="0">Select course</option>
+                            {% for items in item.2 %}
+                            <option value='{{items.id}}' class="values" data-value2="{{items.credit}}" >
+                                {{items.code}}-{{ items.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+                <input type="text" name="ct" value="{{forloop.counter}}" hidden="True">
+                {% endfor %}
+                <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
+            </tbody>
+        </table>
+        <div class="ui divider"></div>
+        <center><button class="ui positive basic button">Replace Course(s)</button>
+        </center>
+    </form>
+    {% else %}
+    <B>
+        <CENTER>NO COURSES TO REPLACE
+    </B></CENTER>
+    {% endif %}
+    {% else %}
+    <B>
+        <center>You do not have minimum CPI required to add course</center>
+    </B>
+    {% endif %}
+    {% else %}
+    <b>
+        <center>You have to wait for the date</center>
+    </b>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+    $(function () {
+        $("#replace_course_form").submit(function (event) {
+            event.preventDefault();
+            var friendForm = $(this);
+
+            var posting = $.post(friendForm.attr('action'), friendForm.serialize());
+            posting.done(function (data) {
+                alert('Course(s) replaced Successfully');
+                window.location = "/academic-procedures/main/";
+            });
+            posting.fail(function (data) {
+                alert('Failed to replace course, some error occured');
+                window.location = "/academic-procedures/main/";
+            });
+            // }
+        });
+    });
+</script>
+
+<script>
+    function replaceCourse(dropdown, successCallback) {
+        var selectedOption = dropdown.querySelector('select').value;
+        var slotId = dropdown.querySelector('select').getAttribute('data-value-slot-id');
+        var selectedOptionElement = dropdown.querySelector('select option:checked');
+        var semesterId = $('[name="semester"]').val();
+        var userId = $('[name="user"]').val();
+        // console.log(selectedOption,
+        //         slotId,
+        //        semesterId,
+        //         userId,)
+        $.ajax({
+            type: "POST",
+            url: "/academic-procedures/replace_one_course/",
+            data: {
+                choice: selectedOption,
+                slot: slotId,
+                semester: semesterId,
+                user: userId,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function (response) {
+                if (response.message === 'Course Replaced Successfully') {
+                successCallback(response);
+                } else {
+                    selectedOptionElement.remove();
+                    alert(response.message);
+                }
+            },
+            error: function (xhr, errmsg, err) {
+                console.log(err , errmsg , xhr)
+                alert('Failed to replace course, some error occurred');
+            }
+        });
+    }
+
+
+
+
+    function handleDropdownChangeReplace(event) {
+        var dropdown = event.target.closest('.ui.dropdown.replaceitems');
+        if (dropdown) {
+            var optionCount = dropdown.querySelector('select').options.length;
+            if (optionCount > 1) {
+                var selectedOption = dropdown.querySelector('select').value;
+                
+                if (selectedOption !== "NULL") {
+                    var selectedCourseName = dropdown.querySelector('select option:checked').text;
+                    if (confirm("Are you sure you want to Replace with " + selectedCourseName + "?")) {
+                        replaceCourse(dropdown , function(response) {
+                            dropdown.classList.add("disabled-dropdown");
+                        });
+                    } else {
+                        dropdown.querySelector('select').selectedIndex = 0;
+                    }
+                }
+            }
+        }
+        }
+
+
+    var dropdowns = document.querySelectorAll('.ui.dropdown.replaceitems');
+    dropdowns.forEach(function (dropdown) {
+        dropdown.addEventListener('change', function () {
+        handleDropdownChangeReplace(event);
+    });
+        
+    });
+</script>

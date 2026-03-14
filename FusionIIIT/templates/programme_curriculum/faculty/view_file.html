@@ -1,0 +1,256 @@
+{% extends 'programme_curriculum/faculty/common.html' %}
+{% block content %}
+
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="notesheet">
+            Note Sheet
+        </a>
+        <a class="item" data-tab="attachments">
+            Attachments
+        </a>
+
+    </div>
+
+    <div class="ui active tab" data-tab="notesheet">
+<!-- 
+        <div class="ui two item menu">
+            <a class="item"><b>Created By :-</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.current_id}}-{{file.designation}}</b></a>
+            <a class="item"><b>File ID :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.department.name}}-{{file.upload_date.year}}-{{file.upload_date.month}}-#{{file.id}}</b></a>
+        </div> -->
+
+            <!-- <form class="ui large form" method="POST" enctype="multipart/form-data" id="form1"> -->
+
+
+        
+            <div class="ui two item menu">
+            <a class="item"><b>Created By :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{ proposal.uploader }} - {{proposal.designation}}</b></a>
+            <a class="item"><b>File ID :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{ proposal.id }}</b></a>
+            </div>
+
+            
+            {% csrf_token %}
+
+            
+            <form class="ui large form error" method="POST">
+            <div class="ui fluid card" style=" padding-left: 18px; padding-top: 10px; height: auto; overflow-y: auto;">
+                <center><span class="ui header"><b>Subject-  {{proposal.subject}}</b></span></center>
+
+                <div class="description">
+                    <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';">Description: {{proposal.description}}</pre>
+                    <div class="ui divider"></div></div>
+                {% for t in trackings %}
+                <div class="ui comments">
+                    
+                    <div class="comment">
+                         <div class="content">
+
+                             <a class="author"><b>Sent By: </b>&nbsp{{t.current_id}} - {{t.current_design}}
+                                 <a class="metadata">
+                                     <span class="date">{{t.forward_date}}</span>
+                                 </a>
+                             </a>
+
+                             <div class="right floated" style="font-color: black;">
+                                 <b>Received By: </b>&nbsp{{t.receive_id}} - {{t.receive_design}}
+                             </div>
+
+                             <div class="text">
+                                 <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';">
+                                    {% if t.remarks %}
+                                        <b>Remarks: </b>&nbsp{{t.remarks}}
+                                    {% else %}
+                                        <span class="meta">No Remarks</span>
+                                    {% endif %}
+
+                                 </pre>
+                             </div>
+                         </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                <div class="ui message">
+                    <div class="header">We had some issues</div>
+                    {% for error in form.non_field_errors %}
+                    <ul class="list">
+                        <li>{{ error }}</li>
+                    </ul>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <div class="field">
+                    {% if form.current_id.errors or form.file_id.errors or form.current_design.errors %}
+                    <div class="ui error message">
+                        <p>{{ form.current_id.errors }}</p>
+                        <p>{{ form.file_id.errors }}</p>
+                        <p>{{ form.current_design.errors }}</p>
+                        <p>{{ form.receive_id.errors }}</p>
+                        <p>{{ form.receive_design.errors }}</p>
+                        <p>{{ form.remarks.errors }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                
+                 <div class="field">
+                        <label for="{{ file_info.id_for_label }}"></label>
+                        <center><span style="color: red;font-size:20px">{{ file_info }}</span></center>
+                        
+                </div>
+                <div class="field">
+                    <label for="{{ file_info.id_for_label }}"></label>
+                    <center><span style="color: green;font-size:20px">{{ file_sucess }}</span></center>
+                    
+            </div><div class="field"> 
+                    <label for="{{ form.current_id.id_for_label }}">Uploader:</label>
+                    {{ form.current_id }}
+                <div class="field">
+                    <label for="{{ form.current_design.id_for_label }}">Uploader Designation:</label>
+                    {{ form.current_design }}
+                </div>
+                <div class="field">
+                    <label for="{{ form.disciplines.id_for_label }}"> Disciplines:</label>
+                    {{ form.disciplines }}
+                </div>
+            </form>
+
+            <br>
+    </div>
+</div>
+    <div class="ui tab" data-tab="attachments">
+
+        <div class="ui two item menu">
+            <a class="item"><b>Created By :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{ proposal.uploader }} - {{proposal.designation}}</b></a>
+            <a class="item"><b>File ID :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{ proposal.id }}</b></a>
+
+        </div>
+
+        <div class="ui bottom attached tab segment active" data-tab="afirst">
+            <div class="content">
+                <div class="description" style="overflow: auto; height: 680px">
+                    <table class="ui large celled definition medium table">
+                        <thead>
+                            <tr style="font-size: medium;
+                            background-color: aliceblue;">
+                                <td colspan="3"><h2><center>Course Proposal Form By -> {{ proposal.uploader }} - {{proposal.designation}}</h2></center>
+                                </td>
+                            </tr>
+                            <tr style="font-size: medium;
+                            background-color: aliceblue;">
+                                <td colspan="3"><h2>{{ proposal.code }} - {{ proposal.name }}</h2>
+                                </td>
+                            </tr>
+                            {% if course.disciplines.all %}
+                            <tr style="font-size: medium;
+                            background-color: aliceblue;">
+                                <td colspan="3">Discipline
+                                    {% for discipline in proposal.disciplines.all %}
+                                        <h3>{{ discipline }}</h3>
+                                    {% endfor %}
+            
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </thead>
+                    <tbody>
+                        <tr class="collapsing">
+                            <td class="collapsing" colspan="2"><B>Course Code</B></td>
+                            <td>{{ proposal.code }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"  class="collapsing"><B>Course Name</B></td>
+                            <td>{{ proposal.name }}</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="6"  class="collapsing"><B>Contact hours</B></td>
+                        </tr>
+                        <tr>
+                            <td colspan="1" class="left aligned collapsing">Lecture</td>
+                            <td colspan="1">{{ proposal.lecture_hours }}hrs</td>
+                        </tr>
+                        <tr>
+                            <td colspan="1" class="left aligned collapsing">Tutorial</td>
+                            <td colspan="1">{{ proposal.tutorial_hours }}hrs</td>
+                        </tr>
+                        <tr>
+                            <td colspan="1" class="left aligned collapsing">Lab</td>
+                            <td colspan="1">{{ proposal.pratical_hours }}hrs</td>
+                        </tr>
+                        <tr>
+                            <td colspan="1" class="left aligned collapsing">Discussion</td>
+                            <td colspan="1">{{ proposal.discussion_hours }}hrs</td>
+                        </tr>
+                        <tr>
+                            <td colspan="1" class="left aligned collapsing">Project</td>
+                            <td colspan="1">{{ proposal.project_hours }}hrs</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="collapsing"><B>Credits</B></td>
+                            <td>{{ proposal.credit }}</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="3" class="collapsing"><B>Pre-requisits</B></td>
+                        </tr>
+                        <tr>
+                            <td class="left aligned collapsing">Info</td>
+                            <td colspan="1">{{ proposal.pre_requisits|linebreaks }}</td>
+                        </tr>
+                        <tr>
+                            <td class="left aligned collapsing">Courses</td>
+                            <td colspan="1">
+                                <p>
+                                {% for p_proposal in proposal.pre_requisit_courses.all %}
+                                    <a href="{% url 'programme_curriculum:faculty_view_a_course' p_proposal.id %}">{{ p_proposal }}</a>,<br>
+                                {% endfor %}
+                                </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="collapsing"><B>Syllabus</B></td>
+                            <td>{{ proposal.syllabus|linebreaks }}</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="8" class="collapsing"><B>Evaluation Schema</B></td>
+                        </tr>
+                        <tr>
+                            <td colspan="1" class="left aligned collapsing">Quiz 1</td>
+                            <td colspan="1">{{ proposal.percent_quiz_1 }} %</td>
+                        </tr>
+                        <tr>
+                            <td colspan="1" class="left aligned collapsing">Mid-Sem Exam</td>
+                            <td colspan="1">{{ proposal.percent_midsem }} %</td>
+                        </tr>
+                        <tr>
+                            <td colspan="1" class="left aligned collapsing">Quiz 2</td>
+                            <td colspan="1">{{ proposal.percent_quiz_2 }} %</td>
+                        </tr>
+                        <tr>
+                            <td colspan="1" class="left aligned collapsing">End-Sem Exam</td>
+                            <td colspan="1">{{ proposal.percent_endsem }} %</td>
+                        </tr>
+                        <tr>
+                            <td colspan="1" class="left aligned collapsing">Project</td>
+                            <td colspan="1">{{ proposal.percent_project }} %</td>
+                        </tr>
+                        <tr>
+                            <td colspan="1" class="left aligned collapsing">Lab Evaluation</td>
+                            <td colspan="1">{{ proposal.percent_lab_evaluation }} %</td>
+                        </tr>
+                        <tr>
+                            <td colspan="1" class="left aligned collapsing">Course Attendance</td>
+                            <td colspan="1">{{ proposal.percent_course_attendance }} %</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="collapsing"><B>References & Books</B></td>
+                            <td>{{ proposal.ref_books|linebreaks }}</td>
+                        </tr>
+                    </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+{% endblock %}
+

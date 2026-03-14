@@ -1,0 +1,254 @@
+<style>
+    .btn {
+        padding: 1.5% 2.5%;
+        background-color: rgb(140, 140, 151);
+        color: white;
+        background-color: rgb(140, 140, 151);
+        margin-top: 12px;
+        border-radius: 15px;
+        display: block;
+        width: 135px;
+        cursor: pointer;
+    }
+
+    .btn:hover {
+        background-color: white;
+        color: rgb(140, 140, 151);
+        border: 1px solid rgb(140, 140, 151);
+    }
+
+    .btn2 {
+        padding: 1.5% 3%;
+        background-color: white;
+        border: 1px solid rgb(140, 140, 151);
+        margin-top: 12px;
+        border-radius: 15px;
+        display: none;
+        width: 135px;
+        cursor: pointer;
+        color: rgb(140, 140, 151);
+
+    }
+
+    .btn {
+        text-decoration: none;
+        color: white;
+    }
+
+    .btn2 {
+        text-decoration: none;
+        color: rgb(140, 140, 151);
+    }
+
+    .btn2:hover {
+        background-color: rgb(140, 140, 151);
+        color: white;
+    }
+    .get-info{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-width: 75%;
+        padding-top:5%;
+        padding-bottom:5%;
+    }
+    .get-info>h4{
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .get-info>h4>div{
+        padding: .5rem;
+    }
+    .get-info>div{
+        font-size: 1rem !important;
+        min-width: 75%;
+        padding: 1rem;
+    }
+    .get-info>div>select{
+        min-width: 75%;
+    }
+    .get-info>div>input{
+        min-width: 75%;
+    }
+    input[type="text"],
+    input[type="number"],
+    select {
+        padding: 10px; /* Increase padding for better readability */
+        border: 1px solid #ccc; /* Add border for clear field separation */
+        border-radius: 5px; /* Rounded corners for a modern look */
+        outline: none; /* Remove default focus outline */
+        transition: border-color 0.3s; /* Smooth transition on focus */
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    select:focus {
+        border-color: #007bff; /* Change border color on focus */
+    }
+</style>
+
+
+
+{% load static %}
+{% block config_pre_registration %}
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="this">
+      Pre Registration Courses Info
+    </a>
+  </div>
+
+
+<div class="ui active tab ui-form get-info"  data-tab="this" style="max-width: 75%;">
+    <div style="display: flex; flex-direction: row;">
+    <div style="padding-right:6rem ;" >
+        <!-- <label>Programme</label> -->
+        <select class="ui dropdown" name="programme" id="programme_curr">
+            <option class="Prechoices"  value="B.Tech">B.Tech</option>
+            <option class="Prechoices"  value="B.Des">B.Des</option>
+            <option class="Prechoices"  value="M.Des">M.Des</option>
+            <option class="Prechoices"  value="M.Tech">M.Tech</option>
+            <option class="Prechoices" value="Phd">PhD</option>
+        </select>
+    </div>
+    
+    <div >
+        <!-- <label>Branch</label> -->
+        <select class="ui dropdown" name="branch" id="branch_curr">
+            <option class="Prechoices" value="CSE">CSE</option>
+            <option class="Prechoices" value="ECE">ECE</option>
+            <option class="Prechoices" value="ME">ME</option>
+            <option class="Prechoices" value="Des.">Design</option>
+            <option class="Prechoices" value="Common">Common</option>
+            <option class="Prechoices" value="Smart Manufacturing">Smart Manufacturing</option>
+        </select>
+    </div>
+    </div>
+    
+    <div class="field">
+        <!-- <label>Semester</label>     -->
+        <input class="ui input" placeholder="Semester" type="number" name="semester" id="semester_curr">
+    </div>
+
+    <div >
+        <!-- <label>Batch</label>     -->
+        <input class="ui input" placeholder="Batch" type="number" name="batch" id="batch_curr">
+    </div>
+
+    <div class="field" >
+        <button class="ui primary button" onclick="fetchCourses()">Get Courses</button>
+    </div>
+</div>
+
+
+<div class="ui vertical segment">
+
+    <div id="courseList"> <!-- Updated: Added an empty div to display course information -->
+        <!-- Course information will be displayed here -->
+    </div>
+
+
+    <form id='student_register' action='/academic-procedures/pre_registration/'>
+        {% csrf_token %}
+        <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%;
+                                    padding-right: 2.5%;
+                                    padding-top: 1%;
+                                    padding-bottom: 1.5%;
+                                    margin: auto;
+                                    width: 95%;">
+            <thead id = "courseTableHead">
+            </thead>
+            
+            <tbody id = "courseTableBody">
+            </tbody>
+        </table>
+    </form>
+    
+    <br>
+    <br>
+</div>
+            
+</center>          
+            
+{% endblock %}
+            
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script>
+    function fetchCourses() {
+        var nextSemId = document.getElementById('semester_curr').value;
+        var branchId = document.getElementById('branch_curr').value;
+        var batchId = document.getElementById('batch_curr').value;
+        var programmeId = document.getElementById('programme_curr').value;
+        // console.log(nextSemId , branchId , batchId , programmeId)
+        fetch('/academic-procedures/acad_person/get_next_sem_courses/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({'next_sem': nextSemId, 'branch': branchId , 'programme' : programmeId , 'batch': batchId}) // Pass nextSemId variable
+        })
+        .then(response => response.json())
+        .then(data => {
+            var courseTable = document.getElementById('courseTableBody');
+            var courseTableHead = document.getElementById('courseTableHead');
+            courseTable.innerHTML = ''; // Clear previous content
+            courseTableHead.innerHTML = '';
+            i = 1
+            var headRow = courseTableHead.insertRow();
+            headRow.innerHTML = `
+                <tr>
+                    <th>#</th>
+                    <th>Slot name</th>
+                    <th>Slot type</th>
+                    <th>Semester</th>
+                    <th>Credits</th>
+                    <th>Courses</th>
+                </tr>
+                `;
+            data.forEach(course_slot => {
+                var newRow = courseTable.insertRow();
+                newRow.innerHTML = `
+                    <td>${i}.</td>
+                    <td>${course_slot.fields.name}</td>
+                    <td>${course_slot.fields.type}</td>
+                    
+                    <td>${nextSemId}</td>
+                    <td>${course_slot.courses[0].credit}</td>
+                    <td>
+                        <select class="ui dropdown" required="True" name="course_priority-${course_slot.pk}">
+                            ${course_slot.courses.map(course => `
+                                <option value="${course_slot.pk}-${course.id}" data-value2="${course.credit}">
+                                    ${course.code}-${course.name}
+                                </option>
+                            `).join('')}
+                        </select>
+                    </td>
+                `;
+                i = i + 1
+            });
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // Function to get CSRF token for POST request
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+

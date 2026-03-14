@@ -1,0 +1,413 @@
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    th, td {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
+    th {
+        background-color: #f2f2f2;
+    }
+</style>
+
+
+<div style="margin: 2rem;">
+    <div class="ui vertical segment">
+        <form method="post" id="ltc_form" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                  
+
+                <br><br>
+                <div class="two fields">    
+                    <div class="eight wide field">
+                        <label name="name">Name</label>
+                        <input type="text" name="name" maxlength="40" id="id_name" value="{{ employee.user }}">
+                    </div>
+                </div>
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label name="designation">Designation</label>
+                        <input type="text" name="designation" maxlength="40" id="id_designation" value="{{designation}}">
+                    </div>
+                </div>
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label name="department_info">Disipline</label>
+                        <input type="text" name="disciplineInfo" maxlength="40" id="disciplineInfo">
+                    </div>
+                </div>  
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label name="department_info">Specific field of knowledge</label>
+                        <input type="text" name="specificFieldOfKnowledge" maxlength="40" id="specificFieldOfKnowledge">
+                    </div>
+                </div>  
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label name="department_info">Current Research Interests</label>
+                        <input type="text" name="currentResearchInterests" maxlength="40" id="currentResearchInterests">
+                    </div>
+                </div>  
+
+                <div> <p> Please give information pertaining to the period of appraisal as per the format given below :- </p></div>
+                <br>
+
+                <div >
+                    <h2 style="text-align: center;">1. INSTRUCTION ELEMENT</h2>
+
+                    <P>1.1 Teaching</P>
+                    <p name="coursesTaught">1.1.1 Courses taught at UG/PG level</p>
+
+
+                    <table>
+                        <tr>
+                          <th>Semester</th>
+                          <th>Course Name and Number</th>
+                          <th>Lecture Hrs/wk</th>
+                          <th>Tutorial Hrs/wk</th>
+                          <th>Lab Hrs/wk</th>
+                          <th>No of Registererd Students</th>
+                          <th>Co-Instructor/ Instructor In charge(if any)</th>
+                        </tr>
+                        <tr>
+                          <td><input type="number" name="info_1_1" maxlength="40" id="id_info_1_1"></td>
+                          <td><input type="text" name="info_1_2" maxlength="40" id="id_info_1_2"></td>
+                          <td><input type="number" name="info_1_3" maxlength="40" id="id_info_1_3"></td>
+                          <td><input type="number" name="info_1_4" maxlength="40" id="id_info_1_4"></td>
+                          <td><input type="number" name="info_1_5" maxlength="40" id="id_info_1_5"></td>
+                          <td><input type="number" name="info_1_6" maxlength="40" id="id_info_1_6"></td>
+                          <td><input type="text" name="info_1_7" maxlength="40" id="id_info_1_7"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="number" name="info_2_1" maxlength="40" id="id_info_2_1"></td>
+                            <td><input type="text" name="info_2_2" maxlength="40" id="id_info_2_2"></td>
+                            <td><input type="number" name="info_2_3" maxlength="40" id="id_info_2_3"></td>
+                            <td><input type="number" name="info_2_4" maxlength="40" id="id_info_2_4"></td>
+                            <td><input type="number" name="info_2_5" maxlength="40" id="id_info_2_5"></td>
+                            <td><input type="number" name="info_2_6" maxlength="40" id="id_info_2_6"></td>
+                            <td><input type="text" name="info_2_7" maxlength="40" id="id_info_2_7"></td>
+                        </tr>
+                        
+                      </table>
+
+                      <p name="newCoursesIntroduced">1.1.2 New Courses/ laboratory experiments introduced and taught</p>
+                      
+
+                      <table>
+                        <tr>
+                          <th>Course Name and Number</th>
+                          <th>UG/PG</th>
+                          <th> Year and Semester of first offering</th>
+                        </tr>
+                        <tr>
+                          <td><input type="text" name="info_3_1" maxlength="40" id="id_info_3_1"></td>
+                          <td><input type="text" name="info_3_2" maxlength="40" id="id_info_3_2"></td>
+                          <td><input type="text" name="info_3_3" maxlength="40" id="id_info_3_3"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="text" name="info_4_1" maxlength="40" id="id_info_4_1"></td>
+                            <td><input type="text" name="info_4_2" maxlength="40" id="id_info_4_2"></td>
+                            <td><input type="text" name="info_4_3" maxlength="40" id="id_info_4_3"></td>
+                          </tr>
+                        </table>
+
+
+
+                        <p name="newCoursesDeveloped">1.1.3 New course material developed/instructional software developed (should be made available on the web / public domain and may be under GIAN/NPTEL/SWAYAM etc)</p>
+                      
+
+                      <table>
+                        <tr>
+                          <th>Course Name and Number</th>
+                          <th>UG/PG</th>
+                          <th>Type of activity</th>
+                          <th> Web/Public</th>
+                        </tr>
+                        <tr>
+                          <td><input type="text" name="info_5_1" maxlength="40" id="id_info_5_1"></td>
+                          <td><input type="text" name="info_5_2" maxlength="40" id="id_info_5_2"></td>
+                          <td><input type="text" name="info_5_3" maxlength="40" id="id_info_5_3"></td>
+                          <td><input type="text" name="info_5_4" maxlength="40" id="id_info_5_4"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="text" name="info_6_1" maxlength="40" id="id_info_6_1"></td>
+                            <td><input type="text" name="info_6_2" maxlength="40" id="id_info_6_2"></td>
+                            <td><input type="text" name="info_6_3" maxlength="40" id="id_info_6_3"></td>
+                            <td><input type="text" name="info_6_4" maxlength="40" id="id_info_6_4"></td>
+                          </tr>
+                        </table>
+
+                        <p>1.1.4 Any other instructional tasks :- </p>
+                        
+                        <input type="text" name="otherInstructionalTasks" maxlength="40" id="otherInstructionalTasks">
+
+                        <div>
+
+                            <div>
+
+                                <h2 style="text-align: center;">2. RESEARCH ELEMENT</h2>
+
+                            <P name="thesisSupervision">2.1 Thesis/Research Supervision</P>
+                            <table>
+                                <tr>
+                                  <th>Name of student (M.tech/Phd)</th>
+                                  <th>Title of thesis/ Thesis topic</th>
+                                  <th>Year and Semester of first registration</th>
+                                  <th> Completed/Submitted/Inprogress</th>
+                                  <th> Co-suppervisors(if-any)</th>
+                                </tr>
+                                <tr>
+                                  <td><input type="text" name="info_7_1" maxlength="40" id="id_info_7_1"></td>
+                                  <td><input type="text" name="info_7_2" maxlength="40" id="id_info_7_2"></td>
+                                  <td><input type="text" name="info_7_3" maxlength="40" id="id_info_7_3"></td>
+                                  <td><input type="text" name="info_7_4" maxlength="40" id="id_info_7_4"></td>
+                                  <td><input type="text" name="info_7_5" maxlength="40" id="id_info_7_5"></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" name="info_8_1" maxlength="40" id="id_info_8_1"></td>
+                                    <td><input type="text" name="info_8_2" maxlength="40" id="id_info_8_2"></td>
+                                    <td><input type="text" name="info_8_3" maxlength="40" id="id_info_8_3"></td>
+                                    <td><input type="text" name="info_8_4" maxlength="40" id="id_info_8_4"></td>
+                                    <td><input type="text" name="info_8_5" maxlength="40" id="id_info_8_5"></td>
+                                  </tr>
+                            </table>
+
+                            <P name="sponsoredReseachProjects">2.2 Sponsored Research and Consultancy projects</P>
+                            <table>
+                                <tr>
+                                  <th>Title of project</th>
+                                  <th>Sponsering agency/oganisation</th>
+                                  <th>Project funding (rs)</th>
+                                  <th>Project duration</th>
+                                  <th>Co-investigators(if any)</th>
+                                  <th>Status(Submitted/ongoing/Completed)</th>
+                                  <th>Remarks</th>
+                                </tr>
+                                <tr>
+                                  <td><input type="text" name="info_9_1" maxlength="40" id="id_info_9_1"></td>
+                                  <td><input type="text" name="info_9_2" maxlength="40" id="id_info_9_2"></td>
+                                  <td><input type="number" name="info_9_3" maxlength="40" id="id_info_9_3"></td>
+                                  <td><input type="number" name="info_9_4" maxlength="40" id="id_info_9_4"></td>
+                                  <td><input type="text" name="info_9_5" maxlength="40" id="id_info_9_5"></td>
+                                  <td><input type="text" name="info_9_6" maxlength="40" id="id_info_9_6"></td>
+                                  <td><input type="text" name="info_9_7" maxlength="40" id="id_info_9_7"></td>
+                                </tr>
+                                
+                            </table>
+
+                            <div class="two fields">
+                                <div class="eight wide field">
+                                    <label name="department_info">2.3 Other Research element(such as development of reseach facilities, patenet(applied for / granted) / transfer of technology, etc)</label>
+                                    <input type="text" name="otherResearchElement" maxlength="40" id="otherResearchElement">
+                                </div>
+                            </div> 
+
+                            <div class="two fields">
+                                <div class="eight wide field">
+                                    <label name="department_info">2.4 Publication(s) (Journal, conference, book, book chapter, technical report,etc) (Kindly provide the details in the standered format as filled in EIS system )</label>
+                                    <input type="text" name="publication" maxlength="40" id="publication">
+                                </div>
+                            </div> 
+
+                            <div class="two fields">
+                                <div class="eight wide field">
+                                    <label name="department_info">2.5 Referred Conferences/ Symposia/ Seminars/ Workshops / Specialist's meetings attended</label>
+                                    <input type="text" name="referredConference" maxlength="40" id="referredConference">
+                                </div>
+                            </div> 
+
+                            <div class="two fields">
+                                <div class="eight wide field">
+                                    <label name="department_info">2.6 Conference / Workshop / STP etc Organised </label>
+                                    <input type="text" name="conferenceOrganised" maxlength="40" id="conferenceOrganised">
+                                </div>
+                            </div> 
+
+                            <p><b>2.7 Professional Recognition</b></p>
+
+                            <div class="two fields">
+                                <div class="eight wide field">
+                                    <label name="department_info">2.7.1 Memberships of Professional Socities(National/International) </label>
+                                    <input type="text" name="membership" maxlength="40" id="membership">
+                                </div>
+                            </div> 
+                            <div class="two fields">
+                                <div class="eight wide field">
+                                    <label name="department_info">2.7.2 Honours/ Prizes/ Awards/ Fell0wship etc</label>
+                                    <input type="text" name="honours" maxlength="40" id="honours">
+                                </div>
+                            </div> 
+                            <div class="two fields">
+                                <div class="eight wide field">
+                                    <label name="department_info">2.7.3 Editors/ Guest Editor etc of Reputed Publication</label>
+                                    <input type="text" name="editorOfPublications" maxlength="40" id="editorOfPublications">
+                                </div>
+                            </div> 
+                            <div class="two fields">
+                                <div class="eight wide field">
+                                    <label name="department_info">2.7.4 Expert/ Invited lecture delivered</label>
+                                    <input type="text" name="expertLectureDelivered" maxlength="40" id="expertLectureDelivered">
+                                </div>
+                            </div> 
+                            <div class="two fields">
+                                <div class="eight wide field">
+                                    <label name="department_info">2.7.5 Membership of BoS/ BoG / Senate etc</label>
+                                    <input type="text" name="membershipOfBOS" maxlength="40" id="membershipOfBOS">
+                                </div>
+                            </div> 
+
+                            <p><b>2.8 Other Extention Taks</b></p>
+                            <p>eg. involvement in government , industry and public community service</p>
+                            <input type="text" name="otherExtensionTasks" id="otherExtensionTasks">
+
+                            </div>
+
+
+                            <div>
+                                <div>
+                                    <h2 style="text-align: center;">3. ADMINISTRATION ASSIGNMENT</h2>
+                                    <p>(Please indicate duration of each assignment)</p>
+                                </div>
+    
+                                <div class="two fields">
+                                    <div class="eight wide field">
+                                        <label name="department_info">3.1 Adminitrative assignment: (please mention institue/discipline level)</label>
+                                        <input type="text" name="administrativeAssignment" maxlength="40" id="administrativeAssignment">
+                                    </div>
+                                </div> 
+                                <div class="two fields">
+                                    <div class="eight wide field">
+                                        <label name="department_info">3.2 Service to institute community(if any): (please mention institute/others)</label>
+                                        <input type="text" name="serviceToInstitute" maxlength="40" id="serviceToInstitute">
+                                    </div>
+                                </div> 
+                                <div class="two fields">
+                                    <div class="eight wide field">
+                                        <label name="department_info">Any other contribution</label>
+                                        <input type="text" name="otherContribution" maxlength="40" id="otherContribution">
+                                    </div>
+                                </div> 
+                            </div>
+
+                            <div>
+
+                                <h2 style="text-align: center;">4. SELF-APPRAISAL BY FACULTY</h2>
+
+                                <div class="two fields">
+                                    <div >
+                                        <label name="department_info">Your comments on your performance so far and this academic year particularly.</label>
+                                        <input type="text" name="performanceComments" id="performanceComments">
+                                    </div>
+                                </div> 
+
+                            </div>
+
+                        </div>
+                        
+                </div>
+
+
+                
+
+               
+             
+               <br><br><br>
+               <div>
+                <div class="eight wide field">
+                    <label name="date">Date</label>
+                    <input type="date" name="submissionDate" id="submissionDate">
+                </div>
+
+               </div>
+
+
+               <div >
+
+                
+               </div>
+
+               
+
+                
+                
+                    
+                
+               <div class="two fields">
+                <div class="eight wide field">
+                    <label for="username_employee">Username:</label>
+                    <input type="text" name="username_employee" id="username_employee" class="ui search" placeholder="Enter Username">
+                </div>
+                <div class="eight wide field">
+                    <label for="designation_employee">Designation:</label>
+                    <input type="text" name="designation_employee" id="designation_employee" readonly>
+                </div>
+                <div class="field">
+                    <button id="check_button" class="ui primary button right floated">Check</button>
+                </div>
+            </div>
+
+
+            <div class="field">
+                <button class="ui primary button right floated" type="submit" value="Submit">
+                    Submit
+                </button>
+            </div>
+        </div>
+        </form>
+
+
+
+
+        <br>
+        <br>
+
+
+    </div>
+    <br>
+    <div class="extra content"></div>
+</div>
+
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#check_button').click(function(event) {
+            event.preventDefault();
+            var selectedUsername = $('#username_employee').val();
+
+            // Fire query to the URL with selected username
+            $.ajax({
+                url: '/hr2/search_employee/',
+                type: 'GET',
+                data: { search: selectedUsername }, // Pass search text as query parameter
+                success: function(data) {
+                    if (data.designation) {
+                        // Employee exists, update designation
+                        $('#designation_employee').val(data.designation);
+                        alert("Employee exists");
+                    } else {
+                        // Employee doesn't exist, show error message
+                        alert("Employee doesn't exist");
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                    // Show error message
+                    alert("An error occurred while processing your request.");
+                }
+            });
+        });
+    });
+
+</script>
+

@@ -2,9 +2,15 @@
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="clubbudgetform">
+       
+        <a class="active item" data-tab="viewbudget">
+            View Budget
+        </a>   
+        {% if "co-ordinator" in global_var or "Convener" in global_var and "Counsellor" not in global_var and "Dean_s" not in global_var %}
+        <a class="item" data-tab="clubbudgetform">
             Club Budget Form
-        </a>
+        </a>   
+        {% endif %}    
     </div>
 
     <script type="text/javascript">
@@ -24,9 +30,9 @@
     </script>
 
 
-    <div class="ui active tab" data-tab="clubbudgetform">
+    <div class="ui  tab" data-tab="clubbudgetform">
         <div class="ui vertical segment">
-            <form method="Post" id="club_budget_form" enctype="multipart/form-data">
+            <form method="Post"  action ="{% url 'gymkhana:club_budget' %}",id="club_budget_form" enctype="multipart/form-data">
             {%csrf_token %}
                 {% comment %}The add a new skill Accordian starts here!{% endcomment %}
                 <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
@@ -35,11 +41,25 @@
                         <label>Club</label>
                         <select class="ui search fluid dropdown" name="club" required>
                             <option value="">Select</option>
+                            {% if "co-ordinator" in global_var%}
                             {% for i in Club_name %}
-                                {% if request.user.username in i.co_ordinator|stringformat:"s" %}
+                                {% if i.status ==  "confirmed" and i.co_ordinator_id == club_details.co_ordinator_id%}
                                     <option value="{{ i.club_name }}">{{ i.club_name }} </option>
-                                {% endif %}
+                                {% endif %}  
                             {% endfor %}
+                            {% endif %} 
+                            {% if "Convener" in global_var%}
+                            {% for i in Club_name %}
+                                {% if i.status ==  "confirmed" %}
+                                    <option value="{{ i.club_name }}">{{ i.club_name }} </option>
+                                {% endif %}  
+                            {% endfor %}
+                            {% endif %}  
+                            {% comment %} {% for i in Club_name %}
+                                {% if i.status ==  "confirmed" and i.co_ordinator_id == club_details.co_ordinator_id%}
+                                    <option value="{{ i.club_name }}">{{ i.club_name }} </option>
+                                {% endif %}  
+                            {% endfor %} {% endcomment %}
                         </select>
                     </div>
 
@@ -66,7 +86,7 @@
                     </div>
 
                     <div class="field">
-                        <button class="ui primary button right floated" type="submit" onclick="form_submit('club_budget','club_budget_form',event)">
+                        <button class="ui primary button right floated" type="submit">
                             Submit
                         </button>
                     </div>
@@ -79,4 +99,157 @@
         <div class="extra content"></div>
     </div>
 
+    <script type="text/javascript">
+        function display() {
+            var data = document.getElementById("clubName").value;
+            console.log("Selected club:", data);
+            $("#record_table tbody tr").prop("hidden", true);
+            $(".clubname-" + data).removeAttr("hidden");
+        }
+        window.onclick = function(e){
+            if(document.activeElement != document.querySelector('[data-tab="viewbudget"] input.search')){
+                $('div[data-tab="viewbudget"] .dropdown').dropdown('hide');
+            }
+        }
+        
+    </script>
+    
+    <div class="ui active tab" data-tab="viewbudget">
+        <div class="ui vertical segment">
+            <form class="ui form" style="padding-left: 32px; padding-right: 32px">
+                <div class="sixteen wide field">
+                    <label>Club</label>
+                    <select class="ui search fluid dropdown" id="clubName" onchange="display();" required>
+                        <option value="">Select</option>
+                        {% for club in Club_name %}
+                        {% if club.status == "confirmed" %}
+                            <option value="{{ club.club_name }}">{{ club.club_name }}</option>
+                        {%endif%}
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+            <br />
+    
+            <h4 class="ui dividing header" style="margin-left: 32px; margin-right: 32px">Budget Information</h4>
+
+            <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%; padding-top: 1%; padding-bottom: 1.5%; margin: auto;" id="record_table">
+                <thead>
+                    <th class="four wide column">Budget For</th>
+                    <th class="one wide column" >Budget Amount</th>
+                     {% if "Counsellor" in global_var or "Convener" in global_var %}
+                    <th class="four wide column">Remaining</th>
+                    {% endif %}
+                    <th class="three wide column">Description</th>
+                    <th>File</th>
+                </thead>
+                <tbody>
+                    {% for budget in Club_budget %}
+                    {% comment %} {% if budget.club_id == selected_club %} {% endcomment %}
+                        {%if budget.status == "confirmed" %}
+                        <tr class="clubname-{{ budget.club_id }}" hidden>
+                            <td>{{ budget.budget_for }}</td>
+                            <td>{{ budget.budget_amt }}</td>
+                            {% if "Counsellor" in global_var or "Convener" in global_var %}
+                           <td>
+  <input type="text" class="new-budget-input" placeholder="Remaining Amount" style="width: 80%; margin-bottom: 10px">
+  <button class="ui blue button update-budget-button" data-budget-id="{{ budget.id }}">Update</button>
+</td>
+{%endif%}
+                            <td>{{ budget.description }}</td>
+                            <td><a href="{{ budget.budget_file.url }}">Download File</a></td>
+                        </tr>
+                        {% comment %} {% endif %} {% endcomment %}
+                        {%endif%}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <br>
+        <div class="extra content"></div>
+    </div>
+    
+<script type="text/javascript">
+
+
+  // Custom generated ID
+window.onload = function() {
+  // function to update budget amount
+  var updateBudgetButtons = document.querySelectorAll('.update-budget-button');
+
+ updateBudgetButtons.forEach(function (button) {
+  button.addEventListener('click', function () {
+    var budgetId = this.getAttribute('data-budget-id');
+    console.log('Budget ID:', budgetId); // Log budget ID to console
+    console.log('req_id:', req_id);
+
+    var newBudget = this.parentElement.querySelector('.new-budget-input').value;
+
+    // Send AJAX request to server to update budget amount
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/gymkhana/update-budget-amount/', true);
+    xhr.setRequestHeader(
+      'Content-Type',
+      'application/x-www-form-urlencoded'
+    );
+    xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken')); // Django CSRF token
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === XMLHttpRequest.DONE) {
+        if (xhr.status === 200) {
+          // Request was successful, handle response
+          var response = JSON.parse(xhr.responseText);
+          if (response.status === 'error') {
+            // Show an alert if there's an error
+            alert(response.message);
+          } else {
+            console.log(response.message);
+            // Optionally update UI or show a message
+          }
+        } else {
+          // Request failed, handle error
+          console.error('Request failed:', xhr.status);
+        }
+      }
+    };
+   
+   
+  xhr.send(
+  'req_id=' +
+    encodeURIComponent("spent") +
+  '&budget_id=' +
+    encodeURIComponent(budgetId) +
+  '&new_budget=' +
+    encodeURIComponent(newBudget)
+);
+  });
+});
+      xhr.send(
+        'budget_id=' +
+          encodeURIComponent(budgetId) +
+          '&new_budget=' +
+          encodeURIComponent(newBudget)+
+       
+      );
+    });
+  });
+
+  // Function to get CSRF token from cookies
+  function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      var cookies = document.cookie.split(';');
+      for (var i = 0; i < cookies.length; i++) {
+        var cookie = cookies[i].trim();
+        // Does this cookie string begin with the name we want?
+        if (cookie.substring(0, name.length + 1) === name + '=') {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+};
+
+</script>
 {% endblock %}

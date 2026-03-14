@@ -1,0 +1,102 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+    No Dues
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <div class="ui stackable doubling grid">
+        <div class="column"></div>
+
+        <div class="three wide column">
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            <div class="ui divider"></div>
+            <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+                <a href="/otheracademic/BTP_nodues" class="item">No Dues Approve
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/otheracademic/BTP_nodues_not" class="active item">Clear No Dues
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                
+            </div>
+        </div>
+
+        <div class="eight wide column">
+            <div class="ui active tab segment" data-tab="first">
+                <h2 class="ui header">Clear No Dues(BTP/Thesis)</h2>
+                <table class="ui celled table">
+                    <thead>
+                        <tr>
+                            <th>Roll No.</th>
+                            <th>Name </th>
+                            <th>BTP Supervisor</th>
+                          
+
+
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            {% for entry in form_data %}
+                        <tr>
+                            {% if not entry.btp_supervisor_clear %}
+                        
+                            <td>{{ entry.roll_no}}</td>
+                            <td>{{ entry.name }}</td>
+                            
+                            <td>
+
+                                {%if entry.btp_supervisor_clear%}
+                                 clear
+                                {%else%}
+                                
+                                    <form action="{% url 'otheracademic:approve_BTP_not' no_dues_id=entry.id %}" method="post">
+                                        {% csrf_token %}
+                                        <button class="ui green button approve-button" type="submit">Clear</button>
+                                    </form>
+                                    
+                                
+                                {%endif%}
+
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor%}
+                        <!-- Add more rows for other departments as needed -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="column"></div>
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.clear-button').click(function() {
+                var rollNo = $(this).data('id');
+                // Perform action to mark as clear for rollNo
+                console.log('Marked as clear for Roll No.: ' + rollNo);
+            });
+
+            $('.not-clear-button').click(function() {
+                var rollNo = $(this).data('id');
+                // Perform action to mark as not clear for rollNo
+                console.log('Marked as not clear for Roll No.: ' + rollNo);
+            });
+        });
+    </script>
+{% endblock %}

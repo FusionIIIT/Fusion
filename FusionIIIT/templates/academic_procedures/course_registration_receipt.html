@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+
+        @media print{
+            @page{
+                margin: 0;
+            }
+            body{
+                margin: 1cm;
+            }
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            width: 8.5in; /* Standard PDF width */
+            height: 10.4in; /* Standard PDF height */
+            box-sizing: border-box;
+        }
+
+        .page {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+            padding: 20px;
+        }
+
+        .half-page {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-bottom: 2px dashed #000; /* Dashed line divider between sections */
+            padding-bottom: 10px;
+        }
+
+        .half-page:last-child {
+            border-bottom: none; /* Remove the border for the last section */
+        }
+
+        .details {
+            text-align: left;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .details p {
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .heading {
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            margin-top: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th,
+        td {
+            border: 1px solid #000;
+            padding: 6px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .extra-info {
+            font-size: 12px;
+            margin: 10px 0;
+        }
+
+        .extra-info p:nth-of-type(1){
+            margin-bottom: 10px;
+        }
+
+        .signatures {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .signature {
+            width: 45%;
+            text-align: center;
+            border-top: 1px solid #000;
+            font-size: 12px;
+            padding-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+        <!-- First Half: Student Copy -->
+        <div class="half-page">
+            <div class="heading">Student Copy</div>
+            <div class="details">
+                <p><strong>Name:</strong> {{ name }}</p>
+                <p><strong>Roll no.:</strong> {{ roll_no }}</p>
+                <p><strong>Branch:</strong> {{ branch }}</p>
+                <p><strong>Batch:</strong> {{ batch }}</p>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 6%;">#</th>
+                        <th style="width: 13%;">Course ID</th>
+                        <th style="width: 50%;">Course Name</th>
+                        <th style="width: 10%;">Credits</th>
+                        <th style="width: 10%;">Registration Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for items in current_courseregistrations %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ items.course_id.code }}</td>
+                        <td>{{ items.course_id.name }}</td>
+                        <td>{{ items.course_id.credit }}</td>
+                        <td>{{ items.registration_type }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="extra-info">
+                <p>Additional Notes:</p>
+                <p>_____________________________________________________________________________________________________________</p>
+                <p>_____________________________________________________________________________________________________________</p>
+            </div>
+
+            <div class="signatures">
+                <div class="signature">Student's Signature</div>
+                <div class="signature">Admin's Signature</div>
+            </div>
+        </div>
+
+        <!-- Divider Line -->
+        <div class="divider"></div>
+
+        <!-- Second Half: Academic Copy -->
+        <div class="half-page">
+            <div class="heading">Academic Copy</div>
+            <div class="details">
+                <p><strong>Name:</strong> {{ name }}</p>
+                <p><strong>Roll no.:</strong> {{ roll_no }}</p>
+                <p><strong>Branch:</strong> {{ branch }}</p>
+                <p><strong>Batch:</strong> {{ batch }}</p>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 6%;">#</th>
+                        <th style="width: 13%;">Course ID</th>
+                        <th style="width: 50%;">Course Name</th>
+                        <th style="width: 10%;">Credits</th>
+                        <th style="width: 10%;">Registration Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for items in current_courseregistrations %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ items.course_id.code }}</td>
+                        <td>{{ items.course_id.name }}</td>
+                        <td>{{ items.course_id.credit }}</td>
+                        <td>{{ items.registration_type }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="extra-info">
+                <p>Additional Notes:</p>
+                <p>_____________________________________________________________________________________________________________</p>
+                <p>_____________________________________________________________________________________________________________</p>
+            </div>
+
+            <div class="signatures">
+                <div class="signature">Student's Signature</div>
+                <div class="signature">Admin's Signature</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

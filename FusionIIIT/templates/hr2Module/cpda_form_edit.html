@@ -1,0 +1,155 @@
+<div style="margin: 2rem;">
+    <div class="ui vertical segment">
+
+
+
+        <form method="post" id="editDetail" enctype="multipart/form-data">
+            {% csrf_token %}
+            <!-- <input type="hidden" name="csrfmiddlewaretoken"
+                value="LCHk0Tkz2dhkiSthRRBbPQTHzgcPFsWYhI8ML3ZkYE4lbETMrdXy9JCdyy4d3ca1"> -->
+
+            <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                
+
+                <div class="eight wide field">
+                    <label for="post_title">Name</label>
+                    <input type="text" name="name" maxlength="40" required id="idName" value="{{ employee.user }}">
+                </div>
+                <div class="eight wide field">
+                    <label for="post_title">Designation</label>
+                    <input type="text" name="designation" maxlength="40" required id="idDesignation" value="{{ designation}}">
+                </div>
+                <div class="eight wide field">
+                    <label for="post_title">P.F. No.</label>
+                    <input type="number" name="pfNo" maxlength="30" required id="pfNo">
+                </div>
+                <div class="fifteen wide field">
+                    <label for="post_title">Purpose</label>
+                    <input type="text" name="purpose" maxlength="40" required id="purpose">
+                </div>
+                <div class="eight wide field">
+                    <label for="post_title">Amount Required</label>
+                    <input type="number" name="amountRequired" maxlength="40" required id="amountRequired">
+                </div>
+                <div class="eight wide field">
+                    <label for="post_title">Advance (PDA) due for adjustment, if any</label>
+                    <input type="number" name="advanceDueAdjustment" maxlength="40" required id="advanceDueAdjustment">
+                </div>
+
+                
+                
+                <div class="eight wide field" style="float: right;">
+                  
+                    <div class="eight wide field">
+                        <label for="post_title">Date</label>
+                        <input type="date" name="submissionDate" maxlength="40" required id="idContact">
+                    </div>
+                </div>
+                <br><br><br><br><br><br><br><br>
+                
+
+                <hr>
+
+                <div style="text-align: center;">
+                    <h4><u>Estt. Section</u></h4>
+                </div>
+                <br><br>
+                
+                <div class="eight wide field" >
+                    <label for="post_title">Balance available as on date:</label>
+                    <input type="number" name="balanceAvailable" maxlength="40" id="balanceAvailable" >
+                </div>
+                <div class="eight wide field" >
+                    <label for="post_title">Advance amount entered in PDA Register Page no.</label>
+                    <input type="number" name="advanceAmountPDA" maxlength="40" id="advanceAmountPDA" >
+                </div>
+                <br><br>
+                
+                
+                <hr>
+
+                <div style="text-align: center;">
+                    <h4><u>Internal Audit</u></h4>
+
+                    <div class="eight wide field">
+                        <label for="post_title">Entry checked in PDA Register for Rs.</label>
+                        <input type="number" name="amountCheckedInPDA" maxlength="40"  id="amountCheckedInPDA" >
+                    </div>
+                    <br><br>
+                   
+                </div>
+                <br><br>
+                
+                <hr>
+
+               
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label for="username_employee">Username:</label>
+                        <input type="text" name="username_employee" id="username_employee" class="ui search" placeholder="Enter Username">
+                    </div>
+                    <div class="eight wide field">
+                        <label for="designation_employee">Designation:</label>
+                        <input type="text" name="designation_employee" id="designation_employee" readonly>
+                    </div>
+                    <div class="field">
+                        <button id="check_button" class="ui primary button right floated">Check</button>
+                    </div>
+                </div>
+
+
+                <div class="field">
+                    <button class="ui primary button right floated" type="submit" value="Submit">
+                        Submit
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <br>
+        <br>
+
+
+    </div>
+    <br>
+    <div class="extra content"></div>
+</div>
+
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#check_button').click(function(event) {
+            event.preventDefault();
+            var selectedUsername = $('#username_employee').val();
+
+            // Fire query to the URL with selected username
+            $.ajax({
+                url: '/hr2/search_employee/',
+                type: 'GET',
+                data: { search: selectedUsername }, // Pass search text as query parameter
+                success: function(data) {
+                    if (data.designation) {
+                        // Employee exists, update designation
+                        $('#designation_employee').val(data.designation);
+                        alert("Employee exists");
+                    } else {
+                        // Employee doesn't exist, show error message
+                        alert("Employee doesn't exist");
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                    // Show error message
+                    alert("An error occurred while processing your request.");
+                }
+            });
+        });
+    });
+
+   
+    
+</script>

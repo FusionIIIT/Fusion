@@ -1,0 +1,134 @@
+{% extends 'programme_curriculum/faculty/common.html' %} 
+{% block content %}
+<div class="ui bottom attached tab segment active" data-tab="afirst">
+    <div class="content">
+        <div class="description" style="overflow: auto; height: 680px">
+            <table class="ui large celled definition medium table">
+                <thead>
+                    <tr style="font-size: medium;
+                    background-color: aliceblue;">
+                        <td colspan="3"><h2><center>Course Proposal Form By -> {{ proposal.uploader }} - {{proposal.designation}}</h2></center>
+                        </td>
+                    </tr>
+                    <tr style="font-size: medium;
+                    background-color: aliceblue;">
+                        <td colspan="3"><h2>{{ proposal.code }} - {{ proposal.name }}</h2>
+                        </td>
+                    </tr>
+                    {% if course.disciplines.all %}
+                    <tr style="font-size: medium;
+                    background-color: aliceblue;">
+                        <td colspan="3">Discipline
+                            {% for discipline in proposal.disciplines.all %}
+                                <h3>{{ discipline }}</h3>
+                            {% endfor %}
+    
+                        </td>
+                    </tr>
+                    {% endif %}
+                </thead>
+            <tbody>
+                <tr class="collapsing">
+                    <td class="collapsing" colspan="2"><B>Course Code</B></td>
+                    <td>{{ proposal.code }}</td>
+                </tr>
+                <tr>
+                    <td colspan="2"  class="collapsing"><B>Course Name</B></td>
+                    <td>{{ proposal.name }}</td>
+                </tr>
+                <tr>
+                    <td rowspan="6"  class="collapsing"><B>Contact hours</B></td>
+                </tr>
+                <tr>
+                    <td colspan="1" class="left aligned collapsing">Lecture</td>
+                    <td colspan="1">{{ proposal.lecture_hours }}hrs</td>
+                </tr>
+                <tr>
+                    <td colspan="1" class="left aligned collapsing">Tutorial</td>
+                    <td colspan="1">{{ proposal.tutorial_hours }}hrs</td>
+                </tr>
+                <tr>
+                    <td colspan="1" class="left aligned collapsing">Lab</td>
+                    <td colspan="1">{{ proposal.pratical_hours }}hrs</td>
+                </tr>
+                <tr>
+                    <td colspan="1" class="left aligned collapsing">Discussion</td>
+                    <td colspan="1">{{ proposal.discussion_hours }}hrs</td>
+                </tr>
+                <tr>
+                    <td colspan="1" class="left aligned collapsing">Project</td>
+                    <td colspan="1">{{ proposal.project_hours }}hrs</td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="collapsing"><B>Credits</B></td>
+                    <td>{{ proposal.credit }}</td>
+                </tr>
+                <tr>
+                    <td rowspan="3" class="collapsing"><B>Pre-requisits</B></td>
+                </tr>
+                <tr>
+                    <td class="left aligned collapsing">Info</td>
+                    <td colspan="1">{{ proposal.pre_requisits|linebreaks }}</td>
+                </tr>
+                <tr>
+                    <td class="left aligned collapsing">Courses</td>
+                    <td colspan="1">
+                        <p>
+                        {% for p_proposal in proposal.pre_requisit_courses.all %}
+                            <a href="{% url 'programme_curriculum:faculty_view_a_course' p_proposal.id %}">{{ p_proposal }}</a>,<br>
+                        {% endfor %}
+                        </p>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="collapsing"><B>Syllabus</B></td>
+                    <td>{{ proposal.syllabus|linebreaks }}</td>
+                </tr>
+                <tr>
+                    <td rowspan="8" class="collapsing"><B>Evaluation Schema</B></td>
+                </tr>
+                <tr>
+                    <td colspan="1" class="left aligned collapsing">Quiz 1</td>
+                    <td colspan="1">{{ proposal.percent_quiz_1 }} %</td>
+                </tr>
+                <tr>
+                    <td colspan="1" class="left aligned collapsing">Mid-Sem Exam</td>
+                    <td colspan="1">{{ proposal.percent_midsem }} %</td>
+                </tr>
+                <tr>
+                    <td colspan="1" class="left aligned collapsing">Quiz 2</td>
+                    <td colspan="1">{{ proposal.percent_quiz_2 }} %</td>
+                </tr>
+                <tr>
+                    <td colspan="1" class="left aligned collapsing">End-Sem Exam</td>
+                    <td colspan="1">{{ proposal.percent_endsem }} %</td>
+                </tr>
+                <tr>
+                    <td colspan="1" class="left aligned collapsing">Project</td>
+                    <td colspan="1">{{ proposal.percent_project }} %</td>
+                </tr>
+                <tr>
+                    <td colspan="1" class="left aligned collapsing">Lab Evaluation</td>
+                    <td colspan="1">{{ proposal.percent_lab_evaluation }} %</td>
+                </tr>
+                <tr>
+                    <td colspan="1" class="left aligned collapsing">Course Attendance</td>
+                    <td colspan="1">{{ proposal.percent_course_attendance }} %</td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="collapsing"><B>References & Books</B></td>
+                    <td>{{ proposal.ref_books|linebreaks }}</td>
+                </tr>
+            </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block rightcontent %}
+<br>
+<br>
+{% block sidepanel%} 
+    {% include 'notifications/programme_curriculum.html' %} 
+    {% endblock %}
+{% endblock %}

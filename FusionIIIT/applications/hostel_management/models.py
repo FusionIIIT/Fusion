@@ -48,7 +48,14 @@ class Hall(models.Model):
     hall_name = models.CharField(max_length=50)
     max_accomodation = models.IntegerField(default=0)
     number_students = models.PositiveIntegerField(default=0)
+    assigned_batch = models.CharField(max_length=50, null=True, blank=True)
+    TYPE_OF_SEATER_CHOICES = [
+        ('single', 'Single Seater'),
+        ('double', 'Double Seater'),
+        ('triple', 'Triple Seater'),
+    ]
 
+    type_of_seater = models.CharField(max_length=50, choices=TYPE_OF_SEATER_CHOICES, default='single')
     def __str__(self):
         return self.hall_id 
 
@@ -81,20 +88,6 @@ class HallWarden(models.Model):
         return str(self.hall) + '  (' + str(self.faculty.id.user.username) + ')'
     
 
-class GuestRoomDetail(models.Model):
-    """
-    Records information related to guest rooms in Hall of Residences.
-
-    'hall' refers to the related Hall of Residence.
-    'room_no' stores the guest room number.
-    'room_status' stores the current status of the guest room from the available choices in 'ROOM_STATUS'.
-    """
-    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
-    room_no = models.CharField(max_length=4, unique=True)
-    room_status  = models.CharField(max_length=20, choices=HostelManagementConstants.ROOM_STATUS, default='Available')
-
-    def __str__(self):
-        return self.room_no
 
 
 class GuestRoomBooking(models.Model):
@@ -116,24 +109,32 @@ class GuestRoomBooking(models.Model):
     """    
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
     intender = models.ForeignKey(User, on_delete=models.CASCADE)
-    guest_name = models.CharField(max_length=100)
-    guest_phone = models.CharField(max_length=15)
-    guest_email = models.CharField(max_length=40, blank=True)
+    guest_name = models.CharField(max_length=255)
+    guest_phone = models.CharField(max_length=255)
+    guest_email = models.CharField(max_length=255, blank=True)
     guest_address = models.TextField(blank=True)
-    rooms_required =  models.IntegerField(default=1,null=True,blank=True)
-    guest_room_id = models.ManyToManyField(GuestRoomDetail)
+    rooms_required =  models.IntegerField(default=1, null=True, blank=True)
+    guest_room_id = models.CharField(max_length=255, blank=True)
     total_guest = models.IntegerField(default=1)
     purpose = models.TextField()
     arrival_date = models.DateField(auto_now_add=False, auto_now=False)
     arrival_time = models.TimeField(auto_now_add=False, auto_now=False)
     departure_date = models.DateField(auto_now_add=False, auto_now=False)
     departure_time = models.TimeField(auto_now_add=False, auto_now=False)
-    status = models.CharField(max_length=15, choices=HostelManagementConstants.BOOKING_STATUS ,default ="Pending")
+    status = models.CharField(max_length=255, choices=HostelManagementConstants.BOOKING_STATUS ,default ="Pending")
     booking_date = models.DateField(auto_now_add=False, auto_now=False, default=timezone.now)
-    nationality = models.CharField(max_length=20, blank=True)
+    nationality = models.CharField(max_length=255, blank=True)
+    ROOM_TYPES = [
+        ('single', 'Single'),
+        ('double', 'Double'),
+        ('triple', 'Triple'),
+        # Add more room types as needed
+    ]
+    room_type = models.CharField(max_length=10, choices=ROOM_TYPES ,default='single')
     
     def __str__(self):
         return '%s ----> %s - %s' % (self.id, self.guest_name, self.status)
+
 
 
 class StaffSchedule(models.Model):
@@ -146,8 +147,8 @@ class StaffSchedule(models.Model):
     'start_time' stores the start time of a schedule.
     'end_time' stores the end time of a schedule.
     """    
-    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
-    staff_id = models.ForeignKey(Staff, on_delete=models.ForeignKey)
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)   
+    staff_id = models.ForeignKey(Staff, on_delete=models.CASCADE)
     staff_type = models.CharField(max_length=100, default='Caretaker')
     day = models.CharField(max_length=15, choices=HostelManagementConstants.DAYS_OF_WEEK)
     start_time = models.TimeField(null=True,blank=True)
@@ -234,6 +235,137 @@ class WorkerReport(models.Model):
     absent = models.IntegerField(default= 0)
     total_day = models.IntegerField(default=31)
     remark = models.CharField(max_length=100)
-
     def str(self):
-        return str(self.worker_name)+'->' + str(self.month) + '-' + str(self.absent)   
+        return str(self.worker_name)+'->' + str(self.month) + '-' + str(self.absent)  
+
+
+
+class HostelInventory(models.Model):
+    """
+    Model to store hostel inventory information.
+    """
+
+    inventory_id = models.AutoField(primary_key=True)
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    inventory_name = models.CharField(max_length=100)
+    cost = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return self.inventory_name
+    
+
+class HostelLeave(models.Model):
+    student_name = models.CharField(max_length=100)
+    roll_num = models.CharField(max_length=20)
+    reason = models.TextField()
+    phone_number = models.CharField(max_length=20, null=True,blank=True)
+    start_date = models.DateField(default=timezone.now)
+    end_date = models.DateField()
+    status = models.CharField(max_length=20, default='pending')
+    remark = models.TextField(blank=True, null=True)
+    file_upload = models.FileField(upload_to='hostel_management/', null=True, blank=True)
+
+    def _str_(self):
+        return f"{self.student_name}'s Leave"  
+
+# changes
+
+class HostelComplaint(models.Model):
+    hall_name = models.CharField(max_length=100)
+    student_name = models.CharField(max_length=100)
+    roll_number = models.CharField(max_length=20)
+    description = models.TextField()
+    contact_number = models.CharField(max_length=15)
+
+    def __str__(self):
+        return f"Complaint from {self.student_name} in {self.hall_name}"
+      
+    
+class HostelAllotment(models.Model):
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    assignedCaretaker = models.ForeignKey(Staff, on_delete=models.CASCADE ,null=True)
+    assignedWarden = models.ForeignKey(Faculty, on_delete=models.CASCADE ,null=True)
+    assignedBatch=models.CharField(max_length=50)
+    def __str__(self):
+        return str(self.hall)+ str(self.assignedCaretaker)+str(self.assignedWarden) + str(self.assignedBatch)
+
+class StudentDetails(models.Model):
+    id = models.CharField(primary_key=True, max_length=20)
+    first_name = models.CharField(max_length=100,blank=True,null=True)
+    last_name = models.CharField(max_length=100,blank=True,null=True)
+    programme = models.CharField(max_length=100,blank=True,null=True)
+    batch = models.CharField(max_length=100,blank=True,null=True)
+    room_num= models.CharField(max_length=20,blank=True,null=True)
+    hall_no= models.CharField(max_length=20,blank=True,null=True)
+    hall_id=models.CharField(max_length=20,blank=True,null=True)
+    specialization = models.CharField(max_length=100,blank=True,null=True)
+    parent_contact = models.CharField(max_length=20, blank=True, null=True)
+    address = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+      return self.first_name
+
+
+
+class GuestRoom(models.Model):
+    """
+    'hall' foreign key: the hostel to which the room belongs
+    'room' guest room number
+    'vacant' boolean value to determine if the room is vacant
+    'occupied_till', date field that tells the next time the room will be vacant, null if 'vacant' == True
+    """
+    ROOM_TYPES = [
+        ('single', 'Single'),
+        ('double', 'Double'),
+        ('triple', 'Triple'),
+    ]
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    room = models.CharField(max_length=255)
+    occupied_till = models.DateField(null=True, blank=True)
+    vacant = models.BooleanField(default=True)
+    room_type = models.CharField(max_length=10, choices=ROOM_TYPES ,default='single')
+    @property
+    def _vacant(self) -> bool:
+        if self.occupied_till and self.occupied_till > timezone.now():
+            self.vacant = False
+        self.vacant = True
+
+    
+
+class HostelFine(models.Model):
+    fine_id = models.AutoField(primary_key=True)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE,default=1)
+    student_name = models.CharField(max_length=100)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Paid', 'Paid'),
+    ]
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Pending')
+    reason = models.TextField()
+
+    def __str__(self):
+        return f"{self.student_name}'s Fine - {self.amount} - {self.status}"
+    
+
+class HostelTransactionHistory(models.Model):
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    change_type = models.CharField(max_length=100)  # Example: 'Caretaker', 'Warden', 'Batch'
+    previous_value = models.CharField(max_length=255)
+    new_value = models.CharField(max_length=255)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.change_type} change in {self.hall} at {self.timestamp}"
+    
+class HostelHistory(models.Model):
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(default=timezone.now)
+    caretaker = models.ForeignKey(Staff, on_delete=models.SET_NULL, null=True, related_name='caretaker_history')
+    batch = models.CharField(max_length=50, null=True)
+    warden = models.ForeignKey(Faculty, on_delete=models.SET_NULL, null=True, related_name='warden_history')
+
+    def __str__(self):
+        return f"History for {self.hall.hall_name} - {self.timestamp}"

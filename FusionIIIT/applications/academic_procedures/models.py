@@ -2,10 +2,12 @@ import datetime
 
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
+from django.contrib.auth import get_user_model
 from applications.academic_information.models import Course, Student, Curriculum
-from applications.programme_curriculum.models import Course as Courses, Semester, CourseSlot
+from applications.programme_curriculum.models import Course as Courses, Semester, CourseSlot, Batch
 from applications.globals.models import DepartmentInfo, ExtraInfo, Faculty
 from django.utils import timezone
+
 
 
 class Constants:
@@ -283,6 +285,9 @@ class SemesterMarks(models.Model):
     # curr_id = models.ForeignKey(Curriculum, on_delete=models.CASCADE)
     curr_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
     #course_id = models.ForeignKey(Courses, on_delete=models.CASCADE, null=True)
+    
+    # def __str__(self):
+    #     return self.student_id
     class Meta:
         db_table = 'SemesterMarks'
 
@@ -565,8 +570,6 @@ class StudentRegistrationChecks(models.Model):
             final_registration_flag(boolean) - to denote whether the final registration is complete
             semester_id(programme_curriculum.Semester) - reference to the semester for which the registration will be considered
 
-
-        
     '''
 
 
@@ -577,6 +580,57 @@ class StudentRegistrationChecks(models.Model):
 
     class Meta:
         db_table = 'StudentRegistrationChecks'
+
+
+class course_registration(models.Model):
+    '''
+            Current Purpose : stores information regarding the process of registration of a student for a course 
+
+            ATTRIBUTES
+            course_id(programme_curriculum.Course) -  reference to the course details for which the registration is being done
+            semester_id(programme_curriculum.Semester) - reference to the semester for which the course registration is done
+            student_id(academic_information.Student) - reference to the student
+            course_slot_id(programme_curriculum.CourseSlot) - details about under which course slot the course is offered(Optional/Core other details)
+
+    '''
+    
+
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    working_year=models.IntegerField(null=True,blank=True,choices=Year_Choices)
+    semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True, on_delete=models.SET_NULL)
+    REGISTRATION_TYPE_CHOICES = [
+        ('Audit', 'Audit'),
+        ('Improvement', 'Improvement'),
+        ('Backlog', 'Backlog'),
+        ('Regular', 'Regular'),
+        ('Extra Credits', 'Extra Credits'),
+        ('Replacement', 'Replacement'),
+    ]
+    registration_type = models.CharField(
+        max_length=20,
+        choices=REGISTRATION_TYPE_CHOICES,
+        default='Regular',
+    )
+    session = models.CharField(max_length=9, null=True)   
+    SEMESTER_TYPE_CHOICES = [
+        ("Odd Semester", "Odd Semester"),
+        ("Even Semester", "Even Semester"),
+        ("Summer Semester", "Summer Semester"),
+    ]
+    semester_type = models.CharField(
+        max_length=20,
+        choices=SEMESTER_TYPE_CHOICES,
+        null=True
+    )
+    # grade = models.CharField(max_length=10)
+    #course_registration_year = models.IntegerField()
+    def __str__(self):
+        return str(self.semester_id.semester_no)
+    class Meta:
+        db_table = 'course_registration'
+        unique_together = ('course_id', 'student_id', 'semester_id', 'registration_type')
 
 
 class InitialRegistration(models.Model):
@@ -591,6 +645,7 @@ class InitialRegistration(models.Model):
             course_slot_id(programme_curriculum.CourseSlot) - details about under which course slot the course is offered(Optional/Core other details)
             timestamp - the time this entry was generated
             priority - priority of the selected course from the list of courses for the corresponding course_slot_it
+            registration_type - Type of registration for the course
 
 
         
@@ -601,11 +656,23 @@ class InitialRegistration(models.Model):
     course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True,on_delete=models.SET_NULL)
     timestamp = models.DateTimeField(default=timezone.now)
     priority = models.IntegerField(blank=True,null=True)
+    old_course_registration=models.ForeignKey(course_registration, null=True, on_delete=models.CASCADE)
+    REGISTRATION_TYPE_CHOICES = [
+        ('Audit', 'Audit'),
+        ('Improvement', 'Improvement'),
+        ('Backlog', 'Backlog'),
+        ('Regular', 'Regular'),
+    ]
+    registration_type = models.CharField(
+        max_length=20,
+        choices=REGISTRATION_TYPE_CHOICES,
+        default='Regular',
+    )
     
     class Meta:
         db_table = 'InitialRegistration'
-
-
+        unique_together = ('course_id', 'student_id', 'semester_id', 'registration_type')
+    
 class FinalRegistration(models.Model):
     '''
             Current Purpose : stores information regarding the process of final(complete) registration of a student for a course 
@@ -618,9 +685,6 @@ class FinalRegistration(models.Model):
             verified(Boolean) - denotes whether the registration is verified by academic department and complete
             course_slot_id(programme_curriculum.CourseSlot) - details about under which course slot the course is offered(Optional/Core other details)
 
-
-
-        
     '''
 
 
@@ -629,9 +693,22 @@ class FinalRegistration(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     verified = models.BooleanField(default=False)
     course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True,on_delete=models.SET_NULL)
+    old_course_registration=models.ForeignKey(course_registration, null=True, on_delete=models.CASCADE)
+    REGISTRATION_TYPE_CHOICES = [
+        ('Audit', 'Audit'),
+        ('Improvement', 'Improvement'),
+        ('Backlog', 'Backlog'),
+        ('Regular', 'Regular'),
+    ]
+    registration_type = models.CharField(
+        max_length=20,
+        choices=REGISTRATION_TYPE_CHOICES,
+        default='Regular',
+    )
 
     class Meta:
         db_table = 'FinalRegistration'
+        unique_together = ('course_id', 'student_id', 'semester_id', 'registration_type')
 
 
 class CourseRequested(models.Model):
@@ -667,30 +744,275 @@ class FeePayments(models.Model):
         db_table = 'FeePayments'
 
 
-class course_registration(models.Model):
-    '''
-            Current Purpose : stores information regarding the process of registration of a student for a course 
+class course_replacement(models.Model):
+    old_course_registration=models.ForeignKey(course_registration, on_delete=models.CASCADE,related_name="replaced")
+    new_course_registration=models.ForeignKey(course_registration, on_delete=models.CASCADE, related_name="replaces")
+    class Meta:
+        db_table = 'course_replacement'
+        unique_together = ('old_course_registration', 'new_course_registration')
 
+class backlog_course(models.Model):
+    '''
+            Current Purpose : stores information regarding the backlog courses of a student (purpose is unclear and is open to interpretations)
 
             ATTRIBUTES
             course_id(programme_curriculum.Course) -  reference to the course details for which the registration is being done
             semester_id(programme_curriculum.Semester) - reference to the semester for which the course registration is done
             student_id(academic_information.Student) - reference to the student
-            course_slot_id(programme_curriculum.CourseSlot) - details about under which course slot the course is offered(Optional/Core other details)
-
-
-
-        
+            is_summer_course(Boolean) - details about whether this course is available as summer_course or not
     '''
-
-
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-    working_year=models.IntegerField(null=True,blank=True,choices=Year_Choices)
     semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
-    course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
-    course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True, on_delete=models.SET_NULL)
-    # grade = models.CharField(max_length=10)
-    #course_registration_year = models.IntegerField()
+    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    is_summer_course = models.BooleanField(default= False)
+
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+
+class Assignment(models.Model):
+    ta          = models.ForeignKey(Student, on_delete=models.CASCADE)
+    faculty     = models.ForeignKey(Faculty, on_delete=models.CASCADE)
+    start_year  = models.IntegerField()
+    start_month = models.IntegerField()  # 1–12
+    end_year    = models.IntegerField()
+    end_month   = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.ta}→{self.faculty} ({self.start_month}/{self.start_year}–{self.end_month}/{self.end_year})"
+
+class StipendRequest(models.Model):
+    PENDING      = 'pending'
+    FAC_APPROVED = 'approved_by_faculty'
+    HOD_APPROVED = 'approved_by_hod'
+    STATUS_CHOICES = [
+        (PENDING,      'Pending'),
+        (FAC_APPROVED, 'Approved by Faculty'),
+        (HOD_APPROVED, 'Approved by HOD'),
+    ]
+
+    assignment     = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name='stipends')
+    year           = models.IntegerField()
+    month          = models.IntegerField()
+    status         = models.CharField(max_length=20, choices=STATUS_CHOICES, default=PENDING)
+    faculty_remark = models.TextField(blank=True, null=True)
+    hod_remark     = models.TextField(blank=True, null=True)
 
     class Meta:
-        db_table = 'course_registration'
+        unique_together = ('assignment','year','month')
+        ordering        = ['year','month']
+
+    def __str__(self):
+        return f"{self.assignment.ta} - {self.month}/{self.year} [{self.get_status_display()}]"
+
+@receiver(post_save, sender=Assignment)
+def create_monthly_stipends(sender, instance, created, **kwargs):
+    if not created: return
+    sy, sm = instance.start_year, instance.start_month
+    ey, em = instance.end_year,   instance.end_month
+    year, month = sy, sm
+    while (year<ey) or (year==ey and month<=em):
+        StipendRequest.objects.create(assignment=instance, year=year, month=month)
+        if month==12:
+            month, year = 1, year+1
+        else:
+            month += 1
+
+
+
+class CourseReplacementRequest(models.Model):
+    STATUS_CHOICES = [
+        ("Pending",  "Pending"),
+        ("Approved", "Approved"),
+        ("Rejected", "Rejected"),
+    ]
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    academic_year = models.CharField(max_length=9)
+    semester_type = models.CharField(
+        max_length=20,
+        choices=[
+            ("Odd Semester",    "Odd Semester"),
+            ("Even Semester",   "Even Semester"),
+            ("Summer Semester", "Summer Semester"),
+        ],
+    )
+    course_slot = models.ForeignKey(CourseSlot, on_delete=models.CASCADE)
+    old_course = models.ForeignKey(
+        Courses,
+        related_name='old_course_reqs',
+        on_delete=models.CASCADE,
+    )
+    new_course = models.ForeignKey(
+        Courses,
+        related_name='new_course_reqs',
+        on_delete=models.CASCADE,
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="Pending",
+    )
+    created_at = models.DateTimeField(default=timezone.now)
+    processed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = (
+            'student',
+            'course_slot',
+            'academic_year',
+            'semester_type',
+        )
+
+    def __str__(self):
+        return f"{self.old_course.code}→{self.new_course.code} [{self.status}]"
+    
+
+class CourseDropRequest(models.Model):
+    STATUS_CHOICES = [
+        ("Pending",  "Pending"),
+        ("Approved", "Approved"),
+        ("Rejected", "Rejected"),
+    ]
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    academic_year = models.CharField(max_length=9)
+    semester_type = models.CharField(
+        max_length=20,
+        choices=[
+            ("Odd Semester",    "Odd Semester"),
+            ("Even Semester",   "Even Semester"),
+            ("Summer Semester", "Summer Semester"),
+        ],
+    )
+    course_slot = models.ForeignKey(CourseSlot, on_delete=models.CASCADE)
+    course = models.ForeignKey(
+        Courses,
+        related_name='drop_course_reqs',
+        on_delete=models.CASCADE,
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="Pending",
+    )
+    created_at = models.DateTimeField(default=timezone.now)
+    processed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = (
+            'student',
+            'course_slot',
+            'academic_year',
+            'semester_type',
+        )
+
+    def __str__(self):
+        return f"{self.course.code} Drop [{self.status}]"
+
+
+class CourseAddRequest(models.Model):
+    STATUS_CHOICES = [
+        ("Pending",  "Pending"),
+        ("Approved", "Approved"),
+        ("Rejected", "Rejected"),
+    ]
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    academic_year = models.CharField(max_length=9)
+    semester_type = models.CharField(
+        max_length=20,
+        choices=[
+            ("Odd Semester",    "Odd Semester"),
+            ("Even Semester",   "Even Semester"),
+            ("Summer Semester", "Summer Semester"),
+        ],
+    )
+    course_slot = models.ForeignKey(CourseSlot, on_delete=models.CASCADE)
+    course = models.ForeignKey(
+        Courses,
+        related_name='add_course_reqs',
+        on_delete=models.CASCADE,
+    )
+    old_course_registration = models.ForeignKey(
+        course_registration,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        help_text="Reference to the previous course registration being replaced (for backlog/improvement)"
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="Pending",
+    )
+    created_at = models.DateTimeField(default=timezone.now)
+    processed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = (
+            'student',
+            'course_slot',
+            'academic_year',
+            'semester_type',
+        )
+
+    def __str__(self):
+        return f"{self.course.code} Add [{self.status}]"
+
+
+class BatchChangeHistory(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    old_batch = models.ForeignKey(Batch, on_delete=models.PROTECT, related_name="history_old")
+    new_batch = models.ForeignKey(Batch, on_delete=models.PROTECT, related_name="history_new")
+    changed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-changed_at"]
+
+
+SEMESTER_CHOICES = [
+    ("Odd Semester", "Odd Semester"),
+    ("Even Semester", "Even Semester"),
+    ("Summer Semester", "Summer Semester"),
+]
+
+class FeedbackQuestion(models.Model):
+    SECTION_CHOICES = [
+        ("contents", "Course Contents"),
+        ("instructor", "Course Instructor"),
+        ("tutorial", "Tutorial"),
+        ("lab", "Lab Instructor"),
+        ("attendance", "Attendance"),
+    ]
+    section = models.CharField(max_length=20, choices=SECTION_CHOICES)
+    text    = models.TextField()
+    order   = models.PositiveIntegerField()
+    class Meta:
+        ordering = ["section", "order"]
+
+class FeedbackOption(models.Model):
+    question = models.ForeignKey(FeedbackQuestion, on_delete=models.CASCADE, related_name="options")
+    text     = models.CharField(max_length=50)
+    order    = models.PositiveIntegerField()
+    class Meta:
+        ordering = ["order"]
+
+class FeedbackResponse(models.Model):
+    question      = models.ForeignKey(FeedbackQuestion, on_delete=models.CASCADE)
+    option        = models.ForeignKey(FeedbackOption, on_delete=models.CASCADE, null=True, blank=True)
+    text_answer   = models.TextField(blank=True)
+    course        = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    section       = models.CharField(max_length=20, choices=FeedbackQuestion.SECTION_CHOICES)
+    session       = models.CharField(max_length=9)
+    semester_type = models.CharField(max_length=20, choices=SEMESTER_CHOICES)
+    submitted_at  = models.DateTimeField(auto_now_add=True)
+
+class FeedbackFilled(models.Model):
+    student      = models.ForeignKey(Student, on_delete=models.CASCADE)
+    semester_no  = models.PositiveIntegerField()
+    filled_at    = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("student", "semester_no")

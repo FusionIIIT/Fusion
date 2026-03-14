@@ -1,0 +1,86 @@
+<!-- file_tracking_form.html -->
+
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+    Seminar Status
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <div class="ui stackable doubling grid">
+        <div class="column"></div>
+
+        <div class="three wide column">
+            {% include 'globals/usercard.html' %}
+
+            <div class="ui divider"></div>
+
+            <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+                <a href="/otheracademic/graduate_status" class="active item">Graduate Seminar Status
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                
+
+            </div>
+        </div>
+
+        <div class="eight wide column">
+            <h2>Graduate Status</h2>
+            <div class="ui active tab segment" data-tab="first">
+                <table class="ui celled table">
+                    <thead>
+                        <tr>
+                            <th>Roll No.</th>
+                            <th>Semester</th>
+                            <th>Seminar Date</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in form_data %}
+                        {%if entry.roll_no == roll_no%}
+                        <tr>
+                            <td>{{ entry.roll_no }}</td>
+                            <td>{{ entry.semester }}</td>
+                            <td>{{ entry.date_of_seminar }}</td>
+                           
+                        </tr>
+                        {%  endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="three wide column">
+            <!-- Right rail content -->
+        </div>
+
+        <div class="column"></div>
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.approve-button').click(function() {
+                var entryId = $(this).data('id');
+                // Perform action to approve the entry with ID entryId
+                console.log('Approved entry with ID: ' + entryId);
+            });
+
+            $('.forward-button').click(function() {
+                var entryId = $(this).data('id');
+                // Perform action to forward the entry with ID entryId
+                console.log('Forwarded entry with ID: ' + entryId);
+            });
+        });
+    </script>
+{% endblock %}

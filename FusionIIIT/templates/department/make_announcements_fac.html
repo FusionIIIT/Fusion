@@ -13,6 +13,7 @@
             <!-- fill the form details -->
             <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST" enctype="multipart/form-data" 
                   action="">
+                <input type="hidden" name = "form_type" value = "form1">
                 {% csrf_token %}
                 <div class="ui header">
                     Make a new Announcement:

@@ -32,25 +32,43 @@
             <div class="ui divider"></div>
 
             {% comment %}The Tab-Menu starts here!{% endcomment %}
+            
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
-                <a class="active item" data-tab="first">
+                 <a class="active item" data-tab="first">
+                    Lodge a Complaint
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="second">
+                    Complaint History
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="third">
+                    Feedback
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                
+                <!-- <a class=" item" data-tab="fourth">
                     View Caretaker
                     <i class="right floated chevron right icon"></i>
-                </a>
-                <a class="item" data-tab="second">
+                </a> -->
+                <!-- <a class="item" data-tab="second">
                     Resolved Complaints
-                    <i class="right floated chevron right icon"></i>
-                </a>
-                <a class="item" data-tab="third">
-                    Unresolved Complaints
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                    <i class="right floated chevron right icon"></i> 
+                </a> -->
+                {% if "supervisor" in global_var %}
                 <a class="item" data-tab="fourth">
+                    Redirected Complaints
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                <!-- <a class="item" data-tab="sixth">
                     Overdue Complaints
                     <i class="right floated chevron right icon"></i>
-                </a>
+                </a> -->
 
                
 
@@ -73,26 +91,49 @@
         <div class="eight wide column">
             {% comment %}The ... start here!{% endcomment %}
             <div class="ui active tab segment" data-tab="first">
+                {% block lodgecomplaint %}
+                    {%  include 'complaintModule/lodgecomplaint_super.html' %}
+                {%  endblock %}
+            </div>
+            {% comment %}The ... end here!{% endcomment %}
+
+            {% comment %}The ... starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="second">
+                {% block complainthistory %}
+                    {%  include 'complaintModule/complainthistory_super_final.html' %}
+                {%  endblock %}
+            </div>
+            {% comment %}The ... ends here!{% endcomment %}
+
+            {% comment %}The ... starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="third">
+                {% block feedback %}
+                    {%  include 'complaintModule/feedback.html' %}
+                {%  endblock %}
+            </div>
+            {% comment %}The ... ends here!{% endcomment %}
+            {% comment %}The ... start here!{% endcomment %}
+            <div class="ui  tab segment" data-tab="fifth">
                 {% block managecaretakers %}
                     {%  include 'complaintModule/manage_caretakers.html' %}
                 {%  endblock %}
             </div>
             {% comment %}The ... end here!{% endcomment %}
             {% comment %}The ... start here!{% endcomment %}
-            <div class="ui tab segment" data-tab="second">
+            <div class="ui tab segment" data-tab="seventh">
                 {% block resolvedsuper %}
                     {%  include 'complaintModule/resolved_super.html' %}
                 {%  endblock %}
             </div>
             {% comment %}The ... end here!{% endcomment %}
             {% comment %}The ... start here!{% endcomment %}
-            <div class="ui  tab segment" data-tab="third">
+            <div class="ui  tab segment" data-tab="fourth">
                 {% block unresolvedsuper %}
                     {%  include 'complaintModule/unresolved_super.html' %}
                 {%  endblock %}
             </div>
             {% comment %}The ... end here!{% endcomment %}
-            <div class="ui tab segment" data-tab="fourth">
+            <div class="ui tab segment" data-tab="sixth">
                 {% block overduesuper %}
                     {%  include 'complaintModule/overdue_super.html' %}
                 {%  endblock %}

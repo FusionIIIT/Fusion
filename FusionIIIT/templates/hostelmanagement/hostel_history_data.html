@@ -1,0 +1,38 @@
+{% load custom_tags %}
+
+{% block {{hall.hall_id}} %}
+<h2 align="center">{{hall.hall_id}} History</h2>
+<div class="textLoader" style="max-height: 64vh; overflow-y: auto; overflow-x: auto;">
+    <table class="ui table" border="1">
+        <thead>
+            <tr>
+                <th>Hall</th>
+                
+                <th>Batch</th>
+                <th>Caretaker</th>            
+                <th>Warden</th>
+                <th>Date</th>
+                
+                
+
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in hostel_history %}
+             
+            {% if entry.hall == hall %}
+            <tr>
+                <td>{{entry.hall}}</td>
+                
+                <td>{{ entry.batch }}</td>
+                <td>{{ entry.caretaker }}</td>               
+                <td>{{ entry.warden }}</td>
+                <td>{{ entry.timestamp|date:"Y-m-d" }}</td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+    {% endblock %}

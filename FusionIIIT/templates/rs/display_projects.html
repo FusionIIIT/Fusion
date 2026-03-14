@@ -1,0 +1,201 @@
+
+
+{% load static %}
+
+{% block title %}
+
+{% endblock %}
+
+{% block view_projects %}
+
+{% block body %}
+
+
+<script>
+    $(document).ready(function(){
+        $('#sort-by-date-btn').click(function(){
+            sortByStartDate();
+        });
+
+        function sortByStartDate() {
+            var rows = $('tbody > tr');
+            rows.sort(function(a, b) {
+                var dateA = new Date($(a).find('.start-date').text()); // Get the start date from the start date column
+                var dateB = new Date($(b).find('.start-date').text());
+                return dateA - dateB;
+            });
+            $('tbody').empty().append(rows); // Replace the existing rows with the sorted rows
+        }
+    });
+</script>
+
+
+<style>
+    .equal-size-button {
+        width: 100px; /* Adjust the width according to your preference */
+    }
+
+    /* Responsive styling */
+     table.ui.celled.table {
+        width: 100%; /* Set table width to 100% */
+    }
+    @media only screen and (max-width: 991px) {
+        .ui.pointing.secondary.menu {
+            font-size: 20px;
+        }
+    }
+
+    @media only screen and (max-width: 767px) {
+        .ui.pointing.secondary.menu {
+            font-size: 15px;
+        }
+
+        .equal-size-button {
+            width: auto; /* Adjust the width for smaller screens */
+            margin-bottom: 5px; /* Add margin for better spacing */
+        }
+    }
+    .ui.small.grey.equal-size-button.button:hover{
+        background-color:black;
+    }
+    .ui.small.equal-size-button.button:hover{
+        background-color:#035afc;
+    }
+</style>
+<div style="width:100%">
+<div class="ui pointing secondary menu" style="font-size:25px; width:100%" >
+    <label style="text-transform: uppercase;" class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
+        Projects          
+
+    </label>
+          
+</div>
+
+ {% if projects|length == 0  %}
+    <div>
+        <h2>No Projects</h2>
+    </div>
+    {% else %}
+<div class="ui active tab" style="width:100%">
+
+    <table class="ui celled table">
+        <thead>
+            <tr style="background-color: #4CAF50; color: white;">
+                <th style="text-transform: uppercase">
+                    <div style="display:flex">
+                        <div>
+                            Project Name 
+                        </div>
+                        
+                    </div>
+                </th>
+                <th style="text-transform: uppercase">Sponsored Agency</th>
+                <th style="text-transform: uppercase">Status</th>
+                {% if global_var == "rspc_admin" %}
+                <th style="text-transform: uppercase">Financial Outlay</th>
+                {% endif %}
+                <th style="text-transform: uppercase">Staff Details</th>
+            <th style="text-transform: uppercase">Project Info</th>
+            
+        </tr>
+    </thead>
+    <tbody>
+        {% for project in projects %}
+        <tr>
+            {% comment %} <td>{{forloop.counter}}</td> {% endcomment %}
+            {% comment %} <td>{{project.project_id}}</td> {% endcomment %}
+            <td>
+                {% if project.project_name|length > 10 %}
+                {{ project.project_name|slice:":10" }}...
+                {% else %}
+                {{ project.project_name }}
+                {% endif %}
+            </td>
+            {% comment %} <td>{{project.project_type}}</td> {% endcomment %}
+            <td>{{project.sponsored_agency}}</td>
+            {% comment %} <td>{{project.years}}</td> {% endcomment %}
+            <td>
+                {% if project.status == 0 %}
+                <div class="ui teal label">OnGoing</div>
+                {% endif %}
+                {% if project.status == 1 %}
+                <div class="ui teal label">Completed</div>
+                {% endif %}
+            </td>
+            {% if global_var == "rspc_admin" %}
+            <td>
+                {% if project.financial_outlay_status == 0  %}
+
+                <button id="fhello{{ project.project_id }}" class="ui small grey equal-size-button button"onmouseover="changeText('fhello{{ project.project_id }}')" onmouseout="restoreText('fhello{{ project.project_id }}')" onclick="window.location='/research_procedures/financial_outlay/{{project.project_id}}'"><i class="plus icon"></i></button>
+                {% endif %}
+                {% if project.financial_outlay_status == 1 %}
+                <button id="vhello{{ project.project_id }}" class="ui small grey equal-size-button button" onmouseover="changeText('vhello{{ project.project_id }}')" onmouseout="restoreText('vhello{{ project.project_id }}')" onclick="window.location='/research_procedures/view_financial_outlay/{{project.project_id}}'"><i class="eye icon"></i></button>
+                {% endif %}
+            </td>
+            {% endif %}
+            <td>
+                <div>
+                {% if request.user.extrainfo.user_type == "staff" %}
+                <button id="{{ project.project_id }}" class="ui small grey equal-size-button button" onmouseover="changeText({{ project.project_id }})" onmouseout="restoreText({{ project.project_id }})" onclick="window.location='/research_procedures/add_staff_details/{{ project.project_id }}'"><i class="plus icon"></i></button>
+                {% endif %}
+                <button style="margin-top:5px;" id="hello{{ project.project_id }}" class="ui small grey equal-size-button button" onmouseover="changeText('hello{{ project.project_id }}')" onmouseout="restoreText('hello{{ project.project_id }}')"  onclick="window.location='/research_procedures/view_staff_details/{{ project.project_id }}'"><i class="eye icon"></i></button>
+                </div>
+            </td>
+            
+            <td>
+                <button class="ui small blue equal-size-button button" style="color:white" onclick="window.location='/research_procedures/view_project_info/{{project.project_id}}'">View</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="pagination" style="margin-top: 2rem;">
+    {% if current_page > 1 %}
+    <a class="mini ui button" href="?page={{ current_page|add:"-1" }}" ><i class="left arrow icon"></i></a>
+    {% endif %}
+    
+    {% for page_num in total_pages %}
+    {% if page_num == current_page %}
+    <a href="?page={{ page_num }}" style="color:blue">{{ page_num }}</a>
+    {% else %}
+    <a href="?page={{ page_num }}" style="color: black">{{ page_num }}</a>
+    {% endif %}
+        {% endfor %}
+        
+        {% if current_page < total_pages|length %}
+        <a class="mini ui button" href="?page={{ current_page|add:"1" }}"><i class="right arrow icon"></i></a>
+        {% endif %}
+    </div>
+    
+</div>
+    
+    
+    
+    {% endif %}
+</div>
+<script>
+    function changeText(pid) {
+        console.log(pid);
+        if(pid[0]=='h'){
+            
+            document.getElementById(pid).innerHTML = "View";
+        }
+    else if(pid[0]=='f')document.getElementById(pid).innerHTML = "Add";
+    else if(pid[0]=='v')document.getElementById(pid).innerHTML = "View";
+    else document.getElementById(pid).innerHTML = "Add";
+  }
+
+  function restoreText(pid) {
+    if(pid[0]=='h'){
+
+        document.getElementById(pid).innerHTML = '<i class="eye icon"></i>';
+    }
+    else if(pid[0]=='f')document.getElementById(pid).innerHTML = '<i class="plus icon"></i>';
+    else if(pid[0]=='v')document.getElementById(pid).innerHTML = '<i class="eye icon"></i>';
+    else document.getElementById(pid).innerHTML = '<i class="plus icon"></i>';
+  }
+</script>
+{% endblock %}
+
+{% endblock %}

@@ -6,13 +6,17 @@
             View Menu
         </a>
 
-        <a class="item" data-tab="fifteenth">
-            Meeting information
+        <a class="item" data-tab="twentythree">
+            View Registrations
         </a>
 
-        <a class="item" data-tab="sixteenth">
-            Feedback Statistics
+        <a class="item" data-tab="twelfth">
+            View Bills
         </a>
+
+        {% comment %} <a class="item" data-tab="sixteenth">
+            Feedback Statistics
+        </a> {% endcomment %}
 
         <a class="item" data-tab="forteenth">
             View Feedback | Statistics
@@ -23,106 +27,117 @@
 {% if info.user_type == 'student' %}
         {% if d.designation.name == 'student' %}
         
-
-            <a class="active item"  data-tab="fourth">
-            Menu | Bill | Payment Details
+            <a class="active item" data-tab="thirteenth">
+                View Menu
             </a>
 
-            <a class=" item" data-tab="first">
+            <a class="item"  data-tab="fourth">
+            View Bill and Payments 
+            </a>
+
+            <a class=" item" data-tab="first" {%if reg_main_stud.current_mess_status == "Deregistered" %} style="display: none;" {% endif %}
+            >
                 Feedback
             </a>
 
             
-            <a class="item" data-tab="sixth">
+            {% comment %} <a class="item" data-tab="sixth">
                 Apply For Non-veg | Check History
+            </a> {% endcomment %}
+
+            <a class="item" data-tab="second" {%if reg_main_stud.current_mess_status == "Deregistered" %} style="display: none;" {% endif %}>
+                Applications
+            </a>
+
+            <!-- <a class="item" data-tab="fifteenth">
+                View Meeting Minutes
+            </a> -->
+            {% if messinfo.mess_option == 'no-mess' %}
+
+            <a class="item" data-tab="Registration">
+                Registration
+            </a>
+
+
+            {% elif reg_main_stud.current_mess_status == "Deregistered" %}
+
+            <a class="item" data-tab="Registration">
+                Registration
+            </a>
+
+            {% else %}
+
+            <a class="item" data-tab="updatePayment">
+                Update Payment
+            </a>
+
+            <a class="item" data-tab="Deregistration">
+                Deregistration
+            </a>
+            {% endif %}
+
+        {% endif %}
+        {% if d.designation.name == 'mess_committee' or d.designation.name == 'mess_committee_mess2' %}
+            <a class="item" data-tab="eighth">
+                Change Menu
+            </a>
+            <!-- <a class="item" data-tab="fifteenth">
+                Meeting information
+            </a> -->
+
+            <a class="item" data-tab="forteenth">
+                View Feedback | Statistics
+            </a>
+
+
+        {% endif %}
+        {% if d.designation.name == 'mess_convener' or d.designation.name == 'mess_convener_mess2' %}
+            <a class="item" data-tab="forteenth">
+                View Feedback | Statistics
+            </a>
+
+            <a class="item" data-tab="eighth">
+                Change Menu
             </a>
 
             <!-- <a class="item" data-tab="ninth">
                 Meeting Information
             </a> -->
-            
 
-            <a class="item" data-tab="second">
-                Applications
-            </a>
-            
- <!--  
-            <a class="item" data-tab="third">
-                Apply For Vacation Food
-            </a>
-
-            <a class="item" data-tab="fifth">
-                Special Food Request | Choose mess
-            </a>
-            -->
-            
-
-
-        {% endif %}
-        {% if d.designation.name == 'mess_committee_mess1' or d.designation.name == 'mess_committee_mess2' %}
-            <a class="item" data-tab="eighth">
-                Change Menu
-            </a>
-            <a class="item" data-tab="fifteenth">
-                Meeting information
-            </a>
-<!--
-            <a class="item" data-tab="tenth">
-                Meeting Minutes
-            </a>
-            -->
-
-            <a class="item" data-tab="forteenth">
-                View Feedback | Statistics
-            </a>
-            <!--
-            <a class="item" data-tab="sixteenth">
-                Feedback Statistics
-            </a>
-            -->
-
-
-        {% endif %}
-        {% if d.designation.name == 'mess_convener_mess1' or d.designation.name == 'mess_convener_mess2' %}
-            <a class="item" data-tab="forteenth">
-                View Feedback | Statistics
-            </a>
-
-            <a class="item" data-tab="eighth">
-                Change Menu
-            </a>
-
-            <a class="item" data-tab="ninth">
-                Meeting Information
-            </a>
-
-            <a class="item" data-tab="eleventh">
-                View Special Food Request
+            <a class="item" data-tab="thirteenth">
+                View Menu
             </a>
 {##}
 {#            <a class="item" data-tab="seventeenth">#}
 {#                Publish Minutes#}
 {#            </a>#}
-            <!--
-            <a class="item" data-tab="sixteenth">
-                Feedback Statistics
-            </a>
-            -->
+
         {% endif %}
     {% endif %}
 
 
     {% if info.user_type == 'staff' and d.designation.name == 'mess_manager' %}
+    <a class="item" data-tab="forteenth">
+        View Feedback | Statistics
+    </a> 
         <a class="item" data-tab="seventh">
-            Respond to requests
+            Respond to rebate requests
+        </a>
+        
+        <a class="item" data-tab="twentysix">
+            Reg/Dereg/UpdatePayment  Requests
         </a>
 
-        <a class="item" data-tab="twentytwo">
+        {% comment %} <a class="item" data-tab="twentytwo">
             Non-Veg Orders
-        </a>
+        </a> {% endcomment %}
 
-        <a class="item" data-tab="nineteenth">
+        <!-- <a class="item" data-tab="nineteenth">
             Menu Requests
+        </a> -->
+        
+        <a class="item" data-tab="eleventh">
+            View Special Food Request
         </a>
 
         <a class="active item" data-tab="thirteenth">
@@ -131,6 +146,24 @@
 
         <a class="item" data-tab="twelfth">
             Mess Activities
+        </a>
+        <!-- <a class="item" data-tab="fifteenth">
+            View Meeting Minutes
+        </a> -->
+        <a class="item" data-tab="twentythree">
+            Manage Registrations
+        </a>
+        {%comment %}
+        <a class="item" data-tab="twentyfour"> 
+            Upload Due Amount
+        </a>
+        {%endcomment%}
+        <a class="item" data-tab="twentyfive">
+            Update Menu
+        </a>
+        
+        <a class="item" data-tab="twentyseven">
+            Update Sem Dates
         </a>
     {% endif %}
 

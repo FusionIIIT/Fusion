@@ -1,0 +1,74 @@
+<!-- jQuery Library -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Table Segment -->
+<div class="ui bottom attached tab segment" data-tab="second">
+    <div id="textSegmentDiv">
+        <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+            <div class="content">
+                <div class="description" style="overflow: auto; max-height: 480px">
+                    <!-- Table to display cpda requests -->
+                    <table class="ui celled medium table" style="text-align: center; margin: auto;">
+                        <thead>
+                            <tr style="font-size: medium; background-color: whitesmoke;">
+                                <th><h4>Form Id</h4></th>
+                                <th><h4>User</h4></th>
+                                <th><h4>Desgination</h4></th>
+                                <th><h4>Date</h4></th>
+                                <th><h4>View</h4></th>
+                                <th><h4>Track</h4></th>
+                                <!-- Add more headers for cpda request details -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Loop through cpda requests and display in table -->
+                            {% for cpda_request in inbox %}
+                                <tr>
+                                    <td>{{ cpda_request.id }}</td>
+                                    <td>{{ cpda_request.sent_by_user }}</td>
+                                    <td>{{ cpda_request.sent_by_designation }}</td>
+                                    <td>{{ cpda_request.upload_date }}</td>
+                                    <td><a href="http://127.0.0.1:8000/hr2/form_view_cpda/{{ cpda_request.src_object_id }}?param1={{ cpda_request.sent_by_user }}&param2={{ cpda_request.sent_by_designation }}&param3={{ cpda_request.id }}">View</a></td>
+
+                                    <td><a href="http://127.0.0.1:8000/hr2/track_file/{{ cpda_request.id }}">Track</a></td>
+
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4">No CPDA requests found</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    $(document).ready(function() {
+        $('.forward-btn').on('click', function() {
+            var cpdaId = $(this).data('cpda-id'); // Get cpda request ID from button data
+
+            $.ajax({
+                url: '/hr2/form_mangement_cpda_hr/' + cpdaId + '/', // URL to send request to
+                type: 'POST', // HTTP method
+                data: {
+                    'id': cpdaId, // Include cpda request ID in data
+                    'csrfmiddlewaretoken': '{{ csrf_token }}' // Include CSRF token for security
+                },
+                success: function(response) {
+                    // Handle success response, if needed
+                    console.log(response);
+                },
+                error: function(xhr, status, error) {
+                    // Handle error
+                    console.error(error);
+                }
+            });
+        });
+    });
+</script>

@@ -1,0 +1,137 @@
+{% extends 'filetracking/filetracking.html' %}
+{% load static %}
+
+{% block filetracking_tab %}
+{% if designations != global_var %}
+  <script>window.location.href = "{% url 'filetracking:inward' %}";</script>
+{% endif %}
+
+<style>
+  .unread-row {
+    background-color: #ffffff; 
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  .read-row {
+    background-color: #f0f0f0;
+  }
+  .read-row td {
+    opacity: 0.5; 
+  }
+</style>
+
+<div class="ui pointing secondary menu">
+  <h3>
+    <a class="active item" data-tab="inward">
+      Inbox  <i>&nbsp;for&nbsp;{{request.user.extrainfo.user}} - {{designations}}</i>
+    </a>
+  </h3>
+</div>
+<div class="ui divider"></div>
+
+<!-- Accordion Filter Section -->
+<div class="ui styled fluid accordion">
+  <div class="title">
+    <i class="dropdown icon"></i>
+    Filter Search
+  </div>
+  <div class="content">
+    <form method="get" action="" class="ui form">
+      <div class="field">
+        <label for="subjectQuery">Search by subject</label>
+        <input type="text" name="q" id="subjectQuery" placeholder="Search by subject..." value="{{ request.GET.q }}">
+      </div>
+      <div class="field">
+        <label for="sentByQuery">Search by sent by</label>
+        <input type="text" name="q" id="sentByQuery" placeholder="Search by sent by..." value="{{ request.GET.q }}">
+      </div>
+      <div class="field">
+        <label for="datePicker">Search by date</label>
+        <div class="ui calendar" id="datePicker">
+          <div class="ui input left icon">
+            <i class="calendar icon"></i>
+            <input type="text" name="q" id="dateQuery" placeholder="Search by date" value="{{ request.GET.q }}">
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="ui primary button">Search</button>
+    </form>
+  </div>
+</div>
+
+<!-- Table Section -->
+<table class="ui very basic celled sortable table">
+  <thead>
+    <tr>
+      <th>Sent by</th>
+      <th>File ID</th>
+      <th>Subject</th>
+      <th data-sort-type="date">Last Received</th>
+      <th>View File</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for f in page_obj %}
+        {% if f.is_forwarded %}
+        <tr class="read-row">
+        {% else %}
+        <tr class="unread-row">
+        {% endif %}
+        <td>{{ f.sent_by_user }}-{{ f.sent_by_designation }}</td>
+        <td>{{ f.uploader_department }}-{{ f.upload_date.year }}-{{ f.upload_date.month }}-#{{ f.id }}</td>
+        <td>{{ f.subject|default:"None" }}</td>
+        <td data-sort-value="{{ f.receive_date|date:'Y-m-d H:i:s' }}">{{ f.receive_date|date:"d M Y, H:i" }}</td>
+        <td>
+            <a href="{% url 'filetracking:view_file_view' f.id %}">
+                <button class="ui primary button">View</button>
+            </a>
+        </td>
+        </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- Pagination Section -->
+<div class="pagination">
+  <span class="step-links">
+    {% if page_obj.has_previous %}
+      <a href="?page=1">&laquo; first</a>
+      <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+    {% endif %}
+
+    <span class="current">
+      Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+    </span>
+
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}">next</a>
+      <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+    {% endif %}
+  </span>
+</div>
+
+<br>
+
+<script>
+$(document).ready(function() {
+  // Initialize Semantic UI accordion
+  $('.ui.accordion').accordion();
+
+  // Initialize Semantic UI calendar
+  $('#datePicker').calendar({
+    type: 'date',
+    formatter: {
+      date: function (date, settings) {
+        if (!date) return '';
+        var day = date.getDate();
+        var month = date.getMonth() + 1;
+        var year = date.getFullYear();
+        return year + '-' + (month < 10 ? '0' + month : month) + '-' + (day < 10 ? '0' + day : day);
+      }
+    }
+  });
+});
+</script>
+
+{% endblock %}
+

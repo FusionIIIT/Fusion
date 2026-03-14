@@ -1,0 +1,68 @@
+{% extends 'examination/base.html' %}
+
+{% block sidetabmenu %}
+<div class="ui medium fluid vertical pointing menu" style="max-width: 320px;">
+  <a class="item" href="{% url 'examination:verifyGradesDean' %}">Verify
+    <i class="right floated chevron right icon"></i>
+  </a>
+  {% comment %} <a class="item" href="{% url 'examination:authenticate' %}">Authenticate Course
+    <i class="right floated chevron right icon"></i>
+  </a> {% endcomment %}
+  <a class="active item" href="{% url 'examination:validateDean' %}"><B> Validate</B>
+    <i class="right floated chevron right icon"></i>
+  </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<h1>Validate Results</h1>
+<br />
+
+<form id="your-form-id" method="POST" enctype="multipart/form-data" action="{% url 'examination:validateDeanSubmit' %}">
+    {% csrf_token %}
+    <div style="display: flex; flex-direction: column; gap: 30px;">
+        <div style="display: flex; flex-direction: row; gap: 50px;">
+            <div style="display: flex; flex-direction: row; gap: 10px;">
+                <div style="margin-top: 8px;">
+                    <label>Course</label>
+                </div>
+                <div class="ui selection dropdown" id="course-dropdown">
+                    <input type="hidden" name="course">
+                    <i class="dropdown icon"></i>
+                    <div class="default text">Select Course</div>
+                    <div class="menu">
+                        {% for course in courses_info %}
+                        <div class="item" data-value="{{ course.id }}"> {{ course.code }} - {{ course.name }} - {{ course.version }}</div>
+                        {% empty %}
+                        <div class="item">No Courses Available</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; flex-direction: row; gap: 10px;">
+                <div style="margin-top: 8px;">
+                    <label>Academic Year</label>
+                </div>
+                <div class="ui selection dropdown" id="year-dropdown">
+                    <input type="hidden" name="year">
+                    <i class="dropdown icon"></i>
+                    <div class="default text">Select Year</div>
+                    <div class="menu">
+                        {% for working_year in working_years %}
+                        <div class="item" data-value="{{ working_year.working_year }}"> {{ working_year.working_year }}</div>
+                        {% empty %}
+                        <div class="item">No Years Available</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; flex-direction: row; gap: 50px; margin-left: 10px;" id="upload-section">
+            <input type="file" id="csv-file" name="csv_file" accept=".csv" required>
+            <button type="submit" class="ui primary button">Validate</button>
+        </div>
+    </div>
+</form>
+
+{% endblock %}

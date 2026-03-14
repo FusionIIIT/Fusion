@@ -1,0 +1,210 @@
+{% load static %}
+
+{% block account_admin_medical_relief %}
+
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="relief">
+           
+        Apply For Medical Relief
+    </a>
+    <a class="item" data-tab="inbox">
+        Inbox
+    </a>    
+</div>
+<div class="ui active tab" data-tab="relief">
+    <div class="ui vertical segment">
+        <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
+            <div class="field">
+                <label for="file">File</label>
+                <div class="ui fluid input">
+                    <input type="file" name="file" id="file" required="true">
+                </div>
+            </div>
+            
+            <br>
+    
+            <div class="field">
+                <label for="description">Description</label>
+                <div class="ui fluid input">
+                    <textarea id="description" class="ui textarea" name="description" type="text" required="true"></textarea>
+                </div>
+            </div>
+    
+            <br>
+    
+            <div class="field">
+                <label for="designation">Send to</label>
+                <div class="ui fluid input">
+                    <select id="designation" name="designation">
+                        {% for queryset in holdsDesignations %}
+                            {% for hd in queryset %}
+                                <option value="{{ hd.user.username }}">{{ hd.designation }}({{ hd.user.username }})</option>
+                            {% endfor %}
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+    
+                    <div class="field">
+                        <label><br></label>
+    
+                        <div>
+                          <input type="button" id="Submit" name="Submit" value="Send" class="ui small right floated primary button" />
+                        </div>
+    
+                    </div>
+                </form>
+                                   
+                    <script type="text/javascript">
+                        $('#Submit').click(function(e) {
+                            // Prevent the default form submission
+                            e.preventDefault();
+                            
+                            // Get the file input element
+                            var fileInput = document.getElementById('file');
+                            
+                            // Get the files from the input element
+                            var file = fileInput.files[0];
+                            
+                            // Create a new FormData object
+                            var formData = new FormData();
+                        
+                            // Append the CSRF token and other form data
+                            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                            formData.append('description', $('#description').val());
+                            formData.append('designation', $('#designation').val());
+                            formData.append('medical_relief_submit', $('#Submit').val());
+                        
+                            // Append the file
+                            formData.append('file', file);
+                        
+                            // Perform the AJAX request using jQuery's $.ajax()
+                            $.ajax({
+                                type: 'POST',
+                                url: '/healthcenter/student/', // Specify the URL
+                                data: formData,
+                                processData: false, // Don't process the data as a query string
+                                contentType: false, // Let the browser set the Content-Type header automatically
+                                success: function(response) {
+                                    // Handle the server's response (e.g., parsing JSON data)
+                                    
+                                    alert('File Forwarded Successfully to Compounder');
+                                    window.location.reload();
+                                    
+
+                                },
+                                error: function(xhr, status, error) {
+                                    // Handle any errors during the request
+                                    console.error('Upload failed:', status, error);
+                                }
+                            });
+                        });
+                        
+                    
+                    </script>    
+                </div>
+            </div>
+                
+
+<div class="ui tab" data-tab="inbox">
+    <div class="ui vertical segment" >
+        <table  border=1 class="ui very basic collapsing celled large sortable table"
+              style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;" >
+            <thead>
+            <tr>
+                <td style="font-weight:bold;color:black;" >
+                    Uploader ID
+                </td>
+
+                <td style="font-weight:bold;color:black;">
+                    Upload Date
+                </td>
+
+                <td style="font-weight:bold;color:black;" >
+                    Description
+                </td>
+                <td style="font-weight:bold;color:black;">
+                      File
+                </td>               
+                <td style="font-weight:bold;color:black;">
+                      Status
+                </td>               
+
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for inbox in acc_admin_inbox %}
+            <tr>
+
+                <td style="white-space:nowrap;">                    
+                    {{inbox.uploader}}
+                </td>
+                <td style="white-space:nowrap;">                
+                           
+                    {{inbox.upload_date}}   
+    
+                </td>
+
+                <td style="white-space:nowrap;">
+                    {{ inbox.desc}}       
+                   
+                </td>
+                <td style="white-space:nowrap;">
+                    <a href="{{ inbox.file }}" download>
+                        <i class="ui download icon right floated"></i>
+                    </a>
+                </td>
+
+                
+                <td>
+                    {% if inbox.status == True %}
+                        Approved
+                    {% else %}
+                        Pending
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if inbox.status == False %}
+                        <input type="button" onclick="rem({{inbox.id}})" id="{{inbox.id}}" name="Approve" value="Approve"class="ui green button" />
+                    {% endif %}
+                </td>
+
+            </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+
+            <script>
+                function rem(id) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/healthcenter/student/', // Specify the URL
+                        data: {
+                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                            file_id: id,  
+                            acc_admin_forward: 1,                            
+                        },
+                        success: function(data) {
+                            if (data.status === 1) {
+                                alert("Approved");
+                                // Optionally, reload the page
+                                window.location.reload();
+                            }
+                        }
+                    });
+                }
+                
+                
+           
+        </script>
+
+    </div>
+</div>
+
+
+
+
+{% endblock %}

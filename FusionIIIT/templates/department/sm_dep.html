@@ -26,8 +26,8 @@
             Announcements
         </a>
 
-        <a class="item" data-tab="Request">
-            Requests
+        <a class="item" data-tab="alumni">
+            Alumni
         </a>
 
     </div>
@@ -77,34 +77,20 @@
             <div class="content">
                 <div class="description">
                     <span>
+                        <p>Phone Number: {{ department_info.sm_info.phone_number }}</p>
+                        <p>Email: {{ department_info.sm_info.email }}</p>
                         <h3>
-                            Central Library :
+                            Facilities :
                         </h3>
                         <p>
-                            Institute library has e-resources through INDEST, Science Direct, IEEE, ACM, Springger Link, Nature and ASME. The Institute also has access to various online research journals & articles like following resources SIAm, AMS, ACS, Kluwer, APS, Palgrave, INFORMS, Rev.of Scientific Instruments, Appl.Physics Letters and the search engine Scopus. Total number of books in the Institute library by the year 2009-10 are approximately 6742.
-                        </p>
+                            {{ department_info.sm_info.facilites|linebreaks}}
+                         </p>
                         <h3>
                             Lab Infrastructure :
                         </h3>
-                        <ol>
-                            <li>
-                                <p>
-                                    <b>Circuits and Innovation Lab :</b>This laboratory is dedicated to circuits designing, is intended to serve its facilities as one of the teaching labs and also to facilitate teaching projects and research projects. These projects and teaching work include the experimental and innovative study in the field of analog and digital circuits, microcontrollers and its applications.
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Basic Electronics lab :</b> This Laboratory is dedicated to the concepts and implementation of basic circuits designing. It serves its facilities as one of the teaching labs and also to facilitate course projects
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>RF&Applied Electromagnetics :</b> This Laboratory acts as a research lab to researchscholars,research associatives. Main research areas of lab include understanding of high frequency devices ,Antenna theory concepts and design fields.
-                                </p>
-                            </li>
-                        </ol>
+                        <p>
+                           {{ department_info.sm_info.labs|linebreaks }}
+                        </p>
                     </span>
                     <div class="ui divider"></div>
                 </div>
@@ -123,14 +109,14 @@
                         <div class="ui vertical segment" >
 
                             {% comment %} {% if ann_list %} {% endcomment %}
-                            <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
-                                <thead>
-                                    <td> id </td>
-                                    <td> faculty name </td>
-                                    <td> sex </td>
-                                    <td> date_of_birth </td>
-                                    <td> address </td>
-                                    <td> phone_no </td>
+                            <table class="ui collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+                                <thead align="center" style="font-weight: bold;">
+                                    <td> ID </td>
+                                    <td> Faculty Name </td>
+                                    <!-- <td> title </td> -->
+                                    <td> Gender </td>
+                                    <td> DoB </td>
+                                    <td> Phone Number </td>
                                     {% comment %} <td> user_type </td>
                                     <td> department </td>
                                     <td> github </td> {% endcomment %}
@@ -145,7 +131,6 @@
                                     <!-- <td>{{ fcu.title }}</td> -->
                                     <td>{{ fcu.sex }}</td>
                                     <td>{{ fcu.date_of_birth }}</td>
-                                    <td>{{ fcu.address }}</td>
                                     <td>{{ fcu.phone_no }}</td>
                                     {% comment %} <td>{{ fcu.user_type }}</td>
                                     <td>{{ fcu.department.name }}</td>
@@ -317,57 +302,64 @@
         </div>
     </div>
 
-   <div class="ui tab" data-tab="Request">
+    <div class="ui tab" data-tab="alumni">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
                     <span>
-                        <div class="ui pointing secondary menu">
-                            <a class="active item" data-tab="file-request">
-                                File Requests
-                            </a>
-                            
-                            <a class="item" data-tab="request-history">
-                                Request History
-                            </a>
-
-
-                        </div>
-
-                        <div class="ui active tab" data-tab="file-request">
-                            <div class="ui vertical segment">
-                                <div class="content">
-                                    <div class="description">
-                                        <span>
-                                            {% with fac_list.staffNsm as faculty %}
-                                                {% block file-requests %}
-                                                    {% include "department/file_request.html" %}
-                                                {% endblock %}
-                                            {% endwith %}
-                                        </span>
-                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
-                                    </div>
-                                </div>
+                        {% comment %}Get student Data{% endcomment %}
+                        <div class="ui styled accordion">
+                            <div class="title">
+                                <i class="dropdown icon"></i>
+                                PhD Students
+                            </div>
+                            <div class="content">
+                                <a class="item" href="./alumni/">
+                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                    <button style="border: solid; float: left; display: block;">
+                                        PhD Students
+                                    </button>
+                                </a>
+                                <br>  
                             </div>
                         </div>
 
-                        <div class="ui tab" data-tab="request-history">
-                            <div class="ui vertical segment">
-                                <div class="content">
-                                    <div class="description">
-                                        <span>
-                                            {% block request_history %}
-                                                {% include "department/request_history.html" %}
-                                            {% endblock %}
-                                        </span>
-                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
-                                    </div>
-                                </div>
+                        <div class="ui styled accordion">
+                            <div class="title">
+                                <i class="dropdown icon"></i>
+                                MTech Students
+                            </div>
+                            <div class="content">
+                                <a class="item" href="./alumni/">
+                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                    <button style="border: solid; float: left; display: block;">
+                                        MTech Students
+                                    </button>
+                                </a>
+                                <br>  
+                            </div>
+                        </div>
+                            
+                        
+
+                        <div class="ui styled accordion">
+                            <div class="title">
+                                <i class="dropdown icon"></i>
+                                BTech Students
+                            </div>
+                            <div class="content">
+                                <a class="item" href="./alumni/">
+                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                    <button style="border: solid; float: left; display: block;">
+                                        BTech Students
+                                    </button>
+                                </a>
+                                <br>  
                             </div>
                         </div>
 
                     </span>
-                    {% comment %} <div class="ui divider"></div> {% endcomment %}
+                    <div class="ui divider"></div>
                 </div>
             </div>
         </div>

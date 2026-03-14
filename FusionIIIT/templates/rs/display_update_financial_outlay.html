@@ -1,0 +1,83 @@
+
+{% load static %}
+
+{% block title %}
+
+{% endblock %}
+
+{% block body %}
+
+
+<script>
+  
+</script>
+<style>
+  .active-row:hover {
+    background-color: #f4f4f4;
+    /* Change to whatever color you want for active row */
+  }
+</style>
+
+<div class="ui pointing secondary menu" style="font-size: 20px;">
+  <label class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
+    Financial Outlay Details for Project: &nbsp;<span class="ui blue text header">{{ project_name }}</span>
+  </label>
+</div>
+
+{% for year in years %}
+<div style="padding: 20px; width:100%">
+  <!-- <p style=" width: 100%; font-size:25px; text-align: center; "> Year {{year}} <p> -->
+  <table class="ui celled striped table" style="width: 100%; border-collapse: collapse; ">
+    <thead>
+      <tr>
+        <th colspan="5" style="text-align: center;">
+          Year {{year}}
+        </th>
+      </tr>
+      <tr style=" text-align: center;">
+        <th style="background-color:grey; color:white">Category</th>
+        <th style="background-color:grey; color:white">Subcategory</th>
+        <th style="background-color:grey; color:white">Alloted Amount</th>
+        <th style="background-color:grey; color:white">Amount Utilised</th>
+
+        <th style="background-color:grey; color:white">Update</th>
+        
+      </tr>
+    </thead>
+    <tbody>
+      {% for category, subcategory_data in category_data.items %}
+      {% for item in subcategory_data %}
+      {% if item.year == year %}
+      <tr style="text-align: center;">
+        <td>{{ item.category }}</td>
+        <td>{{ item.sub_category }}</td>
+        <td>{{ item.amount }}</td>
+        <td>{{item.utilized_amount}}</td>
+        <form method="POST" enctype="multipart/form-data" action="{% url 'research_procedures:update_financial_outlay' project_id %}">
+          {%  csrf_token  %}
+          <input type="hidden" name="financial_outlay_id" value={{item.financial_outlay_id}} >
+          <td>
+            <div class="ui labeled input">
+            <input class="ui label" type="number" name="used_amount">  <button type="submit" style="margin-left:5px;width:90px" id="{{ forloop.parentloop.counter }}{{forloop.counter}}" onmouseover="changeText('{{forloop.parentloop.counter }}{{forloop.counter}}')" onmouseout="restoreText('{{ forloop.parentloop.counter }}{{forloop.counter}}')" class="ui grey button"><i class="edit icon"></i></button>
+            </div>
+          </td> 
+        </form>
+      </tr>
+      {% endif %}
+      {% endfor %}
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<script>
+  function changeText(idi) {
+    document.getElementById(idi).innerHTML = "Update";
+  }
+
+  function restoreText(idi) {
+    document.getElementById(idi).innerHTML = '<i class="edit icon"></i>';
+  }
+</script>
+{% endfor %}
+
+{% endblock %}

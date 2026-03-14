@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave Approve</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
+    <style>
+        .scrollable-boundary {
+            width: 80%;
+            overflow-x: auto; /* Enable horizontal scrolling */
+            white-space: nowrap; /* Prevent line breaks */
+            border: 1px solid #ccc; /* Optional: border for visualization */
+            margin: 10 auto; /* Center the boundary */
+        }
+        .scrollable-container {
+            display: inline-block; /* Allow the boundary to expand with content */
+        }
+    </style>
+</head>
+<body>
+
+<!-- file_tracking_form.html -->
+
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+    Leave Approve
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <div class="ui stackable doubling grid">
+        <div class="column"></div>
+
+        <div class="three wide column">
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            <div class="ui divider">
+
+
+            </div>
+            <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+                <a href="/otheracademic/leaveApproveForm/" class="item">Leave Approve HOD (UG)
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/otheracademic/leaveApproveHOD/" class="item">Leave Approve HOD (PG)
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/otheracademic/leaveApproveTA/" class=" item">Leave Approve (TA)
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/otheracademic/leaveApproveThesis/" class="active item">Leave Approve (Thesis)
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/otheracademic/leaveStatus_Dip/" class="item">Leave Log (UG)
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/otheracademic/leaveStatusPG_Dip/" class="item">Leave Log (PG)
+                    <i class="right floated chevron right icon"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="ten wide column">
+            <h2 class="ui header">Leave Approve (Thesis)</h2>
+            <div class="scrollable-boundary">
+                <div class="scrollable-container">
+                    <table class="ui celled table">
+                        <thead>
+                            <tr>
+                                
+                                <th>Roll No.</th>
+                                <th>Student Name</th>
+                                <th>Programme</th>
+                                <th>Discipline</th>
+                                <th>Semester</th>
+                                <th>Applied Date</th>
+                                <th>Date From</th>
+                                <th>Date to</th>
+                                <th>Leave Type</th>
+                                <th>Attachment</th>
+                                <th>Purpose</th>
+                                <th>address</th>
+                                <th>Mobile No.</th>
+                                <th>Parent Mobile No. </th>
+                                <th>Mobile No. during leave </th>
+                                <th>Action </th>
+                                
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in form_data %}
+                            {% if entry.thesis_supervisor == roll_no%}
+                            <tr>
+                                {% if not entry.thesis_approved and not entry.thesis_rejected %}
+                                    
+                                    <td>{{ entry.roll_no_id }}</td>
+                                    <td>{{ entry.student_name }}</td>
+                                    <td>{{ entry.programme}}</td>
+                                    <td>{{ entry.discipline }}</td>
+                                    <td>{{ entry.Semester }}</td>
+                                    <td>{{ entry.date_of_application }}</td>
+                                    <td>{{ entry.date_from }}</td>
+                                    <td>{{ entry.date_to }}</td>
+                                    <td>{{ entry.leave_type }}</td>
+                                    <td>
+                                        {%if entry.upload_file == ""%}
+                                        {%else%}
+                                            <a href={{ entry.upload_file.url }}>Download</a>
+                                        {%endif%}
+                                    </td> 
+                                    <td>{{ entry.purpose }}</td>
+                                    <td>{{ entry.address }}</td>
+                                    <td>{{ entry.mobile_no }}</td>
+                                    <td>{{ entry.parent_mobile_no }}</td>
+                                    <td>{{ entry.alt_mobile_no }}</td>
+                                    <td>
+                                        <form action="{% url 'otheracademic:approve_leave_thesis'  leave_id=entry.id %}" method="post">
+                                            {% csrf_token %}
+                                            <button class="ui green button approve-button" style="margin-bottom : 10px; width:100%"  type="submit">Approve</button>
+                                        </form>
+                                        <form action="{% url 'otheracademic:reject_leave_thesis' leave_id=entry.id %}" method="post">
+                                            {% csrf_token %}
+                                            <button class="ui red button reject-button" style="width:100%" type="submit">Reject</button>
+                                        </form>
+                                        </td>
+                        
+                                    
+                                {% endif %}
+                            </tr>
+                            {%endif%}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="three wide column">
+            <!-- Right rail content -->
+        </div>
+
+        <div class="column"></div>
+    </div>
+
+{% endblock %}
+{% comment %} 
+{% block javascript %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.approve-button').click(function(e) {
+                e.preventDefault(); // Prevent default form submission
+                var leaveId = $(this).closest('form').data('leave-id');
+                approveLeave(leaveId);
+            });
+
+            $('.reject-button').click(function(e) {
+                e.preventDefault(); // Prevent default form submission
+                var leaveId = $(this).closest('form').data('leave-id');
+                rejectLeave(leaveId);
+            });
+        });
+
+        function approveLeave(leaveId) {
+            $.ajax({
+                type: 'POST',
+                url: '{% url "otheracademic:approve_leave_ta" %}',
+                data: {'leave_id': leaveId},
+                dataType: 'json',
+                success: function(response) {
+                    console.log(response.message);
+                    // Optionally, update the UI to reflect the approval
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+
+        function rejectLeave(leaveId) {
+            $.ajax({
+                type: 'POST',
+                url: '{% url "otheracademic:reject_leave_ta" %}',
+                data: {'leave_id': leaveId},
+                dataType: 'json',
+                success: function(response) {
+                    console.log(response.message);
+                    // Optionally, update the UI to reflect the rejection
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+    </script>
+{% endblock %} {% endcomment %}
+</body>
+</html>

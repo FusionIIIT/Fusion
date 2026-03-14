@@ -16,21 +16,23 @@ from django.template.loader import get_template
 from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
-from applications.academic_procedures.models import MinimumCredits, Register, InitialRegistration, course_registration, AssistantshipClaim,Assistantship_status
+from applications.academic_procedures.models import MinimumCredits, Register, InitialRegistration, course_registration, AssistantshipClaim,Assistantship_status,FinalRegistration, StudentRegistrationChecks
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation, DepartmentInfo)
 
-from .forms import AcademicTimetableForm, ExamTimetableForm, MinuteForm
+from .forms import AcademicTimetableForm, ExamTimetableForm, MinuteForm, PreRegistrationSearchForm
 from .models import (Calendar, Course, Exam_timetable, Grades, Curriculum_Instructor,Constants,
                      Meeting, Student, Student_attendance, Timetable,Curriculum)
-from applications.programme_curriculum.models import (CourseSlot, Course as Courses, Batch, Semester, Programme, Discipline)                     
+from applications.programme_curriculum.models import (CourseSlot, Course as Courses, Batch, Semester, Programme, Discipline, CourseInstructor)                     
 
 
 
-from applications.academic_procedures.views import acad_proced_global_context
+from applications.academic_procedures.views import acad_proced_global_context , get_sem_courses
 from applications.programme_curriculum.models import Batch
-
+from django.db.models import Q
+from .utils import check_for_registration_complete,allocate,view_alloted_course
 
 
 @login_required
@@ -107,9 +109,8 @@ def get_context(request):
     # course_type = Constants.COURSE_TYPE
     # timetable = Timetable.objects.all()
     # exam_t = Exam_timetable.objects.all()
-
     procedures_context = acad_proced_global_context()
-
+    notifs = request.user.notifications.all()
     try:
         examTtForm = ExamTimetableForm()
         acadTtForm = AcademicTimetableForm()
@@ -129,6 +130,7 @@ def get_context(request):
         assistant_flag =""
         hod_flag = ""
         account_flag = ""
+        PreRegistrationsrchform = PreRegistrationSearchForm()
 
         for obj in assis_stat:
             assistant_flag = obj.student_status
@@ -176,7 +178,9 @@ def get_context(request):
         'batch_branch_data' : procedures_context['batch_branch_data'],
         'assistant_flag' : assistant_flag,
         'hod_flag' : hod_flag,
-        'account_flag' : account_flag
+        'account_flag' : account_flag,
+        'notifications': notifs,
+        'preregistrationsrchform': PreRegistrationsrchform,
     }
 
     return context
@@ -214,8 +218,50 @@ def homepage(request):
     """
     if user_check(request):
         return HttpResponseRedirect('/academic-procedures/')
-
+    
     context = get_context(request)
+    
+    if request.method == "POST":
+        if 'check_allocation' in request.POST : 
+            return  JsonResponse(check_for_registration_complete(request.POST.get('batch'), request.POST.get('sem'), request.POST.get('year')))
+        if 'start_allocation' in request.POST :
+            return allocate(request)
+        if 'view_allocation' in request.POST :
+            return view_alloted_course(request)
+        if 'search_preregistration' in request.POST or 'delete_preregistration' in request.POST:
+            form = PreRegistrationSearchForm(request.POST)
+            if form.is_valid():
+                roll_no = form.cleaned_data['roll_no'].upper()
+                semester_no = form.cleaned_data['semester_no']
+                print(roll_no, semester_no)
+
+                # Fetch student object by roll number
+                # student = get_object_or_404(Student, id=roll_no)
+
+                # Fetch semester by semester number
+                # semester = get_object_or_404(Semester, semester_no=semester_no)
+                # print(f"Student -> {student}")
+
+                # Search for all initial registrations and student registration check
+                initial_registrations = InitialRegistration.objects.filter(
+                    student_id_id=roll_no, semester_id__semester_no=semester_no
+                )
+                student_registration_check = StudentRegistrationChecks.objects.filter(
+                    student_id_id=roll_no, semester_id__semester_no=semester_no
+                ).first()
+                if ('delete_preregistration' in request.POST):
+                    print(initial_registrations, student_registration_check)
+                    try:
+                        initial_registrations.delete()
+                        student_registration_check.delete()
+                        messages.success(request, "Student's pre registration data successfully deleted.")
+                    except:
+                        messages.error(request, "An error occured while deleting.")
+                    context['delete_preregistration'] = True
+                else :
+                    context['initial_registrations'] = initial_registrations
+                    context['student_registration_check'] = student_registration_check
+                    context['delete_preregistration'] = True
 
     return render(request, "ais/ais.html", context)
 
@@ -814,107 +860,156 @@ def sem_for_generate_sheet():
 
 @login_required
 def generatexlsheet(request):
-    """
-    to generate Course List of Registered Students
-
-    @param:
-        request - contains metadata about the requested page
-
-    @variables:
-        batch - gets the batch
-        course - gets the course
-        curr_key - gets the curriculum from database
-        obj - get stdents data from database
-        ans - Formatted Array to be converted to xlsx
-        k -temporary array to add data to formatted array/variable
-        output - io Bytes object to write to xlsx file
-        book - workbook of xlsx file
-        title - formatting variable of title the workbook
-        subtitle - formatting variable of subtitle the workbook
-        normaltext - formatting variable for normal text
-        sheet - xlsx sheet to be rendered
-        titletext - formatting variable of title text
-        dep - temporary variables
-        z - temporary variables for final output
-        b - temporary variables for final output
-        c - temporary variables for final output
-        st - temporary variables for final output
-    """
     if user_check(request):
         return HttpResponseRedirect('/academic-procedures/')
-    
+
     try:
-        batch = request.POST['batch']
-        course = Courses.objects.get(id = request.POST['course'])
-        obj = course_registration.objects.all().filter(course_id = course)
+        course_id = int(request.POST['course'])
+        academic_year = request.POST.get('academic_year', '')
+        semester_type = request.POST.get('semester_type', '')
+
+        if not (academic_year and semester_type):
+            return HttpResponse("Missing academic_year or semester_type", status=400)
+
+        start_year = int(academic_year.split('-')[0])
+        course = Courses.objects.get(id=course_id)
+
+        # Get all instructors
+        instructor_objs = CourseInstructor.objects.filter(
+            course_id=course_id,
+            year=start_year,
+            semester_type=semester_type
+        )
+
+        instructor_names = []
+        for inst in instructor_objs:
+            if hasattr(inst.instructor_id, 'user'):
+                name = f"{inst.instructor_id.user.first_name} {inst.instructor_id.user.last_name}"
+                instructor_names.append(name)
+        course_instructor_name = ", ".join(instructor_names) if instructor_names else ""
+
+        # Get registered students
+        registered_courses = course_registration.objects.filter(
+            Q(course_id=course),
+            Q(working_year=start_year),
+            Q(semester_type=semester_type),
+            Q(student_id__finalregistration__verified=True)
+        )
+
     except Exception as e:
-        batch=""
-        course=""
-        curr_key=""
-        obj=""
+        print(str(e))
+        return HttpResponse("Invalid data or internal error", status=500)
 
-    registered_courses = []
-    for i in obj:
-        if i.student_id.batch_id.year == int(batch):
-            registered_courses.append(i)
     ans = []
-    for i in registered_courses:
-        k = []
-        k.append(i.student_id.id.id)
-        k.append(i.student_id.id.user.first_name)
-        k.append(i.student_id.id.user.last_name)
-        k.append(i.student_id.id.department)
-        ans.append(k)
-    ans.sort()
+    student_ids = set()
+    for reg in registered_courses:
+        sid = reg.student_id.id.id
+        if sid not in student_ids:
+            student_ids.add(sid)
+            first_name = reg.student_id.id.user.first_name
+            last_name = reg.student_id.id.user.last_name
+            department = 'CSE'  # You can fetch this dynamically if needed
+            email = reg.student_id.id.user.email
+            ans.append([sid, first_name, last_name, department, email])
+    ans.sort(key=lambda x: x[0])
+
+    # Create Excel
     output = BytesIO()
+    book = Workbook(output, {'in_memory': True})
 
-    book = Workbook(output,{'in_memory':True})
-    title = book.add_format({'bold': True,
-                                'font_size': 22,
-                                'align': 'center',
-                                'valign': 'vcenter'})
-    subtitle = book.add_format({'bold': True,
-                                'font_size': 15,
-                                'align': 'center',
-                                'valign': 'vcenter'})
-    normaltext = book.add_format({'bold': False,
-                                'font_size': 15,
-                                'align': 'center',
-                                'valign': 'vcenter'})
+    big_title_format = book.add_format({
+        'bold': True, 'font_size': 9, 'font_color': 'black',
+        'align': 'right', 'valign': 'vcenter', 'bg_color': '#FFFFFF',
+    })
+    subtitle_format = book.add_format({
+        'bold': True, 'font_size': 12, 'align': 'center',
+        'valign': 'vcenter', 'bg_color': '#FFFFFF', 'border': 1
+    })
+    header_format = book.add_format({
+        'bold': True, 'font_size': 11, 'align': 'center',
+        'valign': 'vcenter', 'bg_color': '#E5E4E2', 'border': 1
+    })
+    normaltext = book.add_format({
+        'bold': False, 'font_size': 11, 'align': 'center',
+        'valign': 'vcenter', 'border': 1
+    })
+    smalltext_format = book.add_format({
+        'bold': False, 'font_size': 10, 'align': 'left',
+        'valign': 'vcenter'
+    })
+    bold_key_format = book.add_format({
+        'bold': True, 'font_size': 10, 'align': 'left',
+        'valign': 'vcenter'
+    })
+
     sheet = book.add_worksheet()
+    sheet.set_column('A:A', 12)
+    sheet.set_column('B:B', 10)
+    sheet.set_column('C:C', 30)
+    sheet.set_column('D:D', 10)
+    sheet.set_column('E:E', 25)
+    sheet.set_column('F:F', 15)
 
-    title_text = ((str(course.name)+" : "+str(str(batch))))
-    sheet.set_default_row(25)
+    sheet.set_row(0, 25)
+    sheet.set_row(1, 20)
+    sheet.set_row(2, 15)
+    sheet.set_row(3, 15)
+    sheet.set_row(4, 15)
+    sheet.set_row(5, 20)
 
-    sheet.merge_range('A2:E2', title_text, title)
-    sheet.write_string('A3',"Sl. No",subtitle)
-    sheet.write_string('B3',"Roll No",subtitle)
-    sheet.write_string('C3',"Name",subtitle)
-    sheet.write_string('D3',"Discipline",subtitle)
-    sheet.write_string('E3','Signature',subtitle)
-    sheet.set_column('A:A',20)
-    sheet.set_column('B:B',20)
-    sheet.set_column('C:C',60)
-    sheet.set_column('D:D',15)
-    sheet.set_column('E:E',30)
-    k = 4
-    num = 1
-    for i in ans:
-        sheet.write_number('A'+str(k),num,normaltext)
-        num+=1
-        z,b,c = str(i[0]),i[1],i[2]
-        name = str(b)+" "+str(c)
-        temp = str(i[3]).split()
-        dep = str(temp[len(temp)-1])
-        sheet.write_string('B'+str(k),z,normaltext)
-        sheet.write_string('C'+str(k),name,normaltext)
-        sheet.write_string('D'+str(k),dep,normaltext)
-        k+=1
+    # Headers
+    sheet.merge_range('A1:F1',
+        "PDPM INDIAN INSTITUTE OF INFORMATION TECHNOLOGY, DESIGN AND MANUFACTURING JABALPUR",
+        big_title_format
+    )
+    sheet.merge_range('A2:F2', f"{semester_type.upper()}, {academic_year}", subtitle_format)
+
+    sheet.write('A3', "Course No:", bold_key_format)
+    sheet.merge_range('B3:F3', f"{course.code}", smalltext_format)
+
+    sheet.write('A4', "Course Title:", bold_key_format)
+    sheet.merge_range('B4:F4', f"{course.name}", smalltext_format)
+
+    sheet.write('A5', "Instructor(s):", bold_key_format)
+    sheet.merge_range('B5:F5', f"{course_instructor_name}", smalltext_format)
+
+    # Table Headers
+    sheet.write_string('A6', "Sl. No", header_format)
+    sheet.write_string('B6', "Roll No", header_format)
+    sheet.write_string('C6', "Name", header_format)
+    sheet.write_string('D6', "Discipline", header_format)
+    sheet.write_string('E6', "Email", header_format)
+    sheet.write_string('F6', "Signature", header_format)
+
+    # Table Body
+    row = 6
+    sno = 1
+    for student in ans:
+        sheet.set_row(row, 30)
+        roll_no = str(student[0])
+        full_name = f"{student[1]} {student[2]}"
+        discipline = student[3]
+        email = student[4]
+
+        sheet.write_number(row, 0, sno, normaltext)
+        sheet.write_string(row, 1, roll_no, normaltext)
+        sheet.write_string(row, 2, full_name, normaltext)
+        sheet.write_string(row, 3, discipline, normaltext)
+        sheet.write_string(row, 4, email, normaltext)
+        sheet.write_string(row, 5, '', normaltext)
+        sno += 1
+        row += 1
+
+    sheet.set_landscape()
+    sheet.set_paper(9)
+    sheet.fit_to_pages(1, 1)
+
     book.close()
     output.seek(0)
-    response = HttpResponse(output.read(),content_type = 'application/vnd.ms-excel')
-    st = 'attachment; filename = ' + course.code + '.xlsx'
-    response['Content-Disposition'] = st
+
+    response = HttpResponse(output.read(), content_type='application/vnd.ms-excel')
+    filename = f"{course.code}_CourseList.xlsx"
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
 
 
@@ -1029,9 +1124,14 @@ def generate_preregistration_report(request):
                 max_width = max(max_width,len(choices_of_current_student))
 
                 for choice in range(1,len(choices_of_current_student)+1):
-                    current_choice = InitialRegistration.objects.get(student_id=student, semester_id__semester_no=sem,course_slot_id = slot,priority = choice)
-                    # #print("current choice is ",current_choice)
-                    z.append(str(current_choice.course_id.code)+"-"+str(current_choice.course_id.name))
+                    try:
+                        current_choice = InitialRegistration.objects.get(student_id=student, semester_id__semester_no=sem, course_slot_id=slot, priority=choice)
+                        z.append(str(current_choice.course_id.code) + "-" + str(current_choice.course_id.name))
+                    except :
+                        z.append("No registration found")
+                    # current_choice = InitialRegistration.objects.get(student_id=student, semester_id__semester_no=sem,course_slot_id = slot,priority = choice)
+                    # # #print("current choice is ",current_choice)
+                    # z.append(str(current_choice.course_id.code)+"-"+str(current_choice.course_id.name))
                 
                 data.append(z)
                 m+=1
@@ -1121,7 +1221,52 @@ def generate_preregistration_report(request):
         st = 'attachment; filename = ' + batch.name + batch.discipline.acronym + str(batch.year) + '-preresgistration.xlsx'
         response['Content-Disposition'] = st
         return response
+    
+@login_required
+def get_excel(request):
+    batch = request.POST.get('batch-check-view')
+    sem = request.POST.get('semester-check-view')
+    year = request.POST.get('year-check-view')
+    course = request.POST.get('Course-check-view')
+    registrations = FinalRegistration.objects.filter(Q(student_id__batch = batch) & Q(semester_id__semester_no = sem) & Q(course_id__code = course))
+    return_list = []
+    for registration in registrations:
+            return_list.append(registration.student_id.id.id)
+    
+    return_list.sort()
+    output = BytesIO()
 
+    book = Workbook(output,{'in_memory':True})
+    title = book.add_format({'bold': True,
+                                    'font_size': 22,
+                                    'align': 'center',
+                                    'valign': 'vcenter'})
+    subtitle = book.add_format({'bold': True,
+                                    'font_size': 15,
+                                    'align': 'center',
+                                    'valign': 'vcenter'})
+    normaltext = book.add_format({'bold': False,
+                                    'font_size': 15,
+                                    'align': 'center',
+                                    'valign': 'vcenter'})
+    sheet = book.add_worksheet()
+    sheet.set_default_row(25)
+    sheet.write_string('A1','Student Roll no',subtitle)
+    sheet.write_string('B1','Student name',subtitle)
+    k=2
+    for no in return_list :
+        student= User.objects.get(username=no)
+        sheet.write_string('A'+str(k),no,normaltext)
+        sheet.write_string('B'+str(k),student.first_name+student.last_name,normaltext)
+        k+=1
+    
+    book.close()
+    output.seek(0)
+
+    response = HttpResponse(output.read(),content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename='+ course +'_student_list.xlsx'
+    response['Content-Transfer-Encoding'] = 'binary'
+    return response
 
 @login_required
 def add_new_profile (request):
@@ -1169,9 +1314,9 @@ def add_new_profile (request):
     }
     if request.method == 'POST' and request.FILES:
         profiles=request.FILES['profiles']
-        excel = xlrd.open_workbook(file_contents=profiles.read())
+        excel = xlrd.open_workbook(profiles.name,file_contents=profiles.read())
         sheet=excel.sheet_by_index(0)
-        for i in range(sheet.nrows):
+        for i in range(1,sheet.nrows):
             roll_no=sheet.cell(i,0).value
             first_name=str(sheet.cell(i,1).value)
             last_name=str(sheet.cell(i,2).value)
@@ -1191,7 +1336,7 @@ def add_new_profile (request):
             category=""
             phone_no=0
             address=""
-            dept=str(sheet.cell(i,12).value)
+            dept=str(sheet.cell(i,11).value)
             specialization=str(sheet.cell(i,12).value)
             hall_no=None
 
@@ -1209,7 +1354,6 @@ def add_new_profile (request):
             batch_year=request.POST['Batch']
 
             batch = Batch.objects.all().filter(name = programme_name, discipline__acronym = dept, year = batch_year).first()
-
             user = User.objects.create_user(
                 username=roll_no,
                 password='hello123',
@@ -1217,6 +1361,7 @@ def add_new_profile (request):
                 last_name=last_name,
                 email=email,
             )
+            
 
             einfo = ExtraInfo.objects.create(
                 id=roll_no,
@@ -1253,6 +1398,11 @@ def add_new_profile (request):
                 working=user,
                 designation=desig,
             )
+            
+            user.save()
+            einfo.save()
+            stud_data.save()
+            hold_des.save()
 
             sem_id = Semester.objects.get(curriculum = batch.curriculum, semester_no = sem)
             course_slots = CourseSlot.objects.all().filter(semester = sem_id)
@@ -2020,6 +2170,10 @@ def view_all_student_data(request):
     """ views all the students """
 
 
+    if request.session.get('currentDesignationSelected') in ["studentacadadmin"]:
+        return HttpResponseRedirect('/aims/')
+    
+
     data = []
     #students = Student.objects.select_related('batch_id', 'id__user', 'batch_id__discipline', 'id') .filter(batch=2019).order_by('id').all().only('batch', 'id__id', 'id__user', 'programme', 'batch_id__discipline__acronym', 'specialization', 'id__sex', 'category', 'id__phone_no', 'id__date_of_birth', 'id__user__first_name', 'id__user__last_name', 'id__user__email', 'father_name', 'mother_name', 'id__address')[0:20]
     
@@ -2055,22 +2209,23 @@ def view_all_student_data(request):
                 students = Student.objects.select_related('batch_id', 'id__user', 'batch_id__discipline', 'id').filter(**filter_names).order_by('id').all().only('batch', 'id__id', 'id__user', 'programme','pwd_status', 'father_mobile_no', 'mother_mobile_no', 'batch_id__discipline__acronym', 'specialization', 'id__sex', 'category', 'id__phone_no', 'id__date_of_birth', 'id__user__first_name', 'id__user__last_name', 'id__user__email', 'father_name', 'mother_name', 'id__address')
             for student in students:
                 obj = {
-                    "admissionYear" : student.batch,
+                    "admissionYear" : student.batch_id.year if student.batch_id else student.batch,
                     "RollNo" : student.id.id,
                     "name" : student.id.user.get_full_name(),
-                    "program": student.programme,
+                    "program": student.programme if student.programme else (student.batch_id.name if student.batch_id else ""),
                     "discipline": student.batch_id.discipline.acronym,
                     "specailization": student.specialization,
                     "gender" : student.id.sex,
                     "category": student.category,
-                    "pwd_status": student.pwd_status,
+                    # "pwd_status": student.pwd_status,
+                    "pwd_status": False,
                     "Mobile": student.id.phone_no,
                     "dob" : student.id.date_of_birth,
                     "emailid" : student.id.user.email,
                     "father_name": student.father_name,
-                    "father_mobile_no": student.father_mobile_no,
+                    # "father_mobile_no": student.father_mobile_no,
                     "mother_name": student.mother_name,
-                    "mother_mobile_no": student.mother_mobile_no,
+                    # "mother_mobile_no": student.mother_mobile_no,
                     "address": student.id.address
                 }
                 data.append(obj)
@@ -2140,9 +2295,9 @@ def generatestudentxlsheet(request):
         data = None
     else:
         if(request_rollno != ""):
-            students = Student.objects.select_related('batch_id', 'id__user', 'batch_id__discipline', 'id').filter(id = request_rollno).only('batch', 'id__id', 'id__user', 'programme','pwd_status', 'father_mobile_no', 'mother_mobile_no', 'batch_id__discipline__acronym', 'specialization', 'id__sex', 'category', 'id__phone_no', 'id__date_of_birth', 'id__user__first_name', 'id__user__last_name', 'id__user__email', 'father_name', 'mother_name', 'id__address')
+            students = Student.objects.select_related('batch_id', 'id__user', 'batch_id__discipline', 'id').filter(id = request_rollno).only('batch', 'id__id', 'id__user', 'programme', 'batch_id__discipline__acronym', 'specialization', 'id__sex', 'category', 'id__phone_no', 'id__date_of_birth', 'id__user__first_name', 'id__user__last_name', 'id__user__email', 'father_name', 'mother_name', 'id__address')
         else:
-            students = Student.objects.select_related('batch_id', 'id__user', 'batch_id__discipline', 'id').filter(**filter_names).order_by('id').all().only('batch', 'id__id', 'id__user', 'programme','pwd_status', 'father_mobile_no', 'mother_mobile_no', 'batch_id__discipline__acronym', 'specialization', 'id__sex', 'category', 'id__phone_no', 'id__date_of_birth', 'id__user__first_name', 'id__user__last_name', 'id__user__email', 'father_name', 'mother_name', 'id__address')
+            students = Student.objects.select_related('batch_id', 'id__user', 'batch_id__discipline', 'id').filter(**filter_names).order_by('id').all().only('batch', 'id__id', 'id__user', 'programme', 'batch_id__discipline__acronym', 'specialization', 'id__sex', 'category', 'id__phone_no', 'id__date_of_birth', 'id__user__first_name', 'id__user__last_name', 'id__user__email', 'father_name', 'mother_name', 'id__address')
         for i in students:
             obj = []
             obj.append(i.batch)
@@ -2153,14 +2308,17 @@ def generatestudentxlsheet(request):
             obj.append(i.specialization)
             obj.append(i.id.sex)
             obj.append(i.category)
-            obj.append(i.pwd_status)
+            #obj.append(i.pwd_status)
+            obj.append(None)
             obj.append(i.id.phone_no)
             obj.append(i.id.date_of_birth)
             obj.append(i.id.user.email)
             obj.append(i.father_name)
-            obj.append(i.father_mobile_no)
+            #obj.append(i.father_mobile_no)
+            obj.append(None)
             obj.append(i.mother_name)
-            obj.append(i.mother_mobile_no)
+            # obj.append(i.mother_mobile_no)
+            obj.append(None)
             obj.append(i.id.address)
             data.append(obj)
     data.sort()

@@ -3,7 +3,8 @@ from django.db import models
 from datetime import date
 
 # Create your models here.
-from applications.globals.models import ExtraInfo
+from applications.globals.models import ExtraInfo , DepartmentInfo
+
   
 class SpecialRequest(models.Model):
     request_maker = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
@@ -21,7 +22,7 @@ class SpecialRequest(models.Model):
 
 class Announcements(models.Model):
     maker_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
-    ann_date = models.DateTimeField(default="04-04-2021")
+    ann_date = models.DateTimeField(auto_now_add=True)
     message = models.CharField(max_length=200)
     batch = models.CharField(max_length=40,default="Year-1")
     department = models.CharField(max_length=40,default="ALL")
@@ -29,3 +30,14 @@ class Announcements(models.Model):
     upload_announcement = models.FileField(upload_to='department/upload_announcement', null=True, default=" ")
     def __str__(self):
         return str(self.maker_id.user.username)
+    
+class Information(models.Model):
+    department = models.OneToOneField(
+        DepartmentInfo,
+        on_delete=models.CASCADE,
+    )
+
+    phone_number = models.BigIntegerField()
+    email = models.CharField(max_length=200)
+    facilites = models.TextField()
+    labs = models.TextField()

@@ -1,0 +1,537 @@
+{% extends 'ps1/ps1.html' %} {% load static %} {% block filetracking_tab %} 
+{% comment %}the compounder prescription tab starts here {% endcomment %}
+
+<div class="ui pointing secondary menu">
+  <h3>
+    <a class="active item" data-tab="composefile"> File New Indent </a>
+  </h3>
+</div>
+{% comment %}the ambulance schedule tab starts here {% endcomment %}
+<div class="ui active tab" data-tab="composefile">
+  <div
+    class="ui vertical stripe team segment"
+    style="padding-left: 3.5%; padding-right: 3.5%"
+  >
+    <form
+      class="ui large form"
+      id="multiple_indent_form"
+    >
+      {% csrf_token %} 
+      
+      <div class="field">
+        <label>Title of Indent File*</label>
+        <textarea rows="1" name="title" required></textarea>
+      </div>
+      <div class="field">
+        <label>Description*</label>
+        <textarea
+          rows="3"
+          placeholder="Enter the description"
+          name="desc"
+          required
+        ></textarea>
+      </div>
+      <div class="field">
+        <label>Budgetary Head</label>
+        <textarea rows="2" name="budgetary_head"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Sources of Supply*</label>
+        <textarea rows="3" name="sources_of_supply" required></textarea>
+      </div>
+
+      <div class="field">
+        <label
+          >Create as:
+          <select
+            required
+            class="ui fluid search selection dropdown"
+            name="design"
+          >
+            <option selected hidden>Select</option>
+
+            {% for designations in designations %}
+            <option value="{{designations.id}}">{{designations}}</option>
+            {% endfor %}
+          </select>
+        </label>
+      </div>
+      <div class="field">
+        <label>Expected Delivery</label>
+        <input type="date" id="start" name="expected_delivery" />
+      </div>
+
+      <br />
+
+      <div class="field">
+        <label> Item Details </label>
+        <table class="ui celled padded table">
+          <thead>
+            <tr>
+              <th>Item Name</th>
+              <th>Quantity & Stocks</th>
+              <th>Purpose & Specification</th>
+              <th>File</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="textify"></tbody>
+          <tfoot class="full-width">
+            <tr>
+              <th></th>
+              <th colspan="4">
+                <div
+                  class="ui right floated small secondary labeled icon button"
+                  id="add_more_items"
+                >
+                  Add Item <i class="ui add icon right floated"></i>
+                </div>
+              </th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <br />
+     
+      <div>
+        <a class="right floated item">
+          <button
+            type="submit"
+            name="save"
+            value='save'
+            class="ui large right floated primary button"
+          >
+            Save to drafts<i class="ui save icon right floated"></i>
+          </button>
+        </a>
+      </div>
+
+      <br />
+
+      <br />
+      <div class="field">
+        <label>Remarks:<textarea rows="2" name="remarks"></textarea></label>
+      </div>
+
+      <div class="field">
+        <label
+          >Forward To:
+
+          <input
+            type="search"
+            id="input_search"
+            list="input_list"
+            name="receiver"
+          />
+          <datalist id="input_list"> </datalist>
+                     
+        </label>
+      </div>
+
+      <div class="field">
+        <label
+          >Receiver Designation:
+          <input
+            type="search"
+            id="input_search1"
+            list="input_list1"
+            name="reciever_designation"
+          />
+          <datalist id="input_list1"> </datalist>
+
+                     
+        </label>
+      </div>
+
+      <div style="margin-bottom: 30px">
+        <a class="right floated item">
+          <button
+            type="submit"
+            name="send"
+            class="ui large right floated primary button"
+            style="float: right"
+          >
+            Send<i class="ui send icon right floated"></i>
+          </button>
+        </a>
+      </div>
+    </form>
+
+    <div class="ui modal">
+      <div class="header">Add New Item</div>
+      <div class="scrolling content">
+        <form class="ui form" id="item-form">
+          <div class="field">
+            <label>Item Details</label>
+            <div class="two fields">
+              <div class="field">
+                <input type="text" placeholder="Item Name" name="item_name" />
+              </div>
+              <div class="field">
+                <input type="number" placeholder="Quantity" name="quantity" />
+              </div>
+            </div>
+          </div>
+         
+
+          <div class="field">
+            <label>Stocks and Costs</label>
+            <div class="two fields">
+              <div class="field">
+                <input
+                  type="number"
+                  placeholder="Present Stock"
+                  name="present_stock"
+                />
+              </div>
+              <div class="field">
+                <input
+                  type="number"
+                  placeholder="Estimated Cost"
+                  name="estimated_cost"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <div class="two fields">
+              <div class="field">
+                <label>Purpose</label>
+                <textarea
+                  rows="3"
+                  placeholder="Enter the Purpose"
+                  name="purpose"
+                ></textarea>
+              </div>
+              <div class="field">
+                <label>Specification</label>
+                <textarea
+                  rows="3"
+                  placeholder="Enter the specification"
+                  name="specification"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="two fields">
+              <div class="field">
+                <label>Item Type</label>
+
+                <select class="ui fluid dropdown" name="item_type">
+                  <option value="Equipment">Equipment</option>
+                  <option value="Machinery">Machinery</option>
+                  <option value="Furniture">Furniture</option>
+                  <option value="Fixture">Fixture</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Expected Delivery</label>
+                <input type="date" id="start" name="expected_delivery" />
+              </div>
+            </div>
+          </div>
+          {% comment %}
+          <div class="field">
+            <div class="two fields">
+              <div class="field">
+                <label>Budgetory Head</label>
+                <textarea rows="3" name="budgetary_head"> </textarea>
+              </div>
+              <div class="field">
+                <label>Sources of Supply</label>
+                <textarea rows="3" name="sources_of_supply"> </textarea>
+              </div>
+            </div>
+          </div>
+          {% endcomment %}
+          <div class="field">
+            <div class="three fields">
+              <div class="field">
+                <h5>Nature of Item*</h5>
+                <label class="radio-inline">
+                  <input type="radio" name="nature" value="True" /> Consumable
+                </label>
+                <label class="radio-inline">
+                  <input type="radio" name="nature" value="False" /> Non
+                  Consumable
+                </label>
+              </div>
+
+              <div class="field">
+                <h5>Indigenous*</h5>
+                <label class="radio-inline">
+                  <input type="radio" name="indigenous" value="True" /> Yes
+                </label>
+                <label class="radio-inline">
+                  <input type="radio" name="indigenous" value="False" /> No
+                </label>
+              </div>
+
+              <div class="field">
+                <h5>Replaced*</h5>
+                <label class="radio-inline">
+                  <input type="radio" name="replaced" value="True" /> Yes
+                </label>
+                <label class="radio-inline">
+                  <input type="radio" name="replaced" value="False" /> No
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="left floated item">
+            <label for="file">Attach Files ( PDF, JPEG, PNG, JPG )</label>
+            <input
+              type="file"
+              id="file"
+              name="myfile"
+              accept=".pdf, .jpg, .jpeg, .png"
+            />
+          </div>
+          <div class="field">
+            <label
+              >Create as:
+              <select
+                required
+                class="ui fluid search selection dropdown"
+                name="design"
+              >
+                <option selected hidden>Select</option>
+
+                {% for designations in designations %}
+                <option value="{{designations.id}}">{{designations}}</option>
+                {% endfor %}
+              </select>
+            </label>
+          </div>
+
+          <div class="action">
+            <button
+              class="ui floated primary button"
+              type="submit"
+              style="margin-top: 20px"
+              tabindex="0"
+            >
+              Add this Item
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <br />
+  </div>
+
+  <br />
+  <div class="extra content"></div>
+</div>
+{% comment %}the compounder prescription tab ends here {% endcomment %}
+
+<script type="text/javascript">
+  const addmoreHandler = () => {
+    $(".ui.modal").modal({ blurring: true }).modal("show");
+  };
+
+  document
+    .getElementById("add_more_items")
+    .addEventListener("click", addmoreHandler, false);
+
+  let Items =[]; /* This is the array which will store the details of the Items of the indentFile*/
+  let item_files=[]
+
+
+  document.getElementById("item-form").addEventListener(
+    "submit",
+    function (event) {
+      event.preventDefault();
+      const form = event.target;
+      const formFields = form.elements;
+      item_files.push(formFields?.myfile?.files[0])
+      Items.push({
+        item_name: formFields?.item_name?.value,
+        quantiy: formFields?.quantity?.value,
+        present_stock: formFields?.present_stock?.value,
+        estimated_cost: formFields?.estimated_cost?.value,
+        purpose: formFields?.purpose?.value,
+        specification: formFields?.specification?.value,
+        item_type: formFields?.item_type?.value,
+        expected_delivery: formFields?.expected_delivery?.value,
+        nature: formFields?.nature?.value,
+        indigenous: formFields?.indigenous?.value,
+        replaced: formFields?.replaced?.value,
+        file: formFields?.myfile?.files[0],
+      }); //  Pushing the Items into Items array
+
+      document.getElementById("textify").innerHTML += ` <tr>
+                <td>
+                    <h3>${formFields?.item_name?.value}</h3>
+                </td>
+                <td class="single line">
+                    <span>Quantity : <strong>${
+                      formFields?.quantity?.value
+                    }</strong></span><br><br>
+                    <span>Stock Present : <strong>${
+                      formFields?.present_stock?.value
+                    }</strong></span>
+                </td>
+                <td>
+                    <div class="ui list">
+                        <div class="item">
+                            <div class="header">Purpose</div>
+                            ${formFields?.purpose?.value}
+                        </div>
+                        <div class="item">
+                            <div class="header">Specification</div>
+                            ${formFields?.specification?.value}
+                        </div>
+                    </div>
+                </td>
+                <td class="left aligned">
+                    <a  target="_blank" href=${URL.createObjectURL(
+                      formFields?.myfile?.files[0]
+                    )}>${formFields?.myfile?.files[0].name}</a>
+                </td>
+                <td>
+                    <button class='ui red button'>Delete</button>
+                </td>
+                </tr>
+                `;
+    },
+    false
+  );
+
+
+  
+
+  document.getElementById('multiple_indent_form').addEventListener('submit',function (event){
+    event.preventDefault();
+    try{
+      const form = event.target;
+      const formFields = form.elements;
+      const formData = new FormData();
+      formData.append("title",formFields?.title?.value)
+      formData.append('expected_delivery',formFields?.expected_delivery?.value)
+      formData.append("design",formFields?.design?.value)
+      formData.append('budgetary_head',formFields?.budgetary_head?.value)
+      formData.append("sources_of_supply",formFields?.sources_of_supply?.value)
+      formData.append("remarks",formFields?.remarks?.value)
+      formData.append("receiver",formFields?.receiver?.value)
+      formData.append("reciever_designation",formFields?.reciever_designation?.value)
+      formData.append("items", JSON.stringify(Items));
+      formData.append('desc',formFields?.desc?.value)
+      for(let i = 0;i<item_files.length;i++){
+        const tmp = `item_file${i}`;
+        formData.append(tmp,item_files[i])
+      }
+      $.ajax({
+          type: "POST",
+          url: "/purchase-and-store/create_indent_multiple/",
+          data: formData,
+          processData: false,
+          contentType: false,
+          success: function (response) {
+            console.log("coming-----------------------");
+            result = JSON.parse(response.data);
+            console.log(result);
+          },
+          error: function (rs, e) {
+            console.log("error-------");
+          },
+      });
+    }catch(error){
+      console.log(error);
+    }
+    
+
+  },false)
+
+  $("#input_search1").keyup(function () {
+    console.log("asdasd");
+    value = $("#input_search1").val();
+
+    $.ajax({
+      type: "POST",
+      url: "/filetracking/ajax/",
+      data: {
+        value: value,
+        csrfmiddlewaretoken: "{{csrf_token}}",
+      },
+      dataType: "json",
+      success: function (response) {
+        console.log("coming-----------------------");
+
+        console.log(response.holds[0]);
+
+        all_designations = JSON.parse(response.holds);
+        console.log(all_designations[0].fields.name);
+        app = [];
+        $("#input_list1").html("");
+        for (var i = 0; i < all_designations.length; i++) {
+          $("#input_list1").append(
+            '<option value="' +
+              all_designations[i].fields.name +
+              '">' +
+              all_designations[i].fields.name +
+              "</option>"
+          );
+        }
+      },
+      error: function (rs, e) {
+        console.log("error-------");
+      },
+    });
+    console.log("dsfagdfdshadf");
+  });
+</script>
+
+<script type="text/javascript">
+  $("#input_search").keyup(function () {
+    console.log("asdasd");
+    value = $("#input_search").val();
+
+    $.ajax({
+      type: "POST",
+      url: "/filetracking/ajax_dropdown/",
+      data: {
+        value: value,
+        csrfmiddlewaretoken: "{{csrf_token}}",
+      },
+      dataType: "json",
+      success: function (response) {
+        console.log("coming-----------------------");
+
+        all_users = JSON.parse(response.users);
+        console.log(all_users[0].fields.username);
+        app = [];
+        $("#input_list").html("");
+        for (var i = 0; i < all_users.length; i++) {
+          $("#input_list").append(
+            '<option value="' +
+              all_users[i].fields.username +
+              '">' +
+              all_users[i].fields.username +
+              "</option>"
+          );
+        }
+      },
+      error: function (rs, e) {
+        console.log("error-------");
+      },
+    });
+    console.log("dsfagdfdshadf");
+  });
+</script>
+
+{% endblock %}
+
+<script type="text/javascript">
+  function ShowHideDiv() {
+    var chkAddress = document.getElementById("chkAddress");
+    var leaveAddress = document.getElementById("leaveAddress");
+    leaveAddress.style.display = chkAddress.checked ? "block" : "none";
+  }
+</script>

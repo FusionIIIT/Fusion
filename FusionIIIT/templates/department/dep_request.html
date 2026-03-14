@@ -47,11 +47,29 @@
                         <i class="right floated chevron right icon"></i>
                     </a>
 
-                    <a class="item" data-tab="third" id="request_status">
+                    {% comment %} <a class="item" data-tab="third" id="request_status">
                         Request Status
                         <i class="right floated chevron right icon"></i>
+                    </a> {% endcomment %}
+                    <a class="item" data-tab="third" id="CSE_Dep">
+                        CSE Department
+                        <i class="right floated chevron right icon"></i>
                     </a>
-
+    
+                    <a class="item" data-tab="fourth" id="ECE_Dep">
+                        ECE Department
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+    
+                    <a class="item" data-tab="fifth" id="ME_Dep">
+                        ME Department
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+    
+                    <a class="item" data-tab="sixth" id="SM_Dep">
+                        SM Department
+                        <i class="right floated chevron right icon"></i>
+                    </a>
                     
                     
                 </div>
@@ -92,14 +110,44 @@
                     {% endblock %}
                 </div>
                 {% comment %}See announcement{% endcomment %}
+                {% comment %}CSE Department!{% endcomment %}
+                <div class="ui tab segment" data-tab="third">
+                    {% block CSE_Dep %}
+                        {% include "department/cse_dep.html" %}
+                    {% endblock %}
+                </div>
+                {% comment %}CSE Department!{% endcomment %}
+
+                {% comment %}ECE Department!{% endcomment %}
+                <div class="ui tab segment" data-tab="fourth">
+                    {% block ECE_Dep %}
+                        {% include "department/ece_dep.html" %}
+                    {% endblock %}
+                </div>
+                {% comment %}ECE Department!{% endcomment %}
+
+                {% comment %}ME Department!{% endcomment %}
+                <div class="ui tab segment" data-tab="fifth">
+                    {% block ME_Dep %}
+                        {% include "department/me_dep.html" %}
+                    {% endblock %}
+                </div>
+                {% comment %}ME Department!{% endcomment %}
+
+                {% comment %}SM Department!{% endcomment %}
+                <div class="ui tab segment" data-tab="sixth">
+                    {% block SM_Dep %}
+                        {% include "department/sm_dep.html" %}
+                    {% endblock %}
+                </div>
+                {% comment %}SM{% endcomment %}
             
                 {% comment %}status of request!{% endcomment %}
-                <div class="ui tab segment" data-tab="third">
+                <div class="ui tab segment" data-tab="seventh">
                     {% block request_status %}
                         {% include "department/request_status.html" %} 
                     {% endblock %}
                 </div>
-                {% comment %}status of request!{% endcomment %}
 
                 
 
@@ -116,6 +164,7 @@
             
             {% comment %}The right-margin segment!{% endcomment %}
             <div class="column"></div>
+        
 
 
     </div>

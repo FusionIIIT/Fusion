@@ -2,16 +2,16 @@
 {% block lodgecomplaint %}
 <!-- this page is for adding worker and removing -->
     {% comment %}The tab menu starts here!{% endcomment %}
-    <div class="ui pointing secondary menu">
+    <!-- <div class="ui pointing secondary menu">
         <a class="active item" data-tab="add">
             ADD
         </a>
         <a class="item" data-tab="remove">
             WORKERS
         </a>
-    </div> 
+    </div>  -->
     <!-- this section is for adding worker -->
-    <div class="ui active tab" data-tab="add">
+    <!-- <div class="ui active tab" data-tab="add">
         <div class="ui vertical segment">
             <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST" enctype="multipart/form-data" 
                   action="">
@@ -25,9 +25,9 @@
                 <div class="fields">
 
                     <div class="eight wide field">
-                        <label>Workers Type<sup><i class="small red asterisk icon"></i></sup></label>
+                        <label>Workers Type<sup><i class="small red asterisk icon"></i></sup></label> -->
                         <!-- selection drop down list -->
-                        <div class="ui selection dropdown">
+                        <!-- <div class="ui selection dropdown">
                             <input name="complaint_type" type="hidden" required="True">
                             <i class="dropdown icon"></i>
 
@@ -82,12 +82,12 @@
                 </div>
 
 
-                <br>
+                <br> -->
 
                <!-- <button class="ui large primary button right floated" onclick="myfunction1(event)">
                     Submit
                 </button>-->
-                <div class="ui buttons right floated">
+                <!-- <div class="ui buttons right floated">
  
                   <button class="large ui blue toggle right floated button" value="save" name="submit" onclick="addwork(),disabled=true">Save</button>
                   <div class="or"></div>
@@ -103,7 +103,7 @@
             <br>
             <div class="ui divider"></div>
         </div>
-    </div>
+    </div> -->
 
 
 
@@ -112,13 +112,13 @@
 
 
 
-    <div class="ui tab" data-tab="remove">
+    <!-- <div class="ui tab" data-tab="remove">
         <div class="ui vertical segment">
                 <div class="ui header">
                     Click on the particular worker to remove
                 <br><br>
                 </div>
-                    These Worker present under Caretaker :   <b>{{ request.user.first_name}}
+                    These Worker present under Department Head :   <b>{{ request.user.first_name}}
                                                              {{ request.user.last_name}}</b>
                 <br><br><br>
                 
@@ -133,10 +133,10 @@
                 <div class="meta">
                     <span><b>{{a.worker_type}}</b></span>
                 </div>
-                <div class="description">
+                <div class="description"> -->
                 <!--<p>Name: {{a.name}} is a {{a.worker_type}} and works in <a href="/caretaker/list_caretakers_area/">{{care_id.area}}</a> </br> <a href=""><b>Remove</b></a></p>-->
 
-                <div>ID: {{a.id}}</div>
+                <!-- <div>ID: {{a.id}}</div>
                 <div>Age: {{a.age}}</div>
                 <div>Phone Number: {{a.phone}}</div>
                 
@@ -144,8 +144,8 @@
                 </div>
                 </div><br><br>
             {%endfor%}
-      
-
+       -->
+<!-- 
 
 
 
@@ -154,10 +154,10 @@
     </div>
 </div>
 
+ -->
 
 
-
-  
+<!--   
 {% endblock %}
 
 {% block javascript %}
@@ -185,4 +185,4 @@
         }
       
       </script>
-    {%endblock%}
+    {%endblock%} -->

@@ -1,4 +1,4 @@
-<!--HTML file for caretaker to assign worker to a paricular complaint-->
+<!--HTML file for secincharge to assign worker to a paricular complaint-->
 {% extends 'globals/base.html' %}
 {% load static %}
 
@@ -34,11 +34,10 @@ Complaint
         <div class="ui divider"></div>
 
         {% comment %}The Tab-Menu starts here!{% endcomment %}
-        <div class="ui huge fluid vertical pointing menu"
-             style="max-width: 320px;">
+        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
 
             <a class="active item" data-tab="first">
-                Assign Workers / Redirect
+                Redirect
                 <i class="right floated chevron right icon"></i>
             </a>
 
@@ -52,120 +51,22 @@ Complaint
     <div class="nine wide column">
         {% comment %}The ... start here!{% endcomment %}
         <div class="ui active tab segment" data-tab="first">
-
             <div class="ui pointing secondary menu ">
-                <a class="active item" data-tab="feedback">
+                <!-- <a class="active item" data-tab="feedback">
                     Assign Worker
-                </a>
-                <a class="item" data-tab="redirect">
+                </a> -->
+                <a class="active item" data-tab="redirect">
                     Redirect
                 </a>
             </div>
 
-            <div class="ui active tab large" data-tab="feedback">
-                <div class="ui vertical segment">
-                    <form method="post" action=".">
-                        {% csrf_token %}
-                        <div class="ui header">
-                            Assign Worker to complaint
-                            <div>Complaint ID :{{ detail.complainer }}</div>
-                            <div>Complainer :{{ detail.complainer.user.first_name }}
-                                {{detail.complainer.user.last_name}}
-                            </div>
-                        </div>
-                        <br>
+            
 
-
-                        <table>
-                            <div class="fields">
-                                <div class="eight wide field">
-                                    <tr>
-                                        <td>Complaint Date</td>
-                                        <td> : {{ detail.complaint_date }}</td>
-                                    </tr>
-                                </div>
-                                <div class="eight wide field">
-                                    <tr>
-                                        <td>Deadline</td>
-                                        <td><span style="color:red;"> : {{ detail.complaint_finish }}</span></td>
-                                    </tr>
-                                </div>
-                            </div>
-                            <div class="fields">
-                                <div class="eight wide field">
-                                    <tr>
-                                        <td>Complaint Type</td>
-                                        <td> : {{ detail.complaint_type }}</td>
-                                    </tr>
-                                </div>
-                                <div class="eight wide field">
-                                    <tr>
-                                        <td>Location</td>
-                                        <td> : {{ detail.location }}</td>
-                                    </tr>
-                                </div>
-                                <div class="eight wide field">
-                                    <tr>
-                                        <td>Specific Location</td>
-                                        <td> : {{ detail.specific_location }}</td>
-                                    </tr>
-                                </div>
-
-                                <div class="eight wide field">
-                                    <tr>
-                                        <td>Status</td>
-                                        <td> : {% if detail.status == 0 %}
-                                            <i class="large orange warning icon"></i>Yet to assign Worker
-                                            {% elif detail.status == 1 %}
-                                            <i class="large orange add user icon"></i>Worker Assigned
-                                            {% elif detail.status == 2 %}
-                                            <i class="large green checkmark icon"></i>Completed
-                                            {% elif detail.status == 3 %}
-                                            <i class="large red x icon"></i>Complaint Rejected
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                </div>
-                            </div>
-                        </table>
-                        <div class="field">
-                            <div class="eight wide field">
-                                <h4><label>Assign Worker :</label>
-                                    {% if flag == 'no_worker' %}
-                                    <B>NO WORKER PRESENT AT THE PLACE</B>
-                                    {% else %}
-                                    <select name="assign_worker">
-                                        {% for i in worker %}
-                                        <option value="{{ i.id }}">{{ i.name }} ({{ i.worker_type }})</option>
-                                        {% endfor %}
-                                    </select>
-                                    <a href="javascript:history.go(-1)">
-                                        <button class="ui large primary button right floated" type="button" name="back">
-                                            Back
-                                        </button>
-                                    </a>
-                                    <button class="ui large primary button right floated" type="submit" name="submit"
-                                            value="assign" onclick="assignworkersubmit()">
-                                        Submit
-                                    </button>
-                                    <br>
-                                    {% endif %}
-                                </h4>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-
-                <br>
-
-
-            </div>
-
-<!-- redirect complaint -->
-            <div class="ui tab large" data-tab="redirect">
+            <!-- redirect complaint -->
+            <div class="ui active tab large" data-tab="redirect">
                 <div class="ui vertical segment" style="padding:40px">
-                    <h4>If you think that this complaint does not belong to you .</br>
-                        You a can pass this complaint to required caretaker .</h4>
+                    <h4>If you want to redirect this complaint ,</br>
+                        you can pass this complaint to specific Incharge .</h4>
                     <form method="post" action=".">
                         {% csrf_token %}
                         <div class="ui header">
@@ -198,36 +99,27 @@ Complaint
                             </table>
                             <div class="eight wide field">
 
-                                {% if detail.status != 0 %}
+                                <!-- {% if detail.status != 0 %}
 
                                 <H3>You have assigned a worker. First, remove the worker from this complaint then
                                     <span style="color: red;">declined</span> this complaint.
-                                    .</H3>
-                                {% else %}
-                                <label>Choose particular caretaker from a drop down box :</label>
-                                <select name="assign_caretaker">
-                                    {% if total_caretakers_in_area %}
-                                    {% for i in total_caretakers_in_area %}
-                                    <option value="{{ i.id }}">{{ i.id }}-{{ i.staff_id }}-{{ i.area }}</option>
-                                    {% endfor %}
-                                    {% else %}
-                                    <option ></option>
-                                    {% endif %}
-                                </select>
-                                <br><br>
+                                    .
+                                </H3>
+                                {% else %} -->
+                                <button class="ui large primary button right floated" type="submit" name="submit"
+                                    value="redirect" onclick="redirectsubmit()">
+                                    Forward
+                                </button>
                                 <a href="javascript:history.go(-1)">
                                     <button class="ui large primary button right floated" type="button" name="back">
                                         Back
                                     </button>
                                 </a>
 
-                                {% if total_caretakers_in_area %}
-                                <button class="ui large primary button right floated" type="submit" name="submit"
-                                        value="redirect" onclick="redirectsubmit()">
-                                    Submit
-                                </button>
-                                {% endif %}
-                                {% endif %}
+                                <!-- {% if total_caretakers_in_area %} -->
+                                
+                                <!-- {% endif %} -->
+                                <!-- {% endif %} -->
                             </div>
                         </div>
                     </form>
@@ -261,7 +153,8 @@ Complaint
     {% endblock %}
 
     {% block javascript %}
-    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script
+        src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
     <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
     <script type="text/javascript" src="{% static 'complaint_system/js/rating.js' %}"></script>
@@ -271,4 +164,3 @@ Complaint
     {% block css %}
 
     {% endblock %}
-

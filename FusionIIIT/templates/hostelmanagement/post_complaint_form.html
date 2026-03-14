@@ -1,0 +1,39 @@
+{% block post_complaint_form %}
+<div class="box-table">
+    <h2 class="heading-complaint-form" align="center">Complaint Form</h2>
+    <form action="{% url 'hostelmanagement:PostComplaint' %}" id="complaintForm" method="post" class="ui form">
+        {% csrf_token %}
+        <label for="hall_name">Hall Name:</label>
+        <input class="ui required form" type="text" id="hall_name" name="hall_name" required><br>
+
+
+        <label for="student_name">Student Name:</label>
+        <input type="text" id="student_name" value="{{ request.user.first_name }} {{ request.user.last_name }}" required readonly><br><br>
+
+        <label for="roll_number">Roll Number:</label>
+        <input type="text" id="roll_number" name="roll_number" value="{{ request.user.username }}" required readonly><br><br>
+      
+        <label for="description">Description:</label>
+        <textarea id="description" class="required field" name="description" rows="4" required></textarea><br>
+
+
+        <label for="contact_number">Contact Number:</label>
+        <input type="text" id="contact_number" name="contact_number" required><br>
+        <div class="complaint-btns">
+            <input class="ui primary button" type="submit" value="Submit">
+        </div>
+    </form>
+</div>
+<style>
+    .complaint-btns{
+        margin-top: 20px;
+        display: flex;
+    }
+</style>
+<script>
+    function navigateTomy_comp() {
+        var roll_number = document.getElementById("roll_number").value;
+        window.location.href = "/hostelmanagement/user_complaints/" + roll_number + "/";
+    }
+</script>
+{% endblock %}

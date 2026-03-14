@@ -12,6 +12,16 @@
         {% include 'dashboard/navbar.html' %}
     {% endblock %}
 
+    <script>
+        $('.message .close')
+            .on('click', function() {
+                $(this)
+                    .closest('.message')
+                    .transition('fade')
+                ;
+            });
+    </script>
+
     {% comment %}The grid starts here!{% endcomment %}
     <div class="ui stackable doubling grid">
 
@@ -34,28 +44,71 @@
             <div class="ui divider"></div>
 
             {% comment %}ROW #2 starts here!{% endcomment %}
-            {% if eligible %}
+            {% if eligible == "Junior Engineer" or eligible == "Executive Engineer (Civil)" or eligible == "Electrical_AE" or eligible == "Electrical_JE" or eligible == "EE" or eligible == "Civil_AE" or eligible == "Civil_AE" %}
             <div class="row">
                 {% comment %}The Tab-Menu starts here!{% endcomment %}
                 <div class="ui large fluid vertical pointing menu">
-                    <a class="active item" data-tab="first">
-                        Create Project Requisition
+                    <a class="active item" href="{% url 'iwdModuleV2:Fetch-Designations' %}">
+                        Create Request
                         <i class="right floated chevron right icon"></i>
                     </a>
 
-                    <a class="item" data-tab="second">
-                        View Project Details
+                    <a class="active item"  href="{% url 'iwdModuleV2:Created Requests view' %}">
+                        Created Requests
                         <i class="right floated chevron right icon"></i>
                     </a>
-<!-- 
-                    <a class="item" data-tab="third">
-                        Feedback
+
+                    <a class="active item"  href="{% url 'iwdModuleV2:Rejected Requests view' %}">
+                        Rejected Requests
                         <i class="right floated chevron right icon"></i>
                     </a>
-                    <a class="item" data-tab="fourth">
-                        Doctor Schedule
+
+                    <a class="active item"  href="{% url 'iwdModuleV2:Issue Work Order' %}">
+                        Issue Work Order
                         <i class="right floated chevron right icon"></i>
-                    </a> -->
+                    </a>
+
+                    <a class="active item"  href="{% url 'iwdModuleV2:Requests In Progress' %}">
+                        Requests In Progress
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="active item"  href="{% url 'iwdModuleV2:Generated-Bills-View' %}">
+                        Generated Bills
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="active item" href="{% url 'iwdModuleV2:Requests-Status' %}">
+                        Requests Status
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                </div>
+                {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+            </div>
+            {% comment %}ROW #2 ends here!{% endcomment %}
+
+        </div>
+        {% endif %}
+        {% if eligible == "Dean (P&D)" %}
+            <div class="row">
+                {% comment %}The Tab-Menu starts here!{% endcomment %}
+                <div class="ui large fluid vertical pointing menu">
+                    <a class="active item" href="{% url 'iwdModuleV2:Engineer-Processed-Requests view' %}">
+                        Process Requests
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="active item" href="{% url 'iwdModuleV2:View-Budget' %}">
+                        View Budget
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="active item" href="{% url 'iwdModuleV2:Requests-Status' %}">
+                        Requests Status
+                        <i class="right floated chevron right icon"></i>
+                    </a>
 
                 </div>
                 {% comment %}The Tab-Menu ends here!{% endcomment %}
@@ -67,24 +120,130 @@
         {% comment %}The left-rail segment ends here!{% endcomment %}
 
         {% comment %}The central-rail segment starts here!{% endcomment %}
-        <div class="eight wide column">
-            {% comment %}The Appointments Form starts here!{% endcomment %}
-            <div class="ui active tab segment" data-tab="first">
-                {% block appointment %}
-                    {% include 'iwdModuleV2/createWork.html' %}
-                {% endblock %}
-            </div>
-            {% comment %}The appointment Form ends here!{% endcomment %}
+        {% endif %}
+        {% if eligible == "Director" %}
+            <div class="row">
+                {% comment %}The Tab-Menu starts here!{% endcomment %}
+                <div class="ui large fluid vertical pointing menu">
+                    <a class="active item" href="{% url 'iwdModuleV2:Dean-Processed-Requests view' %}">
+                        Approve/Reject Requests
+                        <i class="right floated chevron right icon"></i>
+                    </a>
 
-            {% comment %}The patient history starts here!{% endcomment %}
-            <div class="ui tab segment" data-tab="second">
-                {% block history %}
-                    {% include 'iwdModuleV2/viewWork.html' %}
-                {% endblock %}
+                    <a class="active item" href="{% url 'iwdModuleV2:View-Budget' %}">
+                        View Budget
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="active item" href="{% url 'iwdModuleV2:Requests-Status' %}">
+                        Requests Status
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                </div>
+                {% comment %}The Tab-Menu ends here!{% endcomment %}
+
             </div>
-            {% comment %}The patient history ends here!{% endcomment %}
+            {% comment %}ROW #2 ends here!{% endcomment %}
 
         </div>
+        {% comment %}The left-rail segment ends here!{% endcomment %}
+
+        {% comment %}The central-rail segment starts here!{% endcomment %}
+        {% endif %}
+        {% if eligible == "Admin IWD" %}
+            <div class="row">
+                {% comment %}The Tab-Menu starts here!{% endcomment %}
+                <div class="ui large fluid vertical pointing menu">
+
+                    <a class="active item" href="{% url 'iwdModuleV2:Budget' %}">
+                        Manage Budget
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                </div>
+                {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+            </div>
+            {% comment %}ROW #2 ends here!{% endcomment %}
+
+        </div>
+        {% comment %}The left-rail segment ends here!{% endcomment %}
+
+        {% comment %}The central-rail segment starts here!{% endcomment %}
+        {% endif %}
+        {% if eligible == "Accounts Admin" %}
+            <div class="row">
+                {% comment %}The Tab-Menu starts here!{% endcomment %}
+                <div class="ui large fluid vertical pointing menu">
+
+                    <a class="active item" href="{% url 'iwdModuleV2:Settle-Bills-View' %}">
+                        Settle Bills
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="active item" href="{% url 'iwdModuleV2:View-Budget' %}">
+                        View Budget
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                </div>
+                {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+            </div>
+            {% comment %}ROW #2 ends here!{% endcomment %}
+
+        </div>
+        {% comment %}The left-rail segment ends here!{% endcomment %}
+
+        {% comment %}The central-rail segment starts here!{% endcomment %}
+        {% endif %}
+        {% if eligible == "Auditor" %}
+            <div class="row">
+                {% comment %}The Tab-Menu starts here!{% endcomment %}
+                <div class="ui large fluid vertical pointing menu">
+
+                    <a class="active item" href="{% url 'iwdModuleV2:Audit-Document-View' %}">
+                        Audit Documents
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="active item" href="{% url 'iwdModuleV2:View-Budget' %}">
+                        View Budget
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                </div>
+                {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+            </div>
+            {% comment %}ROW #2 ends here!{% endcomment %}
+
+        </div>
+        {% comment %}The left-rail segment ends here!{% endcomment %}
+
+        {% comment %}The central-rail segment starts here!{% endcomment %}
+        {% endif %}
+        {% if eligible != "Junior Engineer" and eligible != "Executive Engineer (Civil)" and eligible != "Electrical_AE" and eligible != "Electrical_JE" and eligible != "EE" and eligible != "Civil_AE" and eligible != "Civil_JE" and eligible != "Dean (P&D)" and eligible != "Director" and eligible != "Accounts Admin" and eligible != "Admin IWD" and eligible != "Auditor" and eligible != "student" %}
+            <div class="row">
+                {% comment %}The Tab-Menu starts here!{% endcomment %}
+                <div class="ui large fluid vertical pointing menu">
+
+                    <a class="active item" href="{% url 'iwdModuleV2:Fetch-Designations' %}">
+                        Create Request
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                </div>
+                {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+            </div>
+            {% comment %}ROW #2 ends here!{% endcomment %}
+
+        </div>
+        {% comment %}The left-rail segment ends here!{% endcomment %}
+
+        {% comment %}The central-rail segment starts here!{% endcomment %}
         {% endif %}
         {% comment %}The central-rail segment ends here!{% endcomment %}
 

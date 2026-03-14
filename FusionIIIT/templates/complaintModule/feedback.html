@@ -15,7 +15,7 @@
     <div class="ui active tab " data-tab="feedback">
         <div class="ui vertical segment" style="overflow-y: auto";>
 
-            <table class="ui very basic collapsing celled sortable table"
+            <table class="ui very basic collapsing celled sortable table" id="feedback_user"
                    style="padding-left: 0.5%;
                                                           padding-right: 0.5%;
                                                           padding-top: 1%;
@@ -49,17 +49,17 @@
                     <th class="one wide column">
                         Status
                     </th>
-                    <th class="one wide column">
+                    <!-- <th class="one wide column">
                         Worker<br>
                         Name
-                    </th>
+                    </th> -->
                     <th class="three wide column">
                         Feedback
                     </th>
                 </tr>
                 </thead>
 
-                {% for a in history %}
+                {% for a in outbox %}
                     {% if a.status == 2 %}
 
                 <tbody>
@@ -86,9 +86,9 @@
                     <td>
                         <i class="large green checkmark icon"></i>
                     </td>
-                    <td>
+                    <!-- <td>
                         {{ a.worker_id }}
-                    </td>
+                    </td> -->
                     <td>
                         {% if a.feedback == '' %}
                             <div class="field">
@@ -115,6 +115,7 @@
                     {% endif %}
                 {% endfor %}
             </table>
+            <div id="paginationfeedback_user" class="pagination" style="text-align: center; margin-top: 10px;"></div>
             <br>
             <div class="ui divider"></div>
             <div class="extra content">
@@ -124,4 +125,9 @@
             </div>
     </div>
     </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            paginate('feedback_user', 10, 'paginationfeedback_user'); // Call the pagination function with table ID and rows per page
+        });
+    </script>
 {% endblock %}

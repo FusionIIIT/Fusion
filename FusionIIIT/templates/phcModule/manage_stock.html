@@ -1,339 +1,637 @@
 {% load static %}
 <head>
-    <script type="text/javascript" src="jspdf.debug.js"></script>
+  <script type="text/javascript" src="jspdf.debug.js"></script>
 </head>
-{% block stock %}
-    {% comment %}the main tab starts here {% endcomment %}
-    <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="addstock">
-          Add Stock/Threshold
-        </a>
+{% block stock %} {% comment %}the main tab starts here {% endcomment %}
+<div class="ui pointing secondary menu">
+  <a class="active item" data-tab="addstock"> Add Stock </a>
 
-        <a class="item" data-tab="addmedicine">
-          Add Medicine
-        </a>
-        <a class="item" data-tab="viewexpiredstock">
-          Expired Medicine
-        </a>
-        <a class="item" data-tab="viewlivestock">
-          View Stock
-        </a>
-        <a class="item" data-tab="thresholdstock">
-          Required Medicine
-        </a>
-    </div>
+  <a class="item" data-tab="addmedicine"> Add Medicine </a>
+  <a class="item" data-tab="EditThreshold"> Edit Threshold </a>
+  <a class="item" data-tab="viewexpiredstock"> Expired Medicine </a>
+  <a class="item" data-tab="viewlivestock"> View Stock </a>
+  <a class="item" data-tab="thresholdstock"> Required Medicine </a>
+</div>
 
-    {% comment %}the add stock tab starts here{% endcomment %}
-    <div class="ui active tab" data-tab="addstock">
-      <p id="medicine_add"></p>
-        <div class="ui vertical segment">
-            <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
-                  <div class="field">
-                        <label>Medicine</label>
-                        <select class="ui search fluid dropdown" id="medicine_a" name="medicine_a" required="true">
-                        <option value="" disabled selected>--SELECT--</option>
-                          {% for stock in stocks %}
-                          <option value="{{stock.id}}">{{stock.medicine_name}}</option>
-                          {% endfor %}
-                        </select>
-                    </div>
-                    <div class="field">
-                        <label>Quantity</label>
-                        <div class="ui fluid large input">
-                            <input placeholder="Quantitys" id="quantity_a" name="quantity_a" type="number">
-                        </div>
-                    </div>
-                    <div class="field">
-                        <label>Supplier</label>
-                        <div class="ui fluid large input">
-                            <input placeholder="Supplier" id="supplier" name="supplier" type="text">
-                        </div>
-                    </div>
-                    <div class="field">
-                        <label>Threshold</label> <p id="thr"></p>
-                        <div class="ui fluid large input">
-                            <input placeholder="Threshold" id="thresh_a" name="thresh_a" type="number">
-                        </div>
-                    </div>
-                    <div class="field">
-                        <label>Expiry Date</label>
-                        <div class="ui fluid large input">
-                            <input id="expiry_date" name="expiry_date" type="date">
-                        </div>
-                    </div>
-                    <div class="field">
-                    <label><br></label>
-
-                    <div >
-                      <input type="button" id="add_stock" name="add_stock"  value="Submit"class="ui large right floated primary button" />
-                    </div>
-
-                   </div>
-            </form>
-            <script type="text/javascript">
-
-            $('#medicine_a').change(function()
-                  {
-                      document.getElementById("thr").innerHTML = "";
-                      $.ajax({
-                      type:'post',
-                      url:'/healthcenter/compounder/',
-                      data: {
-                      csrfmiddlewaretoken: '{{ csrf_token }}',
-                      medicine:$("#medicine_a").val(),
-                      },
-                      success: function(data){
-                        $('#thr').append("Current Threshold: "+data.thresh);
-
-                                              }
-                   });
-                 });
-
-
-              $('#add_stock').click(function(e)
-                                                  {
-                                                    var medicine = document.getElementById('medicine_a').value;
-                                                    var qty = document.getElementById('quantity_a').value;
-                                                    var thresh = document.getElementById('thresh_a').value;
-                                                    var supplier = document.getElementById('supplier').value;
-                                                    var expiry_date = document.getElementById('expiry_date').value;
-													
-													var today = new Date(new Date().setHours(0, 0, 0, 0));
-
-													var N_expired_med1 = new Date(expiry_date);
-                                                   
-                                                    if ( +N_expired_med1 < +today ) {
-                                                        $('#medicine_add').html('You cannot enter expiry date before today!.');
-                                                        return false;
-                                                    }
-													
-													
-                                                    if ( medicine==""||supplier==""||expiry_date==""||qty==""||qty<=0) {
-                                                        $('#medicine_add').html('Enter valid details');
-                                                        return false;
-                                                    }
-
-                                                    $.ajax({
-                                                      type:'post',
-                                                      url:'/healthcenter/compounder/',
-                                                      data: {
-                                                      csrfmiddlewaretoken: '{{ csrf_token }}',
-                                                      medicine_id:$("#medicine_a").val(),
-                                                      quantity:$("#quantity_a").val(),
-                                                      threshold_a:$("#thresh_a").val(),
-                                                      supplier:$("#supplier").val(),
-                                                      expiry_date:$("#expiry_date").val(),
-                                                      add_stock:$("#add_stock").val()
-
-                                                    },
-                                                      success: function(data){
-                                                      alert("added stock ");
-
-                                           {% comment %}           $('#live_stock').find('tbody');
-                        $('#live_stock tbody').append("<tr><td>" + data.medicine + "</td><td>" + data.new_supplier + "</td><td>" + data.new_expiry_date  + "</td><td>" + data.quantity + "</td></tr>"); {% endcomment %}
-                                                      document.getElementById("medicine_a").value="";
-                                                      document.getElementById("quantity").value="";
-                                                      $('#medicine_add').html('');
-                                                      document.getElementById("thr").innerHTML = "";
-                                                      window.location.reload();
-
-                                                    }
-                                                  });
-                                                });
-
-      </script>
-            <br>
-            <br>
+{% comment %}the add stock tab starts here{% endcomment %}
+<div class="ui active tab" data-tab="addstock">
+  <p id="medicine_add"></p>
+  <div class="ui vertical segment">
+    <form
+      class="ui form"
+      method="POST"
+      style="padding: 8px; padding-left: 24px; padding-right: 24px">
+      {% csrf_token %}
+      <div class="field">
+        <label>Brand name</label>
+        <div style="display: flex; gap: 10px">
+          <input
+            type="text"
+            class=""
+            id="brand_name_a"
+            name="brand_name_a"
+            list="med_list_a" />
+          <input
+            type="button"
+            id="add_stock_search_btn"
+            name="add_stock_search_btn"
+            value="Search"
+            class="ui small primary button" />
         </div>
-        <br>
-        <div class="extra segment"></div>
-    </div>
-    {% comment %}the add stock tab ends here {% endcomment %}
-
-
-    {% comment %}the add medicine tab starts here {% endcomment %}
-    <div class="ui tab" data-tab="addmedicine">
-      <p id="med_add"></p>
-        <div class="ui vertical segment">
-            <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
-              <div class="field">
-                <label>Medicine Name</label>
-                <div class="ui fluid large input">
-                    <input placeholder="Medicine Name" id="new_medicine" name="new_medicine" type="text">
-                </div>
-                </div>
-                <div class="field">
-                    <label>Quantity</label>
-                    <div class="ui fluid large input">
-                        <input placeholder="Quantity" id="new_quantity" name="new_quantity" type="number">
-                    </div>
-                </div>
-                <div class="field">
-                    <label>Threshold</label>
-                    <div class="ui fluid large input">
-                        <input placeholder="Threshold" id="threshold" name="threshold" type="number">
-                    </div>
-                </div>
-                <div class="field">
-                    <label>Supplier</label>
-                    <div class="ui fluid large input">
-                        <input placeholder="Supplier" id="new_supplier" name="new_supplier" type="text">
-                    </div>
-                </div>
-                <div class="field">
-                    <label>Expiry Date</label>
-                    <div class="ui fluid large input">
-                        <input id="new_expiry_date" name="new_expiry_date" type="date">
-                    </div>
-                </div>
-                <div class="field">
-                <label><br></label>
-
-                <div >
-                  <input type="button" id="add_medicine" name="add_medicine"  value="Submit"class="ui large right floated primary button" />
-                </div>
-
-               </div>
-            </form>
-            <script type="text/javascript">
-              $('#add_medicine').click(function(e)
-                                                  {
-                                                    var new_medicine = document.getElementById('new_medicine').value;
-                                                    var threshold = document.getElementById('threshold').value;
-                                                    var new_quantity = document.getElementById('new_quantity').value;
-                                                    var new_supplier = document.getElementById('new_supplier').value;
-                                                    var new_expiry_date = document.getElementById('new_expiry_date').value;
-													
-													var today = new Date(new Date().setHours(0, 0, 0, 0));
-
-													var N_expired_med= new Date(new_expiry_date);
-                                                   
-                                                    if ( +N_expired_med < +today ) {
-                                                        $('#med_add').html('You cannot enter expiry date before today!.');
-                                                        return false;
-                                                    }
-													
-
-                                                    if ( new_medicine==""||new_expiry_date==""||new_supplier==""||new_quantity==""||new_quantity<=0||threshold==""||threshold<0) {
-                                                        $('#med_add').html('Enter valid details');
-                                                        return false;
-                                                    }
-
-                                                    $.ajax({
-                                                      type:'post',
-                                                      url:'/healthcenter/compounder/',
-                                                      data: {
-                                                      csrfmiddlewaretoken: '{{ csrf_token }}',
-                                                      new_medicine:$("#new_medicine").val(),
-                                                      new_quantity:$("#new_quantity").val(),
-                                                      threshold:$("#threshold").val(),
-                                                      new_supplier:$("#new_supplier").val(),
-                                                      new_expiry_date:$("#new_expiry_date").val(),
-                                                      add_medicine:$('#add_medicine').val()
-                                                    },
-                                                      success: function(data){
-                                                      alert("added new medicine");
-
-                                           $('#live_stock').find('tbody');
-                        $('#live_stock tbody').append("<tr><td>" + data.medicine + "</td><td>" + data.new_supplier + "</td><td>" + data.new_expiry_date  + "</td><td>" + data.quantity + "</td></tr>");
-                                                     {% comment %}  {% endcomment %}
-
-
-                                                      document.getElementById("new_medicine").value="";
-                                                      document.getElementById("threshold").value="";
-                                                      document.getElementById("new_quantity").value="";
-                                                      document.getElementById("new_supplier").value="";
-                                                      document.getElementById("new_expiry_date").value="";
-                                                      $('#med_add').html('');
-
-                                                    }
-                                                  });
-                                                });
-
-      </script>
-            <br>
-            <br>
+        <datalist id="med_list_a"> </datalist>
+      </div>
+      <div class="field">
+        <label>Quantity</label>
+        <div class="ui fluid large input">
+          <input
+            placeholder="Quantity"
+            id="quantity_a"
+            name="quantity_a"
+            type="number" />
         </div>
-        <br>
-        <div class="extra segment"></div>
+      </div>
+      <div class="field">
+        <label>Supplier</label>
+        <div class="ui fluid large input">
+          <input
+            placeholder="Supplier"
+            id="supplier"
+            name="supplier"
+            type="text" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Expiry Date</label>
+        <div class="ui fluid large input">
+          <input id="new_expiry_date" name="new_expiry_date" type="date" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Medicine Name</label>
+        <div class="ui fluid large input">
+          <input
+            placeholder="Medicine Name"
+            id="medicine_name_a"
+            name="medicine_name"
+            type="text"
+            readonly />
+        </div>
+      </div>
+      <div class="field">
+        <label>Constituents</label>
+        <div class="ui fluid large input">
+          <input
+            placeholder="Constituents"
+            id="constituents_a"
+            name="constituents"
+            type="text"
+            readonly />
+        </div>
+      </div>
+      <div class="field">
+        <label>Manufacturer name</label>
+        <div class="ui fluid large input">
+          <input
+            placeholder="Manufacuturer Name"
+            id="manufacture_name_a"
+            name="manufacture_name"
+            type="text"
+            readonly />
+        </div>
+      </div>
+      <div class="field">
+        <label>Pack Size Label</label>
+        <div class="ui fluid large input">
+          <input
+            placeholder="Pack Size"
+            id="packsize_a"
+            name="packsize"
+            type="text"
+            readonly />
+        </div>
+      </div>
+      <div class="field">
+        <div>
+          <input
+            type="button"
+            id="add_stock"
+            name="add_stock"
+            value="Submit"
+            class="ui large right floated primary button" />
+        </div>
+      </div>
+    </form>
+    <div
+      style="
+        margin-top: 40px;
+        font-size: 20px;
+        padding: 8px;
+        padding-left: 24px;
+        padding-right: 24px;
+      ">
+      <hr />
+      <p style="text-align: center">OR</p>
+      <hr />
+      <p>Insert Data using excel file</p>
     </div>
-    {% comment %}the add medicine tab ends here {% endcomment %}
+    <form
+      class="ui form"
+      method="POST"
+      style="padding: 8px; padding-left: 24px; padding-right: 24px">
+      {% csrf_token %}
+      <div class="field">
+        <label for="file">Report</label>
+        <div class="ui fluid input">
+          <input
+            type="file"
+            name="file"
+            id="file_excel_add_stock"
+            accept=".xls,.xlsx" />
+        </div>
+      </div>
+      <div>
+        <input
+          type="button"
+          id="download_example_add_stock"
+          name="download_example"
+          value="Download Example"
+          class="ui large right floated primary button" />
+      </div>
+      <div>
+        <input
+          type="button"
+          id="add_stock_excel"
+          name="add_stock_excel"
+          value="Submit"
+          class="ui large right floated primary button" />
+      </div>
+    </form>
+    <script type="text/javascript">
+      $("#download_example_add_stock").click(function (e) {
+        alert("view_report");
+        var url = `{% url 'healthcenter:view_file' file_id='0' %}`;
+        var newurl = url.replace("0", -2);
+        window.open(newurl, "_blank");
+      });
 
+      $("#add_stock_excel").click(function (e) {
+        // Get the file input element
+        var fileInput = document.getElementById("file_excel_add_stock");
+        var file = fileInput.files[0];
 
-    {% comment %}the view stock tab starts here {% endcomment %}
-    <div class="ui tab" data-tab="viewlivestock">
-        <div id="meds_print" class="ui vertical segment" >
-            <button type="button"  id="pr_meds" name="PDF" value="PDF" class="ui primary button right floated">
-                    <!-- Download -->
-                    <i class="ui download icon right floated"></i>
-                </button>
+        if (file == undefined) {
+          alert("add a file");
+        } else {
+          var formData = new FormData();
+          formData.append("csrfmiddlewaretoken", "{{ csrf_token }}");
+          formData.append("file", file);
+          formData.append("add_stock_excel", $("#add_medicine_excel").val());
+          $.ajax({
+            type: "post",
+            url: "/healthcenter/compounder/",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (data) {
+              if (data.status == 1) {
+                alert("data inserted successfully");
+                window.location.reload();
+              } else {
+                alert("error while inserting");
+              }
+            },
+          });
+        }
+      });
 
-                <script>
-    $('#pr_meds').click(function(e){
-        var sTable = document.getElementById('meds_print').innerHTML;
+      $("#add_stock_search_btn").click(function () {
+        var name = document.getElementById("brand_name_a").value;
+        if (name.length > 2) {
+          $.ajax({
+            type: "post",
+            url: "/healthcenter/compounder/",
+            data: {
+              csrfmiddlewaretoken: "{{ csrf_token }}",
+              medicine_name_for_stock: $("#brand_name_a").val(),
+              get_stock: 1,
+            },
+            success: function (data) {
+              var med_list_a = document.getElementById("med_list_a");
+              med_list_a.innerHTML = "";
+              $.each(data.sim, function (key, value) {
+                var new_option = document.createElement("option");
+                new_option.value = value.brand_name + "," + value.id;
+                med_list_a.appendChild(new_option);
+              });
+              if (data.status == 2) {
+                console.log(data.sim);
+                var brand_name_a = document.getElementById("medicine_name_a");
+                brand_name_a.value = data.sim[0].medicine_name;
+
+                var constituents_a = document.getElementById("constituents_a");
+                if (data.sim[0].constituents == null) constituents_a.value = "";
+                else constituents_a.value = data.sim[0].constituents;
+
+                var manufacturer_name_a =
+                  document.getElementById("manufacture_name_a");
+                if (data.sim[0].manufacturer_name == null)
+                  manufacturer_name_a.value = "";
+                else manufacturer_name_a.value = data.sim[0].manufacturer_name;
+
+                var pack_size_label_a = document.getElementById("packsize_a");
+                if (data.sim[0].pack_size_label == null)
+                  pack_size_label_a.value = "";
+                else pack_size_label_a.value = data.sim[0].pack_size_label;
+              }
+            },
+          });
+        }
+      });
+
+      $("#add_stock").click(function (e) {
+        var medicine = document.getElementById("brand_name_a").value;
+        var qty = document.getElementById("quantity_a").value;
+        // var thresh = document.getElementById('thresh_a').value;
+        var supplier = document.getElementById("supplier").value;
+        var expiry_date = document.getElementById("new_expiry_date").value;
+        console.log(medicine);
+        console.log(qty);
+        console.log(supplier);
+        console.log(expiry_date);
+        var today = new Date(new Date().setHours(0, 0, 0, 0));
+
+        var N_expired_med1 = new Date(expiry_date);
+
+        if (+N_expired_med1 < +today) {
+          $("#medicine_add").html(
+            "You cannot enter expiry date before today!."
+          );
+          return false;
+        }
+
+        if (
+          medicine == "" ||
+          supplier == "" ||
+          expiry_date == "" ||
+          qty == "" ||
+          qty <= 0
+        ) {
+          $("#medicine_add").html("Enter valid details");
+          return false;
+        }
+
+        $.ajax({
+          type: "post",
+          url: "/healthcenter/compounder/",
+          data: {
+            csrfmiddlewaretoken: "{{ csrf_token }}",
+            medicine_id: $("#brand_name_a").val(),
+            quantity: $("#quantity_a").val(),
+            supplier: $("#supplier").val(),
+            expiry_date: $("#new_expiry_date").val(),
+            add_stock: $("#add_stock").val(),
+          },
+          success: function (data) {
+            if (data.status == 1) {
+              alert("added stock ");
+              $("#live_stock").find("tbody");
+              $("#live_stock tbody").append(
+                "<tr><td>" +
+                  data.medicine +
+                  "</td><td>" +
+                  data.supplier +
+                  "</td><td>" +
+                  data.expiry_date +
+                  "</td><td>" +
+                  data.quantity +
+                  "</td></tr>"
+              );
+              document.getElementById("brand_name_a").value = "";
+              document.getElementById("quantity_a").value = "";
+              document.getElementById("supplier").value = "";
+              document.getElementById("new_expiry_date").value = "";
+              $("#medicine_add").html("");
+              window.location.reload();
+            } else {
+              alert("error while adding stock");
+            }
+          },
+        });
+      });
+    </script>
+    <br />
+    <br />
+  </div>
+  <br />
+  <div class="extra segment"></div>
+</div>
+{% comment %}the add stock tab ends here {% endcomment %} 
+{% comment %}the addmedicine tab starts here {% endcomment %}
+<div class="ui tab" data-tab="addmedicine">
+  <p id="med_add"></p>
+  <div class="ui vertical segment">
+    <form
+      class="ui form"
+      method="POST"
+      style="padding: 8px; padding-left: 24px; padding-right: 24px">
+      {% csrf_token %}
+      <div class="field">
+        <label>Medicine Name</label>
+        <div class="ui fluid large input">
+          <input
+            placeholder="Medicine Name"
+            id="new_medicine"
+            name="new_medicine"
+            type="text" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Threshold</label>
+        <div class="ui fluid large input">
+          <input
+            placeholder="Threshold"
+            id="threshold"
+            name="threshold"
+            type="number" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Brand name</label>
+        <div class="ui fluid large input">
+          <input
+            placeholder="Brand Name"
+            id="brand_name"
+            name="brand_name"
+            type="text" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Constituents</label>
+        <div class="ui fluid large input">
+          <input
+            placeholder="Constituents"
+            id="constituents"
+            name="constituents"
+            type="text" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Manufacturer name</label>
+        <div class="ui fluid large input">
+          <input
+            placeholder="Manufacturer Name"
+            id="manufacture_name"
+            name="manufacture_name"
+            type="text" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Pack Size label</label>
+        <div class="ui fluid large input">
+          <input
+            placeholder="Pack Size"
+            id="packsize"
+            name="packsize"
+            type="text" />
+        </div>
+      </div>
+      <div class="field">
+        <div>
+          <input
+            type="button"
+            id="add_medicine"
+            name="add_medicine"
+            value="Submit"
+            class="ui large right floated primary button" />
+        </div>
+      </div>
+    </form>
+    <div
+      style="
+        margin-top: 40px;
+        font-size: 20px;
+        padding: 8px;
+        padding-left: 24px;
+        padding-right: 24px;
+      ">
+      <hr />
+      <p style="text-align: center">OR</p>
+      <hr />
+      <p>Insert Data using excel file</p>
+    </div>
+    <form
+      class="ui form"
+      method="POST"
+      style="padding: 8px; padding-left: 24px; padding-right: 24px">
+      {% csrf_token %}
+      <div class="field">
+        <label for="file">Report</label>
+        <div class="ui fluid input">
+          <input type="file" name="file" id="file_excel" accept=".xls,.xlsx" />
+        </div>
+      </div>
+      <div>
+        <input
+          type="button"
+          id="download_example"
+          name="download_example"
+          value="Download Example"
+          class="ui large right floated primary button" />
+      </div>
+      <div>
+        <input
+          type="button"
+          id="add_medicine_excel"
+          name="add_medicine_excel"
+          value="Submit"
+          class="ui large right floated primary button" />
+      </div>
+    </form>
+    <script type="text/javascript">
+      $("#download_example").click(function (e) {
+        alert("view_report");
+        var url = `{% url 'healthcenter:view_file' file_id='0' %}`;
+        var newurl = url.replace("0", -1);
+        window.open(newurl, "_blank");
+      });
+
+      $("#add_medicine_excel").click(function (e) {
+        // Get the file input element
+        var fileInput = document.getElementById("file_excel");
+        var file = fileInput.files[0];
+
+        if (file == undefined) {
+          alert("add a file");
+        } else {
+          var formData = new FormData();
+          formData.append("csrfmiddlewaretoken", "{{ csrf_token }}");
+          formData.append("file", file);
+          formData.append("add_medicine_excel", $("#add_medicine_excel").val());
+          $.ajax({
+            type: "post",
+            url: "/healthcenter/compounder/",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (data) {
+              if (data.status == 1) {
+                alert("data inserted successfully");
+                window.location.reload();
+              } else {
+                alert("error while inserting");
+              }
+            },
+          });
+        }
+      });
+      $("#add_medicine").click(function (e) {
+        var new_medicine = document.getElementById("new_medicine").value;
+        var threshold = document.getElementById("threshold").value;
+        var brand_name = document.getElementById("brand_name").value;
+        var constituents = document.getElementById("constituents").value;
+        var manufacture_name =
+          document.getElementById("manufacture_name").value;
+        var packsize = document.getElementById("packsize").value;
+        // var new_quantity = document.getElementById('new_quantity').value;
+        // var new_supplier = document.getElementById('new_supplier').value;
+        // var new_expiry_date = document.getElementById('new_expiry_date').value;
+
+        // if ( +N_expired_med < +today ) {
+        //     $('#med_add').html('You cannot enter expiry date before today!.');
+        //     return false;
+        // }
+
+        if (
+          new_medicine == "" ||
+          brand_name == "" ||
+          constituents == "" ||
+          manufacture_name == "" ||
+          packsize == "" ||
+          packsize <= 0 ||
+          threshold == "" ||
+          threshold < 0
+        ) {
+          $("#med_add").html("Enter valid details");
+          return false;
+        }
+
+        $.ajax({
+          type: "post",
+          url: "/healthcenter/compounder/",
+          data: {
+            csrfmiddlewaretoken: "{{ csrf_token }}",
+            new_medicine: $("#new_medicine").val(),
+            threshold: $("#threshold").val(),
+            brand_name: $("#brand_name").val(),
+            constituents: $("#constituents").val(),
+            manufacture_name: $("#manufacture_name").val(),
+            packsize: $("#packsize").val(),
+            add_medicine: $("#add_medicine").val(),
+          },
+          success: function (data) {
+            alert("added new medicine");
+            document.getElementById("new_medicine").value = "";
+            document.getElementById("threshold").value = "";
+            document.getElementById("brand_name").value = "";
+            document.getElementById("constituents").value = "";
+            document.getElementById("manufacture_name").value = "";
+            document.getElementById("packsize").value = "";
+            $("#med_add").html("");
+          },
+        });
+      });
+    </script>
+    <br />
+    <br />
+  </div>
+  <br />
+  <div class="extra segment"></div>
+</div>
+{% comment %}the add medicine tab ends here {% endcomment %} 
+{% comment %}the view stock tab starts here {% endcomment %}
+
+<div class="ui tab" data-tab="viewlivestock">
+  <form class="ui form" style="margin-bottom: 20px;" id="search_view_stock">
+    <div class="field">
+        <div class="ui fluid large input">
+            <input placeholder="search" id="view_stock_search" name="patient_search" type="text">
+        </div>
+     </div>
+  </form>
+  <div id="meds_print" class="ui vertical segment">
+    <button
+      type="button"
+      id="pr_meds"
+      name="PDF"
+      value="PDF"
+      class="ui primary button right floated">
+      <!-- Download -->
+      <i class="ui download icon right floated"></i>
+    </button>
+
+    <script>
+      $("#pr_meds").click(function (e) {
+        var sTable = document.getElementById("meds_print").innerHTML;
 
         var style = "<style>";
         style = style + "table {width: 100%;font: 17px Calibri;}";
-        style = style + "table, th, td {border: solid 1px #DDD; border-collapse: collapse;";
+        style =
+          style +
+          "table, th, td {border: solid 1px #DDD; border-collapse: collapse;";
         style = style + "padding: 2px 3px;text-align: center;}";
+        style+=".button{display:none}"
         style = style + "</style>";
 
         // CREATE A WINDOW OBJECT.
-        var win = window.open('', '', 'height=700,width=700');
+        var win = window.open("", "", "height=700,width=700");
 
-        win.document.write('<html><head>');
-        win.document.write('<title>Current Stock</title>');   // <title> FOR PDF HEADER.
-        win.document.write(style);          // ADD STYLE INSIDE THE HEAD TAG.
-        win.document.write('</head>');
-        win.document.write('<body>');
-        win.document.write(sTable);         // THE TABLE CONTENTS INSIDE THE BODY TAG.
-        win.document.write('</body></html>');
+        win.document.write("<html><head>");
+        win.document.write("<title>Current Stock</title>"); // <title> FOR PDF HEADER.
+        win.document.write(style); // ADD STYLE INSIDE THE HEAD TAG.
+        win.document.write("</head>");
+        win.document.write("<body>");
+        win.document.write(sTable); // THE TABLE CONTENTS INSIDE THE BODY TAG.
+        win.document.write("</body></html>");
 
-        win.document.close(); 	// CLOSE THE CURRENT WINDOW.
+        win.document.close(); // CLOSE THE CURRENT WINDOW.
 
-        win.print();    // PRINT THE CONTENTS.
-    });
+        win.print(); // PRINT THE CONTENTS.
+      });
+    </script>
 
-</script>
+      <table
+      class="ui very basic collapsing celled large fluid sortable table"
+      id="live_stock"
+      style="
+        padding-left: 2.5%;
+        padding-right: 2.5%;
+        padding-top: 1%;
+        padding-bottom: 1.5%;
+        margin: auto;
+      ">
+      <thead>
+        <tr>
+          <th class="two wide">Medicine</th>
 
-            <table class="ui very basic collapsing celled large fluid sortable table" id="live_stock"
-                   style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
-                <thead>
-                <tr>
-                    <th class="two wide">
-                        Medicine
-                    </th>
+          <th class="two wide">Supplier</th>
 
-                     <th class="two wide" >
-                        Supplier
-                    </th>
+          <th class="two wide">Expiry Date</th>
 
-                    <th class="two wide" >
-                        Expiry Date
-                    </th>
+          <th class="two wide">Quantity</th>
+        </tr>
+      </thead>
 
-                    <th class="two wide" >
-                        Quantity
-                    </th>
+      <tbody id="view-stock-list">
+        {% for view in live_meds.page_stock_view.object_list %}
+        <tr>
 
-                </tr>
-                </thead>
+            <td>
+               {{view.medicine_id}}
+            </td>
 
-                <tbody>
-                {% for view in live_meds %}
-                <tr>
+          <td>{{view.supplier}}</td>
 
-                    <td>
-                       {{view.medicine_id}}
-                    </td>
-
-                    <td>
-                       {{view.supplier}}
-                    </td>
-
-                    <td>
-                       {{view.expiry_date}}
-                    </td>
+          <td>{{view.Expiry_date}}</td>
 
                     <td>
                         {{view.quantity}}
@@ -343,73 +641,114 @@
                 {% endfor %}
                 </tbody>
             </table>
+            
+            <div class="pagination-stock-view" class="pagination-stock-view" style="display: flex; justify-content: center;align-items: center;gap: 15px;margin-top: 15px;">
+              <button id="previous-page-stock" data-page="{{ live_meds.page_stock_view.previous_page_number }}" class="ui small muted button">Previous</button>
+              <div>
+                  Page <input type="number" value="{{ live_meds.page_stock_view.number }}" id="live_stock_page_number" style="width: 40px;"> of <span id="live_stock_total_pages">{{ live_meds.count_stock_view }}</span>
+              </div>
+              <button id="next-page-stock" data-page="{{ live_meds.page_stock_view.next_page_number }}" class="ui small muted button">Next</button>
+          </div>
         </div>
     </div>
     {% comment %}the view stock tab ends here {% endcomment %}
 
     {% comment %}the view stock tab starts here {% endcomment %}
     <div class="ui tab" data-tab="viewexpiredstock">
+      <form class="ui form" style="margin-bottom: 20px;" id="search_view_expired">
+        <div class="field">
+            <div class="ui fluid large input">
+                <input placeholder="search" id="view_expired_search" name="patient_search" type="text">
+            </div>
+         </div>
+      </form>
         <div  id="exmeds_print" class="ui vertical segment" >
+          <button
+          type="button"
+          id="exp_meds"
+          name="PDF"
+          value="PDF"
+          class="ui primary button right floated">
+          <!-- Download -->
+          <i class="ui download icon right floated"></i>
+        </button>
+    
+        <script type="text/javascript">
+          $("#exp_meds").click(function (e) {
+            var sTable = document.getElementById("exmeds_print").innerHTML;
+    
+            var style = "<style>";
+            style = style + "table {width: 100%;font: 17px Calibri;}";
+            style =
+              style +
+              "table, th, td {border: solid 1px #DDD; border-collapse: collapse;";
+            style = style + "padding: 2px 3px;text-align: center;}";
+            style+=".button{display:none}"
+            style = style + "</style>";
+    
+            // CREATE A WINDOW OBJECT.
+            var win = window.open("", "", "height=700,width=700");
+    
+            win.document.write("<html><head>");
+            win.document.write("<title>Current Stock</title>"); // <title> FOR PDF HEADER.
+            win.document.write(style); // ADD STYLE INSIDE THE HEAD TAG.
+            win.document.write("</head>");
+            win.document.write("<body>");
+            win.document.write(sTable); // THE TABLE CONTENTS INSIDE THE BODY TAG.
+            win.document.write("</body></html>");
+    
+            win.document.close(); // CLOSE THE CURRENT WINDOW.
+    
+            win.print(); // PRINT THE CONTENTS.
+          });
+        </script>
 
 
-            <table class="ui very basic collapsing celled large fluid sortable table"
-                   style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
-                <thead>
-                <tr>
-                    <th class="two wide">
-                        Medicine
-                    </th>
+              <table class="ui very basic collapsing celled large fluid sortable table"
+              style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
+            <thead>
+            <tr>
+                <th class="two wide">
+                    Medicine
+                </th>
 
-                    <th class="two wide" >
-                        Quantity
-                    </th>
+      <th class="two wide">Quantity</th>
 
-                    <th class="two wide" >
-                        Expiry Date
-                    </th>
+      <th class="two wide">Expiry Date</th>
 
-                    <th class="two wide" >
-                        Supplier
-                    </th>
+      <th class="two wide">Supplier</th>
+    </tr>
+  </thead>
 
-                    <th class="two wide" >
-                        Return
-                    </th>
+  <tbody id="manage-stock-expired">
+    {% for view in expired.page_stock_expired.object_list %}
+    <tr>
 
-                </tr>
-                </thead>
+        <td style="white-space:nowrap;">
+          {{view.medicine_id}}
+        </td>
 
-                <tbody>
-                {% for view in expired %}
-                <tr>
+      <td>{{view.quantity}}</td>
 
-                    <td style="white-space:nowrap;">
-                       {{view.medicine_id}}
-                    </td>
+      <td>{{view.Expiry_date}}</td>
 
-                    <td>
-                        {{view.quantity}}
-                    </td>
+                <td style="white-space:nowrap;">
+                    {{view.supplier}}
+                </td>
 
-                    <td>
-                        {{view.expiry_date}}
-                    </td>
+            </tr>
+            {% endfor %}
 
-                    <td style="white-space:nowrap;">
-                        {{view.supplier}}
-                    </td>
+            </tbody>
 
-                    {% if view.returned == False %}
-                    <td>
-                        <input type="hidden" id="return_id" name="id" value={{view.id}} />
-                        <input type='button' value='Returned' id="returned" name="returned" class=" return ui small right floated primary button" />
-                    </td>
-                    {% endif %}
-                </tr>
-                {% endfor %}
-                </tbody>
-
-            </table>
+        </table>
+            <div class="pagination-stock-expired" class="pagination-stock-expired" style="display: flex; justify-content: center;align-items: center;gap: 15px;margin-top: 15px;">
+              <button id="previous-page-stock-expired" data-page="{{ expired.page_stock_expired.previous_page_number }}" class="ui small muted button">Previous</button>
+              <div>
+                  Page <input type="number" value="{{ expired.page_stock_expired.number }}" id="expired_page_number" style="width: 40px;"> of <span id="expired_total_pages">{{ expired.count_stock_expired }}</span>
+              </div>
+              <button id="next-page-stock-expired" data-page="{{ expired.page_stock_expired.next_page_number }}" class="ui small muted button">Next</button>
+            </div>
             <script type="text/javascript">
                   $('#returned').click(function(e)
                                                       {
@@ -435,81 +774,547 @@
     
         {% comment %}the threshold stock tab starts here {% endcomment %}
         <div  class="ui tab" data-tab="thresholdstock">
-            <div id="med_print" class="ui vertical segment" >
-                <button type="button"  id="pr_med" name="PDF" value="PDF" class="ui primary button right floated">
+          <form class="ui form" style="margin-bottom: 20px;" id="search_view_required">
+            <div class="field">
+                <div class="ui fluid large input">
+                    <input placeholder="search" id="view_required_search" name="patient_search" type="text">
+                </div>
+             </div>
+          </form>
+            <div id="reqmed_print" class="ui vertical segment" >
+                <button type="button"  id="req_med" name="PDF" value="PDF" class="ui primary button right floated">
                     <!-- Download -->
                     <i class="ui download icon right floated"></i>
                 </button>
 
                 <script>
-    $('#pr_med').click(function(e){
-        var sTable = document.getElementById('med_print').innerHTML;
+    $("#req_med").click(function(e){
+        var sTable = document.getElementById('reqmed_print').innerHTML;
 
         var style = "<style>";
         style = style + "table {width: 100%;font: 17px Calibri;}";
-        style = style + "table, th, td {border: solid 1px #DDD; border-collapse: collapse;";
+        style =
+          style +
+          "table, th, td {border: solid 1px #DDD; border-collapse: collapse;";
         style = style + "padding: 2px 3px;text-align: center;}";
+        style+=".button{display:none}"
         style = style + "</style>";
 
         // CREATE A WINDOW OBJECT.
-        var win = window.open('', '', 'height=700,width=700');
+        var win = window.open("", "", "height=700,width=700");
 
-        win.document.write('<html><head>');
-        win.document.write('<title >Required Medicines</title>');   // <title> FOR PDF HEADER.
-        win.document.write(style);          // ADD STYLE INSIDE THE HEAD TAG.
-        win.document.write('</head>');
-        win.document.write('<body>');
-        win.document.write(sTable);         // THE TABLE CONTENTS INSIDE THE BODY TAG.
-        win.document.write('</body></html>');
+        win.document.write("<html><head>");
+        win.document.write("<title >Required Medicines</title>"); // <title> FOR PDF HEADER.
+        win.document.write(style); // ADD STYLE INSIDE THE HEAD TAG.
+        win.document.write("</head>");
+        win.document.write("<body>");
+        win.document.write(sTable); // THE TABLE CONTENTS INSIDE THE BODY TAG.
+        win.document.write("</body></html>");
 
-        win.document.close(); 	// CLOSE THE CURRENT WINDOW.
+        win.document.close(); // CLOSE THE CURRENT WINDOW.
 
         win.print();    // PRINT THE CONTENTS.
     });
+    // search logic for live stock
+    $('#search_view_stock').on('submit',function(e){
+      e.preventDefault();
+      alert('changed search')
+      $.ajax({
+        type: "post",
+        url: "/healthcenter/compounder/",
+                    data: {
+                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                        search_view_stock: $("#view_stock_search").val(),
+                    },
+                    success: function(data){
+                        console.log(data)
+                        $('#view-stock-list').empty();
+                        $.each(data.stock_context.page_stock_view.object_list, function(index, view) {
+                          $('#view-stock-list').append(
+                            '<tr>' +
+                              '<td style="white-space:nowrap;">'+view.medicine_id +'</td>' +
+                              '<td style="white-space:nowrap;">'+view.supplier +'</td>' +
+                              '<td style="white-space:nowrap;">'+view.Expiry_date + '</td>' +
+                              '<td style="white-space:nowrap;">'+view.quantity + '</td>' +
+                              
+                              
+                              '</tr>'
+                            );
+                          });
+                          
+                          if (data.stock_context.page_stock_view.has_previous) {
+                            $('#previous-page-stock').data('page', data.stock_context.page_stock_view.previous_page_number).show();
+                          } else {
+                            $('#previous-page-stock').data('page', "None").show();
+                          }
+                          
+                          if (data.stock_context.page_stock_view.has_next) {
+                            $('#next-page-stock').data('page', data.stock_context.page_stock_view.next_page_number).show();
+                          } else {
+                            $('#next-page-stock').data('page', "None").show();
+                          }
+                          
+                          $('.pagination-stock-view span').text('Page ' + data.stock_context.page_stock_view.number + ' of ' + data.stock_context.count_stock_view);
+                          document.getElementById('live_stock_page_number').value=data.stock_context.page_stock_view.number
+                          document.getElementById('live_stock_total_pages').innerHTML=data.stock_context.count_stock_view
+                        }
+                      })
+                    })
+    // pagination logic for view stock here
+    function loadPageManage(pageNumber) {
+                     $.ajax({
+                         url: '',
+                         type: 'POST',
+                         
+                         data: {
+                         csrfmiddlewaretoken: '{{ csrf_token }}',
+                         page_stock_view: pageNumber,
+                         search_view_stock: $("#view_stock_search").val(),
+                         datatype:'manage_stock_view'
+                         },
+                         success: function(data) {
+                          console.log(data)
+                             $('#view-stock-list').empty();
+                            
+                             $.each(data.report_stock_view, function(index, view) {
+                                console.log("view",data)
+                                 $('#view-stock-list').append(
+                                     '<tr>' +
+                                        '<td style="white-space:nowrap;">'+view.medicine_id +'</td>' +
+                                        '<td style="white-space:nowrap;">'+view.supplier +'</td>' +
+                                        '<td style="white-space:nowrap;">'+view.Expiry_date + '</td>' +
+                                        '<td style="white-space:nowrap;">'+view.quantity + '</td>' +
+                                     '</tr>'
+                                 );
+                             });
+                             
+                             if (data.has_previous) {
+                                 $('#previous-page-stock').data('page', data.previous_page_number).show();
+                             } else {
+                                $('#previous-page-stock').data('page', "None").show();
+                             }
+         
+                             if (data.has_next) {
+                                 $('#next-page-stock').data('page', data.next_page_number).show();
+                             } else {
+                                $('#next-page-stock').data('page', "None").show();
+                             }
+                             document.getElementById('live_stock_page_number').value=data.page_stock_view
+                             document.getElementById('live_stock_total_pages').innerHTML=data.total_pages_stock_view
+                         }
+                     });
+                 }
+         
+                 $('#previous-page-stock').click(function() {
+                    const pageNumber = $(this).data('page');
+                     loadPageManage(pageNumber);
+                 });
+         
+                 $('#next-page-stock').click(function() {
+                    const pageNumber = $(this).data('page');
+                     loadPageManage(pageNumber);
+                 });
+                 $('#live_stock_page_number').change(function(){
+                    if( document.getElementById('live_stock_page_number').value<=0 || document.getElementById('live_stock_page_number').value > document.getElementById('live_stock_total_pages').innerHTML){
+                        alert("enter valid page number")
+                    }
+                    else{
+                        loadPageManage(document.getElementById('live_stock_page_number').value);
+                    }
+                 })
+      $('#search_view_expired').on('submit',function(e){
+      e.preventDefault();
+      alert('changed search')
+                  $.ajax({
+                    type: "post",
+                    url: "/healthcenter/compounder/",
+                    data: {
+                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                        search_view_expired: $("#view_expired_search").val(),
+                    },
+                    success: function(data){
+                      $('#manage-stock-expired').empty();
+                            
+                            $.each(data.expired_context.page_stock_expired.object_list, function(index, view) {
+                                $('#manage-stock-expired').append(
+                                    '<tr>' +
+                                       '<td>'+view.medicine_id+'</td>'+
+                                       '<td>'+view.quantity+'</td>'+
+                                       '<td>'+view.Expiry_date+'</td>'+
+                                       '<td>'+view.supplier+'</td>'+
+                                    '</tr>'
+                                );
+                            });
+                            
+                            if (data.expired_context.page_stock_expired.has_previous) {
+                                $('#previous-page-stock-expired').data('page', data.expired_context.page_stock_expired.previous_page_number).show();
+                            } else {
+                                $('#previous-page-stock-expired').data('page', "None").show();
+                            }
+        
+                            if (data.expired_context.page_stock_expired.has_next) {
+                                $('#next-page-stock-expired').data('page', data.expired_context.page_stock_expired.next_page_number).show();
+                            } else {
+                                $('#next-page-stock-expired').data('page', "None").show();
+                            }
+        
+                            $('.pagination-stock-expired span').text('Page ' + data.expired_context.page_stock_expired.number + ' of ' + data.expired_context.count_stock_expired);
+                            document.getElementById('expired_page_number').value=data.expired_context.page_stock_expired.number
+                            document.getElementById('expired_total_pages').innerHTML=data.expired_context.count_stock_expired
+                        }
+                      })
+                    })
+                
+                 function loadPageManageExpired(pageNumber) {
+                     $.ajax({
+                         url: '',
+                         type: 'POST',
+                         
+                         data: {
+                         csrfmiddlewaretoken: '{{ csrf_token }}',
+                         page_stock_expired: pageNumber,
+                         search_view_expired: $("#view_expired_search").val(),
+                         datatype:'manage_stock_expired'
+                         },
+                         success: function(data) {
+                             $('#manage-stock-expired').empty();
+                            
+                             $.each(data.report_stock_expired, function(index, view) {
+                                console.log("view",data)
+                                 $('#manage-stock-expired').append(
+                                     '<tr>' +
+                                        '<td>'+view.medicine_id+'</td>'+
+                                        '<td>'+view.quantity+'</td>'+
+                                        '<td>'+view.Expiry_date+'</td>'+
+                                        '<td>'+view.supplier+'</td>'+
+                                     '</tr>'
+                                 );
+                             });
+                             
+                             if (data.has_previous) {
+                                 $('#previous-page-stock-expired').data('page', data.previous_page_number).show();
+                             }
+         
+                             if (data.has_next) {
+                                 $('#next-page-stock-expired').data('page', data.next_page_number).show();
+                             }
+         
+                             $('.pagination-stock-expired span').text('Page ' + data.page_stock_expired + ' of ' + data.total_pages_stock_expired);
+                             document.getElementById('expired_page_number').value=data.page_stock_expired
+                             document.getElementById('expired_total_pages').innerHTML=data.total_pages_stock_expired
+                         }
+                     });
+                 }
+         
+                 $('#previous-page-stock-expired').click(function() {
+                    const pageNumber = $(this).data('page');
+                     loadPageManageExpired(pageNumber);
+                 });
+         
+                 $('#next-page-stock-expired').click(function() {
+                    const pageNumber = $(this).data('page');
+                     loadPageManageExpired(pageNumber);
+                     
+                 });
+                 $('#expired_page_number').change(function(){
+                    if( document.getElementById('expired_page_number').value<=0 || document.getElementById('expired_page_number').value > document.getElementById('expired_total_pages').innerHTML){
+                        alert("enter valid page number")
+                    }
+                    else{
+                      loadPageManageExpired(document.getElementById('expired_page_number').value);
+                    }
+                 })
 
 </script>
 
+    <table
+      id="tblmeds"
+      class="ui very basic collapsing celled large fluid sortable table"
+      style="
+        padding-left: 2.5%;
+        padding-right: 2.5%;
+        padding-top: 1%;
+        padding-bottom: 1.5%;
+        margin: auto;
+      ">
+      <thead>
+        <tr>
+          <th class="three wide">Medicine</th>
 
-                <table id="tblmeds" class="ui very basic collapsing celled large fluid sortable table"
-                       style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
-                    <thead>
-                    <tr>
-                        <th class="three wide">
-                            Medicine
-                        </th>
+          <th class="three wide">Available</th>
+          <th class="three wide">Minimum</th>
+        </tr>
+      </thead>
 
-                        <th class="three wide" >
-                            Available
-                        </th>
-                        <th class="three wide" >
-                            Minimum
-                        </th>
+      <tbody id="req_med_tabel">
+        {% for stock in stocks.page_stock_required.object_list %} {% if stock.quantity < stock.threshold %}
+        <tr>
+          <td>{{stock.medicine_id.brand_name}}</td>
 
-                    </tr>
-                    </thead>
+          <td>{{stock.quantity}}</td>
+          <td>{{stock.threshold}}</td>
+        </tr>
+        {% endif %} {% endfor %}
+      </tbody>
+    </table>
 
-                    <tbody id="req_med">
-                    {% for stock in stocks %}
-                    {% if stock.quantity < stock.threshold %}
-                    <tr>
-
-                        <td>
-                           {{stock.medicine_name}}
-                        </td>
-
-                        <td>
-                            {{stock.quantity}}
-                        </td>
-                        <td>
-                            {{stock.threshold}}
-                        </td>
-                    </tr>
-                    {% endif %}
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+    <div id="pagination-stock-required" class="pagination-stock-required" style="display: flex; justify-content: center;align-items: center;gap: 15px;margin-top: 15px;">
+      <button id="previous-page-stock-required" data-page="{{ stocks.page_stock_required.previous_page_number }}" class="ui small muted button">Previous</button>
+      <div>
+          Page <input type="number" value="{{ stocks.page_stock_required.number }}" id="required_page_number" style="width: 40px;"> of <span id="required_total_pages">{{ stocks.count_stock_required }}</span>
+      </div>
+      <button id="next-page-stock-required" data-page="{{ stocks.page_stock_required.next_page_number }}" class="ui small muted button">Next</button>
+  </div>
+    <script type="text/javascript">
+      $('#search_view_required').on('submit',function(e){
+      e.preventDefault();
+      alert('changed search')
+                  $.ajax({
+                    type: "post",
+                    url: "/healthcenter/compounder/",
+                    data: {
+                        csrfmiddlewaretoken: "{{ csrf_token }}",
+                        search_view_required: $("#view_required_search").val(),
+                    },
+                    success: function(data){
+                      $('#req_med_tabel').empty();
+                            
+                            $.each(data.stocks.page_stock_required.object_list, function(index, view) {
+                               console.log("view",data)
+                                $('#req_med_tabel').append(
+                                    '<tr>' +
+                                       "<td>"+view.medicine_id +"</td>"+
+                                       "<td>"+view.quantity+"</td>"+
+                                       "<td>"+view.threshold+"</td>"+                    
+                                    '</tr>'
+                                );
+                            });
+                            
+                            if (data.stocks.page_stock_required.has_previous) {
+                                $('#previous-page-stock-required').data('page', data.stocks.page_stock_required.previous_page_number).show();
+                            }
+        
+                            if (data.stocks.page_stock_required.has_next) {
+                                $('#next-page-stock-required').data('page', data.stocks.page_stock_required.next_page_number).show();
+                            }
+        
+                            $('.pagination-stock-required span').text('Page ' + data.stocks.page_stock_required.number + ' of ' + data.stocks.count_stock_required);
+                            document.getElementById('required_page_number').value=data.stocks.page_stock_required.number
+                            document.getElementById('required_total_pages').innerHTML=data.stocks.count_stock_required
+                        }
+                      })
+                    })
+      function loadPageManageRequired(pageNumber) {
+                     $.ajax({
+                         url: '',
+                         type: 'POST',
+                         
+                         data: {
+                         csrfmiddlewaretoken: '{{ csrf_token }}',
+                         page_stock_required: pageNumber,
+                         search_view_required: $("#view_required_search").val(),
+                         datatype:'manage_stock_required'
+                         },
+                         success: function(data) {
+                             $('#req_med_tabel').empty();
+                            
+                             $.each(data.report_stock_required, function(index, view) {
+                                console.log("view",data)
+                                 $('#req_med_tabel').append(
+                                     '<tr>' +
+                                        "<td>"+view.medicine_id +"</td>"+
+                                        "<td>"+view.quantity+"</td>"+
+                                        "<td>"+view.threshold+"</td>"+                    
+                                     '</tr>'
+                                 );
+                             });
+                             
+                             if (data.has_previous) {
+                                 $('#previous-page-stock-required').data('page', data.previous_page_number).show();
+                             }
+         
+                             if (data.has_next) {
+                                 $('#next-page-stock-required').data('page', data.next_page_number).show();
+                             }
+         
+                             $('.pagination-stock-required span').text('Page ' + data.page_stock_required + ' of ' + data.total_pages_stock_required);
+                             document.getElementById('required_page_number').value=data.page_stock_required
+                             document.getElementById('required_total_pages').innerHTML=data.total_pages_stock_required
+                         }
+                     });
+                 }
+         
+                 $('#previous-page-stock-required').click(function() {
+                    const pageNumber = $(this).data('page');
+                     loadPageManageRequired(pageNumber);
+                 });
+         
+                 $('#next-page-stock-required').click(function() {
+                    const pageNumber = $(this).data('page');
+                     loadPageManageRequired(pageNumber);
+                     
+                 });
+                 $('#required_page_number').change(function(){
+                    if( document.getElementById('required_page_number').value<=0 || document.getElementById('required_page_number').value > document.getElementById('required_total_pages').innerHTML){
+                        alert("enter valid page number")
+                    }
+                    else{
+                        loadPageManageRequired(document.getElementById('required_page_number').value);
+                    }
+                 })
+    </script>
+  </div>
+</div>
+{% comment %}the view inventory tab ends here {% endcomment %}
+{% comment %}the edit threshold tab starts here{% endcomment %}
+<div class="ui tab" data-tab="EditThreshold">
+  <p id="change_threshold"></p>
+  <div class="ui vertical segment">
+    <form
+      class="ui form"
+      method="POST"
+      style="padding: 8px; padding-left: 24px; padding-right: 24px">
+      {% csrf_token %}
+      <div class="field">
+        <label>Brand Name</label>
+        <div style="display: flex; gap: 10px">
+          <input
+            type="text"
+            class=""
+            id="brand_name_b"
+            name="brand_name_b"
+            list="med_list_b" />
+          <input
+            type="button"
+            id="edit_threshold_search_btn"
+            name="edit_threshold_search_btn"
+            value="Search"
+            class="ui small primary button" />
         </div>
-        {% comment %}the view inventory tab ends here {% endcomment %}
+        <datalist id="med_list_b"> </datalist>
+      </div>
+      <div class="field">
+        <label>Threshold</label>
+        <p id="thr"></p>
+        <div class="ui fluid large input">
+          <input
+            placeholder="Threshold"
+            id="thresh_a"
+            name="thresh_a"
+            type="number" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Manufacturer Name</label>
+        <div class="ui fluid large input">
+          <input
+            placeholder="Manufacturer Name"
+            id="manufacture_name_b"
+            name="manufacture_name"
+            type="text"
+            readonly />
+        </div>
+      </div>
+      <div class="field">
+        <label>pack size label</label>
+        <div class="ui fluid large input">
+          <input
+            placeholder="Pack_size"
+            id="packsize_b"
+            name="packsize"
+            type="text"
+            readonly />
+        </div>
+      </div>
+      <div class="field">
+        <div>
+          <input
+            type="button"
+            id="edit_threshold"
+            name="edit_threshold"
+            value="Edit Threshold"
+            class="ui large right floated primary button" />
+        </div>
+      </div>
+    </form>
+    <script type="text/javascript">
+      $("#edit_threshold_search_btn").click(function () {
+        var name = document.getElementById("brand_name_b").value;
+        if (name.length > 2) {
+          $.ajax({
+            type: "post",
+            url: "/healthcenter/compounder/",
+            data: {
+              csrfmiddlewaretoken: "{{ csrf_token }}",
+              medicine_name_for_stock: $("#brand_name_b").val(),
+              get_stock: 1,
+            },
+            success: function (data) {
+              var med_list_b = document.getElementById("med_list_b");
+              med_list_b.innerHTML = "";
+              $.each(data.sim, function (key, value) {
+                var new_option = document.createElement("option");
+                new_option.value = value.brand_name + "," + value.id;
+                med_list_b.appendChild(new_option);
+              });
+              if (data.status == 2) {
+                var manufacturer_name_b =
+                  document.getElementById("manufacture_name_b");
+                if (data.sim[0].manufacturer_name == null)
+                  manufacturer_name_b.value = "";
+                else manufacturer_name_b.value = data.sim[0].manufacturer_name;
 
-{% endblock %}
+                var pack_size_label_b = document.getElementById("packsize_b");
+                if (data.sim[0].pack_size_label == null)
+                  pack_size_label_b.value = "";
+                else pack_size_label_b.value = data.sim[0].pack_size_label;
+
+                $("#thr").append("Current Threshold: " + data.sim[0].threshold);
+              }
+            },
+          });
+        }
+      });
+
+      $("#edit_threshold").click(function (e) {
+        var medicine = document.getElementById("brand_name_b").value;
+        var thr = document.getElementById("thresh_a").value;
+        console.log(thr);
+        // var thresh = document.getElementById('thresh_a').value;
+
+        if (medicine == "" || thr < 0) {
+          $("#change_threshold").html("Enter valid details");
+          return false;
+        }
+
+        $.ajax({
+          type: "post",
+          url: "/healthcenter/compounder/",
+          data: {
+            csrfmiddlewaretoken: "{{ csrf_token }}",
+            medicine_id: $("#brand_name_b").val(),
+            threshold: $("#thresh_a").val(),
+            edit_threshold: $("#edit_threshold").val(),
+          },
+          success: function (data) {
+            if (data.status == 1) {
+              alert("edited threshold");
+
+              document.getElementById("brand_name_b").value = "";
+              document.getElementById("thr").innerHTML = "";
+              document.getElementById("thresh_a").value = "";
+              window.location.reload();
+            } else {
+              alert("failed to edit threshold");
+            }
+          },
+        });
+      });
+    </script>
+    <br />
+    <br />
+  </div>
+  <br />
+  <div class="extra segment"></div>
+</div>
+{% comment %}the edit threshold tab ends here {% endcomment %} {% endblock %}

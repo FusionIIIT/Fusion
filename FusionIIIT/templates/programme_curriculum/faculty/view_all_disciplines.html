@@ -1,0 +1,35 @@
+{% extends 'programme_curriculum/faculty/common.html' %}
+{% block content %}
+<div class="ui top attached tabular large menu">
+    <a class="item active" data-tab="afirst">Disciplines</a>
+</div>
+<div class="ui bottom attached tab segment active" data-tab="afirst">
+    <div class="content">
+        <div class="description" style="overflow: auto; max-height: 480px">
+            <table class="ui celled medium table"
+            style="text-align: center;
+                margin: auto;">
+                <thead>
+                    <tr style="font-size: medium;
+                        background-color: whitesmoke;">
+                        <td><h4>Discipline Name</h4></td>
+                        <td colspan="2"><h4>Programmes</h4></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for discipline in disciplines %}
+                    <tr>
+                        <td>{{ discipline.name }}</td>
+                        <td colspan="2">
+                            {% for programme in discipline.programmes.all %}
+                            <a href="{% url 'programme_curriculum:view_curriculums_of_a_programme' programme.id %}"><p>{{ programme.name }}</p></a>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

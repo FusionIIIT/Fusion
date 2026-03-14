@@ -1,0 +1,81 @@
+{% block manage_Warden %}
+            <form class="ui form">
+                {% csrf_token %}
+                <h2 class="text-center" align="center">Assign Warden</h2>
+                <div class="field">
+                    
+                  <label for="hall_id" class="form-label">Hall ID:</label>
+                  <select name="hall_id" class="form-control" id="hallid" required>
+                    <!-- Add an option for each hall ID dynamically -->
+                    {% for hall in all_hall %}
+                        <option value="{{ hall.hall_id }}">{{ hall.hall_id }}</option>
+                    {% endfor %}
+                </select>
+                </div>
+                <div class="field">
+                  <label for="warden_id" class="form-label">warden_id :</label>
+                  
+                  <!-- <input type="text" name="caretaker_username" required class="form-control mb-3" id="caretaker_username"> -->
+                  <select name="warden_id" class="form-control" id="warden_id" required>
+                   
+                    {% for warden in warden_ids %}
+                        <option value="{{warden.id.id }}">{{ warden.id.id}}</option>
+                    {% endfor %}
+                </select>
+                
+                </div>
+                
+                <button type="submit" onclick="assignWarden()" class="ui primary button">Assign</button>
+              </form>
+        
+
+
+    
+
+    <script>
+        function assignWarden() {
+            var hall_id = document.getElementById('hallid').value;
+            var warden_id = document.getElementById('warden_id').value;
+            
+
+            // Perform AJAX request to assign batch
+            fetch('/hostelmanagement/assign-warden', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),  // Include CSRF token in headers
+                },
+                body: JSON.stringify({
+                    hall_id: hall_id,
+                    warden_id: warden_id,
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error assigning warden.');
+            });
+        }
+
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Check if the cookie name matches the expected format
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+
+{% endblock %}
+

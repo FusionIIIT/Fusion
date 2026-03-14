@@ -2,21 +2,27 @@
 {% block schedule %}
     {% comment %}the main tab starts here {% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="viewschedule">
-            View Schedule
+        <a class="active item" data-tab="viewdoctorschedule">
+            View Doctor Schedule
         </a>
          <a class="item" data-tab="viewdoctor">
             Doctors Info
+       </a>
+       <a class="item" data-tab="viewpathologistschedule">
+            View Pathologist Schedule
+        </a>
+         <a class="item" data-tab="viewpathologist">
+            Pathologist Info
        </a>
     </div>
 
     {% comment %}the view doctor tab starts here {% endcomment %}
     <div class="ui tab" data-tab="viewdoctor">
          <div id="docs_print" class="ui vertical segment">
-              <!--  <button type="button"  id="pr_docs" name="PDF" value="PDF" class="ui primary button right floated">
+                <button type="button"  id="pr_docs" name="PDF" value="PDF" class="ui primary button right floated">
                     Download
                     <i class="ui download icon right floated"></i>
-                </button>  -->
+                </button>
 
                 <script>
     $('#pr_docs').click(function(e){
@@ -55,9 +61,9 @@
               <tr>
                 <td style="font-weight:bold;color:black;">Doctor</td>
                 
-                {% for d in doct %}
+                {% for d in doctors %}
                 {{count.doctor_count}}
-                <td style="font-weight:bold;color:black; word-wrap:break-word;">{{d}}</td>
+                <td style="font-weight:bold;color:black; word-wrap:break-word;">{{d.doctor_name}}</td>
                 {% endfor %}
               </tr>
               <tr>
@@ -87,65 +93,257 @@
 
 
     {% comment %}the doctor schedule tab starts here {% endcomment %}
-    <div class="ui active tab" data-tab="viewschedule">
+    <div class="ui active tab" data-tab="viewdoctorschedule">
+        <div class="ui vertical segment">
+            <button type="button"  id="pr_sch" name="PDF" value="PDF" class="ui primary button left floated">
+                    <i class="ui download icon right floated"></i>
+            </button>
 
-                 <input type='button' id='Book Appointment' name='Book Appointment' onClick="window.location.reload();" value="Book Appointment" class="ui primary right floated button" >
+            <script>
+         $('#pr_sch').click(function(e){
+        var sTable = document.getElementById('doc_sc').innerHTML;
 
-            <div class="field">
-              <table  border=1 class="ui definition padded table" style="margin: auto;">
-                   </br>
+        var style = "<style>";
+        style = style + "table {width: 100%;font: 17px Calibri;}";
+        style = style + "table, th, td {border: solid 1px #DDD; border-collapse: collapse;";
+        style = style + "padding: 2px 3px;text-align: center;}";
+        style = style + "</style>";
+
+        // CREATE A WINDOW OBJECT.
+        var win = window.open('', '', 'height=700,width=700');
+
+        win.document.write('<html><head>');
+        win.document.write('<title>PHC Doctor Schedule</title>');   // <title> FOR PDF HEADER.
+        win.document.write(style);          // ADD STYLE INSIDE THE HEAD TAG.
+        win.document.write('</head>');
+        win.document.write('<body>');
+        win.document.write(sTable);         // THE TABLE CONTENTS INSIDE THE BODY TAG.
+        win.document.write('</body></html>');
+
+        win.document.close(); 	// CLOSE THE CURRENT WINDOW.
+
+        win.print();    // PRINT THE CONTENTS.
+    });
+
+</script>
+
+
+            <div id="doc_sc" class="field">
+                  <table  border=1 class="ui definition padded table" style="margin: auto;">
+                  </br>
                       </br>
                          </br>
-                  <thead>
+                      <thead>
 
-                    <tr>
-                      <td style="font-weight:bold;color:black;">Doctor</td>
-                      
-                      {% for d in doct %}
-                      {{count.doctor_count}}
-                      <td style="font-weight:bold;color:black; word-wrap:break-word;">{{d}}</td>
-                      {% endfor %}
-                    </tr>
-                    <tr>
+                        <tr>
+                          <td style="font-weight:bold;color:black;">Doctor</td>
+                          {% for d in doctors %}
+                          {{count.doctor_count}}
+                          <td style="font-weight:bold;color:black; word-wrap:break-word;" > {{d.doctor_name}} </td>
+                          {% endfor %}
+                        <tr>
+                            <tr>
                       <td >Specialization</td>
                       {% for d in doctors %}
                       {{count.doctor_count}}
                       <td style="word-wrap:break-word;">{{d.specialization}}</td>
                       {% endfor %}
                     </tr>
-                      {% for p,day in days %}
-                      {{count.empty_fine}}
-                      <tr>
-                        <td>{{day}}</td>
 
-                        {% for d in doctors %}
-                        {{count.empty_fine}}
-                        {% for s in schedule %}
-                        {% if s.day == p %}
-                        {% if d.id == s.doctor_id.id %}
-                        <td style="white-space:nowrap;">{{s.from_time}}--{{s.to_time}}</td>
-                        {{count.increment}}
-                        {% else %}
-                        {% endif %}
-                        {% endif %}
-                        {% endfor %}
-                        {% if count.count == 0 %}
-                          <td></td>
-                        {% endif %}
-                      {% endfor %}
-                      </tr>
-                    {% endfor %}
-                  </thead>
-              </table>
-                 </br>
+                          {% for p,day in days %}
+                          {{count.empty_fine}}
+                          <tr>
+                            <td>{{day}}</td>
 
+                            {% for d in doctors %}
+                            {{count.empty_fine}}
+                            {% for s in schedule %}
+                            {% if s.day == day %}
+                            {% if d.id == s.doctor_id.id %}
+                            <td style="white-space:nowrap;">{{s.from_time}}--{{s.to_time}}</td>
+                            {{count.increment}}
+                            {% else %}
+                            {% endif %}
+                            {% endif %}
+                            {% endfor %}
+                            {% if count.count == 0 %}
+                              <td></td>
+                            {% endif %}
+                          {% endfor %}
+                          </tr>
 
+                          {% endfor %}
+                      </thead>
+                  </table>
         </div>
       </div>
-    </div>
-    {% comment %}the view schedule tab ends here {% endcomment %}
-{% endblock %}
+    </div>  
+    {% comment %}the view doctor schedule tab ends here {% endcomment %}
 
+    {% comment %}the view pathologist tab starts here {% endcomment %}
+    <div class="ui tab" data-tab="viewpathologist">
+         <div id="patho4_print" class="ui vertical segment">
+                <button type="button"  id="pr_patho3" name="PDF" value="PDF" class="ui primary button right floated">
+                    Download
+                    <i class="ui download icon right floated"></i>
+                </button>
+
+                <script>
+    $('#pr_patho3').click(function(e){
+        var sTable = document.getElementById('patho4_print').innerHTML;
+
+        var style = "<style>";
+        style = style + "table {width: 100%;font: 17px Calibri;}";
+        style = style + "table, th, td {border: solid 1px #DDD; border-collapse: collapse;";
+        style = style + "padding: 2px 3px;text-align: center;}";
+        style = style + "</style>";
+
+        // CREATE A WINDOW OBJECT.
+        var win = window.open('', '', 'height=700,width=700');
+
+        win.document.write('<html><head>');
+        win.document.write('<title >PHC Pathologists</title>');   // <title> FOR PDF HEADER.
+        win.document.write(style);          // ADD STYLE INSIDE THE HEAD TAG.
+        win.document.write('</head>');
+        win.document.write('<body>');
+        win.document.write(sTable);         // THE TABLE CONTENTS INSIDE THE BODY TAG.
+        win.document.write('</body></html>');
+
+        win.document.close(); 	// CLOSE THE CURRENT WINDOW.
+
+        win.print();    // PRINT THE CONTENTS.
+    });
+
+</script>
+
+              <table  border=1 class="ui definition padded table" style="margin: auto;">
+              </br>
+                </br>
+                    </br>
+              <thead>
+
+              <tr>
+                <td style="font-weight:bold;color:black;">Pathologist</td>
+                
+                {% for d in pathologists %}
+                {{count.pathologist_count}}
+                <td style="font-weight:bold;color:black; word-wrap:break-word;">{{d.pathologist_name}}</td>
+                {% endfor %}
+              </tr>
+              <tr>
+                <td >Specialization</td>
+                {% for d in pathologists %}
+                {{count.pathologist_count}}
+                <td style="word-wrap:break-word;">{{d.specialization}}</td>
+                {% endfor %}
+              </tr>
+
+              <tr>
+                <td >Phone Number</td>
+                {% for d in pathologists %}
+                {{count.pathologist_count}}
+                <td style="word-wrap:break-word;">{{d.pathologist_phone}}</td>
+                {% endfor %}
+              </tr>
+              </thead>
+              </table>
+
+
+             
+        </div>
+    </div>
+{% comment %}the view pathologist tab ends here {% endcomment %}
+
+{% comment %}the pathologist schedule tab starts here {% endcomment %}
+    <div class="ui tab" data-tab="viewpathologistschedule">
+        <div class="ui vertical segment">
+            <button type="button"  id="pr_patho5" name="PDF" value="PDF" class="ui primary button left floated">
+                    <i class="ui download icon right floated"></i>
+            </button>
+
+            <script>
+         $('#pr_patho5').click(function(e){
+        var sTable = document.getElementById('patho5_sc').innerHTML;
+
+        var style = "<style>";
+        style = style + "table {width: 100%;font: 17px Calibri;}";
+        style = style + "table, th, td {border: solid 1px #DDD; border-collapse: collapse;";
+        style = style + "padding: 2px 3px;text-align: center;}";
+        style = style + "</style>";
+
+        // CREATE A WINDOW OBJECT.
+        var win = window.open('', '', 'height=700,width=700');
+
+        win.document.write('<html><head>');
+        win.document.write('<title>PHC Pathologist Schedule</title>');   // <title> FOR PDF HEADER.
+        win.document.write(style);          // ADD STYLE INSIDE THE HEAD TAG.
+        win.document.write('</head>');
+        win.document.write('<body>');
+        win.document.write(sTable);         // THE TABLE CONTENTS INSIDE THE BODY TAG.
+        win.document.write('</body></html>');
+
+        win.document.close(); 	// CLOSE THE CURRENT WINDOW.
+
+        win.print();    // PRINT THE CONTENTS.
+    });
+
+</script>
+
+
+            <div id="patho5_sc" class="field">
+                  <table  border=1 class="ui definition padded table" style="margin: auto;">
+                  </br>
+                      </br>
+                         </br>
+                      <thead>
+
+                        <tr>
+                          <td style="font-weight:bold;color:black;">Pathologist</td>
+                          {% for d in pathologists %}
+                          {{count.pathologist_count}}
+                          <td style="font-weight:bold;color:black; word-wrap:break-word;" > {{d.pathologist_name}} </td>
+                          {% endfor %}
+                        <tr>
+                            <tr>
+                      <td >Specialization</td>
+                      {% for d in pathologists %}
+                      {{count.pathologist_count}}
+                      <td style="word-wrap:break-word;">{{d.specialization}}</td>
+                      {% endfor %}
+                    </tr>
+
+                          {% for p,day in days %}
+                          {{count.empty_fine}}
+                          <tr>
+                            <td>{{day}}</td>
+
+                            {% for d in pathologists %}
+                            {{count.empty_fine}}
+                            {% for s in schedule1 %}
+                            {% if s.day == day %}
+                            {% if d.id == s.pathologist_id.id %}
+                            <td style="white-space:nowrap;">{{s.from_time}}--{{s.to_time}}</td>
+                            {{count.increment}}
+                            {% else %}
+                            {% endif %}
+                            {% endif %}
+                            {% endfor %}
+                            {% if count.count == 0 %}
+                              <td></td>
+                            {% endif %}
+                          {% endfor %}
+                          </tr>
+
+                          {% endfor %}
+                      </thead>
+                  </table>
+        </div>
+      </div>
+    </div>  
+    {% comment %}the view pathologist schedule tab ends here {% endcomment %}
+
+
+{% endblock %}
 
 
 

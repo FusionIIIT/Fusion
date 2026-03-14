@@ -1,0 +1,97 @@
+{% extends 'programme_curriculum/faculty/common.html' %}
+{% block content %}
+<div class="ui top attached tabular large menu">
+    <a class="item active" data-tab="afirst">Batches</a>
+    <a class="item" data-tab="asecond">Finished Batches</a>
+</div>
+<div class="ui bottom attached tab segment active" data-tab="afirst">
+    <div class="content">
+        <div class="description" style="overflow: auto; max-height: 480px">
+            <table class="ui celled medium table"
+            style="text-align: center;
+                margin: auto;">
+                <thead>
+                    <tr style="font-size: medium;
+                        background-color: whitesmoke;">
+                        <td><h4>Name</h4></td>
+                        <td><h4>Discipline</h4></td>
+                        <td><h4>Year</h4></td>
+                        <td><h4>Curriculum</h4></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for batch in batches %}
+                        <tr>
+                            <td>{{ batch.name }}</td>
+                            <td>{{ batch.discipline }}</td>
+                            <td>{{ batch.year }}</td>
+                            {% if batch.curriculum != None %}
+                            <td><a href="{% url 'programme_curriculum:view_semesters_of_a_curriculum' batch.curriculum.id %}">{{ batch.curriculum }}</a></td>
+                            {% else %}
+                            <td></td>
+                            {% endif %}
+                            
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="3">No Batch Avaliable</td><tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="ui bottom attached tab segment" data-tab="asecond">
+    <div class="content">
+        <div class="description" style="overflow: auto; max-height: 480px">
+            <table class="ui celled medium table"
+            style="text-align: center;
+                margin: auto;">
+                <thead>
+                    <tr style="font-size: medium;
+                        background-color: whitesmoke;">
+                        <td><h4>Name</h4></td>
+                        <td><h4>Discipline</h4></td>
+                        <td><h4>Year</h4></td>
+                        <td><h4>Curriculum</h4></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for batch in finished_batches %}
+                        <tr>
+                            <td>{{ batch.name }}</td>
+                            <td>{{ batch.discipline }}</td>
+                            <td>{{ batch.year }}</td>
+                            {% if batch.curriculum != None %}
+                            <td><a href="{% url 'programme_curriculum:view_semesters_of_a_curriculum' batch.curriculum.id %}">{{ batch.curriculum }}</a></td>
+                            {% else %}
+                            <td></td>
+                            {% endif %}
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="3">No Batch Avaliable</td><tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block rightcontent %}
+<br>
+<br>
+<div class="ui center aligned segment">
+    <div class="ui horizontal divider">FILTER SEARCH</div>
+    <form class="ui small form"  method="get">
+            {{ batchfilter.form }}
+            <br>
+        <button class="ui tiny basic primary button" type="Submit" name="Submit">
+            <i class="search icon"></i>
+            Search
+        </button>
+    </form>
+</div>
+{% block sidepanel%} 
+    {% include 'notifications/programme_curriculum.html' %} 
+    {% endblock %}
+{% endblock %}

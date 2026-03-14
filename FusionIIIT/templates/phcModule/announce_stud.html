@@ -1,0 +1,81 @@
+{% load static %}
+{% block make_announcements %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+
+        <a class="active item" data-tab="announcerecord">
+            Announcement Record
+        </a>
+
+    </div>
+
+
+    <div class="ui active tab" data-tab="announcerecord">
+        <div id="announce_print" class="ui vertical segment" >
+
+            <table  border=1 class="ui very basic collapsing celled large sortable table"
+                  style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;" >
+                <thead>
+                <tr>
+                    <td style="font-weight:bold;color:black; ">
+                        Announcement Details
+                    </td>
+
+                    {% comment %} <td style="font-weight:bold;color:black;" >
+                        Announcement Files
+                    </td> {% endcomment %}
+                  
+
+                </tr>
+                </thead>
+                    {% comment %} <h1>1</h1> {% endcomment %}
+                <tbody>
+                {% for anno in announcement %}
+                <tr>
+                    {% comment %} <h1>1</h1> {% endcomment %}
+                    <td style="font-weight:bold;color:black;">
+                        <h4 class="ui image header">
+                             <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                        </h4>
+                              {{anno.message}}
+
+
+                    </td>
+
+                   
+                    {% comment %} <td style="white-space:nowrap;">
+                        {% if anno.upload_announcement != None %}
+                        <a href="{{ anno.upload_announcement }}" download>
+                            <i class="ui download icon right floated"></i>
+                        </a>
+                        {% endif %}
+                    </td> {% endcomment %}
+
+                    {% comment %} <td>
+                      <table>
+                        {% for announcement in announcement %}
+                            {% if announcement.anno_id.id == anno.id %}
+                                  <tr><td>{{announcement.anno_id}}</td><td>{{announcement.days}}</td><td>{{announcement.times}}</td></tr>
+                            {% endif %}
+                        {% endfor%}
+                      </table>
+                    </td> {% endcomment %}
+                </tr>
+
+                {% endfor %}
+                </tbody>
+            </table>
+
+          </div>
+        </div>
+
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <script type="text/javascript" src="{% static 'department/js/function.js' %}"></script>
+{% endblock %}

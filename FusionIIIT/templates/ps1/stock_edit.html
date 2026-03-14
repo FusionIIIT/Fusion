@@ -44,37 +44,75 @@
                 <div class="field">
                         <label>Name of the purchasing Item/Equipment</label><br>
                         
-                        <input type="text" name="item_name" value={{StockEntry.item_name}}>
+                        <!-- <input type="text" name="item_name" value={{StockEntry.item_name}}> -->
                 </div>
 
-
-        
                 <div class="field">
-                        <label>Vendor</label><br>
+                    <label>Indent File Id</label><br>
+                    <input type="text" name="indent_file_id" value="{{StockEntry.item_id}}" readonly>
+                </div>
+                
+                <div class="field">
+                    <label>Item Type</label><br>
+                    <input type="text" name="item_type" value="{{StockEntry.item_id.item_type}}" readonly>
+                </div>
+                
+                <div class="field">
+                    <label>department /section </label><br>
+                    <input type="text" name="department" value="{{StockEntry.item_id.file_info.uploader.department.name}}" readonly>
+                </div>
+                
+                
+
+                <div class="field">
+                    <label>Dealing Assistant ID * </label><br>
+                    <select id="local_DA_select" name="dealing_assistant_id">
+                        {% for person in persons %}
+                        <option value="{{person}}" >{{person}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="field">
+                        <label>Vendor *</label><br>
                         <input type="text" name="vendor" value={{StockEntry.vendor}}>
                         
                 </div>
 
 
                 <div class="field">
-                        <label>Current stock</label><br>
+                        <label>Current stock *</label><br>
                         <input type="number" name="current_stock" value={{StockEntry.current_stock}} >
                         
                 </div>
 
+                <div class="field">
+                    <label for="location">Location *</label><br>
+                    <select name="location" id="locationSelect">  
+                        <option value="SR1">LHTC</option>  
+                        <option value="SR2">Computer Center</option>  
+                        <option value="SR3">Panini Hostel</option>  
+                        <option value="SR4">Lab Complex</option>  
+                        <option value="SR5">Admin Block</option>  
+                    </select>  
+                </div>
+
         
                 <div class="field">
-                        <label>Received date</label><br>
-                        <input type="date" name="recieved_date"  >
+                    <label>Received date * </label><br>
+                    <input type="date" name="recieved_date"  value="{{ formatted_received_date }}">
                 </div>
 
 
                 <br>
 
                 
-                <div class = "left floated item">
-                      <label for="file">Attach Bills ( PDF, JPEG, PNG, JPG ) sent from indenter</label>
-                      <input type="file" id="file" name="bill" value={{StockEntry.bill}} accept=".pdf, .jpg, .jpeg, .png" >
+                <div class="field">
+                    <label for="file">Attach Bills (PDF, JPEG, PNG, JPG) sent from indenter *</label><br>
+                    {% if StockEntry.bill %}
+                    <p>Current File: {{ StockEntry.bill.name }}</p>
+                    {% endif %}
+                    <input type="file" id="file" name="bill" accept=".pdf, .jpg, .jpeg, .png">
                 </div>
 
                 <br>
@@ -97,6 +135,34 @@
             <br>
 
         </div>
+
+        
+<script type="text/javascript">
+    // Get the current location from the server or wherever it's stored
+    var currentLocation = "{{ StockEntry.location }}";
+    
+    // Set the selected option in the select element
+    var selectElement = document.getElementById("locationSelect");
+    for (let i = 0; i < selectElement.options.length; i++) {
+        if (selectElement.options[i].value === currentLocation) {
+            selectElement.options[i].selected = true;
+            break;
+        }
+    }
+
+    var currentDA = "{{ StockEntry.dealing_assistant_id}}"
+
+     // Set the selected option in the select element
+    var selectElementDA = document.getElementById("local_DA_select");
+    for (let i = 0; i < selectElementDA.options.length; i++) {
+
+        if (String(selectElementDA.options[i].value) === currentDA) {
+            selectElementDA.options[i].selected = true;
+            break;
+        }
+    } 
+
+</script>
 
         <script type="text/javascript">
 

@@ -12,6 +12,7 @@
     </div>
 
     <div class="ui divider"></div>
+    <div class="table-container" style="overflow-x: scroll;max-height: 550px;  overflow-y: scroll;">
 
     <table class="ui very basic celled sortable table">
         <thead>
@@ -27,30 +28,25 @@
         </thead>
 
         <tbody>
+
         {% for j in in_file %}
-            {% ifequal designations j.receive_design|stringformat:'s' %}
             <tr>
-                <td>{{request.user.extrainfo.user}} - {{j.receive_design}}</td>
-                <td>{{j.current_design}}</td>
-                <td>{{j.file_id.uploader.department.name}}-{{j.file_id.upload_date.year}}-{{j.file_id.upload_date.month}}-#{{j.file_id.id}}  </td>
-                <td>{{j.file_id.subject}}</td>
-                <td>{{j.receive_date}}</td>
-                <td><a href="{% url 'ps1:forwardindent' j.file_id.id %}"><button class="ui primary button">
+
+               <td>{{receive_design}}</td>
+                <td>{{j.uploader}}</td>
+                <td>{{j.id}}  </td>
+                <td>{{j.subject}}</td>
+                <td>{{j.upload_date}}</td>
+                <td><a href="{% url 'ps1:forwardindent' j.id %}"><button class="ui primary button">
                               View
                     </button></a></td>
 
-
-
-
-
-
-
               </tr>
-            {% endifequal %}
         {% endfor %}
         </tbody>
 
     </table>
+    </div>
 
     <br>
 

@@ -75,7 +75,7 @@
                 <div class="ui calendar" id="rangeend2">
                     <div class="ui input left icon">
                         <i class="calendar icon"></i>
-                        <input type="text" value="{{ booking.booking_to }}" class="date-selector" name="booking-to" readonly="">
+                        <input type="text"  class="date-selector" name="booking-to" value="{{ booking.booking_to }}" readonly="">
                     </div>
                 </div>
             </div>
@@ -182,7 +182,7 @@
                         {% for key, values in available_rooms.items %}
                             {% if key == booking.id %}
                                 {% for room in values %}
-                                    <option value='{{ room }}'>{{ room }}</option>
+                                    <option value='{{ room.room_number }}'>{{ room.room_number }}</option>
                                 {% endfor %}
                             {% endif %}
                         {% endfor %}
@@ -213,13 +213,14 @@
 
         
             
-        
+        {% if user_designation == 'VhIncharge'  %}
         <div class="field">
             <label>Remarks (required*)</label>
             <div class="ui fluid input">
-                <input type="text" name="cancellation-remarks-{{ booking.id }}" required="">
+                <input type="text" value="{{booking.remark}}" name="cancellation-remarks-{{ booking.id }}" required="">
             </div>
         </div>
+        {% endif  %}
 
         <input type="hidden" name="booking-id-{{ booking.id }}" value="{{ booking.id }}">
         <input type="hidden" name="csrf" value="{{ csrf_token }}">

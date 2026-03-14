@@ -58,6 +58,93 @@ $(document).ready(function(){
        }
     };
 
+ function sub2(event)
+        {
+        var specific_location= $('input[name="specific_location"]').val();
+        var Location = $('input[name="Location"]').val();
+        var complaint_type =  $('input[name="complaint_type"]').val() ;
+        var details =$('input[name="details"]').val() ;
+        var myfile = $('input[name="myfile"]').val();
+        if(specific_location=="" || Location=="" || details=="" || complaint_type=="")
+        {
+            alert("Please fill all the details!");
+            return;
+        }
+        else
+        {
+            event.preventDefault();
+            $.ajax({
+                type : 'POST',
+                url : '.',
+                data : {
+                    'specific_location' : specific_location,
+                    'Location' : Location,
+                    'complaint_type' : complaint_type,
+                    'details' : details,
+                    'myfile' : myfile,
+
+                },
+                success : function (data){
+
+                    // alert("Complaint successfully lodged");
+                    setTimeout(function() {
+                window.location.replace('http://localhost:8000/complaint/caretaker');
+            }, 1500);
+
+                    
+                },
+                error : function (data,err){
+                    alert('Complaint successfully lodged ... ');
+
+                }
+            });
+       }
+    };
+ function sub3(event)
+        {
+        var specific_location= $('input[name="specific_location"]').val();
+        var Location = $('input[name="Location"]').val();
+        var complaint_type =  $('input[name="complaint_type"]').val() ;
+        var details =$('input[name="details"]').val() ;
+        var myfile = $('input[name="myfile"]').val();
+        if(specific_location=="" || Location=="" || details=="" || complaint_type=="")
+        {
+            alert("Please fill all the details!");
+            return;
+        }
+        else
+        {
+            event.preventDefault();
+            $.ajax({
+                type : 'POST',
+                url : '.',
+                data : {
+                    'specific_location' : specific_location,
+                    'Location' : Location,
+                    'complaint_type' : complaint_type,
+                    'details' : details,
+                    'myfile' : myfile,
+
+                },
+                success : function (data){
+
+                    // alert("Complaint successfully lodged");
+                    setTimeout(function() {
+                window.location.replace('http://localhost:8000/complaint/supervisor');
+            }, 1500);
+
+                    
+                },
+                error : function (data,err){
+                    alert('Complaint successfully lodged ... ');
+
+                }
+            });
+       }
+    };
+
+
+
 
 
 
@@ -767,3 +854,98 @@ $.fn.rating.settings = {
 };
 
 })( jQuery, window, document );
+
+
+function paginate(tableId, rowsPerPage, paginationDiv) {
+  var currentPage = 1;
+  var tableRows = document.querySelectorAll('#' + tableId + ' tbody tr');
+  var totalPages = Math.ceil(tableRows.length / rowsPerPage);
+
+  function displayRows() {
+      var startIndex = (currentPage - 1) * rowsPerPage;
+      var endIndex = startIndex + rowsPerPage;
+      tableRows.forEach(function (row, index) {
+          if (index >= startIndex && index < endIndex) {
+              row.style.display = '';
+          } else {
+              row.style.display = 'none';
+          }
+      });
+  }
+
+ function generatePagination() {
+  var pagination = document.getElementById(paginationDiv);
+  pagination.innerHTML = '';
+
+  var maxPagesToShow = 5;
+
+  // Calculate the range of pages to display
+  var startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+  var endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+  // Adjust startPage and endPage if needed
+  if (endPage - startPage < maxPagesToShow - 1) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+  }
+
+  // Create the backward scroll button
+  if (currentPage > 1) {
+      pagination.appendChild(createScrollButton('<'));
+  }
+
+  // Create the page links
+  for (var i = startPage; i <= endPage; i++) {
+      pagination.appendChild(createPageLink(i));
+  }
+
+  // Create the forward scroll button
+  if (currentPage < totalPages) {
+      pagination.appendChild(createScrollButton('>'));
+  }
+}
+
+function createScrollButton(label) {
+  var button = document.createElement('button');
+  button.textContent = label;
+  button.addEventListener('click', function () {
+      if (label === '<') {
+          currentPage = Math.max(1, currentPage - 1);
+      } else {
+          currentPage = Math.min(totalPages, currentPage + 1);
+      }
+      displayRows();
+      generatePagination();
+  });
+  return button;
+}
+
+
+  function createPageLink(pageNumber) {
+      var link = document.createElement('a');
+      link.href = '#';
+      link.textContent = pageNumber;
+      link.style.display = 'inline-block';
+      link.style.padding = '5px 10px';
+      link.style.marginRight = '5px';
+      link.style.color = '#333';
+      link.style.textDecoration = 'none';
+      link.style.border = '1px solid #ccc';
+      link.style.borderRadius = '3px';
+
+      if (pageNumber === currentPage) {
+          link.style.backgroundColor = '#007bff';
+          link.style.color = '#fff';
+      }
+
+      link.addEventListener('click', function () {
+          currentPage = parseInt(this.textContent);
+          displayRows();
+          generatePagination();
+      });
+
+      return link;
+  }
+
+  displayRows();
+  generatePagination();
+}

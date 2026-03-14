@@ -1,0 +1,82 @@
+{% extends 'ps1/ps2.html' %}
+{% load static %}
+
+
+{% block filetracking_tab %}
+    {% comment %}the compounder prescription tab starts here {% endcomment %}
+
+
+    <div class="ui pointing secondary menu">
+        <h3>
+            <a class="active item" data-tab="composefile">
+            Add Filters
+            </a>
+        </h3>
+    </div>
+
+    {% comment %}the ambulance schedule tab starts here {% endcomment %}
+    <div class="ui active tab" data-tab="composefile">
+        <div class="ui vertical stripe team segment" style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+            <form class="ui large form" method="POST" action="/purchase-and-store/generate_report/" ="multipart/form-data" id="form1">
+            {% csrf_token %}
+                <div class="field">
+                        <label>Select Department/Section</label>
+                        <select name="departments" multiple>
+                            <option value="all">All</option>
+                            {% for department in departments %}
+                            <option value="{{department.id}}">{{department.name}}</option>
+                            {% endfor %}
+                        </select>
+                </div>
+
+                <div class="field">
+                    <label>Start Date</label>
+                    <input type="date" id="start" name="start_date" max="{{ today }}" >
+                </div>
+
+                <script>
+                    // Set the default value of the input field to today's date
+                    document.getElementById("start").valueAsDate = new Date();
+                </script>
+
+
+                <div class="field">
+                        <label>Finish Date</label>
+                        <input type="date" id="finish" name="finish_date" max="{{ today }}" >
+                </div>
+
+                <script>
+                    // Set the default value of the input field to today's date
+                    document.getElementById("finish").valueAsDate = new Date();
+                </script>
+
+
+
+                <div style="margin-bottom: 40px;">
+                    <a class="right floated item">
+
+                        <button type="submit"  class="ui large right floated primary button" style = "float: right;">
+                                Generate Report <i class="ui search icon right floated"></i>
+                            </button>
+                    </a>
+                </div>
+
+
+
+            </form>
+
+            <br>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+{% endblock %}
+
+
+

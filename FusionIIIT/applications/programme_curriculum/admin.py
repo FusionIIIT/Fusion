@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.admin.options import ModelAdmin
-from .models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot,CourseInstructor
+from .models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot,CourseInstructor, NewProposalFile,Proposal_Tracking
 
 
 class ProgrammeAdmin(admin.ModelAdmin):
@@ -29,7 +29,11 @@ class BatchAdmin(admin.ModelAdmin):
 class CourseSlotAdmin(admin.ModelAdmin):
     list_display = ('name', 'type', 'course_slot_info','semester')
     list_filter = ('type', 'courses',)
-
+class NewProposalFileAdmin(admin.ModelAdmin):
+    list_display = ('uploader','designation', 'code', 'name',)
+    
+class ProposalTrackingAdmin(admin.ModelAdmin):
+    list_display = ('current_id','current_design', 'receive_id', 'receive_design',)
 
 # Register your models here.
 admin.site.register(Discipline, DisciplineAdmin)
@@ -40,3 +44,5 @@ admin.site.register(Course, CourseAdmin)
 admin.site.register(Batch, BatchAdmin)
 admin.site.register(CourseSlot, CourseSlotAdmin)
 admin.site.register(CourseInstructor)
+admin.site.register(NewProposalFile,NewProposalFileAdmin)
+admin.site.register(Proposal_Tracking,ProposalTrackingAdmin)

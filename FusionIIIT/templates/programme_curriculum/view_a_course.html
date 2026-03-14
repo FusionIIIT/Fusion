@@ -1,27 +1,4 @@
 {% extends 'programme_curriculum/common.html' %}
-
-{% block sidetabmenu %}
-    <div class="ui huge fluid vertical pointing menu"
-        style="max-width: 320px;">
-
-        <a class="item" href="{% url 'programme_curriculum:view_all_programmes' %}">Programmes
-            <i class="right floated chevron right icon"></i>
-        </a>
-        <a class="item" href="{% url 'programme_curriculum:view_all_working_curriculums' %}">Curriculums
-            <i class="right floated chevron right icon"></i>
-        </a>
-        <a class="item" href="{% url 'programme_curriculum:view_all_courses' %}">Courses
-            <i class="right floated chevron right icon"></i>
-        </a>
-        <a class="item" href="{% url 'programme_curriculum:view_all_discplines' %}">Disciplines
-            <i class="right floated chevron right icon"></i>
-        </a>
-        <a class="item" href="{% url 'programme_curriculum:view_all_batches' %}">Batches
-            <i class="right floated chevron right icon"></i>
-        </a>
-    </div>
-{% endblock %}
-
 {% block content %}
 <div class="ui bottom attached tab segment active" data-tab="afirst">
     <div class="content">
@@ -30,7 +7,7 @@
             <thead>
                 <tr style="font-size: medium;
                 background-color: aliceblue;">
-                    <td colspan="3"><h2>{{ course.code }} - {{ course.name }}</h2>
+                    <td colspan="3"><h2>{{ course.code }} - {{ course.name }} - v{{course.version}}</h2>
                     </td>
                 </tr>
                 {% if course.disciplines.all %}

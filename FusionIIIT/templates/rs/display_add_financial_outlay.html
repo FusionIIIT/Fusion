@@ -1,0 +1,207 @@
+
+{% load static %}
+{% block title %}
+
+{% endblock %}
+{% block projects %}
+{% block body %}
+
+<script>
+  
+  function populate(categoriesId, category_subcategory_map, year) {
+    console.log(category_subcategory_map)
+    let id1 = "subcategory-select-" + year + "-";
+    let id2 = categoriesId;
+    id1 += id2.charAt(id2.length - 1);
+    subcategoriesId = id1;
+    var categoriesSelect = document.getElementById(categoriesId);
+    var subcategoriesSelect = document.getElementById(subcategoriesId);
+
+    subcategoriesSelect.innerHTML = "";
+    var optionArray = category_subcategory_map
+    var selectedSubcategories = [];
+    for (var key in optionArray) {
+      if (categoriesSelect.value == key) {
+        selectedSubcategories = optionArray[key];
+      }
+    }
+    for (var j = 0; j < selectedSubcategories.length; j++) {
+      var newOption = document.createElement("option");
+      newOption.value = selectedSubcategories[j];
+      newOption.innerHTML = selectedSubcategories[j];
+      subcategoriesSelect.options.add(newOption);
+    }
+
+  }
+
+  function addCategorySection(event, year, category_subcategory_map) {
+    event.preventDefault();
+    var category_selection_id = '.' + 'category-section-' + year;
+    var originalSection = document.querySelector(category_selection_id);
+    var clonedSection = originalSection.cloneNode(true);
+    var clonedcatselect_id = '.' + 'category-select-' + year;
+    var clonedsubcatselect_id = '.' + 'subcategory-select-' + year;
+    var clonedamount_id = '.' + 'amount-' + year;
+    var clonedCategorySelect = clonedSection.querySelector(clonedcatselect_id);
+    var clonedSubcategorySelect = clonedSection.querySelector(clonedsubcatselect_id);
+    var clonedAmount = clonedSection.querySelector(clonedamount_id);
+    var remove_button_id = '.' + 'remove_button-' + year;
+    var remove_button = clonedSection.querySelector(remove_button_id);
+
+    remove_button.setAttribute('class', 'remove_button-' + year);
+
+    clonedSubcategorySelect.disabled = false;
+    clonedSubcategorySelect.value = '';
+    clonedCategorySelect.value = '';
+    category_select_id = '.' + 'category-select-' + year;
+    var fieldcount = document.querySelectorAll(category_select_id).length + 1;
+
+    console.log(fieldcount + " field count")
+
+    var newName = 'category-select-' + year + '-' + fieldcount; // Generate unique ID
+    var newSubcategoryName = 'subcategory-select-' + year + '-' + fieldcount; // Generate unique ID
+    var newAmountName = 'amount-' + year + '-' + fieldcount; // Generate unique ID
+    var newRemoveButton = 'remove_button-' + year + '-' + fieldcount; // Generate unique ID
+
+    var newId = newName // Generate unique ID
+    var newSubcategoryId = newSubcategoryName; // Generate unique ID
+    var newAmountId = newAmountName; // Generate unique ID
+
+    clonedCategorySelect.setAttribute('id', newId);
+    clonedSubcategorySelect.setAttribute('id', newSubcategoryId);
+    clonedAmount.setAttribute('id', newAmountId);
+    remove_button.setAttribute('id', newRemoveButton);
+    remove_button.setAttribute("class", newRemoveButton + " remove_button-" + year + " ui secondary button");
+
+    clonedCategorySelect.setAttribute('name', newName);
+    clonedSubcategorySelect.setAttribute('name', newSubcategoryName);
+    clonedAmount.setAttribute('name', newAmountName);
+
+    // Append the cloned section to the container 
+
+    var container_id = 'container-' + year
+    console.log(container_id)
+    var clonedContainer = document.getElementById(container_id);
+    clonedContainer.setAttribute('id', container_id)
+    clonedContainer.appendChild(clonedSection);
+
+    var category_count_id = 'category-count-' + year;
+    var category_count = document.getElementById(category_count_id);
+    category_count.setAttribute('value', fieldcount);
+  }
+
+  function removeCategorySection(event, year, category_subcategory_map) {
+    event.preventDefault();
+    var category_selection_id = '.' + 'category-section-' + year;
+    var category_select_id = '.' + 'category-select-' + year;
+    var fieldcount = document.querySelectorAll(category_select_id).length;
+    console.log(fieldcount + " field count")
+    if (fieldcount > 1) {
+      var container_id = 'container-' + year
+      var container = document.getElementById(container_id);
+      var currentSection = event.target.parentElement.parentElement;
+      container.removeChild(currentSection);
+      // to remove corresponding category section
+
+
+      var category_count_id = 'category-count-' + year;
+      var category_count = document.getElementById(category_count_id);
+      category_count.setAttribute('value', fieldcount - 1);
+    }
+  }
+
+</script>
+<style>
+  .catt {
+    display: flex;
+    flex-wrap: wrap;
+    flex: 1;
+    /* Grow flex items to take up available space */
+    margin-right: 10px;
+    /* Add spacing between category sections */
+  }
+
+  .invisible {
+    display: none;
+  }
+
+  .f-group {
+    margin-bottom: 10px;
+    /* Add margin between form groups */
+  }
+
+  button {
+    margin-left: 10px;
+    /* Add space between form and button */
+  }
+</style>
+<div class="ui pointing secondary menu" style="font-size: 25px;">
+  <label class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}active item{% else %} item {% endif %}">
+    Enter Financial Outlay Details for Project &nbsp;<span class="ui blue text header">{{ project_name }}</span>
+  </label>
+</div>
+
+
+<div class="ui active tab" style="width:100%">
+
+  
+  <form method="POST" enctype="multipart/form-data" action="{% url 'research_procedures:update_time_period' project_id %}" >
+    
+    {% csrf_token %}
+    Change Project Duration
+    <div class="ui labeled input">
+      <input  name="updated_year" type="number" />
+    </div>
+    <button class="ui small grey equal-size-button button"  type="submit" > Update </button>
+  </form>
+  
+<form method="post" enctype="multipart/form-data"
+action="{% url 'research_procedures:add_financial_outlay' project_id %}">
+{% csrf_token %}
+  {% for year in years %}
+  <h3>Year - {{year}}</h3>
+  <div class="container" id="container-{{year}}">
+    <div class="category-section-{{year}} catt">
+      <div class="f-group" style="position: relative; display: inline-block; vertical-align: middle;" >
+        <label for="" style="position: absolute; top: 0; left: 0; height: 100%; padding: 0.78571429em 1.5em; margin: 0; background-color: #e4e3e3; border-color: rgba(34, 36, 38, 0.15); border-right: none; color: rgba(0, 0, 0, 0.87); line-height: 1; font-size: 0.92857143em; text-align: center; border-radius: 0.28571429rem 0 0 0.28571429rem;">Category</label>
+        <select name="category-select-{{year}}-1" required id="category-select-{{year}}-1" class="category-select-{{year}}" style="width: 200px;height:40px; background-color: white; color: #333; border: 1px solid #ccc; border-radius: 5px; ;margin-left: 96px;"
+        onchange="populate(this.id,{{ category_subcategory_map|safe }},{{year|safe}})">
+        <option value="" > -- Choose Category -- </option>
+        {% for category , subcategories in category_subcategory_map.items %}
+        <option class="item" value="{{category}}">{{category}}</option>
+        {% endfor %}
+        </select>
+      </div>
+      &nbsp;&nbsp;&nbsp;
+      <div class="f-group" style="position: relative; display: inline-block; vertical-align: middle;">
+        <label for="" style="position: absolute; top: 0; left: 0; height: 100%; padding: 0.78571429em 1.5em; margin: 0; background-color: #e4e3e3; border-color: rgba(34, 36, 38, 0.15); border-right: none; color: rgba(0, 0, 0, 0.87); line-height: 1; font-size: 0.92857143em; text-align: center; border-radius: 0.28571429rem 0 0 0.28571429rem;">Sub Category</label>
+        <select name="subcategory-select-{{year}}-1" required class="subcategory-select-{{year}}" style="width: 200px;height:40px; background-color: white; color: #333; border: 1px solid #ccc; border-radius: 5px; padding: 5px;margin-left: 120px;"
+          id="subcategory-select-{{year}}-1"></select>
+      </div>
+      &nbsp;&nbsp;&nbsp;
+      <div class="ui input  f-group"  style="position: relative; display: inline-block; vertical-align: middle;">
+        <label for="amount-{{year}}-1" style="position: absolute; top: 0; left: 0; height: 100%; padding: 0.78571429em 1.5em; margin: 0; background-color: #e4e3e3; border-color: rgba(34, 36, 38, 0.15); border-right: none; color: rgba(0, 0, 0, 0.87); line-height: 1; font-size: 0.92857143em; text-align: center; border-radius: 0.28571429rem 0 0 0.28571429rem;">Amount(lakhs)&nbsp;&nbsp;&nbsp;</label>
+        <input type="number" name="amount-{{year}}-1" required id="amount-{{year}}-1" class="amount-{{year}}" style="border:0.1rem solid;border-color:rgb(212, 209, 209);margin-left: 135px; ">
+      </div>
+      &nbsp;&nbsp;&nbsp;
+      <div class="f-group ">
+        <button class="remove_button-{{year}} invisible" id="remove_button-{{year}}-1"
+        onclick="removeCategorySection(event,{{year}},{{category_subcategory_map}})">Remove category</button>
+      </div>
+    </div>
+  </div>
+  <button class="f-group ui secondary button"style="background-color:grey"onmouseover="this.style.backgroundColor='grey'"
+  onmouseout="this.style.backgroundColor='#9c9a9a'"
+  onclick="addCategorySection(event,{{year}},{{category_subcategory_map}})">Add category</button>
+  {% endfor %}
+  <br>
+  <br>
+  <div style="display:flex;justify-content:center;">
+    <input type="submit" value="Submit"
+    style="background-color: #007bff; color: #fff; border: none; padding: 10px 20px; cursor: pointer; width: 20%;border-radius:5px;font-size:15px">
+  </div>
+</form>
+
+</div>
+{% endblock %}
+{% endblock %}

@@ -1173,4 +1173,8 @@ def handle_admin_approval(request):
         Requests.objects.filter(id=request_id).update(iwdAdminApproval=-1, status="Rejected", activeProposal=None)
         return Response({'message': 'Request rejected by IWD Admin'}, status=status.HTTP_200_OK)
     else:
+<<<<<<< HEAD
         return Response({'error': 'Invalid action'}, status=status.HTTP_400_BAD_REQUEST)
+=======
+        return Response({'error': 'Invalid action'}, status=status.HTTP_400_BAD_REQUEST)
+>>>>>>> upstream/institute-works-v1

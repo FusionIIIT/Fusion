@@ -1,0 +1,78 @@
+{% extends 'programme_curriculum/acad_admin/common.html' %}
+{% block content %}
+<div class="ui top attached tabular large menu">
+    <a class="item active" data-tab="afirst">Course Instructors</a>
+</div>
+<div class="ui bottom attached tab segment active" data-tab="afirst">
+    <div class="content">
+        <div class="description" style="overflow: auto; max-height: 495px">
+            <table class="ui celled medium table"
+            style="text-align: center;
+                margin: auto;">
+                <thead>
+                    <tr style="font-size: medium;
+                        background-color: whitesmoke;">
+                        <td><h4>Course Code</h4></td>
+                        <td><h4>Course Name</h4></td>
+                        <td><h4>Course Version</h4></td>
+                        <td><h4>Instructor</h4></td>
+                        <td><h4>Year</h4></td>
+                        <td></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for instructor in course_instructors %}
+                        <tr>
+                            <td><a href="{% url 'programme_curriculum:admin_view_a_course' instructor.course_id.id %}">{{ instructor.course_id.code }}</a></td>
+                            <td>{{ instructor.course_id.name }}</td>
+                            <td>{{ instructor.course_id.version }}</td>
+                            <td>{{ instructor.instructor_id.id.user.first_name }}  {{ instructor.instructor_id.id.user.last_name }}</td>
+                            <td>{{ instructor.year }}</td>
+                            <td class="collapsing">
+                                <a class="tiny ui positive animated button" tabindex="0"
+                                    href="{% url 'programme_curriculum:update_course_instructor_form' instructor.id %}"
+                                    type="Submit" name="Submit">
+                                    <div class="visible content">EDIT</div>
+                                    <div class="hidden content">
+                                    <i class="edit icon"></i>
+                                    </div>
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6">No Course Instructors Available</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block rightcontent %}
+<br>
+<br>
+<div class="ui center aligned segment">
+    <div class="description" style="overflow: auto; height: 400px">
+        <a class="fluid ui large primary animated button" tabindex="0"
+            href="{% url 'programme_curriculum:add_course_instructor' %}"
+            type="Submit" name="Submit">
+            <div class="visible content">ADD COURSE INSTRUCTOR</div>
+            <div class="hidden content">
+            <i class="add icon"></i>
+            </div>
+        </a>
+        <div class="ui horizontal divider">FILTER SEARCH</div>
+        <form class="ui small form"  method="get">
+            {{ courseinstructorfilter.form }}
+            <br>
+            <button class="ui tiny basic primary button" type="Submit" name="Submit">
+                <i class="search icon"></i>
+                Search
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,179 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+Hostel
+{% endblock %}
+
+
+{% block body %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
+{% block content %}
+<div class="ui stackable doubling grid">
+    <div class="column"></div>
+    <div class="three wide column">
+        <div class="row">
+            {% block userCard %}
+            {% include 'globals/usercard.html' %}
+            {% endblock %}
+        </div>
+        <!-- <div class="ui divider"></div> -->
+    </div>
+    <div class="eight wide column">
+        <div class="row">
+
+            
+            <h2>Edit Student Details</h2>
+            <form method="post" class="ui form" action="{% url 'hostelmanagement:edit_student' student.id.id %}">
+                {% csrf_token %}
+                <label for="roll_number">Roll Number</label>
+                <input type="text" id="roll_number" name="roll_number" value="{{student.id.id}}"><br>
+                <span id="roll_error" style="color: red;"></span><br>
+
+                <label for="first_name">First Name:</label>
+                <input type="text" id="first_name" name="first_name" value="{{ student.id.user.first_name }}"><br>
+                <span id="first_name_error" style="color: red;"></span><br>
+
+                <label for="programme">Programme:</label>
+                <input type="text" id="programme" name="programme" value="{{ student.programme }}"><br>
+                <span id="programme_error" style="color: red;"></span><br>
+
+                <label for="batch">Batch:</label>
+                <input type="text" id="batch" name="batch" value="{{ student.batch }}"><br>
+                <span id="batch_error" style="color: red;"></span><br>
+                
+                <label for="hall_number">Hall Number:</label>
+                <input type="text" id="hall_number" name="hall_number" value="{{ student.hall_no }}"><br>
+
+                <label for="room_number">Room Number:</label>
+                <input type="text" id="room_number" name="room_number" value="{{ student.room_no }}"><br>
+
+                <label for="specialization">Specialization:</label>
+                <input type="text" id="specialization" name="specialization" value="{{ student.specialization }}"><br>
+
+                <label for="phone_number">Contact Number:</label>
+                <input type="number" id="phone_number" name="phone_number" value="{{ student.id.phone_no }}"><br>
+                <!-- Add an element to display the error message -->
+                <span id="phone_error" style="color: red;"></span><br>
+
+
+                <label for="address">Address:</label>
+                <input type="text" id="address" name="address" value="{{ student.id.address }}"><br>
+
+                <br>
+                <button type="submit" class="ui button primary" id="saveChangesBtn">Save Changes</button>
+                <a href="{% url 'hostelmanagement:hostel_view' %}" class="ui button">Back to Homepage</a>
+                
+            </form>
+            <br>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Get form and button elements
+        const form = document.querySelector('.ui.form');
+        const saveChangesBtn = document.getElementById('saveChangesBtn');
+
+        // Function to validate phone number
+        function validatePhoneNumber() {
+            var phoneNumber = document.getElementById('phone_number').value;
+            var phoneError = document.getElementById('phone_error');
+
+            // Check if phone number is exactly 10 digits
+            if (phoneNumber.length !== 10 || !/^\d{10}$/.test(phoneNumber)) {
+                phoneError.innerText = 'Phone number must be exactly 10 digits.';
+                return false; // Prevent form submission
+            } else {
+                phoneError.innerText = ''; // Clear error message
+                return true; // Allow form submission
+            }
+        }
+
+        // Function to validate roll number
+        function validateRollNumber() {
+            var rollNumber = document.getElementById('roll_number').value;
+            var rollError = document.getElementById('roll_error');
+
+            // Check if roll number is empty
+            if (rollNumber.trim() === '') {
+                rollError.innerText = 'Roll number cannot be empty.';
+                return false; // Prevent form submission
+            } else {
+                rollError.innerText = ''; // Clear error message
+                return true; // Allow form submission
+            }
+        }
+
+        // Function to validate first name
+        function validateFirstName() {
+            var firstName = document.getElementById('first_name').value;
+            var firstNameError = document.getElementById('first_name_error');
+
+            // Check if first name is empty
+            if (firstName.trim() === '') {
+                firstNameError.innerText = 'First name cannot be empty.';
+                return false; // Prevent form submission
+            } else {
+                firstNameError.innerText = ''; // Clear error message
+                return true; // Allow form submission
+            }
+        }
+
+        // Function to validate batch
+        function validateBatch() {
+            var batch = document.getElementById('batch').value;
+            var batchError = document.getElementById('batch_error');
+
+            // Check if batch is empty
+            if (batch.trim() === '') {
+                batchError.innerText = 'Batch cannot be empty.';
+                return false; // Prevent form submission
+            } else {
+                batchError.innerText = ''; // Clear error message
+                return true; // Allow form submission
+            }
+        }
+
+        // Function to validate programme
+        function validateProgramme() {
+            var programme = document.getElementById('programme').value;
+            var programmeError = document.getElementById('programme_error');
+
+            // Check if programme is empty
+            if (programme.trim() === '') {
+                programmeError.innerText = 'Programme cannot be empty.';
+                return false; // Prevent form submission
+            } else {
+                programmeError.innerText = ''; // Clear error message
+                return true; // Allow form submission
+            }
+        }
+
+        // Event listener for form submission
+        form.addEventListener('submit', function(event) {
+            // Prevent default form submission
+            event.preventDefault();
+
+            // Call the validation functions
+            var isValidPhoneNumber = validatePhoneNumber();
+            var isValidRollNumber = validateRollNumber();
+            var isValidFirstName = validateFirstName();
+            var isValidBatch = validateBatch();
+            var isValidProgramme = validateProgramme();
+
+            // If all fields are valid, submit the form
+            if (isValidPhoneNumber && isValidRollNumber && isValidFirstName && isValidBatch && isValidProgramme) {
+                form.submit();
+            }
+        });
+    });
+</script>
+
+
+{% endblock %}

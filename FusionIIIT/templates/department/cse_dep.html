@@ -26,9 +26,13 @@
             Announcements
         </a>
 
-        <a class="item" data-tab="Request">
-            Requests
+        <a class="item" data-tab="alumni">
+            Alumni
         </a>
+
+        {% comment %} <a class="item" data-tab="Request">
+            Requests
+        </a> {% endcomment %}
 
     </div>
     <div class="ui active tab" data-tab="about-us">
@@ -61,49 +65,20 @@
             <div class="content">
                 <div class="description">
                     <span>
+                        <p>Phone Number: {{ department_info.cse_info.phone_number }}</p>
+                        <p>Email: {{ department_info.cse_info.email }}</p>
                         <h3>
-                            Central Library :
+                            Facilities :
                         </h3>
                         <p>
-                            Institute library has e-resources through INDEST, Science Direct, IEEE, ACM, Springger Link, Nature and ASME. The Institute also has access to various online research journals & articles like following resources SIAm, AMS, ACS, Kluwer, APS, Palgrave, INFORMS, Rev.of Scientific Instruments, Appl.Physics Letters and the search engine Scopus. Total number of books in the Institute library by the year 2009-10 are approximately 6742.
-                        </p>
-                        <p>
-                            High Performance Computing Labortory : Specification of Parallel Cluster (for Central Computing Facility)- JS22 Blade No.3, 16GB(2*8GB) DDR2 533 Mhz DiMMs, IBM 146GB SAS 10K SFF HDD, IBM blade center JS22 4-core 4.0 Ghz Processor and WiFi Campus etc.
-                        </p>
+                            {{ department_info.cse_info.facilites|linebreaks}}
+                         </p>
                         <h3>
                             Lab Infrastructure :
                         </h3>
-                        <ol>
-                            <li>
-                                <p>
-                                    <b>Advanced Manufacturing Laboratory :</b> This Laboratory contains Rapid Prototyping Machine, CNC Controlled Abrasive Waterjet Machine, CNC Milling Center, CNC Turning Center, Dynamometer, Electro Chemical Machining System, Injection Moulding Machine etc.
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Biometric Laboratory :</b> This Laboratory contains S Series, H Series, W Series cameras and p6 p520(Tower Model), p6 p520:8203 Model servers Made by IBM etc.
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Digital Signal Processing and Image Processing Laboratory :</b> This Laboratory contains DSP Starter SPARTAN-3 kit (DSK), TMS 320C6713 DSK with CCS (Code Composer Studio), Image Daughter Kit with CCD Cameras, Bloom with DSP, Matrox Imaging Library, Matrox Morphis, Frame Graber Card, Color CCD Camera for online Processing etc.
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Infrared Imaging Laboratory :</b> This Laboratory contains Radiometeric calibration, Extender rings, NDT Base Module, Central computing unit with TFT display, Software Modules for Lockin, Transient-and Pulse Measurement, Module Pulse- and Transient- Thermography, Source for Vibro- Thermography etc.
-                                </p>
-                            </li>
-                            <br>
-                            <li>
-                                <p>
-                                    <b>Materials Research Laboratory :</b> This Laboratory contains three important instruments for material characterization which are X-Ray Diffractometer (XRD), Scanning Electron Microscope (SEM) and Atomic Force Microscope (AFM) including SPM, MFM etc.
-                                </p>
-                            </li>
-                        </ol>
+                        <p>
+                           {{ department_info.cse_info.labs|linebreaks }}
+                        </p>
                     </span>
                     <div class="ui divider"></div>
                 </div>
@@ -125,15 +100,14 @@
                         <div class="ui vertical segment" >
 
                             {% comment %} {% if ann_list %} {% endcomment %}
-                            <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
-                                <thead>
-                                    <td> id </td>
-                                    <td> faculty name </td>
+                            <table class="ui collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+                                <thead align="center" style="font-weight: bold;">
+                                    <td> ID </td>
+                                    <td> Faculty Name </td>
                                     <!-- <td> title </td> -->
-                                    <td> sex </td>
-                                    <td> date_of_birth </td>
-                                    <td> address </td>
-                                    <td> phone_no </td>
+                                    <td> Gender </td>
+                                    <td> DoB </td>
+                                    <td> Phone Number </td>
                                     {% comment %} <td> user_type </td>
                                     <td> department </td>
                                     <td> github </td> {% endcomment %}
@@ -148,7 +122,6 @@
                                         <!-- <td>{{ fcu.title }}</td> -->
                                         <td>{{ fcu.sex }}</td>
                                         <td>{{ fcu.date_of_birth }}</td>
-                                        <td>{{ fcu.address }}</td>
                                         <td>{{ fcu.phone_no }}</td>
                                         {% comment %} <td>{{ fcu.user_type }}</td>
                                         <td>{{ fcu.department.name }}</td>
@@ -316,7 +289,70 @@
         </div>
     </div>
 
-    <div class="ui tab" data-tab="Request">
+    <div class="ui tab" data-tab="alumni">
+        <div class="ui vertical segment">
+            <div class="content">
+                <div class="description">
+                    <span>
+                        {% comment %}Get student Data{% endcomment %}
+                        <div class="ui styled accordion">
+                            <div class="title">
+                                <i class="dropdown icon"></i>
+                                PhD Students
+                            </div>
+                            <div class="content">
+                                <a class="item" href="./alumni/">
+                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                    <button style="border: solid; float: left; display: block;">
+                                        PhD Students
+                                    </button>
+                                </a>
+                                <br>  
+                            </div>
+                        </div>
+
+                        <div class="ui styled accordion">
+                            <div class="title">
+                                <i class="dropdown icon"></i>
+                                MTech Students
+                            </div>
+                            <div class="content">
+                                <a class="item" href="./alumni/">
+                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                    <button style="border: solid; float: left; display: block;">
+                                        MTech Students
+                                    </button>
+                                </a>
+                                <br>  
+                            </div>
+                        </div>
+                            
+                        
+
+                        <div class="ui styled accordion">
+                            <div class="title">
+                                <i class="dropdown icon"></i>
+                                BTech Students
+                            </div>
+                            <div class="content">
+                                <a class="item" href="./alumni/">
+                                    <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                    <button style="border: solid; float: left; display: block;">
+                                        BTech Students
+                                    </button>
+                                </a>
+                                <br>  
+                            </div>
+                        </div>
+
+                    </span>
+                    <div class="ui divider"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% comment %} <div class="ui tab" data-tab="Request">
         <div class="ui vertical segment">
             <div class="content">
                 <div class="description">
@@ -344,7 +380,7 @@
                                                 {% endblock %}
                                             {% endwith %}
                                         </span>
-                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
+ 
                                     </div>
                                 </div>
                             </div>
@@ -359,18 +395,18 @@
                                                 {% include "department/request_history.html" %}
                                             {% endblock %}
                                         </span>
-                                        {% comment %} <div class="ui divider"></div> {% endcomment %}
+
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                     </span>
-                    {% comment %} <div class="ui divider"></div> {% endcomment %}
+
                 </div>
             </div>
         </div>
-    </div>
+    </div> {% endcomment %}
 
     
 

@@ -100,16 +100,17 @@ def convener_view(request):
             # It updates the student Notification table on the spacs head sending the mcm invitation
             if batch == 'all':
                 active_batches = range(datetime.datetime.now().year - 4 , datetime.datetime.now().year + 1)
-                query = reduce(or_, (Q(id__id__startswith=batch) for batch in active_batches))
+                query = reduce(or_, (Q(id__id__startswith=int(batch)-2000) for batch in active_batches))
                 recipient = Student.objects.filter(programme=programme).filter(query)
             else:
-                recipient = Student.objects.filter(programme=programme, id__id__startswith=batch)
+                recipient = Student.objects.filter(programme=programme, id__id__startswith=int(batch)-2000)
             
             # Notification starts
             convenor = request.user
             for student in recipient:
                 scholarship_portal_notif(convenor, student.id.user, 'award_' + award)  # Notification
             if award == 'Merit-cum-Means Scholarship':
+                print("MCM")
                 rel = Release.objects.get(date_time=d_time)
                 Notification.objects.select_related('student_id','release_id').bulk_create([Notification(
                     release_id=rel,
@@ -117,6 +118,7 @@ def convener_view(request):
                     notification_mcm_flag=True,
                     invite_mcm_accept_flag=False) for student in recipient])
             else:
+                print("convo")
                 rel = Release.objects.get(date_time=d_time)
                 Notification.objects.select_related('student_id','release_id').bulk_create([Notification(
                     release_id=rel,
@@ -146,8 +148,10 @@ def convener_view(request):
             year = datetime.datetime.now().year
             Mcm.objects.select_related('award_id','student').filter(id=pk).update(status='Accept')
             request.session['last_clicked'] = 'Accept_MCM'
-            Previous_winner.objects.create(
-                student=student_id, year=year, award_id=award)
+            zest=Previous_winner.objects.filter(student = student_id, year=year, award_id=award)
+            print(zest)
+            if(len(zest)==0):
+                Previous_winner.objects.create(student=student_id, year=year, award_id=award)
             convenor = request.user
             recipient = student_id
             scholarship_portal_notif(convenor, recipient.id.user, 'Accept_MCM')
@@ -171,8 +175,10 @@ def convener_view(request):
             student_id = Director_gold.objects.select_related('student','award_id').get(id=pk).student
             year = datetime.datetime.now().year
             Director_gold.objects.select_related('student','award_id').filter(id=pk).update(status='Accept')
-            Previous_winner.objects.create(
-                student=student_id, year=year, award_id=award)
+            zest=Previous_winner.objects.filter(student = student_id, year=year, award_id=award)
+            print(zest)
+            if(len(zest)==0):
+                Previous_winner.objects.create(student=student_id, year=year, award_id=award)
             convenor = request.user
             recipient = student_id
             scholarship_portal_notif(
@@ -199,12 +205,13 @@ def convener_view(request):
             student_id = Director_silver.objects.select_related('student','award_id').get(id=pk).student
             year = datetime.datetime.now().year
             Director_silver.objects.select_related('student','award_id').filter(id=pk).update(status='Accept')
-            Previous_winner.objects.create(
-                student=student_id, year=year, award_id=award)
+            zest=Previous_winner.objects.filter(student = student_id, year=year, award_id=award)
+            print(zest)
+            if(len(zest)==0):
+                Previous_winner.objects.create(student=student_id, year=year, award_id=award)
             convenor = request.user
             recipient = student_id
-            scholarship_portal_notif(
-                convenor, recipient.id.user, 'Accept_Silver')
+            scholarship_portal_notif(convenor, recipient.id.user, 'Accept_Silver')
             request.session['last_clicked'] = 'Accept_Silver'
             messages.success(request, 'Application is accepted')
             return HttpResponseRedirect('/spacs/convener_view')
@@ -215,8 +222,7 @@ def convener_view(request):
             Director_silver.objects.select_related('student','award_id').filter(id=pk).update(status='Reject')
             convenor = request.user
             recipient = student_id
-            scholarship_portal_notif(
-                convenor, recipient.id.user, 'Reject_Silver')
+            scholarship_portal_notif(convenor, recipient.id.user, 'Reject_Silver')
             request.session['last_clicked'] = 'Reject_Silver'
             messages.success(request, 'Application is rejected')
             return HttpResponseRedirect('/spacs/convener_view')
@@ -227,8 +233,10 @@ def convener_view(request):
             student_id = Proficiency_dm.objects.select_related('student','award_id').get(id=pk).student
             year = datetime.datetime.now().year
             Proficiency_dm.objects.select_related('student','award_id').filter(id=pk).update(status='Accept')
-            Previous_winner.objects.create(
-                student=student_id, year=year, award_id=award)
+            zest=Previous_winner.objects.filter(student = student_id, year=year, award_id=award)
+            print(zest)
+            if(len(zest)==0):
+                Previous_winner.objects.create(student=student_id, year=year, award_id=award)
             convenor = request.user
             recipient = student_id
             scholarship_portal_notif(convenor, recipient.id.user, 'Accept_DM')
@@ -415,6 +423,7 @@ def getWinners(request):
     return HttpResponse(json.dumps(context), content_type='getWinners/json')
 
 def get_MCM_Flag(request):  # Here we are extracting mcm_flag
+    print("get mcm_flags here")
     x = Notification.objects.select_related('student_id','release_id').filter(student_id=request.user.extrainfo.id)
     for i in x:
         i.invite_mcm_accept_flag = True
@@ -431,6 +440,7 @@ def get_MCM_Flag(request):  # Here we are extracting mcm_flag
     # return HttpResponseRedirect('/spacs/student_view')
 
 def getConvocationFlag(request):  # Here we are extracting convocation_flag
+    print("get convo_flags here")
     x = Notification.objects.filter(student_id=request.user.extrainfo.id)
     for i in x:
         i.invite_convocation_accept_flag = True
@@ -1041,22 +1051,27 @@ def sendStudentRenderRequest(request, additionalParams={}):
     x_notif_con_flag = False
     for dates in release:
         if checkDate(dates.startdate, dates.enddate):
-            if dates.award == 'Merit-cum-Means Scholarship' and dates.batch == str(request.user.extrainfo.student)[0:4] and dates.programme == request.user.extrainfo.student.programme:
+            print("sudheer's test --->")
+            print(request.user.extrainfo.student)
+            print(str(request.user.extrainfo.student)[0:2])
+            if dates.award == 'Merit-cum-Means Scholarship' and dates.batch == "20"+str(request.user.extrainfo.student)[0:2]and dates.programme == request.user.extrainfo.student.programme:
                 x_notif_mcm_flag = True
                 if no_of_mcm_filled > 0:
                     update_mcm_flag = True
-            elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4] and dates.programme == request.user.extrainfo.student.programme:
+            elif dates.award == 'Convocation Medals' and dates.batch == "20"+str(request.user.extrainfo.student)[0:2]and dates.programme == request.user.extrainfo.student.programme:
+                
                 x_notif_con_flag = True
                 if no_of_con_filled > 0:
                     update_con_flag = True
         else:
-            if dates.award == "Merit-cum-Means Scholarship" and dates.batch == str(request.user.extrainfo.student)[0:4]:
+           
+            if dates.award == "Merit-cum-Means Scholarship" and dates.batch =="20"+ str(request.user.extrainfo.student)[0:2]:
                 try:
                     x = Notification.objects.select_related('student_id','release_id').get(
                         student_id=request.user.extrainfo.id, release_id=dates.id).delete()
                 except:
                     pass
-            elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4]:
+            elif dates.award == 'Convocation Medals' and dates.batch == "20"+str(request.user.extrainfo.student)[0:2]:
                 try:
                     x = Notification.objects.select_related('student_id','release_id').get(
                         student_id=request.user.extrainfo.id, release_id=dates.id).delete()
@@ -1064,9 +1079,11 @@ def sendStudentRenderRequest(request, additionalParams={}):
                     pass
 
     x = Notification.objects.select_related('student_id','release_id').filter(student_id=request.user.extrainfo.id).order_by('-release_id__date_time')
+    print(x)
     show_mcm_flag = False
     show_convocation_flag = False
     for i in x:
+        print(i.invite_convocation_accept_flag)
         if i.invite_mcm_accept_flag == True:
             show_mcm_flag = True
             break

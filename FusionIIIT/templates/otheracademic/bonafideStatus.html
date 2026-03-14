@@ -1,0 +1,106 @@
+<!-- file_tracking_form.html -->
+
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+    Leave Approve
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <div class="ui stackable doubling grid">
+        <div class="column"></div>
+
+        <div class="three wide column">
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            <div class="ui divider"></div>
+
+            <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+                <a href="/otheracademic/bonafide" class="item">Bonafide Form
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a href="/otheracademic/bonafideStatus" class="active item">Bonafide Status
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                
+            </div>
+          
+        </div>
+
+        <div class="eight wide column">
+            <h2> Bonafide Status </h2>
+            <div class="ui active tab segment" data-tab="first">
+                <table class="ui celled table">
+                    <thead>
+                        <tr>
+                            <th>Roll No.</th>
+                            <th>Student Name</th>
+                            <th>Branch</th>
+                            <th>Semester</th>
+                            <th>Purpose</th>
+                            <th>Date Applied</th>
+                            <th>Bonafide pdf</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in form_data %}
+                        {% if entry.roll_nos_id == roll_no %}
+                        <tr>
+                            <td>{{ entry.roll_nos_id }}</td>
+                            <td>{{ entry.student_names}}</td>
+                            <td>{{ entry.branch_types }}</td>
+                            <td>{{ entry.semester_types }}</td>
+                            <td>{{ entry.purposes }}</td>
+                            <td>{{ entry.date_of_applications }}</td>
+                            <td><a href='{{ entry.download_file.url }}'>Download</a></td>
+                            <td>
+                                {% if entry.approve %}
+                                    Approved
+                                {% elif entry.reject %}
+                                    Rejected
+                                {% else %}
+                                    Pending
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="three wide column">
+            <!-- Right rail content -->
+        </div>
+
+        <div class="column"></div>
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.approve-button').click(function() {
+                var entryId = $(this).data('id');
+                // Perform action to approve the entry with ID entryId
+                console.log('Approved entry with ID: ' + entryId);
+            });
+
+            $('.forward-button').click(function() {
+                var entryId = $(this).data('id');
+                // Perform action to forward the entry with ID entryId
+                console.log('Forwarded entry with ID: ' + entryId);
+            });
+        });
+    </script>
+{% endblock %}

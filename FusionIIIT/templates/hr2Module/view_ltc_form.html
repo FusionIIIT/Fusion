@@ -1,0 +1,733 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+Module
+{% endblock %}
+
+
+
+{% block body %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
+
+{% comment %}The grid starts here!{% endcomment %}
+<div class="ui stackable doubling grid">
+
+    {% comment %}The left-margin segment!{% endcomment %}
+    <div class="column"></div>
+
+    {% comment %}
+    The left-rail segment starts here!
+    {% endcomment %}
+    <div class="three wide column">
+
+        {% comment %}The user image card starts here!{% endcomment %}
+
+        <div class="ui large fluid raised card" style="max-width: 320px;">
+
+            <div class="image">
+                {% block usercard %}
+                {% include 'globals/usercard.html' %}
+                {% endblock %}
+
+                <!-- <div class="ui divider"></div> -->
+                <!-- <div class="content"> -->
+                {% comment %}
+                TODO: Add a If-Else here!
+                {% endcomment %}
+
+            </div>
+
+
+
+        </div>
+
+
+
+
+
+
+
+        {% comment %}The user image card ends here!{% endcomment %}
+
+        <div class="ui divider"></div>
+
+
+
+    </div>
+    {% comment %}
+    The left-rail segment ends here!
+    {% endcomment %}
+
+
+
+    {% comment %}
+    The central-rail segment starts here!
+    {% endcomment %}
+
+
+
+    <div class="eight wide column">
+        <div class="ui top attached tabular large menu">
+            <div class="ui top attached tabular large menu">
+                <a class="active item" data-tab="first">LTC Form</a>
+                <!-- <a class="item" data-tab="asecond">PG: Post Graduate</a> -->
+            </div>
+
+        </div>
+        <div class="ui bottom attached active tab segment" data-tab="first">
+            <div id="textSegmentDiv">
+                {% comment %}
+                TODO: Loader required?
+                <div class="ui active large text loader" id="loader">
+                    Loading ...
+                </div>
+                {% endcomment %}
+                <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+                    {% block alerts %}
+
+                    <div style="margin: 2rem;">
+                        <div class="ui vertical segment">
+                            <form method="post" id="ltc_form" enctype="multipart/form-data">
+                                {% csrf_token %}
+
+                                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                                    <div class="two fields">
+                                        <div class="eight wide field">
+                                            <label for="blockYear">Block Year</label>
+                                            <input type="number" name="blockYear" maxlength="30" id="blockYear"
+                                                value="{{ ltc_request.blockYear}}" readonly>
+                                        </div>
+                                        <div class="eight wide field">
+                                            <label for="pfNo">P.F. No.</label>
+                                            <input type="number" name="pfNo" maxlength="30" id="pfNo"
+                                                value="{{ ltc_request.pfNo }}" readonly>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="eight wide field" style="float: right;">
+                                        <label for="basicPaySalary">Basic Pay Rs.</label>
+                                        <input type="number" name="basicPaySalary" maxlength="20" id="basicPaySalary"
+                                            value="{{ ltc_request.basicPaySalary}}" readonly>
+                                    </div>
+                                    <br><br><br><br>
+                                    <div class="two fields">
+                                        <div class="eight wide field">
+                                            <label for="name">Name</label>
+                                            <input type="text" name="name" maxlength="40" id="name"
+                                                value="{{ ltc_request.name }}" readonly>
+                                        </div>
+                                    </div>
+
+                                    <div class="two fields">
+                                        <div class="eight wide field">
+                                            <label for="designation">Designation</label>
+                                            <input type="text" name="designation" maxlength="40" id="designation"
+                                                value="{{ ltc_request.designation }}" readonly>
+                                        </div>
+                                    </div>
+
+                                    <div class="two fields">
+                                        <div class="eight wide field">
+                                            <label for="departmentInfo">Department/Section</label>
+                                            <input type="text" name="departmentInfo" maxlength="40" id="departmentInfo"
+                                                value="{{ ltc_request.departmentInfo }}" readonly>
+                                        </div>
+                                    </div>
+
+                                    <div class="two fields">
+                                        <div class="eight wide field">
+                                            <label for="leaveRequired">(a) Whether leave is required for availing
+                                                L.T.C.?</label>
+                                            <div class="field">
+                                                <select class="ui dropdown" name="leaveAvailability"
+                                                    id="leaveAvailability">
+                                                    <option value="True">Yes</option>
+                                                    <option value="False">No</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="two fields">
+                                        <div class="eight wide field">
+                                            <label for="leave_dates">(b) (i) If so, duration of leave applied for
+                                                From</label>
+
+                                            <input type="date" name="leaveStartDate"
+                                                value="{{ ltc_request.leaveStartDate|date:'Y-m-d' }}" readonly>
+
+                                            <label for="leave_dates">To:</label>
+                                            <input type="date" name="leaveEndDate"
+                                                value="{{ ltc_request.leaveEndDate|date:'Y-m-d' }}" readonly>
+                                        </div>
+                                        <div class="eight wide field">
+                                            <label for="dateOfDepartureForFamily">(ii) Date of departure of family, if
+                                                not availing himself</label>
+                                            <input type="date" name="dateOfDepartureForFamily"
+                                                value="{{ ltc_request.dateOfDepartureForFamily|date:'Y-m-d'}}" readonly>
+                                        </div>
+                                    </div>
+
+                                    <div class="two fields">
+                                        <div class="eight wide field">
+                                            <label for="natureOfLeave">(c) Nature of leave</label>
+                                            <input type="text" name="natureOfLeave" maxlength="40" id="natureOfLeave"
+                                                value="{{ ltc_request.natureOfLeave }}" readonly>
+                                        </div>
+                                    </div>
+
+                                    <div class="two fields">
+                                        <div class="eight wide field">
+                                            <label for="purposeOfLeave">(d) Purpose</label>
+                                            <input type="text" name="purposeOfLeave" maxlength="40" id="purposeOfLeave"
+                                                value="{{ ltc_request.purposeOfLeave }}" readonly>
+                                        </div>
+                                    </div>
+
+                                    <div class="two fields">
+                                        <div class="eight wide field">
+                                            <label for="hometownOrNot">Whether L.T.C. is desired for going to home
+                                                town or elsewhere?</label>
+                                            <div class="two fields">
+                                                <div class="eight wide field">
+                                                    <label for="hometownOrNot">Select Place:</label>
+                                                    <div class="field">
+                                                        <select class="ui dropdown" name="hometownOrNot"
+                                                            id="hometownOrNot">
+                                                            <option value="True">Home Town</option>
+                                                            <option value="False">Elsewhere</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="ten wide field">
+                                                <label for="placeOfVisit">
+                                                    <input type="text" name="placeOfVisit" maxlength="40"
+                                                        id="placeOfVisit" placeholder="Place where you are visiting"
+                                                        value="{{ ltc_request.placeOfVisit }}" readonly>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="twenty wide field">
+                                        <label for="addressDuringLeave">Address during leave</label>
+                                        <input type="text" name="addressDuringLeave" maxlength="80"
+                                            id="addressDuringLeave" value="{{ ltc_request.addressDuringLeave }}"
+                                            readonly>
+                                    </div>
+
+
+                                    <div class="eight wide field">
+                                        <label for="modeofTravel">Mode: </label>
+                                        <div class="two fields" style="justify-content: space-around;">
+                                            <select class="ui dropdown" name="modeofTravel" id="modeofTravel">
+                                                <option value="True">rail</option>
+                                                <option value="False">road</option>
+                                            </select>
+                                           
+                                        </div>
+                                    </div>
+
+                                    <div class="twenty wide field">
+                                        <label for="detailsOfFamilyMembersAlreadyDone">(i) Details of family
+                                            members for whom L.T.C. for this block has already been availed:</label>
+                                        <div class="three fields">
+                                            {% for member in ltc_request.detailsOfFamilyMembersAlreadyDone %}
+                                            <div class="eight wide field">
+                                                <label for="family_mem_{{ forloop.counter }}">{{ forloop.counter
+                                                    }}</label>
+                                                <input type="text" name="detailsOfFamilyMembersAlreadyDone[]"
+                                                    maxlength="40" id="id_family_mem_{{ forloop.counter }}"
+                                                    value="{{ member }}" readonly>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+
+
+                                    <div class="eight wide field">
+                                        <label for="detailsOfFamilyMembersAboutToAvail">(ii) Details of family members
+                                            who
+                                            will avail L.T.C. <br> &nbsp; &nbsp; &nbsp; &nbsp; (a) Self &nbsp; (b)
+                                            Spouse &nbsp;(c) Children</label>
+                                    </div>
+
+                                    <div>
+                                        <table style="border: 1px solid black">
+                                            <tr>
+                                                <th>S.No</th>
+                                                <th>Full Name</th>
+                                                <th>Age</th>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="number" name="info_1_1" maxlength="40" id="id_info_1_1"
+                                                        value="{{ ltc_request.info_1_1 }}" readonly></td>
+                                                <td><input type="text" name="info_1_2" maxlength="40" id="id_info_1_2"
+                                                        value="{{ ltc_request.info_1_2 }}" readonly></td>
+                                                <td><input type="number" name="info_1_3" maxlength="40" id="id_info_1_3"
+                                                        value="{{ ltc_request.info_1_3 }}" readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="number" name="info_2_1" maxlength="40" id="id_info_2_1"
+                                                        value="{{ ltc_request.info_2_1 }}" readonly></td>
+                                                <td><input type="text" name="info_2_2" maxlength="40" id="id_info_2_2"
+                                                        value="{{ ltc_request.info_2_2 }}" readonly></td>
+                                                <td><input type="number" name="info_2_3" maxlength="40" id="id_info_2_3"
+                                                        value="{{ ltc_request.info_2_3 }}" readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="number" name="info_3_1" maxlength="40" id="id_info_3_1"
+                                                        value="{{ ltc_request.info_3_1 }}" readonly></td>
+                                                <td><input type="text" name="info_3_2" maxlength="40" id="id_info_3_2"
+                                                        value="{{ ltc_request.info_3_2 }}" readonly></td>
+                                                <td><input type="number" name="info_3_3" maxlength="40" id="id_info_3_3"
+                                                        value="{{ ltc_request.info_3_3 }}" readonly></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="number" name="info_4_1" maxlength="40" id="id_info_4_1"
+                                                        value="{{ ltc_request.info_4_1 }}"></td>
+                                                <td><input type="text" name="info_4_2" maxlength="40" id="id_info_4_2"
+                                                        value="{{ ltc_request.info_4_2 }}"></td>
+                                                <td><input type="number" name="info_4_3" maxlength="40" id="id_info_4_3"
+                                                        value="{{ ltc_request.info_4_3 }}"></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="number" name="info_5_1" maxlength="40" id="id_info_5_1"
+                                                        value="{{ ltc_request.info_5_1 }}"></td>
+                                                <td><input type="text" name="info_5_2" maxlength="40" id="id_info_5_2"
+                                                        value="{{ ltc_request.info_5_2 }}"></td>
+                                                <td><input type="number" name="info_5_3" maxlength="40" id="id_info_5_3"
+                                                        value="{{ ltc_request.info_5_3 }}"></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="number" name="info_6_1" maxlength="40" id="id_info_6_1"
+                                                        value="{{ ltc_request.info_6_1 }}"></td>
+                                                <td><input type="text" name="info_6_2" maxlength="40" id="id_info_6_2"
+                                                        value="{{ ltc_request.info_6_2 }}"></td>
+                                                <td><input type="number" name="info_6_3" maxlength="40" id="id_info_6_3"
+                                                        value="{{ ltc_request.info_6_3 }}"></td>
+                                            </tr>
+                                        </table>
+
+                                    </div>
+                                    <br>
+                                    <div class="ten wide field">
+                                        <label for="detailsOfDependents">(d)Dependent parents, minor brothers, and
+                                            sisters residing with the applicant: </label>
+                                    </div>
+
+                                    <div>
+                                        <table style="border: 1px solid black">
+                                            <tr>
+                                                <th>S.No</th>
+                                                <th>Full Name</th>
+                                                <th>Age</th>
+                                                <th>Why fully dependent?</th>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="number" name="d_info_1_1" maxlength="40"
+                                                        id="id_d_info_1_1" value="{{ ltc_request.d_info_1_1 }}"></td>
+                                                <td><input type="text" name="d_info_1_2" maxlength="40"
+                                                        id="id_d_info_1_2" value="{{ ltc_request.d_info_1_2 }}"></td>
+                                                <td><input type="number" name="d_info_1_3" maxlength="40"
+                                                        id="id_d_info_1_3" value="{{ ltc_request.d_info_1_3 }}"></td>
+                                                <td><input type="text" name="d_info_1_4" maxlength="40"
+                                                        id="id_d_info_1_4" value="{{ ltc_request.d_info_1_4 }}"></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="number" name="d_info_2_1" maxlength="40"
+                                                        id="id_d_info_2_1" value="{{ ltc_request.d_info_2_1 }}"></td>
+                                                <td><input type="text" name="d_info_2_2" maxlength="40"
+                                                        id="id_d_info_2_2" value="{{ ltc_request.d_info_2_2 }}"></td>
+                                                <td><input type="number" name="d_info_2_3" maxlength="40"
+                                                        id="id_d_info_2_3" value="{{ ltc_request.d_info_2_3 }}"></td>
+                                                <td><input type="text" name="d_info_2_4" maxlength="40"
+                                                        id="id_d_info_2_4" value="{{ ltc_request.d_info_2_4 }}"></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="number" name="d_info_3_1" maxlength="40"
+                                                        id="id_d_info_3_1" value="{{ ltc_request.d_info_3_1 }}"></td>
+                                                <td><input type="text" name="d_info_3_2" maxlength="40"
+                                                        id="id_d_info_3_2" value="{{ ltc_request.d_info_3_2 }}"></td>
+                                                <td><input type="number" name="d_info_3_3" maxlength="40"
+                                                        id="id_d_info_3_3" value="{{ ltc_request.d_info_3_3 }}"></td>
+                                                <td><input type="text" name="d_info_3_4" maxlength="40"
+                                                        id="id_d_info_3_4" value="{{ ltc_request.d_info_3_4 }}"></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="number" name="d_info_4_1" maxlength="40"
+                                                        id="id_d_info_4_1" value="{{ ltc_request.d_info_4_1 }}"></td>
+                                                <td><input type="text" name="d_info_4_2" maxlength="40"
+                                                        id="id_d_info_4_2" value="{{ ltc_request.d_info_4_2 }}"></td>
+                                                <td><input type="number" name="d_info_4_3" maxlength="40"
+                                                        id="id_d_info_4_3" value="{{ ltc_request.d_info_4_3 }}"></td>
+                                                <td><input type="text" name="d_info_4_4" maxlength="40"
+                                                        id="id_d_info_4_4" value="{{ ltc_request.d_info_4_4 }}"></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="number" name="d_info_5_1" maxlength="40"
+                                                        id="id_d_info_5_1" value="{{ ltc_request.d_info_5_1 }}"></td>
+                                                <td><input type="text" name="d_info_5_2" maxlength="40"
+                                                        id="id_d_info_5_2" value="{{ ltc_request.d_info_5_2 }}"></td>
+                                                <td><input type="number" name="d_info_5_3" maxlength="40"
+                                                        id="id_d_info_5_3" value="{{ ltc_request.d_info_5_3 }}"></td>
+                                                <td><input type="text" name="d_info_5_4" maxlength="40"
+                                                        id="id_d_info_5_4" value="{{ ltc_request.d_info_5_4 }}"></td>
+                                            </tr>
+                                            <tr>
+                                                <td><input type="number" name="d_info_6_1" maxlength="40"
+                                                        id="id_d_info_6_1" value="{{ ltc_request.d_info_6_1 }}"></td>
+                                                <td><input type="text" name="d_info_6_2" maxlength="40"
+                                                        id="id_d_info_6_2" value="{{ ltc_request.d_info_6_2 }}"></td>
+                                                <td><input type="number" name="d_info_6_3" maxlength="40"
+                                                        id="id_d_info_6_3" value="{{ ltc_request.d_info_6_3 }}"></td>
+                                                <td><input type="text" name="d_info_6_4" maxlength="40"
+                                                        id="id_d_info_6_4" value="{{ ltc_request.d_info_6_4 }}"></td>
+                                            </tr>
+                                        </table>
+
+                                    </div>
+
+                                    <div class="eight wide field">
+                                        <label for="amountOfAdvanceRequired">Amount of advance required, if
+                                            any:</label>
+                                        <input type="number" name="amountOfAdvanceRequired" maxlength="10"
+                                            id="amountOfAdvanceRequired"
+                                            value="{{ ltc_request.amountOfAdvanceRequired}}" readonly>
+                                    </div>
+                                    <div class="two fields">
+                                        <div class="eight wide field">
+                                            <label for="certifiedThatFamilyDependents">(i) Certified that family members
+                                                for whom the L.T.C. is claimed are residing with me and are wholly
+                                                dependent upon me. </label>
+                                            <input type="text" name="certifiedThatFamilyDependents" maxlength="40"
+                                                id="certifiedThatFamilyDependents"
+                                                value="{{ ltc_request.certifiedThatFamilyDependents}}" readonly>
+                                        </div>
+
+                                        <div class="eight wide field">
+                                            <label for="certifiedThatAdvanceTakenOn">(ii) Certified that the previous
+                                                L.T.C.
+                                                advance drawn by me on </label>
+                                            <input name="certifiedThatAdvanceTakenOn" id="certifiedThatAdvanceTakenOn"
+                                                value="{{ ltc_request.certifiedThatAdvanceTakenOn}}">
+                                            <label for="adjustedMonth">has been adjusted in the month of </label>
+                                            <input type="text" name="adjustedMonth" maxlength="40" id="adjustedMonth"
+                                                value="{{ ltc_request.adjustedMonth}}" readonly>
+
+                                        </div>
+                                    </div>
+
+                                    <div class="eight wide field">
+                                        <label for="submissionDate">Date</label>
+                                        <input type="date" name="submissionDate" id="id_date"
+                                            value="{{ ltc_request.submissionDate|date:'Y-m-d'}}" readonly>
+                                    </div>
+
+                                    <div class="two fields">
+                                        <div class="eight wide field">
+                                            <label for="phoneNumberForContact">Phone Number for contact</label>
+                                            <input type="number" name="phoneNumberForContact" maxlength="40"
+                                                id="phoneNumberForContact"
+                                                value="{{ ltc_request.phoneNumberForContact}}" readonly>
+                                        </div>
+                                       
+                                    </div>
+
+
+        
+                                    {% if button == 1 %}
+                                    <div class="two fields">
+                                        <div class="eight wide field">
+                                            <label for="username_employee">Username:</label>
+                                            <input type="text" name="username_employee" id="username_employee"
+                                                class="ui search" placeholder="Enter Username">
+                                        </div>
+                                        <div class="eight wide field">
+                                            <label for="designation_employee">Designation:</label>
+                                            <input type="text" name="designation_employee" id="designation_employee"
+                                                readonly>
+                                        </div>
+                                        <button id="check_button" class="ui primary button right floated">Check</button>
+                                    </div>
+                                    <div class="two fields">
+                                        <button id="forward-btn" class="ui primary button right floated" type="submit"
+                                            value="Forward">
+                                            Forward
+                                        </button>
+                                        <button id="reject-btn" class="ui primary red button right floated"
+                                            type="submit" value="Reject">
+                                            Reject
+                                        </button>
+                                        <button id="approve-btn" class="ui primary red button right floated"
+                                            type="submit" value="Approve">
+                                            Approve
+                                        </button>
+                                        <button id="archive-btn" class="ui primary red button right floated"
+                                            type="submit" value="Approve">
+                                            Archive
+                                        </button>
+                                        <button id="getAllForms-btn" class="ui primary red button right floated"
+                                            type="submit" value="getAllForms">
+                                            PreviousForms
+                                        </button>
+                                       
+                                    </div>
+                                    <label>Remarks</label>
+                                    <input id="remark_id" name="remark_id"></input>
+
+
+                                    {% endif %}
+                                </div>
+                                <input type="hidden" id="file_id" name="file_id" value="{{ file_id }}">
+                                <input type="hidden" id="from_user" name="from_user" value="{{ from_user }}">
+                                <input type="hidden" id="from_designation" name="from_designation"
+                                    value="{{ from_designation }}">
+                                <input type="hidden" id="form_id" name="file_id" value="{{ id }}">
+                               
+                                <input type="hidden" id="user_id" name="user_id" value="{{ user_id }}">
+                            </form>
+
+                           <div id="data-of-past">
+                              
+                           </div>
+
+
+                            <br>
+                            <br>
+
+
+                        </div>
+                        <br>
+                        <div class="extra content"></div>
+                    </div>
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    {% comment %}The central-rail segment ends here!{% endcomment %}
+
+    {% comment %}The right-rail segment starts here!{% endcomment %}
+    <div class="three wide column">
+        <div class="row">
+            {% comment %}The Modules:{% endcomment %}
+            {% block modules %}
+            {% include 'dashboard/modules.html' %}
+            {% endblock %}
+        </div>
+
+    </div>
+    {% comment %}The right-rail segment ends here!{% endcomment %}
+
+
+
+</div>
+{% comment %}The grid ends here!{% endcomment %}
+
+
+
+{% endblock %}
+
+{% block javascript %}
+<script
+    src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+<script>
+    //----------------------calender--------------------------------
+
+    $('#rangestart').calendar({
+        monthFirst: false,
+        type: 'date',
+        minDate: new Date(getToday().getFullYear(), getToday().getMonth(), getToday().getDate()),
+        formatter: {
+            date: function (date, settings) {
+                if (!date) return '';
+                var day = date.getDate();
+                var month = date.getMonth() + 1;
+                var year = date.getFullYear();
+                return year + '-' + month + '-' + day;
+            }
+        }
+    });
+
+   
+</script>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#check_button').click(function (event) {
+            event.preventDefault();
+            var selectedUsername = $('#username_employee').val();
+
+            // Fire query to the URL with selected username
+            $.ajax({
+                url: '/hr2/search_employee/',
+                type: 'GET',
+                data: { search: selectedUsername }, // Pass search text as query parameter
+                success: function (data) {
+                    if (data.designation) {
+                        // Employee exists, update designation
+                        $('#designation_employee').val(data.designation);
+                        alert("Employee exists");
+                    } else {
+                        // Employee doesn't exist, show error message
+                        alert("Employee doesn't exist");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error(error);
+                    // Show error message
+                    alert("An error occurred while processing your request.");
+                }
+            });
+        });
+
+    });
+</script>
+
+<script>
+     $(document).ready(function() {
+         $('#getAllForms-btn').click(function(event) {
+             event.preventDefault();
+
+             var user_id = '{{ user_id }}';
+
+            //  var user_id = 5332;
+
+             console.log(user_id)
+        
+             var type = 'LTC'; // Assuming 'LTC' is the type for this request
+            $.ajax({
+             type: 'GET',
+                url: '/hr2/getform/',
+                data: {
+                    'id': user_id,
+                    'type': type
+                },
+                success: function(response) {
+                    // Construct HTML table from response data
+                    var tableHtml = '<table style="border: 1px solid black"><thead><tr><th>S.No</th><th>Full Name</th><th>designation</th><th>submissionDate</th></tr></thead><tbody>';
+                    for (var i = 0; i < response.length; i++) {
+                        var form = response[i];
+                        var approvedColor = form.is_approved ? 'green' : 'red'; // Change color based on is_approved field
+
+                        tableHtml += '<tr style="color: ' + approvedColor + '">';
+                        tableHtml += '<td><input type="number" name="info_' + (i+1) + '_1" maxlength="40" id="id_info_' + (i+1) + '_1" value="' + form.id + '" readonly></td>';
+                        tableHtml += '<td><input type="text" name="info_' + (i+1) + '_2" maxlength="40" id="id_info_' + (i+1) + '_2" value="' + form.name + '" readonly></td>';
+                        tableHtml += '<td><input type="text" name="info_' + (i+1) + '_3" maxlength="40" id="id_info_' + (i+1) + '_3" value="' + form.designation + '" readonly></td>';
+                        tableHtml += '<td><input type="date" name="info_' + (i+1) + '_3" maxlength="40" id="id_info_' + (i+1) + '_3" value="' + form.submissionDate + '" readonly></td>';
+                        tableHtml += '</tr>';
+                    }
+                    tableHtml += '</tbody></table>';
+
+                    // Populate data into the specified div and show it
+                    $('#data-of-past').html(tableHtml).show();
+                },
+
+                error: function(xhr, status, error) {
+                    // Handle errors here
+                    console.error(xhr.responseText);
+                }
+            });
+        });
+    });
+   
+</script>
+<script>
+    $(document).ready(function () {
+
+        // Handle Forward and Reject button clicks
+        $('#forward-btn').click(function (event) {
+            event.preventDefault();
+            // Perform actions for forwarding
+            handleForwardOrReject(0);
+        });
+
+        $('#reject-btn').click(function (event) {
+            event.preventDefault();
+            // Perform actions for rejecting
+            var confirmation = confirm("Do you want to reject the request?")
+
+            if (confirmation) {
+                handleForwardOrReject(1);
+            }
+        });
+
+        $('#approve-btn').click(function (event) {
+            event.preventDefault();
+            // Perform actions for rejecting
+            var confirmation = confirm("Do you want to approve the request?")
+
+            if (confirmation) {
+                handleForwardOrReject(2);
+            }
+        });
+        $('#archive-btn').click(function (event) {
+            event.preventDefault();
+            // Perform actions for rejecting
+            var confirmation = confirm("Do you want to archive the file")
+
+            if(confirmation){
+                handleForwardOrReject(3);   
+            }
+        });
+
+        function handleForwardOrReject(action) {
+            // Prepare the data to be sent to the server
+            var formData = $('#ltc_form').serialize(); // Serialize the form data
+            formData += '&action=' + action; // Append the action (0 for Forward, 1 for Reject , 2 for Approve)
+            var file_id = $('#file_id').val();
+            var from_user = $('#from_user').val();
+            var from_designation = $('#from_designation').val();
+            var username_employee = $('#username_employee').val();
+            var designation_employee = $('#designation_employee').val();
+            var form_id = $('#form_id').val();
+            var remark_id = $('#remark_id').val();
+            formData += '&context=' + JSON.stringify({
+                file_id: file_id,
+                from_user: from_user,
+                from_designation: from_designation,
+                username_employee: username_employee,
+                designation_employee: designation_employee,
+                form_id: form_id,
+                remark_id: remark_id
+            });
+            // Fire an AJAX request to handle the action
+            $.ajax({
+                url: '/hr2/file_handle_ltc/',
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                data: formData, // Send the serialized form data
+                success: function (data) {
+                    // Handle success response, if needed
+                    alert("Request it succefull.");
+                    console.log(data);
+                },
+                error: function (xhr, status, error) {
+                    console.error(error);
+                    // Show error message, if needed
+                    alert("An error occurred while processing your request.");
+                }
+            });
+        }
+    });
+</script>
+
+
+{% endblock %}
+

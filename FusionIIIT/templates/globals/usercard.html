@@ -1,14 +1,12 @@
 {% load static %}
 
 {% block usercard %}
-
     {% comment %}
         TODO: Something!
     {% endcomment %}
-    {% comment %}The Employee Image Card starts here!{% endcomment %}
-    <div class="ui large fluid raised card"
-         style="max-width: 320px;">
 
+    {% comment %}The Employee Image Card starts here!{% endcomment %}
+    <div class="ui large fluid raised card" style="max-width: 25rem;">
         <div class="image">
             <img src="{% static 'globals/img/zlatan.jpg' %}">
         </div>
@@ -18,61 +16,67 @@
                 TODO: Add a If-Else here!
             {% endcomment %}
             {% if user %}
-            <div class="ui large header" href="">
-                {{ user.first_name}}
-                {{ user.last_name}}
-                <span class="right floated meta">
-                    {{ user.extrainfo.department.name}}
-                    
-                </span>
-                <span class="left floated meta">
-                    {% if user.extrainfo.user_type == 'student' %}
-                    {{user.extrainfo.student.programme}}
-                    {{ user.extrainfo.student.batch}}
-                    <br/>
-                    Sem - {{user.extrainfo.student.curr_semester_no}}
-                    {% endif %}
-                </span>
+
+                <div style="display:flex;justify-content:space-between;flex-direction: column;" class="ui large header">
+                    <div style="padding: 0.25rem; word-wrap: break-word;">
+
+                        {{ user.first_name }}
+                        {{ user.last_name }}
+                    </div>
                 
-            </div>
-            {% else %}
-            <div class="ui large header" href="">
-                {{ request.user.first_name}}
-                {{ request.user.last_name}}
-                <span class="right floated meta">
-                    {{ request.user.extrainfo.department.name}}
-                    <span class="right floated meta">
-                        {% if request.user.extrainfo.user_type == 'student' %}
-                        {{request.user.extrainfo.student.programme}}
-                        {{ request.user.extrainfo.student.batch}}
-                        <br/>
-                        Sem - {{request.user.extrainfo.student.curr_semester_no}}
-                        <br/>
+
+                    <div class="meta" style="padding: 0.25rem;word-wrap: break-word;">
+                        {{ user.extrainfo.department.name }}
+                        {% if user.extrainfo.user_type == "student" %}
+                            -
+                            {{ user.extrainfo.id }}
                         {% endif %}
-                </span>
+                    </div>
+                </div>
+
+                <div class="ui large header">
+                    {% if user.extrainfo.user_type == 'student' %}
+                        {{ user.extrainfo.student.programme }}
+                        {{ user.extrainfo.student.batch }}
+                        <br/>
+                        Sem - {{ user.extrainfo.student.curr_semester_no }}
+                    {% endif %}
+                </div>
+            {% else %}
+                <div style="display:flex;flex-wrap:wrap;justify-content:space-between;" class="ui large header">
+                    <div>
+                        {{ request.user.first_name }}
+                        {{ request.user.last_name }}
+                    </div>
+                    
+                    <div class="meta">
+                        {{ request.user.extrainfo.department.name }}
+                    </div>
+                </div>
+                
+                <div class="ui large header">
+                    {% if user.extrainfo.user_type == 'student' %}
+                        {{ request.user.extrainfo.student.programme }}
+                        {{ request.user.extrainfo.student.batch }}
+                        <br/>
+                        Sem - {{ request.user.extrainfo.student.curr_semester_no }}
+                    {% endif %}
+                </div>
+                
                 <span class="right floated meta">
-                    {{user.extrainfo.student.programme}}
-                    {{ user.extrainfo.student.batch}}
-                    {{user.extrainfo.student.curr_semester_no}}
+                    {{ user.extrainfo.student.programme }}
+                    {{ user.extrainfo.student.batch }}
+                    {{ user.extrainfo.student.curr_semester_no }}
                 </span>
-            </div>
             {% endif %}
             <br/>
             <div class="meta">
-                {% for i in Curr_desig %}
-                <span> {% comment %}Should this be inside if else?{% endcomment %}
-                    {% if i == "co-ordinator" or  i == "co co-ordinator" %}
-                        {{ i }} of {{ club_details }} club
-                    {% else %}
-                        {{ i }}
-                    {% endif %}
+               
+                <span> 
+                    {{global_var|capfirst}}
                 </span>
-                <br>
-                {% endfor %}
             </div>
         </div>
     </div>
-    {% comment %}The Employee Image Card ends here!{% endcomment %}
-
-
+    {% comment %} The Employee Image Card ends here! {% endcomment %}
 {% endblock %}

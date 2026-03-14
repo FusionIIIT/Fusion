@@ -6,34 +6,40 @@
 </head>
 <body>
         <div class="ui vertical segment">
-            <table class="ui definition padded table" style="margin: auto;">
+            <center><h1 style='font:24px'>PDPM Indian Institute of Information Technology Design and Manufacturing, Jabalpur</h1></center>
+            <table class="ui definition padded table" border="1" cellpadding="8" style="margin: auto;">
                 <thead>
                 <tr>
                     <th></th>
-                    <th>Breakfast</th>
-                    <th>Lunch</th>
-                    <th>Dinner</th>
+                    <th style="margin-right: 80px;">Breakfast <br> <br></th>
+                    <th style="margin-right: 80px;">Lunch <br> <br></th>
+                    <th style="margin-right: 80px;">Dinner <br><br></th>
+                   
                 </tr>
                 </thead>
 
                 <tbody>
-                <br>
-                <h3 align="centre">Mess 2 menu</h3>
-                <br>
-                <tr>
+               
+                <h3 style="text-align: center; margin-bottom: 20px;">Mess 2 menu</h3>
+                
+            
+                <tr> 
+                <hr style="margin-bottom: 20px;">
 
-                    <td>Monday</td>
+
+                    <td style="margin-left: 70px; font-weight: 500;">Monday <br></td>
                     {% for item in menu %}
                         {% if item.mess_option == 'mess2' %}
                             {% if item.meal_time == 'MB' or item.meal_time == 'ML' or item.meal_time == 'MD' %}
 
                                 {% if item.meal_time == 'MB' %}
-                                    <td>{{item.dish}}</td>
+                                    <td style="padding-right: 15px;">{{item.dish}}<br></td>
                                 {% elif item.meal_time == 'ML' %}
-                                    <td>{{item.dish}}</td>
+                                    <td style="padding-right: 15px;">{{item.dish}}<br></td>
                                 {% elif item.meal_time == 'MD' %}
-                                    <td>{{item.dish}}</td>
+                                    <td style="padding-right: 15px;">{{item.dish}}<br></td>
                                 {% endif %}
+                            </div>
 
                             {% endif %}
                         {% endif %}
@@ -43,18 +49,18 @@
 
                 <tr>
 
-                    <td>Tuesday</td>
+                    <td style="margin-left: 70px; font-weight: 500;">Tuesday<br></td>
                     {% for item in menu %}
                         {% if item.mess_option == 'mess2' %}
 
                             {% if item.meal_time == 'TB' or item.meal_time == 'TL' or item.meal_time == 'TD' %}
 
                                 {% if item.meal_time == 'TB' %}
-                                    <td>{{item.dish}}</td>
+                                    <td style="padding-right: 15px;">{{item.dish}}<br></td>
                                 {% elif item.meal_time == 'TL' %}
-                                    <td>{{item.dish}}</td>
+                                    <td style="padding-right: 15px;">{{item.dish}}<br></td>
                                 {% elif item.meal_time == 'TD' %}
-                                    <td>{{item.dish}}</td>
+                                    <td style="padding-right: 15px;">{{item.dish}}<br></td>
                                 {% endif %}
 
                             {% endif %}
@@ -66,17 +72,17 @@
 
                 <tr>
 
-                    <td>Wednesday</td>
+                    <td style="margin-left: 70px; font-weight: 500;">Wednesday <br></td>
                     {% for item in menu %}
                         {% if item.mess_option == 'mess2' %}
                             {% if item.meal_time == 'WB' or item.meal_time == 'WL' or item.meal_time == 'WD' %}
 
                                 {% if item.meal_time == 'WB' %}
-                                    <td>{{item.dish}}</td>
+                                    <td style="padding-right: 15px;">{{item.dish}} <br></td>
                                 {% elif item.meal_time == 'WL' %}
-                                    <td>{{item.dish}}</td>
+                                    <td style="padding-right: 15px;">{{item.dish}} <br></td>
                                 {% elif item.meal_time == 'WD' %}
-                                    <td>{{item.dish}}</td>
+                                    <td style="padding-right: 15px;">{{item.dish}} <br></td>
                                 {% endif %}
 
                             {% endif %}
@@ -86,18 +92,18 @@
 
                 <tr>
 
-                    <td>Thursday</td>
+                    <td style="margin-left: 70px; font-weight: 500;">Thursday <br></td>
                     {% for item in menu %}
                         {% if item.mess_option == 'mess2' %}
                             {% if item.meal_time == 'THB' or item.meal_time == 'THL' or item.meal_time == 'THD' %}
 
 
                                 {% if item.meal_time == 'THB' %}
-                                    <td>{{item.dish}}</td>
+                                    <td style="padding-right: 15px;">{{item.dish}} <br></td>
                                 {% elif item.meal_time == 'THL' %}
-                                    <td>{{item.dish}}</td>
+                                    <td style="padding-right: 15px;">{{item.dish}} <br></td>
                                 {% elif item.meal_time == 'THD' %}
-                                    <td>{{item.dish}}</td>
+                                    <td style="padding-right: 15px;">{{item.dish}} <br></td>
                                 {% endif %}
 
                             {% endif %}
@@ -108,17 +114,17 @@
                 <tr>
 
 
-                    <td>Friday</td>
+                    <td style="margin-left: 70px; font-weight: 500;">Friday <br></td>
                     {% for item in menu %}
                         {% if item.mess_option == 'mess2' %}
                             {% if item.meal_time == 'FB' or item.meal_time == 'FL' or item.meal_time == 'FD' %}
 
                                 {% if item.meal_time == 'FB' %}
-                                    <td>{{item.dish}}</td>
+                                    <td style="padding-right: 15px;">{{item.dish}} <br></td>
                                 {% elif item.meal_time == 'FL' %}
-                                    <td>{{item.dish}}</td>
+                                    <td style="padding-right: 15px;">{{item.dish}} <br></td>
                                 {% elif item.meal_time == 'FD' %}
-                                    <td>{{item.dish}}</td>
+                                    <td style="padding-right: 15px;">{{item.dish}} <br></td>
                                 {% endif %}
 
                             {% endif %}
@@ -129,17 +135,17 @@
 
                 <tr>
 
-                    <td>Saturday</td>
+                    <td style="margin-left: 70px; font-weight: 500;">Saturday <br></td>
                     {% for item in menu %}
                         {% if item.mess_option == 'mess2' %}
                             {% if item.meal_time == 'SB' or item.meal_time == 'SL' or item.meal_time == 'SD' %}
 
                                 {% if item.meal_time == 'SB' %}
-                                    <td>{{item.dish}}</td>
+                                    <td style="padding-right: 15px;">{{item.dish}} <br></td>
                                 {% elif item.meal_time == 'SL' %}
-                                    <td>{{item.dish}}</td>
+                                    <td style="padding-right: 15px;">{{item.dish}} <br></td>
                                 {% elif item.meal_time == 'SD' %}
-                                    <td>{{item.dish}}</td>
+                                    <td style="padding-right: 15px;">{{item.dish}} <br></td>
                                 {% endif %}
 
                             {% endif %}
@@ -150,17 +156,17 @@
 
                 <tr>
 
-                    <td>Sunday</td>
+                    <td style="margin-left: 70px; font-weight: 500;">Sunday <br> </td>
                     {% for item in menu %}
                         {% if item.mess_option == 'mess2' %}
                             {% if item.meal_time == 'SUB' or item.meal_time == 'SUL' or item.meal_time == 'SUD' %}
 
                                 {% if item.meal_time == 'SUB' %}
-                                    <td>{{item.dish}}</td>
+                                    <td style="padding-right: 15px;">{{item.dish}} <br>  </td>
                                 {% elif item.meal_time == 'SUL' %}
-                                    <td>{{item.dish}}</td>
+                                    <td style="padding-right: 15px;">{{item.dish}} <br>  </td>
                                 {% elif item.meal_time == 'SUD' %}
-                                    <td>{{item.dish}}</td>
+                                    <td style="padding-right: 15px;">{{item.dish}} <br>  </td>
                                 {% endif %}
 
                             {% endif %}
@@ -175,8 +181,13 @@
             </table>
 
 
-        </div>
-        </div>
+        </div> 
+        <div style="margin-top:10;font:'18px' text-align:right">
+            Date:
+            {% block menu1 %}
+            {{date}}
+            {% endblock %}    
+        </div>   
 
 </body>
 </html>

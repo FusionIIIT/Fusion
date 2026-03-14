@@ -1,0 +1,70 @@
+<!-- jQuery Library -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Table Segment -->
+<div class="ui bottom attached tab segment" data-tab="second">
+    <div id="textSegmentDiv">
+        <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+            <div class="content">
+                <div class="description" style="overflow: auto; max-height: 480px">
+                    <!-- Table to display CPDA requests -->
+                    <table class="ui celled medium table" style="text-align: center; margin: auto;">
+                        <thead>
+                            <tr style="font-size: medium; background-color: whitesmoke;">
+                                <th><h4>Form Id</h4></th>
+                                <th><h4>User</h4></th>
+                                <th><h4>Desgination</h4></th>
+                                <th><h4>Date</h4></th>
+                                <th><h4>View</h4></th>
+                                <!-- Add more headers for CPDA request details -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Loop through CPDA requests and display in table -->
+                            {% for cpda_reimbursement_request in cpda_reimbursement_requests %}
+                                <tr>
+                                    <td>{{ cpda_reimbursement_request.id }}</td>
+                                    <td>{{ cpda_reimbursement_request.name }}</td>
+                                    <td>{{ cpda_reimbursement_request.designation }}</td>
+                                    <th>{{ cpda_reimbursement_request.submissionDate }}</th>
+                                    <td><a href="http://127.0.0.1:8000/hr2/view_cpda_reimbursement_form/{{ cpda_reimbursement_request.id }}">View</a></td>
+                                    
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4">No CPDA requests found</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript to handle button click -->
+<script>
+    $(document).ready(function() {
+        $('.forward-btn').on('click', function() {
+            var cpdaReimbursementId = $(this).data('cpda-reimbursement-id'); // Get CPDA request ID from button data
+
+            $.ajax({
+                url: '/hr2/form_mangement_cpda_reimbursement_hr/' + cpdaReimbursementId + '/', // URL to send request to
+                type: 'POST', // HTTP method
+                data: {
+                    'id': cpdaReimbursementId, // Include CPDA request ID in data
+                    'csrfmiddlewaretoken': '{{ csrf_token }}' // Include CSRF token for security
+                },
+                success: function(response) {
+                    // Handle success response, if needed
+                    console.log(response);
+                },
+                error: function(xhr, status, error) {
+                    // Handle error
+                    console.error(error);
+                }
+            });
+        });
+    });
+</script>

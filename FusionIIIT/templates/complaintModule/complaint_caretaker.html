@@ -58,27 +58,45 @@
                 {% endif %}
         </div>
             {% comment %}The Tab-Menu starts here!{% endcomment %}
+            {% comment %}A single modules row starts here!{% endcomment %}
+               
+                        {% if  request.user.extrainfo.user_type == "staff"    %}
+             
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
-
                 <a class="active item" data-tab="first">
-                    Manage Workers
+                    Lodge a Complaint
                     <i class="right floated chevron right icon"></i>
                 </a>
 
                 <a class="item" data-tab="second">
-                    Resolved Complaints
+                    Complaint History
                     <i class="right floated chevron right icon"></i>
                 </a>
 
                 <a class="item" data-tab="third">
+                    Feedback
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                
+                {% comment %}A single modules row ends here!{% endcomment %}
+                
+                {% if  "caretaker" in global_var %}
+                <a class=" item" data-tab="fourth">
+                    Resolved Complaints
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="fifth">
                     Unresolved Complaints
                     <i class="right floated chevron right icon"></i>
                 </a>
-                <a class="item" data-tab="fourth">
+                <!-- <a class="item" data-tab="sixth">
                     Overdue Complaints
                     <i class="right floated chevron right icon"></i>
-                </a>
+                </a> -->
+                {% endif %}
 
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
@@ -93,11 +111,12 @@
         {% comment %}
             The central-rail segment starts here!
         {% endcomment %}
-        <div class="seven wide column">
+        <div class="eight wide column">
+           
             {% comment %}The ... start here!{% endcomment %}
             <div class="ui active tab segment" data-tab="first">
                 {% block lodgecomplaint %}
-                    {%  include 'complaintModule/add_workers.html' %}
+                    {%  include 'complaintModule/lodgecomplaint_caretaker.html' %}
                 {%  endblock %}
             </div>
             {% comment %}The ... end here!{% endcomment %}
@@ -105,27 +124,42 @@
             {% comment %}The ... starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="second">
                 {% block complainthistory %}
-                    {%  include 'complaintModule/complainthistory_caretaker.html' %}
+                    {%  include 'complaintModule/complainthistory_care_final.html' %}
                 {%  endblock %}
             </div>
             {% comment %}The ... ends here!{% endcomment %}
 
             {% comment %}The ... starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="third">
-                {% block resolvecomplaint %}
-                    {%  include 'complaintModule/resolvecomplaint.html' %}
+                {% block feedback %}
+                    {%  include 'complaintModule/carefeedback.html' %}
                 {%  endblock %}
             </div>
-            <div class="ui tab segment" data-tab="fourth">
+            {% comment %}The ... ends here!{% endcomment %}
+            {% comment %}The ... starts here!{% endcomment %}
+            <div class="ui  tab segment" data-tab="fourth">
+                {% block resolvecomplaint %}
+                    {%  include 'complaintModule/resolve_caretaker.html' %}
+                {%  endblock %}
+            </div>
+            {% comment %}The ... ends here!{% endcomment %}
+
+            {% comment %}The ... starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="fifth">
+                {% block unresolvecomplaint %}
+                    {%  include 'complaintModule/unresolvecomplaint.html' %}
+                {%  endblock %}
+            </div>
+            <div class="ui tab segment" data-tab="sixth">
                 {% block overduecomplaint %}
                     {%  include 'complaintModule/overduecomplaint.html' %}
                 {%  endblock %}
             </div>
             {% comment %}The ... ends here!{% endcomment %}
 
-            {% comment %}The ... starts here!{% endcomment %}
+            <!-- {% comment %}The ... starts here!{% endcomment %}
 
-            {% comment %}The ... ends here!{% endcomment %}
+            {% comment %}The ... ends here!{% endcomment %} -->
 
         </div>
         {% comment %}The central-rail segment ends here!{% endcomment %}
@@ -156,6 +190,5 @@
     
 
 {% endblock %}
-
 
 
