@@ -4,15 +4,26 @@ from applications.iwdModuleV2.models import *
 from applications.ps1.models import *
 from decimal import Decimal
 import json
+
+
 class WorkOrderFormSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkOrder
-        fields = '__all__'
+        fields = [
+            'id',
+            'request',
+            'vendor',
+            'issueDate',
+            'completionDate',
+            'status'
+        ]
+
 
 class DesignationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Designation
         fields = ['id', 'name']
+
 
 class HoldsDesignationSerializer(serializers.ModelSerializer):
     designation = DesignationSerializer()
@@ -21,6 +32,7 @@ class HoldsDesignationSerializer(serializers.ModelSerializer):
     class Meta:
         model = HoldsDesignation
         fields = ['id', 'designation', 'username']
+
 
 class CreateRequestsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -39,40 +51,76 @@ class CreateRequestsSerializer(serializers.ModelSerializer):
         validated_data['billProcessed'] = 0
         validated_data['billSettled'] = 0
         return super().create(validated_data)
-    
+
+
 class IWDAdminApprovedRequestsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Requests
         fields = ['id', 'name', 'area', 'description', 'requestCreatedBy']
-    
+
+
 class DirectorApprovedRequestsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Requests
         fields = ['id', 'name', 'area', 'description', 'requestCreatedBy']
 
+
 class WorkUnderProgressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Requests
-        fields = ['id', 'name', 'area', 'description', 'requestCreatedBy', 'issuedWorkOrder', 'workCompleted']
+        fields = [
+            'id',
+            'name',
+            'area',
+            'description',
+            'requestCreatedBy',
+            'issuedWorkOrder',
+            'workCompleted'
+        ]
 
 
 class RequestsInProgressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Requests
-        fields = ['id', 'name', 'area', 'description', 'requestCreatedBy', 'issuedWorkOrder', 'workCompleted']
+        fields = [
+            'id',
+            'name',
+            'area',
+            'description',
+            'requestCreatedBy',
+            'issuedWorkOrder',
+            'workCompleted'
+        ]
+
 
 class ItemsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
-        fields = ['name', 'description', 'unit', 'price_per_unit', 'quantity', 'docs', 'total_price', 'id']
+        fields = [
+            'id',
+            'name',
+            'description',
+            'unit',
+            'price_per_unit',
+            'quantity',
+            'docs',
+            'total_price'
+        ]
 
 
 class CreateProposalSerializer(serializers.ModelSerializer):
-    items = ItemsSerializer(many=True, write_only=True)  # Keep the many=True option
+    items = ItemsSerializer(many=True, write_only=True)
 
     class Meta:
         model = Proposal
-        fields = '__all__'
+        fields = [
+            'id',
+            'request',
+            'vendor',
+            'created_by',
+            'created_at',
+            'items'
+        ]
 
     def create(self, validated_data):
         items_data = validated_data.pop('items', [])
@@ -80,16 +128,30 @@ class CreateProposalSerializer(serializers.ModelSerializer):
         proposal.save()
         return proposal
 
+
 class ProposalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Proposal
-        fields = '__all__'
+        fields = [
+            'id',
+            'request',
+            'vendor',
+            'created_by',
+            'created_at'
+        ]
 
 
 class VendorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vendor
-        fields = '__all__'
+        fields = [
+            'id',
+            'name',
+            'email',
+            'phone',
+            'address'
+        ]
+
     def create(self, validated_data):
         vendor = Vendor.objects.create(**validated_data)
         vendor.save()

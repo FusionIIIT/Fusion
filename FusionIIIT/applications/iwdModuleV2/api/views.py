@@ -2,8 +2,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from applications.globals.models import *
-from applications.iwdModuleV2.models import *
+from applications.iwdModuleV2.models import Requests, File, Tracking, Budget, Vendor, WorkOrder, Bills, Proposal, Item
 from applications.ps1.models import *
 from applications.filetracking.sdk.methods import *
 from notification.views import iwd_notif
@@ -18,6 +17,11 @@ from io import BytesIO
 from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from collections import defaultdict
+from django.db import transaction
+import logging  
+from .services import *
+
+logger = logging.getLogger(__name__)
 # @api_view(['GET'])
 # def dashboard(request):
 #     userObj = request.user
@@ -50,39 +54,17 @@ def fetch_designations(request):
 @permission_classes([IsAuthenticated])
 def create_request(request):
 
-    '''
-        to create a new request
-    '''
     data = request.data.copy()
     data['requestCreatedBy'] = request.user.username
     attachment = request.FILES.get('file')
+
     serializer = CreateRequestsSerializer(data=data, context={'request': request})
+
     if serializer.is_valid():
-        formObject = serializer.save()
-        receiver_desg = "Admin IWD"
-        receiver_user = "kunal"
-        # receiver_desg, receiver_user = data.get('designation').split('|')
-        try:
-            receiver_user_obj = User.objects.get(username=receiver_user)
-            request_object = Requests.objects.get(pk=formObject.pk)
-        except User.DoesNotExist:
-            return Response({'error': 'Receiver user does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-        create_file(
-            uploader=request.user.username,
-            uploader_designation=data.get('role'),
-            receiver=receiver_user,
-            receiver_designation=receiver_desg,
-            src_module="IWD",
-            src_object_id=str(request_object.id),
-            file_extra_JSON={"value": 2},
-            attached_file=attachment
-        )
-        
-        
-        iwd_notif(request.user, receiver_user_obj, "Request_added")
-        
+        create_request_service(request, serializer, attachment, data.get("role"))
+
         return Response({'message': "Request Successfully Created"}, status=status.HTTP_201_CREATED)
-    
+
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -180,30 +162,24 @@ def dean_processed_requests(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def handle_dean_process_request(request):
-    
-    '''
-        This api is made for the dean to process and forward the request
-    '''
 
     data = request.data
+
     fileid = data.get('fileid')
-    request_id = File.objects.get(id=fileid).src_object_id
-    
     remarks = data.get('remarks')
     attachment = request.FILES.get('file')
+
     receiver_desg, receiver_user = data.get('designation').split('|')
-    forward_file(
-        file_id=fileid,
-        receiver=receiver_user,
-        receiver_designation=receiver_desg,
-        file_extra_JSON={"message": "Request forwarded."},
-        remarks=remarks,
-        file_attachment=attachment,
+
+    handle_dean_process_service(
+        request,
+        fileid,
+        remarks,
+        attachment,
+        receiver_user,
+        receiver_desg
     )
-    
-    Requests.objects.filter(id=request_id).update(deanProcessed=1, status="Approved by the dean", directorApproval=0)
-    receiver_user_obj = get_object_or_404(User, username=receiver_user)
-    iwd_notif(request.user, receiver_user_obj, "file_forward")
+
     return Response({'message': 'File Forwarded'}, status=200)
 
 @api_view(['POST'])
@@ -216,17 +192,14 @@ def forward_request(request):
     remarks = data.get('remarks')
     attachment = request.FILES.get('file')
     receiver_desg, receiver_user = data.get('designation').split('|')
-    forward_file(
-        file_id=fileid,
-        receiver=receiver_user,
-        receiver_designation=receiver_desg,
-        file_extra_JSON={"message": "Request forwarded."},
-        remarks=remarks,
-        file_attachment=attachment,
+    forward_request_service(
+        request,
+        fileid,
+        receiver_user,
+        receiver_desg,
+        remarks,
+        attachment
     )
-
-    receiver_user_obj = get_object_or_404(User, username=receiver_user)
-    iwd_notif(request.user, receiver_user_obj, "file_forward")
 
     return Response({
         "message": "File forwarded successfully",
@@ -235,82 +208,49 @@ def forward_request(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def handle_director_approval(request):
-    """
-    Approve or reject a request by the director.
-    """
+
     data = request.data
+
     fileid = data.get('fileid')
     action = data.get('action')
 
-    if not fileid or not action:
-        return Response({'error': 'File ID and action are required'}, status=status.HTTP_400_BAD_REQUEST)
-
-    try:
-        request_id = File.objects.get(id=fileid).src_object_id
-    except File.DoesNotExist:
-        return Response({'error': 'File not found'}, status=status.HTTP_404_NOT_FOUND)
-
-    request_instance = Requests.objects.filter(id=request_id, iwdAdminApproval=True).first()
-    if not request_instance:
-        return Response({'error': 'Request not approved by IWD Admin'}, status=status.HTTP_400_BAD_REQUEST)
-
-    if not request_instance.activeProposal:
-        return Response({'error': 'No active proposal exists for this request'}, status=status.HTTP_400_BAD_REQUEST)
-
     remarks = data.get('remarks')
     attachment = request.FILES.get('file')
+
     receiver_desg, receiver_user = data.get('designation').split('|')
 
-    forward_file(
-        file_id=fileid,
-        receiver=receiver_user,
-        receiver_designation=receiver_desg,
-        file_extra_JSON={"message": "Request forwarded."},
-        remarks=remarks,
-        file_attachment=attachment,
+    handle_director_approval_service(
+        request,
+        fileid,
+        action,
+        remarks,
+        attachment,
+        receiver_user,
+        receiver_desg
     )
-    receiver_user_obj = get_object_or_404(User, username=receiver_user)
-    iwd_notif(request.user, receiver_user_obj, "file_forward")
 
-    if action == "approve":
-        Requests.objects.filter(id=request_id).update(directorApproval=1, status="Approved by the director")
-        return Response({'message': 'Request approved by Director'}, status=status.HTTP_200_OK)
-    elif action == "reject":
-        Requests.objects.filter(id=request_id).update(directorApproval=-1, status="Rejected by the director", iwdAdminApproval=0, activeProposal=None)
-        return Response({'message': 'Request rejected by Director'}, status=status.HTTP_200_OK)
-    else:
-        return Response({'error': 'Invalid action'}, status=status.HTTP_400_BAD_REQUEST)
+    return Response({'message': 'Processed successfully'})
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def handle_audit_document(request):
-    
-    '''
-        This api is used to audit bill documents (with provided fileid)
-    '''
 
     fileid = request.data.get('fileid')
     remarks = request.data.get('remarks')
     attachment = request.FILES.get('attachment')
+
     receiver_desg, receiver_user = request.data['designation'].split('|')
 
-    if fileid:
-        request_id = File.objects.get(id=fileid).src_object_id
+    audit_document_service(
+        request,
+        fileid,
+        remarks,
+        attachment,
+        receiver_user,
+        receiver_desg
+    )
 
-        forward_file(
-            file_id=fileid,
-            receiver=receiver_user,
-            receiver_designation=receiver_desg,
-            file_extra_JSON={"message": "Request forwarded."},
-            remarks=remarks,
-            file_attachment=attachment,
-        )
-        
-        Requests.objects.filter(id=request_id).update(status="Bill Audited")
-
-        return Response("Bill Audited", status=status.HTTP_200_OK)
-    
-    return Response({'error': 'File ID not provided'}, status=status.HTTP_400_BAD_REQUEST)
+    return Response("Bill Audited", status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
@@ -350,107 +290,29 @@ def rejected_requests(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def handle_update_requests(request):
-    
-    '''
-        to update an old request(delete and make a new one)
-    '''
 
     data = request.data.copy()
     request_id = data.get("id")
+
     request_instance = Requests.objects.filter(id=request_id).first()
+
     if not request_instance:
         return Response({'error': 'Request not found'}, status=status.HTTP_404_NOT_FOUND)
 
     if request_instance.iwdAdminApproval == -1:
-        return Response({'error': 'This request has been rejected by IWD Admin and cannot be updated.'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'error': 'This request has been rejected by IWD Admin'}, status=status.HTTP_403_FORBIDDEN)
 
     receiver_desg, receiver_user = data.get("designation").split('|')
-    data["created_by"] = str(request.user)
-    data["request"] = request_id
-    if request.FILES.get("supporting_documents"):
-        data["supporting_documents"] = request.FILES["supporting_documents"]
-    items = defaultdict(dict)
-    for key in request.data:
-        if key.startswith("items["):
-            import re
-            match = re.match(r"items\[(\d+)\]\[(\w+)\]", key)
-            if match:
-                index, field = match.groups()
-                value = request.data[key]
-                if field in ['quantity', 'price_per_unit']:  # Cast numbers
-                    try:
-                        value = Decimal(value)
-                    except:
-                        pass
-                items[int(index)][field] = value
 
-    for key in request.FILES:
-        if key.startswith("items["):
-            match = re.match(r"items\[(\d+)\]\[(\w+)\]", key)
-            if match:
-                index, field = match.groups()
-                items[int(index)][field] = request.FILES.get(key)
+    result = update_request_service(
+        request,
+        data,
+        request_instance,
+        receiver_user,
+        receiver_desg
+    )
 
-    items_list = [items[idx] for idx in sorted(items.keys())]
-    data["items"] = items_list
-
-    serializer = CreateProposalSerializer(data=data)
-    print("Cleaned data going to serializer:")
-    print(data)
-    if serializer.is_valid():
-        proposal = serializer.save()
-        if request_instance.activeProposal is None:
-            Requests.objects.filter(id=request_id).update(
-                activeProposal=proposal.id,
-                status="Proposal created",
-                iwdAdminApproval=0,
-                directorApproval=0,
-            )
-        else:
-            Requests.objects.filter(id=request_id).update(
-                activeProposal=proposal.id
-            )
-        total_budget = 0
-        for item_data in items_list:
-            try:
-                print("\n\n\n",item_data)
-                quantity = Decimal(item_data['quantity'])
-                price_per_unit = Decimal(item_data['price_per_unit'])
-                total_price = quantity * price_per_unit
-                item_data['total_price'] = total_price
-                total_budget += total_price
-
-                newitem = Item.objects.create(
-                    proposal=proposal, 
-                    name=item_data['name'],
-                    description=item_data['description'],
-                    unit=item_data['unit'],
-                    quantity=quantity, 
-                    price_per_unit=price_per_unit, 
-                    total_price=quantity * price_per_unit
-                )
-                if item_data['docs'] is not None:
-                    newitem.docs.save(item_data['docs'].name, item_data['docs'], save=True)
-            except KeyError as e:
-                print(f"Error processing item {item_data}: {e}")
-                continue
-        proposal.proposal_budget = total_budget
-        proposal.save()
-        receiver_user_obj = User.objects.get(username=receiver_user)
-        iwd_notif(request.user, receiver_user_obj, "Proposal_added")
-        file_obj = File.objects.get(src_object_id=request_id, src_module="IWD")
-        if file_obj:
-            forward_file(
-                file_id=file_obj.id,
-                receiver=receiver_user,
-                receiver_designation=receiver_desg, 
-                file_extra_JSON={"message": "Request forwarded."},
-                remarks="updated proposal created",
-            )
-        else:
-            return Response({"message":"file doesnot exist"}, status = status.HTTP_400_BAD_REQUEST)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response(result, status=status.HTTP_201_CREATED)
 
 
 @api_view(['GET'])
@@ -464,52 +326,46 @@ def director_approved_requests(request):
     requestsObject = Requests.objects.filter(directorApproval=1, issuedWorkOrder=0)
     serializer = DirectorApprovedRequestsSerializer(requestsObject, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
-
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def issue_work_order(request):
-    '''
-        issue work order
-    '''
+
     data = request.data.copy()
     data['work_issuer'] = request.user.username
-    request_id = data.get('request_id')
-    request_instance = get_object_or_404(Requests, pk=request_id)
-    active_proposal = request_instance.activeProposal
-    proposal_obj = get_object_or_404(Proposal, pk=active_proposal)
-    data['estimate_budget']=proposal_obj.proposal_budget
-    print(data)
-    serializer = WorkOrderFormSerializer(data=data)
-    if serializer.is_valid():
 
-        work_order = serializer.save(request_id=request_instance)
+    result = issue_work_order_service(request, data)
 
-        request_instance.status = "Work Order issued"
-        request_instance.issuedWorkOrder = 1
-        request_instance.save()
-
-        messages.success(request, "Work Order Issued")
+    if result["success"]:
         return Response(status=status.HTTP_200_OK)
-    print("wow")
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    return Response(result["error"], status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_vendor(request):
-    '''
-        add vendor for a particular work
-    '''
+
     data = request.data.copy()
+
+    logger.info("Add vendor request received")
+
     serializer = VendorSerializer(data=data)
-    print("test 1\n\n\n\n\n")
-    print(serializer)
+
+    logger.debug(f"Vendor serializer initialized: {serializer}")
+
     if serializer.is_valid():
-        print("test 2\n\n\n\n\n")
+
+        logger.info("Vendor serializer validation successful")
+
         serializer.save()
-        print("test 3\n\n\n\n\n")
+
+        logger.info("Vendor saved successfully")
+
         messages.success(request, "Vendor Added")
+
         return Response(status=status.HTTP_200_OK)
+
+    logger.warning(f"Vendor serializer validation failed: {serializer.errors}")
+
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
@@ -559,18 +415,11 @@ def requests_in_progress(request):
 @permission_classes([IsAuthenticated])
 def work_completed(request):
 
-    '''
-        to mark the work as completed
-    '''
-
     request_id = request.data.get('id')
-    Requests.objects.filter(id=request_id).update(workCompleted=1, status="Work Completed")
-    return Response(
-        {
-            'message': 'Work Completed',
-        },
-        status=status.HTTP_200_OK
-    )
+
+    work_completed_service(request_id)
+
+    return Response({'message': 'Work Completed'})
 
 
 
@@ -771,46 +620,26 @@ def audit_document_view(request):
 
     return Response(obj, status=status.HTTP_200_OK)
 
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def handle_process_bills(request):
 
-    '''
-        This api is used to submit (process) a bill 
-    '''
-
     obj = request.data
 
     fileid = obj.get('fileid')
-    try:
-        request_id = File.objects.get(id=fileid).src_object_id
-    except ObjectDoesNotExist:
-        return Response({'error': 'File not found.'}, status=status.HTTP_404_NOT_FOUND)
-
     remarks = obj.get('remarks')
     attachment = request.FILES.get('attachment')
+
     receiver_desg, receiver_user = obj['designation'].split('|')
 
-    forward_file(
-        file_id=fileid,
-        receiver=receiver_user,
-        receiver_designation=receiver_desg, 
-        file_extra_JSON={"message": "Request forwarded."},
-        remarks=remarks,
-        file_attachment=attachment, 
+    process_bill_service(
+        request,
+        fileid,
+        remarks,
+        attachment,
+        receiver_user,
+        receiver_desg
     )
-    
-    Requests.objects.filter(id=request_id).update(billProcessed=1, status="Final Bill Processed")
-    
-    request_instance = Requests.objects.get(pk=request_id)
-
-    formObject = Bills()
-    formObject.request_id = request_instance
-    formObject.file = attachment
-    formObject.save()
-    receiver_user_obj = User.objects.get(username=receiver_user)
-    iwd_notif(request.user, receiver_user_obj, "file_forward")
 
     return Response({'obj': obj}, status=status.HTTP_200_OK)
 
@@ -913,28 +742,15 @@ def engineer_processed_requests(request):
 #     response.write(buffer.getvalue())
 
 #     return response
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def handleBillGeneratedRequests(request):
-    request_id = request.data.get("id", 0)
-    if request_id:
-        Requests.objects.filter(id=request_id).update(status="Bill Generated", billGenerated=1)
 
-    requests_object = Requests.objects.filter(issuedWorkOrder=1, billGenerated=0)
-    obj = []
-    for x in requests_object:
-        element = {
-            "id": x.id,
-            "name": x.name,
-            "area": x.area,
-            "description": x.description,
-            "requestCreatedBy": x.requestCreatedBy,
-            "workCompleted": x.workCompleted,
-        }
-        obj.append(element)
+    request_id = request.data.get("id")
 
-    return Response({'obj': obj}, status=status.HTTP_200_OK)
+    obj = bill_generated_service(request_id)
+
+    return Response({'obj': obj})
 
 
 @api_view(['GET'])
@@ -1006,104 +822,39 @@ def handle_settle_bill_requests(request):
     
     return Response({'error': 'Request ID not provided'}, status=status.HTTP_400_BAD_REQUEST)
 
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_proposal(request):
+
     data = request.data.copy()
+
     request_id = data.get("id")
 
-    request_instance = Requests.objects.filter(id=request_id, iwdAdminApproval=True).first()
+    request_instance = Requests.objects.filter(
+        id=request_id,
+        iwdAdminApproval=True
+    ).first()
+
     if not request_instance:
-        return Response({'error': 'Request not approved by IWD Admin'}, status=status.HTTP_400_BAD_REQUEST)
-
-    # Extract user and request info
-    receiver_desg, receiver_user = data.get("designation").split('|')
-    data["created_by"] = str(request.user)
-    data["request"] = request_id
-
-    # Extract supporting docs if present
-    if request.FILES.get("supporting_documents"):
-        data["supporting_documents"] = request.FILES["supporting_documents"]
-
-    # Parse items[] from FormData
-    items = defaultdict(dict)
-    for key in request.data:
-        if key.startswith("items["):
-            # key pattern: items[0][name]
-            import re
-            match = re.match(r"items\[(\d+)\]\[(\w+)\]", key)
-            if match:
-                index, field = match.groups()
-                value = request.data[key]
-                if field in ['quantity', 'price_per_unit']:  # Cast numbers
-                    try:
-                        value = Decimal(value)
-                    except:
-                        pass
-                items[int(index)][field] = value
-
-    # Handle file fields
-    for key in request.FILES:
-        if key.startswith("items["):
-            match = re.match(r"items\[(\d+)\]\[(\w+)\]", key)
-            if match:
-                index, field = match.groups()
-                items[int(index)][field] = request.FILES.get(key)
-
-    # Flatten items to list
-    items_list = [items[idx] for idx in sorted(items.keys())]
-    data["items"] = items_list
+        return Response(
+            {'error': 'Request not approved by IWD Admin'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     serializer = CreateProposalSerializer(data=data)
-    print("Cleaned data going to serializer:")
-    print(data)
+
     if serializer.is_valid():
-        proposal = serializer.save()
-        if request_instance.activeProposal is None:
-            Requests.objects.filter(id=request_id).update(
-                activeProposal=proposal.id,
-                status="Proposal created"
-            )
-        else:
-            Requests.objects.filter(id=request_id).update(
-                activeProposal=proposal.id
-            )
-        total_budget = 0
-        for item_data in items_list:
-            try:
-                print("\n\n\n",item_data)
-                quantity = Decimal(item_data['quantity'])
-                price_per_unit = Decimal(item_data['price_per_unit'])
-                total_price = quantity * price_per_unit
-                item_data['total_price'] = total_price
-                total_budget += total_price
 
-                # Create an Item instance for each item
+        create_proposal_service(
+            request,
+            serializer,
+            request_instance
+        )
 
-                newitem = Item.objects.create(
-                    proposal=proposal, 
-                    name=item_data['name'],
-                    description=item_data['description'],
-                    unit=item_data['unit'],
-                    quantity=quantity, 
-                    price_per_unit=price_per_unit, 
-                    total_price=quantity * price_per_unit
-                )
-                if item_data['docs'] is not None:
-                    newitem.docs.save(item_data['docs'].name, item_data['docs'], save=True)
-            except KeyError as e:
-                print(f"Error processing item {item_data}: {e}")
-                continue
-        proposal.proposal_budget = total_budget
-        proposal.save()
-        # Proposal.objects.filter(id=proposal.id).update(proposal_budget=total_budget)
-        receiver_user_obj = User.objects.get(username=receiver_user)
-        iwd_notif(request.user, receiver_user_obj, "Proposal_added")
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    print("\n\n\n errors : ", serializer.errors)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_proposals(request):
@@ -1129,52 +880,25 @@ def get_items(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def handle_admin_approval(request):
-    """
-    Approve or reject a request by the IWD Admin.
-    """
+
     data = request.data
-    action = data.get('action')
 
     fileid = data.get('fileid')
-    request_id = File.objects.get(id=fileid).src_object_id
+    action = data.get('action')
 
     remarks = data.get('remarks')
     attachment = request.FILES.get('file')
+
     receiver_desg, receiver_user = data.get('designation').split('|')
-    if not fileid:
-        return Response({'error': 'File ID not provided'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    forward_file(
-        file_id=fileid,
-        receiver=receiver_user,
-        receiver_designation=receiver_desg,
-        file_extra_JSON={"message": "Request forwarded."},
-        remarks=remarks,
-        file_attachment=attachment,
+
+    admin_approval_service(
+        request,
+        fileid,
+        action,
+        remarks,
+        attachment,
+        receiver_user,
+        receiver_desg
     )
-    receiver_user_obj = get_object_or_404(User, username=receiver_user)
-    iwd_notif(request.user, receiver_user_obj, "file_forward")
-    message = ""
 
-    if not request_id or not action:
-        return Response({'error': 'Request ID and action are required'}, status=status.HTTP_400_BAD_REQUEST)
-
-    request_instance = Requests.objects.filter(id=request_id).first()
-    if not request_instance:
-        return Response({'error': 'Request not found'}, status=status.HTTP_404_NOT_FOUND)
-
-    if action == "approve":
-        if request_instance.activeProposal:
-            Requests.objects.filter(id=request_id).update(iwdAdminApproval=1, status="Proposal created")
-        else:
-            Requests.objects.filter(id=request_id).update(iwdAdminApproval=1, status="Approved by the IWD Admin")
-        return Response({'message': 'Request approved by IWD Admin'}, status=status.HTTP_200_OK)
-    elif action == "reject":
-        Requests.objects.filter(id=request_id).update(iwdAdminApproval=-1, status="Rejected", activeProposal=None)
-        return Response({'message': 'Request rejected by IWD Admin'}, status=status.HTTP_200_OK)
-    else:
-<<<<<<< HEAD
-        return Response({'error': 'Invalid action'}, status=status.HTTP_400_BAD_REQUEST)
-=======
-        return Response({'error': 'Invalid action'}, status=status.HTTP_400_BAD_REQUEST)
->>>>>>> upstream/institute-works-v1
+    return Response({'message': 'Processed successfully'})
