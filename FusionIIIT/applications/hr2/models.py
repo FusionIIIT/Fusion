@@ -49,6 +49,36 @@ class Constants:
     )
 
 
+class BaseForm(models.Model):
+    """Abstract base for HR form models that share common metadata.
+
+    This helps reduce redundancy and ensures consistent common fields across
+    multiple form types.
+    """
+
+    employeeId = models.IntegerField(null=True)
+    name = models.CharField(max_length=100, null=True)
+    designation = models.CharField(max_length=50, null=True)
+    pfNo = models.IntegerField(null=True)
+    submissionDate = models.DateField(blank=True, null=True)
+    approved = models.BooleanField(null=True)
+    approvedDate = models.DateField(auto_now_add=True, null=True)
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name='%(class)s_created_by',
+    )
+    approved_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name='%(class)s_approved_by',
+    )
+
+    class Meta:
+        abstract = True
+
 
 # Employee model
 class Employee(models.Model):
@@ -144,84 +174,48 @@ class WorkAssignemnt(models.Model):
     job_title = models.CharField(max_length=50, default='')
     orders_copy = models.FileField(blank=True, null=True)
 
-class LTCform(models.Model):
-    id = models.AutoField(primary_key=True)
-    employeeId = models.IntegerField()
-    name = models.CharField(max_length=100, null=True)
-    blockYear = models.TextField() #
-    pfNo = models.IntegerField()
+class LTCform(BaseForm):
+    blockYear = models.TextField()
     basicPaySalary = models.IntegerField(null=True)
-    designation = models.CharField(max_length=50)
     departmentInfo = models.CharField(max_length=50)
-    leaveRequired = models.BooleanField(default=False,null=True) #
+    leaveRequired = models.BooleanField(default=False, null=True)
     leaveStartDate = models.DateField(null=True, blank=True)
     leaveEndDate = models.DateField(null=True, blank=True)
-    dateOfDepartureForFamily = models.DateField(null=True, blank=True) #
-    natureOfLeave = models.TextField(null=True,blank=True)
-    purposeOfLeave = models.TextField(null=True,blank=True)
+    dateOfDepartureForFamily = models.DateField(null=True, blank=True)
+    natureOfLeave = models.TextField(null=True, blank=True)
+    purposeOfLeave = models.TextField(null=True, blank=True)
     hometownOrNot = models.BooleanField(default=False)
-    placeOfVisit = models.TextField(max_length=100, null=True, blank=True) 
+    placeOfVisit = models.TextField(max_length=100, null=True, blank=True)
     addressDuringLeave = models.TextField(null=True)
-    modeofTravel = models.TextField(max_length=10, null=True,blank=True) #
-    detailsOfFamilyMembersAlreadyDone = models.JSONField(null=True,blank=True)
-    detailsOfFamilyMembersAboutToAvail = models.JSONField(max_length=100, null=True,blank=True) 
-    detailsOfDependents = models.JSONField(blank=True,null=True) 
+    modeofTravel = models.TextField(max_length=10, null=True, blank=True)
+    detailsOfFamilyMembersAlreadyDone = models.JSONField(null=True, blank=True)
+    detailsOfFamilyMembersAboutToAvail = models.JSONField(max_length=100, null=True, blank=True)
+    detailsOfDependents = models.JSONField(blank=True, null=True)
     amountOfAdvanceRequired = models.IntegerField(null=True, blank=True)
-    certifiedThatFamilyDependents = models.BooleanField(blank=True,null=True) 
-    certifiedThatAdvanceTakenOn = models.DateField(null=True, blank=True) 
-    adjustedMonth = models.TextField(max_length=50, null=True,blank=True)
-    submissionDate = models.DateField(null=True)
+    certifiedThatFamilyDependents = models.BooleanField(blank=True, null=True)
+    certifiedThatAdvanceTakenOn = models.DateField(null=True, blank=True)
+    adjustedMonth = models.TextField(max_length=50, null=True, blank=True)
     phoneNumberForContact = models.BigIntegerField()
-    approved = models.BooleanField(null=True)
-    approvedDate = models.DateField(auto_now_add=True, null=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='LTC_created_by')
-    approved_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='LTC_approved_by')
 
 
 
-class CPDAAdvanceform(models.Model):
-    id = models.AutoField(primary_key=True)
-    employeeId = models.IntegerField(null=True)
-    name = models.CharField(max_length=40,null=True)
-    designation = models.CharField(max_length=40,null=True)
-    pfNo = models.IntegerField(null=True)
+class CPDAAdvanceform(BaseForm):
     purpose = models.TextField(max_length=40, null=True)
     amountRequired = models.IntegerField(null=True)
-    advanceDueAdjustment = models.DecimalField(max_digits=10, decimal_places=2, null=True,blank=True)
-   
-    submissionDate = models.DateField(blank=True, null=True)
-   
+    advanceDueAdjustment = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     balanceAvailable = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     advanceAmountPDA = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     amountCheckedInPDA = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-   
-    approved = models.BooleanField(null=True)
-    approvedDate = models.DateField(auto_now_add=True, null=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='CPDA_created_by')
-    approved_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='CPDA_approved_by')
 
-class LeaveForm(models.Model):
-    id = models.AutoField(primary_key=True)
-    employeeId = models.IntegerField(null=True)
-    name = models.CharField(max_length=40,null=True)
-    designation = models.CharField(max_length=40,null=True)
-    submissionDate = models.DateField(blank=True, null=True)
-    pfNo = models.IntegerField(null=True)
-    departmentInfo = models.CharField(max_length=40,null=True)
-    natureOfLeave = models.TextField(max_length=40,null=True)
+class LeaveForm(BaseForm):
+    departmentInfo = models.CharField(max_length=40, null=True)
+    natureOfLeave = models.TextField(max_length=40, null=True)
     leaveStartDate = models.DateField(blank=True, null=True)
     leaveEndDate = models.DateField(blank=True, null=True)
-   
-    purposeOfLeave = models.TextField(max_length=40,null=True)
+    purposeOfLeave = models.TextField(max_length=40, null=True)
     addressDuringLeave = models.TextField(max_length=40, blank=True, null=True)
-
     academicResponsibility = models.TextField(max_length=40, blank=True, null=True)
-    addministrativeResponsibiltyAssigned = models.TextField(max_length=40,null=True)
-
-    approved = models.BooleanField(null=True)
-    approvedDate = models.DateField(auto_now_add=True, null=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='Leave_created_by')
-    approved_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='Leave_approved_by')
+    addministrativeResponsibiltyAssigned = models.TextField(max_length=40, null=True)
 
 class LeaveBalance(models.Model):
     id = models.AutoField(primary_key=True)
@@ -235,11 +229,7 @@ class LeaveBalance(models.Model):
     vacationLeave = models.IntegerField(default=0)
 
 
-class Appraisalform(models.Model):
-    id = models.AutoField(primary_key=True)
-    employeeId = models.IntegerField(null=True)
-    name = models.CharField(max_length=22)
-    designation = models.CharField(max_length=50)
+class Appraisalform(BaseForm):
     disciplineInfo = models.CharField(max_length=22, null=True)
     specificFieldOfKnowledge = models.TextField(max_length=40, null=True)
     currentResearchInterests = models.TextField(max_length=40, null=True)
@@ -263,32 +253,16 @@ class Appraisalform(models.Model):
     serviceToInstitute = models.TextField(max_length=40, null=True)
     otherContribution = models.TextField(max_length=40, null=True)
     performanceComments = models.TextField(max_length=100, null=True)
-    submissionDate = models.DateField(max_length=6, null=True)
-
-    approved = models.BooleanField(null=True)
-    approvedDate = models.DateField(auto_now_add=True, null=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='Appraisal_created_by')
-    approved_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='Appraisal_approved_by')
 
 
-class CPDAReimbursementform(models.Model):
-     id = models.AutoField(primary_key=True)
-     employeeId = models.IntegerField(null=True)
-     name = models.CharField(max_length=50)
-     designation = models.CharField(max_length=50)
-     pfNo = models.IntegerField()
-     advanceTaken = models.IntegerField()
-     purpose = models.TextField()
-     adjustmentSubmitted = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-     balanceAvailable = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-     advanceDueAdjustment = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-     advanceAmountPDA = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-     amountCheckedInPDA = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-     submissionDate = models.DateField(auto_now_add=True)
-     approved = models.BooleanField(null=True)
-     approvedDate = models.DateField(auto_now_add=True, null=True)
-     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='CPDAR_created_by')
-     approved_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='CPDAR_approved_by')
+class CPDAReimbursementform(BaseForm):
+    advanceTaken = models.IntegerField()
+    purpose = models.TextField()
+    adjustmentSubmitted = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    balanceAvailable = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    advanceDueAdjustment = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    advanceAmountPDA = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    amountCheckedInPDA = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
    
 
 
