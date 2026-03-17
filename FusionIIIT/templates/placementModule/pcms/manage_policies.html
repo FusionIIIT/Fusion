@@ -1,0 +1,112 @@
+{% extends 'placementModule/pcms/base_pcms.html' %}
+
+{% block pcms_content %}
+<h2 class="ui header">
+    <i class="cog icon"></i>
+    <div class="content">
+        Placement Policies
+        <div class="sub header">Configure placement rules and restrictions</div>
+    </div>
+</h2>
+
+<div class="ui divider"></div>
+
+{# Create New Policy #}
+<div class="ui segment">
+    <h3 class="ui header">Create New Policy</h3>
+    <form class="ui form" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="create">
+        <div class="two fields">
+            <div class="required field">
+                <label>Policy Name</label>
+                <input type="text" name="name" placeholder="e.g., Standard Placement Policy 2025" required>
+            </div>
+            <div class="required field">
+                <label>Max Offers Allowed</label>
+                <input type="number" name="max_offers_allowed" value="1" min="1" max="10">
+            </div>
+        </div>
+        <div class="field">
+            <label>Description</label>
+            <textarea name="description" rows="3" placeholder="Policy description..."></textarea>
+        </div>
+        <div class="two fields">
+            <div class="field">
+                <label>Allow Dream Company</label>
+                <div class="ui toggle checkbox">
+                    <input type="checkbox" name="allow_dream_company">
+                    <label>Enable dream company applications for placed students</label>
+                </div>
+            </div>
+            <div class="field">
+                <label>Dream CTC Threshold (LPA)</label>
+                <input type="number" name="dream_ctc_threshold" step="0.01" min="0" value="0" placeholder="Minimum CTC for dream company">
+            </div>
+        </div>
+        <button class="ui primary button" type="submit">
+            <i class="plus icon"></i> Create & Activate Policy
+        </button>
+    </form>
+</div>
+
+{# Existing Policies #}
+{% if policies %}
+    <h3 class="ui header">Existing Policies</h3>
+    <table class="ui celled striped table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Max Offers</th>
+                <th>Dream Company</th>
+                <th>Dream Threshold</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for policy in policies %}
+                <tr>
+                    <td>
+                        <strong>{{ policy.name }}</strong>
+                        {% if policy.description %}
+                            <br><small>{{ policy.description|truncatewords:20 }}</small>
+                        {% endif %}
+                    </td>
+                    <td>{{ policy.max_offers_allowed }}</td>
+                    <td>{% if policy.allow_dream_company %}<i class="green check icon"></i>{% else %}<i class="red times icon"></i>{% endif %}</td>
+                    <td>{% if policy.allow_dream_company %}₹{{ policy.dream_ctc_threshold }} LPA{% else %}-{% endif %}</td>
+                    <td>
+                        {% if policy.is_active %}
+                            <span class="ui green label">Active</span>
+                        {% else %}
+                            <span class="ui grey label">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form method="POST" style="display:inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="toggle">
+                            <input type="hidden" name="policy_id" value="{{ policy.id }}">
+                            <button type="submit" class="ui tiny {% if policy.is_active %}red{% else %}green{% endif %} button">
+                                {% if policy.is_active %}Deactivate{% else %}Activate{% endif %}
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="ui message">
+        <p>No placement policies configured. Create one above.</p>
+    </div>
+{% endif %}
+
+<script>
+    $(document).ready(function() {
+        $('.ui.checkbox').checkbox();
+    });
+</script>
+{% endblock %}
+

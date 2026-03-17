@@ -1,0 +1,81 @@
+{% extends 'placementModule/pcms/base_pcms.html' %}
+
+{% block pcms_content %}
+<h2 class="ui header">
+    <i class="calendar icon"></i>
+    <div class="content">
+        Schedule Interview - {{ posting.title }}
+        <div class="sub header">{{ posting.company.name }}</div>
+    </div>
+</h2>
+
+<div class="ui divider"></div>
+
+<div class="ui info message">
+    <p><strong>{{ shortlisted_count }}</strong> shortlisted candidate(s) will be added to this interview.</p>
+</div>
+
+<form class="ui form" method="POST">
+    {% csrf_token %}
+    <div class="three fields">
+        <div class="required field">
+            <label>Interview Date</label>
+            {{ form.date }}
+        </div>
+        <div class="required field">
+            <label>Time Slot</label>
+            {{ form.time_slot }}
+        </div>
+        <div class="required field">
+            <label>Mode</label>
+            {{ form.mode }}
+        </div>
+    </div>
+    <div class="field">
+        <label>Venue / Meeting Link</label>
+        {{ form.venue_or_link }}
+    </div>
+    <div class="field">
+        <label>Description / Instructions</label>
+        {{ form.description }}
+    </div>
+    <button class="ui primary button" type="submit">
+        <i class="calendar check icon"></i> Schedule Interview
+    </button>
+    <a class="ui button" href="{% url 'placement:job_posting_detail' posting.id %}">Cancel</a>
+</form>
+
+{% if interviews %}
+    <div class="ui divider"></div>
+    <h3 class="ui header">Existing Interviews</h3>
+    <table class="ui celled table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Mode</th>
+                <th>Venue / Link</th>
+                <th>Candidates</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for interview in interviews %}
+                <tr>
+                    <td>{{ interview.date|date:"M d, Y" }}</td>
+                    <td>{{ interview.time_slot|time:"H:i" }}</td>
+                    <td><span class="ui label">{{ interview.mode }}</span></td>
+                    <td>{{ interview.venue_or_link|default:"-" }}</td>
+                    <td>{{ interview.panelists.count }}</td>
+                    <td>
+                        <a class="ui tiny button" href="{% url 'placement:interview_detail' interview.id %}">
+                            View Details
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+{% endblock %}
+

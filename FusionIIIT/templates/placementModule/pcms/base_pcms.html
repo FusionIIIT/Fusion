@@ -1,0 +1,94 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+    PCMS - {{ page_title|default:"Placement Cell" }}
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <div class="ui stackable doubling grid">
+        <div class="column"></div>
+
+        {# Left Sidebar #}
+        <div class="three wide column">
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+
+            <div class="ui divider"></div>
+
+            <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+                <a class="item" href="{% url 'placement:pcms_dashboard' %}">
+                    <i class="dashboard icon"></i> PCMS Dashboard
+                </a>
+                <a class="item" href="{% url 'placement:placement' %}">
+                    <i class="calendar icon"></i> Legacy Placement
+                </a>
+
+                <div class="ui divider"></div>
+
+                <a class="item" href="{% url 'placement:job_posting_list' %}">
+                    <i class="briefcase icon"></i> Job Postings
+                </a>
+                <a class="item" href="{% url 'placement:announcement_list' %}">
+                    <i class="bullhorn icon"></i> Announcements
+                </a>
+
+                {% if is_student %}
+                    <a class="item" href="{% url 'placement:my_applications' %}">
+                        <i class="file alternate icon"></i> My Applications
+                    </a>
+                    <a class="item" href="{% url 'placement:my_offers' %}">
+                        <i class="gift icon"></i> My Offers
+                    </a>
+                {% endif %}
+
+                {% if is_officer or is_chairman %}
+                    <div class="ui divider"></div>
+                    <a class="item" href="{% url 'placement:company_list' %}">
+                        <i class="building icon"></i> Companies
+                    </a>
+                    <a class="item" href="{% url 'placement:all_offers' %}">
+                        <i class="handshake icon"></i> All Offers
+                    </a>
+                    <a class="item" href="{% url 'placement:placement_reports' %}">
+                        <i class="chart bar icon"></i> Reports
+                    </a>
+                    <a class="item" href="{% url 'placement:manage_policies' %}">
+                        <i class="cog icon"></i> Policies
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        {# Main Content #}
+        <div class="eleven wide column">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="ui {% if message.tags == 'error' %}negative{% elif message.tags == 'success' %}positive{% elif message.tags == 'warning' %}warning{% else %}info{% endif %} message">
+                        <i class="close icon"></i>
+                        <p>{{ message }}</p>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% block pcms_content %}
+            {% endblock %}
+        </div>
+
+        <div class="column"></div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('.message .close').on('click', function() {
+                $(this).closest('.message').transition('fade');
+            });
+        });
+    </script>
+{% endblock %}
+

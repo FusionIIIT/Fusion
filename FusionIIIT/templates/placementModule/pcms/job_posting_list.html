@@ -1,0 +1,103 @@
+{% extends 'placementModule/pcms/base_pcms.html' %}
+
+{% block pcms_content %}
+<div class="ui grid">
+    <div class="twelve wide column">
+        <h2 class="ui header">
+            <i class="briefcase icon"></i>
+            <div class="content">Job Postings</div>
+        </h2>
+    </div>
+    <div class="four wide column right aligned">
+        {% if is_officer or is_chairman %}
+            <a class="ui primary button" href="{% url 'placement:create_job_posting' %}">
+                <i class="plus icon"></i> Create Job Posting
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="ui divider"></div>
+
+{% if postings %}
+    <div class="ui cards">
+        {% for posting in postings %}
+            <div class="ui fluid card">
+                <div class="content">
+                    <div class="right floated meta">
+                        {% if posting.is_active %}
+                            <span class="ui green label">Active</span>
+                        {% else %}
+                            <span class="ui red label">Inactive</span>
+                        {% endif %}
+                        <span class="ui label">{{ posting.job_type }}</span>
+                    </div>
+                    <div class="header">
+                        <a href="{% url 'placement:job_posting_detail' posting.id %}">{{ posting.title }}</a>
+                    </div>
+                    <div class="meta">
+                        <i class="building icon"></i> {{ posting.company.name }}
+                        {% if posting.location %}
+                            | <i class="map marker icon"></i> {{ posting.location }}
+                        {% endif %}
+                    </div>
+                    <div class="description">
+                        {{ posting.description|truncatewords:40 }}
+                    </div>
+                </div>
+                <div class="extra content">
+                    <span><i class="rupee sign icon"></i> {{ posting.ctc }} LPA</span>
+                    <span class="right floated">
+                        <i class="clock icon"></i> Deadline: {{ posting.application_deadline|date:"M d, Y H:i" }}
+                    </span>
+                </div>
+                {% if posting.min_cpi %}
+                    <div class="extra content">
+                        <span>Min CPI: {{ posting.min_cpi }}</span>
+                        {% if posting.eligible_programmes %}
+                            | Programmes: {{ posting.eligible_programmes }}
+                        {% endif %}
+                        {% if posting.eligible_branches %}
+                            | Branches: {{ posting.eligible_branches }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+                <div class="extra content">
+                    <a class="ui button" href="{% url 'placement:job_posting_detail' posting.id %}">View Details</a>
+                    {% if is_officer or is_chairman %}
+                        <a class="ui button" href="{% url 'placement:edit_job_posting' posting.id %}">Edit</a>
+                        <a class="ui button" href="{% url 'placement:manage_applications' posting.id %}">
+                            Applications ({{ posting.total_applications }})
+                        </a>
+                        <form method="GET" action="{% url 'placement:toggle_job_posting' posting.id %}" style="display:inline;">
+                            <a href="{% url 'placement:toggle_job_posting' posting.id %}" class="ui tiny {% if posting.is_active %}red{% else %}green{% endif %} button">
+                                {% if posting.is_active %}Deactivate{% else %}Activate{% endif %}
+                            </a>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {# Pagination #}
+    {% if postings.has_other_pages %}
+        <div class="ui pagination menu" style="margin-top: 20px;">
+            {% if postings.has_previous %}
+                <a class="item" href="?page={{ postings.previous_page_number }}">Previous</a>
+            {% endif %}
+            {% for num in postings.paginator.page_range %}
+                <a class="{% if postings.number == num %}active {% endif %}item" href="?page={{ num }}">{{ num }}</a>
+            {% endfor %}
+            {% if postings.has_next %}
+                <a class="item" href="?page={{ postings.next_page_number }}">Next</a>
+            {% endif %}
+        </div>
+    {% endif %}
+{% else %}
+    <div class="ui message">
+        <p>No job postings available at the moment.</p>
+    </div>
+{% endif %}
+{% endblock %}
+

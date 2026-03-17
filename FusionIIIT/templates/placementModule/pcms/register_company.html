@@ -1,0 +1,70 @@
+{% extends 'placementModule/pcms/base_pcms.html' %}
+
+{% block pcms_content %}
+<h2 class="ui header">
+    <i class="building icon"></i>
+    <div class="content">Register New Company</div>
+</h2>
+
+<div class="ui divider"></div>
+
+<form class="ui form" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="two fields">
+        <div class="required field">
+            <label>Company Name</label>
+            {{ form.name }}
+        </div>
+        <div class="field">
+            <label>Industry Domain</label>
+            {{ form.domain }}
+        </div>
+    </div>
+
+    <div class="field">
+        <label>Website</label>
+        {{ form.website }}
+    </div>
+
+    <div class="field">
+        <label>Description</label>
+        {{ form.description }}
+    </div>
+
+    <div class="two fields">
+        <div class="field">
+            <label>Contact Person Name</label>
+            {{ form.contact_person_name }}
+        </div>
+        <div class="required field">
+            <label>Contact Email</label>
+            {{ form.contact_email }}
+        </div>
+    </div>
+
+    <div class="two fields">
+        <div class="field">
+            <label>Contact Phone</label>
+            {{ form.contact_phone }}
+        </div>
+        <div class="field">
+            <label>Company Logo</label>
+            {{ form.logo }}
+        </div>
+    </div>
+
+    <div class="field">
+        <label>Address</label>
+        {{ form.address }}
+    </div>
+
+    <div class="ui divider"></div>
+
+    <button class="ui primary button" type="submit">
+        <i class="check icon"></i> Register Company
+    </button>
+    <a class="ui button" href="{% url 'placement:company_list' %}">Cancel</a>
+</form>
+{% endblock %}
+

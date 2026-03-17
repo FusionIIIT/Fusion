@@ -1,0 +1,196 @@
+{% extends 'placementModule/pcms/base_pcms.html' %}
+
+{% block pcms_content %}
+<h2 class="ui header">
+    <i class="chart bar icon"></i>
+    <div class="content">
+        Placement Reports & Analytics
+    </div>
+</h2>
+
+<div class="ui divider"></div>
+
+{# Filters #}
+<div class="ui segment">
+    <form class="ui form" method="GET">
+        <div class="four fields">
+            <div class="field">
+                <label>Year</label>
+                {{ form.year }}
+            </div>
+            <div class="field">
+                <label>Department</label>
+                {{ form.department }}
+            </div>
+            <div class="field">
+                <label>Programme</label>
+                {{ form.programme }}
+            </div>
+            <div class="field">
+                <label>Job Type</label>
+                {{ form.job_type }}
+            </div>
+        </div>
+        <button class="ui primary button" type="submit">
+            <i class="filter icon"></i> Apply Filters
+        </button>
+        <a class="ui button" href="{% url 'placement:placement_reports' %}">Reset</a>
+    </form>
+</div>
+
+{# Summary Statistics #}
+<div class="ui four stackable cards">
+    <div class="ui card blue">
+        <div class="content center aligned">
+            <div class="header" style="font-size:2em;">{{ placed_students }}</div>
+            <div class="description">Students Placed</div>
+        </div>
+    </div>
+    <div class="ui card green">
+        <div class="content center aligned">
+            <div class="header" style="font-size:2em;">{{ placement_rate }}%</div>
+            <div class="description">Placement Rate</div>
+        </div>
+    </div>
+    <div class="ui card teal">
+        <div class="content center aligned">
+            <div class="header" style="font-size:2em;">{{ companies_participated }}</div>
+            <div class="description">Companies Participated</div>
+        </div>
+    </div>
+    <div class="ui card orange">
+        <div class="content center aligned">
+            <div class="header" style="font-size:2em;">{{ total_students }}</div>
+            <div class="description">Total Students</div>
+        </div>
+    </div>
+</div>
+
+{# Package Statistics #}
+<div class="ui segment">
+    <h3 class="ui header">Package Statistics</h3>
+    <div class="ui four statistics">
+        <div class="statistic">
+            <div class="value">₹{{ stats.max_ctc }}</div>
+            <div class="label">Highest Package (LPA)</div>
+        </div>
+        <div class="statistic">
+            <div class="value">₹{{ stats.avg_ctc|floatformat:2 }}</div>
+            <div class="label">Average Package (LPA)</div>
+        </div>
+        <div class="statistic">
+            <div class="value">₹{{ stats.min_ctc }}</div>
+            <div class="label">Lowest Package (LPA)</div>
+        </div>
+        <div class="statistic">
+            <div class="value">{{ stats.total_offers }}</div>
+            <div class="label">Total Offers Accepted</div>
+        </div>
+    </div>
+</div>
+
+{# Company-wise Stats #}
+{% if stats.company_wise %}
+    <div class="ui segment">
+        <h3 class="ui header">Company-wise Placements</h3>
+        <table class="ui celled table">
+            <thead>
+                <tr>
+                    <th>Company</th>
+                    <th>Students Placed</th>
+                    <th>Avg Package (LPA)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in stats.company_wise %}
+                    <tr>
+                        <td>{{ row.application__job_posting__company__name }}</td>
+                        <td>{{ row.count }}</td>
+                        <td>₹{{ row.avg_package|floatformat:2 }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+
+{# Branch-wise Stats #}
+{% if stats.branch_wise %}
+    <div class="ui segment">
+        <h3 class="ui header">Department-wise Placements</h3>
+        <table class="ui celled table">
+            <thead>
+                <tr>
+                    <th>Department</th>
+                    <th>Students Placed</th>
+                    <th>Avg Package (LPA)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in stats.branch_wise %}
+                    <tr>
+                        <td>{{ row.application__student__id__department__name|default:"N/A" }}</td>
+                        <td>{{ row.count }}</td>
+                        <td>₹{{ row.avg_package|floatformat:2 }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+
+{# Programme-wise Stats #}
+{% if stats.programme_wise %}
+    <div class="ui segment">
+        <h3 class="ui header">Programme-wise Placements</h3>
+        <table class="ui celled table">
+            <thead>
+                <tr>
+                    <th>Programme</th>
+                    <th>Students Placed</th>
+                    <th>Avg Package (LPA)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in stats.programme_wise %}
+                    <tr>
+                        <td>{{ row.application__student__programme }}</td>
+                        <td>{{ row.count }}</td>
+                        <td>₹{{ row.avg_package|floatformat:2 }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+
+{# Individual Placement Records #}
+{% if offers and is_officer or is_chairman %}
+    <div class="ui segment">
+        <h3 class="ui header">Placed Students</h3>
+        <table class="ui celled striped table">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Roll No</th>
+                    <th>Company</th>
+                    <th>Position</th>
+                    <th>CTC (LPA)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for offer in offers %}
+                    <tr>
+                        <td>{{ offer.application.student.id.user.get_full_name }}</td>
+                        <td>{{ offer.application.student.id.id }}</td>
+                        <td>{{ offer.application.job_posting.company.name }}</td>
+                        <td>{{ offer.application.job_posting.title }}</td>
+                        <td>₹{{ offer.ctc_offered }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+{% endblock %}
+

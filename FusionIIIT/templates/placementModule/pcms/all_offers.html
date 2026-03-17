@@ -1,0 +1,74 @@
+{% extends 'placementModule/pcms/base_pcms.html' %}
+
+{% block pcms_content %}
+<h2 class="ui header">
+    <i class="handshake icon"></i>
+    <div class="content">
+        All Offers
+        <div class="sub header">Manage placement offers across all companies</div>
+    </div>
+</h2>
+
+<div class="ui divider"></div>
+
+{# Filters #}
+<div class="ui segment">
+    <form class="ui form" method="GET">
+        <div class="inline fields">
+            <label>Filter by Status:</label>
+            <select name="status" class="ui dropdown" onchange="this.form.submit()">
+                <option value="">All</option>
+                {% for val, label in offer_status_choices %}
+                    <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+</div>
+
+{% if offers %}
+    <table class="ui celled striped table">
+        <thead>
+            <tr>
+                <th>Student</th>
+                <th>Roll No</th>
+                <th>Company</th>
+                <th>Position</th>
+                <th>CTC Offered</th>
+                <th>Status</th>
+                <th>Deadline</th>
+                <th>Extended On</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for offer in offers %}
+                <tr>
+                    <td>{{ offer.application.student.id.user.get_full_name }}</td>
+                    <td>{{ offer.application.student.id.id }}</td>
+                    <td>{{ offer.application.job_posting.company.name }}</td>
+                    <td>{{ offer.application.job_posting.title }}</td>
+                    <td>₹{{ offer.ctc_offered }} LPA</td>
+                    <td>
+                        {% if offer.status == 'PENDING' %}
+                            <span class="ui yellow label">Pending</span>
+                        {% elif offer.status == 'ACCEPTED' %}
+                            <span class="ui green label">Accepted</span>
+                        {% elif offer.status == 'REJECTED' %}
+                            <span class="ui grey label">Rejected</span>
+                        {% elif offer.status == 'EXPIRED' %}
+                            <span class="ui red label">Expired</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ offer.response_deadline|date:"M d, Y" }}</td>
+                    <td>{{ offer.extended_at|date:"M d, Y" }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="ui message">
+        <p>No offers found.</p>
+    </div>
+{% endif %}
+{% endblock %}
+

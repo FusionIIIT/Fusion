@@ -1,0 +1,174 @@
+{% extends 'placementModule/pcms/base_pcms.html' %}
+
+{% block pcms_content %}
+<div class="ui grid">
+    <div class="twelve wide column">
+        <h2 class="ui header">
+            <i class="briefcase icon"></i>
+            <div class="content">
+                {{ posting.title }}
+                <div class="sub header">{{ posting.company.name }}</div>
+            </div>
+        </h2>
+    </div>
+    <div class="four wide column right aligned">
+        {% if is_officer or is_chairman %}
+            <a class="ui button" href="{% url 'placement:edit_job_posting' posting.id %}">
+                <i class="edit icon"></i> Edit
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="ui divider"></div>
+
+{# Job details #}
+<div class="ui two column stackable grid">
+    <div class="column">
+        <div class="ui segment">
+            <h4 class="ui header">Job Details</h4>
+            <table class="ui definition table">
+                <tr><td>Company</td><td><a href="{% url 'placement:company_detail' posting.company.id %}">{{ posting.company.name }}</a></td></tr>
+                <tr><td>Type</td><td><span class="ui label">{{ posting.job_type }}</span></td></tr>
+                <tr><td>CTC / Stipend</td><td><strong>₹{{ posting.ctc }} LPA</strong></td></tr>
+                <tr><td>Location</td><td>{{ posting.location|default:"-" }}</td></tr>
+                <tr><td>Deadline</td><td>{{ posting.application_deadline|date:"M d, Y H:i" }}</td></tr>
+                <tr><td>Status</td><td>
+                    {% if posting.is_active and not posting.is_deadline_passed %}
+                        <span class="ui green label">Open</span>
+                    {% elif posting.is_deadline_passed %}
+                        <span class="ui red label">Deadline Passed</span>
+                    {% else %}
+                        <span class="ui grey label">Inactive</span>
+                    {% endif %}
+                </td></tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="column">
+        <div class="ui segment">
+            <h4 class="ui header">Eligibility Criteria</h4>
+            <table class="ui definition table">
+                <tr><td>Min CPI</td><td>{{ posting.min_cpi }}</td></tr>
+                <tr><td>Programmes</td><td>{{ posting.eligible_programmes|default:"All" }}</td></tr>
+                <tr><td>Branches</td><td>{{ posting.eligible_branches|default:"All" }}</td></tr>
+                <tr><td>Batch</td><td>
+                    {% if posting.eligible_batch_from and posting.eligible_batch_to %}
+                        {{ posting.eligible_batch_from }} - {{ posting.eligible_batch_to }}
+                    {% elif posting.eligible_batch_from %}
+                        From {{ posting.eligible_batch_from }}
+                    {% elif posting.eligible_batch_to %}
+                        Up to {{ posting.eligible_batch_to }}
+                    {% else %}
+                        All
+                    {% endif %}
+                </td></tr>
+                <tr><td>Backlog Allowed</td><td>{% if posting.backlog_allowed %}Yes{% else %}No{% endif %}</td></tr>
+            </table>
+            {% if posting.required_skills.all %}
+                <h5>Required Skills:</h5>
+                {% for skill in posting.required_skills.all %}
+                    <span class="ui label">{{ skill.skill }}</span>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{# Description #}
+<div class="ui segment">
+    <h4 class="ui header">Role Description</h4>
+    <p>{{ posting.description|linebreaks }}</p>
+    {% if posting.bond_details %}
+        <h5>Bond Details</h5>
+        <p>{{ posting.bond_details }}</p>
+    {% endif %}
+    {% if posting.attached_file %}
+        <p><a href="{{ posting.attached_file.url }}" target="_blank"><i class="file icon"></i> Download Attachment</a></p>
+    {% endif %}
+</div>
+
+{# Student Application Section #}
+{% if is_student %}
+    <div class="ui segment">
+        {% if eligibility_result %}
+            {% if eligibility_result.eligible %}
+                {% if has_applied %}
+                    <div class="ui info message">
+                        <div class="header">Already Applied</div>
+                        <p>You have already applied for this position. Status: <strong>{{ application.status }}</strong></p>
+                    </div>
+                {% else %}
+                    <div class="ui positive message">
+                        <div class="header">You are eligible!</div>
+                        <p>You meet all eligibility criteria for this position.</p>
+                    </div>
+                    <form method="POST" action="{% url 'placement:apply_for_job' posting.id %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="field">
+                            <label>Upload Resume (optional)</label>
+                            <input type="file" name="resume" accept=".pdf,.doc,.docx">
+                        </div>
+                        <button class="ui primary button" type="submit">
+                            <i class="paper plane icon"></i> Apply Now
+                        </button>
+                    </form>
+                {% endif %}
+            {% else %}
+                <div class="ui negative message">
+                    <div class="header">Not Eligible</div>
+                    <ul>
+                        {% for reason in eligibility_result.reasons %}
+                            <li>{{ reason }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+{% endif %}
+
+{# TPO Application Management #}
+{% if is_officer or is_chairman %}
+    <div class="ui divider"></div>
+    <h3 class="ui header">Applications ({{ posting.total_applications }})</h3>
+
+    <div class="ui buttons">
+        <a class="ui button" href="{% url 'placement:manage_applications' posting.id %}">
+            <i class="list icon"></i> Manage Applications
+        </a>
+        <a class="ui button" href="{% url 'placement:schedule_interview' posting.id %}">
+            <i class="calendar icon"></i> Schedule Interview
+        </a>
+    </div>
+
+    {% if applications %}
+        <table class="ui celled table" style="margin-top: 15px;">
+            <thead>
+                <tr>
+                    <th>Roll No</th>
+                    <th>Name</th>
+                    <th>Programme</th>
+                    <th>CPI</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for app in applications %}
+                    <tr>
+                        <td>{{ app.student.id.id }}</td>
+                        <td>{{ app.student.id.user.get_full_name }}</td>
+                        <td>{{ app.student.programme }}</td>
+                        <td>{{ app.student.cpi }}</td>
+                        <td><span class="ui label">{{ app.status }}</span></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p style="margin-top:10px;">No applications yet.</p>
+    {% endif %}
+{% endif %}
+{% endblock %}
+

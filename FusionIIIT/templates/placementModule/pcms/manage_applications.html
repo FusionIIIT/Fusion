@@ -1,0 +1,146 @@
+{% extends 'placementModule/pcms/base_pcms.html' %}
+
+{% block pcms_content %}
+<h2 class="ui header">
+    <i class="list icon"></i>
+    <div class="content">
+        Manage Applications - {{ posting.title }}
+        <div class="sub header">{{ posting.company.name }}</div>
+    </div>
+</h2>
+
+<div class="ui divider"></div>
+
+{# Filters #}
+<div class="ui segment">
+    <form class="ui form" method="GET">
+        <div class="inline fields">
+            <label>Filter by Status:</label>
+            <select name="status" class="ui dropdown" onchange="this.form.submit()">
+                <option value="">All</option>
+                {% for val, label in status_choices %}
+                    <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+</div>
+
+{# Bulk Shortlist #}
+{% if applications %}
+    <form method="POST" action="{% url 'placement:bulk_shortlist' posting.id %}" id="bulk-form">
+        {% csrf_token %}
+        <table class="ui celled striped table">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="select-all"></th>
+                    <th>Roll No</th>
+                    <th>Name</th>
+                    <th>Programme</th>
+                    <th>Department</th>
+                    <th>CPI</th>
+                    <th>Status</th>
+                    <th>Applied On</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for app in applications %}
+                    <tr>
+                        <td>
+                            {% if app.status == 'APPLIED' %}
+                                <input type="checkbox" name="application_ids" value="{{ app.id }}">
+                            {% endif %}
+                        </td>
+                        <td>{{ app.student.id.id }}</td>
+                        <td>{{ app.student.id.user.get_full_name }}</td>
+                        <td>{{ app.student.programme }}</td>
+                        <td>{{ app.student.id.department.name|default:"-" }}</td>
+                        <td>{{ app.student.cpi }}</td>
+                        <td>
+                            {% if app.status == 'APPLIED' %}
+                                <span class="ui blue label">Applied</span>
+                            {% elif app.status == 'SHORTLISTED' %}
+                                <span class="ui teal label">Shortlisted</span>
+                            {% elif app.status == 'INTERVIEW_SCHEDULED' %}
+                                <span class="ui orange label">Interview</span>
+                            {% elif app.status == 'OFFER_EXTENDED' %}
+                                <span class="ui purple label">Offer Extended</span>
+                            {% elif app.status == 'OFFER_ACCEPTED' %}
+                                <span class="ui green label">Accepted</span>
+                            {% elif app.status == 'REJECTED' %}
+                                <span class="ui red label">Rejected</span>
+                            {% else %}
+                                <span class="ui label">{{ app.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ app.applied_at|date:"M d, Y" }}</td>
+                        <td>
+                            {# Individual status update #}
+                            <div class="ui tiny buttons">
+                                <button type="button" class="ui tiny button status-btn"
+                                        data-app-id="{{ app.id }}"
+                                        onclick="updateStatus({{ app.id }})">
+                                    Update
+                                </button>
+                                {% if app.status == 'OFFER_EXTENDED' or app.status == 'INTERVIEW_SCHEDULED' %}
+                                    <a class="ui tiny primary button"
+                                       href="{% url 'placement:extend_offer' app.id %}">
+                                        Extend Offer
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <button type="submit" class="ui teal button">
+            <i class="check icon"></i> Bulk Shortlist Selected
+        </button>
+    </form>
+{% else %}
+    <div class="ui message">
+        <p>No applications found.</p>
+    </div>
+{% endif %}
+
+{# Modal for individual status update #}
+<div class="ui modal" id="status-modal">
+    <div class="header">Update Application Status</div>
+    <div class="content">
+        <form class="ui form" method="POST" id="status-form">
+            {% csrf_token %}
+            <input type="hidden" name="application_id" id="modal-app-id">
+            <div class="field">
+                <label>New Status</label>
+                <select name="new_status">
+                    {% for val, label in status_choices %}
+                        <option value="{{ val }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label>Remarks</label>
+                <textarea name="remarks" rows="3"></textarea>
+            </div>
+            <button class="ui primary button" type="submit">Update</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('#select-all').change(function() {
+            $('input[name="application_ids"]').prop('checked', this.checked);
+        });
+    });
+
+    function updateStatus(appId) {
+        $('#modal-app-id').val(appId);
+        $('#status-modal').modal('show');
+    }
+</script>
+{% endblock %}
+

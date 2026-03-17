@@ -1,0 +1,76 @@
+{% extends 'placementModule/pcms/base_pcms.html' %}
+
+{% block pcms_content %}
+<div class="ui grid">
+    <div class="twelve wide column">
+        <h2 class="ui header">
+            <i class="building icon"></i>
+            <div class="content">Registered Companies</div>
+        </h2>
+    </div>
+    <div class="four wide column right aligned">
+        {% if is_officer or is_chairman %}
+            <a class="ui primary button" href="{% url 'placement:register_company' %}">
+                <i class="plus icon"></i> Register Company
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="ui divider"></div>
+
+{% if companies %}
+    <table class="ui celled striped table">
+        <thead>
+            <tr>
+                <th>Company Name</th>
+                <th>Domain</th>
+                <th>Contact Email</th>
+                <th>Status</th>
+                {% if is_officer or is_chairman %}
+                    <th>Actions</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for company in companies %}
+                <tr>
+                    <td>
+                        <a href="{% url 'placement:company_detail' company.id %}">
+                            <strong>{{ company.name }}</strong>
+                        </a>
+                    </td>
+                    <td>{{ company.domain|default:"-" }}</td>
+                    <td>{{ company.contact_email }}</td>
+                    <td>
+                        {% if company.approval_status == 'APPROVED' %}
+                            <span class="ui green label">Approved</span>
+                        {% elif company.approval_status == 'PENDING' %}
+                            <span class="ui yellow label">Pending</span>
+                        {% else %}
+                            <span class="ui red label">Rejected</span>
+                        {% endif %}
+                    </td>
+                    {% if is_officer or is_chairman %}
+                        <td>
+                            {% if company.approval_status == 'PENDING' %}
+                                <form method="POST" action="{% url 'placement:approve_company' company.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" name="action" value="approve" class="ui tiny green button">Approve</button>
+                                    <button type="submit" name="action" value="reject" class="ui tiny red button">Reject</button>
+                                </form>
+                            {% endif %}
+                            <a href="{% url 'placement:company_detail' company.id %}" class="ui tiny button">View</a>
+                        </td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="ui message">
+        <p>No companies registered yet.</p>
+    </div>
+{% endif %}
+{% endblock %}
+

@@ -1,0 +1,92 @@
+{% extends 'placementModule/pcms/base_pcms.html' %}
+
+{% block pcms_content %}
+<h2 class="ui header">
+    <i class="calendar icon"></i>
+    <div class="content">
+        Interview Details
+        <div class="sub header">{{ interview.job_posting.company.name }} - {{ interview.job_posting.title }}</div>
+    </div>
+</h2>
+
+<div class="ui divider"></div>
+
+<div class="ui segment">
+    <div class="ui list">
+        <div class="item"><i class="calendar icon"></i> <strong>Date:</strong> {{ interview.date|date:"M d, Y" }}</div>
+        <div class="item"><i class="clock icon"></i> <strong>Time:</strong> {{ interview.time_slot|time:"H:i" }}</div>
+        <div class="item"><i class="desktop icon"></i> <strong>Mode:</strong> <span class="ui label">{{ interview.mode }}</span></div>
+        {% if interview.venue_or_link %}
+            <div class="item"><i class="map marker icon"></i> <strong>Venue / Link:</strong> {{ interview.venue_or_link }}</div>
+        {% endif %}
+        {% if interview.description %}
+            <div class="item"><i class="info circle icon"></i> <strong>Instructions:</strong> {{ interview.description }}</div>
+        {% endif %}
+    </div>
+</div>
+
+<h3 class="ui header">Candidates ({{ panelists.count }})</h3>
+
+{% if panelists %}
+    <table class="ui celled striped table">
+        <thead>
+            <tr>
+                <th>Roll No</th>
+                <th>Name</th>
+                <th>Programme</th>
+                <th>CPI</th>
+                <th>Result</th>
+                <th>Remarks</th>
+                {% if is_officer or is_chairman %}
+                    <th>Actions</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for panel in panelists %}
+                <tr>
+                    <td>{{ panel.application.student.id.id }}</td>
+                    <td>{{ panel.application.student.id.user.get_full_name }}</td>
+                    <td>{{ panel.application.student.programme }}</td>
+                    <td>{{ panel.application.student.cpi }}</td>
+                    <td>
+                        {% if panel.result == 'SELECTED' %}
+                            <span class="ui green label">Selected</span>
+                        {% elif panel.result == 'REJECTED' %}
+                            <span class="ui red label">Rejected</span>
+                        {% elif panel.result == 'WAITLISTED' %}
+                            <span class="ui orange label">Waitlisted</span>
+                        {% else %}
+                            <span class="ui grey label">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ panel.remarks|default:"-" }}</td>
+                    {% if is_officer or is_chairman %}
+                        <td>
+                            <form method="POST" class="ui form" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="panel_id" value="{{ panel.id }}">
+                                <div class="ui tiny buttons">
+                                    <button type="submit" name="result" value="SELECTED" class="ui tiny green button">Select</button>
+                                    <button type="submit" name="result" value="REJECTED" class="ui tiny red button">Reject</button>
+                                    <button type="submit" name="result" value="WAITLISTED" class="ui tiny orange button">Waitlist</button>
+                                </div>
+                                <input type="hidden" name="remarks" value="">
+                            </form>
+                        </td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="ui message">
+        <p>No candidates assigned to this interview.</p>
+    </div>
+{% endif %}
+
+<a class="ui button" href="{% url 'placement:schedule_interview' interview.job_posting.id %}">
+    <i class="arrow left icon"></i> Back to Interviews
+</a>
+{% endblock %}
+

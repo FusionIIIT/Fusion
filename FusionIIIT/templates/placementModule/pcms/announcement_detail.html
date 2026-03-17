@@ -1,0 +1,50 @@
+{% extends 'placementModule/pcms/base_pcms.html' %}
+
+{% block pcms_content %}
+<h2 class="ui header">
+    <i class="bullhorn icon"></i>
+    <div class="content">
+        {{ announcement.title }}
+        <div class="sub header">
+            <span class="ui label">{{ announcement.get_announcement_type_display }}</span>
+            {{ announcement.created_at|date:"M d, Y H:i" }}
+            {% if announcement.created_by %}
+                | By {{ announcement.created_by.get_full_name }}
+            {% endif %}
+        </div>
+    </div>
+</h2>
+
+<div class="ui divider"></div>
+
+{% if announcement.target_audience %}
+    <div class="ui info message">
+        <strong>Target Audience:</strong> {{ announcement.target_audience }}
+    </div>
+{% endif %}
+
+<div class="ui segment">
+    {{ announcement.content|linebreaks }}
+</div>
+
+{% if announcement.attached_file %}
+    <div class="ui segment">
+        <a href="{{ announcement.attached_file.url }}" target="_blank">
+            <i class="file icon"></i> Download Attachment
+        </a>
+    </div>
+{% endif %}
+
+<a class="ui button" href="{% url 'placement:announcement_list' %}">
+    <i class="arrow left icon"></i> Back to Announcements
+</a>
+
+{% if is_officer or is_chairman %}
+    <a class="ui red button"
+       href="{% url 'placement:delete_announcement' announcement.id %}"
+       onclick="return confirm('Remove this announcement?')">
+        <i class="trash icon"></i> Remove Announcement
+    </a>
+{% endif %}
+{% endblock %}
+

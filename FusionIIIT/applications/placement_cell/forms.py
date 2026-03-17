@@ -2,12 +2,13 @@
 from datetime import *
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.utils import timezone as tz
 
 from applications.academic_information.models import Constants as Con
 from applications.globals.models import DepartmentInfo
 from django.forms import CheckboxSelectMultiple, MultiWidget, Select
 
-from .models import Constants, NotifyStudent, Skill, Role
+from .models import Constants, NotifyStudent, Skill, Role, Company, JobPosting, Announcement
 
 class AddProfile(forms.ModelForm):
     """
@@ -727,3 +728,278 @@ class ManageHigherRecord(forms.Form):
                                                               'class': 'field'}),
                                 label="company", required=False)
     test_score = forms.IntegerField(label="test_score", required=False)
+
+
+# =============================================
+# PCMS NEW FORMS
+# =============================================
+
+class CompanyRegistrationForm(forms.Form):
+    """
+    Form for TPO to register a recruiting company on the system.
+    """
+    name = forms.CharField(
+        max_length=200,
+        widget=forms.TextInput(attrs={'class': 'field', 'placeholder': 'Company Name'}),
+        label="Company Name"
+    )
+    website = forms.URLField(
+        max_length=300, required=False,
+        widget=forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'https://example.com'}),
+        label="Website"
+    )
+    description = forms.CharField(
+        max_length=2000, required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'About the company'}),
+        label="Description"
+    )
+    domain = forms.CharField(
+        max_length=200, required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., IT, Finance'}),
+        label="Industry Domain"
+    )
+    contact_person_name = forms.CharField(
+        max_length=200, required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Contact Person'}),
+        label="Contact Person Name"
+    )
+    contact_email = forms.EmailField(
+        max_length=200,
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'hr@company.com'}),
+        label="Contact Email"
+    )
+    contact_phone = forms.CharField(
+        max_length=20, required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone Number'}),
+        label="Contact Phone"
+    )
+    address = forms.CharField(
+        max_length=500, required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Company Address'}),
+        label="Address"
+    )
+    logo = forms.ImageField(required=False, label="Company Logo")
+
+
+class JobPostingForm(forms.Form):
+    """
+    Form for TPO to create a job posting with eligibility criteria.
+    """
+    company = forms.ModelChoiceField(
+        queryset=Company.objects.filter(approval_status='APPROVED'),
+        label="Company",
+        widget=forms.Select(attrs={'style': 'height:45px'})
+    )
+    title = forms.CharField(
+        max_length=200,
+        widget=forms.TextInput(attrs={'class': 'field', 'placeholder': 'Job Title / Role'}),
+        label="Job Title"
+    )
+    description = forms.CharField(
+        max_length=3000,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Role description'}),
+        label="Description"
+    )
+    job_type = forms.ChoiceField(
+        choices=Constants.JOB_TYPE,
+        widget=forms.Select(attrs={'style': 'height:45px'}),
+        label="Job Type"
+    )
+    location = forms.CharField(
+        max_length=200, required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Job Location'}),
+        label="Location"
+    )
+    ctc = forms.DecimalField(
+        max_digits=10, decimal_places=2,
+        widget=forms.NumberInput(attrs={'min': 0, 'step': 0.25, 'placeholder': 'CTC in LPA'}),
+        label="CTC / Stipend (LPA)"
+    )
+    bond_details = forms.CharField(
+        max_length=500, required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Bond details if any'}),
+        label="Bond Details"
+    )
+
+    # Eligibility
+    min_cpi = forms.FloatField(
+        required=False, initial=0.0,
+        widget=forms.NumberInput(attrs={'min': 0, 'max': 10, 'step': 0.01}),
+        label="Minimum CPI"
+    )
+    eligible_programmes = forms.MultipleChoiceField(
+        choices=[
+            ('B.Tech', 'B.Tech'), ('M.Tech', 'M.Tech'),
+            ('B.Des', 'B.Des'), ('M.Des', 'M.Des'), ('PhD', 'PhD'),
+        ],
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+        label="Eligible Programmes"
+    )
+    eligible_branches = forms.MultipleChoiceField(
+        choices=[
+            ('CSE', 'CSE'), ('ECE', 'ECE'), ('ME', 'ME'),
+            ('SM', 'SM'), ('DESIGN', 'Design'),
+            ('CAD/CAM', 'CAD/CAM'), ('MANUFACTURING', 'Manufacturing'),
+            ('MECHATRONICS', 'Mechatronics'), ('NS', 'NS'),
+        ],
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+        label="Eligible Branches"
+    )
+    eligible_batch_from = forms.IntegerField(
+        required=False,
+        widget=forms.NumberInput(attrs={'placeholder': 'From Year (e.g., 2022)'}),
+        label="Batch From"
+    )
+    eligible_batch_to = forms.IntegerField(
+        required=False,
+        widget=forms.NumberInput(attrs={'placeholder': 'To Year (e.g., 2026)'}),
+        label="Batch To"
+    )
+    required_skills = forms.ModelMultipleChoiceField(
+        required=False,
+        queryset=Skill.objects.all(),
+        widget=forms.SelectMultiple(attrs={'class': 'form-control'}),
+        label="Required Skills"
+    )
+    backlog_allowed = forms.BooleanField(required=False, label="Backlog Allowed")
+
+    application_deadline = forms.DateTimeField(
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        label="Application Deadline"
+    )
+    attached_file = forms.FileField(required=False, label="Attachment (JD, etc.)")
+
+    def clean(self):
+        cleaned_data = super().clean()
+        deadline = cleaned_data.get('application_deadline')
+        if deadline and deadline < tz.now():
+            raise forms.ValidationError("Application deadline must be in the future.")
+        batch_from = cleaned_data.get('eligible_batch_from')
+        batch_to = cleaned_data.get('eligible_batch_to')
+        if batch_from and batch_to and batch_from > batch_to:
+            raise forms.ValidationError("Batch 'From' year must be before 'To' year.")
+        return cleaned_data
+
+
+class JobOfferForm(forms.Form):
+    """
+    Form for extending a job offer to a student.
+    """
+    ctc_offered = forms.DecimalField(
+        max_digits=10, decimal_places=2,
+        widget=forms.NumberInput(attrs={'min': 0, 'step': 0.25, 'placeholder': 'CTC in LPA'}),
+        label="CTC Offered (LPA)"
+    )
+    designation_offered = forms.CharField(
+        max_length=200, required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Designation'}),
+        label="Designation Offered"
+    )
+    joining_date = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={'class': 'datepicker', 'type': 'date'}),
+        label="Joining Date"
+    )
+    offer_letter = forms.FileField(required=False, label="Offer Letter")
+    response_deadline = forms.DateTimeField(
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        label="Response Deadline"
+    )
+
+    def clean_response_deadline(self):
+        deadline = self.cleaned_data.get('response_deadline')
+        if deadline and deadline < tz.now():
+            raise forms.ValidationError("Response deadline must be in the future.")
+        return deadline
+
+
+class AnnouncementForm(forms.Form):
+    """
+    Form for TPO / Placement Chairman to publish announcements.
+    """
+    title = forms.CharField(
+        max_length=200,
+        widget=forms.TextInput(attrs={'class': 'field', 'placeholder': 'Announcement Title'}),
+        label="Title"
+    )
+    content = forms.CharField(
+        max_length=3000,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 6, 'placeholder': 'Announcement content'}),
+        label="Content"
+    )
+    announcement_type = forms.ChoiceField(
+        choices=Constants.ANNOUNCEMENT_TYPE,
+        widget=forms.Select(attrs={'style': 'height:45px'}),
+        label="Type"
+    )
+    target_audience = forms.CharField(
+        max_length=200, required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'ALL, B.Tech, CSE, etc.'}),
+        label="Target Audience"
+    )
+    attached_file = forms.FileField(required=False, label="Attachment")
+
+
+class InterviewScheduleForm(forms.Form):
+    """
+    Form for scheduling interviews for a job posting.
+    """
+    date = forms.DateField(
+        widget=forms.DateInput(attrs={'class': 'datepicker', 'type': 'date'}),
+        label="Interview Date"
+    )
+    time_slot = forms.TimeField(
+        widget=forms.TimeInput(attrs={'type': 'time'}),
+        label="Time Slot"
+    )
+    mode = forms.ChoiceField(
+        choices=Constants.INTERVIEW_MODE,
+        widget=forms.Select(attrs={'style': 'height:45px'}),
+        label="Mode"
+    )
+    venue_or_link = forms.CharField(
+        max_length=500, required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Venue / Meeting Link'}),
+        label="Venue / Link"
+    )
+    description = forms.CharField(
+        max_length=1000, required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        label="Description"
+    )
+
+
+class ReportFilterForm(forms.Form):
+    """
+    Form for filtering placement reports and analytics.
+    """
+    year = forms.IntegerField(
+        required=False,
+        widget=forms.NumberInput(attrs={'placeholder': 'Year (e.g., 2025)'}),
+        label="Year"
+    )
+    department = forms.ChoiceField(
+        choices=[('', 'All Departments')] + list(Constants.BTECH_DEP) + list(Constants.MTECH_DEP),
+        required=False,
+        widget=forms.Select(attrs={'style': 'height:45px'}),
+        label="Department"
+    )
+    programme = forms.ChoiceField(
+        choices=[
+            ('', 'All Programmes'),
+            ('B.Tech', 'B.Tech'), ('M.Tech', 'M.Tech'),
+            ('B.Des', 'B.Des'), ('M.Des', 'M.Des'), ('PhD', 'PhD'),
+        ],
+        required=False,
+        widget=forms.Select(attrs={'style': 'height:45px'}),
+        label="Programme"
+    )
+    job_type = forms.ChoiceField(
+        choices=[('', 'All Types')] + list(Constants.JOB_TYPE),
+        required=False,
+        widget=forms.Select(attrs={'style': 'height:45px'}),
+        label="Job Type"
+    )
+

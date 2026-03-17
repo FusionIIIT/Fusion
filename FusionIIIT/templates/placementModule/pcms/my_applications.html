@@ -1,0 +1,100 @@
+{% extends 'placementModule/pcms/base_pcms.html' %}
+
+{% block pcms_content %}
+<h2 class="ui header">
+    <i class="file alternate icon"></i>
+    <div class="content">
+        My Applications
+        <div class="sub header">Track your placement application status</div>
+    </div>
+</h2>
+
+<div class="ui divider"></div>
+
+{# Summary Stats #}
+<div class="ui small statistics">
+    <div class="statistic">
+        <div class="value">{{ summary.total }}</div>
+        <div class="label">Total</div>
+    </div>
+    <div class="statistic">
+        <div class="value">{{ summary.applied }}</div>
+        <div class="label">Applied</div>
+    </div>
+    <div class="statistic">
+        <div class="value">{{ summary.shortlisted }}</div>
+        <div class="label">Shortlisted</div>
+    </div>
+    <div class="statistic">
+        <div class="value">{{ summary.interview_scheduled }}</div>
+        <div class="label">Interview</div>
+    </div>
+    <div class="statistic">
+        <div class="value">{{ summary.offer_extended }}</div>
+        <div class="label">Offer</div>
+    </div>
+    <div class="statistic">
+        <div class="value">{{ summary.offer_accepted }}</div>
+        <div class="label">Accepted</div>
+    </div>
+</div>
+
+<div class="ui divider"></div>
+
+{% if summary.applications %}
+    <table class="ui celled striped table">
+        <thead>
+            <tr>
+                <th>Company</th>
+                <th>Position</th>
+                <th>CTC (LPA)</th>
+                <th>Applied On</th>
+                <th>Status</th>
+                <th>Remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for app in summary.applications %}
+                <tr>
+                    <td>
+                        <a href="{% url 'placement:company_detail' app.job_posting.company.id %}">
+                            {{ app.job_posting.company.name }}
+                        </a>
+                    </td>
+                    <td>
+                        <a href="{% url 'placement:job_posting_detail' app.job_posting.id %}">
+                            {{ app.job_posting.title }}
+                        </a>
+                    </td>
+                    <td>₹{{ app.job_posting.ctc }}</td>
+                    <td>{{ app.applied_at|date:"M d, Y" }}</td>
+                    <td>
+                        {% if app.status == 'APPLIED' %}
+                            <span class="ui blue label">Applied</span>
+                        {% elif app.status == 'SHORTLISTED' %}
+                            <span class="ui teal label">Shortlisted</span>
+                        {% elif app.status == 'INTERVIEW_SCHEDULED' %}
+                            <span class="ui orange label">Interview Scheduled</span>
+                        {% elif app.status == 'OFFER_EXTENDED' %}
+                            <span class="ui purple label">Offer Extended</span>
+                        {% elif app.status == 'OFFER_ACCEPTED' %}
+                            <span class="ui green label">Offer Accepted</span>
+                        {% elif app.status == 'OFFER_REJECTED' %}
+                            <span class="ui grey label">Offer Rejected</span>
+                        {% elif app.status == 'REJECTED' %}
+                            <span class="ui red label">Rejected</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ app.remarks|default:"-" }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="ui message">
+        <p>You haven't applied for any positions yet.</p>
+        <a class="ui primary button" href="{% url 'placement:job_posting_list' %}">Browse Job Postings</a>
+    </div>
+{% endif %}
+{% endblock %}
+

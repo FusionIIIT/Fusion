@@ -38,11 +38,36 @@ def leave_module_notif(sender, recipient, type, date=None):
 
 
 def placement_cell_notif(sender, recipient, type):
-    url = 'placement:placement'
+    url = 'placement:pcms_dashboard'
     module = 'Placement Cell'
     sender = sender
     recipient = recipient
     verb = ''
+
+    if type == 'new_job_posting':
+        verb = "A new job opportunity has been posted. Check it out!"
+        url = 'placement:job_posting_list'
+    elif type == 'new_application':
+        verb = "A student has submitted a new job application."
+        url = 'placement:pcms_dashboard'
+    elif type == 'application_status_update':
+        verb = "Your application status has been updated."
+        url = 'placement:my_applications'
+    elif type == 'shortlisted':
+        verb = "Congratulations! You have been shortlisted."
+        url = 'placement:my_applications'
+    elif type == 'interview_scheduled':
+        verb = "An interview has been scheduled for you."
+        url = 'placement:my_applications'
+    elif type == 'offer_extended':
+        verb = "A job offer has been extended to you!"
+        url = 'placement:my_offers'
+    elif type == 'offer_accepted':
+        verb = "A student has accepted a job offer."
+        url = 'placement:all_offers'
+    elif type == 'announcement':
+        verb = "A new placement announcement has been published."
+        url = 'placement:announcement_list'
 
     notify.send(sender=sender, recipient=recipient,
                 url=url, module=module, verb=verb)

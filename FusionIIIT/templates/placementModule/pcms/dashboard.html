@@ -1,0 +1,201 @@
+{% extends 'placementModule/pcms/base_pcms.html' %}
+
+{% block pcms_content %}
+<h2 class="ui header">
+    <i class="dashboard icon"></i>
+    <div class="content">
+        Placement Cell Dashboard
+        <div class="sub header">Placement Cell Management System</div>
+    </div>
+</h2>
+
+<div class="ui divider"></div>
+
+{% if is_student %}
+    {# Student Dashboard #}
+    <div class="ui four stackable cards">
+        <div class="ui card">
+            <div class="content">
+                <div class="header"><i class="briefcase icon"></i> Active Jobs</div>
+                <div class="description">
+                    <h2 class="ui header">{{ active_postings|default:"0" }}</h2>
+                </div>
+            </div>
+            <a class="ui bottom attached button" href="{% url 'placement:job_posting_list' %}">
+                <i class="eye icon"></i> Browse Jobs
+            </a>
+        </div>
+
+        <div class="ui card">
+            <div class="content">
+                <div class="header"><i class="file alternate icon"></i> My Applications</div>
+                <div class="description">
+                    <h2 class="ui header">{{ my_apps|default:"0" }}</h2>
+                </div>
+            </div>
+            <a class="ui bottom attached button" href="{% url 'placement:my_applications' %}">
+                <i class="eye icon"></i> View Applications
+            </a>
+        </div>
+
+        <div class="ui card">
+            <div class="content">
+                <div class="header"><i class="gift icon"></i> Pending Offers</div>
+                <div class="description">
+                    <h2 class="ui header">{{ my_offers_count|default:"0" }}</h2>
+                </div>
+            </div>
+            <a class="ui bottom attached button" href="{% url 'placement:my_offers' %}">
+                <i class="eye icon"></i> View Offers
+            </a>
+        </div>
+
+        <div class="ui card">
+            <div class="content">
+                <div class="header"><i class="bullhorn icon"></i> Announcements</div>
+                <div class="description">
+                    <h2 class="ui header">{{ recent_announcements|length|default:"0" }}</h2>
+                </div>
+            </div>
+            <a class="ui bottom attached button" href="{% url 'placement:announcement_list' %}">
+                <i class="eye icon"></i> View All
+            </a>
+        </div>
+    </div>
+
+    {% if recent_announcements %}
+        <h3 class="ui header">Recent Announcements</h3>
+        <div class="ui relaxed divided list">
+            {% for ann in recent_announcements %}
+                <div class="item">
+                    <i class="bullhorn icon"></i>
+                    <div class="content">
+                        <a class="header" href="{% url 'placement:announcement_detail' ann.id %}">{{ ann.title }}</a>
+                        <div class="description">
+                            <span class="ui label">{{ ann.announcement_type }}</span>
+                            {{ ann.created_at|date:"M d, Y" }}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+{% elif is_officer or is_chairman %}
+    {# TPO / Chairman Dashboard #}
+    <div class="ui six stackable cards">
+        <div class="ui card blue">
+            <div class="content">
+                <div class="header"><i class="building icon"></i> Companies</div>
+                <div class="description">
+                    <h2 class="ui header">{{ total_companies|default:"0" }}</h2>
+                    {% if pending_companies %}
+                        <span class="ui red label">{{ pending_companies }} pending</span>
+                    {% endif %}
+                </div>
+            </div>
+            <a class="ui bottom attached blue button" href="{% url 'placement:company_list' %}">
+                <i class="eye icon"></i> Manage
+            </a>
+        </div>
+
+        <div class="ui card teal">
+            <div class="content">
+                <div class="header"><i class="briefcase icon"></i> Active Postings</div>
+                <div class="description">
+                    <h2 class="ui header">{{ active_postings|default:"0" }}</h2>
+                </div>
+            </div>
+            <a class="ui bottom attached teal button" href="{% url 'placement:job_posting_list' %}">
+                <i class="eye icon"></i> Manage
+            </a>
+        </div>
+
+        <div class="ui card olive">
+            <div class="content">
+                <div class="header"><i class="file alternate icon"></i> Applications</div>
+                <div class="description">
+                    <h2 class="ui header">{{ total_applications|default:"0" }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="ui card orange">
+            <div class="content">
+                <div class="header"><i class="clock icon"></i> Pending Offers</div>
+                <div class="description">
+                    <h2 class="ui header">{{ pending_offers|default:"0" }}</h2>
+                </div>
+            </div>
+            <a class="ui bottom attached orange button" href="{% url 'placement:all_offers' %}">
+                <i class="eye icon"></i> View
+            </a>
+        </div>
+
+        <div class="ui card green">
+            <div class="content">
+                <div class="header"><i class="check circle icon"></i> Accepted Offers</div>
+                <div class="description">
+                    <h2 class="ui header">{{ accepted_offers|default:"0" }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="ui card violet">
+            <div class="content">
+                <div class="header"><i class="chart bar icon"></i> Reports</div>
+                <div class="description">
+                    <p>Analytics & Stats</p>
+                </div>
+            </div>
+            <a class="ui bottom attached violet button" href="{% url 'placement:placement_reports' %}">
+                <i class="chart bar icon"></i> View
+            </a>
+        </div>
+    </div>
+
+    <div class="ui divider"></div>
+
+    <div class="ui grid">
+        <div class="eight wide column">
+            <h3 class="ui header">Quick Actions</h3>
+            <div class="ui vertical fluid menu">
+                <a class="item" href="{% url 'placement:register_company' %}">
+                    <i class="plus icon"></i> Register New Company
+                </a>
+                <a class="item" href="{% url 'placement:create_job_posting' %}">
+                    <i class="plus icon"></i> Create Job Posting
+                </a>
+                <a class="item" href="{% url 'placement:create_announcement' %}">
+                    <i class="plus icon"></i> Create Announcement
+                </a>
+            </div>
+        </div>
+
+        <div class="eight wide column">
+            <h3 class="ui header">Recent Applications</h3>
+            {% if recent_applications %}
+                <div class="ui relaxed divided list">
+                    {% for app in recent_applications %}
+                        <div class="item">
+                            <div class="content">
+                                <div class="header">
+                                    {{ app.student.id.user.get_full_name }} - {{ app.job_posting.title }}
+                                </div>
+                                <div class="description">
+                                    {{ app.job_posting.company.name }} |
+                                    <span class="ui mini label">{{ app.status }}</span>
+                                    {{ app.applied_at|date:"M d, Y" }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No recent applications.</p>
+            {% endif %}
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+

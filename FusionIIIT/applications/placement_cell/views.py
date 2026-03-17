@@ -35,12 +35,20 @@ from .forms import (AddAchievement, AddChairmanVisit, AddCourse, AddEducation,
                     AddPublication, AddSchedule, AddSkill, ManageHigherRecord,
                     ManagePbiRecord, ManagePlacementRecord, SearchHigherRecord,
                     SearchPbiRecord, SearchPlacementRecord,
-                    SearchStudentRecord, SendInvite)
+                    SearchStudentRecord, SendInvite,
+                    CompanyRegistrationForm, JobPostingForm, JobOfferForm,
+                    AnnouncementForm, InterviewScheduleForm, ReportFilterForm)
 
 from .models import (Achievement, ChairmanVisit, Course, Education, Experience, Conference,
                      Has, NotifyStudent, Patent, PlacementRecord, Extracurricular, Reference,
                      PlacementSchedule, PlacementStatus, Project, Publication,
-                     Skill, StudentPlacement, StudentRecord, Role, CompanyDetails,)
+                     Skill, StudentPlacement, StudentRecord, Role, CompanyDetails,
+                     Company, JobPosting, JobApplication, InterviewSchedule,
+                     InterviewPanel, JobOffer, Announcement, PlacementPolicy, Constants as PlacementConstants)
+
+from .utils import (check_eligibility, check_duplicate_application,
+                    check_placement_policy, get_placement_statistics,
+                    get_student_application_summary, expire_pending_offers)
 '''
     @variables:
             user - logged in user
@@ -5807,4 +5815,1191 @@ def placement_visit_save(request):
         except:
             messages.error(request,"Failed to Add Chairman Visit")
             return redirect("/placement/add_placement_visit/")
+
+
+# =============================================
+# PCMS NEW VIEWS
+# =============================================
+
+def _get_user_roles(user):
+    """Helper to determine user's placement roles."""
+    is_chairman = HoldsDesignation.objects.filter(
+        Q(working=user, designation__name="placement chairman")
+    ).exists()
+    is_officer = HoldsDesignation.objects.filter(
+        Q(working=user, designation__name="placement officer")
+    ).exists()
+    is_student = HoldsDesignation.objects.filter(
+        Q(working=user, designation__name="student")
+    ).exists()
+    return is_chairman, is_officer, is_student
+
+
+# ---------- Company Management ----------
+
+@login_required
+def company_list(request):
+    """List all registered companies."""
+    user = request.user
+    is_chairman, is_officer, is_student = _get_user_roles(user)
+
+    if is_officer or is_chairman:
+        companies = Company.objects.all()
+    else:
+        companies = Company.objects.filter(approval_status='APPROVED')
+
+    context = {
+        'companies': companies,
+        'is_chairman': is_chairman,
+        'is_officer': is_officer,
+        'is_student': is_student,
+    }
+    return render(request, 'placementModule/pcms/company_list.html', context)
+
+
+@login_required
+def register_company(request):
+    """TPO registers a new company."""
+    user = request.user
+    is_chairman, is_officer, is_student = _get_user_roles(user)
+
+    if not (is_officer or is_chairman):
+        messages.error(request, "You are not authorized to register companies.")
+        return redirect('/placement/')
+
+    if request.method == 'POST':
+        form = CompanyRegistrationForm(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                company = Company.objects.create(
+                    name=form.cleaned_data['name'],
+                    website=form.cleaned_data.get('website', ''),
+                    description=form.cleaned_data.get('description', ''),
+                    domain=form.cleaned_data.get('domain', ''),
+                    contact_person_name=form.cleaned_data.get('contact_person_name', ''),
+                    contact_email=form.cleaned_data['contact_email'],
+                    contact_phone=form.cleaned_data.get('contact_phone', ''),
+                    address=form.cleaned_data.get('address', ''),
+                    logo=form.cleaned_data.get('logo'),
+                    approval_status='APPROVED',
+                    approved_by=user,
+                    registered_by=user,
+                )
+                messages.success(request, "Company '{}' registered successfully.".format(company.name))
+                return redirect('/placement/companies/')
+            except Exception as e:
+                messages.error(request, "Failed to register company: {}".format(str(e)))
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = CompanyRegistrationForm()
+
+    context = {
+        'form': form,
+        'is_chairman': is_chairman,
+        'is_officer': is_officer,
+    }
+    return render(request, 'placementModule/pcms/register_company.html', context)
+
+
+@login_required
+def approve_company(request, company_id):
+    """TPO approves or rejects a company registration."""
+    user = request.user
+    is_chairman, is_officer, is_student = _get_user_roles(user)
+
+    if not (is_officer or is_chairman):
+        messages.error(request, "Not authorized.")
+        return redirect('/placement/')
+
+    company = get_object_or_404(Company, id=company_id)
+
+    if request.method == 'POST':
+        action = request.POST.get('action', '')
+        if action == 'approve':
+            company.approval_status = 'APPROVED'
+            company.approved_by = user
+            company.save()
+            messages.success(request, "Company '{}' approved.".format(company.name))
+        elif action == 'reject':
+            company.approval_status = 'REJECTED'
+            company.approved_by = user
+            company.save()
+            messages.success(request, "Company '{}' rejected.".format(company.name))
+
+    return redirect('/placement/companies/')
+
+
+@login_required
+def company_detail(request, company_id):
+    """View company details and its job postings."""
+    user = request.user
+    is_chairman, is_officer, is_student = _get_user_roles(user)
+    company = get_object_or_404(Company, id=company_id)
+    job_postings = company.job_postings.filter(is_active=True).order_by('-created_at')
+
+    context = {
+        'company': company,
+        'job_postings': job_postings,
+        'is_chairman': is_chairman,
+        'is_officer': is_officer,
+        'is_student': is_student,
+    }
+    return render(request, 'placementModule/pcms/company_detail.html', context)
+
+
+# ---------- Job Posting Management ----------
+
+@login_required
+def job_posting_list(request):
+    """List all active job postings. Students see only eligible ones."""
+    user = request.user
+    is_chairman, is_officer, is_student = _get_user_roles(user)
+    profile = get_object_or_404(ExtraInfo, Q(user=user))
+
+    if is_officer or is_chairman:
+        postings = JobPosting.objects.select_related('company').all()
+    else:
+        postings = JobPosting.objects.select_related('company').filter(is_active=True)
+
+    # Pagination
+    paginator = Paginator(postings, 10)
+    page = request.GET.get('page', 1)
+    postings_page = paginator.get_page(page)
+
+    context = {
+        'postings': postings_page,
+        'is_chairman': is_chairman,
+        'is_officer': is_officer,
+        'is_student': is_student,
+    }
+    return render(request, 'placementModule/pcms/job_posting_list.html', context)
+
+
+@login_required
+def create_job_posting(request):
+    """TPO creates a new job posting."""
+    user = request.user
+    is_chairman, is_officer, is_student = _get_user_roles(user)
+
+    if not (is_officer or is_chairman):
+        messages.error(request, "Not authorized to create job postings.")
+        return redirect('/placement/')
+
+    if request.method == 'POST':
+        form = JobPostingForm(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                posting = JobPosting.objects.create(
+                    company=form.cleaned_data['company'],
+                    title=form.cleaned_data['title'],
+                    description=form.cleaned_data['description'],
+                    job_type=form.cleaned_data['job_type'],
+                    location=form.cleaned_data.get('location', ''),
+                    ctc=form.cleaned_data['ctc'],
+                    bond_details=form.cleaned_data.get('bond_details', ''),
+                    min_cpi=form.cleaned_data.get('min_cpi', 0.0) or 0.0,
+                    eligible_programmes=','.join(form.cleaned_data.get('eligible_programmes', [])),
+                    eligible_branches=','.join(form.cleaned_data.get('eligible_branches', [])),
+                    eligible_batch_from=form.cleaned_data.get('eligible_batch_from'),
+                    eligible_batch_to=form.cleaned_data.get('eligible_batch_to'),
+                    backlog_allowed=form.cleaned_data.get('backlog_allowed', False),
+                    application_deadline=form.cleaned_data['application_deadline'],
+                    posted_by=user,
+                    attached_file=form.cleaned_data.get('attached_file'),
+                )
+                # Set required skills M2M
+                skills = form.cleaned_data.get('required_skills')
+                if skills:
+                    posting.required_skills.set(skills)
+
+                # Notify eligible students
+                _notify_eligible_students(posting, user)
+
+                messages.success(request, "Job posting '{}' created successfully.".format(posting.title))
+                return redirect('/placement/jobs/')
+            except Exception as e:
+                messages.error(request, "Failed to create job posting: {}".format(str(e)))
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = JobPostingForm()
+
+    context = {
+        'form': form,
+        'is_chairman': is_chairman,
+        'is_officer': is_officer,
+    }
+    return render(request, 'placementModule/pcms/create_job_posting.html', context)
+
+
+def _notify_eligible_students(posting, sender_user):
+    """Send notifications to students who may be eligible for the posting."""
+    try:
+        from notification.views import placement_cell_notif
+        students = Student.objects.select_related('id', 'id__user', 'id__department').all()
+        for student in students:
+            is_eligible, _ = check_eligibility(student, posting)
+            if is_eligible:
+                placement_cell_notif(
+                    sender=sender_user,
+                    recipient=student.id.user,
+                    type='new_job_posting'
+                )
+    except Exception as e:
+        logger.error("Error notifying students: {}".format(str(e)))
+
+
+@login_required
+def job_posting_detail(request, posting_id):
+    """View details of a job posting. Students can check eligibility and apply."""
+    user = request.user
+    is_chairman, is_officer, is_student = _get_user_roles(user)
+    profile = get_object_or_404(ExtraInfo, Q(user=user))
+    posting = get_object_or_404(JobPosting, id=posting_id)
+
+    eligibility_result = None
+    has_applied = False
+    application = None
+
+    if is_student:
+        try:
+            student = Student.objects.get(id=profile)
+            is_eligible, reasons = check_eligibility(student, posting)
+            eligibility_result = {'eligible': is_eligible, 'reasons': reasons}
+            has_applied = check_duplicate_application(student, posting)
+            if has_applied:
+                application = JobApplication.objects.filter(
+                    student=student, job_posting=posting
+                ).first()
+        except Student.DoesNotExist:
+            pass
+
+    applications = None
+    if is_officer or is_chairman:
+        applications = posting.applications.select_related(
+            'student', 'student__id', 'student__id__user'
+        ).all()
+
+    context = {
+        'posting': posting,
+        'eligibility_result': eligibility_result,
+        'has_applied': has_applied,
+        'application': application,
+        'applications': applications,
+        'is_chairman': is_chairman,
+        'is_officer': is_officer,
+        'is_student': is_student,
+    }
+    return render(request, 'placementModule/pcms/job_posting_detail.html', context)
+
+
+@login_required
+def edit_job_posting(request, posting_id):
+    """TPO edits an existing job posting."""
+    user = request.user
+    is_chairman, is_officer, is_student = _get_user_roles(user)
+
+    if not (is_officer or is_chairman):
+        messages.error(request, "Not authorized.")
+        return redirect('/placement/')
+
+    posting = get_object_or_404(JobPosting, id=posting_id)
+
+    if request.method == 'POST':
+        form = JobPostingForm(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                posting.company = form.cleaned_data['company']
+                posting.title = form.cleaned_data['title']
+                posting.description = form.cleaned_data['description']
+                posting.job_type = form.cleaned_data['job_type']
+                posting.location = form.cleaned_data.get('location', '')
+                posting.ctc = form.cleaned_data['ctc']
+                posting.bond_details = form.cleaned_data.get('bond_details', '')
+                posting.min_cpi = form.cleaned_data.get('min_cpi', 0.0) or 0.0
+                posting.eligible_programmes = ','.join(form.cleaned_data.get('eligible_programmes', []))
+                posting.eligible_branches = ','.join(form.cleaned_data.get('eligible_branches', []))
+                posting.eligible_batch_from = form.cleaned_data.get('eligible_batch_from')
+                posting.eligible_batch_to = form.cleaned_data.get('eligible_batch_to')
+                posting.backlog_allowed = form.cleaned_data.get('backlog_allowed', False)
+                posting.application_deadline = form.cleaned_data['application_deadline']
+                if form.cleaned_data.get('attached_file'):
+                    posting.attached_file = form.cleaned_data['attached_file']
+                posting.save()
+
+                skills = form.cleaned_data.get('required_skills')
+                if skills:
+                    posting.required_skills.set(skills)
+
+                messages.success(request, "Job posting updated successfully.")
+                return redirect('/placement/jobs/{}/'.format(posting.id))
+            except Exception as e:
+                messages.error(request, "Failed to update: {}".format(str(e)))
+    else:
+        initial_data = {
+            'company': posting.company,
+            'title': posting.title,
+            'description': posting.description,
+            'job_type': posting.job_type,
+            'location': posting.location,
+            'ctc': posting.ctc,
+            'bond_details': posting.bond_details,
+            'min_cpi': posting.min_cpi,
+            'eligible_programmes': posting.eligible_programmes.split(',') if posting.eligible_programmes else [],
+            'eligible_branches': posting.eligible_branches.split(',') if posting.eligible_branches else [],
+            'eligible_batch_from': posting.eligible_batch_from,
+            'eligible_batch_to': posting.eligible_batch_to,
+            'backlog_allowed': posting.backlog_allowed,
+            'application_deadline': posting.application_deadline,
+            'required_skills': posting.required_skills.all(),
+        }
+        form = JobPostingForm(initial=initial_data)
+
+    context = {
+        'form': form,
+        'posting': posting,
+        'is_chairman': is_chairman,
+        'is_officer': is_officer,
+        'editing': True,
+    }
+    return render(request, 'placementModule/pcms/create_job_posting.html', context)
+
+
+@login_required
+def toggle_job_posting(request, posting_id):
+    """Activate/deactivate a job posting."""
+    user = request.user
+    is_chairman, is_officer, is_student = _get_user_roles(user)
+
+    if not (is_officer or is_chairman):
+        messages.error(request, "Not authorized.")
+        return redirect('/placement/')
+
+    posting = get_object_or_404(JobPosting, id=posting_id)
+    posting.is_active = not posting.is_active
+    posting.save()
+    status = "activated" if posting.is_active else "deactivated"
+    messages.success(request, "Job posting {} {}.".format(posting.title, status))
+    return redirect('/placement/jobs/')
+
+
+# ---------- Job Application Management ----------
+
+@login_required
+def apply_for_job(request, posting_id):
+    """Student applies for a job posting."""
+    user = request.user
+    is_chairman, is_officer, is_student = _get_user_roles(user)
+
+    if not is_student:
+        messages.error(request, "Only students can apply for jobs.")
+        return redirect('/placement/')
+
+    profile = get_object_or_404(ExtraInfo, Q(user=user))
+    posting = get_object_or_404(JobPosting, id=posting_id)
+
+    try:
+        student = Student.objects.get(id=profile)
+    except Student.DoesNotExist:
+        messages.error(request, "Student profile not found.")
+        return redirect('/placement/jobs/')
+
+    # Check duplicate
+    if check_duplicate_application(student, posting):
+        messages.warning(request, "You have already applied for this position.")
+        return redirect('/placement/jobs/{}/'.format(posting_id))
+
+    # Check eligibility
+    is_eligible, reasons = check_eligibility(student, posting)
+    if not is_eligible:
+        for reason in reasons:
+            messages.error(request, reason)
+        return redirect('/placement/jobs/{}/'.format(posting_id))
+
+    # Check placement policy
+    can_apply, policy_reason = check_placement_policy(student, posting)
+    if not can_apply:
+        messages.error(request, policy_reason)
+        return redirect('/placement/jobs/{}/'.format(posting_id))
+
+    if request.method == 'POST':
+        try:
+            resume = request.FILES.get('resume', None)
+            application = JobApplication.objects.create(
+                job_posting=posting,
+                student=student,
+                status='APPLIED',
+                resume_link=resume,
+            )
+            messages.success(request, "Successfully applied for '{}' at '{}'.".format(
+                posting.title, posting.company.name
+            ))
+
+            # Notify TPO
+            try:
+                from notification.views import placement_cell_notif
+                tpo_designations = HoldsDesignation.objects.filter(
+                    designation__name="placement officer"
+                )
+                for hd in tpo_designations:
+                    placement_cell_notif(
+                        sender=user,
+                        recipient=hd.working,
+                        type='new_application'
+                    )
+            except Exception:
+                pass
+
+            return redirect('/placement/my-applications/')
+        except Exception as e:
+            messages.error(request, "Failed to submit application: {}".format(str(e)))
+
+    return redirect('/placement/jobs/{}/'.format(posting_id))
+
+
+@login_required
+def my_applications(request):
+    """Student views their application history and status."""
+    user = request.user
+    is_chairman, is_officer, is_student = _get_user_roles(user)
+
+    if not is_student:
+        messages.error(request, "Only students can view their applications.")
+        return redirect('/placement/')
+
+    profile = get_object_or_404(ExtraInfo, Q(user=user))
+
+    try:
+        student = Student.objects.get(id=profile)
+    except Student.DoesNotExist:
+        messages.error(request, "Student profile not found.")
+        return redirect('/placement/')
+
+    summary = get_student_application_summary(student)
+
+    context = {
+        'summary': summary,
+        'is_student': True,
+    }
+    return render(request, 'placementModule/pcms/my_applications.html', context)
+
+
+@login_required
+def manage_applications(request, posting_id):
+    """TPO manages applications for a job posting (shortlist, reject, etc.)."""
+    user = request.user
+    is_chairman, is_officer, is_student = _get_user_roles(user)
+
+    if not (is_officer or is_chairman):
+        messages.error(request, "Not authorized.")
+        return redirect('/placement/')
+
+    posting = get_object_or_404(JobPosting, id=posting_id)
+    applications = posting.applications.select_related(
+        'student', 'student__id', 'student__id__user', 'student__id__department'
+    ).all()
+
+    if request.method == 'POST':
+        app_id = request.POST.get('application_id')
+        new_status = request.POST.get('new_status')
+        remarks = request.POST.get('remarks', '')
+
+        if app_id and new_status:
+            try:
+                app = JobApplication.objects.get(id=app_id, job_posting=posting)
+                valid_statuses = [s[0] for s in PlacementConstants.APPLICATION_STATUS]
+                if new_status in valid_statuses:
+                    app.status = new_status
+                    if remarks:
+                        app.remarks = remarks
+                    app.save()
+
+                    # Notify student of status change
+                    try:
+                        from notification.views import placement_cell_notif
+                        placement_cell_notif(
+                            sender=user,
+                            recipient=app.student.id.user,
+                            type='application_status_update'
+                        )
+                    except Exception:
+                        pass
+
+                    messages.success(request, "Application status updated to '{}'.".format(new_status))
+                else:
+                    messages.error(request, "Invalid status.")
+            except JobApplication.DoesNotExist:
+                messages.error(request, "Application not found.")
+
+    # Filter options
+    status_filter = request.GET.get('status', '')
+    if status_filter:
+        applications = applications.filter(status=status_filter)
+
+    context = {
+        'posting': posting,
+        'applications': applications,
+        'status_choices': PlacementConstants.APPLICATION_STATUS,
+        'status_filter': status_filter,
+        'is_chairman': is_chairman,
+        'is_officer': is_officer,
+    }
+    return render(request, 'placementModule/pcms/manage_applications.html', context)
+
+
+@login_required
+def bulk_shortlist(request, posting_id):
+    """TPO bulk shortlists multiple applications."""
+    user = request.user
+    is_chairman, is_officer, is_student = _get_user_roles(user)
+
+    if not (is_officer or is_chairman):
+        messages.error(request, "Not authorized.")
+        return redirect('/placement/')
+
+    if request.method == 'POST':
+        app_ids = request.POST.getlist('application_ids')
+        if app_ids:
+            updated = JobApplication.objects.filter(
+                id__in=app_ids, job_posting_id=posting_id, status='APPLIED'
+            ).update(status='SHORTLISTED')
+
+            # Notify shortlisted students
+            try:
+                from notification.views import placement_cell_notif
+                shortlisted_apps = JobApplication.objects.filter(
+                    id__in=app_ids, job_posting_id=posting_id
+                ).select_related('student__id__user')
+                for app in shortlisted_apps:
+                    placement_cell_notif(
+                        sender=user,
+                        recipient=app.student.id.user,
+                        type='shortlisted'
+                    )
+            except Exception:
+                pass
+
+            messages.success(request, "{} application(s) shortlisted.".format(updated))
+
+    return redirect('/placement/jobs/{}/applications/'.format(posting_id))
+
+
+# ---------- Interview Management ----------
+
+@login_required
+def schedule_interview(request, posting_id):
+    """TPO schedules an interview for a job posting."""
+    user = request.user
+    is_chairman, is_officer, is_student = _get_user_roles(user)
+
+    if not (is_officer or is_chairman):
+        messages.error(request, "Not authorized.")
+        return redirect('/placement/')
+
+    posting = get_object_or_404(JobPosting, id=posting_id)
+
+    if request.method == 'POST':
+        form = InterviewScheduleForm(request.POST)
+        if form.is_valid():
+            try:
+                interview = InterviewSchedule.objects.create(
+                    job_posting=posting,
+                    date=form.cleaned_data['date'],
+                    time_slot=form.cleaned_data['time_slot'],
+                    mode=form.cleaned_data['mode'],
+                    venue_or_link=form.cleaned_data.get('venue_or_link', ''),
+                    description=form.cleaned_data.get('description', ''),
+                    created_by=user,
+                )
+
+                # Add shortlisted students to interview panel
+                shortlisted = posting.applications.filter(status='SHORTLISTED')
+                for app in shortlisted:
+                    InterviewPanel.objects.create(
+                        interview=interview,
+                        application=app,
+                    )
+                    app.status = 'INTERVIEW_SCHEDULED'
+                    app.save()
+
+                # Notify students
+                try:
+                    from notification.views import placement_cell_notif
+                    for app in shortlisted:
+                        placement_cell_notif(
+                            sender=user,
+                            recipient=app.student.id.user,
+                            type='interview_scheduled'
+                        )
+                except Exception:
+                    pass
+
+                messages.success(request, "Interview scheduled for {} on {}.".format(
+                    posting.title, form.cleaned_data['date']
+                ))
+                return redirect('/placement/jobs/{}/'.format(posting_id))
+            except Exception as e:
+                messages.error(request, "Failed to schedule interview: {}".format(str(e)))
+    else:
+        form = InterviewScheduleForm()
+
+    shortlisted_count = posting.applications.filter(status='SHORTLISTED').count()
+    interviews = posting.interviews.all()
+
+    context = {
+        'form': form,
+        'posting': posting,
+        'shortlisted_count': shortlisted_count,
+        'interviews': interviews,
+        'is_chairman': is_chairman,
+        'is_officer': is_officer,
+    }
+    return render(request, 'placementModule/pcms/schedule_interview.html', context)
+
+
+@login_required
+def interview_detail(request, interview_id):
+    """View interview details and panelist results."""
+    user = request.user
+    is_chairman, is_officer, is_student = _get_user_roles(user)
+
+    interview = get_object_or_404(InterviewSchedule, id=interview_id)
+    panelists = interview.panelists.select_related(
+        'application', 'application__student', 'application__student__id__user'
+    ).all()
+
+    if request.method == 'POST' and (is_officer or is_chairman):
+        panel_id = request.POST.get('panel_id')
+        result = request.POST.get('result')
+        remarks = request.POST.get('remarks', '')
+        if panel_id and result:
+            try:
+                panel = InterviewPanel.objects.get(id=panel_id, interview=interview)
+                panel.result = result
+                panel.remarks = remarks
+                panel.save()
+
+                if result == 'SELECTED':
+                    panel.application.status = 'OFFER_EXTENDED'
+                    panel.application.save()
+                elif result == 'REJECTED':
+                    panel.application.status = 'REJECTED'
+                    panel.application.save()
+
+                messages.success(request, "Interview result updated.")
+            except InterviewPanel.DoesNotExist:
+                messages.error(request, "Panel entry not found.")
+
+    context = {
+        'interview': interview,
+        'panelists': panelists,
+        'is_chairman': is_chairman,
+        'is_officer': is_officer,
+        'is_student': is_student,
+    }
+    return render(request, 'placementModule/pcms/interview_detail.html', context)
+
+
+# ---------- Offer Management ----------
+
+@login_required
+def extend_offer(request, application_id):
+    """TPO extends a job offer to a selected student."""
+    user = request.user
+    is_chairman, is_officer, is_student = _get_user_roles(user)
+
+    if not (is_officer or is_chairman):
+        messages.error(request, "Not authorized.")
+        return redirect('/placement/')
+
+    application = get_object_or_404(JobApplication, id=application_id)
+
+    # Check if offer already exists
+    if hasattr(application, 'offer'):
+        messages.warning(request, "An offer has already been extended for this application.")
+        return redirect('/placement/jobs/{}/applications/'.format(application.job_posting.id))
+
+    if request.method == 'POST':
+        form = JobOfferForm(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                offer = JobOffer.objects.create(
+                    application=application,
+                    ctc_offered=form.cleaned_data['ctc_offered'],
+                    designation_offered=form.cleaned_data.get('designation_offered', ''),
+                    joining_date=form.cleaned_data.get('joining_date'),
+                    offer_letter=form.cleaned_data.get('offer_letter'),
+                    response_deadline=form.cleaned_data['response_deadline'],
+                )
+                application.status = 'OFFER_EXTENDED'
+                application.save()
+
+                # Notify student
+                try:
+                    from notification.views import placement_cell_notif
+                    placement_cell_notif(
+                        sender=user,
+                        recipient=application.student.id.user,
+                        type='offer_extended'
+                    )
+                except Exception:
+                    pass
+
+                messages.success(request, "Offer extended to {}.".format(
+                    application.student.id.user.get_full_name()
+                ))
+                return redirect('/placement/jobs/{}/applications/'.format(application.job_posting.id))
+            except Exception as e:
+                messages.error(request, "Failed to extend offer: {}".format(str(e)))
+    else:
+        form = JobOfferForm(initial={
+            'ctc_offered': application.job_posting.ctc,
+        })
+
+    context = {
+        'form': form,
+        'application': application,
+        'is_chairman': is_chairman,
+        'is_officer': is_officer,
+    }
+    return render(request, 'placementModule/pcms/extend_offer.html', context)
+
+
+@login_required
+def my_offers(request):
+    """Student views their job offers."""
+    user = request.user
+    is_chairman, is_officer, is_student = _get_user_roles(user)
+
+    if not is_student:
+        messages.error(request, "Only students can view offers.")
+        return redirect('/placement/')
+
+    profile = get_object_or_404(ExtraInfo, Q(user=user))
+    try:
+        student = Student.objects.get(id=profile)
+    except Student.DoesNotExist:
+        messages.error(request, "Student profile not found.")
+        return redirect('/placement/')
+
+    # Expire stale offers first
+    expire_pending_offers()
+
+    offers = JobOffer.objects.filter(
+        application__student=student
+    ).select_related(
+        'application', 'application__job_posting', 'application__job_posting__company'
+    ).all()
+
+    context = {
+        'offers': offers,
+        'is_student': True,
+    }
+    return render(request, 'placementModule/pcms/my_offers.html', context)
+
+
+@login_required
+def respond_to_offer(request, offer_id):
+    """Student accepts or rejects a job offer."""
+    user = request.user
+    is_chairman, is_officer, is_student = _get_user_roles(user)
+
+    if not is_student:
+        messages.error(request, "Only students can respond to offers.")
+        return redirect('/placement/')
+
+    offer = get_object_or_404(JobOffer, id=offer_id)
+    profile = get_object_or_404(ExtraInfo, Q(user=user))
+
+    try:
+        student = Student.objects.get(id=profile)
+    except Student.DoesNotExist:
+        messages.error(request, "Student profile not found.")
+        return redirect('/placement/')
+
+    # Verify the offer belongs to this student
+    if offer.application.student != student:
+        messages.error(request, "This offer does not belong to you.")
+        return redirect('/placement/')
+
+    if offer.status != 'PENDING':
+        messages.warning(request, "This offer has already been {}.".format(offer.status.lower()))
+        return redirect('/placement/my-offers/')
+
+    if offer.is_deadline_passed:
+        offer.status = 'EXPIRED'
+        offer.save()
+        messages.error(request, "The response deadline has passed. Offer expired.")
+        return redirect('/placement/my-offers/')
+
+    if request.method == 'POST':
+        action = request.POST.get('action', '')
+        if action == 'accept':
+            offer.status = 'ACCEPTED'
+            offer.responded_at = timezone.now()
+            offer.save()
+
+            offer.application.status = 'OFFER_ACCEPTED'
+            offer.application.save()
+
+            # Update StudentPlacement record
+            sp, created = StudentPlacement.objects.get_or_create(unique_id=student)
+            sp.placed_type = 'PLACED'
+            sp.placement_date = datetime.date.today()
+            sp.package = offer.ctc_offered
+            sp.save()
+
+            messages.success(request, "Offer from '{}' accepted!".format(
+                offer.application.job_posting.company.name
+            ))
+
+            # Notify TPO
+            try:
+                from notification.views import placement_cell_notif
+                tpo_designations = HoldsDesignation.objects.filter(
+                    designation__name="placement officer"
+                )
+                for hd in tpo_designations:
+                    placement_cell_notif(
+                        sender=user,
+                        recipient=hd.working,
+                        type='offer_accepted'
+                    )
+            except Exception:
+                pass
+
+        elif action == 'reject':
+            offer.status = 'REJECTED'
+            offer.responded_at = timezone.now()
+            offer.save()
+
+            offer.application.status = 'OFFER_REJECTED'
+            offer.application.save()
+
+            messages.success(request, "Offer from '{}' rejected.".format(
+                offer.application.job_posting.company.name
+            ))
+
+    return redirect('/placement/my-offers/')
+
+
+@login_required
+def all_offers(request):
+    """TPO views all offers across all companies."""
+    user = request.user
+    is_chairman, is_officer, is_student = _get_user_roles(user)
+
+    if not (is_officer or is_chairman):
+        messages.error(request, "Not authorized.")
+        return redirect('/placement/')
+
+    offers = JobOffer.objects.select_related(
+        'application', 'application__student', 'application__student__id',
+        'application__student__id__user', 'application__job_posting',
+        'application__job_posting__company'
+    ).all()
+
+    status_filter = request.GET.get('status', '')
+    if status_filter:
+        offers = offers.filter(status=status_filter)
+
+    context = {
+        'offers': offers,
+        'offer_status_choices': PlacementConstants.OFFER_STATUS,
+        'status_filter': status_filter,
+        'is_chairman': is_chairman,
+        'is_officer': is_officer,
+    }
+    return render(request, 'placementModule/pcms/all_offers.html', context)
+
+
+# ---------- Reports & Analytics ----------
+
+@login_required
+def placement_reports(request):
+    """Generate placement reports and analytics."""
+    user = request.user
+    is_chairman, is_officer, is_student = _get_user_roles(user)
+
+    form = ReportFilterForm(request.GET or None)
+
+    year_filter = request.GET.get('year')
+    dept_filter = request.GET.get('department')
+    prog_filter = request.GET.get('programme')
+    job_type_filter = request.GET.get('job_type')
+
+    stats = get_placement_statistics(year=year_filter)
+
+    # Additional filtered data
+    offers_qs = JobOffer.objects.filter(status='ACCEPTED').select_related(
+        'application__student__id__department',
+        'application__student',
+        'application__job_posting__company'
+    )
+
+    if year_filter:
+        offers_qs = offers_qs.filter(application__job_posting__created_at__year=year_filter)
+    if dept_filter:
+        offers_qs = offers_qs.filter(application__student__id__department__name=dept_filter)
+    if prog_filter:
+        offers_qs = offers_qs.filter(application__student__programme=prog_filter)
+    if job_type_filter:
+        offers_qs = offers_qs.filter(application__job_posting__job_type=job_type_filter)
+
+    # Company participation
+    companies_participated = Company.objects.filter(
+        approval_status='APPROVED',
+        job_postings__is_active=True
+    ).distinct().count()
+
+    total_students = Student.objects.count()
+    placed_students = JobOffer.objects.filter(status='ACCEPTED').values(
+        'application__student'
+    ).distinct().count()
+
+    placement_rate = (placed_students / total_students * 100) if total_students > 0 else 0
+
+    context = {
+        'form': form,
+        'stats': stats,
+        'offers': offers_qs,
+        'companies_participated': companies_participated,
+        'total_students': total_students,
+        'placed_students': placed_students,
+        'placement_rate': round(placement_rate, 2),
+        'is_chairman': is_chairman,
+        'is_officer': is_officer,
+        'is_student': is_student,
+    }
+    return render(request, 'placementModule/pcms/reports.html', context)
+
+
+# ---------- Announcements ----------
+
+@login_required
+def announcement_list(request):
+    """View all active announcements."""
+    user = request.user
+    is_chairman, is_officer, is_student = _get_user_roles(user)
+
+    announcements = Announcement.objects.filter(is_active=True)
+
+    # Pagination
+    paginator = Paginator(announcements, 10)
+    page = request.GET.get('page', 1)
+    announcements_page = paginator.get_page(page)
+
+    context = {
+        'announcements': announcements_page,
+        'is_chairman': is_chairman,
+        'is_officer': is_officer,
+        'is_student': is_student,
+    }
+    return render(request, 'placementModule/pcms/announcement_list.html', context)
+
+
+@login_required
+def create_announcement(request):
+    """TPO or Placement Chairman creates an announcement."""
+    user = request.user
+    is_chairman, is_officer, is_student = _get_user_roles(user)
+
+    if not (is_officer or is_chairman):
+        messages.error(request, "Not authorized to create announcements.")
+        return redirect('/placement/')
+
+    if request.method == 'POST':
+        form = AnnouncementForm(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                announcement = Announcement.objects.create(
+                    title=form.cleaned_data['title'],
+                    content=form.cleaned_data['content'],
+                    announcement_type=form.cleaned_data['announcement_type'],
+                    target_audience=form.cleaned_data.get('target_audience', 'ALL'),
+                    attached_file=form.cleaned_data.get('attached_file'),
+                    created_by=user,
+                )
+
+                # Notify all students
+                try:
+                    from notification.views import placement_cell_notif
+                    students = Student.objects.select_related('id__user').all()
+                    for student in students:
+                        placement_cell_notif(
+                            sender=user,
+                            recipient=student.id.user,
+                            type='announcement'
+                        )
+                except Exception:
+                    pass
+
+                messages.success(request, "Announcement '{}' published.".format(announcement.title))
+                return redirect('/placement/announcements/')
+            except Exception as e:
+                messages.error(request, "Failed to create announcement: {}".format(str(e)))
+    else:
+        form = AnnouncementForm()
+
+    context = {
+        'form': form,
+        'is_chairman': is_chairman,
+        'is_officer': is_officer,
+    }
+    return render(request, 'placementModule/pcms/create_announcement.html', context)
+
+
+@login_required
+def announcement_detail(request, announcement_id):
+    """View a single announcement."""
+    user = request.user
+    is_chairman, is_officer, is_student = _get_user_roles(user)
+    announcement = get_object_or_404(Announcement, id=announcement_id)
+
+    context = {
+        'announcement': announcement,
+        'is_chairman': is_chairman,
+        'is_officer': is_officer,
+        'is_student': is_student,
+    }
+    return render(request, 'placementModule/pcms/announcement_detail.html', context)
+
+
+@login_required
+def delete_announcement(request, announcement_id):
+    """Deactivate an announcement."""
+    user = request.user
+    is_chairman, is_officer, is_student = _get_user_roles(user)
+
+    if not (is_officer or is_chairman):
+        messages.error(request, "Not authorized.")
+        return redirect('/placement/')
+
+    announcement = get_object_or_404(Announcement, id=announcement_id)
+    announcement.is_active = False
+    announcement.save()
+    messages.success(request, "Announcement '{}' removed.".format(announcement.title))
+    return redirect('/placement/announcements/')
+
+
+# ---------- Placement Policy Management ----------
+
+@login_required
+def manage_policies(request):
+    """TPO manages placement policies."""
+    user = request.user
+    is_chairman, is_officer, is_student = _get_user_roles(user)
+
+    if not (is_officer or is_chairman):
+        messages.error(request, "Not authorized.")
+        return redirect('/placement/')
+
+    policies = PlacementPolicy.objects.all()
+
+    if request.method == 'POST':
+        action = request.POST.get('action', '')
+        if action == 'create':
+            name = request.POST.get('name', '')
+            description = request.POST.get('description', '')
+            max_offers = int(request.POST.get('max_offers_allowed', 1))
+            allow_dream = request.POST.get('allow_dream_company') == 'on'
+            dream_threshold = request.POST.get('dream_ctc_threshold', 0)
+
+            try:
+                # Deactivate all existing policies first
+                PlacementPolicy.objects.update(is_active=False)
+
+                PlacementPolicy.objects.create(
+                    name=name,
+                    description=description,
+                    max_offers_allowed=max_offers,
+                    allow_dream_company=allow_dream,
+                    dream_ctc_threshold=dream_threshold or 0,
+                    is_active=True,
+                )
+                messages.success(request, "Policy '{}' created and activated.".format(name))
+            except Exception as e:
+                messages.error(request, "Failed to create policy: {}".format(str(e)))
+        elif action == 'toggle':
+            policy_id = request.POST.get('policy_id')
+            try:
+                policy = PlacementPolicy.objects.get(id=policy_id)
+                if not policy.is_active:
+                    PlacementPolicy.objects.update(is_active=False)
+                    policy.is_active = True
+                else:
+                    policy.is_active = False
+                policy.save()
+                messages.success(request, "Policy '{}' updated.".format(policy.name))
+            except PlacementPolicy.DoesNotExist:
+                messages.error(request, "Policy not found.")
+
+    context = {
+        'policies': policies,
+        'is_chairman': is_chairman,
+        'is_officer': is_officer,
+    }
+    return render(request, 'placementModule/pcms/manage_policies.html', context)
+
+
+# ---------- PCMS Dashboard / Hub ----------
+
+@login_required
+def pcms_dashboard(request):
+    """Central PCMS dashboard combining all PCMS features."""
+    user = request.user
+    is_chairman, is_officer, is_student = _get_user_roles(user)
+    profile = get_object_or_404(ExtraInfo, Q(user=user))
+
+    context = {
+        'is_chairman': is_chairman,
+        'is_officer': is_officer,
+        'is_student': is_student,
+    }
+
+    if is_student:
+        try:
+            student = Student.objects.get(id=profile)
+            active_postings = JobPosting.objects.filter(is_active=True).count()
+            my_apps = JobApplication.objects.filter(student=student).count()
+            my_offers_count = JobOffer.objects.filter(
+                application__student=student, status='PENDING'
+            ).count()
+            announcements = Announcement.objects.filter(is_active=True)[:5]
+
+            context.update({
+                'student': student,
+                'active_postings': active_postings,
+                'my_apps': my_apps,
+                'my_offers_count': my_offers_count,
+                'recent_announcements': announcements,
+            })
+        except Student.DoesNotExist:
+            pass
+
+    elif is_officer or is_chairman:
+        total_companies = Company.objects.filter(approval_status='APPROVED').count()
+        pending_companies = Company.objects.filter(approval_status='PENDING').count()
+        active_postings = JobPosting.objects.filter(is_active=True).count()
+        total_applications = JobApplication.objects.count()
+        pending_offers = JobOffer.objects.filter(status='PENDING').count()
+        accepted_offers = JobOffer.objects.filter(status='ACCEPTED').count()
+
+        recent_applications = JobApplication.objects.select_related(
+            'student__id__user', 'job_posting__company'
+        ).order_by('-applied_at')[:10]
+
+        context.update({
+            'total_companies': total_companies,
+            'pending_companies': pending_companies,
+            'active_postings': active_postings,
+            'total_applications': total_applications,
+            'pending_offers': pending_offers,
+            'accepted_offers': accepted_offers,
+            'recent_applications': recent_applications,
+        })
+
+    return render(request, 'placementModule/pcms/dashboard.html', context)
+
 

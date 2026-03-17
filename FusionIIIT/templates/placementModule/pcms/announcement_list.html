@@ -1,0 +1,81 @@
+{% extends 'placementModule/pcms/base_pcms.html' %}
+
+{% block pcms_content %}
+<div class="ui grid">
+    <div class="twelve wide column">
+        <h2 class="ui header">
+            <i class="bullhorn icon"></i>
+            <div class="content">Announcements</div>
+        </h2>
+    </div>
+    <div class="four wide column right aligned">
+        {% if is_officer or is_chairman %}
+            <a class="ui primary button" href="{% url 'placement:create_announcement' %}">
+                <i class="plus icon"></i> New Announcement
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="ui divider"></div>
+
+{% if announcements %}
+    <div class="ui relaxed divided list">
+        {% for ann in announcements %}
+            <div class="item" style="padding: 15px 0;">
+                <div class="content">
+                    <div class="header" style="font-size: 1.2em;">
+                        <a href="{% url 'placement:announcement_detail' ann.id %}">{{ ann.title }}</a>
+                    </div>
+                    <div class="description" style="margin-top: 5px;">
+                        <span class="ui label">{{ ann.get_announcement_type_display }}</span>
+                        {% if ann.target_audience %}
+                            <span class="ui basic label">{{ ann.target_audience }}</span>
+                        {% endif %}
+                        <span style="color: #999; margin-left: 10px;">
+                            <i class="clock icon"></i> {{ ann.created_at|date:"M d, Y H:i" }}
+                        </span>
+                        {% if ann.created_by %}
+                            <span style="color: #999;">
+                                | By {{ ann.created_by.get_full_name }}
+                            </span>
+                        {% endif %}
+                    </div>
+                    <div class="description" style="margin-top: 8px;">
+                        {{ ann.content|truncatewords:50 }}
+                    </div>
+                    {% if is_officer or is_chairman %}
+                        <div style="margin-top: 8px;">
+                            <a class="ui tiny red button"
+                               href="{% url 'placement:delete_announcement' ann.id %}"
+                               onclick="return confirm('Remove this announcement?')">
+                                <i class="trash icon"></i> Remove
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {# Pagination #}
+    {% if announcements.has_other_pages %}
+        <div class="ui pagination menu" style="margin-top: 20px;">
+            {% if announcements.has_previous %}
+                <a class="item" href="?page={{ announcements.previous_page_number }}">Previous</a>
+            {% endif %}
+            {% for num in announcements.paginator.page_range %}
+                <a class="{% if announcements.number == num %}active {% endif %}item" href="?page={{ num }}">{{ num }}</a>
+            {% endfor %}
+            {% if announcements.has_next %}
+                <a class="item" href="?page={{ announcements.next_page_number }}">Next</a>
+            {% endif %}
+        </div>
+    {% endif %}
+{% else %}
+    <div class="ui message">
+        <p>No announcements at the moment.</p>
+    </div>
+{% endif %}
+{% endblock %}
+

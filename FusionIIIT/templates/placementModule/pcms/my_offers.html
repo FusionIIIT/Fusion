@@ -1,0 +1,80 @@
+{% extends 'placementModule/pcms/base_pcms.html' %}
+
+{% block pcms_content %}
+<h2 class="ui header">
+    <i class="gift icon"></i>
+    <div class="content">
+        My Offers
+        <div class="sub header">Manage your job offers</div>
+    </div>
+</h2>
+
+<div class="ui divider"></div>
+
+{% if offers %}
+    <div class="ui cards">
+        {% for offer in offers %}
+            <div class="ui fluid card">
+                <div class="content">
+                    <div class="right floated meta">
+                        {% if offer.status == 'PENDING' %}
+                            <span class="ui yellow label">Pending</span>
+                        {% elif offer.status == 'ACCEPTED' %}
+                            <span class="ui green label">Accepted</span>
+                        {% elif offer.status == 'REJECTED' %}
+                            <span class="ui grey label">Rejected</span>
+                        {% elif offer.status == 'EXPIRED' %}
+                            <span class="ui red label">Expired</span>
+                        {% endif %}
+                    </div>
+                    <div class="header">{{ offer.application.job_posting.company.name }}</div>
+                    <div class="meta">{{ offer.application.job_posting.title }}</div>
+                    <div class="description">
+                        <div class="ui list">
+                            <div class="item"><strong>CTC Offered:</strong> ₹{{ offer.ctc_offered }} LPA</div>
+                            {% if offer.designation_offered %}
+                                <div class="item"><strong>Designation:</strong> {{ offer.designation_offered }}</div>
+                            {% endif %}
+                            {% if offer.joining_date %}
+                                <div class="item"><strong>Joining Date:</strong> {{ offer.joining_date|date:"M d, Y" }}</div>
+                            {% endif %}
+                            <div class="item"><strong>Extended On:</strong> {{ offer.extended_at|date:"M d, Y" }}</div>
+                            <div class="item"><strong>Response Deadline:</strong> {{ offer.response_deadline|date:"M d, Y H:i" }}</div>
+                            {% if offer.responded_at %}
+                                <div class="item"><strong>Responded On:</strong> {{ offer.responded_at|date:"M d, Y H:i" }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% if offer.offer_letter %}
+                    <div class="extra content">
+                        <a href="{{ offer.offer_letter.url }}" target="_blank">
+                            <i class="file pdf icon"></i> Download Offer Letter
+                        </a>
+                    </div>
+                {% endif %}
+                {% if offer.status == 'PENDING' %}
+                    <div class="extra content">
+                        <form method="POST" action="{% url 'placement:respond_to_offer' offer.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" name="action" value="accept" class="ui green button"
+                                    onclick="return confirm('Are you sure you want to ACCEPT this offer?')">
+                                <i class="check icon"></i> Accept Offer
+                            </button>
+                            <button type="submit" name="action" value="reject" class="ui red button"
+                                    onclick="return confirm('Are you sure you want to REJECT this offer?')">
+                                <i class="times icon"></i> Reject Offer
+                            </button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="ui message">
+        <p>You have no job offers at the moment.</p>
+    </div>
+{% endif %}
+{% endblock %}
+

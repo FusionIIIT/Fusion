@@ -1,0 +1,62 @@
+{% extends 'placementModule/pcms/base_pcms.html' %}
+
+{% block pcms_content %}
+<h2 class="ui header">
+    <i class="gift icon"></i>
+    <div class="content">
+        Extend Job Offer
+        <div class="sub header">
+            {{ application.student.id.user.get_full_name }} -
+            {{ application.job_posting.title }} at {{ application.job_posting.company.name }}
+        </div>
+    </div>
+</h2>
+
+<div class="ui divider"></div>
+
+<div class="ui segment">
+    <h4>Candidate Details</h4>
+    <div class="ui list">
+        <div class="item"><strong>Name:</strong> {{ application.student.id.user.get_full_name }}</div>
+        <div class="item"><strong>Roll No:</strong> {{ application.student.id.id }}</div>
+        <div class="item"><strong>Programme:</strong> {{ application.student.programme }}</div>
+        <div class="item"><strong>CPI:</strong> {{ application.student.cpi }}</div>
+    </div>
+</div>
+
+<form class="ui form" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="two fields">
+        <div class="required field">
+            <label>CTC Offered (LPA)</label>
+            {{ form.ctc_offered }}
+        </div>
+        <div class="field">
+            <label>Designation Offered</label>
+            {{ form.designation_offered }}
+        </div>
+    </div>
+    <div class="two fields">
+        <div class="field">
+            <label>Joining Date</label>
+            {{ form.joining_date }}
+        </div>
+        <div class="required field">
+            <label>Response Deadline</label>
+            {{ form.response_deadline }}
+        </div>
+    </div>
+    <div class="field">
+        <label>Offer Letter</label>
+        {{ form.offer_letter }}
+    </div>
+
+    <div class="ui divider"></div>
+
+    <button class="ui primary button" type="submit">
+        <i class="paper plane icon"></i> Extend Offer
+    </button>
+    <a class="ui button" href="{% url 'placement:manage_applications' application.job_posting.id %}">Cancel</a>
+</form>
+{% endblock %}
+

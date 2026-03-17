@@ -1,0 +1,44 @@
+{% extends 'placementModule/pcms/base_pcms.html' %}
+
+{% block pcms_content %}
+<h2 class="ui header">
+    <i class="bullhorn icon"></i>
+    <div class="content">Create Announcement</div>
+</h2>
+
+<div class="ui divider"></div>
+
+<form class="ui form" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="required field">
+        <label>Title</label>
+        {{ form.title }}
+    </div>
+    <div class="required field">
+        <label>Content</label>
+        {{ form.content }}
+    </div>
+    <div class="two fields">
+        <div class="required field">
+            <label>Announcement Type</label>
+            {{ form.announcement_type }}
+        </div>
+        <div class="field">
+            <label>Target Audience</label>
+            {{ form.target_audience }}
+        </div>
+    </div>
+    <div class="field">
+        <label>Attachment</label>
+        {{ form.attached_file }}
+    </div>
+
+    <div class="ui divider"></div>
+
+    <button class="ui primary button" type="submit">
+        <i class="bullhorn icon"></i> Publish Announcement
+    </button>
+    <a class="ui button" href="{% url 'placement:announcement_list' %}">Cancel</a>
+</form>
+{% endblock %}
+

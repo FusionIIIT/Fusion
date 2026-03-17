@@ -1,0 +1,111 @@
+{% extends 'placementModule/pcms/base_pcms.html' %}
+
+{% block pcms_content %}
+<h2 class="ui header">
+    <i class="building icon"></i>
+    <div class="content">
+        {{ company.name }}
+        {% if company.approval_status == 'APPROVED' %}
+            <span class="ui green label">Approved</span>
+        {% elif company.approval_status == 'PENDING' %}
+            <span class="ui yellow label">Pending</span>
+        {% else %}
+            <span class="ui red label">Rejected</span>
+        {% endif %}
+    </div>
+</h2>
+
+<div class="ui divider"></div>
+
+<div class="ui two column stackable grid">
+    <div class="column">
+        <div class="ui card fluid">
+            <div class="content">
+                <div class="header">Company Information</div>
+            </div>
+            <div class="content">
+                <div class="ui list">
+                    {% if company.website %}
+                        <div class="item">
+                            <i class="globe icon"></i> <a href="{{ company.website }}" target="_blank">{{ company.website }}</a>
+                        </div>
+                    {% endif %}
+                    {% if company.domain %}
+                        <div class="item">
+                            <i class="industry icon"></i> {{ company.domain }}
+                        </div>
+                    {% endif %}
+                    {% if company.address %}
+                        <div class="item">
+                            <i class="map marker icon"></i> {{ company.address }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="column">
+        <div class="ui card fluid">
+            <div class="content">
+                <div class="header">Contact Details</div>
+            </div>
+            <div class="content">
+                <div class="ui list">
+                    {% if company.contact_person_name %}
+                        <div class="item">
+                            <i class="user icon"></i> {{ company.contact_person_name }}
+                        </div>
+                    {% endif %}
+                    <div class="item">
+                        <i class="mail icon"></i> {{ company.contact_email }}
+                    </div>
+                    {% if company.contact_phone %}
+                        <div class="item">
+                            <i class="phone icon"></i> {{ company.contact_phone }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if company.description %}
+    <h3 class="ui header">About</h3>
+    <p>{{ company.description }}</p>
+{% endif %}
+
+<div class="ui divider"></div>
+
+<h3 class="ui header">Job Postings from {{ company.name }}</h3>
+
+{% if job_postings %}
+    <div class="ui cards">
+        {% for posting in job_postings %}
+            <div class="ui card">
+                <div class="content">
+                    <div class="header">
+                        <a href="{% url 'placement:job_posting_detail' posting.id %}">{{ posting.title }}</a>
+                    </div>
+                    <div class="meta">
+                        <span class="ui label">{{ posting.job_type }}</span>
+                        <span>₹{{ posting.ctc }} LPA</span>
+                    </div>
+                    <div class="description">
+                        {{ posting.description|truncatewords:30 }}
+                    </div>
+                </div>
+                <div class="extra content">
+                    <i class="clock icon"></i> Deadline: {{ posting.application_deadline|date:"M d, Y" }}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="ui message">
+        <p>No active job postings from this company.</p>
+    </div>
+{% endif %}
+{% endblock %}
+

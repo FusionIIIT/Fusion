@@ -1,0 +1,123 @@
+{% extends 'placementModule/pcms/base_pcms.html' %}
+
+{% block pcms_content %}
+<h2 class="ui header">
+    <i class="briefcase icon"></i>
+    <div class="content">
+        {% if editing %}Edit{% else %}Create{% endif %} Job Posting
+    </div>
+</h2>
+
+<div class="ui divider"></div>
+
+<form class="ui form" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="two fields">
+        <div class="required field">
+            <label>Company</label>
+            {{ form.company }}
+        </div>
+        <div class="required field">
+            <label>Job Title</label>
+            {{ form.title }}
+        </div>
+    </div>
+
+    <div class="field">
+        <label>Description</label>
+        {{ form.description }}
+    </div>
+
+    <div class="three fields">
+        <div class="required field">
+            <label>Job Type</label>
+            {{ form.job_type }}
+        </div>
+        <div class="field">
+            <label>Location</label>
+            {{ form.location }}
+        </div>
+        <div class="required field">
+            <label>CTC / Stipend (LPA)</label>
+            {{ form.ctc }}
+        </div>
+    </div>
+
+    <div class="field">
+        <label>Bond Details</label>
+        {{ form.bond_details }}
+    </div>
+
+    <h3 class="ui header">Eligibility Criteria</h3>
+    <div class="ui segment">
+        <div class="two fields">
+            <div class="field">
+                <label>Minimum CPI</label>
+                {{ form.min_cpi }}
+            </div>
+            <div class="field">
+                <label>Backlog Allowed</label>
+                <div class="ui toggle checkbox">
+                    {{ form.backlog_allowed }}
+                </div>
+            </div>
+        </div>
+
+        <div class="field">
+            <label>Eligible Programmes</label>
+            <div class="ui segment">
+                {{ form.eligible_programmes }}
+            </div>
+        </div>
+
+        <div class="field">
+            <label>Eligible Branches</label>
+            <div class="ui segment">
+                {{ form.eligible_branches }}
+            </div>
+        </div>
+
+        <div class="two fields">
+            <div class="field">
+                <label>Batch From</label>
+                {{ form.eligible_batch_from }}
+            </div>
+            <div class="field">
+                <label>Batch To</label>
+                {{ form.eligible_batch_to }}
+            </div>
+        </div>
+
+        <div class="field">
+            <label>Required Skills</label>
+            {{ form.required_skills }}
+        </div>
+    </div>
+
+    <div class="two fields">
+        <div class="required field">
+            <label>Application Deadline</label>
+            {{ form.application_deadline }}
+        </div>
+        <div class="field">
+            <label>Attachment (JD, etc.)</label>
+            {{ form.attached_file }}
+        </div>
+    </div>
+
+    <div class="ui divider"></div>
+
+    <button class="ui primary button" type="submit">
+        <i class="check icon"></i> {% if editing %}Update{% else %}Create{% endif %} Job Posting
+    </button>
+    <a class="ui button" href="{% url 'placement:job_posting_list' %}">Cancel</a>
+</form>
+
+<script>
+    $(document).ready(function() {
+        $('.ui.checkbox').checkbox();
+    });
+</script>
+{% endblock %}
+

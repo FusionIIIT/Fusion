@@ -4,7 +4,9 @@ from .models import (Achievement, ChairmanVisit, Coauthor, Coinventor, Course,
                      Education, Experience, Has, Interest, MessageOfficer, Conference,
                      NotifyStudent, Patent, PlacementRecord, PlacementSchedule,
                      PlacementStatus, Project, Publication, Skill, Extracurricular,
-                     StudentPlacement, StudentRecord, Role, CompanyDetails, Reference)
+                     StudentPlacement, StudentRecord, Role, CompanyDetails, Reference,
+                     Company, JobPosting, JobApplication, InterviewSchedule,
+                     InterviewPanel, JobOffer, Announcement, PlacementPolicy)
 
 
 # Register your models here.
@@ -118,3 +120,59 @@ admin.site.register(CompanyDetails)
 admin.site.register(Reference)
 admin.site.register(Extracurricular)
 admin.site.register(Conference)
+
+
+class CompanyAdmin(admin.ModelAdmin):
+    list_display = ('name', 'domain', 'contact_email', 'approval_status', 'created_at')
+    list_filter = ('approval_status', 'domain')
+    search_fields = ('name', 'contact_email')
+
+
+class JobPostingAdmin(admin.ModelAdmin):
+    list_display = ('title', 'company', 'job_type', 'ctc', 'application_deadline', 'is_active')
+    list_filter = ('job_type', 'is_active', 'company')
+    search_fields = ('title', 'company__name')
+
+
+class JobApplicationAdmin(admin.ModelAdmin):
+    list_display = ('student', 'job_posting', 'status', 'applied_at')
+    list_filter = ('status',)
+    search_fields = ('student__id__user__username', 'job_posting__title')
+
+
+class InterviewScheduleAdmin(admin.ModelAdmin):
+    list_display = ('job_posting', 'date', 'time_slot', 'mode')
+    list_filter = ('mode', 'date')
+
+
+class InterviewPanelAdmin(admin.ModelAdmin):
+    list_display = ('interview', 'application', 'result')
+    list_filter = ('result',)
+
+
+class JobOfferAdmin(admin.ModelAdmin):
+    list_display = ('application', 'ctc_offered', 'status', 'response_deadline', 'extended_at')
+    list_filter = ('status',)
+    search_fields = ('application__student__id__user__username',)
+
+
+class AnnouncementAdmin(admin.ModelAdmin):
+    list_display = ('title', 'announcement_type', 'created_by', 'is_active', 'created_at')
+    list_filter = ('announcement_type', 'is_active')
+    search_fields = ('title',)
+
+
+class PlacementPolicyAdmin(admin.ModelAdmin):
+    list_display = ('name', 'max_offers_allowed', 'allow_dream_company', 'is_active')
+    list_filter = ('is_active',)
+
+
+admin.site.register(Company, CompanyAdmin)
+admin.site.register(JobPosting, JobPostingAdmin)
+admin.site.register(JobApplication, JobApplicationAdmin)
+admin.site.register(InterviewSchedule, InterviewScheduleAdmin)
+admin.site.register(InterviewPanel, InterviewPanelAdmin)
+admin.site.register(JobOffer, JobOfferAdmin)
+admin.site.register(Announcement, AnnouncementAdmin)
+admin.site.register(PlacementPolicy, PlacementPolicyAdmin)
+
