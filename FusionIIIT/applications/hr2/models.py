@@ -147,9 +147,6 @@ class ForeignService(models.Model):
     description = models.CharField(max_length=300, default='')
     salary_source = models.CharField(max_length=100, default='')
     designation = models.CharField(max_length=100, default='')
-    # award_name = models.CharField(max_length=100, default='')
-    # award_type = models.CharField(max_length=100, default='')
-    # achievement_date = models.CharField(max_length=100, default='')
     service_type = models.CharField(
         max_length=100, choices=Constants.FOREIGN_SERVICE)
 
@@ -263,8 +260,3 @@ class CPDAReimbursementform(BaseForm):
     advanceDueAdjustment = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     advanceAmountPDA = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     amountCheckedInPDA = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-   
-
-
-
-

@@ -1,9 +1,8 @@
 from django.contrib import admin
 
 from .models import *
-# from .models import CPDAReimbursementform
-# Register your models here.
 
+# Register your models here.
 admin.site.register(Employee)
 admin.site.register(EmpConfidentialDetails)
 admin.site.register(EmpDependents)

@@ -1,4 +1,4 @@
 # Package for HR2 REST API views.
-# This package exports a legacy "form_views" module for backwards compatibility.
+# Exports the consolidated views module for all API endpoints.
 
-from . import form_views
+from . import views

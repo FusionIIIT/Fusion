@@ -61,7 +61,7 @@ urlpatterns = [
     url(r'^counselling/', include('applications.counselling_cell.urls')),
     url(r'^hostelmanagement/', include('applications.hostel_management.urls')),
     url(r'^income-expenditure/', include('applications.income_expenditure.urls')),
-    url(r'^hr2/', include('applications.hr2.urls')),
+    url(r'^hr2/', include('applications.hr2.api.urls')),
     url(r'^recruitment/', include('applications.recruitment.urls')),
     url(r'^examination/', include('applications.examination.urls')),
     url(r'^otheracademic/', include('applications.otheracademic.urls')),

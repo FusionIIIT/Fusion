@@ -1,7 +1,8 @@
-"""Service layer for HR form persistence and lookup.
+"""Selector layer for HR2 module.
 
-The goal is to keep database access logic out of views and provide a stable,
-reusable interface for fetching and updating form instances.
+Selectors are read-only database query functions. This module centralizes all
+form retrieval and query logic, keeping database access logic separate from
+business operations (services).
 """
 
 from django.contrib.auth import get_user_model
@@ -28,31 +29,35 @@ _FORM_TYPE_TO_MODEL = {
 }
 
 
+# ============================================================================
+# Form Type Lookup
+# ============================================================================
+
 def get_model_for_form_type(form_type: str):
     """Return the Django model class for a given form type."""
-
     return _FORM_TYPE_TO_MODEL.get(form_type)
 
 
+# ============================================================================
+# Form Query Selectors
+# ============================================================================
+
 def get_forms_by_creator(form_model, username: str):
     """Return a queryset (or list) of forms created by the given username."""
-
     user = User.objects.get(username=username)
     return form_model.objects.filter(created_by=user)
 
 
 def get_form_by_id(form_model, form_id):
     """Fetch a single form by its ID."""
-
     return form_model.objects.get(id=form_id)
 
 
-def get_forms_for_user(form_type: str, username: str):
-    """Fetch forms for a user by form type.
+def select_forms_for_user(form_type: str, username: str):
+    """Select forms for a user by form type.
 
     Returns (forms, many) where `many` indicates whether the result is a queryset.
     """
-
     model = get_model_for_form_type(form_type)
     if model is None:
         return [], True
@@ -68,9 +73,8 @@ def get_forms_for_user(form_type: str, username: str):
     return list(queryset), True
 
 
-def get_form_for_type_and_id(form_type: str, form_id: int):
-    """Fetch a specific form instance for the given type and id."""
-
+def select_form_by_type_and_id(form_type: str, form_id: int):
+    """Select a specific form instance for the given type and id."""
     model = get_model_for_form_type(form_type)
     if model is None:
         raise ObjectDoesNotExist(f"Unknown form type: {form_type}")
