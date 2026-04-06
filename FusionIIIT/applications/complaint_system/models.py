@@ -83,6 +83,9 @@ class StudentComplain(models.Model):
     worker_id = models.ForeignKey(Workers, blank=True, null=True,on_delete=models.CASCADE)
     upload_complaint = models.FileField(blank=True)
     comment = models.CharField(max_length=100,  default="None")
+    is_escalated = models.IntegerField(default=0)  # 0=Not escalated, 1=Escalated
+    escalation_reason = models.CharField(max_length=300, blank=True, default="")
+    escalated_date = models.DateTimeField(blank=True, null=True)
     #upload_resolved = models.FileField(blank=True,null=True)
 
     def __str__(self):
