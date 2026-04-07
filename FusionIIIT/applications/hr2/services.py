@@ -4,6 +4,8 @@ This module consolidates business logic from form management and file workflow,
 providing a stable, reusable interface for both database operations and file tracking.
 """
 
+import datetime
+
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -47,6 +49,47 @@ def get_model_for_form_type(form_type: str):
 
 
 # ============================================================================
+# Date Filtering Helpers
+# ============================================================================
+
+def _get_default_date_range():
+    """Return (start_date, end_date) for the current calendar year (Jan 1 - Dec 31)."""
+    today = datetime.date.today()
+    start = datetime.date(today.year, 1, 1)
+    end = datetime.date(today.year, 12, 31)
+    return start, end
+
+
+def _parse_and_validate_date_params(from_date_str, to_date_str):
+    """Parse and validate ISO 8601 date strings (YYYY-MM-DD).
+    
+    Returns:
+        (from_date: date, to_date: date) on success, or (None, None) on parse error.
+        Validates that from_date <= to_date.
+    """
+    from_date = None
+    to_date = None
+    
+    if from_date_str:
+        try:
+            from_date = datetime.datetime.strptime(from_date_str.strip(), "%Y-%m-%d").date()
+        except (ValueError, AttributeError):
+            return None, None
+    
+    if to_date_str:
+        try:
+            to_date = datetime.datetime.strptime(to_date_str.strip(), "%Y-%m-%d").date()
+        except (ValueError, AttributeError):
+            return None, None
+    
+    # Validate range if both dates provided
+    if from_date and to_date and from_date > to_date:
+        return None, None
+    
+    return from_date, to_date
+
+
+# ============================================================================
 # Form Persistence & Lookup (Form Services)
 # ============================================================================
 
@@ -61,16 +104,47 @@ def get_form_by_id(form_model, form_id):
     return form_model.objects.get(id=form_id)
 
 
-def get_forms_for_user(form_type: str, username: str):
-    """Fetch forms for a user by form type.
-
-    Returns (forms, many) where `many` indicates whether the result is a queryset.
+def get_forms_for_user(form_type: str, username: str, from_date: str = None, to_date: str = None):
+    """Fetch forms for a user by form type, optionally filtered by date range.
+    
+    Args:
+        form_type: The type of form (e.g., FormType.LTC, FormType.LEAVE).
+        username: The username of the form creator.
+        from_date: Optional start date (ISO 8601 format YYYY-MM-DD). If not provided,
+                   defaults to Jan 1 of current year.
+        to_date: Optional end date (ISO 8601 format YYYY-MM-DD). If not provided,
+                 defaults to Dec 31 of current year.
+    
+    Returns:
+        (forms, many) where `many` indicates whether the result is a queryset.
+        - Single object (many=False) if exactly 1 result
+        - List (many=True) if 0 or multiple results
     """
     model = get_model_for_form_type(form_type)
     if model is None:
         return [], True
 
     queryset = get_forms_by_creator(model, username)
+    
+    # Parse and validate date parameters; use defaults if not provided or invalid
+    parsed_from_date, parsed_to_date = _parse_and_validate_date_params(from_date, to_date)
+    
+    # If dates were provided but invalid, return empty list (failed validation)
+    if (from_date or to_date) and (parsed_from_date is None and parsed_to_date is None):
+        return [], True
+    
+    # If no valid dates provided, use default range (current calendar year)
+    if parsed_from_date is None and parsed_to_date is None:
+        parsed_from_date, parsed_to_date = _get_default_date_range()
+    # Handle case where only from_date was provided
+    elif parsed_from_date and not parsed_to_date:
+        _, parsed_to_date = _get_default_date_range()
+    # Handle case where only to_date was provided
+    elif parsed_to_date and not parsed_from_date:
+        parsed_from_date, _ = _get_default_date_range()
+    
+    # Apply date range filter on submissionDate field
+    queryset = queryset.filter(submissionDate__range=[parsed_from_date, parsed_to_date])
 
     # Keep response shape consistent with prior behavior:
     # - a single object for 1 result

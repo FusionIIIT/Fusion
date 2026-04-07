@@ -66,6 +66,7 @@ _LEAVE_TYPE_TO_ALLOTTED_USED = {
 }
 
 
+
 def _get_request_designation(request, receiver_payload=None):
     receiver_payload = receiver_payload or {}
     request_data_designation = request.data.get("designation") if isinstance(request.data, dict) else None
@@ -205,7 +206,9 @@ class LTC(APIView):
 
     def get(self, request, *args, **kwargs):
         username = request.query_params.get("name")
-        forms, many = get_forms_for_user(FormType.LTC, username)
+        from_date = request.query_params.get("from_date")
+        to_date = request.query_params.get("to_date")
+        forms, many = get_forms_for_user(FormType.LTC, username, from_date, to_date)
         serializer = self.serializer_class(forms, many=many)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -271,7 +274,9 @@ class CPDAAdvance(APIView):
 
     def get(self, request, *args, **kwargs):
         username = request.query_params.get("name")
-        forms, many = get_forms_for_user(FormType.CPDA_ADVANCE, username)
+        from_date = request.query_params.get("from_date")
+        to_date = request.query_params.get("to_date")
+        forms, many = get_forms_for_user(FormType.CPDA_ADVANCE, username, from_date, to_date)
         serializer = self.serializer_class(forms, many=many)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -337,7 +342,9 @@ class CPDAReimbursement(APIView):
 
     def get(self, request, *args, **kwargs):
         username = request.query_params.get("name")
-        forms, many = get_forms_for_user(FormType.CPDA_REIMBURSEMENT, username)
+        from_date = request.query_params.get("from_date")
+        to_date = request.query_params.get("to_date")
+        forms, many = get_forms_for_user(FormType.CPDA_REIMBURSEMENT, username, from_date, to_date)
         serializer = self.serializer_class(forms, many=many)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -403,7 +410,9 @@ class Leave(APIView):
 
     def get(self, request, *args, **kwargs):
         username = request.query_params.get("name")
-        forms, many = get_forms_for_user(FormType.LEAVE, username)
+        from_date = request.query_params.get("from_date")
+        to_date = request.query_params.get("to_date")
+        forms, many = get_forms_for_user(FormType.LEAVE, username, from_date, to_date)
         serializer = self.serializer_class(forms, many=many)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -477,7 +486,9 @@ class Appraisal(APIView):
 
     def get(self, request, *args, **kwargs):
         username = request.query_params.get("name")
-        forms, many = get_forms_for_user(FormType.APPRAISAL, username)
+        from_date = request.query_params.get("from_date")
+        to_date = request.query_params.get("to_date")
+        forms, many = get_forms_for_user(FormType.APPRAISAL, username, from_date, to_date)
         serializer = self.serializer_class(forms, many=many)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -585,11 +596,13 @@ class GetFormHistory(APIView):
     def get(self, request, *args, **kwargs):
         form_type = request.query_params.get("type")
         username = request.query_params.get("id")
+        from_date = request.query_params.get("from_date")
+        to_date = request.query_params.get("to_date")
 
         if form_type not in _FORM_TYPE_TO_SERIALIZER:
             return Response([], status=status.HTTP_200_OK)
 
-        forms, many = get_forms_for_user(form_type, username)
+        forms, many = get_forms_for_user(form_type, username, from_date, to_date)
         serializer_cls = _FORM_TYPE_TO_SERIALIZER[form_type]
         serializer = serializer_cls(forms, many=many)
         return Response(serializer.data, status=status.HTTP_200_OK)
