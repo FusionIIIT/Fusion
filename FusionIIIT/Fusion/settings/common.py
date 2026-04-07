@@ -89,6 +89,10 @@ CELERY_BEAT_SCHEDULE = {
     'leave-migration-task': {
         'task': 'applications.leave.tasks.execute_leave_migrations',
         'schedule': crontab(minute='1', hour='0')
+    },
+    'complaint-auto-escalation-task': {
+        'task': 'applications.complaint_system.tasks.escalate_overdue_complaints',
+        'schedule': crontab(minute='*/15')
     }
 }
 
