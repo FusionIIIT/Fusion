@@ -214,6 +214,9 @@ class LeaveForm(BaseForm):
     academicResponsibility = models.TextField(max_length=40, blank=True, null=True)
     addministrativeResponsibiltyAssigned = models.TextField(max_length=40, null=True)
     leave_pdf = models.BinaryField(null=True, blank=True)
+    leave_pdf_file = models.FileField(
+        upload_to='Hr2/leave_pdfs', null=True, blank=True
+    )
 
 class LeaveBalance(models.Model):
     """Per-type leave: available = allotted - used (synced into legacy *Leave columns on save)."""

@@ -4,15 +4,19 @@ This module contains all REST API view classes for HR2 form operations,
 including LTC, CPDA, Leave, Appraisal forms and management/workflow views.
 """
 
+import datetime
+import os
+
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.db import transaction
+from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from django.contrib.auth import get_user_model
-from django.db import transaction
-from django.http import HttpResponse
-
+from applications.hr2.api.permissions import ModuleAccessHRPermission
 from applications.hr2.constants.form_types import FormType
 from applications.hr2.api.serializers import (
     Appraisal_serializer,
@@ -175,14 +179,64 @@ def _ensure_rejection_remarks_if_rejecting(receiver, form_payload):
     return None
 
 
+def _get_appraisal_submission_window():
+    start = getattr(settings, "HR2_APPRAISAL_SUBMISSION_START", None)
+    end = getattr(settings, "HR2_APPRAISAL_SUBMISSION_END", None)
+
+    if isinstance(start, str):
+        try:
+            start = datetime.date.fromisoformat(start)
+        except ValueError:
+            start = None
+    if isinstance(end, str):
+        try:
+            end = datetime.date.fromisoformat(end)
+        except ValueError:
+            end = None
+
+    return start, end
+
+
+def _ensure_appraisal_submission_window():
+    start, end = _get_appraisal_submission_window()
+    if start is None or end is None:
+        return None
+    today = datetime.date.today()
+    if not (start <= today <= end):
+        return Response(
+            {
+                "detail": (
+                    f"Appraisal submissions are allowed only between "
+                    f"{start.isoformat()} and {end.isoformat()}."
+                )
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    return None
+
+
+def _validate_search_query(value, param_name="query"):
+    if value is None or str(value).strip() == "":
+        return Response(
+            {"detail": f"{param_name} parameter must be at least 1 character."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    return None
+
+
+class Hr2APIView(APIView):
+    """Base API view for HR2 endpoints enforcing login and HR module access."""
+
+    permission_classes = (IsAuthenticated, ModuleAccessHRPermission,)
+
+
 # ============================================================================
 # Form CRUD Views
 # ============================================================================
 
-class LTC(APIView):
+class LTC(Hr2APIView):
     """API view for LTC (Long Term Advance) form operations."""
     serializer_class = LTC_serializer
-    permission_classes = (IsAuthenticated,)
 
     def post(self, request):
         is_complete, message = _is_profile_complete_for_ltc(request.user)
@@ -250,10 +304,9 @@ class LTC(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-class CPDAAdvance(APIView):
+class CPDAAdvance(Hr2APIView):
     """API view for CPDA Advance form operations."""
     serializer_class = CPDAAdvance_serializer
-    permission_classes = (IsAuthenticated,)
 
     def post(self, request):
         user_info = request.data[1]
@@ -318,10 +371,9 @@ class CPDAAdvance(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-class CPDAReimbursement(APIView):
+class CPDAReimbursement(Hr2APIView):
     """API view for CPDA Reimbursement form operations."""
     serializer_class = CPDAReimbursement_serializer
-    permission_classes = (IsAuthenticated,)
 
     def post(self, request):
         user_info = request.data[1]
@@ -386,10 +438,9 @@ class CPDAReimbursement(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-class Leave(APIView):
+class Leave(Hr2APIView):
     """API view for Leave form operations."""
     serializer_class = Leave_serializer
-    permission_classes = (IsAuthenticated,)
 
     def post(self, request):
         user_info = request.data[1]
@@ -462,12 +513,15 @@ class Leave(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-class Appraisal(APIView):
+class Appraisal(Hr2APIView):
     """API view for Appraisal form operations."""
     serializer_class = Appraisal_serializer
-    permission_classes = (IsAuthenticated,)
 
     def post(self, request):
+        window_error = _ensure_appraisal_submission_window()
+        if window_error:
+            return window_error
+
         user_info = request.data[1]
         serializer = self.serializer_class(data=request.data[0])
         if serializer.is_valid():
@@ -530,10 +584,8 @@ class Appraisal(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-class LeaveFormPdfDownload(APIView):
+class LeaveFormPdfDownload(Hr2APIView):
     """Download stored leave application PDF bytes (refactored hr2 endpoint)."""
-
-    permission_classes = (IsAuthenticated,)
 
     def get(self, request, form_id=None, *args, **kwargs):
         form_id = form_id or request.query_params.get("id")
@@ -543,17 +595,26 @@ class LeaveFormPdfDownload(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         try:
-            leave = LeaveForm.objects.only("id", "leave_pdf").get(pk=form_id)
+            leave = LeaveForm.objects.only("id", "leave_pdf", "leave_pdf_file").get(pk=form_id)
         except LeaveForm.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        if not leave.leave_pdf:
-            return Response(
-                {"detail": "No PDF stored for this leave form."},
-                status=status.HTTP_404_NOT_FOUND,
+        if leave.leave_pdf:
+            return HttpResponse(
+                bytes(leave.leave_pdf),
+                content_type="application/pdf",
             )
-        return HttpResponse(
-            bytes(leave.leave_pdf),
-            content_type="application/pdf",
+        if leave.leave_pdf_file:
+            response = HttpResponse(
+                leave.leave_pdf_file.read(),
+                content_type="application/pdf",
+            )
+            response["Content-Disposition"] = (
+                f'attachment; filename="{os.path.basename(leave.leave_pdf_file.name)}"'
+            )
+            return response
+        return Response(
+            {"detail": "No PDF stored for this leave form."},
+            status=status.HTTP_404_NOT_FOUND,
         )
 
 
@@ -561,9 +622,8 @@ class LeaveFormPdfDownload(APIView):
 # Form Management & Workflow Views
 # ============================================================================
 
-class FormManagement(APIView):
+class FormManagement(Hr2APIView):
     """API view for form management (inbox operations)."""
-    permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
         username = request.query_params.get("username")
@@ -589,9 +649,8 @@ class FormManagement(APIView):
         return Response(status=status.HTTP_200_OK)
 
 
-class GetFormHistory(APIView):
+class GetFormHistory(Hr2APIView):
     """API view to retrieve form history for a user."""
-    permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
         form_type = request.query_params.get("type")
@@ -608,9 +667,8 @@ class GetFormHistory(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class TrackProgress(APIView):
+class TrackProgress(Hr2APIView):
     """API view to track form workflow progress."""
-    permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
         file_id = request.query_params.get("id")
@@ -618,9 +676,8 @@ class TrackProgress(APIView):
         return Response({"status": progress}, status=status.HTTP_200_OK)
 
 
-class FormFetch(APIView):
+class FormFetch(Hr2APIView):
     """API view to fetch form details with workflow tracking."""
-    permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
         file_id = request.query_params.get("file_id")
@@ -651,13 +708,15 @@ class FormFetch(APIView):
         )
 
 
-class CheckLeaveBalance(APIView):
+class CheckLeaveBalance(Hr2APIView):
     """API view to check and update leave balance."""
-    permission_classes = (IsAuthenticated,)
     serializer_class = LeaveBalanace_serializer
 
     def get(self, request, *args, **kwargs):
         name = request.query_params.get("name")
+        validation_error = _validate_search_query(name, "name")
+        if validation_error:
+            return validation_error
         person = User.objects.get(username=name)
         extrainfo = ExtraInfo.objects.get(user=person)
         leave_balance = LeaveBalance.objects.get(employeeId=extrainfo)
@@ -683,9 +742,8 @@ class CheckLeaveBalance(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class AllEmployeeLeaveBalances(APIView):
+class AllEmployeeLeaveBalances(Hr2APIView):
     """API view to fetch all employee leave balances (HR Admin only)."""
-    permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
         if not _is_hr_admin(request.user):
@@ -731,31 +789,34 @@ class AllEmployeeLeaveBalances(APIView):
         return Response({"leave_balances": rows}, status=status.HTTP_200_OK)
 
 
-class DropDown(APIView):
+class DropDown(Hr2APIView):
     """API view to get user designations for dropdown."""
-    permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
         user_id = request.query_params.get("username")
+        validation_error = _validate_search_query(user_id, "username")
+        if validation_error:
+            return validation_error
         user = User.objects.get(username=user_id)
         designations = user.holdsdesignation_set.all()
         designation_list = [d.designation.name for d in designations]
         return Response(designation_list, status=status.HTTP_200_OK)
 
 
-class UserById(APIView):
+class UserById(Hr2APIView):
     """API view to get user information by ID."""
-    permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
         user_id = request.query_params.get("id")
+        validation_error = _validate_search_query(user_id, "id")
+        if validation_error:
+            return validation_error
         user = User.objects.get(id=user_id)
         return Response({"username": user.username}, status=status.HTTP_200_OK)
 
 
-class ViewArchived(APIView):
+class ViewArchived(Hr2APIView):
     """API view to retrieve archived forms."""
-    permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
         user_name = request.query_params.get("username")
@@ -764,9 +825,8 @@ class ViewArchived(APIView):
         return Response(archived_inbox, status=status.HTTP_200_OK)
 
 
-class GetOutbox(APIView):
+class GetOutbox(Hr2APIView):
     """API view to retrieve outbox."""
-    permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
         name = request.query_params.get("username")
