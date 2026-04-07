@@ -213,17 +213,62 @@ class LeaveForm(BaseForm):
     addressDuringLeave = models.TextField(max_length=40, blank=True, null=True)
     academicResponsibility = models.TextField(max_length=40, blank=True, null=True)
     addministrativeResponsibiltyAssigned = models.TextField(max_length=40, null=True)
+    leave_pdf = models.BinaryField(null=True, blank=True)
 
 class LeaveBalance(models.Model):
+    """Per-type leave: available = allotted - used (synced into legacy *Leave columns on save)."""
+
     id = models.AutoField(primary_key=True)
     employeeId = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE)
     casualLeave = models.IntegerField(default=0)
+    casual_leave_allotted = models.PositiveIntegerField(default=15)
+    casual_leave_used = models.PositiveIntegerField(default=0)
     specialCasualLeave = models.IntegerField(default=0)
+    special_casual_leave_allotted = models.PositiveIntegerField(default=7)
+    special_casual_leave_used = models.PositiveIntegerField(default=0)
     earnedLeave = models.IntegerField(default=0)
+    earned_leave_allotted = models.PositiveIntegerField(default=30)
+    earned_leave_used = models.PositiveIntegerField(default=0)
     commutedLeave = models.IntegerField(default=0)
+    commuted_leave_allotted = models.PositiveIntegerField(default=0)
+    commuted_leave_used = models.PositiveIntegerField(default=0)
     restrictedHoliday = models.IntegerField(default=0)
+    restricted_holiday_allotted = models.PositiveIntegerField(default=2)
+    restricted_holiday_used = models.PositiveIntegerField(default=0)
     stationLeave = models.IntegerField(default=0)
+    station_leave_allotted = models.PositiveIntegerField(default=0)
+    station_leave_used = models.PositiveIntegerField(default=0)
     vacationLeave = models.IntegerField(default=0)
+    vacation_leave_allotted = models.PositiveIntegerField(default=0)
+    vacation_leave_used = models.PositiveIntegerField(default=0)
+
+    def save(self, *args, **kwargs):
+        self.casualLeave = max(
+            0, int(self.casual_leave_allotted or 0) - int(self.casual_leave_used or 0)
+        )
+        self.specialCasualLeave = max(
+            0,
+            int(self.special_casual_leave_allotted or 0)
+            - int(self.special_casual_leave_used or 0),
+        )
+        self.earnedLeave = max(
+            0, int(self.earned_leave_allotted or 0) - int(self.earned_leave_used or 0)
+        )
+        self.commutedLeave = max(
+            0, int(self.commuted_leave_allotted or 0) - int(self.commuted_leave_used or 0)
+        )
+        self.restrictedHoliday = max(
+            0,
+            int(self.restricted_holiday_allotted or 0)
+            - int(self.restricted_holiday_used or 0),
+        )
+        self.stationLeave = max(
+            0, int(self.station_leave_allotted or 0) - int(self.station_leave_used or 0)
+        )
+        self.vacationLeave = max(
+            0, int(self.vacation_leave_allotted or 0) - int(self.vacation_leave_used or 0)
+        )
+        super().save(*args, **kwargs)
 
 
 class Appraisalform(BaseForm):

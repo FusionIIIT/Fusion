@@ -15,6 +15,8 @@ urlpatterns = [
     # cpda reimbursement form
     url('cpdareim/', views.CPDAReimbursement.as_view(),
         name='CPDAReimbursement_form'),
+    # leave PDF download (must be registered before generic leave/)
+    url(r'^leave/pdf/(?P<form_id>\d+)/$', views.LeaveFormPdfDownload.as_view(), name='leave_form_pdf'),
     #  leave form
     url('leave/', views.Leave.as_view(), name='Leave_form'),
     url('formManagement/', views.FormManagement.as_view(), name='formManagement'),
@@ -23,6 +25,7 @@ urlpatterns = [
     #  create for GetForms
     url('getForms/', views.GetFormHistory.as_view(), name='getForms'),
     url('leaveBalance/', views.CheckLeaveBalance.as_view(), name='leaveBalance'),
+    url('allLeaveBalances/', views.AllEmployeeLeaveBalances.as_view(), name='allLeaveBalances'),
     url('getDesignations/', views.DropDown.as_view(), name="designations"),
     url('getOutbox/', views.GetOutbox.as_view(), name='outbox'),
     url('getArchive/', views.ViewArchived.as_view(), name='archive'),
