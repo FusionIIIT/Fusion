@@ -13,21 +13,28 @@ def user_logged_in_middleware(get_response):
             # Assuming user is a model with the desired data field, retrieve the data
             # For example, if your User model has a field named 'custom_field', you can access it like:
             if user.is_authenticated:
+                # Check if user has extrainfo (skip if not, e.g., for superusers)
+                try:
+                    user_extrainfo = user.extrainfo
+                except ExtraInfo.DoesNotExist:
+                    # User (e.g., superuser/admin) doesn't have ExtraInfo - skip role-based setup
+                    return
+                
                 desig = list(HoldsDesignation.objects.select_related('user','working','designation').all().filter(working = request.user).values_list('designation'))
                 print(desig)
                 b = [i for sub in desig for i in sub]
                 design = HoldsDesignation.objects.select_related('user','designation').filter(working=request.user)
 
                 designation=[]
-                if str(user.extrainfo.user_type) == "student":
-                    designation.append(str(user.extrainfo.user_type))
+                if str(user_extrainfo.user_type) == "student":
+                    designation.append(str(user_extrainfo.user_type))
 
 
                 for i in design:
-                    if str(i.designation) != str(user.extrainfo.user_type):
+                    if str(i.designation) != str(user_extrainfo.user_type):
                         print('-------')
                         print(i.designation)
-                        print(user.extrainfo.user_type)
+                        print(user_extrainfo.user_type)
                         print('')
                         designation.append(str(i.designation))
 

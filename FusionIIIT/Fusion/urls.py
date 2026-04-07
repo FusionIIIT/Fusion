@@ -32,7 +32,13 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^academic-procedures/', include('applications.academic_procedures.urls')),
     url(r'^aims/', include('applications.academic_information.urls')),
+    
+    # Notification module (new proper REST API)
+    url(r'^notification/', include('notification.urls')),
+    
+    # Legacy notifications endpoints (keep for backward compatibility)
     url(r'^notifications/', include('applications.notifications_extension.urls')),
+    
     url(r'^estate/', include('applications.estate_module.urls')),
     url(r'^dep/', include('applications.department.urls')),
     url(r'^programme_curriculum/',include('applications.programme_curriculum.urls')),

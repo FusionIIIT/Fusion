@@ -38,13 +38,19 @@ def login(request):
     design = HoldsDesignation.objects.select_related('user','designation').filter(working=user)
 
     designation=[]
-                
-    if str(user.extrainfo.user_type) == "student":
-        designation.append(str(user.extrainfo.user_type))
+    
+    # Create ExtraInfo if it doesn't exist
+    if user:
+        try:
+            extra_info = user.extrainfo
+        except ExtraInfo.DoesNotExist:
+            extra_info = ExtraInfo.objects.create(user=user, user_type='student')
         
-    for i in design:
-        if str(i.designation) != str(user.extrainfo.user_type):
-            designation.append(str(i.designation))
+        designation.append(str(extra_info.user_type))
+        
+        for i in design:
+            if str(i.designation) != str(extra_info.user_type):
+                designation.append(str(i.designation))
     
     resp = {
         'success' : 'True',

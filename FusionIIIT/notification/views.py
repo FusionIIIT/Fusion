@@ -1,7 +1,18 @@
-from django.shortcuts import render
-from requests import Response
+"""
+Notification Legacy Views
+==========================
+
+This module provides backward compatibility for existing code that directly calls
+notification functions. All functions here delegate to the notification.services module.
+
+IMPORTANT: New code should use the NotificationService class from notification.services
+instead of calling these functions directly.
+
+This layer exists ONLY for backward compatibility with existing modules.
+"""
+
 from notifications.signals import notify
-# Create your views here.
+from .services import NotificationService
 
 
 def leave_module_notif(sender, recipient, type, date=None):
@@ -578,3 +589,75 @@ def iwd_notif(sender,recipient,type):
     if type == "Request_rejected": 
         verb = "Request rejected by " + sender.username + "." 
     notify.send(sender=sender,recipient=recipient,url=url,module=module,verb=verb)
+
+
+def RSPC_notif(sender, recipient, type):
+    """
+    Notification for Research and Sponsored Projects Cell
+    """
+    url = 'office:officeOfDeanRSPC'
+    module = 'Research & Sponsored Projects Cell'
+    sender = sender
+    recipient = recipient
+    verb = ""
+
+    if type == 'Approve':
+        verb = "Your Project request has been accepted"
+    elif type == 'Disapprove':
+        verb = "Your project request got rejected"
+    elif type == 'Pending':
+        verb = "Kindly wait for the response"
+
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
+
+
+def announcement_list(request):
+    """
+    Returns announcements visible to the current user based on their profile.
+    This function retrieves all announcements that the user should see.
+    """
+    from .models import Announcements, AnnouncementRecipients
+    from django.utils import timezone
+    
+    user = request.user
+    announcements = Announcements.objects.filter(is_active=True, is_published=True)
+    
+    # Filter announcements based on target_group
+    if user.is_staff or user.is_superuser:
+        # Staff and admins see all announcements
+        pass
+    else:
+        # Filter by target group
+        user_type = user.extrainfo.user_type if hasattr(user, 'extrainfo') else None
+        department = user.extrainfo.department if hasattr(user, 'extrainfo') else None
+        
+        # Build query based on user profile
+        from django.db.models import Q
+        
+        filter_query = Q(target_group='all_users')
+        
+        if user_type == 'student':
+            filter_query |= Q(target_group='students')
+            filter_query |= Q(target_group='batch', batch=user.extrainfo.student.batch if hasattr(user.extrainfo, 'student') else None)
+        
+        if user_type == 'faculty':
+            filter_query |= Q(target_group='faculty')
+        
+        if user_type == 'staff':
+            filter_query |= Q(target_group='staff')
+        
+        if department:
+            filter_query |= Q(target_group='department', department=department)
+        
+        # Specific users
+        filter_query |= Q(
+            target_group='specific_users',
+            recipients__user__user=user
+        )
+        
+        announcements = announcements.filter(filter_query).distinct()
+    
+    return {
+        'announcements': announcements,
+        'user': user
+    }
