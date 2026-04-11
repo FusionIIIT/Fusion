@@ -9,4 +9,5 @@ urlpatterns = [
     path('students-grade-info/', views.StudentsGradeInfo.as_view(), name="students-grade-info"),
     path('course-student-count/', views.CourseStudentCountView.as_view(), name="course-student-count"),
     path('course-students/', views.CourseStudentsListView.as_view(), name="course-students"),
+    path('unregistered-by-batch/', views.UnregisteredStudentsByBatchView.as_view(), name="unregistered-by-batch"),
 ]

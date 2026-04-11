@@ -1,4 +1,4 @@
-from django.db.models import Count, Q, F
+from django.db.models import Count, Q, F, Max
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -581,8 +581,123 @@ class StudentsGradeInfo(APIView):
         except Exception as e:
             logger.error(f"Error in StudentsGradeInfo: {str(e)}", exc_info=True)
             return Response({
-                'success': False, 
+                'success': False,
                 'error': f'An error occurred while fetching data: {str(e)}'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class UnregisteredStudentsByBatchView(APIView):
+    """
+    GET: Retrieve students who haven't registered for any course in semesters
+    1 to their current semester, grouped by semester.
+
+    Query params:
+        - batch_id (required): Batch year, e.g., '2022'
+
+    Response format:
+        {
+            'success': True,
+            'data': [
+                {'roll_no': '201234001', 'student_name': 'John Doe', 'semester_no': 7,
+                 'batch': '2022', 'current_semester': 8},
+                ...
+            ],
+            'count': 45,
+            'batch_id': '2022',
+            'semester_range': [1, 2, 3, 4, 5, 6, 7, 8]
+        }
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        batch_id = request.query_params.get('batch_id')
+
+        
+        if not batch_id:
+            return Response({
+                'success': False,
+                'error': 'batch_id parameter is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+   
+        if not self._is_valid_batch_year(batch_id):
+            return Response({
+                'success': False,
+                'error': 'Invalid batch_id. Must be a year between 2000 and 2100'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            
+            batch_exists = Student.objects.filter(batch=batch_id).exists()
+            if not batch_exists:
+                return Response({
+                    'success': False,
+                    'error': f'No students found for batch {batch_id}'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+           
+            students = Student.objects.filter(batch=batch_id).select_related(
+                'id', 'id__user'
+            ).values(
+                'id_id', 'curr_semester_no', 'id__user__first_name', 'id__user__last_name'
+            )
+
+            # Find max semester in batch to determine range
+            max_semester_result = students.aggregate(Max('curr_semester_no'))
+            max_semester = max_semester_result.get('curr_semester_no__max') or 1
+            semesters = list(range(1, max_semester + 1))
+
+            
+            result = []
+
+            
+            for semester in semesters:
+                # Get set of students registered in this semester
+                registered_students = set(
+                    course_registration.objects.filter(
+                        student_id__batch=batch_id,
+                        semester_id__semester_no=semester
+                    ).values_list('student_id_id', flat=True)
+                )
+
+                # Add unregistered students for this semester
+                for student in students:
+                    student_roll_no = student['id_id']
+
+                    # Only add if student hasn't registered for this semester
+                    if student_roll_no not in registered_students:
+                        result.append({
+                            'roll_no': student_roll_no,
+                            'student_name': f"{student['id__user__first_name']} {student['id__user__last_name']}",
+                            'semester_no': semester,
+                            'batch': batch_id,
+                            'current_semester': student['curr_semester_no']
+                        })
+
+           
+            result.sort(key=lambda x: (x['semester_no'], x['roll_no']))
+
+            return Response({
+                'success': True,
+                'data': result,
+                'count': len(result),
+                'batch_id': batch_id,
+                'semester_range': semesters
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            logger.error(f"Error in UnregisteredStudentsByBatch: {str(e)}", exc_info=True)
+            return Response({
+                'success': False,
+                'error': f'An error occurred while fetching unregistered students: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def _is_valid_batch_year(self, batch_id):
+        """Validate that batch_id is a valid year"""
+        try:
+            year = int(batch_id)
+            return 2000 <= year <= 2100
+        except (ValueError, TypeError):
+            return False
 
 
