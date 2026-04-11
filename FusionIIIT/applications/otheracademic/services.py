@@ -13,6 +13,7 @@ from applications.otheracademic.models import (
     BonafideFormTableUpdated,
     AssistantshipClaimFormStatusUpd,
     NoDues,
+    GraduateSeminarFormTable,
     LeaveStatusChoices,
     LeaveTypeChoices,
 )
@@ -450,3 +451,115 @@ def get_assistantship_approval_stages(form):
             result[stage_name] = "Pending"
 
     return result
+
+
+# ==================== GRADUATE SEMINAR SERVICES ====================
+
+class GraduateSeminarServiceError(Exception):
+    """Custom exception for graduate seminar-related service errors."""
+    pass
+
+
+class NoDuesServiceError(Exception):
+    """Custom exception for no dues-related service errors."""
+    pass
+
+
+def submit_graduate_seminar_form(
+    user,
+    semester,
+    date_of_seminar,
+    theme_of_work,
+    place,
+    time,
+    work_done_till_previous_sem,
+    specific_contri_in_cur_sem,
+    future_plan,
+    quality_of_work,
+    quantity_of_work,
+):
+    """Submit a graduate seminar form."""
+    try:
+        # Get the user's ExtraInfo object (which contains roll_no)
+        extra_info = user.extrainfo
+    except ExtraInfo.DoesNotExist:
+        raise GraduateSeminarServiceError("Student profile not found.")
+
+    # Create graduate seminar form record
+    form = GraduateSeminarFormTable.objects.create(
+        roll_no=extra_info,
+        semester=semester,
+        date_of_seminar=date_of_seminar,
+        theme_of_work=theme_of_work,
+        place=place,
+        time=time,
+        work_done_till_previous_sem=work_done_till_previous_sem,
+        specific_contri_in_cur_sem=specific_contri_in_cur_sem,
+        future_plan=future_plan,
+        quality_of_work=quality_of_work,
+        quantity_of_work=quantity_of_work,
+        status='Pending',
+    )
+
+    # Send notification to department admin
+    # (notification logic would go here)
+
+    return form
+
+
+def update_graduate_seminar_status(approved_ids, rejected_ids, remarks=''):
+    """Update graduate seminar form status (department admin approval)."""
+    from applications.otheracademic.models import GraduateSeminarStatusChoices
+    
+    if approved_ids:
+        GraduateSeminarFormTable.objects.filter(id__in=approved_ids).update(
+            status=GraduateSeminarStatusChoices.APPROVED,
+            remarks=remarks
+        )
+    if rejected_ids:
+        GraduateSeminarFormTable.objects.filter(id__in=rejected_ids).update(
+            status=GraduateSeminarStatusChoices.REJECTED,
+            remarks=remarks
+        )
+
+
+# ==================== NO DUES SERVICES ====================
+
+def update_nodues_status(record_id, department, action):
+    """Update no dues status for a student in a specific department."""
+    # Map department to field names
+    department_field_map = {
+        "hostel": ("hostel_clear", "hostel_notclear"),
+        "library": ("library_clear", "library_notclear"),
+        "mess": ("mess_clear", "mess_notclear"),
+        "ece": ("ece_clear", "ece_notclear"),
+        "physics_lab": ("physics_lab_clear", "physics_lab_notclear"),
+        "bank": ("bank_clear", "bank_notclear"),
+        "icard_dsa": ("icard_dsa_clear", "icard_dsa_notclear"),
+        "design_studio": ("design_studio_clear", "design_studio_notclear"),
+        "discipline_office": ("discipline_office_clear", "discipline_office_notclear"),
+        "account": ("account_clear", "account_notclear"),
+    }
+    
+    try:
+        nodues_record = NoDues.objects.get(id=record_id)
+    except NoDues.DoesNotExist:
+        raise NoDuesServiceError(f"No Dues record with ID {record_id} not found.")
+    
+    if department not in department_field_map:
+        raise NoDuesServiceError(f"Unknown department: {department}")
+    
+    clear_field, notclear_field = department_field_map[department]
+    
+    if action == "clear":
+        setattr(nodues_record, clear_field, True)
+        setattr(nodues_record, notclear_field, False)
+    elif action == "notclear":
+        setattr(nodues_record, clear_field, False)
+        setattr(nodues_record, notclear_field, True)
+    else:
+        raise NoDuesServiceError(f"Invalid action: {action}. Must be 'clear' or 'notclear'.")
+    
+    nodues_record.save()
+
+

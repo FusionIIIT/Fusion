@@ -12,7 +12,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from applications.otheracademic import services, selectors
 from applications.otheracademic.models import LeaveStatusChoices
-from .serializers import (
+from applications.otheracademic.api.serializers import (
     LeaveFormInputSerializer,
     LeavePGInputSerializer,
     LeaveStatusUpdateSerializer,
@@ -20,6 +20,12 @@ from .serializers import (
     BonafideStatusUpdateSerializer,
     AssistantshipFormInputSerializer,
     AssistantshipStatusUpdateSerializer,
+    GraduateSeminarFormInputSerializer,
+    GraduateSeminarStatusUpdateSerializer,
+)
+from applications.otheracademic.api.file_validation import (
+    validate_bonafide_file,
+    FileValidationError,
 )
 
 
@@ -204,12 +210,27 @@ class GetPGLeaveRequests(APIView):
 # ==================== BONAFIDE VIEWS ====================
 
 class BonafideFormSubmitView(APIView):
-    """Submit a bonafide application."""
+    """Submit a bonafide application with optional file upload and validation."""
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         data = request.POST
-        file = request.FILES.get('related_document')
+        file = request.FILES.get('bonafide_file')
+
+        # Validate file if provided
+        try:
+            if file:
+                validation_result = validate_bonafide_file(file)
+                if not validation_result["valid"]:
+                    return Response(
+                        {"error": "File validation failed"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+        except FileValidationError as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             bonafide = services.submit_bonafide(
@@ -220,7 +241,10 @@ class BonafideFormSubmitView(APIView):
                 download_file=file,
             )
             return Response(
-                {"message": "Your bonafide form has been successfully submitted."},
+                {
+                    "message": "Your bonafide form has been successfully submitted.",
+                    "file_info": validation_result.get("file_info") if file else None
+                },
                 status=status.HTTP_201_CREATED
             )
         except services.BonafideServiceError as e:
@@ -553,3 +577,159 @@ class GetAssistantshipStatus(APIView):
                 {"error": "An error occurred while fetching assistantship status.", "details": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+# ==================== GRADUATE SEMINAR VIEWS ====================
+
+class GraduateSeminarFormSubmitView(APIView):
+    """Submit a graduate seminar form."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = GraduateSeminarFormInputSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            form = services.submit_graduate_seminar_form(
+                user=request.user,
+                semester=serializer.validated_data.get('semester'),
+                date_of_seminar=serializer.validated_data.get('date_of_seminar'),
+                theme_of_work=serializer.validated_data.get('theme_of_work'),
+                place=serializer.validated_data.get('place'),
+                time=serializer.validated_data.get('time'),
+                work_done_till_previous_sem=serializer.validated_data.get('work_done_till_previous_sem'),
+                specific_contri_in_cur_sem=serializer.validated_data.get('specific_contri_in_cur_sem'),
+                future_plan=serializer.validated_data.get('future_plan'),
+                quality_of_work=serializer.validated_data.get('quality_of_work'),
+                quantity_of_work=serializer.validated_data.get('quantity_of_work'),
+            )
+            return Response(
+                {"message": "Graduate seminar form submitted successfully", "id": form.id},
+                status=status.HTTP_201_CREATED
+            )
+        except services.LeaveServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FetchPendingGraduateSeminarRequests(APIView):
+    """Fetch pending graduate seminar forms for department admin approval."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        # Check if user is department admin
+        try:
+            from applications.globals.models import HoldsDesignation, Designation
+            
+            dept_admin_design = Designation.objects.get(name='deptadmin')
+            has_designation = HoldsDesignation.objects.filter(
+                user=request.user,
+                designation=dept_admin_design
+            ).exists()
+            
+            if not has_designation:
+                return Response(
+                    {"error": "Access Denied: Only department admins can access this resource."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        except Designation.DoesNotExist:
+            pass  # If designation doesn't exist, allow for now
+        
+        pending_forms = selectors.get_pending_graduate_seminar_forms()
+        data = [selectors.serialize_graduate_seminar_form(form) for form in pending_forms]
+        return Response(data, status=status.HTTP_200_OK)
+
+
+class UpdateGraduateSeminarStatus(APIView):
+    """Update graduate seminar form status (department admin approval)."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        # Check if user is department admin
+        try:
+            from applications.globals.models import HoldsDesignation, Designation
+            
+            dept_admin_design = Designation.objects.get(name='deptadmin')
+            has_designation = HoldsDesignation.objects.filter(
+                user=request.user,
+                designation=dept_admin_design
+            ).exists()
+            
+            if not has_designation:
+                return Response(
+                    {"error": "Access Denied: Only department admins can update forms."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        except Designation.DoesNotExist:
+            pass  # If designation doesn't exist, allow for now
+        
+        serializer = GraduateSeminarStatusUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        approved_ids = serializer.validated_data.get('approvedRequests', [])
+        rejected_ids = serializer.validated_data.get('rejectedRequests', [])
+        remarks = serializer.validated_data.get('remarks', '')
+
+        services.update_graduate_seminar_status(approved_ids, rejected_ids, remarks)
+        return Response({"message": "Graduate seminar statuses updated successfully."})
+
+
+class GetGraduateSeminarStatus(APIView):
+    """Get graduate seminar status for a specific student."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        roll_no_id = request.query_params.get('roll_no')
+
+        try:
+            seminar_forms = selectors.get_graduate_seminar_forms_by_roll_no(roll_no_id)
+            data = [selectors.serialize_graduate_seminar_form(form) for form in seminar_forms]
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": "An error occurred while fetching graduate seminar status.", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+# ==================== NO DUES VIEWS ====================
+
+class GetNoDuesRecords(APIView):
+    """Fetch no dues records for a specific department."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        department = request.query_params.get('department', 'hostel')
+        
+        try:
+            records = selectors.get_nodues_records_by_department(department)
+            data = [selectors.serialize_nodues_record(record, department) for record in records]
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": "An error occurred while fetching no dues records.", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class UpdateNoDuesStatus(APIView):
+    """Update no dues status for a student in a specific department."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        record_id = request.data.get('record_id')
+        department = request.data.get('department', 'hostel')
+        action = request.data.get('action', 'clear')  # 'clear' or 'notclear'
+
+        try:
+            services.update_nodues_status(record_id, department, action)
+            return Response({"message": "No dues status updated successfully."}, status=status.HTTP_200_OK)
+        except services.NoDuesServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(
+                {"error": "An error occurred while updating no dues status.", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
