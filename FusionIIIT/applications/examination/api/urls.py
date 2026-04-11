@@ -39,4 +39,5 @@ urlpatterns = [
     url(r'^grade_summary/', views.GradeSummaryAPI.as_view(), name='grade_summary'),
     url(r'^generate_gradesheet_data/', views.GenerateGradeSheetData.as_view(), name='generate_gradesheet_data'),
     url(r'^generate_gradesheet_form/', views.GenerateGradeSheetForm.as_view(), name='generate_gradesheet_form'),
+    url(r'^grade_validation/', views.GradeValidationView.as_view(), name='grade_validation'),
 ]

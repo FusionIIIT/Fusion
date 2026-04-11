@@ -4120,3 +4120,706 @@ class GradeSummaryAPI(APIView):
                 {"error": f"An error occurred: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class GradeValidationView(APIView):
+    """
+    API for Grade Validation: fetch batch years/branches, list students,
+    and return all-semester grades for a student.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """Return batch list for the dropdown (same format as GenerateGradeSheetForm)."""
+        role = request.GET.get("role")
+        if role != "acadadmin":
+            return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
+
+        batches_qs = Batch.objects.select_related("discipline").order_by("-year", "name")
+        batch_list = [
+            {"id": b.id, "label": f"{b.name} - {b.discipline} {b.year}"}
+            for b in batches_qs
+        ]
+        return Response({"batches": batch_list}, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        role = request.data.get("Role")
+        if role != "acadadmin":
+            return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
+
+        action = request.data.get("action")
+
+        # ── Action 1: return student list for a batch_id ────────────────────
+        if action == "get_students":
+            batch_id = request.data.get("batch_id")
+            if not batch_id:
+                return Response(
+                    {"error": "batch_id is required."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            try:
+                batch_id = int(batch_id)
+            except (TypeError, ValueError):
+                return Response({"error": "Invalid batch_id."}, status=status.HTTP_400_BAD_REQUEST)
+
+            students = (
+                Student.objects.filter(batch_id=batch_id)
+                .select_related("id__user", "batch_id__discipline")
+                .order_by("id__user__username")
+            )
+
+            PROGRAMME_MAP = {
+                "B.Tech": "Bachelor of Technology",
+                "B.Des": "Bachelor of Design",
+                "M.Tech": "Master of Technology",
+                "M.Des": "Master of Design",
+                "PhD": "Doctor of Philosophy",
+            }
+
+            student_list = []
+            for s in students:
+                discipline = ""
+                try:
+                    if s.batch_id and s.batch_id.discipline:
+                        discipline = s.batch_id.discipline.name
+                except Exception:
+                    pass
+
+                student_list.append({
+                    "roll_no": s.id.user.username,
+                    "name": f"{s.id.user.first_name} {s.id.user.last_name}".strip(),
+                    "programme": PROGRAMME_MAP.get(s.programme, s.programme or ""),
+                    "discipline": discipline,
+                })
+
+            return Response({"students": student_list}, status=status.HTTP_200_OK)
+
+        # ── Action 2: all-semester grades for one student ────────────────────
+        elif action == "get_all_grades":
+            roll_no = request.data.get("roll_no")
+            if not roll_no:
+                return Response({"error": "roll_no is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Validate input: only alphanumeric + common roll-no chars
+            import re as _re
+            if not _re.match(r'^[A-Za-z0-9_/-]{1,20}$', str(roll_no)):
+                return Response({"error": "Invalid roll number format."}, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                student = Student.objects.select_related(
+                    "id__user", "id__department", "batch_id__discipline"
+                ).get(id__user__username=roll_no)
+            except Student.DoesNotExist:
+                return Response({"error": "Student not found."}, status=status.HTTP_404_NOT_FOUND)
+
+            student_id = student.id_id
+
+            # All grades across every semester, ordered chronologically
+            all_grades = (
+                Student_grades.objects.filter(roll_no=student_id)
+                .select_related("course_id")
+                .order_by("semester", "semester_type", "course_id__code")
+            )
+
+            # Group by (semester_no, semester_type)
+            semesters_map = defaultdict(list)
+            for g in all_grades:
+                semesters_map[(g.semester, g.semester_type)].append(g)
+
+            # Sort keys: summer comes AFTER the matching regular semester
+            def _sem_sort_key(key):
+                s_no, s_type = key
+                is_summer = bool(s_type and "summer" in str(s_type).lower())
+                # (semester_no, 1 if summer else 0) keeps summers right after their regular sem
+                return (s_no if s_no is not None else 0, 1 if is_summer else 0)
+
+            sorted_keys = sorted(semesters_map.keys(), key=_sem_sort_key)
+
+            # Track first appearance of each course to classify remark
+            FAILING_GRADES = {"F", "I", "X", "AU", "CD"}
+            NON_CREDIT_GRADES = {"F", "I", "X", "AU", "CD", "S"}
+            course_first_grade: dict = {}   # course_id -> first grade string
+
+            semesters_data = []
+            summer_counter = 0  # increment each time we encounter a summer semester
+            running_total_credits = Decimal('0')
+
+            for key in sorted_keys:
+                s_no, s_type = key
+                is_summer = bool(s_type and "summer" in str(s_type).lower())
+
+                if is_summer:
+                    summer_counter += 1
+                    label = f"Summer Semester {summer_counter}"
+                else:
+                    label = f"Semester {s_no}"
+
+                courses = []
+                sem_credits_earned = Decimal('0')
+                for g in semesters_map[key]:
+                    course = g.course_id
+                    cid = course.id
+                    grade = g.grade or ""
+
+                    if cid in course_first_grade:
+                        prev = course_first_grade[cid]
+                        remark = "Backlog" if prev in FAILING_GRADES else "Improvement"
+                    else:
+                        remark = "Regular"
+                        course_first_grade[cid] = grade  # record only first appearance
+
+                    # Count credits only for non-failing grades
+                    credit = Decimal(str(course.credit)) if course.credit is not None else Decimal('0')
+                    if grade and grade.strip() not in NON_CREDIT_GRADES:
+                        sem_credits_earned += credit
+
+                    courses.append({
+                        "code": course.code or "",
+                        "name": course.name or "",
+                        "credits": float(credit),
+                        "grade": grade,
+                        "remark": remark,
+                    })
+
+                if courses:  # skip empty semesters (no graded courses)
+                    running_total_credits += sem_credits_earned
+
+                    # Compute SPI / CPI via existing helpers
+                    try:
+                        s_spi, _, _ = calculate_spi_for_student(student, s_no, s_type)
+                        s_cpi, _, _ = calculate_cpi_for_student(student, s_no, s_type)
+                    except Exception:
+                        s_spi, s_cpi = 0, 0
+
+                    semesters_data.append({
+                        "semester_no": s_no,
+                        "semester_type": s_type,
+                        "is_summer": is_summer,
+                        "label": label,
+                        "courses": courses,
+                        "semester_credits": float(sem_credits_earned),
+                        "total_credits": float(running_total_credits),
+                        "spi": float(s_spi) if s_spi else 0.0,
+                        "cpi": float(s_cpi) if s_cpi else 0.0,
+                    })
+
+            # ── Append registered-but-not-yet-graded semester ────────────────
+            graded_keys = set(sorted_keys)
+            try:
+                all_regs = (
+                    course_registration.objects
+                    .filter(student_id=student)
+                    .select_related("course_id", "semester_id")
+                    .order_by("semester_id__semester_no", "semester_type", "course_id__code")
+                )
+                reg_map = defaultdict(list)
+                for r in all_regs:
+                    reg_map[(r.semester_id.semester_no, r.semester_type)].append(r)
+
+                # Only include keys that have NO corresponding grade entry
+                pending_keys = [
+                    k for k in reg_map
+                    if k not in graded_keys and reg_map[k]
+                ]
+                # Sort pending keys same way
+                pending_keys.sort(key=_sem_sort_key)
+
+                for key in pending_keys:
+                    s_no, s_type = key
+                    is_summer = bool(s_type and "summer" in str(s_type).lower())
+                    if is_summer:
+                        label = f"Summer Semester (Registered)"
+                    else:
+                        label = f"Semester {s_no} (Registered)"
+
+                    reg_courses = []
+                    reg_credits_total = Decimal('0')
+                    for r in reg_map[key]:
+                        credit = Decimal(str(r.course_id.credit)) if r.course_id.credit is not None else Decimal('0')
+                        reg_credits_total += credit
+                        reg_courses.append({
+                            "code": r.course_id.code or "",
+                            "name": r.course_id.name or "",
+                            "credits": float(credit),
+                            "grade": "—",
+                            "remark": r.registration_type or "Regular",
+                        })
+
+                    if reg_courses:
+                        semesters_data.append({
+                            "semester_no": s_no,
+                            "semester_type": s_type,
+                            "is_summer": is_summer,
+                            "is_registered_only": True,
+                            "label": label,
+                            "courses": reg_courses,
+                            "semester_credits": float(reg_credits_total),
+                            "total_credits": float(running_total_credits),  # cumulative unchanged
+                            "spi": None,
+                            "cpi": None,
+                        })
+            except Exception:
+                pass
+
+            # Build student info
+            PROGRAMME_MAP = {
+                "B.Tech": "Bachelor of Technology",
+                "B.Des": "Bachelor of Design",
+                "M.Tech": "Master of Technology",
+                "M.Des": "Master of Design",
+                "PhD": "Doctor of Philosophy",
+            }
+            programme_full = PROGRAMME_MAP.get(student.programme, student.programme or "")
+
+            discipline_full = ""
+            try:
+                if student.batch_id and student.batch_id.discipline:
+                    discipline_full = student.batch_id.discipline.name
+            except Exception:
+                pass
+            if not discipline_full:
+                try:
+                    discipline_full = student.id.department.name if student.id.department else ""
+                except Exception:
+                    pass
+
+            student_info = {
+                "roll_no": roll_no,
+                "name": f"{student.id.user.first_name} {student.id.user.last_name}".strip(),
+                "programme": programme_full,
+                "discipline": discipline_full,
+            }
+
+            return Response(
+                {"student_info": student_info, "semesters": semesters_data},
+                status=status.HTTP_200_OK,
+            )
+
+        # ── Action 3: server-side ZIP of all student PDFs ────────────────────
+        elif action == "export_all_zip":
+            import zipfile as _zipfile
+            from io import BytesIO as _BytesIO
+            from reportlab.lib.pagesizes import A4
+            from reportlab.platypus import (
+                SimpleDocTemplate, Paragraph, Spacer,
+                TableStyle as RLTableStyle,
+            )
+            from reportlab.platypus import Table as RLTable
+            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+            from reportlab.lib import colors as RL_COLORS
+            from reportlab.lib.units import mm
+
+            batch_id_raw = request.data.get("batch_id")
+            if not batch_id_raw:
+                return Response({"error": "batch_id required."}, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                batch_id_int = int(batch_id_raw)
+            except (TypeError, ValueError):
+                return Response({"error": "Invalid batch_id."}, status=status.HTTP_400_BAD_REQUEST)
+
+            students_qs = (
+                Student.objects.filter(batch_id=batch_id_int)
+                .select_related("id__user", "id__department", "batch_id__discipline")
+                .order_by("id__user__username")
+            )
+
+            PROGRAMME_MAP2 = {
+                "B.Tech": "Bachelor of Technology",
+                "B.Des": "Bachelor of Design",
+                "M.Tech": "Master of Technology",
+                "M.Des": "Master of Design",
+                "PhD": "Doctor of Philosophy",
+            }
+            NON_CREDIT_GRADES2 = {"F", "I", "X", "AU", "CD", "S"}
+            FAILING_GRADES2 = {"F", "I", "X", "AU", "CD"}
+
+            def _get_student_data(stu):
+                """Return (student_info dict, semesters list) for one student."""
+                stu_id = stu.id_id
+                programme_full2 = PROGRAMME_MAP2.get(stu.programme, stu.programme or "")
+                discipline2 = ""
+                try:
+                    if stu.batch_id and stu.batch_id.discipline:
+                        discipline2 = stu.batch_id.discipline.name
+                except Exception:
+                    pass
+
+                all_grades2 = (
+                    Student_grades.objects.filter(roll_no=stu_id)
+                    .select_related("course_id")
+                    .order_by("semester", "semester_type", "course_id__code")
+                )
+
+                sem_map2 = defaultdict(list)
+                for g in all_grades2:
+                    sem_map2[(g.semester, g.semester_type)].append(g)
+
+                def _key2(k):
+                    s, t = k
+                    return (s or 0, 1 if (t and "summer" in str(t).lower()) else 0)
+
+                sorted_keys2 = sorted(sem_map2.keys(), key=_key2)
+                course_first2: dict = {}
+                sems2 = []
+                summer_ctr2 = 0
+                running_creds2 = Decimal('0')
+
+                for key2 in sorted_keys2:
+                    s_no2, s_type2 = key2
+                    is_sum2 = bool(s_type2 and "summer" in str(s_type2).lower())
+                    if is_sum2:
+                        summer_ctr2 += 1
+                        lbl2 = f"Summer Semester {summer_ctr2}"
+                    else:
+                        lbl2 = f"Semester {s_no2}"
+
+                    courses2 = []
+                    sem_creds2 = Decimal('0')
+                    for g2 in sem_map2[key2]:
+                        c2 = g2.course_id
+                        cid2 = c2.id
+                        grade2 = g2.grade or ""
+                        if cid2 in course_first2:
+                            prev2 = course_first2[cid2]
+                            rem2 = "Backlog" if prev2 in FAILING_GRADES2 else "Improvement"
+                        else:
+                            rem2 = "Regular"
+                            course_first2[cid2] = grade2
+                        credit2 = Decimal(str(c2.credit)) if c2.credit is not None else Decimal('0')
+                        if grade2 and grade2.strip() not in NON_CREDIT_GRADES2:
+                            sem_creds2 += credit2
+                        courses2.append({
+                            "code": c2.code or "",
+                            "name": c2.name or "",
+                            "credits": float(credit2),
+                            "grade": grade2,
+                            "remark": rem2,
+                        })
+
+                    if courses2:
+                        running_creds2 += sem_creds2
+                        try:
+                            sp2, _, _ = calculate_spi_for_student(stu, s_no2, s_type2)
+                            cp2, _, _ = calculate_cpi_for_student(stu, s_no2, s_type2)
+                        except Exception:
+                            sp2, cp2 = 0, 0
+                        sems2.append({
+                            "label": lbl2,
+                            "is_registered_only": False,
+                            "courses": courses2,
+                            "semester_credits": float(sem_creds2),
+                            "total_credits": float(running_creds2),
+                            "spi": float(sp2) if sp2 else 0.0,
+                            "cpi": float(cp2) if cp2 else 0.0,
+                        })
+
+                # Registered-only semesters
+                graded_keys2 = set(sorted_keys2)
+                try:
+                    all_regs2 = (
+                        course_registration.objects
+                        .filter(student_id=stu)
+                        .select_related("course_id", "semester_id")
+                        .order_by("semester_id__semester_no", "semester_type", "course_id__code")
+                    )
+                    reg_map2 = defaultdict(list)
+                    for r2 in all_regs2:
+                        reg_map2[(r2.semester_id.semester_no, r2.semester_type)].append(r2)
+                    pending2 = sorted(
+                        [k for k in reg_map2 if k not in graded_keys2 and reg_map2[k]],
+                        key=_key2,
+                    )
+                    for pk2 in pending2:
+                        s_no2p, s_type2p = pk2
+                        is_sump = bool(s_type2p and "summer" in str(s_type2p).lower())
+                        lblp = f"Summer Semester (Registered)" if is_sump else f"Semester {s_no2p} (Registered)"
+                        reg_cs2 = []
+                        reg_cred2 = Decimal('0')
+                        for r2p in reg_map2[pk2]:
+                            cr2p = Decimal(str(r2p.course_id.credit)) if r2p.course_id.credit is not None else Decimal('0')
+                            reg_cred2 += cr2p
+                            reg_cs2.append({
+                                "code": r2p.course_id.code or "",
+                                "name": r2p.course_id.name or "",
+                                "credits": float(cr2p),
+                                "grade": "—",
+                                "remark": r2p.registration_type or "Regular",
+                            })
+                        if reg_cs2:
+                            sems2.append({
+                                "label": lblp,
+                                "is_registered_only": True,
+                                "courses": reg_cs2,
+                                "semester_credits": float(reg_cred2),
+                                "total_credits": float(running_creds2),
+                                "spi": None,
+                                "cpi": None,
+                            })
+                except Exception:
+                    pass
+
+                stu_info2 = {
+                    "roll_no": stu.id.user.username,
+                    "name": f"{stu.id.user.first_name} {stu.id.user.last_name}".strip(),
+                    "programme": programme_full2,
+                    "discipline": discipline2,
+                }
+                return stu_info2, sems2
+
+            def _build_pdf_bytes(stu_info, semesters):
+                buf = _BytesIO()
+                PAGE_W, PAGE_H = A4
+                M = 12 * mm
+                doc = SimpleDocTemplate(
+                    buf,
+                    pagesize=A4,
+                    leftMargin=M, rightMargin=M,
+                    topMargin=8 * mm, bottomMargin=12 * mm,
+                )
+                styles = getSampleStyleSheet()
+                small = ParagraphStyle("small", parent=styles["Normal"], fontSize=8, leading=10)
+                bold_small = ParagraphStyle("bold_small", parent=small, fontName="Helvetica-Bold")
+                heading_style = ParagraphStyle(
+                    "heading", parent=styles["Normal"],
+                    fontSize=9, fontName="Helvetica-Bold",
+                    textColor=RL_COLORS.black,
+                )
+
+                W = PAGE_W - 2 * M  # usable width
+
+                story = []
+
+                # ── Header table ────────────────────────────────────────────
+                header_data = [
+                    [Paragraph("<b>Roll No.</b>", small), Paragraph(stu_info["roll_no"], small),
+                     Paragraph("<b>Programme</b>", small), Paragraph(stu_info["programme"], small)],
+                    [Paragraph("<b>Student Name</b>", small), Paragraph(stu_info["name"], small),
+                     Paragraph("<b>Discipline</b>", small), Paragraph(stu_info["discipline"], small)],
+                ]
+                col_w = [W * 0.14, W * 0.36, W * 0.14, W * 0.36]
+                ht = RLTable(header_data, colWidths=col_w, repeatRows=0)
+                ht.setStyle(RLTableStyle([
+                    ("BOX",     (0, 0), (-1, -1), 0.5, RL_COLORS.black),
+                    ("LINEBELOW", (0, 0), (-1, 0), 0.5, RL_COLORS.black),
+                    ("FONTSIZE",  (0, 0), (-1, -1), 8),
+                    ("PADDING",   (0, 0), (-1, -1), 3),
+                    ("VALIGN",    (0, 0), (-1, -1), "TOP"),
+                ]))
+                story.append(ht)
+
+                # ── Per-semester blocks ──────────────────────────────────────
+                for sem in semesters:
+                    story.append(Spacer(1, 6))
+
+                    # Heading row
+                    ht2 = RLTable(
+                        [[Paragraph(sem["label"], heading_style)]],
+                        colWidths=[W],
+                    )
+                    ht2.setStyle(RLTableStyle([
+                        ("BOX",       (0, 0), (-1, -1), 0.5, RL_COLORS.black),
+                        ("BACKGROUND",(0, 0), (-1, -1), RL_COLORS.HexColor("#dce7f3")),
+                        ("PADDING",   (0, 0), (-1, -1), 4),
+                    ]))
+                    story.append(ht2)
+
+                    # Course table
+                    is_reg = sem.get("is_registered_only", False)
+                    col_widths = [W * 0.13, W * 0.47, W * 0.10, W * 0.13, W * 0.17]
+
+                    tbl_data = [[
+                        Paragraph("<b>Course No.</b>", small),
+                        Paragraph("<b>Course Title</b>", small),
+                        Paragraph("<b>Units</b>", small),
+                        Paragraph("<b>Grade</b>", small),
+                        Paragraph("<b>Remark</b>", small),
+                    ]]
+                    REMARK_COLORS2 = {
+                        "Regular": RL_COLORS.HexColor("#2f9e44"),
+                        "Backlog": RL_COLORS.HexColor("#c92a2a"),
+                        "Improvement": RL_COLORS.HexColor("#e67700"),
+                    }
+                    remark_row_colors = []
+                    for c in sem["courses"]:
+                        rem = c.get("remark", "Regular")
+                        rc = REMARK_COLORS2.get(rem, RL_COLORS.black)
+                        remark_row_colors.append(rc)
+                        tbl_data.append([
+                            Paragraph(str(c["code"]), small),
+                            Paragraph(str(c["name"]), small),
+                            Paragraph(str(c["credits"]), small),
+                            Paragraph(str(c["grade"]), small),
+                            Paragraph(f'<font color="#{rem == "Regular" and "2f9e44" or (rem == "Backlog" and "c92a2a" or "e67700")}">{rem}</font>', small),
+                        ])
+
+                    ct = RLTable(tbl_data, colWidths=col_widths, repeatRows=1)
+                    tbl_style = [
+                        ("BOX",         (0, 0), (-1, -1), 0.5, RL_COLORS.black),
+                        ("LINEBELOW",   (0, 0), (-1, 0),  0.5, RL_COLORS.black),
+                        ("INNERGRID",   (0, 1), (-1, -1), 0.3, RL_COLORS.HexColor("#cccccc")),
+                        ("BACKGROUND",  (0, 0), (-1, 0),  RL_COLORS.HexColor("#eef4fb")),
+                        ("FONTSIZE",    (0, 0), (-1, -1), 8),
+                        ("PADDING",     (0, 0), (-1, -1), 3),
+                        ("ALIGN",       (2, 0), (-1, -1), "CENTER"),
+                        ("VALIGN",      (0, 0), (-1, -1), "MIDDLE"),
+                        ("KEEPWITHNEXT", (0, 0), (-1, 0), 1),
+                    ]
+                    if is_reg:
+                        tbl_style.append(("BACKGROUND", (0, 1), (-1, -1), RL_COLORS.HexColor("#fffdf0")))
+                    ct.setStyle(RLTableStyle(tbl_style))
+                    story.append(ct)
+
+                    # Summary row — 4 equal columns, fills full width
+                    if is_reg:
+                        sum_row = [
+                            Paragraph(f"<b>Total Registered Credits:</b> {sem['semester_credits']}", small),
+                            Paragraph("", small),
+                            Paragraph("", small),
+                            Paragraph("", small),
+                        ]
+                        sum_spans = [("SPAN", (0, 0), (3, 0))]
+                    else:
+                        spi_str = f"{sem['spi']:.1f}" if sem.get('spi') is not None else "—"
+                        cpi_str = f"{sem['cpi']:.1f}" if sem.get('cpi') is not None else "—"
+                        sum_row = [
+                            Paragraph(f"<b>Total Credits Earned:</b> {sem['total_credits']}", small),
+                            Paragraph(f"<b>Semester Credits Earned:</b> {sem['semester_credits']}", small),
+                            Paragraph(f"<b>SPI:</b> {spi_str}", small),
+                            Paragraph(f"<b>CPI:</b> {cpi_str}", small),
+                        ]
+                        sum_spans = []
+
+                    st2 = RLTable(
+                        [sum_row],
+                        colWidths=[W * 0.31, W * 0.31, W * 0.19, W * 0.19],
+                    )
+                    st2.setStyle(RLTableStyle([
+                        ("BOX",       (0, 0), (-1, -1), 0.5, RL_COLORS.black),
+                        ("BACKGROUND",(0, 0), (-1, -1), RL_COLORS.HexColor("#f0f4f8")),
+                        ("PADDING",   (0, 0), (-1, -1), 5),
+                        ("FONTSIZE",  (0, 0), (-1, -1), 8),
+                        ("VALIGN",    (0, 0), (-1, -1), "MIDDLE"),
+                        ("ALIGN",     (2, 0), (-1, -1), "CENTER"),
+                        *sum_spans,
+                    ]))
+                    story.append(st2)
+
+                # ── Credits Details table ────────────────────────────────
+                NON_EARN = {"F", "I", "X", "AU", "CD", "S", "—", ""}
+                graded_sems = [s for s in semesters if not s.get("is_registered_only")]
+
+                cd_rows = []
+                tot_earned = tot_regular = tot_backlog_imp = tot_swayam = 0.0
+
+                for gs in graded_sems:
+                    earned = regular = backlog_imp = swayam = 0.0
+                    for c in gs.get("courses", []):
+                        cr  = float(c.get("credits") or 0)
+                        rem = c.get("remark", "Regular")
+                        g   = (c.get("grade") or "").strip()
+                        is_sw = str(c.get("code", "")).upper().startswith("SW")
+                        if g in NON_EARN:
+                            continue
+                        earned += cr
+                        if is_sw:
+                            swayam += cr
+                        elif rem in ("Backlog", "Improvement"):
+                            backlog_imp += cr
+                        else:
+                            regular += cr
+
+                    tot_earned      += earned
+                    tot_regular     += regular
+                    tot_backlog_imp += backlog_imp
+                    tot_swayam      += swayam
+
+                    def _fmt(v): return str(int(v)) if v == int(v) else f"{v:.1f}"
+                    cd_rows.append([
+                        Paragraph(gs["label"], small),
+                        Paragraph(_fmt(earned),      small),
+                        Paragraph(_fmt(regular),     small),
+                        Paragraph(_fmt(backlog_imp), small),
+                        Paragraph(_fmt(swayam),      small),
+                    ])
+
+                def _fmt(v): return str(int(v)) if v == int(v) else f"{v:.1f}"
+
+                if cd_rows:
+                    story.append(Spacer(1, 10))
+
+                    # Heading banner
+                    cd_heading = RLTable(
+                        [[Paragraph("<b>Credits Details</b>", heading_style)]],
+                        colWidths=[W],
+                    )
+                    cd_heading.setStyle(RLTableStyle([
+                        ("BOX",        (0, 0), (-1, -1), 0.5, RL_COLORS.black),
+                        ("BACKGROUND", (0, 0), (-1, -1), RL_COLORS.HexColor("#d3f9d8")),
+                        ("PADDING",    (0, 0), (-1, -1), 4),
+                    ]))
+                    story.append(cd_heading)
+
+                    # Header row + data rows + total row
+                    cd_col_w = [W * 0.28, W * 0.18, W * 0.18, W * 0.18, W * 0.18]
+                    cd_header = [
+                        Paragraph("<b>Semester</b>",                       small),
+                        Paragraph("<b>Credits Earned</b>",                 small),
+                        Paragraph("<b>Regular Credits</b>",                small),
+                        Paragraph("<b>Backlog / Improvement Credits</b>",  small),
+                        Paragraph("<b>Swayam Credits</b>",                 small),
+                    ]
+                    cd_total_row = [
+                        Paragraph("<b>Total</b>",                   small),
+                        Paragraph(f"<b>{_fmt(tot_earned)}</b>",     small),
+                        Paragraph(f"<b>{_fmt(tot_regular)}</b>",    small),
+                        Paragraph(f"<b>{_fmt(tot_backlog_imp)}</b>",small),
+                        Paragraph(f"<b>{_fmt(tot_swayam)}</b>",     small),
+                    ]
+
+                    cd_tbl = RLTable(
+                        [cd_header] + cd_rows + [cd_total_row],
+                        colWidths=cd_col_w,
+                        repeatRows=1,
+                    )
+                    n_data = len(cd_rows)
+                    cd_tbl.setStyle(RLTableStyle([
+                        ("BOX",         (0, 0),  (-1, -1), 0.5, RL_COLORS.black),
+                        ("LINEBELOW",   (0, 0),  (-1, 0),  0.5, RL_COLORS.black),
+                        ("LINEABOVE",   (0, -1), (-1, -1), 0.5, RL_COLORS.black),
+                        ("INNERGRID",   (0, 1),  (-1, -2), 0.3, RL_COLORS.HexColor("#cccccc")),
+                        ("BACKGROUND",  (0, 0),  (-1, 0),  RL_COLORS.HexColor("#ebfbee")),
+                        ("BACKGROUND",  (0, -1), (-1, -1), RL_COLORS.HexColor("#ebfbee")),
+                        ("FONTSIZE",    (0, 0),  (-1, -1), 8),
+                        ("PADDING",     (0, 0),  (-1, -1), 4),
+                        ("ALIGN",       (1, 0),  (-1, -1), "CENTER"),
+                        ("VALIGN",      (0, 0),  (-1, -1), "MIDDLE"),
+                    ]))
+                    story.append(cd_tbl)
+
+                doc.build(story)
+                return buf.getvalue()
+
+            # Build ZIP
+            zip_buf = _BytesIO()
+            with _zipfile.ZipFile(zip_buf, "w", _zipfile.ZIP_DEFLATED) as zf:
+                for stu in students_qs:
+                    try:
+                        stu_info_z, sems_z = _get_student_data(stu)
+                        if not sems_z:
+                            continue
+                        pdf_bytes = _build_pdf_bytes(stu_info_z, sems_z)
+                        safe = re.sub(r'[^\w\-]', '_', stu.id.user.username)
+                        zf.writestr(f"{safe}_GradeValidation.pdf", pdf_bytes)
+                    except Exception:
+                        continue
+
+            zip_buf.seek(0)
+            batch_obj = Batch.objects.filter(id=batch_id_int).first()
+            batch_label = str(batch_obj) if batch_obj else f"Batch_{batch_id_int}"
+            safe_batch = re.sub(r'[^\w\-]', '_', batch_label)[:80]
+            resp = HttpResponse(zip_buf.read(), content_type="application/zip")
+            resp["Content-Disposition"] = f'attachment; filename="{safe_batch}_GradeValidation.zip"'
+            return resp
+
+        return Response({"error": "Invalid action."}, status=status.HTTP_400_BAD_REQUEST)

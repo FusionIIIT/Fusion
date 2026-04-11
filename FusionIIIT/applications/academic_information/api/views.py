@@ -676,8 +676,17 @@ def generate_preregistration_report(request):
         
     if request.method == "POST":
         sem = request.data.get('semester_no')
-        batch_id=request.data.get('batch_branch')
-        batch = Batch.objects.filter(id = batch_id).first()
+        batch_id = request.data.get('batch_branch')
+        preview_only = request.data.get('preview_only', False)
+        status_filter = request.data.get('status_filter', None)  # "Registered" | "Not Registered" | None
+
+        if not sem or not batch_id:
+            return Response({'detail': 'semester_no and batch_branch are required.'}, status=400)
+
+        batch = Batch.objects.filter(id=batch_id).first()
+        if not batch:
+            return Response({'detail': 'Batch not found.'}, status=404)
+
         obj = InitialRegistration.objects.filter(student_id__batch_id=batch_id, semester_id__semester_no=sem)
 
 
@@ -760,6 +769,40 @@ def generate_preregistration_report(request):
                 
                 data.append(z)
                 m+=1
+
+        # Sort all rows by roll_no (index 1) ascending
+        data.sort(key=lambda r: r[1] if len(r) > 1 else '')
+
+        # Apply status filter for export (index 4 holds status string)
+        VALID_FILTERS = {"Registered", "Not Registered"}
+        if status_filter in VALID_FILTERS:
+            data = [r for r in data if (r[4] if len(r) > 4 else '') == status_filter]
+
+        # --- JSON preview mode ---
+        if preview_only:
+            preview_rows = []
+            for row in data:
+                entry = {
+                    'roll_no': row[1] if len(row) > 1 else '',
+                    'name': row[2] if len(row) > 2 else '',
+                    'department': row[3] if len(row) > 3 else '',
+                    'status': row[4] if len(row) > 4 else '',
+                    'timestamp': row[5] if len(row) > 5 else '',
+                    'course_slot': row[6] if len(row) > 6 else '',
+                    'choices': row[7:] if len(row) > 7 else [],
+                }
+                preview_rows.append(entry)
+            return Response({
+                'title': "Pre-registration: {} {} {} Semester: {}".format(
+                    batch.name, batch.discipline.acronym, batch.year, sem
+                ),
+                'batch_name': "{} {} {}".format(batch.name, batch.discipline.acronym, batch.year),
+                'semester': sem,
+                'max_choices': max_width,
+                'students': preview_rows,
+            })
+
+        # --- XLSX export mode ---
         output = BytesIO()
 
         book = xlsxwriter.Workbook(output,{'in_memory':True})
