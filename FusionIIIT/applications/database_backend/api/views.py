@@ -1,17 +1,15 @@
-from django.db.models import Count, Q, F, Max
+from django.db.models import Count, Q, Max
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from applications.academic_procedures.models import course_registration
 from applications.academic_information.models import Student
-from applications.programme_curriculum.models import Course, Semester, Batch, Programme
 from applications.online_cms.models import Student_grades
-from .serializers import CourseStudentCountSerializer, StudentCourseDetailSerializer
+from .serializers import CourseStudentCountSerializer
 from .permissions import IsDatabaseAccessAllowed
 from .audit import DatabaseAuditLog
 import logging
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -165,7 +163,7 @@ class CourseStudentCountView(APIView):
                 category_filter,
                 session=session,
                 semester_type=semester_type,
-            ).select_related('course_id', 'student_id')
+            )
 
             if course_code:
                 queryset = queryset.filter(course_id__code=course_code)
@@ -222,7 +220,7 @@ class CourseStudentCountView(APIView):
                 status='FAILURE',
                 error_message=str(e)
             )
-            return Response({'error': f'An error occurred while fetching data: {str(e)}'}, status=500)
+            return Response({'error': 'An error occurred while fetching data.'}, status=500)
 
 
 class CourseStudentsListView(APIView):
@@ -303,7 +301,7 @@ class CourseStudentsListView(APIView):
                 status='FAILURE',
                 error_message=str(e)
             )
-            return Response({'error': f'An error occurred: {str(e)}'}, status=500)
+            return Response({'error': 'An error occurred while fetching data.'}, status=500)
 
 
 class StudentCoursesDetail(APIView):
@@ -344,10 +342,6 @@ class StudentCoursesDetail(APIView):
                 }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-
-            current_year = datetime.now().year
-            years_since_batch = current_year - batch_year
-            max_expected_semester = (years_since_batch * 2) + 1
 
             queryset = course_registration.objects.filter(
                 student_id__batch=batch_year
@@ -439,7 +433,7 @@ class StudentCoursesDetail(APIView):
             )
             return Response({
                 'success': False,
-                'error': f'An error occurred while fetching data: {str(e)}'
+                'error': 'An error occurred while fetching data.'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -503,7 +497,7 @@ class StudentsGradeInfo(APIView):
 
         try:
 
-            queryset = course_registration.objects.filter(
+            base_queryset = course_registration.objects.filter(
                 student_id__batch=batch_year
             ).select_related(
                 'student_id',
@@ -513,7 +507,18 @@ class StudentsGradeInfo(APIView):
                 'student_id__batch_id__discipline',
                 'course_id',
                 'semester_id'
-            ).order_by(
+            )
+
+            total_count = base_queryset.count()
+
+            # Apply roll-number filter at ORM level before iterating
+            queryset = base_queryset
+            if filter_roll_no:
+                queryset = queryset.filter(
+                    student_id__id__user__username__icontains=filter_roll_no
+                )
+
+            queryset = queryset.order_by(
                 'student_id__id__user__username',
                 'semester_id__semester_no',
                 'course_id__code'
@@ -537,22 +542,25 @@ class StudentsGradeInfo(APIView):
                     'message': 'No course registrations found for this batch'
                 }, status=status.HTTP_200_OK)
 
-            total_count = queryset.count()
-
-            # OPTIMIZATION: Fetch all grades for this batch in one query
-            # LEFT JOIN logic: match on (roll_no, course_id_id, semester_no)
-            # Build a dictionary for O(1) lookup: {(roll_no, course_id_id, semester_no): grade}
+            # OPTIMIZATION: Fetch all grades for this batch in one query.
+            # Key includes academic_year and semester_type to avoid returning the
+            # wrong grade when a student repeats a course across sessions/semester types.
+            # Build a dictionary for O(1) lookup:
+            #   {(roll_no, course_id_id, semester, academic_year, semester_type): grade}
             grades_dict = {}
             try:
-
                 all_grades = Student_grades.objects.filter(
                     batch=batch_year
-                ).values('roll_no', 'course_id_id', 'semester', 'grade')
+                ).values('roll_no', 'course_id_id', 'semester', 'academic_year', 'semester_type', 'grade')
 
                 for grade_record in all_grades:
-
-                    key = (grade_record['roll_no'], grade_record['course_id_id'], grade_record['semester'])
-
+                    key = (
+                        grade_record['roll_no'],
+                        grade_record['course_id_id'],
+                        grade_record['semester'],
+                        grade_record['academic_year'],
+                        grade_record['semester_type'],
+                    )
                     grades_dict[key] = grade_record['grade']
             except Exception as grades_error:
                 logger.warning(f"Could not fetch grades in bulk: {str(grades_error)}")
@@ -564,12 +572,16 @@ class StudentsGradeInfo(APIView):
             for registration in queryset:
                 available_courses.add(registration.course_id.code)
 
-
                 roll_no = registration.student_id.id.user.username
                 semester_no = registration.semester_id.semester_no
 
-
-                key = (roll_no, registration.course_id_id, semester_no)
+                key = (
+                    roll_no,
+                    registration.course_id_id,
+                    semester_no,
+                    registration.session,
+                    registration.semester_type,
+                )
                 grade_value = grades_dict.get(key)
 
                 if grade_value is None or str(grade_value).strip() == '':
@@ -591,14 +603,8 @@ class StudentsGradeInfo(APIView):
                     'registration_type': registration.registration_type
                 })
 
-
-            # OPTIMIZATION: Queryset already ordered at DB level
-            # Removed: sorted_data = sorted(all_data, key=lambda x: ...)
+            # Queryset already ordered at DB level
             sorted_data = all_data
-
-
-            if filter_roll_no:
-                sorted_data = [item for item in sorted_data if filter_roll_no.lower() in item['roll_no'].lower()]
 
 
             unique_students = set()
@@ -684,7 +690,7 @@ class StudentsGradeInfo(APIView):
             )
             return Response({
                 'success': False,
-                'error': f'An error occurred while fetching data: {str(e)}'
+                'error': 'An error occurred while fetching data.'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -807,7 +813,7 @@ class UnregisteredStudentsByBatchView(APIView):
             )
             return Response({
                 'success': False,
-                'error': f'An error occurred while fetching unregistered students: {str(e)}'
+                'error': 'An error occurred while fetching unregistered students.'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def _is_valid_batch_year(self, batch_id):

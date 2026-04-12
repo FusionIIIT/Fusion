@@ -1,6 +1,5 @@
 from rest_framework.permissions import BasePermission
 from applications.globals.models import ModuleAccess, HoldsDesignation
-from django.contrib.auth.models import User
 import logging
 
 logger = logging.getLogger(__name__)

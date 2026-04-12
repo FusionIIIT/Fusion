@@ -20,7 +20,6 @@ USAGE:
 """
 
 from django.core.cache import cache
-from django.http import JsonResponse
 from rest_framework.response import Response
 import hashlib
 import logging
@@ -154,11 +153,13 @@ def cache_decorated_response(cache_timeout=None, cache_prefix=None):
             if request.method != 'GET':
                 return get_method(self, request, *args, **kwargs)
 
+            # Normalize query params so different orderings produce the same cache key
+            normalized_query = '&'.join(f"{k}={v}" for k, v in sorted(request.GET.items()))
             cache_key = DatabaseCacheManager.generate_cache_key(
                 cache_prefix or 'default',
                 user_id=request.user.id if request.user else None,
                 path=request.path,
-                query=request.GET.urlencode()
+                query=normalized_query
             )
 
             timeout = (

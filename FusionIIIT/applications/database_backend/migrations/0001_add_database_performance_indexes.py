@@ -15,15 +15,16 @@ class Migration(migrations.Migration):
         # QUERY PATTERN: Student.objects.filter(batch=batch_id)
         # PERFORMANCE: 10-50x faster lookup
         migrations.RunSQL(
-            sql='CREATE INDEX idx_student_batch ON academic_information_student(batch);',
+            sql='CREATE INDEX IF NOT EXISTS idx_student_batch ON academic_information_student(batch);',
             reverse_sql='DROP INDEX IF EXISTS idx_student_batch;'
         ),
 
         # INDEX 2: course_registration student_id - frequent inner join target
         # QUERY PATTERN: course_registration.objects.filter(student_id__batch=batch_id)
         # NOTE: Index created on FK id, not the related lookup
+        # NOTE: db_table for course_registration model is 'course_registration'
         migrations.RunSQL(
-            sql='CREATE INDEX idx_course_reg_student ON academic_procedures_course_registration(student_id_id);',
+            sql='CREATE INDEX IF NOT EXISTS idx_course_reg_student ON course_registration(student_id_id);',
             reverse_sql='DROP INDEX IF EXISTS idx_course_reg_student;'
         ),
 
@@ -31,14 +32,14 @@ class Migration(migrations.Migration):
         # QUERY PATTERN: course_registration.objects.filter(session=X, semester_type=Y)
         # INDEXTYPE: Composite index for multi-column filtering
         migrations.RunSQL(
-            sql='CREATE INDEX idx_course_reg_session_semester ON academic_procedures_course_registration(session, semester_type);',
+            sql='CREATE INDEX IF NOT EXISTS idx_course_reg_session_semester ON course_registration(session, semester_type);',
             reverse_sql='DROP INDEX IF EXISTS idx_course_reg_session_semester;'
         ),
 
         # INDEX 4: Semester ID - used in UnregisteredStudentsByBatchView
         # QUERY PATTERN: course_registration.objects.filter(semester_id__semester_no=N)
         migrations.RunSQL(
-            sql='CREATE INDEX idx_course_reg_semester_fk ON academic_procedures_course_registration(semester_id_id);',
+            sql='CREATE INDEX IF NOT EXISTS idx_course_reg_semester_fk ON course_registration(semester_id_id);',
             reverse_sql='DROP INDEX IF EXISTS idx_course_reg_semester_fk;'
         ),
 
@@ -46,7 +47,7 @@ class Migration(migrations.Migration):
         # QUERY PATTERN: Student_grades.objects.filter(batch=X, roll_no=Y)
         # CRITICAL: Used in grade lookup loop in StudentsGradeInfo
         migrations.RunSQL(
-            sql='CREATE INDEX idx_student_grades_batch_rollno ON online_cms_student_grades(batch, roll_no);',
+            sql='CREATE INDEX IF NOT EXISTS idx_student_grades_batch_rollno ON online_cms_student_grades(batch, roll_no);',
             reverse_sql='DROP INDEX IF EXISTS idx_student_grades_batch_rollno;'
         ),
     ]

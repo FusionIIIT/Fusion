@@ -12,7 +12,7 @@ Usage:
     grades_dict = DatabaseQueryOptimizer.get_student_grades_dict(batch_id)
 """
 
-from django.db.models import Q, F, Count, Max, Prefetch
+from django.db.models import Q, Max
 from applications.academic_procedures.models import course_registration
 from applications.academic_information.models import Student
 from applications.online_cms.models import Student_grades
@@ -81,26 +81,30 @@ class DatabaseQueryOptimizer:
             batch_id (str): Batch year (e.g., '2021')
 
         Returns:
-            dict: {(roll_no, course_id_id, semester): grade_value}
-                  Missing entries default to None when .get() is called
+            dict: {(roll_no, course_id_id, semester, academic_year, semester_type): grade_value}
+                  Missing entries default to None when .get() is called.
+                  academic_year and semester_type are included to avoid returning the wrong
+                  grade when a student repeats a course across different sessions/semester types.
 
         Example:
             grades_dict = DatabaseQueryOptimizer.get_student_grades_dict('2021')
-            # Later in loop:
-            key = (roll_no, course_id_id, semester_no)
+            # Later in loop (callers must include session and semester_type):
+            key = (roll_no, course_id_id, semester_no, registration.session, registration.semester_type)
             grade = grades_dict.get(key)  # O(1) lookup
         """
         grades_dict = {}
         try:
             all_grades = Student_grades.objects.filter(
                 batch=batch_id
-            ).values('roll_no', 'course_id_id', 'semester', 'grade')
+            ).values('roll_no', 'course_id_id', 'semester', 'academic_year', 'semester_type', 'grade')
 
             for grade_record in all_grades:
                 key = (
                     grade_record['roll_no'],
                     grade_record['course_id_id'],
-                    grade_record['semester']
+                    grade_record['semester'],
+                    grade_record['academic_year'],
+                    grade_record['semester_type'],
                 )
                 grades_dict[key] = grade_record['grade']
 
