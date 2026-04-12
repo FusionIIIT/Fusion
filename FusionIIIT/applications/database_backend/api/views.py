@@ -347,9 +347,7 @@ class StudentCoursesDetail(APIView):
 
             current_year = datetime.now().year
             years_since_batch = current_year - batch_year
-            # Calculate maximum expected semester (2 semesters per year + 1 for buffer)
             max_expected_semester = (years_since_batch * 2) + 1
-
 
             queryset = course_registration.objects.filter(
                 student_id__batch=batch_year
