@@ -113,6 +113,8 @@ class StudentComplain(models.Model):
     complaint_ref = models.CharField(max_length=32, unique=True, blank=True)
     complainer = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     complaint_date = models.DateTimeField(default=timezone.now)
+    submitted_at = models.DateTimeField(blank=True, null=True)
+    is_draft = models.BooleanField(default=False)
     complaint_finish = models.DateField(blank=True, null=True)
     priority = models.CharField(max_length=20, choices=ComplaintPriority.CHOICES, default=ComplaintPriority.STANDARD)
     sla_deadline = models.DateTimeField(blank=True, null=True)
@@ -154,7 +156,8 @@ class StudentComplain(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.complaint_ref:
-            self.complaint_ref = f"CMP-{timezone.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:8].upper()}"
+            prefix = 'DRF' if self.is_draft else 'CMP'
+            self.complaint_ref = f"{prefix}-{timezone.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:8].upper()}"
 
         if self.sla_deadline and not self.complaint_finish:
             self.complaint_finish = self.sla_deadline.date()
@@ -183,6 +186,8 @@ class ComplaintEvent(models.Model):
 class Supervisor(models.Model):
     sup_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     type = models.CharField(choices=Constants.COMPLAINT_TYPE, max_length=30,default='Electricity')
+    area = models.CharField(max_length=30, blank=True, default='')
 
     def __str__(self):
-        return str(self.sup_id) + '-' + str(self.type)
+        scope = self.area or 'all-areas'
+        return str(self.sup_id) + '-' + str(self.type) + '-' + scope

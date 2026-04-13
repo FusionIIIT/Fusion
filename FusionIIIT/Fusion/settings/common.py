@@ -93,6 +93,10 @@ CELERY_BEAT_SCHEDULE = {
     'complaint-auto-escalation-task': {
         'task': 'applications.complaint_system.tasks.escalate_overdue_complaints',
         'schedule': crontab(minute='*/15')
+    },
+    'complaint-sla-reminder-task': {
+        'task': 'applications.complaint_system.tasks.send_sla_deadline_reminders',
+        'schedule': crontab(minute='*/30')
     }
 }
 

@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 from datetime import timedelta
 from unittest.mock import patch
@@ -122,6 +123,29 @@ class ComplaintApiTests(APITestCase):
 		self.assertEqual(len(complaints), 1)
 		self.assertEqual(complaints[0]['complaint_type'], 'internet')
 
+	def test_supervisor_list_includes_all_mapped_supervisor_types(self):
+		Supervisor.objects.create(sup_id=self.faculty_extra, type='plumber')
+		self._auth(self.faculty_user)
+		response = self.client.get('/complaint/api/studentcomplain')
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		complaints = response.data['student_complain']
+		self.assertEqual(len(complaints), 2)
+		types = sorted([item['complaint_type'] for item in complaints])
+		self.assertEqual(types, ['internet', 'plumber'])
+
+	def test_supervisor_area_scope_filters_complaints(self):
+		Supervisor.objects.filter(sup_id=self.faculty_extra, type='internet').update(area='hall-3')
+		self.complaint_2.complaint_type = 'internet'
+		self.complaint_2.location = 'hall-1'
+		self.complaint_2.save(update_fields=['complaint_type', 'location'])
+
+		self._auth(self.faculty_user)
+		response = self.client.get('/complaint/api/studentcomplain')
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		complaints = response.data['student_complain']
+		self.assertEqual(len(complaints), 1)
+		self.assertEqual(complaints[0]['location'], 'hall-3')
+
 	def test_create_sets_logged_in_user_as_complainer(self):
 		self._auth(self.student_user)
 		payload = {
@@ -187,6 +211,144 @@ class ComplaintApiTests(APITestCase):
 		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 		self.assertIn('complaint_type', response.data)
 
+	def test_create_rejects_invalid_attachment_type(self):
+		self._auth(self.student_user)
+		payload = {
+			'complaint_type': 'internet',
+			'location': 'hall-3',
+			'specific_location': 'Room 110',
+			'details': 'File type validation',
+			'priority': 'Standard',
+			'upload_complaint': SimpleUploadedFile(
+				'bad.exe',
+				b'bad-content',
+				content_type='application/x-msdownload',
+			),
+		}
+		response = self.client.post('/complaint/api/newcomplain', payload, format='multipart')
+		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+		self.assertIn('upload_complaint', response.data)
+
+	def test_create_rejects_oversized_attachment(self):
+		self._auth(self.student_user)
+		payload = {
+			'complaint_type': 'internet',
+			'location': 'hall-3',
+			'specific_location': 'Room 110',
+			'details': 'File size validation',
+			'priority': 'Standard',
+			'upload_complaint': SimpleUploadedFile(
+				'large.pdf',
+				b'a' * (5 * 1024 * 1024 + 1),
+				content_type='application/pdf',
+			),
+		}
+		response = self.client.post('/complaint/api/newcomplain', payload, format='multipart')
+		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+		self.assertIn('upload_complaint', response.data)
+
+	def test_create_draft_allows_partial_payload_and_skips_sla(self):
+		self._auth(self.student_user)
+		payload = {
+			'location': 'hall-3',
+			'details': '',
+			'is_draft': True,
+		}
+		response = self.client.post('/complaint/api/newcomplain', payload, format='json')
+		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+		draft = StudentComplain.objects.get(id=response.data['id'])
+		self.assertTrue(draft.is_draft)
+		self.assertIsNone(draft.sla_deadline)
+		self.assertTrue(str(draft.complaint_ref).startswith('DRF-'))
+		self.assertTrue(ComplaintEvent.objects.filter(complaint=draft, action='draft_saved').exists())
+
+	def test_drafts_are_hidden_from_caretaker_queue(self):
+		StudentComplain.objects.create(
+			complainer=self.student_extra,
+			complaint_type='internet',
+			location='hall-3',
+			details='Draft complaint',
+			is_draft=True,
+		)
+		self._auth(self.staff_user)
+		response = self.client.get('/complaint/api/studentcomplain')
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		for item in response.data['student_complain']:
+			self.assertFalse(item.get('is_draft'))
+
+	def test_submit_draft_starts_sla_and_assignment(self):
+		draft = StudentComplain.objects.create(
+			complainer=self.student_extra,
+			complaint_type='internet',
+			location='hall-3',
+			details='Saved draft details',
+			is_draft=True,
+		)
+		self._auth(self.student_user)
+		response = self.client.post(f'/complaint/api/submitdraft/{draft.id}', {}, format='json')
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		draft.refresh_from_db()
+		self.assertFalse(draft.is_draft)
+		self.assertIsNotNone(draft.submitted_at)
+		self.assertIsNotNone(draft.sla_deadline)
+		self.assertTrue(str(draft.complaint_ref).startswith('CMP-'))
+		self.assertEqual(draft.assigned_to_id, self.internet_worker.id)
+		self.assertTrue(ComplaintEvent.objects.filter(complaint=draft, action='draft_submitted').exists())
+
+	def test_report_analytics_returns_kpis_and_status_logs(self):
+		self.complaint_1.complaint_date = timezone.now() - timedelta(hours=10)
+		self.complaint_1.sla_deadline = timezone.now() - timedelta(hours=1)
+		self.complaint_1.resolved_at = timezone.now() - timedelta(hours=2)
+		self.complaint_1.status = 2
+		self.complaint_1.feedback = 'Resolved quickly'
+		self.complaint_1.save(update_fields=['complaint_date', 'sla_deadline', 'resolved_at', 'status', 'feedback'])
+
+		self.complaint_2.complaint_date = timezone.now() - timedelta(hours=100)
+		self.complaint_2.sla_deadline = timezone.now() - timedelta(hours=90)
+		self.complaint_2.closed_at = timezone.now() - timedelta(hours=10)
+		self.complaint_2.status = 3
+		self.complaint_2.reopen_requested = True
+		self.complaint_2.save(update_fields=['complaint_date', 'sla_deadline', 'closed_at', 'status', 'reopen_requested'])
+
+		ComplaintEvent.objects.create(complaint=self.complaint_1, actor=self.staff_extra, action='status_updated')
+		ComplaintEvent.objects.create(complaint=self.complaint_1, actor=self.staff_extra, action='status_updated')
+		ComplaintEvent.objects.create(complaint=self.complaint_2, actor=self.staff_extra, action='verified_and_closed')
+
+		self._auth(self.superuser)
+		response = self.client.get('/complaint/api/report-analytics')
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		self.assertEqual(response.data['totals']['complaint_count'], 2)
+		self.assertEqual(response.data['totals']['resolved_count'], 2)
+		self.assertEqual(response.data['totals']['feedback_count'], 1)
+		self.assertAlmostEqual(response.data['kpis']['avg_resolution_time_hours'], 49.0, delta=0.2)
+		self.assertEqual(response.data['kpis']['sla_compliance_rate'], 50.0)
+		self.assertEqual(response.data['kpis']['reopen_rate'], 50.0)
+		self.assertEqual(response.data['kpis']['feedback_response_rate'], 50.0)
+		actions = {entry['action']: entry['count'] for entry in response.data['status_logs']}
+		self.assertEqual(actions.get('status_updated'), 2)
+		self.assertIn('analytics', response.data)
+		self.assertIn('category_hotspots', response.data['analytics'])
+		self.assertIn('location_hotspots', response.data['analytics'])
+		self.assertIn('recurring_issue_clusters', response.data['analytics'])
+		self.assertIn('time_series', response.data['analytics'])
+
+	def test_report_analytics_rejects_invalid_date_range(self):
+		self._auth(self.superuser)
+		response = self.client.get('/complaint/api/report-analytics?date_from=2026-04-20&date_to=2026-04-01')
+		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+	def test_report_analytics_denies_non_supervisor_user(self):
+		self._auth(self.student_user)
+		response = self.client.get('/complaint/api/report-analytics')
+		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+	def test_report_analytics_for_supervisor_is_scoped_to_supervisor_types(self):
+		self._auth(self.faculty_user)
+		response = self.client.get('/complaint/api/report-analytics')
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		self.assertEqual(response.data['totals']['complaint_count'], 1)
+		self.assertEqual(response.data['complaints'][0]['complaint_type'], 'internet')
+
 	def test_escalation_rejects_empty_reason(self):
 		self._auth(self.staff_user)
 		response = self.client.post(
@@ -229,6 +391,40 @@ class ComplaintApiTests(APITestCase):
 		self.assertIsNotNone(event)
 		self.assertEqual(event.metadata.get('source'), 'automatic')
 		self.assertTrue(mocked_notif.called)
+
+	@patch('applications.complaint_system.notifications.complaint_system_notif')
+	def test_sla_reminder_job_notifies_before_breach_and_logs_event(self, mocked_notif):
+		self.complaint_1.sla_deadline = timezone.now() + timedelta(hours=2)
+		self.complaint_1.assigned_to = self.internet_worker
+		self.complaint_1.save(update_fields=['sla_deadline', 'assigned_to'])
+
+		from applications.complaint_system.tasks import send_sla_deadline_reminders
+
+		result = send_sla_deadline_reminders()
+		self.assertEqual(result['reminder_count'], 1)
+		self.assertIn(self.complaint_1.id, result['reminder_ids'])
+		event = ComplaintEvent.objects.filter(complaint=self.complaint_1, action='sla_reminder_sent').first()
+		self.assertIsNotNone(event)
+		self.assertEqual(event.metadata.get('source'), 'automatic')
+		self.assertTrue(mocked_notif.called)
+
+	@patch('applications.complaint_system.notifications.complaint_system_notif')
+	def test_sla_reminder_job_does_not_duplicate_for_same_deadline(self, mocked_notif):
+		self.complaint_1.sla_deadline = timezone.now() + timedelta(hours=3)
+		self.complaint_1.assigned_to = self.internet_worker
+		self.complaint_1.save(update_fields=['sla_deadline', 'assigned_to'])
+
+		from applications.complaint_system.tasks import send_sla_deadline_reminders
+
+		first = send_sla_deadline_reminders()
+		second = send_sla_deadline_reminders()
+
+		self.assertEqual(first['reminder_count'], 1)
+		self.assertEqual(second['reminder_count'], 0)
+		self.assertEqual(
+			ComplaintEvent.objects.filter(complaint=self.complaint_1, action='sla_reminder_sent').count(),
+			1,
+		)
 
 	def test_detail_denies_unrelated_student(self):
 		self._auth(self.other_student_user)
@@ -334,6 +530,56 @@ class ComplaintApiTests(APITestCase):
 		self.assertEqual(self.complaint_1.status, 3)
 		self.assertEqual(self.complaint_1.verification_status, VerificationStatus.APPROVED)
 
+	def test_feedback_submission_requires_closed_status_and_complainant(self):
+		self._auth(self.student_user)
+		not_closed = self.client.post(
+			f'/complaint/api/feedback/{self.complaint_1.id}',
+			{'feedback': 'good', 'rating': 4},
+			format='json',
+		)
+		self.assertEqual(not_closed.status_code, status.HTTP_400_BAD_REQUEST)
+
+		self._auth(self.staff_user)
+		self.client.put(
+			f'/complaint/api/updatecomplain/{self.complaint_1.id}',
+			{'status': 1, 'remarks': 'in progress'},
+			format='json',
+		)
+		self.client.put(
+			f'/complaint/api/updatecomplain/{self.complaint_1.id}',
+			{'status': 2, 'remarks': 'resolved'},
+			format='json',
+		)
+
+		self._auth(self.student_user)
+		self.client.post(
+			f'/complaint/api/verify/{self.complaint_1.id}',
+			{'verification_source': 'complainant', 'verification_decision': 'approve'},
+			format='json',
+		)
+
+		self._auth(self.other_student_user)
+		forbidden = self.client.post(
+			f'/complaint/api/feedback/{self.complaint_1.id}',
+			{'feedback': 'not owner', 'rating': 3},
+			format='json',
+		)
+		self.assertEqual(forbidden.status_code, status.HTTP_403_FORBIDDEN)
+
+		self._auth(self.student_user)
+		ok = self.client.post(
+			f'/complaint/api/feedback/{self.complaint_1.id}',
+			{'feedback': 'Issue fixed properly', 'rating': 5},
+			format='json',
+		)
+		self.assertEqual(ok.status_code, status.HTTP_200_OK)
+		self.complaint_1.refresh_from_db()
+		self.assertEqual(self.complaint_1.feedback, 'Issue fixed properly')
+		self.assertEqual(self.complaint_1.flag, 5)
+		self.assertTrue(
+			ComplaintEvent.objects.filter(complaint=self.complaint_1, action='feedback_submitted').exists()
+		)
+
 	def test_supervisor_can_reject_a_resolved_complaint(self):
 		self._auth(self.staff_user)
 		self.client.put(
@@ -382,6 +628,27 @@ class ComplaintApiTests(APITestCase):
 			format='json',
 		)
 		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+	def test_non_matching_supervisor_cannot_reopen(self):
+		self._auth(self.staff_user)
+		self.client.put(
+			f'/complaint/api/updatecomplain/{self.complaint_2.id}',
+			{'status': 1, 'remarks': 'in progress'},
+			format='json',
+		)
+		self.client.put(
+			f'/complaint/api/updatecomplain/{self.complaint_2.id}',
+			{'status': 2, 'remarks': 'resolved'},
+			format='json',
+		)
+
+		self._auth(self.faculty_user)
+		response = self.client.post(
+			f'/complaint/api/reopen/{self.complaint_2.id}',
+			{'reopen_reason': 'Try reopen plumber complaint'},
+			format='json',
+		)
+		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 	def test_reopen_rejects_expired_window(self):
 		self._auth(self.student_user)
@@ -520,4 +787,33 @@ class ComplaintApiTests(APITestCase):
 			format='json',
 		)
 		self.assertEqual(reopen_resp.status_code, status.HTTP_200_OK)
+		self.assertTrue(mocked_notif.called)
+
+	@patch('applications.complaint_system.notifications.complaint_system_notif')
+	def test_bulk_reassign_updates_assignment_and_notifies(self, mocked_notif):
+		new_worker = Workers.objects.create(
+			secincharge_id=self.secincharge,
+			name='Replacement Worker',
+			age='29',
+			phone=8888888888,
+			worker_type='internet',
+		)
+
+		self._auth(self.faculty_user)
+		response = self.client.post(
+			'/complaint/api/bulk-action',
+			{
+				'action': 'reassign',
+				'complaint_ids': [self.complaint_1.id],
+				'assigned_to': new_worker.id,
+				'assigned_team': 'Night shift',
+				'remarks': 'Reassigned for follow up',
+			},
+			format='json',
+		)
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		self.complaint_1.refresh_from_db()
+		self.assertEqual(self.complaint_1.assigned_to_id, new_worker.id)
+		self.assertEqual(self.complaint_1.assigned_team, 'Night shift')
+		self.assertTrue(ComplaintEvent.objects.filter(complaint=self.complaint_1, action='bulk_reassigned').exists())
 		self.assertTrue(mocked_notif.called)

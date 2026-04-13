@@ -18,6 +18,15 @@ COMPLAINT_SLA_HOURS = {
     ComplaintPriority.LOW: 168,
 }
 
+ALLOWED_ATTACHMENT_TYPES = {
+    'image/jpeg',
+    'image/png',
+    'application/pdf',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+}
+
+MAX_ATTACHMENT_SIZE = 5 * 1024 * 1024
+
 class StudentComplainSerializers(serializers.ModelSerializer):
     assigned_to_name = serializers.SerializerMethodField()
     status_label = serializers.SerializerMethodField()
@@ -32,6 +41,7 @@ class StudentComplainSerializers(serializers.ModelSerializer):
             'complainer',
             'complaint_date',
             'complaint_ref',
+            'submitted_at',
             'sla_deadline',
             'assigned_to',
             'assigned_team',
@@ -52,6 +62,12 @@ class StudentComplainSerializers(serializers.ModelSerializer):
         from datetime import timedelta
         from django.utils import timezone
 
+        draft_mode = bool(
+            self.context.get('draft_mode')
+            or attrs.get('is_draft')
+            or (self.instance is not None and getattr(self.instance, 'is_draft', False))
+        )
+
         def _is_empty(value):
             return value is None or (isinstance(value, str) and not value.strip())
 
@@ -62,9 +78,10 @@ class StudentComplainSerializers(serializers.ModelSerializer):
                 'location': 'Location is required',
                 'details': 'Description is required',
             }
-            for field, message in required_fields.items():
-                if _is_empty(attrs.get(field)):
-                    raise serializers.ValidationError({field: message})
+            if not draft_mode:
+                for field, message in required_fields.items():
+                    if _is_empty(attrs.get(field)):
+                        raise serializers.ValidationError({field: message})
 
             priority = attrs.get('priority', ComplaintPriority.STANDARD)
             if priority not in dict(ComplaintPriority.CHOICES):
@@ -75,22 +92,28 @@ class StudentComplainSerializers(serializers.ModelSerializer):
             attrs.setdefault('reason', 'None')
             attrs.setdefault('comment', 'None')
             attrs.setdefault('priority', ComplaintPriority.STANDARD)
+            attrs.setdefault('is_draft', draft_mode)
             priority = attrs['priority']
-            attrs['sla_deadline'] = timezone.now() + timedelta(hours=COMPLAINT_SLA_HOURS.get(priority, 72))
+            if not draft_mode:
+                attrs['sla_deadline'] = timezone.now() + timedelta(hours=COMPLAINT_SLA_HOURS.get(priority, 72))
+                attrs.setdefault('submitted_at', timezone.now())
+            else:
+                attrs['sla_deadline'] = None
+                attrs['complaint_finish'] = None
         else:
             for field, message in {
                 'complaint_type': 'Category cannot be empty',
                 'location': 'Location cannot be empty',
                 'details': 'Description cannot be empty',
             }.items():
-                if field in attrs and _is_empty(attrs.get(field)):
+                if not draft_mode and field in attrs and _is_empty(attrs.get(field)):
                     raise serializers.ValidationError({field: message})
 
         if 'priority' in attrs:
             if attrs.get('priority') not in dict(ComplaintPriority.CHOICES):
                 raise serializers.ValidationError({'priority': 'Invalid priority'})
 
-        if self.instance is not None and 'priority' in attrs and 'sla_deadline' not in attrs:
+        if self.instance is not None and 'priority' in attrs and 'sla_deadline' not in attrs and not draft_mode:
             priority = attrs.get('priority', getattr(self.instance, 'priority', ComplaintPriority.STANDARD))
             attrs['sla_deadline'] = timezone.now() + timedelta(hours=COMPLAINT_SLA_HOURS.get(priority, 72))
 
@@ -98,6 +121,30 @@ class StudentComplainSerializers(serializers.ModelSerializer):
             attrs['complaint_finish'] = attrs['sla_deadline'].date()
 
         return attrs
+
+    def _validate_attachment(self, file_obj, field_label):
+        if file_obj is None:
+            return file_obj
+
+        content_type = getattr(file_obj, 'content_type', None)
+        if content_type not in ALLOWED_ATTACHMENT_TYPES:
+            raise serializers.ValidationError(
+                f'{field_label} must be JPG, PNG, PDF, or DOCX'
+            )
+
+        file_size = getattr(file_obj, 'size', 0) or 0
+        if file_size > MAX_ATTACHMENT_SIZE:
+            raise serializers.ValidationError(
+                f'{field_label} must be 5 MB or smaller'
+            )
+
+        return file_obj
+
+    def validate_upload_complaint(self, value):
+        return self._validate_attachment(value, 'upload_complaint')
+
+    def validate_progress_attachment(self, value):
+        return self._validate_attachment(value, 'progress_attachment')
 
     def get_assigned_to_name(self, obj):
         if obj.assigned_to_id and obj.assigned_to:
