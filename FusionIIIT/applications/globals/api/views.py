@@ -26,11 +26,20 @@ from notifications.models import Notification
 User = get_user_model()
 
 @api_view(['POST'])
+@authentication_classes([])
 @permission_classes([AllowAny])
 def login(request):
     serializer = serializers.UserLoginSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    user = get_and_authenticate_user(**serializer.validated_data)
+    if not serializer.is_valid():
+        with open(r'e:\Fusion Lab\Fusion\FusionIIIT\login_debug.txt', 'a') as f:
+            f.write(f"ERROR: {request.data} -> {serializer.errors}\n")
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        user = get_and_authenticate_user(**serializer.validated_data)
+    except Exception as e:
+        with open(r'e:\Fusion Lab\Fusion\FusionIIIT\login_debug.txt', 'a') as f:
+            f.write(f"AUTH_FAIL: {serializer.validated_data.get('username')} -> {str(e)}\n")
+        raise e
     data = serializers.AuthUserSerializer(user).data
     
     desig = list(HoldsDesignation.objects.select_related('user','working','designation').all().filter(working = user).values_list('designation'))

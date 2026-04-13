@@ -1,0 +1,15 @@
+﻿python : Traceback (most recent call last):
+At line:1 char:1
++ python manage.py test 
+applications.scholarships.tests -v 2 --testrunn ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Trace 
+   back (most recent call last)::String) [], Remo  
+  teException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "manage.py", line 8, in <module>
+    from django.core.management import 
+execute_from_command_line
+ModuleNotFoundError: No module named 'django'
