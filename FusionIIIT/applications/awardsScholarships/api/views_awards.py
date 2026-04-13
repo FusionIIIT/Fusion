@@ -258,15 +258,15 @@ class GenerateAutoAwardsView(APIView):
             if cgm_winners:
                 insert_award("Chairman's Gold Medal", 'CGM', cgm_winners[0])
 
-        # DGM — by UG/PG category
-        for code, label, progs in [
-            ('DGM_UG', "Director's Gold Medal (UG)", UG_PROGRAMMES),
-            ('DGM_PG', "Director's Gold Medal (PG)", PG_PROGRAMMES),
+        # DGM — Top B.Tech and Top M.Tech
+        for code, label, prog_name in [
+            ('DGM_BTECH', "Director's Gold Medal (B.Tech)", 'B.Tech'),
+            ('DGM_MTECH', "Director's Gold Medal (M.Tech)", 'M.Tech'),
         ]:
-            group = [s for s in valid_students if s['programme'] in progs]
+            group = [s for s in valid_students if s['programme'] == prog_name]
             if group:
                 cat_max = max(s['cpi'] for s in group)
-                # Pick ONE winner
+                # Pick ONE winner (highest CPI, break ties by roll number)
                 dgm_winners = sorted([x for x in group if x['cpi'] == cat_max], key=lambda x: x['roll_no'])
                 if dgm_winners:
                     insert_award(label, code, dgm_winners[0])
