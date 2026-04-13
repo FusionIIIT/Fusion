@@ -1,0 +1,243 @@
+Test_ID,Scenario,Input/Action,Expected Result,Actual Result,Status,Evidence,Tester,Timestamp
+BR-PMS-001-I-01,Submit application missing required field,,400; Missing required field,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-001-V-01,Submit application with complete payload,POST /patentsystem/applicant/applications/submit/,201; Application created,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-002-I-01,Unauthenticated user submits,,401,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-002-V-01,Authenticated applicant submits,,201,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-003-I-01,Assertion failed,,,Assertion failed,Fail,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 202, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\test_business_rules.py"", line 148, in test_invalid_director_inventor_conflict_blocked
+    self._consent_all(app)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\test_business_rules.py"", line 37, in _consent_all
+    self.api_post(self.API_PREFIX + f""applicant/applications/{app.id}/consent/"", {}, expected_status=200)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 310, in api_post
+    self.assertEqual(resp.status_code, expected_status, msg=getattr(resp, ""content"", b"""")[:500])
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 912, in assertEqual
+    assertion_func(first, second, msg=msg)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 905, in _baseAssertEqual
+    raise self.failureException(msg)
+AssertionError: 400 != 200 : b'{""error"": ""User is not a registered applicant.""}'
+",Tester,2026-04-07 16:48:44
+BR-PMS-003-V-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-004-I-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-004-V-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-005-I-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-005-V-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-006-I-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-006-V-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-007-I-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-007-V-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-008-I-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-008-V-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-009-I-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-009-V-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-010-V-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-011-I-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-011-V-01,Assertion failed,,,Assertion failed,Fail,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 202, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\test_business_rules.py"", line 328, in test_valid_unread_count_increments_after_submit
+    self.assertGreaterEqual(r.json().get(""unread_count"", 0), 1)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 1316, in assertGreaterEqual
+    self.fail(self._formatMessage(msg, standardMsg))
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 753, in fail
+    raise self.failureException(msg)
+AssertionError: 0 not greater than or equal to 1
+",Tester,2026-04-07 16:48:44
+BR-PMS-013-I-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-013-V-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-014-I-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-014-V-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-016-I-01,Assertion failed,,,Assertion failed,Fail,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 202, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\test_business_rules.py"", line 452, in test_invalid_resubmit_after_deadline_expires
+    self.assertEqual(app.status, ApplicationStatus.EXPIRED)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 912, in assertEqual
+    assertion_func(first, second, msg=msg)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 905, in _baseAssertEqual
+    raise self.failureException(msg)
+AssertionError: 'Needs Revision' != <ApplicationStatus.EXPIRED: 'Expired'>
+",Tester,2026-04-07 16:48:44
+BR-PMS-016-V-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-017-I-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-017-V-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-018-I-01,Assertion failed,,,Assertion failed,Fail,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 202, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\test_business_rules.py"", line 515, in test_invalid_non_pcc_cannot_view_audit_logs
+    self.api_get(url, expected_status=403)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 303, in api_get
+    self.assertEqual(resp.status_code, expected_status, msg=getattr(resp, ""content"", b"""")[:500])
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 912, in assertEqual
+    assertion_func(first, second, msg=msg)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 905, in _baseAssertEqual
+    raise self.failureException(msg)
+AssertionError: 200 != 403 : b'[{""id"":174,""application"":158,""user"":11009,""user_name"":"""",""action"":""Auto-transitioned to Submitted - All Consents Received"",""previous_state"":""Pending Inventor Consent"",""new_state"":""Submitted"",""details"":"""",""timestamp"":""2026-04-07T16:47:44.137937""},{""id"":173,""application"":158,""user"":11009,""user_name"":"""",""action"":""Inventor consent given by inventor2"",""previous_state"":"""",""new_state"":"""",""details"":"""",""timestamp"":""2026-04-07T16:47:44.133936""},{""id"":172,""application"":158,""user"":11008,""user_name"":"""",""acti'
+",Tester,2026-04-07 16:48:44
+BR-PMS-018-V-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-019-I-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+BR-PMS-019-V-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+,,,,,Pass,,Tester,2026-04-07 16:48:44
+,,,,,Pass,,Tester,2026-04-07 16:48:44
+,,,,,Fail,,Tester,2026-04-07 16:48:44
+,,,,,Pass,,Tester,2026-04-07 16:48:44
+,,,,,Pass,,Tester,2026-04-07 16:48:44
+,,,,,Pass,,Tester,2026-04-07 16:48:44
+,,,,,Pass,,Tester,2026-04-07 16:48:44
+,,,,,Pass,,Tester,2026-04-07 16:48:44
+,,,,,Pass,,Tester,2026-04-07 16:48:44
+,,,,,Error,,Tester,2026-04-07 16:48:44
+PMS-UC-001-AP-01,All inventors give consent; system auto-submits,POST /.../consent/ by each inventor,status transitions to Submitted,status=Submitted,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-001-EX-01,Unauthenticated user attempts submission,POST /patentsystem/applicant/applications/submit/,401 Unauthorized,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-001-HP-01,Applicant submits complete application,POST /patentsystem/applicant/applications/submit/,201; Application created with status=Pending Inventor Consent,"Created application_id=171, status=Pending Inventor Consent",Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-002-AP-01,Forwarding with comment >1000 chars,,400 Validation error,status=400,Pass,"{""error"": ""Comments must be \u2264 1000 characters.""}",Tester,2026-04-07 16:48:44
+PMS-UC-002-EX-01,Non-PCC user tries to forward,,403 Forbidden,status=403,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-002-HP-01,PCC Admin forwards reviewed application to Director,POST /patentsystem/pccAdmin/applications/new/forward/{id}/,200; status becomes Forwarded for Director's Review,status=Forwarded for Director's Review,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-003-AP-01,Director requests revision,,200; status=Needs Revision,status=Needs Revision,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-003-EX-01,Director rejects with too-short feedback,,400; validation error,status=400,Pass,"{""error"": ""Feedback must be at least 50 characters for Reject / Needs Revision.""}",Tester,2026-04-07 16:48:44
+PMS-UC-003-HP-01,Director approves,,200; status=Approved,status=Approved,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-004-AP-01,Applicant resubmits with partial update,,200; title updated; status=Resubmitted,Assertion failed,Fail,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 202, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\test_use_cases.py"", line 290, in test_ap01_resubmit_updates_title_only
+    self.assertEqual(r.status_code, 200)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 912, in assertEqual
+    assertion_func(first, second, msg=msg)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 905, in _baseAssertEqual
+    raise self.failureException(msg)
+AssertionError: 400 != 200
+",Tester,2026-04-07 16:48:44
+PMS-UC-004-EX-01,Applicant resubmits after deadline,,400; status=Expired,Assertion failed,Fail,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 202, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\test_use_cases.py"", line 310, in test_ex01_resubmit_after_deadline_marks_expired
+    self.assertEqual(app.status, ApplicationStatus.EXPIRED)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 912, in assertEqual
+    assertion_func(first, second, msg=msg)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 905, in _baseAssertEqual
+    raise self.failureException(msg)
+AssertionError: 'Needs Revision' != <ApplicationStatus.EXPIRED: 'Expired'>
+",Tester,2026-04-07 16:48:44
+PMS-UC-004-HP-01,Applicant resubmits within deadline,,200; status=Resubmitted,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-005-AP-01,Assertion failed,,,Assertion failed,Fail,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 202, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\test_use_cases.py"", line 335, in test_ap01_applicant_views_details_of_own_application
+    self.assertEqual(str(r.json().get(""id"")), str(app.id))
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 912, in assertEqual
+    assertion_func(first, second, msg=msg)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 1292, in assertMultiLineEqual
+    self.fail(self._formatMessage(msg, standardMsg))
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 753, in fail
+    raise self.failureException(msg)
+AssertionError: 'None' != '181'
+- None
++ 181
+
+",Tester,2026-04-07 16:48:44
+PMS-UC-005-EX-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-005-HP-01,Assertion failed,,,Assertion failed,Fail,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 202, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\test_use_cases.py"", line 326, in test_hp01_applicant_views_own_applications_list
+    self.assertTrue(any(str(a.get(""id"")) == str(app.id) for a in data))
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 765, in assertTrue
+    raise self.failureException(msg)
+AssertionError: False is not true
+",Tester,2026-04-07 16:48:44
+PMS-UC-006-AP-01,Unhandled exception,,,AttorneyAssignment matching query does not exist.,Error,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 202, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\test_use_cases.py"", line 384, in test_ap01_pcc_updates_existing_attorney_assignment
+    self.assertEqual(AttorneyAssignment.objects.get(application=app).attorney_name, ""B"")
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\venv\lib\site-packages\django\db\models\manager.py"", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\venv\lib\site-packages\django\db\models\query.py"", line 429, in get
+    raise self.model.DoesNotExist(
+applications.patent_system.models.AttorneyAssignment.DoesNotExist: AttorneyAssignment matching query does not exist.
+",Tester,2026-04-07 16:48:44
+PMS-UC-006-EX-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-006-HP-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-007-AP-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-007-EX-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-007-HP-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-008-AP-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-008-EX-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-008-HP-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-009-AP-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-009-EX-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-009-HP-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-010-AP-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-010-EX-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-010-HP-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-014-AP-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-014-EX-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-014-HP-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-015-AP-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-015-EX-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-015-HP-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-016-AP-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-016-EX-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-016-HP-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-018-AP-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-018-EX-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-018-HP-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-019-AP-01,Search with status filter,,200; filtered result set,Assertion failed,Fail,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 202, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\test_use_cases.py"", line 835, in test_ap01_search_filters_by_status
+    self.assertIn(""items"", body)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 1179, in assertIn
+    self.fail(self._formatMessage(msg, standardMsg))
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 753, in fail
+    raise self.failureException(msg)
+AssertionError: 'items' not found in []
+",Tester,2026-04-07 16:48:44
+PMS-UC-019-EX-01,Assertion failed,,,Assertion failed,Fail,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 202, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\test_use_cases.py"", line 843, in test_ex01_search_rejects_invalid_date_format
+    self.assertIn(""items"", r.json())
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 1179, in assertIn
+    self.fail(self._formatMessage(msg, standardMsg))
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 753, in fail
+    raise self.failureException(msg)
+AssertionError: 'items' not found in []
+",Tester,2026-04-07 16:48:44
+PMS-UC-019-HP-01,Search applications by keyword,,200; returns results with total + items,Assertion failed,Fail,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 202, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\test_use_cases.py"", line 822, in test_hp01_search_by_query_returns_results_structure
+    self.assertIn(""items"", body)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 1179, in assertIn
+    self.fail(self._formatMessage(msg, standardMsg))
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 753, in fail
+    raise self.failureException(msg)
+AssertionError: 'items' not found in []
+",Tester,2026-04-07 16:48:44
+PMS-UC-020-AP-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-020-EX-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-UC-020-HP-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-WF-101-E2E-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-WF-101-NEG-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-WF-201-E2E-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-WF-201-NEG-01,Assertion failed,,,Assertion failed,Fail,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 202, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\test_workflows.py"", line 124, in test_negative_expired
+    self.assertEqual(app.status, ApplicationStatus.EXPIRED)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 912, in assertEqual
+    assertion_func(first, second, msg=msg)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 905, in _baseAssertEqual
+    raise self.failureException(msg)
+AssertionError: 'Needs Revision' != <ApplicationStatus.EXPIRED: 'Expired'>
+",Tester,2026-04-07 16:48:44
+PMS-WF-301-E2E-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-WF-301-NEG-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-WF-401-E2E-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-WF-401-NEG-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-WF-501-E2E-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-WF-501-NEG-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-WF-601-E2E-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44
+PMS-WF-601-NEG-01,Completed,,,OK,Pass,,Tester,2026-04-07 16:48:44

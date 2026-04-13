@@ -1,0 +1,40 @@
+Artifact_ID,Type,Status,Details
+PMS-UC-001,Use Case,Implemented Correctly,3/3 passed
+PMS-UC-002,Use Case,Implemented Correctly,3/3 passed
+PMS-UC-003,Use Case,Implemented Correctly,3/3 passed
+PMS-UC-004,Use Case,Partially Implemented,1/3 passed
+PMS-UC-005,Use Case,Partially Implemented,1/3 passed
+PMS-UC-006,Use Case,Partially Implemented,2/3 passed
+PMS-UC-007,Use Case,Implemented Correctly,3/3 passed
+PMS-UC-008,Use Case,Implemented Correctly,3/3 passed
+PMS-UC-009,Use Case,Implemented Correctly,3/3 passed
+PMS-UC-010,Use Case,Implemented Correctly,3/3 passed
+PMS-UC-014,Use Case,Implemented Correctly,3/3 passed
+PMS-UC-015,Use Case,Implemented Correctly,3/3 passed
+PMS-UC-016,Use Case,Implemented Correctly,3/3 passed
+PMS-UC-018,Use Case,Implemented Correctly,3/3 passed
+PMS-UC-019,Use Case,Incorrectly Implemented,0/3 passed
+PMS-UC-020,Use Case,Implemented Correctly,3/3 passed
+BR-PMS-001,Business Rule,Enforced Correctly,2/2 passed
+BR-PMS-002,Business Rule,Enforced Correctly,2/2 passed
+BR-PMS-003,Business Rule,Partially Enforced,1/2 passed
+BR-PMS-004,Business Rule,Enforced Correctly,2/2 passed
+BR-PMS-005,Business Rule,Enforced Correctly,2/2 passed
+BR-PMS-006,Business Rule,Enforced Correctly,2/2 passed
+BR-PMS-007,Business Rule,Enforced Correctly,2/2 passed
+BR-PMS-008,Business Rule,Enforced Correctly,2/2 passed
+BR-PMS-009,Business Rule,Enforced Correctly,2/2 passed
+BR-PMS-010,Business Rule,Enforced Correctly,1/1 passed
+BR-PMS-011,Business Rule,Partially Enforced,1/2 passed
+BR-PMS-013,Business Rule,Enforced Correctly,2/2 passed
+BR-PMS-014,Business Rule,Enforced Correctly,2/2 passed
+BR-PMS-016,Business Rule,Partially Enforced,1/2 passed
+BR-PMS-017,Business Rule,Enforced Correctly,2/2 passed
+BR-PMS-018,Business Rule,Partially Enforced,1/2 passed
+BR-PMS-019,Business Rule,Enforced Correctly,2/2 passed
+PMS-WF-101,Workflow,Complete,2/2 passed
+PMS-WF-201,Workflow,Partial,1/2 passed
+PMS-WF-301,Workflow,Complete,2/2 passed
+PMS-WF-401,Workflow,Complete,2/2 passed
+PMS-WF-501,Workflow,Complete,2/2 passed
+PMS-WF-601,Workflow,Complete,2/2 passed

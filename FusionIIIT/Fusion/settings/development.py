@@ -11,6 +11,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'fusionlab',
         'HOST': os.environ.get("DB_HOST", default='localhost'),
+        'PORT': '5433',
         'USER': 'fusion_admin',
         'PASSWORD': 'hello123',
     }
@@ -65,3 +66,12 @@ CRONJOBS = [
 ]
 
 CRONTAB_DJANGO_MANAGE_PATH = '/home/owlman/Desktop/Fuse/Fusion/FusionIIIT/manage.py'
+
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'
+
+DATABASES['default']['TEST'] = {
+    'MIRROR': 'default',
+}
+
+DEBUG = True
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'

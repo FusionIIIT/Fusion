@@ -141,6 +141,7 @@ INSTALLED_APPS = [
     'applications.hr2',
     'applications.department',
     'applications.iwdModuleV2',
+    'applications.patent_system',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',

@@ -1,0 +1,536 @@
+use_cases:
+
+  - id: "PMS-UC-001"
+    title: "Submit Patent Application"
+    description: "Allows an applicant (Faculty/Staff/Applicant) to create and formally submit a new patent application into the system for review and processing."
+    actors: "Primary: Applicant; Secondary: PCC_ADMIN"
+    preconditions: "Applicant logged in with 'Applicant' role; all necessary documents and details are ready; required agreements signed"
+
+    happy_paths:
+      - scenario: "Applicant submits a complete application with valid documents"
+        preconditions: "Applicant is logged in and authorized"
+        input_action: "POST /patent/application with title, abstract, description, claims, inventors, uploaded_documents"
+        expected_result: "PatentApplication created with status=Submitted; confirmation email sent; appears on applicant dashboard"
+
+    alternate_paths:
+      - scenario: "Applicant saves an incomplete application as draft"
+        preconditions: "Applicant is logged in"
+        input_action: "POST /patent/application with partial fields, action=save_draft"
+        expected_result: "Application saved as draft; no notification sent to PCC_ADMIN"
+
+    exception_paths:
+      - scenario: "Unauthorized user attempts to submit"
+        preconditions: "User is logged in without 'Applicant' role"
+        input_action: "POST /patent/application"
+        expected_result: "Request rejected with authorization error; submission blocked"
+
+      - scenario: "Applicant submits incomplete application"
+        preconditions: "Applicant is logged in"
+        input_action: "POST /patent/application with missing required fields"
+        expected_result: "System highlights missing fields; application not submitted; returns to form"
+
+      - scenario: "Document validation fails during upload"
+        preconditions: "Applicant is logged in"
+        input_action: "POST /patent/application/documents with invalid file format"
+        expected_result: "Error displayed for invalid document; retry upload prompted"
+
+    business_rules: ["BR-PMS-001", "BR-PMS-002", "BR-PMS-010", "BR-PMS-013", "BR-PMS-018"]
+    workflows: ["PMS-WF-101", "PMS-WF-401"]
+
+
+  - id: "PMS-UC-002"
+    title: "Assign Application to Director"
+    description: "Enables PCC_ADMIN or system to assign newly submitted patent applications to appropriate Director(s) based on expertise or workload."
+    actors: "Primary: PCC_ADMIN, System; Secondary: Director"
+    preconditions: "Application exists with status=Submitted; Directors have defined expertise and workloads"
+
+    happy_paths:
+      - scenario: "System auto-assigns application to Director based on expertise match"
+        preconditions: "Application status is Submitted; eligible Directors are available"
+        input_action: "PATCH /patent/application/{id}/assign with director_selection=auto"
+        expected_result: "Application status updated to Under Review; Director notified; review timeline initiated"
+
+    alternate_paths:
+      - scenario: "PCC_ADMIN manually overrides auto-assignment"
+        preconditions: "Application is Submitted; PCC_ADMIN is logged in"
+        input_action: "PATCH /patent/application/{id}/assign with director_id={manual_id}"
+        expected_result: "Application assigned to selected Director; status updated; Director notified"
+
+    exception_paths:
+      - scenario: "No eligible Director is available"
+        preconditions: "Application is Submitted; no Director with matching expertise has capacity"
+        input_action: "PATCH /patent/application/{id}/assign with director_selection=auto"
+        expected_result: "Assignment fails; retry scheduled; application remains Submitted"
+
+      - scenario: "Assignment conflict detected"
+        preconditions: "Director already at max workload"
+        input_action: "PATCH /patent/application/{id}/assign with director_id={overloaded_id}"
+        expected_result: "Conflict flagged; manual override required; assignment not saved"
+
+    business_rules: ["BR-PMS-002", "BR-PMS-003", "BR-PMS-004", "BR-PMS-011", "BR-PMS-012", "BR-PMS-015", "BR-PMS-018"]
+    workflows: ["PMS-WF-401"]
+
+
+  - id: "PMS-UC-003"
+    title: "Review Patent Application"
+    description: "Enables Director or Reviewer to access and review submissions, provide feedback, and issue decisions (Approve/Reject/Revision Required)."
+    actors: "Primary: Director; Secondary: Applicant, PCC_ADMIN"
+    preconditions: "Application assigned to Director with status=Under Review"
+
+    happy_paths:
+      - scenario: "Director approves a complete and valid application"
+        preconditions: "Application is Under Review and assigned to Director"
+        input_action: "POST /patent/application/{id}/review with decision=Approved, feedback={comments}"
+        expected_result: "Application status updated to Approved; applicant notified; audit log updated"
+
+    alternate_paths:
+      - scenario: "Director requests revision from applicant"
+        preconditions: "Application is Under Review"
+        input_action: "POST /patent/application/{id}/review with decision=Needs Revision, feedback={detailed_comments}"
+        expected_result: "Application status changed to Needs Revision; applicant notified with feedback"
+
+      - scenario: "Director defers the review"
+        preconditions: "Application is Under Review"
+        input_action: "POST /patent/application/{id}/review with action=defer, note={reason}"
+        expected_result: "Deferral note added; timeline extended; application remains Under Review"
+
+    exception_paths:
+      - scenario: "Review timeline is violated"
+        preconditions: "Application has exceeded review deadline"
+        input_action: "GET /patent/application/{id}/review_status"
+        expected_result: "Escalation logged; timeline violation recorded; PCC_ADMIN notified"
+
+    business_rules: ["BR-PMS-001", "BR-PMS-003", "BR-PMS-004", "BR-PMS-005", "BR-PMS-006", "BR-PMS-011", "BR-PMS-018"]
+    workflows: []
+
+
+  - id: "PMS-UC-004"
+    title: "Revise and Resubmit Application"
+    description: "Applicant revises application based on Director feedback and resubmits for further review."
+    actors: "Primary: Applicant; Secondary: Director"
+    preconditions: "Application status is Needs Revision or Rejected; revision is within the allowed time limit"
+
+    happy_paths:
+      - scenario: "Applicant addresses all feedback and resubmits within 60 days"
+        preconditions: "Application is in Needs Revision status; within 60-day resubmission window"
+        input_action: "PUT /patent/application/{id}/revise with updated_fields, updated_documents"
+        expected_result: "Application status changed to Resubmitted; new review cycle triggered; stakeholders notified"
+
+    alternate_paths:
+      - scenario: "Applicant partially updates and saves before final resubmission"
+        preconditions: "Application is in Needs Revision; within allowed window"
+        input_action: "PUT /patent/application/{id}/revise with action=save_draft"
+        expected_result: "Draft revision saved; version history maintained; no status change"
+
+    exception_paths:
+      - scenario: "Applicant attempts to resubmit after the 60-day window has expired"
+        preconditions: "Application is in Needs Revision; 60-day deadline has passed"
+        input_action: "PUT /patent/application/{id}/revise"
+        expected_result: "Submission rejected with date/deadline error; status changed to Expired; applicant notified"
+
+      - scenario: "Revised application does not address the feedback"
+        preconditions: "Application is in Needs Revision"
+        input_action: "PUT /patent/application/{id}/revise with unaddressed feedback items"
+        expected_result: "System rejects revision; applicant prompted to make further edits"
+
+    business_rules: ["BR-PMS-002", "BR-PMS-006", "BR-PMS-011", "BR-PMS-016"]
+    workflows: ["PMS-WF-201"]
+
+
+  - id: "PMS-UC-005"
+    title: "Track Application Status"
+    description: "Allows applicants and administrators to view real-time status of patent applications throughout the lifecycle."
+    actors: "Primary: Applicant, PCC_ADMIN; Secondary: Director"
+    preconditions: "Application exists in the system; user has appropriate role to view"
+
+    happy_paths:
+      - scenario: "Applicant views current status of their application"
+        preconditions: "Applicant is logged in; application exists in the system"
+        input_action: "GET /patent/application/{id}/status"
+        expected_result: "Current status, history timeline, and pending actions displayed"
+
+    alternate_paths:
+      - scenario: "PCC_ADMIN views status of all applications in a batch"
+        preconditions: "PCC_ADMIN is logged in"
+        input_action: "GET /patent/applications?filter=all&sort=status"
+        expected_result: "Filtered and sorted list of applications with statuses displayed"
+
+    exception_paths:
+      - scenario: "Applicant attempts to view another applicant's application"
+        preconditions: "Applicant is logged in"
+        input_action: "GET /patent/application/{other_id}/status"
+        expected_result: "Access denied with authorization error"
+
+    business_rules: ["BR-PMS-002", "BR-PMS-018"]
+    workflows: []
+
+
+  - id: "PMS-UC-006"
+    title: "Assign Attorney"
+    description: "Assigns a legal attorney to a patent application for legal assessment and filing support."
+    actors: "Primary: PCC_ADMIN; Secondary: Attorney, Director"
+    preconditions: "Application is in a state requiring legal involvement (e.g., Approved or Under Review)"
+
+    happy_paths:
+      - scenario: "PCC_ADMIN assigns available attorney to application"
+        preconditions: "Application requires legal review; attorney is available"
+        input_action: "PATCH /patent/application/{id}/assign_attorney with attorney_id={id}"
+        expected_result: "Attorney assigned; application updated; attorney notified"
+
+    exception_paths:
+      - scenario: "No attorney is available for assignment"
+        preconditions: "All attorneys are at capacity"
+        input_action: "PATCH /patent/application/{id}/assign_attorney with attorney_selection=auto"
+        expected_result: "Assignment fails; PCC_ADMIN alerted to manually resolve"
+
+    business_rules: ["BR-PMS-003", "BR-PMS-004", "BR-PMS-012", "BR-PMS-018"]
+    workflows: []
+
+
+  - id: "PMS-UC-007"
+    title: "Assess Application Patentability (Legal Assessment)"
+    description: "Attorney or Director conducts legal assessment to evaluate patentability of the submitted application."
+    actors: "Primary: Attorney; Secondary: Director, PCC_ADMIN"
+    preconditions: "Application is Approved or Under Review; attorney assigned"
+
+    happy_paths:
+      - scenario: "Attorney completes legal assessment and marks application as patentable"
+        preconditions: "Attorney is assigned and application is accessible"
+        input_action: "POST /patent/application/{id}/legal_assessment with result=Patentable, notes={details}"
+        expected_result: "Legal assessment recorded; application progresses to filing stage"
+
+    exception_paths:
+      - scenario: "Attorney finds significant legal conflict; application is not patentable"
+        preconditions: "Attorney is assigned"
+        input_action: "POST /patent/application/{id}/legal_assessment with result=Not Patentable, notes={reason}"
+        expected_result: "Application flagged; Director and applicant notified; further action required"
+
+    business_rules: ["BR-PMS-003", "BR-PMS-005", "BR-PMS-007", "BR-PMS-018"]
+    workflows: []
+
+
+  - id: "PMS-UC-008"
+    title: "Manage Budgets and Financial Approval"
+    description: "Handles budget allocation, cost estimation, and financial approvals for patent-related expenditures."
+    actors: "Primary: PCC_ADMIN; Secondary: Director"
+    preconditions: "Application status is Approved; cost estimates for fees are available"
+
+    happy_paths:
+      - scenario: "PCC_ADMIN approves budget within threshold"
+        preconditions: "Budget request submitted; amount is within PCC_ADMIN approval limit"
+        input_action: "POST /patent/application/{id}/budget_approval with amount={value}, approved_by=PCC_ADMIN"
+        expected_result: "Budget approved; financial tracking initiated; stakeholders notified"
+
+    alternate_paths:
+      - scenario: "Budget exceeds PCC_ADMIN threshold; escalated to Director"
+        preconditions: "Budget request submitted; amount exceeds PCC_ADMIN authority"
+        input_action: "POST /patent/application/{id}/budget_approval with amount={high_value}"
+        expected_result: "Request escalated to Director for approval"
+
+    exception_paths:
+      - scenario: "Budget request denied by Director"
+        preconditions: "Escalated budget request is under Director review"
+        input_action: "POST /patent/application/{id}/budget_approval with decision=Denied"
+        expected_result: "Budget denied; applicant and PCC_ADMIN notified; application on hold"
+
+    business_rules: ["BR-PMS-008", "BR-PMS-009", "BR-PMS-018"]
+    workflows: ["PMS-WF-301"]
+
+
+  - id: "PMS-UC-009"
+    title: "File with Patent Office / Log Official Filing"
+    description: "Handles the official submission of approved applications to the patent office and logs the filing details."
+    actors: "Primary: Attorney, PCC_ADMIN; Secondary: System"
+    preconditions: "Application is Approved; budget is approved; legal assessment complete"
+
+    happy_paths:
+      - scenario: "Attorney files application with patent office and logs confirmation"
+        preconditions: "All approvals in place"
+        input_action: "POST /patent/application/{id}/official_filing with filing_date, office_reference_number"
+        expected_result: "Filing logged; application status updated to Filed; deadline tracking initiated"
+
+    exception_paths:
+      - scenario: "Patent office rejects filing due to format error"
+        preconditions: "Application submitted to patent office"
+        input_action: "POST /patent/application/{id}/official_filing with malformed documents"
+        expected_result: "Filing error logged; attorney notified to correct and refile"
+
+    business_rules: ["BR-PMS-009", "BR-PMS-013", "BR-PMS-018"]
+    workflows: ["PMS-WF-601"]
+
+
+  - id: "PMS-UC-010"
+    title: "Track Application Progress and Notifications"
+    description: "Provides real-time progress tracking and automated notifications to relevant stakeholders at each stage."
+    actors: "Primary: System; Secondary: Applicant, PCC_ADMIN, Director"
+    preconditions: "Application exists in the system"
+
+    happy_paths:
+      - scenario: "System sends status-change notification to applicant automatically"
+        preconditions: "Application status changes to a new stage"
+        input_action: "SYSTEM_EVENT: application.status_changed with new_status={value}"
+        expected_result: "Notification dispatched to applicant and relevant parties; event logged in audit trail"
+
+    exception_paths:
+      - scenario: "Notification delivery fails due to invalid email"
+        preconditions: "Status change event triggered"
+        input_action: "SYSTEM_EVENT: application.status_changed with invalid email on record"
+        expected_result: "Delivery failure logged; PCC_ADMIN alerted to update contact details"
+
+    business_rules: ["BR-PMS-018"]
+    workflows: []
+
+
+  - id: "PMS-UC-011"
+    title: "Respond to Office Actions / Amend and Resubmit"
+    description: "Enables attorney or applicant to respond to official queries (Office Actions) from the patent office and resubmit amendments."
+    actors: "Primary: Attorney; Secondary: Applicant, PCC_ADMIN"
+    preconditions: "An Office Action has been received and logged; application is Filed"
+
+    happy_paths:
+      - scenario: "Attorney submits timely response to Office Action"
+        preconditions: "Office Action received; within response deadline"
+        input_action: "POST /patent/application/{id}/office_action_response with response_document, amendments"
+        expected_result: "Response filed; application status updated; deadline extended or closed"
+
+    exception_paths:
+      - scenario: "Response deadline passes without submission"
+        preconditions: "Office Action response deadline exceeded"
+        input_action: "SYSTEM_EVENT: office_action.deadline_passed"
+        expected_result: "Application flagged as at-risk; escalation notification sent to PCC_ADMIN and Director"
+
+    business_rules: ["BR-PMS-005", "BR-PMS-012", "BR-PMS-018"]
+    workflows: ["PMS-WF-601"]
+
+
+  - id: "PMS-UC-012"
+    title: "Track and Manage Deadlines"
+    description: "Tracks all critical deadlines (review timelines, resubmission windows, office action responses) and sends automated reminders."
+    actors: "Primary: System; Secondary: PCC_ADMIN, Attorney, Applicant"
+    preconditions: "Application has active deadlines in the system"
+
+    happy_paths:
+      - scenario: "System sends deadline reminder 7 days before due date"
+        preconditions: "Deadline is approaching"
+        input_action: "SYSTEM_EVENT: deadline.approaching with days_remaining=7"
+        expected_result: "Reminder notification sent to responsible party; logged in audit trail"
+
+    exception_paths:
+      - scenario: "Deadline is missed; escalation triggered"
+        preconditions: "Deadline has passed without action"
+        input_action: "SYSTEM_EVENT: deadline.missed"
+        expected_result: "Escalation created; PCC_ADMIN and Director notified; application flagged"
+
+    business_rules: ["BR-PMS-012", "BR-PMS-015", "BR-PMS-018"]
+    workflows: []
+
+
+  - id: "PMS-UC-013"
+    title: "Manage Maintenance Fees and Renewals"
+    description: "Tracks and manages ongoing maintenance fee payments and renewal deadlines for granted patents."
+    actors: "Primary: PCC_ADMIN; Secondary: Director, System"
+    preconditions: "Patent is Granted; maintenance schedule is defined"
+
+    happy_paths:
+      - scenario: "PCC_ADMIN processes maintenance fee payment on time"
+        preconditions: "Maintenance fee is due; budget available"
+        input_action: "POST /patent/{id}/maintenance_fee with payment_amount, payment_date"
+        expected_result: "Payment recorded; patent renewal confirmed; next deadline scheduled"
+
+    exception_paths:
+      - scenario: "Maintenance fee not paid before deadline"
+        preconditions: "Fee due date has passed"
+        input_action: "SYSTEM_EVENT: maintenance_fee.overdue"
+        expected_result: "Patent flagged for lapse; escalation notification sent; grace period window activated"
+
+    business_rules: ["BR-PMS-009", "BR-PMS-013", "BR-PMS-018"]
+    workflows: ["PMS-WF-501"]
+
+
+  - id: "PMS-UC-014"
+    title: "Withdraw Patent Application"
+    description: "Allows applicant or PCC_ADMIN to formally withdraw a patent application before final disposition."
+    actors: "Primary: Applicant; Secondary: PCC_ADMIN"
+    preconditions: "Application is in an active, non-final state (e.g., Draft, Submitted, Under Review, Needs Revision)"
+
+    happy_paths:
+      - scenario: "Applicant withdraws application before review begins"
+        preconditions: "Application status is Submitted or Draft"
+        input_action: "DELETE /patent/application/{id} with reason={withdrawal_reason}"
+        expected_result: "Application status changed to Withdrawn; record locked; stakeholders notified"
+
+    exception_paths:
+      - scenario: "Applicant attempts to withdraw an already-approved application"
+        preconditions: "Application status is Approved or Filed"
+        input_action: "DELETE /patent/application/{id}"
+        expected_result: "Withdrawal rejected with status error; PCC_ADMIN must authorize any late-stage withdrawal"
+
+    business_rules: ["BR-PMS-016", "BR-PMS-018"]
+    workflows: ["PMS-WF-201"]
+
+
+  - id: "PMS-UC-015"
+    title: "Generate Reports and Analytics Dashboards"
+    description: "Generates reports and visual dashboards on application pipeline, inventor activity, budget utilization, and patent outcomes."
+    actors: "Primary: PCC_ADMIN, Director; Secondary: nil"
+    preconditions: "User has reporting permissions; data exists in the system"
+
+    happy_paths:
+      - scenario: "PCC_ADMIN generates a monthly application status report"
+        preconditions: "PCC_ADMIN is logged in"
+        input_action: "GET /reports/applications?period=monthly&format=pdf"
+        expected_result: "PDF report generated with application counts by status; download link provided"
+
+    alternate_paths:
+      - scenario: "Director views live analytics dashboard"
+        preconditions: "Director is logged in"
+        input_action: "GET /dashboard/director"
+        expected_result: "Interactive dashboard displayed with current pipeline, pending reviews, and deadlines"
+
+    exception_paths:
+      - scenario: "Report generation fails due to data query timeout"
+        preconditions: "Large dataset being queried"
+        input_action: "GET /reports/applications?period=annual"
+        expected_result: "Timeout error returned; user advised to narrow filter or retry"
+
+    business_rules: ["BR-PMS-018"]
+    workflows: []
+
+
+  - id: "PMS-UC-016"
+    title: "Manage Co-Inventors and Inventor Agreements"
+    description: "Manages co-inventor records, contribution percentages, and ensures all inventor agreements are signed before submission."
+    actors: "Primary: Applicant, PCC_ADMIN; Secondary: nil"
+    preconditions: "Application exists; all co-inventors are registered users or can be invited"
+
+    happy_paths:
+      - scenario: "Applicant adds co-inventor and system sends agreement for e-signature"
+        preconditions: "Application is in Draft; co-inventor email is valid"
+        input_action: "POST /patent/application/{id}/inventors with co_inventor_email, contribution_percentage"
+        expected_result: "Co-inventor added; agreement email dispatched; application cannot be submitted until agreement is signed"
+
+    exception_paths:
+      - scenario: "Co-inventor does not sign agreement before submission deadline"
+        preconditions: "Application ready for submission; co-inventor agreement pending"
+        input_action: "POST /patent/application/{id}/submit"
+        expected_result: "Submission blocked with unsigned agreement error; reminder sent to co-inventor"
+
+    business_rules: ["BR-PMS-001", "BR-PMS-018"]
+    workflows: []
+
+
+  - id: "PMS-UC-017"
+    title: "Patent Licensing / Tech Transfer Request"
+    description: "Handles requests, reviews, negotiations, and recordkeeping for licensing or transfer of granted patents."
+    actors: "Primary: Applicant; Secondary: PCC_ADMIN, Director, Legal"
+    preconditions: "Patent is Granted or reviewed; licensing policy is in place"
+
+    happy_paths:
+      - scenario: "Applicant submits licensing request; committee approves and agreement is finalized"
+        preconditions: "Patent is Granted; licensing policy exists"
+        input_action: "POST /patent/{id}/licensing_request with proposed_terms, external_party_details"
+        expected_result: "License record created; IP and financial systems updated; stakeholders notified"
+
+    alternate_paths:
+      - scenario: "Negotiation involves confidential terms; redacted record created"
+        preconditions: "Licensing negotiation in progress"
+        input_action: "POST /patent/{id}/licensing_request with confidential=true"
+        expected_result: "Redacted record stored; accessible only to authorized roles"
+
+    exception_paths:
+      - scenario: "Negotiation fails; request archived"
+        preconditions: "Licensing request submitted; negotiation rounds exhausted"
+        input_action: "PATCH /patent/{id}/licensing_request/{req_id} with status=Failed"
+        expected_result: "Request archived; retry option available; no financial updates made"
+
+    business_rules: ["BR-PMS-013", "BR-PMS-018"]
+    workflows: []
+
+
+  - id: "PMS-UC-018"
+    title: "Appeal Against Rejection"
+    description: "Applicant can lodge an appeal with grounds; Director checks and may remand to attorney for action."
+    actors: "Primary: Applicant; Secondary: Director, PCC_ADMIN"
+    preconditions: "Application was rejected; appeal period is still valid"
+
+    happy_paths:
+      - scenario: "Applicant files appeal within time limit; Director upholds and remands for amendment"
+        preconditions: "Application is Rejected; appeal window is open"
+        input_action: "POST /patent/application/{id}/appeal with grounds={justification}, supporting_documents"
+        expected_result: "Appeal logged; Director reviews; decision to remand routes application to attorney"
+
+    alternate_paths:
+      - scenario: "Director modifies the original decision upon appeal"
+        preconditions: "Appeal is under review by Director"
+        input_action: "POST /patent/application/{id}/appeal/{appeal_id}/decision with outcome=Modified"
+        expected_result: "Application status updated per modified decision; applicant notified"
+
+    exception_paths:
+      - scenario: "Appeal submitted after the appeal period has expired"
+        preconditions: "Rejection is recorded; appeal window has closed"
+        input_action: "POST /patent/application/{id}/appeal"
+        expected_result: "Appeal rejected with time-expiry error; process closed"
+
+    business_rules: ["BR-PMS-005", "BR-PMS-008", "BR-PMS-015", "BR-PMS-016", "BR-PMS-018"]
+    workflows: []
+
+
+  - id: "PMS-UC-019"
+    title: "Search Prior Art"
+    description: "Enables users to search for and attach prior art references to support novelty and patentability claims."
+    actors: "Primary: Applicant, Attorney; Secondary: nil"
+    preconditions: "Application details entered; database resources accessible"
+
+    happy_paths:
+      - scenario: "Applicant searches prior art and attaches relevant references to the application"
+        preconditions: "Application is in Draft or Under Review; database is accessible"
+        input_action: "GET /prior_art/search?keywords={terms}&classifications={cls}&date_range={range}"
+        expected_result: "Ranked search results returned; selected references attached to application; session logged"
+
+    alternate_paths:
+      - scenario: "No results found; system suggests keyword refinements"
+        preconditions: "Search performed with narrow or niche keywords"
+        input_action: "GET /prior_art/search?keywords={narrow_terms}"
+        expected_result: "Empty results with keyword expansion suggestions displayed; user can refine and retry"
+
+    exception_paths:
+      - scenario: "Database query fails due to external service unavailability"
+        preconditions: "Search initiated; external patent database is down"
+        input_action: "GET /prior_art/search?keywords={terms}"
+        expected_result: "Error message displayed; session ends gracefully; retry option shown"
+
+    business_rules: ["BR-PMS-003", "BR-PMS-007", "BR-PMS-012", "BR-PMS-018"]
+    workflows: []
+
+
+  - id: "PMS-UC-020"
+    title: "Manage Document Versions"
+    description: "Allows users to upload, track, and manage different versions of all application documents."
+    actors: "Primary: Applicant, Attorney, PCC_ADMIN; Secondary: nil"
+    preconditions: "Application exists in the system; prior document versions may exist"
+
+    happy_paths:
+      - scenario: "Applicant uploads a new version of the patent abstract; history maintained"
+        preconditions: "Application is active; applicant has edit access"
+        input_action: "POST /patent/application/{id}/documents/{doc_id}/versions with new_file"
+        expected_result: "New version saved; previous version archived; version history updated; stakeholders notified"
+
+    alternate_paths:
+      - scenario: "User views version history and compares two versions"
+        preconditions: "At least two document versions exist"
+        input_action: "GET /patent/application/{id}/documents/{doc_id}/versions?compare=v1,v2"
+        expected_result: "Version comparison view displayed with tracked changes highlighted"
+
+    exception_paths:
+      - scenario: "Uploaded document fails virus scan"
+        preconditions: "New version upload initiated"
+        input_action: "POST /patent/application/{id}/documents/{doc_id}/versions with infected_file"
+        expected_result: "Upload blocked; virus scan failure error shown; previous version remains current; notification sent"
+
+      - scenario: "Version conflict detected between simultaneous uploads"
+        preconditions: "Two users upload a new version at the same time"
+        input_action: "POST /patent/application/{id}/documents/{doc_id}/versions (concurrent requests)"
+        expected_result: "Conflict detected; merge process initiated; neither version automatically published until resolved"
+
+    business_rules: ["BR-PMS-014", "BR-PMS-017", "BR-PMS-018"]
+    workflows: []

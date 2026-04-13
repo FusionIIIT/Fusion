@@ -21,6 +21,8 @@ from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
+
+from django.views.static import serve
 from django.urls import path
 
 from applications.globals.views import RateLimitedPasswordResetView
@@ -40,6 +42,8 @@ urlpatterns = [
     url(r'^__debug__/', include(debug_toolbar.urls)),
     url(r'^research_procedures/', include('applications.research_procedures.urls')),
     url(r'^accounts/', include('allauth.urls')),
+    
+    # url(r'^api/iwdModuleV2/', include('applications.iwdModuleV2.api.urls')),
 
 
     url(r'^eis/', include('applications.eis.urls')),
@@ -55,6 +59,7 @@ urlpatterns = [
     url(r'^finance/', include('applications.finance_accounts.urls')),
     url(r'^purchase-and-store/', include('applications.ps1.urls')),
     url(r'^gymkhana/', include('applications.gymkhana.urls')),
+    # url(r'^inventory/', include('applications.inventory.urls')),  # Commented out - module not present
     url(r'^library/', include('applications.library.urls')),
     url(r'^establishment/', include('applications.establishment.urls')),
     url(r'^ocms/', include('applications.online_cms.urls')),
@@ -65,7 +70,10 @@ urlpatterns = [
     url(r'^recruitment/', include('applications.recruitment.urls')),
     url(r'^examination/', include('applications.examination.urls')),
     url(r'^otheracademic/', include('applications.otheracademic.urls')),
-
+    url(r'^patentsystem/', include('applications.patent_system.api.urls')),
+    url(r'^media/(?P<path>.*)$', serve, {"document_root": settings.MEDIA_ROOT},),
+    
+    # Password Reset URLs
     path(
         'password-reset/',
         RateLimitedPasswordResetView.as_view(
