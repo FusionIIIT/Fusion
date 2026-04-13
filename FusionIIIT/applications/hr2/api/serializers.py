@@ -348,7 +348,9 @@ class Leave_serializer(serializers.ModelSerializer):
             "purposeOfLeave",
             "addressDuringLeave",
             "academicResponsibility",
+            "academicResponsibility_status",
             "addministrativeResponsibiltyAssigned",
+            "adminResponsibility_status",
             "approved",
             "approvedDate",
             "created_by",
@@ -415,6 +417,13 @@ class Leave_serializer(serializers.ModelSerializer):
                     leave_pdf_file.seek(0)
             except Exception:
                 pass
+        
+        # Set responsibility statuses to 'pending' by default if not provided (BR-HR-006, BR-HR-007)
+        if "academicResponsibility_status" not in validated_data:
+            validated_data["academicResponsibility_status"] = "pending"
+        if "adminResponsibility_status" not in validated_data:
+            validated_data["adminResponsibility_status"] = "pending"
+        
         return LeaveForm.objects.create(**validated_data)
 
 
@@ -491,3 +500,20 @@ class LeaveBalanace_serializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return LeaveBalance.objects.create(**validated_data)
+
+
+class ResponsibilityActionSerializer(serializers.Serializer):
+    """Serializer for accepting/rejecting responsibility assignments."""
+    form_id = serializers.IntegerField(required=True)
+    responsibility_type = serializers.ChoiceField(choices=['academic', 'admin'], required=True)
+    action = serializers.ChoiceField(choices=['accept', 'reject'], required=True)
+    remarks = serializers.CharField(required=False, allow_blank=True)
+
+    def validate(self, attrs):
+        action = attrs.get('action')
+        remarks = attrs.get('remarks', '')
+        if action == 'reject' and not str(remarks).strip():
+            raise serializers.ValidationError(
+                {"remarks": "Remarks are required when rejecting a responsibility."}
+            )
+        return attrs

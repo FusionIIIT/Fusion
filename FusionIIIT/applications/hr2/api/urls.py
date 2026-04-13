@@ -31,4 +31,6 @@ urlpatterns = [
     url('getOutbox/', views.GetOutbox.as_view(), name='outbox'),
     url('getArchive/', views.ViewArchived.as_view(), name='archive'),
     url('getuserbyid/', views.UserById.as_view(), name='userById'),
+    # Responsibility management (HR-UC-026, HR-UC-027)
+    url('responsibility/action/', views.ResponsibilityAction.as_view(), name='responsibility_action'),
 ]

@@ -25,6 +25,7 @@ from applications.hr2.api.serializers import (
     Leave_serializer,
     LeaveBalanace_serializer,
     LTC_serializer,
+    ResponsibilityActionSerializer,
 )
 from applications.hr2.models import ExtraInfo, LeaveBalance, EmpConfidentialDetails, LeaveForm
 from applications.hr2.services import (
@@ -831,5 +832,74 @@ class GetOutbox(Hr2APIView):
     def get(self, request, *args, **kwargs):
         name = request.query_params.get("username")
         user_designation = request.query_params.get("designation")
-        outbox = get_outbox(username=name, designation=user_designation)
-        return Response(outbox, status=status.HTTP_200_OK)
+        
+        # Get raw outbox data
+        outbox_data = get_outbox(username=name, designation=user_designation)
+        
+        # Transform to match frontend expectations
+        outbox_items = []
+        if outbox_data:
+            for item in outbox_data:
+                outbox_items.append({
+                    "id": item.get("id") or item.get("file_id"),
+                    "subject": item.get("subject") or item.get("title") or "Document",
+                    "type": item.get("form_type") or item.get("type") or "Document",
+                    "recipient": item.get("receiver") or item.get("recipient") or item.get("to"),
+                    "status": item.get("status") or "Pending",
+                    "submission_date": item.get("submitted_date") or item.get("date"),
+                    "to": item.get("receiver") or item.get("to"),
+                    "date": (item.get("submitted_date") or item.get("date")).split("T")[0] if item.get("submitted_date") or item.get("date") else None
+                })
+        
+        return Response({"outbox_items": outbox_items}, status=status.HTTP_200_OK)
+
+
+# ============================================================================
+# Responsibility Management Views (HR-UC-026, HR-UC-027)
+# ============================================================================
+
+class ResponsibilityAction(Hr2APIView):
+    """API view for handling academic and administrative responsibility accept/reject actions."""
+
+    def post(self, request, *args, **kwargs):
+        """Accept or reject an academic or administrative responsibility."""
+        serializer = ResponsibilityActionSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        form_id = serializer.validated_data['form_id']
+        responsibility_type = serializer.validated_data['responsibility_type']
+        action = serializer.validated_data['action']
+        remarks = serializer.validated_data.get('remarks', '')
+
+        try:
+            leave_form = LeaveForm.objects.get(id=form_id)
+        except LeaveForm.DoesNotExist:
+            return Response(
+                {"detail": "Leave form not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Update the appropriate responsibility status
+        if responsibility_type == 'academic':
+            if action == 'accept':
+                leave_form.academicResponsibility_status = 'accepted'
+            else:  # reject
+                leave_form.academicResponsibility_status = 'rejected'
+        elif responsibility_type == 'admin':
+            if action == 'accept':
+                leave_form.adminResponsibility_status = 'accepted'
+            else:  # reject
+                leave_form.adminResponsibility_status = 'rejected'
+
+        leave_form.save()
+
+        return Response(
+            {
+                "status": f"Responsibility {action}ed successfully.",
+                "form_id": form_id,
+                "responsibility_type": responsibility_type,
+                "action": action,
+            },
+            status=status.HTTP_200_OK,
+        )
