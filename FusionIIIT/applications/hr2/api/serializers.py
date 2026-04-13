@@ -353,11 +353,14 @@ class Leave_serializer(serializers.ModelSerializer):
             "approvedDate",
             "created_by",
             "approved_by",
+            "leave_pdf_file",
             "has_leave_pdf",
         ]
 
     def get_has_leave_pdf(self, obj):
-        return bool(getattr(obj, "leave_pdf", None))
+        return bool(
+            getattr(obj, "leave_pdf", None) or getattr(obj, "leave_pdf_file", None)
+        )
 
     def validate(self, attrs):
         attrs = _validate_approved_status_transition(self.instance, attrs)
@@ -387,10 +390,31 @@ class Leave_serializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         request = self.context.get("request")
+        # Handle approval metadata (approved_by, approvedDate) via shared helper
         validated_data = _set_approved_by_and_date_on_approval(instance, validated_data, request)
+
+        # Handle PDF file upload: read bytes into leave_pdf binary field
+        leave_pdf_file = validated_data.get("leave_pdf_file")
+        if leave_pdf_file:
+            try:
+                validated_data["leave_pdf"] = leave_pdf_file.read()
+                if hasattr(leave_pdf_file, "seek"):
+                    leave_pdf_file.seek(0)
+            except Exception:
+                pass
+
         return super().update(instance, validated_data)
 
     def create(self, validated_data):
+        # Handle PDF file upload: read bytes into leave_pdf binary field
+        leave_pdf_file = validated_data.get("leave_pdf_file")
+        if leave_pdf_file:
+            try:
+                validated_data["leave_pdf"] = leave_pdf_file.read()
+                if hasattr(leave_pdf_file, "seek"):
+                    leave_pdf_file.seek(0)
+            except Exception:
+                pass
         return LeaveForm.objects.create(**validated_data)
 
 
