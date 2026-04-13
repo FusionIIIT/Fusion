@@ -2,8 +2,8 @@
 
 # Apply database migrations
 echo "Apply database migrations"
-# python3 FusionIIIT/manage.py makemigrations
-# python3 FusionIIIT/manage.py migrate
+python3 FusionIIIT/manage.py makemigrations
+python3 FusionIIIT/manage.py migrate
 
 # Start server
 echo "Starting server"
