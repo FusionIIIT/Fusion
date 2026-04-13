@@ -86,6 +86,20 @@ def _validate_ltc_dependents_list(deps, max_count=25):
             )
 
 
+def _set_approved_by_and_date_on_approval(instance, validated_data, request):
+    """Set approved_by and approvedDate when form is approved by the current user."""
+    if instance is None:
+        return validated_data
+    prev_approved = instance.approved
+    new_approved = validated_data.get("approved", prev_approved)
+    # When transitioning from non-approved to approved (True)
+    if new_approved is True and prev_approved is not True:
+        if request and request.user.is_authenticated:
+            validated_data["approved_by"] = request.user
+            validated_data["approvedDate"] = datetime.date.today()
+    return validated_data
+
+
 class LTC_serializer(serializers.ModelSerializer):
     class Meta:
         model = LTCform
@@ -187,6 +201,11 @@ class LTC_serializer(serializers.ModelSerializer):
 
         return attrs
 
+    def update(self, instance, validated_data):
+        request = self.context.get("request")
+        validated_data = _set_approved_by_and_date_on_approval(instance, validated_data, request)
+        return super().update(instance, validated_data)
+
     def create(self, validated_data):
         return LTCform.objects.create(**validated_data)
 
@@ -215,6 +234,11 @@ class CPDAAdvance_serializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         return _validate_approved_status_transition(self.instance, attrs)
+
+    def update(self, instance, validated_data):
+        request = self.context.get("request")
+        validated_data = _set_approved_by_and_date_on_approval(instance, validated_data, request)
+        return super().update(instance, validated_data)
 
     def create(self, validated_data):
         return CPDAAdvanceform.objects.create(**validated_data)
@@ -261,6 +285,11 @@ class Appraisal_serializer(serializers.ModelSerializer):
     def validate(self, attrs):
         return _validate_approved_status_transition(self.instance, attrs)
 
+    def update(self, instance, validated_data):
+        request = self.context.get("request")
+        validated_data = _set_approved_by_and_date_on_approval(instance, validated_data, request)
+        return super().update(instance, validated_data)
+
     def create(self, validated_data):
         return Appraisalform.objects.create(**validated_data)
 
@@ -290,6 +319,11 @@ class CPDAReimbursement_serializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         return _validate_approved_status_transition(self.instance, attrs)
+
+    def update(self, instance, validated_data):
+        request = self.context.get("request")
+        validated_data = _set_approved_by_and_date_on_approval(instance, validated_data, request)
+        return super().update(instance, validated_data)
 
     def create(self, validated_data):
         return CPDAReimbursementform.objects.create(**validated_data)
@@ -353,10 +387,7 @@ class Leave_serializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         request = self.context.get("request")
-        prev = instance.approved
-        new_val = validated_data.get("approved", prev)
-        if new_val is True and prev is not True and request and request.user.is_authenticated:
-            validated_data["approved_by"] = request.user
+        validated_data = _set_approved_by_and_date_on_approval(instance, validated_data, request)
         return super().update(instance, validated_data)
 
     def create(self, validated_data):

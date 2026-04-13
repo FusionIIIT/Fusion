@@ -25,6 +25,7 @@ urlpatterns = [
     #  create for GetForms
     url('getForms/', views.GetFormHistory.as_view(), name='getForms'),
     url('leaveBalance/', views.CheckLeaveBalance.as_view(), name='leaveBalance'),
+    url('leaveBalance/all/', views.AllEmployeeLeaveBalances.as_view(), name='leaveBalance_all'),
     url('allLeaveBalances/', views.AllEmployeeLeaveBalances.as_view(), name='allLeaveBalances'),
     url('getDesignations/', views.DropDown.as_view(), name="designations"),
     url('getOutbox/', views.GetOutbox.as_view(), name='outbox'),
