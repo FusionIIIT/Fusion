@@ -17,8 +17,11 @@ urlpatterns = [
         name='CPDAReimbursement_form'),
     # leave PDF download (must be registered before generic leave/)
     url(r'^leave/pdf/(?P<form_id>\d+)/$', views.LeaveFormPdfDownload.as_view(), name='leave_form_pdf'),
-    #  leave form
-    url('leave/', views.Leave.as_view(), name='Leave_form'),
+    # leave form initials for frontend prefill
+    url(r'^leave/form-initials/$', views.LeaveFormInitials.as_view(), name='leave_form_initials'),
+    url(r'^leave/balance/$', views.CheckLeaveBalance.as_view(), name='leave_balance_alias'),
+    #  leave form (exact path only)
+    url(r'^leave/$', views.Leave.as_view(), name='Leave_form'),
     url('formManagement/', views.FormManagement.as_view(), name='formManagement'),
     url('tracking/', views.TrackProgress.as_view(), name='tracking'),
     url('formFetch/', views.FormFetch.as_view(), name='fetch_form'),
@@ -31,4 +34,6 @@ urlpatterns = [
     url('getOutbox/', views.GetOutbox.as_view(), name='outbox'),
     url('getArchive/', views.ViewArchived.as_view(), name='archive'),
     url('getuserbyid/', views.UserById.as_view(), name='userById'),
+    url('get_my_details/', views.GetMyDetails.as_view(), name='get_my_details'),
+    url('search_employee/', views.SearchEmployee.as_view(), name='search_employee'),
 ]

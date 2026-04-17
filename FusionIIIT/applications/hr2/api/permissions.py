@@ -12,7 +12,9 @@ class ModuleAccessHRPermission(permissions.BasePermission):
         if not request.user or not request.user.is_authenticated:
             return False
 
-        working_designations = request.user.holdsdesignation_set.select_related("designation").all()
+        working_designations = HoldsDesignation.objects.filter(
+            working=request.user
+        ).select_related("designation")
         for hold in working_designations:
             designation_name = getattr(hold.designation, "name", None)
             if not designation_name:

@@ -618,6 +618,39 @@ class LeaveFormPdfDownload(Hr2APIView):
         )
 
 
+class LeaveFormInitials(Hr2APIView):
+    """Return authenticated user's baseline details for leave form prefill."""
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        extra_info = ExtraInfo.objects.filter(user=request.user).select_related("department").first()
+        if not extra_info:
+            return Response(
+                {"detail": "Employee profile not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        full_name = f"{request.user.first_name} {request.user.last_name}".strip()
+        designation = (
+            extra_info.last_selected_role
+            or HoldsDesignation.objects.filter(working=request.user)
+            .select_related("designation")
+            .values_list("designation__name", flat=True)
+            .first()
+            or ""
+        )
+
+        return Response(
+            {
+                "name": full_name or request.user.username,
+                "last_selected_role": designation,
+                "pfno": extra_info.id,
+                "department": getattr(extra_info.department, "name", "") or "",
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
 # ============================================================================
 # Form Management & Workflow Views
 # ============================================================================
@@ -713,15 +746,55 @@ class CheckLeaveBalance(Hr2APIView):
     serializer_class = LeaveBalanace_serializer
 
     def get(self, request, *args, **kwargs):
-        name = request.query_params.get("name")
-        validation_error = _validate_search_query(name, "name")
-        if validation_error:
-            return validation_error
-        person = User.objects.get(username=name)
-        extrainfo = ExtraInfo.objects.get(user=person)
-        leave_balance = LeaveBalance.objects.get(employeeId=extrainfo)
-        serializer = self.serializer_class(leave_balance, many=False)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        name = request.query_params.get("name") or request.user.username
+        try:
+            person = User.objects.get(username=name)
+            extrainfo = ExtraInfo.objects.get(user=person)
+        except (User.DoesNotExist, ExtraInfo.DoesNotExist):
+            return Response(
+                {"detail": "Leave balance not found for this user."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        leave_balance, _ = LeaveBalance.objects.get_or_create(employeeId=extrainfo)
+        leave_balance_summary = {
+            "casual_leave": {
+                "allotted": int(leave_balance.casual_leave_allotted or 0),
+                "taken": int(leave_balance.casual_leave_used or 0),
+                "balance": int(leave_balance.casualLeave or 0),
+            },
+            "special_casual_leave": {
+                "allotted": int(leave_balance.special_casual_leave_allotted or 0),
+                "taken": int(leave_balance.special_casual_leave_used or 0),
+                "balance": int(leave_balance.specialCasualLeave or 0),
+            },
+            "earned_leave": {
+                "allotted": int(leave_balance.earned_leave_allotted or 0),
+                "taken": int(leave_balance.earned_leave_used or 0),
+                "balance": int(leave_balance.earnedLeave or 0),
+            },
+            "commuted_leave": {
+                "allotted": int(leave_balance.commuted_leave_allotted or 0),
+                "taken": int(leave_balance.commuted_leave_used or 0),
+                "balance": int(leave_balance.commutedLeave or 0),
+            },
+            "restricted_holiday": {
+                "allotted": int(leave_balance.restricted_holiday_allotted or 0),
+                "taken": int(leave_balance.restricted_holiday_used or 0),
+                "balance": int(leave_balance.restrictedHoliday or 0),
+            },
+            "station_leave": {
+                "allotted": int(leave_balance.station_leave_allotted or 0),
+                "taken": int(leave_balance.station_leave_used or 0),
+                "balance": int(leave_balance.stationLeave or 0),
+            },
+            "vacation_leave": {
+                "allotted": int(leave_balance.vacation_leave_allotted or 0),
+                "taken": int(leave_balance.vacation_leave_used or 0),
+                "balance": int(leave_balance.vacationLeave or 0),
+            },
+        }
+        return Response({"leave_balance": leave_balance_summary}, status=status.HTTP_200_OK)
 
     def put(self, request, *args, **kwargs):
         if not _is_hr_admin(request.user):
@@ -833,3 +906,66 @@ class GetOutbox(Hr2APIView):
         user_designation = request.query_params.get("designation")
         outbox = get_outbox(username=name, designation=user_designation)
         return Response(outbox, status=status.HTTP_200_OK)
+
+
+class GetMyDetails(Hr2APIView):
+    """API view to get current user's details (username and designation)."""
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        extra_info = ExtraInfo.objects.filter(user=user).first()
+        
+        # Get the user's current designation if available
+        designation = None
+        if extra_info:
+            # Try to get designation from HoldsDesignation (current roles)
+            current_role = HoldsDesignation.objects.filter(
+                working=user
+            ).first()
+            if current_role:
+                designation = current_role.designation.name
+        
+        return Response(
+            {
+                "username": user.username,
+                "designation": designation or "N/A",
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+class SearchEmployee(Hr2APIView):
+    """API view to search employees by username."""
+
+    def get(self, request, *args, **kwargs):
+        search_query = request.query_params.get("search")
+        validation_error = _validate_search_query(search_query, "search")
+        if validation_error:
+            return validation_error
+        
+        # Search for user by username (case-insensitive)
+        user = User.objects.filter(username__icontains=search_query).first()
+        if not user:
+            return Response(
+                {"detail": "Employee not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        extra_info = ExtraInfo.objects.filter(user=user).first()
+        
+        # Get the user's designation
+        designation = None
+        if extra_info:
+            current_role = HoldsDesignation.objects.filter(
+                working=user
+            ).first()
+            if current_role:
+                designation = current_role.designation.name
+        
+        return Response(
+            {
+                "username": user.username,
+                "designation": designation or "N/A",
+            },
+            status=status.HTTP_200_OK
+        )
