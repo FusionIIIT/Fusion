@@ -1,11 +1,14 @@
 import logging
 
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 from notification.views import complaint_system_notif
 
 from applications.complaint_system.models import ComplaintEvent, ComplaintStatus, Supervisor
+from applications.globals.models import HoldsDesignation
 
 
 logger = logging.getLogger(__name__)
@@ -17,12 +20,47 @@ def _get_supervisor_recipients(complaint):
     recipients = []
     seen_ids = set()
 
-    for supervisor in Supervisor.objects.select_related('sup_id', 'sup_id__user').filter(type=complaint.complaint_type):
+    supervisors = Supervisor.objects.select_related('sup_id', 'sup_id__user').filter(
+        type=complaint.complaint_type,
+    ).filter(
+        Q(area='') | Q(area=complaint.location)
+    )
+
+    for supervisor in supervisors:
         recipient = getattr(supervisor.sup_id, 'user', None)
         if recipient is None or recipient.id in seen_ids:
             continue
         seen_ids.add(recipient.id)
         recipients.append(recipient)
+
+    return recipients
+
+
+def _get_authority_and_admin_recipients(excluded_ids=None):
+    excluded_ids = set(excluded_ids or [])
+    recipients = []
+    seen_ids = set(excluded_ids)
+
+    # Always include Django superusers as admin-level fallback recipients.
+    for admin_user in User.objects.filter(is_superuser=True):
+        if admin_user.id in seen_ids:
+            continue
+        recipients.append(admin_user)
+        seen_ids.add(admin_user.id)
+
+    # Include service authority style roles based on held designations.
+    authority_designations = HoldsDesignation.objects.select_related('working', 'designation').filter(
+        Q(designation__name__icontains='serviceauthority')
+        | Q(designation__name__icontains='service authority')
+        | Q(designation__name__icontains='convener')
+        | Q(designation__name__icontains='admin')
+    )
+    for held in authority_designations:
+        recipient = held.working
+        if recipient is None or recipient.id in seen_ids:
+            continue
+        recipients.append(recipient)
+        seen_ids.add(recipient.id)
 
     return recipients
 
@@ -42,6 +80,19 @@ def notify_supervisors_about_escalation(complaint, reason, actor=None, automatic
     message = f'{message_prefix} complaint {complaint.complaint_ref or complaint.id}: {reason}'
 
     for recipient in recipients:
+        complaint_system_notif(
+            sender,
+            recipient,
+            'complaint_escalation',
+            complaint.id,
+            0,
+            message,
+        )
+
+    authority_recipients = _get_authority_and_admin_recipients(
+        excluded_ids=[recipient.id for recipient in recipients],
+    )
+    for recipient in authority_recipients:
         complaint_system_notif(
             sender,
             recipient,
@@ -77,7 +128,7 @@ def notify_supervisors_about_escalation(complaint, reason, actor=None, automatic
             message,
         )
 
-    return len(recipients)
+    return len(recipients) + len(authority_recipients)
 
 
 @transaction.atomic

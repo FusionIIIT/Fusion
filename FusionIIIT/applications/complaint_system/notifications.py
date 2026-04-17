@@ -1,6 +1,6 @@
 from notification.views import complaint_system_notif
 
-from applications.complaint_system.models import ComplaintStatus, Supervisor
+from applications.complaint_system.models import ComplaintEvent, ComplaintStatus, Supervisor
 
 
 STATUS_LABELS = {
@@ -26,9 +26,34 @@ def _notify(sender_user, recipient_user, complaint, message, student_view=True):
         message,
     )
 
+    actor = getattr(complaint, 'complainer', None)
+    if sender_user is not None and actor is not None and getattr(actor, 'user_id', None) != sender_user.id:
+        actor = None
+
+    ComplaintEvent.objects.create(
+        complaint=complaint,
+        actor=actor,
+        action='notification_sent',
+        from_status=complaint.status,
+        to_status=complaint.status,
+        note=message[:200],
+        metadata={
+            'recipient_user_id': recipient_user.id,
+            'recipient_username': recipient_user.username,
+            'channel': 'in_app',
+            'student_view': bool(student_view),
+        },
+    )
+
 
 def _assigned_caretaker_user(complaint):
     worker = complaint.assigned_to
+    if worker is None or worker.secincharge_id is None or worker.secincharge_id.staff_id is None:
+        return None
+    return getattr(worker.secincharge_id.staff_id, 'user', None)
+
+
+def _worker_user(worker):
     if worker is None or worker.secincharge_id is None or worker.secincharge_id.staff_id is None:
         return None
     return getattr(worker.secincharge_id.staff_id, 'user', None)
@@ -129,6 +154,71 @@ def notify_verification_result(complaint, actor=None, decision='approve', notes=
     _notify(sender_user, complainer_user, complaint, message, student_view=True)
 
     if caretaker_user and caretaker_user.id != getattr(complainer_user, 'id', None):
+        _notify(sender_user, caretaker_user, complaint, message, student_view=False)
+
+    for supervisor_user in _supervisor_users(complaint):
+        if supervisor_user.id in {
+            getattr(complainer_user, 'id', None),
+            getattr(caretaker_user, 'id', None),
+        }:
+            continue
+        _notify(sender_user, supervisor_user, complaint, message, student_view=False)
+
+
+def notify_assignment_change(complaint, actor=None, previous_worker=None, note=''):
+    sender_user = getattr(actor, 'user', None) or getattr(complaint.complainer, 'user', None)
+    complainer_user = getattr(complaint.complainer, 'user', None)
+    previous_worker_user = _worker_user(previous_worker)
+    current_worker_user = _assigned_caretaker_user(complaint)
+
+    previous_label = (
+        getattr(previous_worker, 'name', None)
+        or getattr(previous_worker_user, 'username', None)
+        or 'unassigned'
+    )
+    current_label = (
+        getattr(complaint.assigned_to, 'name', None)
+        or getattr(current_worker_user, 'username', None)
+        or 'unassigned'
+    )
+    suffix = f' Note: {note}' if str(note or '').strip() else ''
+    message = (
+        f'Complaint {complaint.complaint_ref or complaint.id} reassigned from {previous_label} '
+        f'to {current_label}.{suffix}'
+    )
+
+    _notify(sender_user, complainer_user, complaint, message, student_view=True)
+
+    if current_worker_user and current_worker_user.id != getattr(complainer_user, 'id', None):
+        _notify(sender_user, current_worker_user, complaint, message, student_view=False)
+
+    if previous_worker_user and previous_worker_user.id not in {
+        getattr(complainer_user, 'id', None),
+        getattr(current_worker_user, 'id', None),
+    }:
+        _notify(sender_user, previous_worker_user, complaint, message, student_view=False)
+
+    for supervisor_user in _supervisor_users(complaint):
+        if supervisor_user.id in {
+            getattr(complainer_user, 'id', None),
+            getattr(current_worker_user, 'id', None),
+            getattr(previous_worker_user, 'id', None),
+        }:
+            continue
+        _notify(sender_user, supervisor_user, complaint, message, student_view=False)
+
+
+def notify_sla_deadline_reminder(complaint, hours_remaining):
+    sender_user = getattr(complaint.complainer, 'user', None)
+    complainer_user = getattr(complaint.complainer, 'user', None)
+    caretaker_user = _assigned_caretaker_user(complaint)
+
+    message = (
+        f'Complaint {complaint.complaint_ref or complaint.id} is nearing SLA deadline '
+        f'({hours_remaining} hours remaining). Please prioritize resolution.'
+    )
+
+    if caretaker_user:
         _notify(sender_user, caretaker_user, complaint, message, student_view=False)
 
     for supervisor_user in _supervisor_users(complaint):
