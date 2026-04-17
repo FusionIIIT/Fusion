@@ -969,3 +969,490 @@ class SearchEmployee(Hr2APIView):
             },
             status=status.HTTP_200_OK
         )
+
+
+# ============================================================================
+# URL-slug → FormType mapping for the new REST-style endpoints
+# ============================================================================
+
+_URL_SLUG_TO_FORM_TYPE = {
+    "cpda_adv": FormType.CPDA_ADVANCE,
+    "ltc": FormType.LTC,
+    "leave": FormType.LEAVE,
+    "appraisal": FormType.APPRAISAL,
+}
+
+
+def _get_user_primary_designation(user):
+    """Return the name of the first designation the user holds, or None."""
+    hd = HoldsDesignation.objects.filter(
+        working=user
+    ).select_related("designation").first()
+    return hd.designation.name if hd else None
+
+
+def _filter_files_by_form_type(files, form_type_value):
+    """Filter a list of serialized file dicts by file_extra_JSON.type."""
+    return [
+        f for f in files
+        if isinstance(f.get("file_extra_JSON"), dict)
+        and f["file_extra_JSON"].get("type") == form_type_value
+    ]
+
+
+# ============================================================================
+# Generic form-type-specific views (requests / inbox / archive / track / form)
+# ============================================================================
+
+class FormTypeRequests(Hr2APIView):
+    """Outbox (submitted forms) filtered by form type."""
+
+    def get(self, request, form_type_slug):
+        form_type = _URL_SLUG_TO_FORM_TYPE.get(form_type_slug)
+        if not form_type:
+            return Response({"detail": "Unknown form type."}, status=status.HTTP_400_BAD_REQUEST)
+
+        designation = _get_user_primary_designation(request.user)
+        if not designation:
+            return Response({f"{form_type_slug}_requests": []}, status=status.HTTP_200_OK)
+
+        try:
+            outbox = get_outbox(username=request.user.username, designation=designation)
+        except Exception:
+            outbox = []
+
+        filtered = _filter_files_by_form_type(outbox, form_type)
+        return Response({f"{form_type_slug}_requests": filtered}, status=status.HTTP_200_OK)
+
+
+class FormTypeInbox(Hr2APIView):
+    """Inbox filtered by form type."""
+
+    def get(self, request, form_type_slug):
+        form_type = _URL_SLUG_TO_FORM_TYPE.get(form_type_slug)
+        if not form_type:
+            return Response({"detail": "Unknown form type."}, status=status.HTTP_400_BAD_REQUEST)
+
+        designation = _get_user_primary_designation(request.user)
+        if not designation:
+            return Response({f"{form_type_slug}_inbox": []}, status=status.HTTP_200_OK)
+
+        try:
+            inbox = get_inbox(username=request.user.username, designation=designation)
+        except Exception:
+            inbox = []
+
+        filtered = _filter_files_by_form_type(inbox, form_type)
+        return Response({f"{form_type_slug}_inbox": filtered}, status=status.HTTP_200_OK)
+
+
+class FormTypeArchive(Hr2APIView):
+    """Archive filtered by form type."""
+
+    def get(self, request, form_type_slug):
+        form_type = _URL_SLUG_TO_FORM_TYPE.get(form_type_slug)
+        if not form_type:
+            return Response({"detail": "Unknown form type."}, status=status.HTTP_400_BAD_REQUEST)
+
+        designation = _get_user_primary_designation(request.user)
+        if not designation:
+            return Response({f"{form_type_slug}_archive": []}, status=status.HTTP_200_OK)
+
+        try:
+            archived = get_archived(username=request.user.username, designation=designation)
+        except Exception:
+            archived = []
+
+        filtered = _filter_files_by_form_type(archived, form_type)
+        return Response({f"{form_type_slug}_archive": filtered}, status=status.HTTP_200_OK)
+
+
+class FormTypeTrack(Hr2APIView):
+    """File tracking history for a given file id."""
+
+    def get(self, request, file_id):
+        history = get_file_history(file_id=str(file_id))
+        return Response({"file_history": history}, status=status.HTTP_200_OK)
+
+
+class FormTypeFormDetail(Hr2APIView):
+    """Fetch a single form's data by form type slug and form id."""
+
+    def get(self, request, form_type_slug, form_id):
+        form_type = _URL_SLUG_TO_FORM_TYPE.get(form_type_slug)
+        if not form_type:
+            return Response({"detail": "Unknown form type."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer_cls = _FORM_TYPE_TO_SERIALIZER.get(form_type)
+        if not serializer_cls:
+            return Response({"detail": "Unknown form type."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            form = get_form_for_type_and_id(form_type, form_id)
+        except Exception:
+            return Response({"detail": "Form not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = serializer_cls(form, many=False)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# ============================================================================
+# CPDA Claim specific views (nested under cpda/claim/)
+# ============================================================================
+
+class CpdaClaimRequests(Hr2APIView):
+    """Outbox filtered for CPDA Reimbursement (claim)."""
+
+    def get(self, request):
+        designation = _get_user_primary_designation(request.user)
+        if not designation:
+            return Response({"cpda_claim_requests": []}, status=status.HTTP_200_OK)
+
+        try:
+            outbox = get_outbox(username=request.user.username, designation=designation)
+        except Exception:
+            outbox = []
+
+        filtered = _filter_files_by_form_type(outbox, FormType.CPDA_REIMBURSEMENT)
+        return Response({"cpda_claim_requests": filtered}, status=status.HTTP_200_OK)
+
+
+class CpdaClaimInbox(Hr2APIView):
+    """Inbox filtered for CPDA Reimbursement (claim)."""
+
+    def get(self, request):
+        designation = _get_user_primary_designation(request.user)
+        if not designation:
+            return Response({"cpda_claim_inbox": []}, status=status.HTTP_200_OK)
+
+        try:
+            inbox = get_inbox(username=request.user.username, designation=designation)
+        except Exception:
+            inbox = []
+
+        filtered = _filter_files_by_form_type(inbox, FormType.CPDA_REIMBURSEMENT)
+        return Response({"cpda_claim_inbox": filtered}, status=status.HTTP_200_OK)
+
+
+class CpdaClaimArchive(Hr2APIView):
+    """Archive filtered for CPDA Reimbursement (claim)."""
+
+    def get(self, request):
+        designation = _get_user_primary_designation(request.user)
+        if not designation:
+            return Response({"cpda_claim_archive": []}, status=status.HTTP_200_OK)
+
+        try:
+            archived = get_archived(username=request.user.username, designation=designation)
+        except Exception:
+            archived = []
+
+        filtered = _filter_files_by_form_type(archived, FormType.CPDA_REIMBURSEMENT)
+        return Response({"cpda_claim_archive": filtered}, status=status.HTTP_200_OK)
+
+
+class CpdaClaimTrack(Hr2APIView):
+    """File tracking for CPDA Claim."""
+
+    def get(self, request, file_id):
+        history = get_file_history(file_id=str(file_id))
+        return Response({"file_history": history}, status=status.HTTP_200_OK)
+
+
+class CpdaClaimSubmit(Hr2APIView):
+    """Submit a CPDA Reimbursement (claim) form."""
+    serializer_class = CPDAReimbursement_serializer
+
+    def post(self, request):
+        user_info = request.data.get("user_info", request.data[1] if isinstance(request.data, list) else {})
+        form_data = request.data.get("form_data", request.data[0] if isinstance(request.data, list) else request.data)
+        serializer = self.serializer_class(data=form_data)
+        if serializer.is_valid():
+            instance = serializer.save()
+            create_form_file(
+                uploader=user_info.get("uploader_name", request.user.username),
+                uploader_designation=user_info.get("uploader_designation", _get_user_primary_designation(request.user) or ""),
+                receiver=user_info.get("receiver_name", ""),
+                receiver_designation=user_info.get("receiver_designation", ""),
+                src_object_id=str(instance.id),
+                form_type=FormType.CPDA_REIMBURSEMENT,
+            )
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ============================================================================
+# Appraisal submit view
+# ============================================================================
+
+class AppraisalSubmit(Hr2APIView):
+    """Submit an Appraisal form."""
+    serializer_class = Appraisal_serializer
+
+    def post(self, request):
+        window_error = _ensure_appraisal_submission_window()
+        if window_error:
+            return window_error
+
+        user_info = request.data.get("user_info", request.data[1] if isinstance(request.data, list) else {})
+        form_data = request.data.get("form_data", request.data[0] if isinstance(request.data, list) else request.data)
+        serializer = self.serializer_class(data=form_data)
+        if serializer.is_valid():
+            instance = serializer.save()
+            create_form_file(
+                uploader=user_info.get("uploader_name", request.user.username),
+                uploader_designation=user_info.get("uploader_designation", _get_user_primary_designation(request.user) or ""),
+                receiver=user_info.get("receiver_name", ""),
+                receiver_designation=user_info.get("receiver_designation", ""),
+                src_object_id=str(instance.id),
+                form_type=FormType.APPRAISAL,
+            )
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ============================================================================
+# Leave-specific views
+# ============================================================================
+
+class LeaveSubmit(Hr2APIView):
+    """Submit a leave form (POST)."""
+    serializer_class = Leave_serializer
+
+    def post(self, request):
+        user_info = request.data.get("user_info", request.data[1] if isinstance(request.data, list) else {})
+        form_data = request.data.get("form_data", request.data[0] if isinstance(request.data, list) else request.data)
+        serializer = self.serializer_class(data=form_data)
+        if serializer.is_valid():
+            instance = serializer.save()
+            create_form_file(
+                uploader=user_info.get("uploader_name", request.user.username),
+                uploader_designation=user_info.get("uploader_designation", _get_user_primary_designation(request.user) or ""),
+                receiver=user_info.get("receiver_name", ""),
+                receiver_designation=user_info.get("receiver_designation", ""),
+                src_object_id=str(instance.id),
+                form_type=FormType.LEAVE,
+            )
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LeaveFileHandle(Hr2APIView):
+    """Handle a leave file action (forward/approve/reject)."""
+    serializer_class = Leave_serializer
+
+    def post(self, request, file_id):
+        permission_error = _ensure_current_owner_with_designation(
+            request, file_id=file_id, receiver_payload=request.data,
+        )
+        if permission_error:
+            return permission_error
+
+        action = request.data.get("action")
+        receiver = request.data.get("receiver")
+        receiver_designation = request.data.get("receiver_designation")
+        remarks = request.data.get("remarks", "")
+
+        if action == "forward" and receiver and receiver_designation:
+            forward_form_file(
+                file_id=str(file_id),
+                receiver=receiver,
+                receiver_designation=receiver_designation,
+                remarks=remarks,
+                file_extra_JSON=request.data.get("file_extra_JSON", {"type": FormType.LEAVE}),
+            )
+            return Response({"detail": "File forwarded."}, status=status.HTTP_200_OK)
+
+        if action == "archive":
+            if archive_form_file(file_id=str(file_id)):
+                return Response({"detail": "File archived."}, status=status.HTTP_200_OK)
+            return Response({"detail": "Failed to archive."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Default: try to update form and forward
+        form_id = request.data.get("form_id")
+        if form_id:
+            try:
+                form = get_form_for_type_and_id(FormType.LEAVE, form_id)
+            except Exception:
+                return Response({"detail": "Form not found."}, status=status.HTTP_404_NOT_FOUND)
+            form_payload = request.data.get("form_data", {})
+            rem_err = _ensure_rejection_remarks_if_rejecting(request.data, form_payload)
+            if rem_err:
+                return rem_err
+            serializer = self.serializer_class(form, data=form_payload, context={"request": request})
+            if serializer.is_valid():
+                with transaction.atomic():
+                    previous_approved = form.approved is True
+                    updated_form = serializer.save()
+                    now_approved = updated_form.approved is True
+                    if not previous_approved and now_approved:
+                        success, message = _decrement_leave_balance_on_approval(updated_form)
+                        if not success:
+                            transaction.set_rollback(True)
+                            return Response({"detail": message}, status=status.HTTP_400_BAD_REQUEST)
+                if receiver and receiver_designation:
+                    forward_form_file(
+                        file_id=str(file_id),
+                        receiver=receiver,
+                        receiver_designation=receiver_designation,
+                        remarks=remarks,
+                        file_extra_JSON=request.data.get("file_extra_JSON", {"type": FormType.LEAVE}),
+                    )
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"detail": "Invalid action."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LeaveAcademicResponsibility(Hr2APIView):
+    """Handle academic responsibility for a leave file."""
+
+    def post(self, request, file_id):
+        action = request.data.get("action")
+        remarks = request.data.get("remarks", f"Academic responsibility {action}")
+        # Forward to next step or archive based on action
+        if action == "accept":
+            return Response({"detail": "Academic responsibility accepted."}, status=status.HTTP_200_OK)
+        elif action == "reject":
+            return Response({"detail": "Academic responsibility rejected."}, status=status.HTTP_200_OK)
+        return Response({"detail": "Invalid action."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LeaveAdministrativeResponsibility(Hr2APIView):
+    """Handle administrative responsibility for a leave file."""
+
+    def post(self, request, file_id):
+        action = request.data.get("action")
+        if action == "accept":
+            return Response({"detail": "Administrative responsibility accepted."}, status=status.HTTP_200_OK)
+        elif action == "reject":
+            return Response({"detail": "Administrative responsibility rejected."}, status=status.HTTP_200_OK)
+        return Response({"detail": "Invalid action."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class OfflineLeaveForm(Hr2APIView):
+    """Submit an offline leave form."""
+    serializer_class = Leave_serializer
+
+    def post(self, request):
+        if not _is_hr_admin(request.user):
+            return Response(
+                {"detail": "Only HR Admin can submit offline leave forms."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        # Handle multipart form data
+        form_data = request.data
+        serializer = self.serializer_class(data=form_data)
+        if serializer.is_valid():
+            instance = serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ============================================================================
+# Search & generic views
+# ============================================================================
+
+class SearchEmployeesView(Hr2APIView):
+    """Search employees by text query."""
+
+    def get(self, request):
+        search_text = request.query_params.get("search_text", "")
+        if len(search_text) < 3:
+            return Response({"employees": []}, status=status.HTTP_200_OK)
+
+        users = User.objects.filter(username__icontains=search_text)[:20]
+        employees = []
+        for u in users:
+            extra = ExtraInfo.objects.filter(user=u).first()
+            hd = HoldsDesignation.objects.filter(working=u).select_related("designation").first()
+            employees.append({
+                "username": u.username,
+                "name": f"{u.first_name} {u.last_name}".strip() or u.username,
+                "designation": hd.designation.name if hd else "N/A",
+                "department": getattr(extra.department, "name", "") if extra and hasattr(extra, "department") else "",
+            })
+        return Response({"employees": employees}, status=status.HTTP_200_OK)
+
+
+class FormTrackGeneric(Hr2APIView):
+    """Generic form tracking by file id."""
+
+    def get(self, request, file_id):
+        history = get_file_history(file_id=str(file_id))
+        return Response({"file_history": history}, status=status.HTTP_200_OK)
+
+
+class EmployeeDetail(Hr2APIView):
+    """Get employee info by employee/user id."""
+
+    def get(self, request, employee_id):
+        try:
+            user = User.objects.get(pk=employee_id)
+        except User.DoesNotExist:
+            return Response({"detail": "Employee not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        extra = ExtraInfo.objects.filter(user=user).first()
+        hd = HoldsDesignation.objects.filter(working=user).select_related("designation").first()
+
+        return Response({
+            "username": user.username,
+            "name": f"{user.first_name} {user.last_name}".strip() or user.username,
+            "designation": hd.designation.name if hd else "N/A",
+            "department": getattr(extra.department, "name", "") if extra and hasattr(extra, "department") else "",
+            "pfno": extra.id if extra else None,
+        }, status=status.HTTP_200_OK)
+
+
+class AdminLeaveRequests(Hr2APIView):
+    """Admin view of leave requests for a specific employee."""
+
+    def get(self, request, user_id):
+        if not _is_hr_admin(request.user):
+            return Response(
+                {"detail": "Only HR Admin can view employee leave requests."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            target_user = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        date_filter = request.query_params.get("date")
+        forms = LeaveForm.objects.filter(created_by=target_user)
+        if date_filter:
+            try:
+                filter_date = datetime.datetime.strptime(date_filter.strip(), "%Y-%m-%d").date()
+                forms = forms.filter(submissionDate__date=filter_date)
+            except ValueError:
+                pass
+
+        serializer = Leave_serializer(forms, many=True)
+        return Response({"leave_requests": serializer.data}, status=status.HTTP_200_OK)
+
+
+class LtcCreate(Hr2APIView):
+    """Create an LTC form (POST) — thin wrapper."""
+    serializer_class = LTC_serializer
+
+    def post(self, request):
+        is_complete, message = _is_profile_complete_for_ltc(request.user)
+        if not is_complete:
+            return Response({"detail": message}, status=status.HTTP_400_BAD_REQUEST)
+
+        user_info = request.data.get("user_info", request.data[1] if isinstance(request.data, list) else {})
+        form_data = request.data.get("form_data", request.data[0] if isinstance(request.data, list) else request.data)
+        serializer = self.serializer_class(data=form_data)
+        if serializer.is_valid():
+            instance = serializer.save()
+            create_form_file(
+                uploader=user_info.get("uploader_name", request.user.username),
+                uploader_designation=user_info.get("uploader_designation", _get_user_primary_designation(request.user) or ""),
+                receiver=user_info.get("receiver_name", ""),
+                receiver_designation=user_info.get("receiver_designation", ""),
+                src_object_id=str(instance.id),
+                form_type=FormType.LTC,
+            )
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
