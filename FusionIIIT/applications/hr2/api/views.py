@@ -981,6 +981,7 @@ _URL_SLUG_TO_FORM_TYPE = {
     "ltc": FormType.LTC,
     "leave": FormType.LEAVE,
     "appraisal": FormType.APPRAISAL,
+    "cpda_claim": FormType.CPDA_REIMBURSEMENT,
 }
 
 
@@ -1077,7 +1078,7 @@ class FormTypeTrack(Hr2APIView):
 
 
 class FormTypeFormDetail(Hr2APIView):
-    """Fetch a single form's data by form type slug and form id."""
+    """Fetch a single form's data by form type slug and file id."""
 
     def get(self, request, form_type_slug, form_id):
         form_type = _URL_SLUG_TO_FORM_TYPE.get(form_type_slug)
@@ -1088,8 +1089,15 @@ class FormTypeFormDetail(Hr2APIView):
         if not serializer_cls:
             return Response({"detail": "Unknown form type."}, status=status.HTTP_400_BAD_REQUEST)
 
+        from applications.filetracking.models import File
         try:
-            form = get_form_for_type_and_id(form_type, form_id)
+            file_obj = File.objects.get(pk=form_id)
+            real_form_id = int(file_obj.src_object_id)
+        except (File.DoesNotExist, ValueError, TypeError):
+            return Response({"detail": "File not found or invalid format."}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            form = get_form_for_type_and_id(form_type, real_form_id)
         except Exception:
             return Response({"detail": "Form not found."}, status=status.HTTP_404_NOT_FOUND)
 
