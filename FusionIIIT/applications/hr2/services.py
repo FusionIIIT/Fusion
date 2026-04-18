@@ -177,9 +177,13 @@ def create_form_file(
     src_object_id: str,
     form_type: str,
     src_module: str = "HR",
-    attached_file=None
+    attached_file=None,
+    file_extra_JSON=None,
 ):
     """Create a file in filetracking for a form and return the created file id."""
+    extra = {"type": form_type}
+    if file_extra_JSON and isinstance(file_extra_JSON, dict):
+        extra.update(file_extra_JSON)
     return create_file(
         uploader=uploader,
         uploader_designation=uploader_designation,
@@ -187,7 +191,7 @@ def create_form_file(
         receiver_designation=receiver_designation,
         src_module=src_module,
         src_object_id=src_object_id,
-        file_extra_JSON={"type": form_type},
+        file_extra_JSON=extra,
         attached_file=attached_file,
     )
 

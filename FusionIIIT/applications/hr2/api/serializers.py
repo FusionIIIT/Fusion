@@ -226,10 +226,19 @@ class CPDAAdvance_serializer(serializers.ModelSerializer):
             "balanceAvailable",
             "advanceAmountPDA",
             "amountCheckedInPDA",
+            "workflow_status",
+            "workflow_history",
             "approved",
             "approvedDate",
             "created_by",
             "approved_by",
+        ]
+        read_only_fields = [
+            "workflow_status",
+            "workflow_history",
+            "created_by",
+            "approved_by",
+            "approvedDate",
         ]
 
     def validate(self, attrs):

@@ -197,12 +197,31 @@ class LTCform(BaseForm):
 
 
 class CPDAAdvanceform(BaseForm):
+    """CPDA advance request with explicit workflow status (see hr2.workflow.cpda_advance)."""
+
+    WORKFLOW_STATUS_CHOICES = (
+        ("submitted", "Submitted"),
+        ("hod_verified", "Verified by HOD"),
+        ("hod_not_verified", "Not verified by HOD"),
+        ("forwarded_to_director", "Forwarded to Director"),
+        ("director_approved", "Approved by Director"),
+        ("director_rejected", "Rejected by Director"),
+        ("accountant_processed", "Processed by Accountant"),
+    )
+
     purpose = models.TextField(max_length=40, null=True)
     amountRequired = models.IntegerField(null=True)
     advanceDueAdjustment = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     balanceAvailable = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     advanceAmountPDA = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     amountCheckedInPDA = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    workflow_status = models.CharField(
+        max_length=40,
+        choices=WORKFLOW_STATUS_CHOICES,
+        default="submitted",
+        db_index=True,
+    )
+    workflow_history = models.JSONField(default=list, blank=True)
 
 class LeaveForm(BaseForm):
     departmentInfo = models.CharField(max_length=40, null=True)

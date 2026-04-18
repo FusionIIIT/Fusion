@@ -27,7 +27,15 @@ from applications.hr2.api.serializers import (
     LTC_serializer,
     ResponsibilityActionSerializer,
 )
-from applications.hr2.models import ExtraInfo, LeaveBalance, EmpConfidentialDetails, LeaveForm
+from applications.filetracking.models import File
+from applications.hr2.models import (
+    CPDAAdvanceform,
+    ExtraInfo,
+    LeaveBalance,
+    EmpConfidentialDetails,
+    LeaveForm,
+)
+from applications.hr2.workflow import cpda_advance as cpda_wf
 from applications.hr2.services import (
     get_archived,
     get_file_history,
@@ -231,6 +239,12 @@ class Hr2APIView(APIView):
     permission_classes = (IsAuthenticated, ModuleAccessHRPermission,)
 
 
+class Hr2AuthenticatedAPIView(APIView):
+    """Logged-in users only (self-service forms, inbox, track). Not gated on ModuleAccess.hr."""
+
+    permission_classes = (IsAuthenticated,)
+
+
 # ============================================================================
 # Form CRUD Views
 # ============================================================================
@@ -306,39 +320,111 @@ class LTC(Hr2APIView):
 
 
 class CPDAAdvance(Hr2APIView):
-    """API view for CPDA Advance form operations."""
+    """API view for CPDA Advance form operations (submission routes to department HOD)."""
     serializer_class = CPDAAdvance_serializer
 
-    def post(self, request):
-        user_info = request.data[1]
-        serializer = self.serializer_class(data=request.data[0])
-        if serializer.is_valid():
-            instance = serializer.save()
-            try:
-                create_form_file(
-                    uploader=request.user.username,
-                    uploader_designation=user_info["uploader_designation"],
-                    receiver=user_info["receiver_name"],
-                    receiver_designation=user_info["receiver_designation"],
-                    src_object_id=str(instance.id),
-                    form_type=FormType.CPDA_ADVANCE,
-                )
-            except Exception as e:
-                import logging
-                logging.getLogger(__name__).error("File tracking failed for CPDA Advance: %s", e)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+    def get_permissions(self):
+        # Faculty/staff submit and list their own forms without globals.ModuleAccess.hr.
+        if self.request.method in ("POST", "GET"):
+            return [IsAuthenticated()]
+        return [IsAuthenticated(), ModuleAccessHRPermission()]
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request):
+        if isinstance(request.data, list):
+            form_data = request.data[0] if len(request.data) > 0 else {}
+            user_info = request.data[1] if len(request.data) > 1 else {}
+        else:
+            form_data = request.data.get("form_data", request.data)
+            user_info = request.data.get("user_info", {})
+        user_info = user_info or {}
+        serializer = self.serializer_class(data=form_data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        hod_user, hod_desig = cpda_wf.resolve_hod_for_applicant(request.user)
+        if not hod_user:
+            return Response(
+                {
+                    "detail": (
+                        "No HOD is configured for your department. "
+                        "Ask an administrator to create the HOD designation and assign a holder."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        uploader_desig = (
+            user_info.get("uploader_designation")
+            or _get_user_primary_designation(request.user)
+            or ""
+        )
+        if not uploader_desig:
+            return Response(
+                {"detail": "Your designation could not be determined. Cannot submit."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        import logging
+
+        instance = serializer.save(created_by=request.user)
+        try:
+            create_form_file(
+                uploader=request.user.username,
+                uploader_designation=uploader_desig,
+                receiver=hod_user,
+                receiver_designation=hod_desig,
+                src_object_id=str(instance.id),
+                form_type=FormType.CPDA_ADVANCE,
+                file_extra_JSON={"workflow_status": cpda_wf.WF_SUBMITTED},
+            )
+        except Exception as e:
+            logging.getLogger(__name__).error("File tracking failed for CPDA Advance: %s", e)
+            instance.delete()
+            return Response(
+                {"detail": f"File tracking failed: {e!s}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        cpda_wf.append_workflow_event(
+            instance,
+            cpda_wf.WF_SUBMITTED,
+            request.user.username,
+            "Application submitted",
+        )
+
+        refreshed = get_form_for_type_and_id(FormType.CPDA_ADVANCE, instance.id)
+        return Response(
+            self.serializer_class(refreshed).data,
+            status=status.HTTP_200_OK,
+        )
 
     def get(self, request, *args, **kwargs):
         username = request.query_params.get("name")
+        if username and username != request.user.username and not _is_hr_admin(request.user):
+            return Response(
+                {"detail": "You may only list CPDA Advance forms for your own account."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        lookup_user = username or request.user.username
         from_date = request.query_params.get("from_date")
         to_date = request.query_params.get("to_date")
-        forms, many = get_forms_for_user(FormType.CPDA_ADVANCE, username, from_date, to_date)
+        forms, many = get_forms_for_user(
+            FormType.CPDA_ADVANCE, lookup_user, from_date, to_date
+        )
         serializer = self.serializer_class(forms, many=many)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, *args, **kwargs):
+        if not _is_hr_admin(request.user):
+            return Response(
+                {
+                    "detail": (
+                        "CPDA Advance workflow changes must be made through the workflow API "
+                        "(or contact HR Admin for data corrections)."
+                    )
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
         form_id = request.query_params.get("id")
         receiver = request.data[0]
         permission_error = _ensure_current_owner_with_designation(
@@ -374,6 +460,216 @@ class CPDAAdvance(Hr2APIView):
         if archive_form_file(file_id=file_id):
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class CPDAAdvanceWorkflowHandle(Hr2AuthenticatedAPIView):
+    """Role-based actions for CPDA Advance (HOD → Director → Accountant)."""
+
+    def post(self, request, file_id):
+        action = (request.data.get("action") or "").strip()
+        designation = request.data.get("designation") or _get_request_designation(request)
+        remarks = (request.data.get("remarks") or "").strip()
+
+        perm_err = _ensure_current_owner_with_designation(
+            request,
+            file_id=file_id,
+            receiver_payload=request.data,
+        )
+        if perm_err:
+            return perm_err
+
+        try:
+            file_obj = File.objects.get(pk=file_id)
+        except File.DoesNotExist:
+            return Response({"detail": "File not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        extra = file_obj.file_extra_JSON or {}
+        if extra.get("type") != FormType.CPDA_ADVANCE:
+            return Response({"detail": "Not a CPDA Advance file."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            form = get_form_for_type_and_id(
+                FormType.CPDA_ADVANCE, int(file_obj.src_object_id)
+            )
+        except Exception:
+            return Response({"detail": "Form not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if form.workflow_status in cpda_wf.TERMINAL_STATUSES:
+            return Response(
+                {"detail": "This application is already closed."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        username = request.user.username
+
+        def _forward_extra(status_key):
+            return {"type": FormType.CPDA_ADVANCE, "workflow_status": status_key}
+
+        if action == "hod_verify":
+            if not cpda_wf.designation_is_hod(designation):
+                return Response({"detail": "Only HOD can verify."}, status=status.HTTP_403_FORBIDDEN)
+            if not cpda_wf.hod_covers_applicant(designation, form.created_by):
+                return Response(
+                    {"detail": "You are not the HOD for this applicant's department."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            if form.workflow_status != cpda_wf.WF_SUBMITTED:
+                return Response(
+                    {"detail": "Application is not awaiting HOD verification."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            with transaction.atomic():
+                cpda_wf.append_workflow_event(
+                    form, cpda_wf.WF_HOD_VERIFIED, username, remarks or "Verified by HOD"
+                )
+                cpda_wf.sync_file_extra_workflow(file_obj, cpda_wf.WF_HOD_VERIFIED)
+            return Response({"detail": "Verified.", "workflow_status": form.workflow_status})
+
+        if action == "hod_not_verify":
+            if not cpda_wf.designation_is_hod(designation):
+                return Response({"detail": "Only HOD can reject at this stage."}, status=status.HTTP_403_FORBIDDEN)
+            if not cpda_wf.hod_covers_applicant(designation, form.created_by):
+                return Response(
+                    {"detail": "You are not the HOD for this applicant's department."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            if form.workflow_status != cpda_wf.WF_SUBMITTED:
+                return Response(
+                    {"detail": "Application is not awaiting HOD verification."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            with transaction.atomic():
+                cpda_wf.append_workflow_event(
+                    form,
+                    cpda_wf.WF_HOD_NOT_VERIFIED,
+                    username,
+                    remarks or "Not verified by HOD",
+                    approved=False,
+                )
+                cpda_wf.sync_file_extra_workflow(file_obj, cpda_wf.WF_HOD_NOT_VERIFIED)
+                archive_form_file(file_id=str(file_id))
+            return Response({"detail": "Marked as not verified.", "workflow_status": form.workflow_status})
+
+        if action == "hod_forward":
+            if not cpda_wf.designation_is_hod(designation):
+                return Response({"detail": "Only HOD can forward to the Director."}, status=status.HTTP_403_FORBIDDEN)
+            if not cpda_wf.hod_covers_applicant(designation, form.created_by):
+                return Response(
+                    {"detail": "You are not the HOD for this applicant's department."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            if form.workflow_status != cpda_wf.WF_HOD_VERIFIED:
+                return Response(
+                    {"detail": "Verify the application before forwarding to the Director."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            dir_user, dir_desig = cpda_wf.resolve_director()
+            if not dir_user:
+                return Response(
+                    {"detail": "Director is not configured (no user holds the Director designation)."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            with transaction.atomic():
+                forward_form_file(
+                    file_id=str(file_id),
+                    receiver=dir_user,
+                    receiver_designation=dir_desig,
+                    remarks=remarks or "Forwarded to Director (Sanctioning Authority)",
+                    file_extra_JSON=_forward_extra(cpda_wf.WF_FORWARDED_DIRECTOR),
+                )
+                cpda_wf.append_workflow_event(
+                    form,
+                    cpda_wf.WF_FORWARDED_DIRECTOR,
+                    username,
+                    remarks or "Forwarded to Director",
+                )
+                file_obj.refresh_from_db()
+                cpda_wf.sync_file_extra_workflow(file_obj, cpda_wf.WF_FORWARDED_DIRECTOR)
+            return Response({"detail": "Forwarded to Director.", "workflow_status": form.workflow_status})
+
+        if action == "director_approve":
+            if not cpda_wf.designation_is_director(designation):
+                return Response({"detail": "Only the Director can approve."}, status=status.HTTP_403_FORBIDDEN)
+            if form.workflow_status != cpda_wf.WF_FORWARDED_DIRECTOR:
+                return Response(
+                    {"detail": "Application is not with the Director for approval."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            acct_user, acct_desig = cpda_wf.resolve_accountant()
+            if not acct_user:
+                return Response(
+                    {"detail": "Accountant is not configured."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            with transaction.atomic():
+                forward_form_file(
+                    file_id=str(file_id),
+                    receiver=acct_user,
+                    receiver_designation=acct_desig,
+                    remarks=remarks or "Approved by Director; forwarded to Accountant",
+                    file_extra_JSON=_forward_extra(cpda_wf.WF_DIRECTOR_APPROVED),
+                )
+                cpda_wf.append_workflow_event(
+                    form,
+                    cpda_wf.WF_DIRECTOR_APPROVED,
+                    username,
+                    remarks or "Approved by Director",
+                    approved=True,
+                    approved_by=request.user,
+                    approvedDate=datetime.date.today(),
+                )
+                file_obj.refresh_from_db()
+                cpda_wf.sync_file_extra_workflow(file_obj, cpda_wf.WF_DIRECTOR_APPROVED)
+            return Response({"detail": "Approved and sent to Accountant.", "workflow_status": form.workflow_status})
+
+        if action == "director_reject":
+            if not cpda_wf.designation_is_director(designation):
+                return Response({"detail": "Only the Director can reject."}, status=status.HTTP_403_FORBIDDEN)
+            if form.workflow_status != cpda_wf.WF_FORWARDED_DIRECTOR:
+                return Response(
+                    {"detail": "Application is not with the Director."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if not remarks:
+                return Response(
+                    {"detail": "Remarks are required when rejecting."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            with transaction.atomic():
+                cpda_wf.append_workflow_event(
+                    form,
+                    cpda_wf.WF_DIRECTOR_REJECTED,
+                    username,
+                    remarks,
+                    approved=False,
+                )
+                cpda_wf.sync_file_extra_workflow(file_obj, cpda_wf.WF_DIRECTOR_REJECTED)
+                archive_form_file(file_id=str(file_id))
+            return Response({"detail": "Rejected.", "workflow_status": form.workflow_status})
+
+        if action == "accountant_complete":
+            if not cpda_wf.designation_is_accountant(designation):
+                return Response(
+                    {"detail": "Only the Accountant can complete processing."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            if form.workflow_status != cpda_wf.WF_DIRECTOR_APPROVED:
+                return Response(
+                    {"detail": "Application is not awaiting accountant processing."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            with transaction.atomic():
+                cpda_wf.append_workflow_event(
+                    form,
+                    cpda_wf.WF_ACCOUNTANT_PROCESSED,
+                    username,
+                    remarks or "Processing completed by Accountant",
+                )
+                cpda_wf.sync_file_extra_workflow(file_obj, cpda_wf.WF_ACCOUNTANT_PROCESSED)
+                archive_form_file(file_id=str(file_id))
+            return Response({"detail": "Processing completed.", "workflow_status": form.workflow_status})
+
+        return Response({"detail": "Unknown or missing action."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CPDAReimbursement(Hr2APIView):
@@ -593,7 +889,7 @@ class Appraisal(Hr2APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-class LeaveFormPdfDownload(Hr2APIView):
+class LeaveFormPdfDownload(Hr2AuthenticatedAPIView):
     """Download stored leave application PDF bytes (refactored hr2 endpoint)."""
 
     def get(self, request, form_id=None, *args, **kwargs):
@@ -627,7 +923,7 @@ class LeaveFormPdfDownload(Hr2APIView):
         )
 
 
-class LeaveFormInitials(Hr2APIView):
+class LeaveFormInitials(Hr2AuthenticatedAPIView):
     """Return authenticated user's baseline details for leave form prefill."""
     permission_classes = (IsAuthenticated,)
 
@@ -750,7 +1046,7 @@ class FormFetch(Hr2APIView):
         )
 
 
-class CheckLeaveBalance(Hr2APIView):
+class CheckLeaveBalance(Hr2AuthenticatedAPIView):
     """API view to check and update leave balance."""
     serializer_class = LeaveBalanace_serializer
 
@@ -917,7 +1213,7 @@ class GetOutbox(Hr2APIView):
         return Response(outbox, status=status.HTTP_200_OK)
 
 
-class GetMyDetails(Hr2APIView):
+class GetMyDetails(Hr2AuthenticatedAPIView):
     """API view to get current user's details (username and designation)."""
 
     def get(self, request, *args, **kwargs):
@@ -943,7 +1239,7 @@ class GetMyDetails(Hr2APIView):
         )
 
 
-class SearchEmployee(Hr2APIView):
+class SearchEmployee(Hr2AuthenticatedAPIView):
     """API view to search employees by username."""
 
     def get(self, request, *args, **kwargs):
@@ -1014,7 +1310,7 @@ def _filter_files_by_form_type(files, form_type_value):
 # Generic form-type-specific views (requests / inbox / archive / track / form)
 # ============================================================================
 
-class FormTypeRequests(Hr2APIView):
+class FormTypeRequests(Hr2AuthenticatedAPIView):
     """Outbox (submitted forms) filtered by form type."""
 
     def get(self, request, form_type_slug):
@@ -1035,7 +1331,7 @@ class FormTypeRequests(Hr2APIView):
         return Response({f"{form_type_slug}_requests": filtered}, status=status.HTTP_200_OK)
 
 
-class FormTypeInbox(Hr2APIView):
+class FormTypeInbox(Hr2AuthenticatedAPIView):
     """Inbox filtered by form type."""
 
     def get(self, request, form_type_slug):
@@ -1056,7 +1352,7 @@ class FormTypeInbox(Hr2APIView):
         return Response({f"{form_type_slug}_inbox": filtered}, status=status.HTTP_200_OK)
 
 
-class FormTypeArchive(Hr2APIView):
+class FormTypeArchive(Hr2AuthenticatedAPIView):
     """Archive filtered by form type."""
 
     def get(self, request, form_type_slug):
@@ -1077,15 +1373,28 @@ class FormTypeArchive(Hr2APIView):
         return Response({f"{form_type_slug}_archive": filtered}, status=status.HTTP_200_OK)
 
 
-class FormTypeTrack(Hr2APIView):
+class FormTypeTrack(Hr2AuthenticatedAPIView):
     """File tracking history for a given file id."""
 
     def get(self, request, form_type_slug, file_id):
         history = get_file_history(file_id=str(file_id))
-        return Response({"file_history": history}, status=status.HTTP_200_OK)
+        payload = {"file_history": history}
+        if form_type_slug == "cpda_adv":
+            try:
+                f_obj = File.objects.get(pk=file_id)
+                if (f_obj.file_extra_JSON or {}).get("type") == FormType.CPDA_ADVANCE:
+                    cpda_form = CPDAAdvanceform.objects.filter(
+                        pk=int(f_obj.src_object_id)
+                    ).first()
+                    if cpda_form:
+                        payload["workflow_status"] = cpda_form.workflow_status
+                        payload["workflow_history"] = cpda_form.workflow_history or []
+            except (File.DoesNotExist, ValueError, TypeError):
+                pass
+        return Response(payload)
 
 
-class FormTypeFormDetail(Hr2APIView):
+class FormTypeFormDetail(Hr2AuthenticatedAPIView):
     """Fetch a single form's data by form type slug and file id."""
 
     def get(self, request, form_type_slug, form_id):
@@ -1097,7 +1406,6 @@ class FormTypeFormDetail(Hr2APIView):
         if not serializer_cls:
             return Response({"detail": "Unknown form type."}, status=status.HTTP_400_BAD_REQUEST)
 
-        from applications.filetracking.models import File
         try:
             file_obj = File.objects.get(pk=form_id)
             real_form_id = int(file_obj.src_object_id)
@@ -1117,7 +1425,7 @@ class FormTypeFormDetail(Hr2APIView):
 # CPDA Claim specific views (nested under cpda/claim/)
 # ============================================================================
 
-class CpdaClaimRequests(Hr2APIView):
+class CpdaClaimRequests(Hr2AuthenticatedAPIView):
     """Outbox filtered for CPDA Reimbursement (claim)."""
 
     def get(self, request):
@@ -1134,7 +1442,7 @@ class CpdaClaimRequests(Hr2APIView):
         return Response({"cpda_claim_requests": filtered}, status=status.HTTP_200_OK)
 
 
-class CpdaClaimInbox(Hr2APIView):
+class CpdaClaimInbox(Hr2AuthenticatedAPIView):
     """Inbox filtered for CPDA Reimbursement (claim)."""
 
     def get(self, request):
@@ -1151,7 +1459,7 @@ class CpdaClaimInbox(Hr2APIView):
         return Response({"cpda_claim_inbox": filtered}, status=status.HTTP_200_OK)
 
 
-class CpdaClaimArchive(Hr2APIView):
+class CpdaClaimArchive(Hr2AuthenticatedAPIView):
     """Archive filtered for CPDA Reimbursement (claim)."""
 
     def get(self, request):
@@ -1168,7 +1476,7 @@ class CpdaClaimArchive(Hr2APIView):
         return Response({"cpda_claim_archive": filtered}, status=status.HTTP_200_OK)
 
 
-class CpdaClaimTrack(Hr2APIView):
+class CpdaClaimTrack(Hr2AuthenticatedAPIView):
     """File tracking for CPDA Claim."""
 
     def get(self, request, file_id):
@@ -1176,7 +1484,7 @@ class CpdaClaimTrack(Hr2APIView):
         return Response({"file_history": history}, status=status.HTTP_200_OK)
 
 
-class CpdaClaimSubmit(Hr2APIView):
+class CpdaClaimSubmit(Hr2AuthenticatedAPIView):
     """Submit a CPDA Reimbursement (claim) form."""
     serializer_class = CPDAReimbursement_serializer
 
@@ -1210,7 +1518,7 @@ class CpdaClaimSubmit(Hr2APIView):
 # Appraisal submit view
 # ============================================================================
 
-class AppraisalSubmit(Hr2APIView):
+class AppraisalSubmit(Hr2AuthenticatedAPIView):
     """Submit an Appraisal form."""
     serializer_class = Appraisal_serializer
 
@@ -1248,7 +1556,7 @@ class AppraisalSubmit(Hr2APIView):
 # Leave-specific views
 # ============================================================================
 
-class LeaveSubmit(Hr2APIView):
+class LeaveSubmit(Hr2AuthenticatedAPIView):
     """Submit a leave form (POST)."""
     serializer_class = Leave_serializer
 
@@ -1278,7 +1586,7 @@ class LeaveSubmit(Hr2APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class LeaveFileHandle(Hr2APIView):
+class LeaveFileHandle(Hr2AuthenticatedAPIView):
     """Handle a leave file action (forward/approve/reject)."""
     serializer_class = Leave_serializer
 
@@ -1394,7 +1702,7 @@ class OfflineLeaveForm(Hr2APIView):
 # Search & generic views
 # ============================================================================
 
-class SearchEmployeesView(Hr2APIView):
+class SearchEmployeesView(Hr2AuthenticatedAPIView):
     """Search employees by text query."""
 
     def get(self, request):
@@ -1416,7 +1724,7 @@ class SearchEmployeesView(Hr2APIView):
         return Response({"employees": employees}, status=status.HTTP_200_OK)
 
 
-class FormTrackGeneric(Hr2APIView):
+class FormTrackGeneric(Hr2AuthenticatedAPIView):
     """Generic form tracking by file id."""
 
     def get(self, request, file_id):
@@ -1473,7 +1781,7 @@ class AdminLeaveRequests(Hr2APIView):
         return Response({"leave_requests": serializer.data}, status=status.HTTP_200_OK)
 
 
-class LtcCreate(Hr2APIView):
+class LtcCreate(Hr2AuthenticatedAPIView):
     """Create an LTC form (POST) — thin wrapper."""
     serializer_class = LTC_serializer
 
