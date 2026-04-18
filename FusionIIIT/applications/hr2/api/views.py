@@ -314,14 +314,18 @@ class CPDAAdvance(Hr2APIView):
         serializer = self.serializer_class(data=request.data[0])
         if serializer.is_valid():
             instance = serializer.save()
-            create_form_file(
-                uploader=request.user.username,
-                uploader_designation=user_info["uploader_designation"],
-                receiver=user_info["receiver_name"],
-                receiver_designation=user_info["receiver_designation"],
-                src_object_id=str(instance.id),
-                form_type=FormType.CPDA_ADVANCE,
-            )
+            try:
+                create_form_file(
+                    uploader=request.user.username,
+                    uploader_designation=user_info["uploader_designation"],
+                    receiver=user_info["receiver_name"],
+                    receiver_designation=user_info["receiver_designation"],
+                    src_object_id=str(instance.id),
+                    form_type=FormType.CPDA_ADVANCE,
+                )
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error("File tracking failed for CPDA Advance: %s", e)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -381,14 +385,18 @@ class CPDAReimbursement(Hr2APIView):
         serializer = self.serializer_class(data=request.data[0])
         if serializer.is_valid():
             instance = serializer.save()
-            create_form_file(
-                uploader=request.user.username,
-                uploader_designation=user_info["uploader_designation"],
-                receiver=user_info["receiver_name"],
-                receiver_designation=user_info["receiver_designation"],
-                src_object_id=str(instance.id),
-                form_type=FormType.CPDA_REIMBURSEMENT,
-            )
+            try:
+                create_form_file(
+                    uploader=request.user.username,
+                    uploader_designation=user_info["uploader_designation"],
+                    receiver=user_info["receiver_name"],
+                    receiver_designation=user_info["receiver_designation"],
+                    src_object_id=str(instance.id),
+                    form_type=FormType.CPDA_REIMBURSEMENT,
+                )
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error("File tracking failed for CPDA Reimbursement: %s", e)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -1182,14 +1190,18 @@ class CpdaClaimSubmit(Hr2APIView):
         serializer = self.serializer_class(data=form_data)
         if serializer.is_valid():
             instance = serializer.save()
-            create_form_file(
-                uploader=user_info.get("uploader_name", request.user.username),
-                uploader_designation=user_info.get("uploader_designation", _get_user_primary_designation(request.user) or ""),
-                receiver=user_info.get("receiver_name", ""),
-                receiver_designation=user_info.get("receiver_designation", ""),
-                src_object_id=str(instance.id),
-                form_type=FormType.CPDA_REIMBURSEMENT,
-            )
+            try:
+                create_form_file(
+                    uploader=user_info.get("uploader_name", request.user.username),
+                    uploader_designation=user_info.get("uploader_designation", _get_user_primary_designation(request.user) or ""),
+                    receiver=user_info.get("receiver_name", ""),
+                    receiver_designation=user_info.get("receiver_designation", ""),
+                    src_object_id=str(instance.id),
+                    form_type=FormType.CPDA_REIMBURSEMENT,
+                )
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error("File tracking failed for CPDA Claim: %s", e)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1216,14 +1228,18 @@ class AppraisalSubmit(Hr2APIView):
         serializer = self.serializer_class(data=form_data)
         if serializer.is_valid():
             instance = serializer.save()
-            create_form_file(
-                uploader=user_info.get("uploader_name", request.user.username),
-                uploader_designation=user_info.get("uploader_designation", _get_user_primary_designation(request.user) or ""),
-                receiver=user_info.get("receiver_name", ""),
-                receiver_designation=user_info.get("receiver_designation", ""),
-                src_object_id=str(instance.id),
-                form_type=FormType.APPRAISAL,
-            )
+            try:
+                create_form_file(
+                    uploader=user_info.get("uploader_name", request.user.username),
+                    uploader_designation=user_info.get("uploader_designation", _get_user_primary_designation(request.user) or ""),
+                    receiver=user_info.get("receiver_name", ""),
+                    receiver_designation=user_info.get("receiver_designation", ""),
+                    src_object_id=str(instance.id),
+                    form_type=FormType.APPRAISAL,
+                )
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error("File tracking failed for Appraisal: %s", e)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1246,14 +1262,18 @@ class LeaveSubmit(Hr2APIView):
         serializer = self.serializer_class(data=form_data)
         if serializer.is_valid():
             instance = serializer.save()
-            create_form_file(
-                uploader=user_info.get("uploader_name", request.user.username),
-                uploader_designation=user_info.get("uploader_designation", _get_user_primary_designation(request.user) or ""),
-                receiver=user_info.get("receiver_name", ""),
-                receiver_designation=user_info.get("receiver_designation", ""),
-                src_object_id=str(instance.id),
-                form_type=FormType.LEAVE,
-            )
+            try:
+                create_form_file(
+                    uploader=user_info.get("uploader_name", request.user.username),
+                    uploader_designation=user_info.get("uploader_designation", _get_user_primary_designation(request.user) or ""),
+                    receiver=user_info.get("receiver_name", ""),
+                    receiver_designation=user_info.get("receiver_designation", ""),
+                    src_object_id=str(instance.id),
+                    form_type=FormType.LEAVE,
+                )
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error("File tracking failed for Leave: %s", e)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1467,14 +1487,18 @@ class LtcCreate(Hr2APIView):
         serializer = self.serializer_class(data=form_data)
         if serializer.is_valid():
             instance = serializer.save()
-            create_form_file(
-                uploader=user_info.get("uploader_name", request.user.username),
-                uploader_designation=user_info.get("uploader_designation", _get_user_primary_designation(request.user) or ""),
-                receiver=user_info.get("receiver_name", ""),
-                receiver_designation=user_info.get("receiver_designation", ""),
-                src_object_id=str(instance.id),
-                form_type=FormType.LTC,
-            )
+            try:
+                create_form_file(
+                    uploader=user_info.get("uploader_name", request.user.username),
+                    uploader_designation=user_info.get("uploader_designation", _get_user_primary_designation(request.user) or ""),
+                    receiver=user_info.get("receiver_name", ""),
+                    receiver_designation=user_info.get("receiver_designation", ""),
+                    src_object_id=str(instance.id),
+                    form_type=FormType.LTC,
+                )
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error("File tracking failed for LTC: %s", e)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
