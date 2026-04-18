@@ -79,4 +79,6 @@ urlpatterns = [
     url('getuserbyid/', views.UserById.as_view(), name='userById'),
     url('get_my_details/', views.GetMyDetails.as_view(), name='get_my_details'),
     url('search_employee/', views.SearchEmployee.as_view(), name='search_employee'),
+    # Responsibility management (HR-UC-026, HR-UC-027)
+    url('responsibility/action/', views.ResponsibilityAction.as_view(), name='responsibility_action'),
 ]

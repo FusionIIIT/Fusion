@@ -1,0 +1,117 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+HR2 Outbox
+{% endblock %}
+
+{% block body %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
+
+<div class="ui stackable doubling grid">
+    {% comment %}Left column{% endcomment %}
+    <div class="column"></div>
+
+    {% comment %}Left sidebar{% endcomment %}
+    <div class="three wide column">
+        {% block usercard %}
+        {% include 'globals/usercard.html' %}
+        {% endblock %}
+
+        <div class="ui divider"></div>
+
+        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+            <a class="item" href="{% url 'hr2:index' %}">
+                Dashboard
+                <i class="right floated chevron right icon"></i>
+            </a>
+            <a class="active item" href="{% url 'hr2:outbox' %}">
+                Outbox
+                <i class="right floated chevron right icon"></i>
+            </a>
+            <a class="item" href="{% url 'hr2:inbox' %}">
+                Inbox
+                <i class="right floated chevron right icon"></i>
+            </a>
+            <a class="item" href="{% url 'hr2:archive' %}">
+                Archive
+                <i class="right floated chevron right icon"></i>
+            </a>
+        </div>
+    </div>
+
+    {% comment %}Main content area{% endcomment %}
+    <div class="eight wide column">
+        <h2 class="ui header">
+            <i class="inbox icon"></i>
+            <div class="content">
+                Outbox
+                <div class="sub header">Forms submitted to others</div>
+            </div>
+        </h2>
+
+        <div class="ui divider"></div>
+
+        {% if outbox_items %}
+            <table class="ui celled table">
+                <thead>
+                    <tr>
+                        <th>Form ID</th>
+                        <th>Form Type</th>
+                        <th>Receiver</th>
+                        <th>Status</th>
+                        <th>Submitted Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in outbox_items %}
+                        <tr>
+                            <td>{{ item.form_id }}</td>
+                            <td>
+                                <span class="ui label">
+                                    {{ item.form_type|upper }}
+                                </span>
+                            </td>
+                            <td>{{ item.receiver_name }}</td>
+                            <td>
+                                {% if item.status == 'accepted' %}
+                                    <span class="ui label green">Accepted</span>
+                                {% elif item.status == 'rejected' %}
+                                    <span class="ui label red">Rejected</span>
+                                {% elif item.status == 'forwarded' %}
+                                    <span class="ui label blue">Forwarded</span>
+                                {% else %}
+                                    <span class="ui label yellow">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ item.submitted_date|date:"M d, Y" }}</td>
+                            <td>
+                                <a href="{% url 'hr2:view_form' item.form_id %}" class="ui mini button primary">View</a>
+                                <a href="{% url 'hr2:track_form' item.form_id %}" class="ui mini button">Track</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="ui message info">
+                <div class="header">No outbox items</div>
+                <p>You haven't submitted any forms yet.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    {% comment %}Right column{% endcomment %}
+    <div class="column"></div>
+</div>
+
+<script>
+$(document).ready(function() {
+    // Initialize any select/dropdown if needed
+    $('.ui.dropdown').dropdown();
+});
+</script>
+{% endblock %}
