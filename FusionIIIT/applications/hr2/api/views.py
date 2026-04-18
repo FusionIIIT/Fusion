@@ -1072,7 +1072,7 @@ class FormTypeArchive(Hr2APIView):
 class FormTypeTrack(Hr2APIView):
     """File tracking history for a given file id."""
 
-    def get(self, request, file_id):
+    def get(self, request, form_type_slug, file_id):
         history = get_file_history(file_id=str(file_id))
         return Response({"file_history": history}, status=status.HTTP_200_OK)
 
@@ -1207,8 +1207,12 @@ class AppraisalSubmit(Hr2APIView):
         if window_error:
             return window_error
 
-        user_info = request.data.get("user_info", request.data[1] if isinstance(request.data, list) else {})
-        form_data = request.data.get("form_data", request.data[0] if isinstance(request.data, list) else request.data)
+        if isinstance(request.data, list):
+            form_data = request.data[0] if len(request.data) > 0 else {}
+            user_info = request.data[1] if len(request.data) > 1 else {}
+        else:
+            form_data = request.data.get("form_data", request.data)
+            user_info = request.data.get("user_info", {})
         serializer = self.serializer_class(data=form_data)
         if serializer.is_valid():
             instance = serializer.save()
@@ -1233,8 +1237,12 @@ class LeaveSubmit(Hr2APIView):
     serializer_class = Leave_serializer
 
     def post(self, request):
-        user_info = request.data.get("user_info", request.data[1] if isinstance(request.data, list) else {})
-        form_data = request.data.get("form_data", request.data[0] if isinstance(request.data, list) else request.data)
+        if isinstance(request.data, list):
+            form_data = request.data[0] if len(request.data) > 0 else {}
+            user_info = request.data[1] if len(request.data) > 1 else {}
+        else:
+            form_data = request.data.get("form_data", request.data)
+            user_info = request.data.get("user_info", {})
         serializer = self.serializer_class(data=form_data)
         if serializer.is_valid():
             instance = serializer.save()

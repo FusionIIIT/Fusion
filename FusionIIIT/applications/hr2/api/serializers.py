@@ -281,6 +281,31 @@ class Appraisal_serializer(serializers.ModelSerializer):
             "created_by",
             "approved_by",
         ]
+        extra_kwargs = {
+            "disciplineInfo": {"allow_blank": True, "required": False},
+            "specificFieldOfKnowledge": {"allow_blank": True, "required": False},
+            "currentResearchInterests": {"allow_blank": True, "required": False},
+            "coursesTaught": {"required": False},
+            "newCoursesIntroduced": {"required": False},
+            "newCoursesDeveloped": {"required": False},
+            "otherInstructionalTasks": {"allow_blank": True, "required": False},
+            "thesisSupervision": {"required": False},
+            "sponsoredReseachProjects": {"required": False},
+            "otherResearchElement": {"allow_blank": True, "required": False},
+            "publication": {"allow_blank": True, "required": False},
+            "referredConference": {"allow_blank": True, "required": False},
+            "conferenceOrganised": {"allow_blank": True, "required": False},
+            "membership": {"allow_blank": True, "required": False},
+            "honours": {"allow_blank": True, "required": False},
+            "editorOfPublications": {"allow_blank": True, "required": False},
+            "expertLectureDelivered": {"allow_blank": True, "required": False},
+            "membershipOfBOS": {"allow_blank": True, "required": False},
+            "otherExtensionTasks": {"allow_blank": True, "required": False},
+            "administrativeAssignment": {"allow_blank": True, "required": False},
+            "serviceToInstitute": {"allow_blank": True, "required": False},
+            "otherContribution": {"allow_blank": True, "required": False},
+            "performanceComments": {"allow_blank": True, "required": False},
+        }
 
     def validate(self, attrs):
         return _validate_approved_status_transition(self.instance, attrs)

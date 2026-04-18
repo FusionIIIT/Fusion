@@ -142,8 +142,12 @@ def view_outbox(username: str, designation: str, src_module: str) -> list:
     # remove duplicate file ids (from sending back and forth)
     sent_files_unique = uniqueList(sent_files)
 
-    sent_files_serialized = FileHeaderSerializer(sent_files_unique, many=True)
-    return sent_files_serialized.data
+    sent_files_serialized = list(FileHeaderSerializer(sent_files_unique, many=True).data)
+    for file in sent_files_serialized:
+        uploader_extrainfo = ExtraInfo.objects.get(id=file['uploader'])
+        file['uploader_name'] = uploader_extrainfo.user.username
+        file['designation_name'] = Designation.objects.get(id=file['designation']).name if file.get('designation') else ''
+    return sent_files_serialized
 
 
 
@@ -175,8 +179,12 @@ def view_archived(username: str, designation: str, src_module: str) -> dict:
     # remove duplicate file ids (from sending back and forth)
     archived_files_unique = uniqueList(archived_files)
 
-    archived_files_serialized = FileHeaderSerializer(archived_files_unique, many=True)
-    return archived_files_serialized.data
+    archived_files_serialized = list(FileHeaderSerializer(archived_files_unique, many=True).data)
+    for file in archived_files_serialized:
+        uploader_extrainfo = ExtraInfo.objects.get(id=file['uploader'])
+        file['uploader_name'] = uploader_extrainfo.user.username
+        file['designation_name'] = Designation.objects.get(id=file['designation']).name if file.get('designation') else ''
+    return archived_files_serialized
 
 
 
