@@ -698,7 +698,9 @@ class CPDAAdvanceWorkflowHandle(Hr2AuthenticatedAPIView):
                     approved=False,
                 )
                 cpda_wf.sync_file_extra_workflow(file_obj, cpda_wf.WF_HOD_NOT_VERIFIED)
-                archive_form_file(file_id=str(file_id))
+                cpda_wf.archive_tracked_file_if_workflow_closed(
+                    file_id, form.workflow_status
+                )
             return Response({"detail": "Marked as not verified.", "workflow_status": form.workflow_status})
 
         if action == "hod_forward":
@@ -795,7 +797,9 @@ class CPDAAdvanceWorkflowHandle(Hr2AuthenticatedAPIView):
                     approved=False,
                 )
                 cpda_wf.sync_file_extra_workflow(file_obj, cpda_wf.WF_DIRECTOR_REJECTED)
-                archive_form_file(file_id=str(file_id))
+                cpda_wf.archive_tracked_file_if_workflow_closed(
+                    file_id, form.workflow_status
+                )
             return Response({"detail": "Rejected.", "workflow_status": form.workflow_status})
 
         if action == "accountant_complete":
@@ -817,7 +821,9 @@ class CPDAAdvanceWorkflowHandle(Hr2AuthenticatedAPIView):
                     remarks or "Processing completed by Accountant",
                 )
                 cpda_wf.sync_file_extra_workflow(file_obj, cpda_wf.WF_ACCOUNTANT_PROCESSED)
-                archive_form_file(file_id=str(file_id))
+                cpda_wf.archive_tracked_file_if_workflow_closed(
+                    file_id, form.workflow_status
+                )
             return Response({"detail": "Processing completed.", "workflow_status": form.workflow_status})
 
         return Response({"detail": "Unknown or missing action."}, status=status.HTTP_400_BAD_REQUEST)

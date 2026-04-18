@@ -19,6 +19,20 @@ TERMINAL_STATUSES = frozenset(
 )
 
 
+def archive_tracked_file_if_workflow_closed(file_id, workflow_status: str) -> None:
+    """Move the file to HR file-tracking archive when the workflow cannot progress further.
+
+    Call after updating ``workflow_status`` on the form. Rejections and final accountant
+    completion are archived. ``director_approved`` is *not* archived here—the file must stay
+    active for the Accountant inbox until ``accountant_processed``.
+    """
+    if workflow_status not in TERMINAL_STATUSES:
+        return
+    from applications.hr2.services import archive_form_file
+
+    archive_form_file(file_id=str(file_id))
+
+
 def append_workflow_event(form, new_status, username, remarks="", **extra_fields):
     """Set workflow_status, append workflow_history, and apply optional field updates."""
     hist = list(form.workflow_history or [])
