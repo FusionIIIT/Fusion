@@ -4,6 +4,7 @@ from django.utils import timezone
 from django import template
 from django.contrib.auth.models import User
 from django.db import models
+from django.core.validators import MinValueValidator
 from django.utils import timezone
 from django.urls import reverse
 
@@ -285,7 +286,8 @@ class Club_budget(models.Model):
     id = models.AutoField(primary_key=True)
     club = models.ForeignKey(Club_info, on_delete=models.CASCADE, max_length=50, null=False)
     budget_for = models.CharField(max_length=256, null=False)
-    budget_amt = models.IntegerField(default=0, null=False)
+    # DEF-007 FIX: MinValueValidator(0) prevents negative budget amounts
+    budget_amt = models.IntegerField(default=0, null=False, validators=[MinValueValidator(0)])
     budget_file = models.FileField(upload_to='uploads/', null=False)
     description = models.TextField(max_length=256, null=False)
     status = models.CharField(max_length=50, choices=BudgetStatus.choices, default=BudgetStatus.OPEN)
@@ -407,7 +409,8 @@ class Fest_budget(models.Model):
     """
     id = models.AutoField(primary_key=True)
     fest = models.CharField(max_length=50, null=False, choices=FestChoices.choices)
-    budget_amt = models.IntegerField(default=0, null=False)
+    # DEF-007 FIX: MinValueValidator(0) prevents negative budget amounts
+    budget_amt = models.IntegerField(default=0, null=False, validators=[MinValueValidator(0)])
     budget_file = models.FileField(upload_to='uploads/', null=False)
     year = models.CharField(max_length=10, null=True)
     description = models.TextField(max_length=256, null=False)
@@ -528,10 +531,15 @@ class Voting_voters(models.Model):
     """
     poll_event = models.ForeignKey(Voting_polls, on_delete=models.CASCADE)
     student_id = models.CharField(max_length=50, null=False)
-    
+
     def __str__(self):
         return self.student_id
-    
+
+    class Meta:
+        # DEF-011 FIX: enforce one vote per student per poll at the database level
+        # This makes IntegrityError on duplicate vote guaranteed, not just likely
+        unique_together = ('poll_event', 'student_id')
+        db_table = 'Voting_voters'
 class ClubLeadershipHistory(models.Model):
     club = models.ForeignKey(Club_info, on_delete=models.CASCADE)
     previous_coordinator = models.CharField(max_length=100)

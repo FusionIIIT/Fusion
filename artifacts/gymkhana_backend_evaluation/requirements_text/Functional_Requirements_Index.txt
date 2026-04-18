@@ -1,0 +1,150 @@
+FUNCTIONAL REQUIREMENTS INDEX
+Gymkhana Module - Complete Documentation Index
+1. Overview
+This document provides a comprehensive index of all functional requirements documentation for the Gymkhana Module. All artifacts have been reverse-engineered strictly from the backend implementation code (models.py, views.py, urls.py, serializers.py).
+2. Documentation Artifacts
+2.1 Platform Specific Model (PSM)
+Document: GYMKHANA_PSM.xlsx
+Contents:
+Sheet 1: Code Traceability (45 URL routes mapped to views and entities)
+Sheet 2: Database Model Implementation (106 attributes across 16 entities)
+Sheet 3: Serialization & API Layer (12 serializers documented)
+Purpose: Complete mapping of backend implementation to functional components
+2.2 Platform Independent Model (PIM)
+Document: GYMKHANA_PIM.xlsx
+Contents:
+EBC Class Descriptions: 16 Entity classes + 5 Control classes = 21 total
+Class Relationships: 17 associations with cardinalities
+Purpose: Platform-independent view of system classes and relationships
+Note: NO Boundary classes (backend-only system)
+2.3 Use Cases Document
+Document: Use_Cases.docx
+Contents:
+10 core use cases extracted from API endpoints
+Each UC includes: ID, Name, Actor, Preconditions, Postconditions, Main Flow, Alternate Flows, Business Rules
+Coverage:
+UC001: Create New Club
+UC002: Book Club Session
+UC003: Book Club Event
+UC004: Apply for Club Membership
+UC005: Approve Club Membership
+UC006: Create Voting Poll
+UC007: Vote in Poll
+UC008: Change Club Leadership
+UC009: Request Club Budget
+UC010: Submit Club Event Report
+2.4 Business Rules Document
+Document: Business_Rules.docx
+Contents:
+22 business rules extracted from model constraints and view logic
+Each BR includes: ID, Name, Description, Source Code Reference, Rationale, Enforcement Mechanism
+Categories:
+Validation rules (BR001-BR002): Coordinator and faculty validation
+Conflict detection (BR003-BR004): Venue time conflict prevention
+Membership rules (BR005-BR008): Application and approval workflows
+Voting rules (BR009-BR012): Poll creation and voting constraints
+Leadership rules (BR013-BR014): Club head succession
+Budget rules (BR015-BR016): Budget validation
+Reporting rules (BR017-BR018): Event report requirements
+Enumeration rules (BR019-BR020): Status and category constraints
+Database rules (BR021-BR022): CASCADE delete and PK uniqueness
+2.5 Workflows Document
+Document: Workflows.docx
+Contents:
+7 workflows extracted from API interaction sequences
+Each workflow includes detailed step-by-step code-level execution
+Coverage:
+WF001: Club Creation Workflow
+WF002: Session Booking Workflow
+WF003: Membership Application Workflow
+WF004: Membership Approval Workflow
+WF005: Voting Poll Creation Workflow
+WF006: Poll Voting Workflow
+WF007: Leadership Change Workflow
+2.6 Traceability Matrix
+Document: Traceability_Matrix.docx
+Contents:
+Forward Traceability: Use Cases → Implementation (View Functions, Models, BRs)
+Backward Traceability: Database Models → Use Cases
+Business Rules Traceability: BRs → Enforcement Locations → Use Cases
+Workflow Traceability: Workflows → Primary Use Cases
+API Endpoint Traceability: URL Routes → View Functions → Use Cases → Entities
+Purpose: Complete bidirectional traceability across all artifacts
+2.7 Problem Statement
+Document: Problem_Statement.docx
+Contents:
+Background: Context of gymkhana management
+Problem Domain: Areas addressed by the module
+Identified Problems: 6 specific problem areas
+Scope: In-scope and out-of-scope items
+Stakeholders: Primary users and system stakeholders
+Constraints: Technical, business, and data integrity constraints
+Assumptions: System dependencies and prerequisites
+Success Criteria: Measurable success indicators
+2.8 Class Diagrams
+Document: Domain_Class_Diagram.drawio
+Contents:
+16 Entity classes with attributes
+5 Control classes with methods
+17 relationships with cardinalities
+Purpose: Visual representation of domain model
+Document: Use_Case_Diagram.drawio
+Contents:
+2 primary actors: Student, Club Head
+10 use cases with actor associations
+Purpose: Visual representation of system functionality
+3. Coverage Summary
+Artifact Type
+Count
+Source
+URL Routes Documented
+45
+urls.py + views.py
+Database Models
+16
+models.py
+Model Attributes
+106
+models.py field definitions
+Entity Classes (PIM)
+16
+models.py classes
+Control Classes (PIM)
+5
+views.py helper functions
+Relationships
+17
+ForeignKey declarations
+Use Cases
+10
+API endpoints
+Business Rules
+22
+Model constraints + view logic
+Workflows
+7
+API interaction sequences
+Serializers
+12
+serializers.py
+Actors
+5
+Derived from view decorators and logic
+4. Key Principles Applied
+Strict Reverse Engineering: Every element traces to specific code lines
+No Invention: No features, validations, or business rules added beyond implementation
+Complete Coverage: All 16 models and 106 attributes documented
+Backend-Only Focus: Zero Boundary classes introduced
+Bidirectional Traceability: Forward and backward tracing across all artifacts
+Template Adherence: All documents follow required formats
+5. Document Verification Checklist
+✓ PSM contains all 106 model attributes
+✓ PIM contains 16 Entity + 5 Control = 21 classes
+✓ Zero Boundary classes (backend-only system)
+✓ All 10 use cases map to specific API endpoints
+✓ All 22 business rules reference specific code locations
+✓ All 7 workflows show code-level execution steps
+✓ Complete traceability matrix with 5 views
+✓ Problem statement derived from implementation analysis
+✓ Class diagrams match PIM exactly
+✓ Use case diagram includes all 10 core UCs

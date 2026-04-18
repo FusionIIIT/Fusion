@@ -1,0 +1,10 @@
+Gymkhana backend static findings
+===============================
+1. selectors.py and services.py import Budget, but models.py defines Club_budget and Fest_budget only.
+2. api/serializers.py is not a DRF serializer module; it contains selector code and imports .models from the api package.
+3. api/views.py references ClubCreateSerializer, ClubMemberCreateSerializer, EventCreateSerializer, EventSerializer, SessionSerializer, but serializers.py does not define them.
+4. ClubMembersAPIView.post contains a placeholder comment and no persistence logic.
+5. create_event() in services.py passes start_date/end_date to Event_info.objects.create(), but Event_info only has date.
+6. ListSessionsAPIView.get uses datetime.date.today() without importing datetime.
+7. applications/globals/api/views.py imports coordinator_club from applications.gymkhana.api.views, but that symbol is defined in applications.gymkhana.views instead.
+8. tests/test_services.py imports ClubService, but services.py does not define that class.

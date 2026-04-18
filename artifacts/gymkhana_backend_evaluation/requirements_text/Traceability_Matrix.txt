@@ -1,0 +1,284 @@
+TRACEABILITY MATRIX
+Gymkhana Module
+Forward Traceability: Use Cases to Implementation
+Use Case ID
+Use Case Name
+View Function
+Database Models
+Business Rules
+UC001
+Create New Club
+new_club()
+Club_info, Student, Faculty
+BR001, BR002
+UC002
+Book Club Session
+new_session()
+Session_info, ExtraInfo
+BR003, BR004
+UC003
+Book Club Event
+new_event()
+Event_info, ExtraInfo
+BR003, BR004
+UC004
+Apply for Club Membership
+club_membership()
+Club_member, Student, Club_info
+BR005, BR006
+UC005
+Approve Club Membership
+approve()
+Club_member
+BR007, BR008
+UC006
+Create Voting Poll
+voting_poll()
+Voting_polls, Voting_choices
+BR009, BR010
+UC007
+Vote in Poll
+vote()
+Voting_choices, Voting_voters
+BR011, BR012
+UC008
+Change Club Leadership
+change_head()
+Club_info, HoldsDesignation
+BR013, BR014
+UC009
+Request Club Budget
+club_budget()
+Club_budget
+BR015, BR016
+UC010
+Submit Club Event Report
+club_report()
+Club_report, ExtraInfo
+BR017, BR018
+Backward Traceability: Database Models to Use Cases
+Database Model
+Key Attributes
+Related Use Cases
+Business Rules
+Club_info
+club_name (PK), co_ordinator (FK), co_coordinator (FK), faculty_incharge (FK), status
+UC001, UC008
+BR001, BR002, BR013, BR014, BR019, BR020
+Session_info
+id (PK), club (FK), venue, date, start_time, end_time
+UC002
+BR003, BR004
+Event_info
+id (PK), club (FK), event_name, venue, date, start_time, end_time
+UC003
+BR003, BR004
+Club_member
+id (PK), member (FK), club (FK), status, remarks
+UC004, UC005
+BR005, BR006, BR007, BR008
+Voting_polls
+id (PK), title, description, exp_date, created_by, groups
+UC006
+BR009, BR010
+Voting_choices
+id (PK), poll_event (FK), title, votes
+UC006, UC007
+BR009, BR012
+Voting_voters
+id (PK), poll_event (FK), student_id
+UC007
+BR011
+Club_budget
+id (PK), club (FK), budget_amt, budget_file, status
+UC009
+BR015, BR016, BR019
+Club_report
+id (PK), club (FK), incharge (FK), event_details
+UC010
+BR017, BR018
+Fest_budget
+id (PK), fest, budget_amt, budget_file, year, status
+Not in core UCs
+BR015, BR016, BR019
+Core_team
+id (PK), student_id (FK), team, fest_name, year
+Not in core UCs
+BR020
+Form_available
+roll (PK), status, form_name
+Not in core UCs
+Registration_form
+roll (PK), user_name, branch, cpi, programme
+Not in core UCs
+Other_report
+id (PK), incharge (FK), event_name, event_details
+Not in core UCs
+BR017
+Change_office
+id (PK), club (FK), co_ordinator (FK), co_coordinator (FK)
+Not in core UCs
+BR019
+Business Rules Traceability
+Business Rule
+Rule Description
+Enforced In
+Related Use Cases
+BR001
+Valid Student Coordinator
+new_club() - ExtraInfo validation
+UC001
+BR002
+Valid Faculty Incharge
+new_club() - ExtraInfo validation
+UC001
+BR003
+No Venue Time Conflicts
+conflict_algorithm_session/event()
+UC002, UC003
+BR004
+Valid Time Range
+conflict algorithms
+UC002, UC003
+BR005
+Multiple Club Applications
+Club_member model - no unique constraint
+UC004
+BR006
+Duplicate Prevention
+club_membership() - exception handling
+UC004
+BR007
+Club Head Authorization
+coordinator_club() validation
+UC005
+BR008
+Status Transition
+approve() - status update
+UC005
+BR009
+Minimum Poll Choices
+voting_poll() - choice creation
+UC006
+BR010
+Poll Target Groups
+get_target_user() - JSON conversion
+UC006
+BR011
+One Vote Per Poll
+Voting_voters - unique constraint
+UC007
+BR012
+Atomic Vote Increment
+vote() - transaction
+UC007
+BR013
+Leadership Succession
+change_head() - delete old
+UC008
+BR014
+Designation Tracking
+change_head() - create new
+UC008
+BR015
+Non-Negative Budget
+Club_budget.budget_amt - IntegerField
+UC009
+BR016
+Budget File Required
+Club_budget.budget_file - null=False
+UC009
+BR017
+Report File Required
+Club_report.event_details - null=False
+UC010
+BR018
+Date Time Concatenation
+club_report() - string concat
+UC010
+BR019
+Status Enumeration
+Constants.status - CharField choices
+All status-based UCs
+BR020
+Category Enumeration
+Constants.categoryCh - CharField choices
+UC001
+BR021
+Cascade Delete
+ForeignKey - on_delete=CASCADE
+All UCs with FK
+BR022
+Primary Key Uniqueness
+Model - primary_key=True
+All UCs
+Workflow to Use Case Traceability
+Workflow ID
+Workflow Name
+Primary Use Case
+WF001
+Club Creation Workflow
+UC001
+WF002
+Session Booking Workflow
+UC002
+WF003
+Membership Application Workflow
+UC004
+WF004
+Membership Approval Workflow
+UC005
+WF005
+Voting Poll Creation Workflow
+UC006
+WF006
+Poll Voting Workflow
+UC007
+WF007
+Leadership Change Workflow
+UC008
+API Endpoint Traceability
+URL Route
+View Function
+Primary Use Case
+Entity Classes
+/gymkhana/new_club/
+new_club()
+UC001
+Club_info, Student, Faculty
+/gymkhana/new_session/
+new_session()
+UC002
+Session_info
+/gymkhana/new_event/
+new_event()
+UC003
+Event_info
+/gymkhana/club_membership/
+club_membership()
+UC004
+Club_member
+/gymkhana/approve/
+approve()
+UC005
+Club_member
+/gymkhana/voting_poll/
+voting_poll()
+UC006
+Voting_polls, Voting_choices
+/gymkhana/<poll_id>/
+vote(poll_id)
+UC007
+Voting_choices, Voting_voters
+/gymkhana/change_head/
+change_head()
+UC008
+Club_info, HoldsDesignation
+/gymkhana/club_budget/
+club_budget()
+UC009
+Club_budget
+/gymkhana/club_event_report/
+club_report()
+UC010
+Club_report

@@ -1,0 +1,45 @@
+Test ID,BR ID,Test Category,Input / Action,Expected Result
+BR001-T01,BR001,Valid,Execute backend path with a valid case for rule Valid Student Coordinator,Valid case is accepted: Co-ordinator must be a valid student in Student table
+BR001-T02,BR001,Invalid,Execute backend path with an invalid/rejected case for rule Valid Student Coordinator,Invalid case is rejected or prevented by the backend: Co-ordinator must be a valid student in Student table
+BR002-T01,BR002,Valid,Execute backend path with a valid case for rule Valid Faculty Incharge,Valid case is accepted: Faculty_incharge must be a valid faculty member in Faculty table
+BR002-T02,BR002,Invalid,Execute backend path with an invalid/rejected case for rule Valid Faculty Incharge,Invalid case is rejected or prevented by the backend: Faculty_incharge must be a valid faculty member in Faculty table
+BR003-T01,BR003,Valid,Execute backend path with a valid case for rule No Venue Time Conflicts,Valid case is accepted: Sessions and events cannot overlap in same venue at same date/time
+BR003-T02,BR003,Invalid,Execute backend path with an invalid/rejected case for rule No Venue Time Conflicts,Invalid case is rejected or prevented by the backend: Sessions and events cannot overlap in same venue at same date/time
+BR004-T01,BR004,Valid,Execute backend path with a valid case for rule Valid Time Range,Valid case is accepted: start_time must be before end_time
+BR004-T02,BR004,Invalid,Execute backend path with an invalid/rejected case for rule Valid Time Range,Invalid case is rejected or prevented by the backend: start_time must be before end_time
+BR005-T01,BR005,Valid,Execute backend path with a valid case for rule Multiple Club Applications,Valid case is accepted: Student can apply to multiple clubs
+BR005-T02,BR005,Invalid,Execute backend path with an invalid/rejected case for rule Multiple Club Applications,Invalid case is rejected or prevented by the backend: Student can apply to multiple clubs
+BR006-T01,BR006,Valid,Execute backend path with a valid case for rule Duplicate Application Prevention,Valid case is accepted: Student cannot submit duplicate applications to same club
+BR006-T02,BR006,Invalid,Execute backend path with an invalid/rejected case for rule Duplicate Application Prevention,Invalid case is rejected or prevented by the backend: Student cannot submit duplicate applications to same club
+BR007-T01,BR007,Valid,Execute backend path with a valid case for rule Club Head Authorization,Valid case is accepted: Only club co-ordinator/co-coordinator can approve memberships
+BR007-T02,BR007,Invalid,Execute backend path with an invalid/rejected case for rule Club Head Authorization,Invalid case is rejected or prevented by the backend: Only club co-ordinator/co-coordinator can approve memberships
+BR008-T01,BR008,Valid,Execute backend path with a valid case for rule Status Transition on Approval,Valid case is accepted: Approval changes status from 'open' to 'confirmed'
+BR008-T02,BR008,Invalid,Execute backend path with an invalid/rejected case for rule Status Transition on Approval,Invalid case is rejected or prevented by the backend: Approval changes status from 'open' to 'confirmed'
+BR009-T01,BR009,Valid,Execute backend path with a valid case for rule Minimum Poll Choices,Valid case is accepted: Voting poll must have at least 2 choices
+BR009-T02,BR009,Invalid,Execute backend path with an invalid/rejected case for rule Minimum Poll Choices,Invalid case is rejected or prevented by the backend: Voting poll must have at least 2 choices
+BR010-T01,BR010,Valid,Execute backend path with a valid case for rule Poll Target Groups,Valid case is accepted: Polls target specific batches and branches as JSON
+BR010-T02,BR010,Invalid,Execute backend path with an invalid/rejected case for rule Poll Target Groups,Invalid case is rejected or prevented by the backend: Polls target specific batches and branches as JSON
+BR011-T01,BR011,Valid,Execute backend path with a valid case for rule One Vote Per Student Per Poll,Valid case is accepted: Student can vote only once per poll
+BR011-T02,BR011,Invalid,Execute backend path with an invalid/rejected case for rule One Vote Per Student Per Poll,Invalid case is rejected or prevented by the backend: Student can vote only once per poll
+BR012-T01,BR012,Valid,Execute backend path with a valid case for rule Atomic Vote Increment,Valid case is accepted: Vote count increments atomically
+BR012-T02,BR012,Invalid,Execute backend path with an invalid/rejected case for rule Atomic Vote Increment,Invalid case is rejected or prevented by the backend: Vote count increments atomically
+BR013-T01,BR013,Valid,Execute backend path with a valid case for rule Leadership Succession,Valid case is accepted: Old leadership removed when new leadership assigned
+BR013-T02,BR013,Invalid,Execute backend path with an invalid/rejected case for rule Leadership Succession,Invalid case is rejected or prevented by the backend: Old leadership removed when new leadership assigned
+BR014-T01,BR014,Valid,Execute backend path with a valid case for rule Designation Tracking,Valid case is accepted: HoldsDesignation records track current club leadership
+BR014-T02,BR014,Invalid,Execute backend path with an invalid/rejected case for rule Designation Tracking,Invalid case is rejected or prevented by the backend: HoldsDesignation records track current club leadership
+BR015-T01,BR015,Valid,Execute backend path with a valid case for rule Non-Negative Budget,Valid case is accepted: Budget amount must be greater than or equal to 0
+BR015-T02,BR015,Invalid,Execute backend path with an invalid/rejected case for rule Non-Negative Budget,Invalid case is rejected or prevented by the backend: Budget amount must be greater than or equal to 0
+BR016-T01,BR016,Valid,Execute backend path with a valid case for rule Budget File Required,Valid case is accepted: Budget request must include file
+BR016-T02,BR016,Invalid,Execute backend path with an invalid/rejected case for rule Budget File Required,Invalid case is rejected or prevented by the backend: Budget request must include file
+BR017-T01,BR017,Valid,Execute backend path with a valid case for rule Report File Required,Valid case is accepted: Event reports must include details file
+BR017-T02,BR017,Invalid,Execute backend path with an invalid/rejected case for rule Report File Required,Invalid case is rejected or prevented by the backend: Event reports must include details file
+BR018-T01,BR018,Valid,Execute backend path with a valid case for rule Date Time Concatenation,Valid case is accepted: Event report date and time concatenated for storage
+BR018-T02,BR018,Invalid,Execute backend path with an invalid/rejected case for rule Date Time Concatenation,Invalid case is rejected or prevented by the backend: Event report date and time concatenated for storage
+BR019-T01,BR019,Valid,Execute backend path with a valid case for rule Status Enumeration,"Valid case is accepted: Status must be open, confirmed, or rejected"
+BR019-T02,BR019,Invalid,Execute backend path with an invalid/rejected case for rule Status Enumeration,"Invalid case is rejected or prevented by the backend: Status must be open, confirmed, or rejected"
+BR020-T01,BR020,Valid,Execute backend path with a valid case for rule Category Enumeration,"Valid case is accepted: Club category must be Technical, Sports, or Cultural"
+BR020-T02,BR020,Invalid,Execute backend path with an invalid/rejected case for rule Category Enumeration,"Invalid case is rejected or prevented by the backend: Club category must be Technical, Sports, or Cultural"
+BR021-T01,BR021,Valid,Execute backend path with a valid case for rule Cascade Delete,Valid case is accepted: Deleting referenced entity deletes dependent records
+BR021-T02,BR021,Invalid,Execute backend path with an invalid/rejected case for rule Cascade Delete,Invalid case is rejected or prevented by the backend: Deleting referenced entity deletes dependent records
+BR022-T01,BR022,Valid,Execute backend path with a valid case for rule Primary Key Uniqueness,Valid case is accepted: Primary keys must be unique
+BR022-T02,BR022,Invalid,Execute backend path with an invalid/rejected case for rule Primary Key Uniqueness,Invalid case is rejected or prevented by the backend: Primary keys must be unique
