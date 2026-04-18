@@ -1173,8 +1173,12 @@ class CpdaClaimSubmit(Hr2APIView):
     serializer_class = CPDAReimbursement_serializer
 
     def post(self, request):
-        user_info = request.data.get("user_info", request.data[1] if isinstance(request.data, list) else {})
-        form_data = request.data.get("form_data", request.data[0] if isinstance(request.data, list) else request.data)
+        if isinstance(request.data, list):
+            form_data = request.data[0] if len(request.data) > 0 else {}
+            user_info = request.data[1] if len(request.data) > 1 else {}
+        else:
+            form_data = request.data.get("form_data", request.data)
+            user_info = request.data.get("user_info", {})
         serializer = self.serializer_class(data=form_data)
         if serializer.is_valid():
             instance = serializer.save()
