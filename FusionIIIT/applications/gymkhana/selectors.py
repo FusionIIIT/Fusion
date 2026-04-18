@@ -1,8 +1,9 @@
-from django.db.models import Q, Prefetch
-from django.utils import timezone
-from .models import Club_info, Club_member, Session_info, Event_info, Budget
-from applications.academic_information.models import Student
 import datetime
+
+from django.db.models import Prefetch, Q
+
+from applications.academic_information.models import Student
+from .models import Club_budget, Club_info, Club_member, Event_info, Session_info
 
 # Club Selectors
 def get_club_by_coordinator(user):
@@ -51,23 +52,23 @@ def get_upcoming_events():
     """Get upcoming events"""
     today = datetime.date.today()
     return Event_info.objects.filter(
-        start_date__gte=today,
+        date__gte=today,
         status='confirmed'
-    ).select_related('club').order_by('start_date', 'start_time')
+    ).select_related('club').order_by('date', 'start_time')
 
 def get_past_events():
     """Get past events"""
     today = datetime.date.today()
     return Event_info.objects.filter(
-        end_date__lt=today,
+        date__lt=today,
         status='confirmed'
-    ).select_related('club').order_by('-end_date', '-start_time')
+    ).select_related('club').order_by('-date', '-start_time')
 
 def get_club_events(club_name):
     """Get events for a specific club"""
     return Event_info.objects.filter(
         club__club_name=club_name
-    ).select_related('club').order_by('-start_date')
+    ).select_related('club').order_by('-date')
 
 def get_club_sessions(club_name):
     """Get sessions for a specific club"""
@@ -110,12 +111,10 @@ def check_event_conflict(date, start_time, end_time, venue, exclude_id=None):
 # Budget Selectors
 def get_pending_budgets():
     """Get pending budget requests"""
-    return Budget.objects.filter(
-        status='COORDINATOR'
-    ).select_related('club', 'file_id')
+    return Club_budget.objects.filter(status='open').select_related('club')
 
 def get_club_budgets(club_name):
     """Get budgets for a specific club"""
-    return Budget.objects.filter(
+    return Club_budget.objects.filter(
         club__club_name=club_name
     ).select_related('club').order_by('-id')

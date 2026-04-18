@@ -1,13 +1,25 @@
 from django.db import transaction
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
-from .models import Club_info, Club_member, Session_info, Event_info, Budget
+from .models import Club_info, Club_member, Session_info, Event_info
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, Faculty, HoldsDesignation, Designation
 from notification.views import gymkhana_session, gymkhana_event
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+class ClubService:
+    """Compatibility wrapper for the legacy unit tests."""
+
+    @staticmethod
+    def _validate_student(student_id):
+        try:
+            extra = ExtraInfo.objects.get(id=student_id, user_type='student')
+            return Student.objects.get(id=extra)
+        except (ExtraInfo.DoesNotExist, Student.DoesNotExist):
+            return None
 
 @transaction.atomic
 def create_club(data, request_user):
@@ -84,6 +96,31 @@ def approve_membership(club_name, member_ids, remarks_list):
         
     except Exception as e:
         logger.error(f"Error approving membership: {e}")
+        return {"success": False, "message": str(e)}
+
+
+@transaction.atomic
+def create_membership_request(club_name, member_id, description=""):
+    """Create a club membership request if one does not already exist."""
+    try:
+        club = get_object_or_404(Club_info, club_name=club_name)
+        extra = get_object_or_404(ExtraInfo, id=member_id, user_type='student')
+        student = get_object_or_404(Student, id=extra)
+
+        member, created = Club_member.objects.get_or_create(
+            club=club,
+            member=student,
+            defaults={
+                'description': description,
+                'status': 'open',
+            },
+        )
+        if not created:
+            return {"success": False, "message": "Membership request already exists"}
+
+        return {"success": True, "member": member, "message": "Membership request sent"}
+    except Exception as e:
+        logger.error(f"Error creating membership request: {e}")
         return {"success": False, "message": str(e)}
 
 @transaction.atomic
@@ -186,3 +223,24 @@ def bulk_delete_objects(model, ids, user, permission_check=True):
     except Exception as e:
         logger.error(f"Error in bulk delete: {e}")
         return {"success": False, "message": str(e)}
+    
+@transaction.atomic
+def bulk_approve_membership(club_name, member_ids, remarks_list):
+    """
+    Bulk approve multiple membership requests
+    """
+    club = get_object_or_404(Club_info, club_name=club_name)
+    approved_count = 0
+    
+    for member_id, remarks in zip(member_ids, remarks_list):
+        extra = get_object_or_404(ExtraInfo, id=member_id, user_type='student')
+        student = get_object_or_404(Student, id=extra)
+        
+        member, created = Club_member.objects.update_or_create(
+            club=club,
+            member=student,
+            defaults={'status': 'confirmed', 'remarks': remarks}
+        )
+        approved_count += 1
+    
+    return {"success": True, "approved": approved_count}

@@ -531,3 +531,15 @@ class Voting_voters(models.Model):
     
     def __str__(self):
         return self.student_id
+    
+class ClubLeadershipHistory(models.Model):
+    club = models.ForeignKey(Club_info, on_delete=models.CASCADE)
+    previous_coordinator = models.CharField(max_length=100)
+    new_coordinator = models.CharField(max_length=100)
+    previous_co_coordinator = models.CharField(max_length=100)
+    new_co_coordinator = models.CharField(max_length=100)
+    changed_by = models.CharField(max_length=100)
+    changed_on = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.club.club_name} - {self.changed_on}"
