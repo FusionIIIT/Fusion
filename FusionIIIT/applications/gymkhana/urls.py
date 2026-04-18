@@ -14,16 +14,6 @@ from applications.gymkhana.api.views import (
     ListSessionsAPIView,
     CreateSessionAPIView,
     BulkDeleteSessionsAPIView,
-    # Existing API Views
-    Voting_Polls,
-    clubname,
-    Club_Details,
-    club_events,
-    club_budgetinfo,
-    Fest_Budget,
-    club_report,
-    Registraion_form,
-    session_details,
 )
 from . import views
 from rest_framework.authtoken.views import obtain_auth_token
@@ -52,11 +42,6 @@ api_urlpatterns = [
 
 # Legacy URL patterns (keep for backward compatibility)
 legacy_urlpatterns = [
-    # Session and Event info endpoints
-    url(r'^session_details/$', session_details.as_view()),
-    url(r'^event_info/$', club_events.as_view()),
-    url(r'^club_budgetinfo/$', club_budgetinfo.as_view()),
-    
     # Academic administration
     url(r'^club_approve/$', views.club_approve, name='club_approve'),
     url(r'^club_reject/$', views.club_reject, name='club_reject'),
@@ -74,12 +59,9 @@ legacy_urlpatterns = [
     url(r'^login/$', obtain_auth_token, name='login'),
     
     # API endpoints (legacy)
-    url(r'^clubdetails/$', Club_Details.as_view()),
-    url(r'^Fest_budget/$', Fest_Budget.as_view(), name='Fest_budget'),
-    url(r'^club_report/$', club_report.as_view()),
-    url(r'^registration_form/$', Registraion_form.as_view()),
-    url(r'^voting_polls/$', Voting_Polls.as_view()),
-    url(r'^clubname/$', clubname.as_view()),
+    url(r'^Fest_budget/$', views.fest_budget, name='Fest_budget'),
+    url(r'^club_report/$', views.club_report, name='club_report'),
+    url(r'^registration_form/$', views.registration_form, name='registration_form'),
 ]
 
 # Main HTML view patterns (keep for frontend)
@@ -130,7 +112,6 @@ html_urlpatterns = [
     url(r'^get_venue/$', views.getVenue, name='get_venue'),
     
     # Core team and voting
-    url(r'^core_team/$', views.core_team, name='core_team'),
     url(r'^voting_poll/$', views.voting_poll, name='voting_poll'),
     url(r'^delete_poll/(?P<poll_id>\d+)/$', views.delete_poll, name='delete_poll'),
     url(r'^(?P<poll_id>\d+)/$', views.vote, name='vote'),
