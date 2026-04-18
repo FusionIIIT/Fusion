@@ -82,7 +82,11 @@ class NotificationViewSet(viewsets.ViewSet):
         
         # Filter by module if provided
         if module:
-            notifications = notifications.filter(data__module=module)
+            if isinstance(notifications, list):
+                notifications = [n for n in notifications if n.data and n.data.get('module') == module]
+            else:
+                # text fallback for jsonfield 
+                notifications = notifications.filter(data__icontains=f'"module": "{module}"')
         
         serializer = NotificationSerializer(notifications, many=True)
         

@@ -55,14 +55,21 @@ def get_user_notifications(
     
     # T-NT-05: Sort by priority first, then by timestamp
     if sort_by_priority:
-        queryset = queryset.order_by('-data__priority', '-timestamp')
+        # Fallback to Python sorting since jsonfield backend doesn't support order_by('-data__priority')
+        queryset = queryset.order_by('-timestamp')
+        notifications = list(queryset)
+        notifications.sort(key=lambda n: (
+            n.data.get('priority', 4) if isinstance(n.data, dict) else 4, 
+            -n.timestamp.timestamp()
+        ))
+        if limit:
+            notifications = notifications[:limit]
+        return notifications
     else:
         queryset = queryset.order_by('-timestamp')
-    
-    if limit:
-        queryset = queryset[:limit]
-    
-    return queryset
+        if limit:
+            queryset = queryset[:limit]
+        return queryset
 
 
 def get_notification_by_id(notification_id: int, user: User) -> Optional[Notification]:
