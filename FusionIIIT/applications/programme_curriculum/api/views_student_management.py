@@ -1,6 +1,5 @@
 import json
 import pandas as pd
-import openpyxl
 import random
 import secrets
 import string
@@ -2025,6 +2024,7 @@ def export_students(request, programme_type):
     Export student data to Excel
     """
     try:
+        import openpyxl
         students = StudentBatchUpload.objects.filter(programme_type=programme_type).order_by('roll_number')
         
         if not students.exists():

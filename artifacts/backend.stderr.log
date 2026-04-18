@@ -1,0 +1,66 @@
+Traceback (most recent call last):
+  File "manage.py", line 10, in <module>
+    execute_from_command_line(sys.argv)
+  File "C:\Users\bhara\Fusion\venv\lib\site-packages\django\core\management\__init__.py", line 401, in execute_from_command_line
+    utility.execute()
+  File "C:\Users\bhara\Fusion\venv\lib\site-packages\django\core\management\__init__.py", line 395, in execute
+    self.fetch_command(subcommand).run_from_argv(self.argv)
+  File "C:\Users\bhara\Fusion\venv\lib\site-packages\django\core\management\base.py", line 330, in run_from_argv
+    self.execute(*args, **cmd_options)
+  File "C:\Users\bhara\Fusion\venv\lib\site-packages\django\core\management\commands\runserver.py", line 61, in execute
+    super().execute(*args, **options)
+  File "C:\Users\bhara\Fusion\venv\lib\site-packages\django\core\management\base.py", line 371, in execute
+    output = self.handle(*args, **options)
+  File "C:\Users\bhara\Fusion\venv\lib\site-packages\django\core\management\commands\runserver.py", line 96, in handle
+    self.run(**options)
+  File "C:\Users\bhara\Fusion\venv\lib\site-packages\django\core\management\commands\runserver.py", line 105, in run
+    self.inner_run(None, **options)
+  File "C:\Users\bhara\Fusion\venv\lib\site-packages\django\core\management\commands\runserver.py", line 118, in inner_run
+    self.check(display_num_errors=True)
+  File "C:\Users\bhara\Fusion\venv\lib\site-packages\django\core\management\base.py", line 392, in check
+    all_issues = checks.run_checks(
+  File "C:\Users\bhara\Fusion\venv\lib\site-packages\django\core\checks\registry.py", line 70, in run_checks
+    new_errors = check(app_configs=app_configs, databases=databases)
+  File "C:\Users\bhara\Fusion\venv\lib\site-packages\django\core\checks\urls.py", line 13, in check_url_config
+    return check_resolver(resolver)
+  File "C:\Users\bhara\Fusion\venv\lib\site-packages\django\core\checks\urls.py", line 23, in check_resolver
+    return check_method()
+  File "C:\Users\bhara\Fusion\venv\lib\site-packages\django\urls\resolvers.py", line 408, in check
+    for pattern in self.url_patterns:
+  File "C:\Users\bhara\Fusion\venv\lib\site-packages\django\utils\functional.py", line 48, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\bhara\Fusion\venv\lib\site-packages\django\urls\resolvers.py", line 589, in url_patterns
+    patterns = getattr(self.urlconf_module, "urlpatterns", self.urlconf_module)
+  File "C:\Users\bhara\Fusion\venv\lib\site-packages\django\utils\functional.py", line 48, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "C:\Users\bhara\Fusion\venv\lib\site-packages\django\urls\resolvers.py", line 582, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "C:\Program Files\Python38\lib\importlib\__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1014, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 991, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 975, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 671, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 848, in exec_module
+  File "<frozen importlib._bootstrap>", line 219, in _call_with_frames_removed
+  File "C:\Users\bhara\Fusion\FusionIIIT\Fusion\urls.py", line 47, in <module>
+    url(r'^complaint/', include('applications.complaint_system.urls')),
+  File "C:\Users\bhara\Fusion\venv\lib\site-packages\django\urls\conf.py", line 34, in include
+    urlconf_module = import_module(urlconf_module)
+  File "C:\Program Files\Python38\lib\importlib\__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1014, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 991, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 975, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 671, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 848, in exec_module
+  File "<frozen importlib._bootstrap>", line 219, in _call_with_frames_removed
+  File "C:\Users\bhara\Fusion\FusionIIIT\applications\complaint_system\urls.py", line 3, in <module>
+    from . import views
+  File "<frozen importlib._bootstrap>", line 991, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 975, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 671, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 844, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 939, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1038, in get_data
+MemoryError

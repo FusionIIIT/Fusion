@@ -29,9 +29,6 @@ from .handlers import (add_mess_feedback, add_sem_dates, add_vacation_food_reque
 from notification.views import central_mess_notif
 
 import csv
-import openpyxl
- 
-
 today_g = datetime.datetime.now()
 month_g = today_g.month
 month_g_l = today_g.strftime('%B')
@@ -1463,6 +1460,7 @@ def searchAddOrRemoveStudent(request):
                 print(latest_end_date)
             except:
                 latest_end_date=None
+            import openpyxl
             excel_file = request.FILES['excel_file1']
             wb = openpyxl.load_workbook(excel_file)
             flag = False
@@ -1497,7 +1495,7 @@ def searchAddOrRemoveStudent(request):
 @csrf_exempt
 def uploadPaymentDue(request):
     if(request.FILES):
-        
+        import openpyxl
         excel_file = request.FILES['excel_file']
         wb = openpyxl.load_workbook(excel_file)
 
@@ -1622,6 +1620,7 @@ def update_payment(request):
 @csrf_exempt
 def update_bill_excel(request):
     if(request.FILES):   
+            import openpyxl
             excel_file = request.FILES['excel_file_bill']
             wb = openpyxl.load_workbook(excel_file)
             flag = False

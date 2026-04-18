@@ -7,9 +7,6 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 import csv
 import json
-from openpyxl import Workbook
-from openpyxl.styles import Alignment, Font
-from openpyxl.utils import get_column_letter
 from io import BytesIO,StringIO
 from django.db.models import IntegerField
 from django.db.models.functions import Cast
@@ -38,6 +35,14 @@ from applications.eis.models import faculty_about, emp_research_projects
 from applications.academic_information.models import Course
 from applications.academic_procedures.models import course_registration, Register,Semester
 from applications.programme_curriculum.filters import CourseFilter
+
+
+def _load_openpyxl_exports():
+    from openpyxl import Workbook
+    from openpyxl.styles import Alignment, Font
+    from openpyxl.utils import get_column_letter
+
+    return Workbook, Alignment, Font, get_column_letter
 from notification.views import examination_notif
 from applications.department.models import SpecialRequest, Announcements
 from applications.globals.models import (
@@ -1887,6 +1892,7 @@ def checkresult(request):
 
 def grades_report(request):
     if request.method == 'POST':
+        Workbook, Alignment, Font, get_column_letter = _load_openpyxl_exports()
         des = request.session.get("currentDesignationSelected")
         if des == "student":
          pass
