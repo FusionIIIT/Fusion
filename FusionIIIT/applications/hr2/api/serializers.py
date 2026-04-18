@@ -131,8 +131,16 @@ class LTC_serializer(serializers.ModelSerializer):
             "adjustedMonth",
             "submissionDate",
             "phoneNumberForContact",
+            "workflow_status",
+            "workflow_history",
             "approved",
             "approvedDate",
+            "created_by",
+            "approved_by",
+        ]
+        read_only_fields = [
+            "workflow_status",
+            "workflow_history",
             "created_by",
             "approved_by",
         ]
@@ -285,8 +293,16 @@ class Appraisal_serializer(serializers.ModelSerializer):
             "otherContribution",
             "performanceComments",
             "submissionDate",
+            "workflow_status",
+            "workflow_history",
             "approved",
             "approvedDate",
+            "created_by",
+            "approved_by",
+        ]
+        read_only_fields = [
+            "workflow_status",
+            "workflow_history",
             "created_by",
             "approved_by",
         ]

@@ -129,11 +129,14 @@ def create_role_user(cfg):
         },
     )
     if created:
-        user.set_password(PASSWORD)
-        user.save()
-        print(f"  ✅  Created User: {username}  (password: {PASSWORD})")
+        print(f"  ✅  Created User: {username}")
     else:
         print(f"  ℹ️  User already exists: {username}")
+    # Always (re)set password so rerunning this script fixes "invalid credentials".
+    user.set_password(PASSWORD)
+    user.is_active = True
+    user.save()
+    print(f"  ✅  Password set: {PASSWORD}")
 
     # 2. Department
     dept = get_or_create_department(cfg["department_name"])

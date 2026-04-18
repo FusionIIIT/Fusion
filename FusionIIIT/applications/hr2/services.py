@@ -9,6 +9,7 @@ import datetime
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 
+from applications.globals.models import HoldsDesignation
 from applications.hr2.constants.form_types import FormType
 from applications.hr2.models import (
     Appraisalform,
@@ -232,6 +233,85 @@ def get_archived(*, username: str, designation: str, src_module: str = "HR"):
 def get_outbox(*, username: str, designation: str, src_module: str = "HR"):
     """Retrieve outbox for a user."""
     return view_outbox(username=username, designation=designation, src_module=src_module)
+
+
+def _merge_file_rows_by_id(file_rows: list) -> list:
+    seen = set()
+    merged = []
+    for f in file_rows:
+        fid = f.get("id")
+        if fid is None:
+            continue
+        if fid not in seen:
+            seen.add(fid)
+            merged.append(f)
+    return merged
+
+
+def _designation_names_for_working_user(user) -> list:
+    names = []
+    seen = set()
+    for hd in HoldsDesignation.objects.filter(working=user).select_related("designation"):
+        if not hd.designation_id:
+            continue
+        n = (hd.designation.name or "").strip()
+        if not n or n in seen:
+            continue
+        seen.add(n)
+        names.append(n)
+    names.sort()
+    return names
+
+
+def get_inbox_for_all_held_designations(*, username: str, src_module: str = "HR") -> list:
+    """Inbox across every designation the user holds (``working`` = user)."""
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return []
+    combined = []
+    for name in _designation_names_for_working_user(user):
+        try:
+            combined.extend(
+                get_inbox(username=username, designation=name, src_module=src_module)
+            )
+        except Exception:
+            continue
+    return _merge_file_rows_by_id(combined)
+
+
+def get_outbox_for_all_held_designations(*, username: str, src_module: str = "HR") -> list:
+    """Outbox across every designation the user holds."""
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return []
+    combined = []
+    for name in _designation_names_for_working_user(user):
+        try:
+            combined.extend(
+                get_outbox(username=username, designation=name, src_module=src_module)
+            )
+        except Exception:
+            continue
+    return _merge_file_rows_by_id(combined)
+
+
+def get_archived_for_all_held_designations(*, username: str, src_module: str = "HR") -> list:
+    """Archive across every designation the user holds."""
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return []
+    combined = []
+    for name in _designation_names_for_working_user(user):
+        try:
+            combined.extend(
+                get_archived(username=username, designation=name, src_module=src_module)
+            )
+        except Exception:
+            continue
+    return _merge_file_rows_by_id(combined)
 
 
 def get_file_history(*, file_id: str):

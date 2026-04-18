@@ -5,6 +5,7 @@ including LTC, CPDA, Leave, Appraisal forms and management/workflow views.
 """
 
 import datetime
+import logging
 import os
 
 from django.conf import settings
@@ -34,13 +35,20 @@ from applications.hr2.models import (
     LeaveBalance,
     EmpConfidentialDetails,
     LeaveForm,
+    LTCform,
+    Appraisalform,
 )
+from applications.hr2.workflow import appraisal as appraisal_wf
 from applications.hr2.workflow import cpda_advance as cpda_wf
+from applications.hr2.workflow import ltc as ltc_wf
 from applications.hr2.services import (
     get_archived,
+    get_archived_for_all_held_designations,
     get_file_history,
     get_inbox,
+    get_inbox_for_all_held_designations,
     get_outbox,
+    get_outbox_for_all_held_designations,
     forward_form_file,
     get_forms_for_user,
     get_form_for_type_and_id,
@@ -249,6 +257,121 @@ class Hr2AuthenticatedAPIView(APIView):
 # Form CRUD Views
 # ============================================================================
 
+def _submit_ltc_application(request, form_data, user_info):
+    """Create LTC row, filetracking entry, and initial workflow state.
+
+    Returns:
+        (dict, None) with serialized form data on success,
+        (None, Response) on error.
+    """
+    receiver = (user_info.get("receiver_name") or "").strip()
+    recv_desig = (user_info.get("receiver_designation") or "").strip()
+    if not receiver or not recv_desig:
+        return None, Response(
+            {"detail": "Approver username and designation are required."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    uploader_desig = (
+        user_info.get("uploader_designation")
+        or _get_user_primary_designation(request.user)
+        or ""
+    )
+    if not uploader_desig:
+        return None, Response(
+            {"detail": "Your designation could not be determined. Cannot submit."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    serializer = LTC_serializer(data=form_data)
+    if not serializer.is_valid():
+        return None, Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    instance = serializer.save(created_by=request.user)
+    try:
+        create_form_file(
+            uploader=request.user.username,
+            uploader_designation=uploader_desig,
+            receiver=receiver,
+            receiver_designation=recv_desig,
+            src_object_id=str(instance.id),
+            form_type=FormType.LTC,
+            file_extra_JSON={"workflow_status": ltc_wf.WF_SUBMITTED},
+        )
+    except Exception as e:
+        logging.getLogger(__name__).error("File tracking failed for LTC: %s", e)
+        instance.delete()
+        return None, Response(
+            {"detail": f"File tracking failed: {e!s}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    ltc_wf.append_workflow_event(
+        instance,
+        ltc_wf.WF_SUBMITTED,
+        request.user.username,
+        "Application submitted",
+    )
+    refreshed = get_form_for_type_and_id(FormType.LTC, instance.id)
+    return LTC_serializer(refreshed).data, None
+
+
+def _submit_appraisal_application(request, form_data, user_info):
+    """Create Appraisal row, filetracking entry, and initial workflow state."""
+    window_error = _ensure_appraisal_submission_window()
+    if window_error:
+        return None, window_error
+
+    receiver = (user_info.get("receiver_name") or "").strip()
+    recv_desig = (user_info.get("receiver_designation") or "").strip()
+    if not receiver or not recv_desig:
+        return None, Response(
+            {"detail": "Approver username and designation are required."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    uploader_desig = (
+        user_info.get("uploader_designation")
+        or _get_user_primary_designation(request.user)
+        or ""
+    )
+    if not uploader_desig:
+        return None, Response(
+            {"detail": "Your designation could not be determined. Cannot submit."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    serializer = Appraisal_serializer(data=form_data)
+    if not serializer.is_valid():
+        return None, Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    instance = serializer.save(created_by=request.user)
+    try:
+        create_form_file(
+            uploader=request.user.username,
+            uploader_designation=uploader_desig,
+            receiver=receiver,
+            receiver_designation=recv_desig,
+            src_object_id=str(instance.id),
+            form_type=FormType.APPRAISAL,
+            file_extra_JSON={"workflow_status": appraisal_wf.WF_SUBMITTED},
+        )
+    except Exception as e:
+        logging.getLogger(__name__).error("File tracking failed for Appraisal: %s", e)
+        instance.delete()
+        return None, Response(
+            {"detail": f"File tracking failed: {e!s}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    appraisal_wf.append_workflow_event(
+        instance,
+        appraisal_wf.WF_SUBMITTED,
+        request.user.username,
+        "Appraisal submitted",
+    )
+    refreshed = get_form_for_type_and_id(FormType.APPRAISAL, instance.id)
+    return Appraisal_serializer(refreshed).data, None
+
+
 class LTC(Hr2APIView):
     """API view for LTC (Long Term Advance) form operations."""
     serializer_class = LTC_serializer
@@ -257,21 +380,16 @@ class LTC(Hr2APIView):
         is_complete, message = _is_profile_complete_for_ltc(request.user)
         if not is_complete:
             return Response({"detail": message}, status=status.HTTP_400_BAD_REQUEST)
-        user_info = request.data[1]
-        serializer = self.serializer_class(data=request.data[0])
-        if serializer.is_valid():
-            instance = serializer.save()
-            create_form_file(
-                uploader=request.user.username,
-                uploader_designation=user_info["uploader_designation"],
-                receiver=user_info["receiver_name"],
-                receiver_designation=user_info["receiver_designation"],
-                src_object_id=str(instance.id),
-                form_type=FormType.LTC,
-            )
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if isinstance(request.data, list):
+            form_data = request.data[0] if len(request.data) > 0 else {}
+            user_info = request.data[1] if len(request.data) > 1 else {}
+        else:
+            form_data = request.data.get("form_data", request.data)
+            user_info = request.data.get("user_info", {})
+        data, err = _submit_ltc_application(request, form_data, user_info)
+        if err:
+            return err
+        return Response(data, status=status.HTTP_200_OK)
 
     def get(self, request, *args, **kwargs):
         username = request.query_params.get("name")
@@ -518,12 +636,45 @@ class CPDAAdvanceWorkflowHandle(Hr2AuthenticatedAPIView):
                     {"detail": "Application is not awaiting HOD verification."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
+            dir_user, dir_desig = cpda_wf.resolve_director()
+            if not dir_user:
+                return Response(
+                    {
+                        "detail": (
+                            "Director is not configured (no user holds the Director designation)."
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            # Verify and immediately route the file to the Director so the inbox updates.
+            # (Previously only workflow_status changed; physical file routing required a second
+            # "Forward" step, so the Director saw an empty inbox.)
             with transaction.atomic():
                 cpda_wf.append_workflow_event(
                     form, cpda_wf.WF_HOD_VERIFIED, username, remarks or "Verified by HOD"
                 )
                 cpda_wf.sync_file_extra_workflow(file_obj, cpda_wf.WF_HOD_VERIFIED)
-            return Response({"detail": "Verified.", "workflow_status": form.workflow_status})
+                forward_form_file(
+                    file_id=str(file_id),
+                    receiver=dir_user,
+                    receiver_designation=dir_desig,
+                    remarks=remarks or "Verified by HOD — forwarded to Director",
+                    file_extra_JSON=_forward_extra(cpda_wf.WF_FORWARDED_DIRECTOR),
+                )
+                cpda_wf.append_workflow_event(
+                    form,
+                    cpda_wf.WF_FORWARDED_DIRECTOR,
+                    username,
+                    remarks or "Forwarded to Director",
+                )
+                file_obj.refresh_from_db()
+                cpda_wf.sync_file_extra_workflow(file_obj, cpda_wf.WF_FORWARDED_DIRECTOR)
+            return Response(
+                {
+                    "detail": "Verified and forwarded to Director.",
+                    "workflow_status": form.workflow_status,
+                }
+            )
 
         if action == "hod_not_verify":
             if not cpda_wf.designation_is_hod(designation):
@@ -668,6 +819,230 @@ class CPDAAdvanceWorkflowHandle(Hr2AuthenticatedAPIView):
                 cpda_wf.sync_file_extra_workflow(file_obj, cpda_wf.WF_ACCOUNTANT_PROCESSED)
                 archive_form_file(file_id=str(file_id))
             return Response({"detail": "Processing completed.", "workflow_status": form.workflow_status})
+
+        return Response({"detail": "Unknown or missing action."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LTCWorkflowHandle(Hr2AuthenticatedAPIView):
+    """HR Admin (or chosen approver with HR Admin role) approves/rejects; approval forwards to Accountant."""
+
+    def post(self, request, file_id):
+        action = (request.data.get("action") or "").strip()
+        designation = request.data.get("designation") or _get_request_designation(request)
+        remarks = (request.data.get("remarks") or "").strip()
+
+        perm_err = _ensure_current_owner_with_designation(
+            request,
+            file_id=file_id,
+            receiver_payload=request.data,
+        )
+        if perm_err:
+            return perm_err
+
+        try:
+            file_obj = File.objects.get(pk=file_id)
+        except File.DoesNotExist:
+            return Response({"detail": "File not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        extra = file_obj.file_extra_JSON or {}
+        if extra.get("type") != FormType.LTC:
+            return Response({"detail": "Not an LTC file."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            form = get_form_for_type_and_id(FormType.LTC, int(file_obj.src_object_id))
+        except Exception:
+            return Response({"detail": "Form not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if form.workflow_status in ltc_wf.TERMINAL_STATUSES:
+            return Response(
+                {"detail": "This application is already closed."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        username = request.user.username
+
+        if action == "hr_admin_approve":
+            if not ltc_wf.designation_is_hr_admin(designation):
+                return Response(
+                    {"detail": "Only HR Admin can approve at this stage."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            if form.workflow_status != ltc_wf.WF_SUBMITTED:
+                return Response(
+                    {"detail": "Application is not awaiting HR approval."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            acct_user, acct_desig = ltc_wf.resolve_accountant()
+            if not acct_user:
+                return Response(
+                    {"detail": "Accountant is not configured (no user holds the Accountant designation)."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            with transaction.atomic():
+                forward_form_file(
+                    file_id=str(file_id),
+                    receiver=acct_user,
+                    receiver_designation=acct_desig,
+                    remarks=remarks or "Approved by HR; forwarded to Accountant",
+                    file_extra_JSON={
+                        "type": FormType.LTC,
+                        "workflow_status": ltc_wf.WF_WITH_ACCOUNTANT,
+                    },
+                )
+                ltc_wf.append_workflow_event(
+                    form,
+                    ltc_wf.WF_HR_APPROVED,
+                    username,
+                    remarks or "Approved by HR",
+                    approved=True,
+                    approved_by=request.user,
+                    approvedDate=datetime.date.today(),
+                )
+                ltc_wf.append_workflow_event(
+                    form,
+                    ltc_wf.WF_WITH_ACCOUNTANT,
+                    username,
+                    remarks or "Forwarded to Accountant",
+                )
+                file_obj.refresh_from_db()
+                ltc_wf.sync_file_extra_workflow(file_obj, ltc_wf.WF_WITH_ACCOUNTANT)
+            refreshed = get_form_for_type_and_id(FormType.LTC, form.id)
+            return Response(
+                {
+                    "detail": "Approved and sent to Accountant.",
+                    "workflow_status": refreshed.workflow_status,
+                    "form": LTC_serializer(refreshed).data,
+                }
+            )
+
+        if action == "hr_admin_reject":
+            if not ltc_wf.designation_is_hr_admin(designation):
+                return Response(
+                    {"detail": "Only HR Admin can reject at this stage."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            if form.workflow_status != ltc_wf.WF_SUBMITTED:
+                return Response(
+                    {"detail": "Application is not awaiting HR approval."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if not remarks:
+                return Response(
+                    {"detail": "Remarks are required when rejecting."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            with transaction.atomic():
+                ltc_wf.append_workflow_event(
+                    form,
+                    ltc_wf.WF_HR_REJECTED,
+                    username,
+                    remarks,
+                    approved=False,
+                )
+                ltc_wf.sync_file_extra_workflow(file_obj, ltc_wf.WF_HR_REJECTED)
+                archive_form_file(file_id=str(file_id))
+            return Response({"detail": "Rejected.", "workflow_status": form.workflow_status})
+
+        return Response({"detail": "Unknown or missing action."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AppraisalWorkflowHandle(Hr2AuthenticatedAPIView):
+    """HR Admin approves or rejects appraisal; file is archived after decision."""
+
+    def post(self, request, file_id):
+        action = (request.data.get("action") or "").strip()
+        designation = request.data.get("designation") or _get_request_designation(request)
+        remarks = (request.data.get("remarks") or "").strip()
+
+        perm_err = _ensure_current_owner_with_designation(
+            request,
+            file_id=file_id,
+            receiver_payload=request.data,
+        )
+        if perm_err:
+            return perm_err
+
+        try:
+            file_obj = File.objects.get(pk=file_id)
+        except File.DoesNotExist:
+            return Response({"detail": "File not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        extra = file_obj.file_extra_JSON or {}
+        if extra.get("type") != FormType.APPRAISAL:
+            return Response({"detail": "Not an Appraisal file."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            form = get_form_for_type_and_id(FormType.APPRAISAL, int(file_obj.src_object_id))
+        except Exception:
+            return Response({"detail": "Form not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if form.workflow_status in appraisal_wf.TERMINAL_STATUSES:
+            return Response(
+                {"detail": "This application is already closed."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        username = request.user.username
+
+        if action == "hr_admin_approve":
+            if not ltc_wf.designation_is_hr_admin(designation):
+                return Response(
+                    {"detail": "Only HR Admin can approve at this stage."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            if form.workflow_status != appraisal_wf.WF_SUBMITTED:
+                return Response(
+                    {"detail": "Application is not awaiting HR approval."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            with transaction.atomic():
+                appraisal_wf.append_workflow_event(
+                    form,
+                    appraisal_wf.WF_HR_APPROVED,
+                    username,
+                    remarks or "Approved by HR",
+                    approved=True,
+                    approved_by=request.user,
+                    approvedDate=datetime.date.today(),
+                )
+                appraisal_wf.sync_file_extra_workflow(file_obj, appraisal_wf.WF_HR_APPROVED)
+                archive_form_file(file_id=str(file_id))
+            refreshed = get_form_for_type_and_id(FormType.APPRAISAL, form.id)
+            return Response(
+                {
+                    "detail": "Approved.",
+                    "workflow_status": refreshed.workflow_status,
+                    "form": Appraisal_serializer(refreshed).data,
+                }
+            )
+
+        if action == "hr_admin_reject":
+            if not ltc_wf.designation_is_hr_admin(designation):
+                return Response(
+                    {"detail": "Only HR Admin can reject at this stage."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            if form.workflow_status != appraisal_wf.WF_SUBMITTED:
+                return Response(
+                    {"detail": "Application is not awaiting HR approval."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if not remarks:
+                return Response(
+                    {"detail": "Remarks are required when rejecting."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            with transaction.atomic():
+                appraisal_wf.append_workflow_event(
+                    form,
+                    appraisal_wf.WF_HR_REJECTED,
+                    username,
+                    remarks,
+                    approved=False,
+                )
+                appraisal_wf.sync_file_extra_workflow(file_obj, appraisal_wf.WF_HR_REJECTED)
+                archive_form_file(file_id=str(file_id))
+            return Response({"detail": "Rejected.", "workflow_status": form.workflow_status})
 
         return Response({"detail": "Unknown or missing action."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -823,25 +1198,16 @@ class Appraisal(Hr2APIView):
     serializer_class = Appraisal_serializer
 
     def post(self, request):
-        window_error = _ensure_appraisal_submission_window()
-        if window_error:
-            return window_error
-
-        user_info = request.data[1]
-        serializer = self.serializer_class(data=request.data[0])
-        if serializer.is_valid():
-            instance = serializer.save()
-            create_form_file(
-                uploader=request.user.username,
-                uploader_designation=user_info["uploader_designation"],
-                receiver=user_info["receiver_name"],
-                receiver_designation=user_info["receiver_designation"],
-                src_object_id=str(instance.id),
-                form_type=FormType.APPRAISAL,
-            )
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if isinstance(request.data, list):
+            form_data = request.data[0] if len(request.data) > 0 else {}
+            user_info = request.data[1] if len(request.data) > 1 else {}
+        else:
+            form_data = request.data.get("form_data", request.data)
+            user_info = request.data.get("user_info", {})
+        data, err = _submit_appraisal_application(request, form_data, user_info)
+        if err:
+            return err
+        return Response(data, status=status.HTTP_200_OK)
 
     def get(self, request, *args, **kwargs):
         username = request.query_params.get("name")
@@ -1218,22 +1584,26 @@ class GetMyDetails(Hr2AuthenticatedAPIView):
 
     def get(self, request, *args, **kwargs):
         user = request.user
-        extra_info = ExtraInfo.objects.filter(user=user).first()
-        
-        # Get the user's current designation if available
-        designation = None
-        if extra_info:
-            # Try to get designation from HoldsDesignation (current roles)
-            current_role = HoldsDesignation.objects.filter(
-                working=user
-            ).first()
-            if current_role:
-                designation = current_role.designation.name
-        
+        designations = []
+        seen = set()
+        for hd in (
+            HoldsDesignation.objects.filter(working=user)
+            .select_related("designation")
+            .order_by("designation__name")
+        ):
+            if not hd.designation_id:
+                continue
+            n = (hd.designation.name or "").strip()
+            if n and n not in seen:
+                seen.add(n)
+                designations.append(n)
+        designation = designations[0] if designations else None
+
         return Response(
             {
                 "username": user.username,
                 "designation": designation or "N/A",
+                "designations": designations,
             },
             status=status.HTTP_200_OK
         )
@@ -1318,12 +1688,13 @@ class FormTypeRequests(Hr2AuthenticatedAPIView):
         if not form_type:
             return Response({"detail": "Unknown form type."}, status=status.HTTP_400_BAD_REQUEST)
 
-        designation = _get_user_primary_designation(request.user)
-        if not designation:
+        if not HoldsDesignation.objects.filter(working=request.user).exists():
             return Response({f"{form_type_slug}_requests": []}, status=status.HTTP_200_OK)
 
         try:
-            outbox = get_outbox(username=request.user.username, designation=designation)
+            outbox = get_outbox_for_all_held_designations(
+                username=request.user.username
+            )
         except Exception:
             outbox = []
 
@@ -1339,12 +1710,13 @@ class FormTypeInbox(Hr2AuthenticatedAPIView):
         if not form_type:
             return Response({"detail": "Unknown form type."}, status=status.HTTP_400_BAD_REQUEST)
 
-        designation = _get_user_primary_designation(request.user)
-        if not designation:
+        if not HoldsDesignation.objects.filter(working=request.user).exists():
             return Response({f"{form_type_slug}_inbox": []}, status=status.HTTP_200_OK)
 
         try:
-            inbox = get_inbox(username=request.user.username, designation=designation)
+            inbox = get_inbox_for_all_held_designations(
+                username=request.user.username
+            )
         except Exception:
             inbox = []
 
@@ -1360,12 +1732,13 @@ class FormTypeArchive(Hr2AuthenticatedAPIView):
         if not form_type:
             return Response({"detail": "Unknown form type."}, status=status.HTTP_400_BAD_REQUEST)
 
-        designation = _get_user_primary_designation(request.user)
-        if not designation:
+        if not HoldsDesignation.objects.filter(working=request.user).exists():
             return Response({f"{form_type_slug}_archive": []}, status=status.HTTP_200_OK)
 
         try:
-            archived = get_archived(username=request.user.username, designation=designation)
+            archived = get_archived_for_all_held_designations(
+                username=request.user.username
+            )
         except Exception:
             archived = []
 
@@ -1389,6 +1762,26 @@ class FormTypeTrack(Hr2AuthenticatedAPIView):
                     if cpda_form:
                         payload["workflow_status"] = cpda_form.workflow_status
                         payload["workflow_history"] = cpda_form.workflow_history or []
+            except (File.DoesNotExist, ValueError, TypeError):
+                pass
+        elif form_type_slug == "ltc":
+            try:
+                f_obj = File.objects.get(pk=file_id)
+                if (f_obj.file_extra_JSON or {}).get("type") == FormType.LTC:
+                    ltc_row = LTCform.objects.filter(pk=int(f_obj.src_object_id)).first()
+                    if ltc_row:
+                        payload["workflow_status"] = ltc_row.workflow_status
+                        payload["workflow_history"] = ltc_row.workflow_history or []
+            except (File.DoesNotExist, ValueError, TypeError):
+                pass
+        elif form_type_slug == "appraisal":
+            try:
+                f_obj = File.objects.get(pk=file_id)
+                if (f_obj.file_extra_JSON or {}).get("type") == FormType.APPRAISAL:
+                    row = Appraisalform.objects.filter(pk=int(f_obj.src_object_id)).first()
+                    if row:
+                        payload["workflow_status"] = row.workflow_status
+                        payload["workflow_history"] = row.workflow_history or []
             except (File.DoesNotExist, ValueError, TypeError):
                 pass
         return Response(payload)
@@ -1429,12 +1822,13 @@ class CpdaClaimRequests(Hr2AuthenticatedAPIView):
     """Outbox filtered for CPDA Reimbursement (claim)."""
 
     def get(self, request):
-        designation = _get_user_primary_designation(request.user)
-        if not designation:
+        if not HoldsDesignation.objects.filter(working=request.user).exists():
             return Response({"cpda_claim_requests": []}, status=status.HTTP_200_OK)
 
         try:
-            outbox = get_outbox(username=request.user.username, designation=designation)
+            outbox = get_outbox_for_all_held_designations(
+                username=request.user.username
+            )
         except Exception:
             outbox = []
 
@@ -1446,12 +1840,13 @@ class CpdaClaimInbox(Hr2AuthenticatedAPIView):
     """Inbox filtered for CPDA Reimbursement (claim)."""
 
     def get(self, request):
-        designation = _get_user_primary_designation(request.user)
-        if not designation:
+        if not HoldsDesignation.objects.filter(working=request.user).exists():
             return Response({"cpda_claim_inbox": []}, status=status.HTTP_200_OK)
 
         try:
-            inbox = get_inbox(username=request.user.username, designation=designation)
+            inbox = get_inbox_for_all_held_designations(
+                username=request.user.username
+            )
         except Exception:
             inbox = []
 
@@ -1463,12 +1858,13 @@ class CpdaClaimArchive(Hr2AuthenticatedAPIView):
     """Archive filtered for CPDA Reimbursement (claim)."""
 
     def get(self, request):
-        designation = _get_user_primary_designation(request.user)
-        if not designation:
+        if not HoldsDesignation.objects.filter(working=request.user).exists():
             return Response({"cpda_claim_archive": []}, status=status.HTTP_200_OK)
 
         try:
-            archived = get_archived(username=request.user.username, designation=designation)
+            archived = get_archived_for_all_held_designations(
+                username=request.user.username
+            )
         except Exception:
             archived = []
 
@@ -1523,33 +1919,16 @@ class AppraisalSubmit(Hr2AuthenticatedAPIView):
     serializer_class = Appraisal_serializer
 
     def post(self, request):
-        window_error = _ensure_appraisal_submission_window()
-        if window_error:
-            return window_error
-
         if isinstance(request.data, list):
             form_data = request.data[0] if len(request.data) > 0 else {}
             user_info = request.data[1] if len(request.data) > 1 else {}
         else:
             form_data = request.data.get("form_data", request.data)
             user_info = request.data.get("user_info", {})
-        serializer = self.serializer_class(data=form_data)
-        if serializer.is_valid():
-            instance = serializer.save()
-            try:
-                create_form_file(
-                    uploader=user_info.get("uploader_name", request.user.username),
-                    uploader_designation=user_info.get("uploader_designation", _get_user_primary_designation(request.user) or ""),
-                    receiver=user_info.get("receiver_name", ""),
-                    receiver_designation=user_info.get("receiver_designation", ""),
-                    src_object_id=str(instance.id),
-                    form_type=FormType.APPRAISAL,
-                )
-            except Exception as e:
-                import logging
-                logging.getLogger(__name__).error("File tracking failed for Appraisal: %s", e)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        data, err = _submit_appraisal_application(request, form_data, user_info)
+        if err:
+            return err
+        return Response(data, status=status.HTTP_200_OK)
 
 
 # ============================================================================
@@ -1782,7 +2161,7 @@ class AdminLeaveRequests(Hr2APIView):
 
 
 class LtcCreate(Hr2AuthenticatedAPIView):
-    """Create an LTC form (POST) — thin wrapper."""
+    """Create an LTC form (POST) — authenticated users; same pipeline as ``LTC.post``."""
     serializer_class = LTC_serializer
 
     def post(self, request):
@@ -1790,25 +2169,16 @@ class LtcCreate(Hr2AuthenticatedAPIView):
         if not is_complete:
             return Response({"detail": message}, status=status.HTTP_400_BAD_REQUEST)
 
-        user_info = request.data.get("user_info", request.data[1] if isinstance(request.data, list) else {})
-        form_data = request.data.get("form_data", request.data[0] if isinstance(request.data, list) else request.data)
-        serializer = self.serializer_class(data=form_data)
-        if serializer.is_valid():
-            instance = serializer.save()
-            try:
-                create_form_file(
-                    uploader=user_info.get("uploader_name", request.user.username),
-                    uploader_designation=user_info.get("uploader_designation", _get_user_primary_designation(request.user) or ""),
-                    receiver=user_info.get("receiver_name", ""),
-                    receiver_designation=user_info.get("receiver_designation", ""),
-                    src_object_id=str(instance.id),
-                    form_type=FormType.LTC,
-                )
-            except Exception as e:
-                import logging
-                logging.getLogger(__name__).error("File tracking failed for LTC: %s", e)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if isinstance(request.data, list):
+            form_data = request.data[0] if len(request.data) > 0 else {}
+            user_info = request.data[1] if len(request.data) > 1 else {}
+        else:
+            form_data = request.data.get("form_data", request.data)
+            user_info = request.data.get("user_info", {})
+        data, err = _submit_ltc_application(request, form_data, user_info)
+        if err:
+            return err
+        return Response(data, status=status.HTTP_200_OK)
 
 
 # ============================================================================

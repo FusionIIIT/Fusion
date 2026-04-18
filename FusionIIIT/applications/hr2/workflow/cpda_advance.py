@@ -54,33 +54,44 @@ def resolve_hod_for_applicant(applicant_user):
     for desig_name in candidates:
         if not Designation.objects.filter(name=desig_name).exists():
             continue
+        qs = HoldsDesignation.objects.filter(designation__name=desig_name).select_related(
+            "working"
+        )
+        # Prefer seeded workflow HOD accounts (hod_cse, …) over other users who may
+        # also hold the same designation (e.g. legacy data where .first() was vkjain).
         hd = (
-            HoldsDesignation.objects.filter(designation__name=desig_name)
-            .select_related("working")
+            qs.filter(working__username__startswith="hod_")
+            .order_by("working__username")
             .first()
         )
+        if not hd:
+            hd = qs.first()
         if hd and hd.working_id:
             return hd.working.username, desig_name
     return None, None
 
 
 def resolve_director():
-    hd = (
-        HoldsDesignation.objects.filter(designation__name__iexact="Director")
-        .select_related("working")
-        .first()
+    """Prefer the canonical ``director`` account when multiple users hold Director."""
+    qs = HoldsDesignation.objects.filter(designation__name__iexact="Director").select_related(
+        "working"
     )
+    hd = qs.filter(working__username__iexact="director").first()
+    if not hd:
+        hd = qs.order_by("working__username").first()
     if hd and hd.working_id:
         return hd.working.username, "Director"
     return None, None
 
 
 def resolve_accountant():
-    hd = (
-        HoldsDesignation.objects.filter(designation__name__iexact="Accountant")
-        .select_related("working")
-        .first()
+    """Prefer the canonical ``accountant`` account when multiple users hold Accountant."""
+    qs = HoldsDesignation.objects.filter(designation__name__iexact="Accountant").select_related(
+        "working"
     )
+    hd = qs.filter(working__username__iexact="accountant").first()
+    if not hd:
+        hd = qs.order_by("working__username").first()
     if hd and hd.working_id:
         return hd.working.username, "Accountant"
     return None, None

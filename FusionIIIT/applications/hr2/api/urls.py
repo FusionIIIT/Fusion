@@ -17,6 +17,8 @@ urlpatterns = [
     path('<str:form_type_slug>/track/<int:file_id>', views.FormTypeTrack.as_view(), name='form_type_track'),
     path('<str:form_type_slug>/form/<int:form_id>', views.FormTypeFormDetail.as_view(), name='form_type_form_detail'),
     path('cpda_adv/handle/<int:file_id>/', views.CPDAAdvanceWorkflowHandle.as_view(), name='cpda_advance_handle'),
+    path('ltc/handle/<int:file_id>/', views.LTCWorkflowHandle.as_view(), name='ltc_workflow_handle'),
+    path('appraisal/handle/<int:file_id>/', views.AppraisalWorkflowHandle.as_view(), name='appraisal_workflow_handle'),
 
     # --- CPDA Claim (nested path: cpda/claim/...) ---
     path('cpda/claim/requests', views.CpdaClaimRequests.as_view(), name='cpda_claim_requests'),

@@ -172,6 +172,22 @@ class WorkAssignemnt(models.Model):
     orders_copy = models.FileField(blank=True, null=True)
 
 class LTCform(BaseForm):
+    """LTC request with workflow (see hr2.workflow.ltc)."""
+
+    WORKFLOW_STATUS_CHOICES = (
+        ("submitted", "Submitted"),
+        ("hr_approved", "Approved by HR"),
+        ("hr_rejected", "Rejected by HR"),
+        ("with_accountant", "With Accountant"),
+    )
+    workflow_status = models.CharField(
+        max_length=40,
+        choices=WORKFLOW_STATUS_CHOICES,
+        default="submitted",
+        db_index=True,
+    )
+    workflow_history = models.JSONField(blank=True, default=list)
+
     blockYear = models.TextField()
     basicPaySalary = models.IntegerField(null=True)
     departmentInfo = models.CharField(max_length=50)
@@ -294,6 +310,21 @@ class LeaveBalance(models.Model):
 
 
 class Appraisalform(BaseForm):
+    """Faculty/staff appraisal with workflow (see hr2.workflow.appraisal)."""
+
+    WORKFLOW_STATUS_CHOICES = (
+        ("submitted", "Submitted"),
+        ("hr_approved", "Approved by HR"),
+        ("hr_rejected", "Rejected by HR"),
+    )
+    workflow_status = models.CharField(
+        max_length=40,
+        choices=WORKFLOW_STATUS_CHOICES,
+        default="submitted",
+        db_index=True,
+    )
+    workflow_history = models.JSONField(blank=True, default=list)
+
     disciplineInfo = models.CharField(max_length=22, null=True)
     specificFieldOfKnowledge = models.TextField(max_length=40, null=True)
     currentResearchInterests = models.TextField(max_length=40, null=True)
