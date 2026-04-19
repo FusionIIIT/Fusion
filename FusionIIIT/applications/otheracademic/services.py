@@ -626,15 +626,18 @@ def submit_assistantship(
     if selectors.assistantship_exists_for_period(user.extrainfo, date_from, date_to):
         raise AssistantshipServiceError("Form for this period already exists.")
 
-    # Validate TA supervisor
+    # Validate faculty supervisor username passed from form.
     ta_supervisor_user = selectors.get_user_by_username(ta_supervisor)
     if not ta_supervisor_user:
-        raise AssistantshipServiceError("TA Supervisor username not found.")
+        raise AssistantshipServiceError("Faculty Supervisor username not found.")
 
-    # Validate Thesis supervisor
-    thesis_supervisor_user = selectors.get_user_by_username(thesis_supervisor)
-    if not thesis_supervisor_user:
-        raise AssistantshipServiceError("Thesis Supervisor username not found.")
+    # Resolve Department Admin for next stage.
+    dept_admin_user = (
+        selectors.get_first_user_for_designation("dept_admin")
+        or selectors.get_first_user_for_designation("deptadmin")
+    )
+    if not dept_admin_user:
+        raise AssistantshipServiceError("Department Admin is not configured.")
 
     # Create assistantship form
     assistantship_form = AssistantshipClaimFormStatusUpd.objects.create(
@@ -646,9 +649,9 @@ def submit_assistantship(
         bank_account=bank_account,
         student_signature=signature_file,
         dateApplied=date_applied,
-        ta_supervisor=ta_supervisor,
-        thesis_supervisor=thesis_supervisor,
-        hod=hod,
+        ta_supervisor=ta_supervisor_user.username,
+        thesis_supervisor=thesis_supervisor or "",
+        hod=dept_admin_user.username,
         applicability=applicability,
         TA_approved=False,
         TA_rejected=False,
@@ -656,33 +659,84 @@ def submit_assistantship(
         Ths_rejected=False,
         HOD_approved=False,
         HOD_rejected=False,
-        Dean_approved=False,
-        Dean_rejected=False,
-        Director_approved=False,
-        Director_rejected=False,
-        AcadAdmin_approved=False,
-        AcadAdmin_rejected=False,
+        Acad_approved=False,
+        Acad_rejected=False,
+        remark="",
     )
 
-    # Send notifications
+    # Send notification to faculty supervisor (first review stage).
     otheracademic_notif(
-        user, ta_supervisor_user, "assistantship_form", assistantship_form.id,
-        "student", "Assistantship form needs your (TA Supervisor) approval."
-    )
-    otheracademic_notif(
-        user, thesis_supervisor_user, "assistantship_form", assistantship_form.id,
-        "student", "Assistantship form needs your (Thesis Supervisor) approval."
+        user,
+        ta_supervisor_user,
+        "ast_ta",
+        assistantship_form.id,
+        "student",
+        "A PG assistantship form is waiting for your verification.",
     )
 
     return assistantship_form
 
 
-def update_assistantship_status_ta(approved_ids, rejected_ids):
-    """Update assistantship status by TA supervisor."""
+def update_assistantship_status_ta(approved_ids, rejected_ids, actor_user):
+    """Update assistantship status by faculty supervisor."""
     if approved_ids:
-        AssistantshipClaimFormStatusUpd.objects.filter(id__in=approved_ids).update(TA_approved=True)
+        for form_id in approved_ids:
+            form = selectors.get_assistantship_by_id(form_id)
+            if not form:
+                continue
+            if form.ta_supervisor.lower() != actor_user.username.lower():
+                raise AssistantshipServiceError("You can only review forms assigned to you.")
+            if form.TA_approved or form.TA_rejected:
+                raise AssistantshipServiceError("This assistantship form is already reviewed.")
+
+            form.TA_approved = True
+            form.TA_rejected = False
+            form.save(update_fields=["TA_approved", "TA_rejected"])
+
+            student_user = selectors.get_user_by_extrainfo_id(form.roll_no_id)
+            dept_admin_user = selectors.get_user_by_username(form.hod)
+            if student_user:
+                otheracademic_notif(
+                    actor_user,
+                    student_user,
+                    "ast_ta_accept",
+                    form.id,
+                    "admin",
+                    "Your assistantship form has been verified by Faculty Supervisor.",
+                )
+            if dept_admin_user:
+                otheracademic_notif(
+                    actor_user,
+                    dept_admin_user,
+                    "ast_hod",
+                    form.id,
+                    "admin",
+                    "A verified assistantship form is waiting for Department Admin approval.",
+                )
     if rejected_ids:
-        AssistantshipClaimFormStatusUpd.objects.filter(id__in=rejected_ids).update(TA_rejected=True)
+        for form_id in rejected_ids:
+            form = selectors.get_assistantship_by_id(form_id)
+            if not form:
+                continue
+            if form.ta_supervisor.lower() != actor_user.username.lower():
+                raise AssistantshipServiceError("You can only review forms assigned to you.")
+            if form.TA_approved or form.TA_rejected:
+                raise AssistantshipServiceError("This assistantship form is already reviewed.")
+
+            form.TA_approved = False
+            form.TA_rejected = True
+            form.save(update_fields=["TA_approved", "TA_rejected"])
+
+            student_user = selectors.get_user_by_extrainfo_id(form.roll_no_id)
+            if student_user:
+                otheracademic_notif(
+                    actor_user,
+                    student_user,
+                    "ast_ta_accept",
+                    form.id,
+                    "admin",
+                    "Your assistantship form has been rejected by Faculty Supervisor.",
+                )
 
 
 def update_assistantship_status_thesis(approved_ids, rejected_ids):
@@ -693,36 +747,103 @@ def update_assistantship_status_thesis(approved_ids, rejected_ids):
         AssistantshipClaimFormStatusUpd.objects.filter(id__in=rejected_ids).update(Ths_rejected=True)
 
 
-def update_assistantship_status_hod(approved_ids, rejected_ids):
-    """Update assistantship status by HOD."""
+def update_assistantship_status_hod(approved_ids, rejected_ids, actor_user):
+    """Update assistantship status by Department Admin (final stage)."""
     if approved_ids:
-        AssistantshipClaimFormStatusUpd.objects.filter(id__in=approved_ids).update(HOD_approved=True, HOD_rejected=False)
+        for form_id in approved_ids:
+            form = selectors.get_assistantship_by_id(form_id)
+            if not form:
+                continue
+            if form.hod.lower() != actor_user.username.lower():
+                raise AssistantshipServiceError("You can only approve forms assigned to you.")
+            if not form.TA_approved or form.TA_rejected:
+                raise AssistantshipServiceError("Department Admin can act only after Faculty Supervisor verification.")
+            if form.HOD_approved or form.HOD_rejected:
+                raise AssistantshipServiceError("This assistantship form is already finalized.")
+
+            form.HOD_approved = True
+            form.HOD_rejected = False
+            form.remark = "Stipend marked for disbursement"
+            form.save(update_fields=["HOD_approved", "HOD_rejected", "remark"])
+
+            student_user = selectors.get_user_by_extrainfo_id(form.roll_no_id)
+            if student_user:
+                otheracademic_notif(
+                    actor_user,
+                    student_user,
+                    "ast_ta_accept",
+                    form.id,
+                    "admin",
+                    "Your assistantship has been approved by Department Admin and marked for disbursement.",
+                )
     if rejected_ids:
-        AssistantshipClaimFormStatusUpd.objects.filter(id__in=rejected_ids).update(HOD_approved=False, HOD_rejected=True)
+        for form_id in rejected_ids:
+            form = selectors.get_assistantship_by_id(form_id)
+            if not form:
+                continue
+            if form.hod.lower() != actor_user.username.lower():
+                raise AssistantshipServiceError("You can only approve forms assigned to you.")
+            if not form.TA_approved or form.TA_rejected:
+                raise AssistantshipServiceError("Department Admin can act only after Faculty Supervisor verification.")
+            if form.HOD_approved or form.HOD_rejected:
+                raise AssistantshipServiceError("This assistantship form is already finalized.")
+
+            form.HOD_approved = False
+            form.HOD_rejected = True
+            form.remark = "Disbursement stopped due to rejection"
+            form.save(update_fields=["HOD_approved", "HOD_rejected", "remark"])
+
+            student_user = selectors.get_user_by_extrainfo_id(form.roll_no_id)
+            if student_user:
+                otheracademic_notif(
+                    actor_user,
+                    student_user,
+                    "ast_ta_accept",
+                    form.id,
+                    "admin",
+                    "Your assistantship has been rejected by Department Admin.",
+                )
+
+
+def withdraw_assistantship(user, form_id):
+    """Allow PG student to withdraw assistantship before faculty review."""
+    form = selectors.get_assistantship_by_id(form_id)
+    if not form:
+        raise AssistantshipServiceError("Assistantship form not found.")
+    if form.roll_no_id != user.extrainfo.id:
+        raise AssistantshipServiceError("You are not authorized to withdraw this assistantship form.")
+    if form.TA_approved or form.TA_rejected:
+        raise AssistantshipServiceError("Cannot withdraw after faculty supervisor has reviewed the form.")
+
+    supervisor_user = selectors.get_user_by_username(form.ta_supervisor)
+    if supervisor_user:
+        otheracademic_notif(
+            user,
+            supervisor_user,
+            "ast_ta",
+            form.id,
+            "student",
+            "A PG assistantship form was withdrawn by the student.",
+        )
+    form.delete()
 
 
 def update_assistantship_status_acad_admin(approved_ids, rejected_ids):
     """Update assistantship status by Academic Admin."""
     if approved_ids:
-        AssistantshipClaimFormStatusUpd.objects.filter(id__in=approved_ids).update(AcadAdmin_approved=True, AcadAdmin_rejected=False)
+        AssistantshipClaimFormStatusUpd.objects.filter(id__in=approved_ids).update(Acad_approved=True, Acad_rejected=False)
     if rejected_ids:
-        AssistantshipClaimFormStatusUpd.objects.filter(id__in=rejected_ids).update(AcadAdmin_approved=False, AcadAdmin_rejected=True)
+        AssistantshipClaimFormStatusUpd.objects.filter(id__in=rejected_ids).update(Acad_approved=False, Acad_rejected=True)
 
 
 def update_assistantship_status_dean(approved_ids, rejected_ids):
     """Update assistantship status by Dean Academic."""
-    if approved_ids:
-        AssistantshipClaimFormStatusUpd.objects.filter(id__in=approved_ids).update(Dean_approved=True, Dean_rejected=False)
-    if rejected_ids:
-        AssistantshipClaimFormStatusUpd.objects.filter(id__in=rejected_ids).update(Dean_approved=False, Dean_rejected=True)
+    return None
 
 
 def update_assistantship_status_director(approved_ids, rejected_ids):
     """Update assistantship status by Director."""
-    if approved_ids:
-        AssistantshipClaimFormStatusUpd.objects.filter(id__in=approved_ids).update(Director_approved=True, Director_rejected=False)
-    if rejected_ids:
-        AssistantshipClaimFormStatusUpd.objects.filter(id__in=rejected_ids).update(Director_approved=False, Director_rejected=True)
+    return None
 
 
 def get_assistantship_status_text(form):
@@ -731,31 +852,23 @@ def get_assistantship_status_text(form):
     Returns 'Rejected', 'Approved', or 'Pending'.
     """
     is_rejected = any([
-        form.Director_rejected,
-        form.Dean_rejected,
-        form.AcadAdmin_rejected,
         form.HOD_rejected,
         form.TA_rejected,
-        form.Ths_rejected
     ])
 
     if is_rejected:
         return "Rejected"
-    elif form.Director_approved:
+    elif form.HOD_approved:
         return "Approved"
     else:
         return "Pending"
 
 
 def get_assistantship_approval_stages(form):
-    """Get approval status for each stage of the assistantship workflow."""
+    """Get approval status for each stage of the PG assistantship workflow."""
     stages = {
-        "TA_Supervisor": ("TA_approved", "TA_rejected"),
-        "Thesis_Supervisor": ("Ths_approved", "Ths_rejected"),
-        "HOD": ("HOD_approved", "HOD_rejected"),
-        "Academic_Admin": ("AcadAdmin_approved", "AcadAdmin_rejected"),
-        "Dean_Academic": ("Dean_approved", "Dean_rejected"),
-        "Director": ("Director_approved", "Director_rejected"),
+        "Faculty_Supervisor": ("TA_approved", "TA_rejected"),
+        "Department_Admin": ("HOD_approved", "HOD_rejected"),
     }
 
     result = {}
@@ -766,5 +879,9 @@ def get_assistantship_approval_stages(form):
             result[stage_name] = "Rejected"
         else:
             result[stage_name] = "Pending"
+
+    result["Stipend_Disbursement"] = (
+        "Marked for Disbursement" if form.HOD_approved else "Not Marked"
+    )
 
     return result

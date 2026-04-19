@@ -366,6 +366,15 @@ def get_pending_assistantships_for_ta():
     )
 
 
+def get_pending_assistantships_for_ta_user(ta_username):
+    """Get assistantship forms pending review for a specific faculty supervisor."""
+    return AssistantshipClaimFormStatusUpd.objects.filter(
+        TA_approved=False,
+        TA_rejected=False,
+        ta_supervisor__iexact=ta_username,
+    )
+
+
 def get_pending_assistantships_for_thesis():
     """Get assistantship forms pending Thesis supervisor approval."""
     return AssistantshipClaimFormStatusUpd.objects.filter(
@@ -375,49 +384,50 @@ def get_pending_assistantships_for_thesis():
 
 
 def get_pending_assistantships_for_hod():
-    """Get assistantship forms pending HOD approval."""
+    """Get assistantship forms pending Department Admin approval."""
     return AssistantshipClaimFormStatusUpd.objects.filter(
         TA_approved=True,
-        Ths_approved=True,
         HOD_approved=False,
         HOD_rejected=False
     )
+
+
+def get_pending_assistantships_for_hod_user(hod_username):
+    """Get assistantship forms pending for a specific Department Admin user."""
+    return AssistantshipClaimFormStatusUpd.objects.filter(
+        TA_approved=True,
+        HOD_approved=False,
+        HOD_rejected=False,
+        hod__iexact=hod_username,
+    )
+
+
+def get_assistantship_by_id(form_id):
+    """Get assistantship form by id."""
+    try:
+        return AssistantshipClaimFormStatusUpd.objects.get(id=form_id)
+    except AssistantshipClaimFormStatusUpd.DoesNotExist:
+        return None
 
 
 def get_pending_assistantships_for_acad_admin():
     """Get assistantship forms pending Academic Admin approval."""
     return AssistantshipClaimFormStatusUpd.objects.filter(
         TA_approved=True,
-        Ths_approved=True,
         HOD_approved=True,
-        AcadAdmin_approved=False,
-        AcadAdmin_rejected=False
+        Acad_approved=False,
+        Acad_rejected=False
     )
 
 
 def get_pending_assistantships_for_dean():
     """Get assistantship forms pending Dean Academic approval."""
-    return AssistantshipClaimFormStatusUpd.objects.filter(
-        TA_approved=True,
-        Ths_approved=True,
-        HOD_approved=True,
-        AcadAdmin_approved=True,
-        Dean_approved=False,
-        Dean_rejected=False
-    )
+    return AssistantshipClaimFormStatusUpd.objects.none()
 
 
 def get_pending_assistantships_for_director():
     """Get assistantship forms pending Director approval."""
-    return AssistantshipClaimFormStatusUpd.objects.filter(
-        TA_approved=True,
-        Ths_approved=True,
-        HOD_approved=True,
-        AcadAdmin_approved=True,
-        Dean_approved=True,
-        Director_approved=False,
-        Director_rejected=False
-    )
+    return AssistantshipClaimFormStatusUpd.objects.none()
 
 
 def get_assistantships_by_roll_no(roll_no_id):
@@ -436,6 +446,9 @@ def serialize_assistantship_pending(form):
         "dateTo": form.dateTo.strftime('%Y-%m-%d'),
         "applicability": form.applicability,
         "dateApplied": form.dateApplied.strftime('%Y-%m-%d'),
+        "ta_supervisor": form.ta_supervisor,
+        "thesis_supervisor": form.thesis_supervisor,
+        "hod": form.hod,
     }
 
 
