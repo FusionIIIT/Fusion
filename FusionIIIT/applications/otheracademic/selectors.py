@@ -22,7 +22,7 @@ from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 def get_user_by_username(username):
     """Get a user by username, returns None if not found."""
     try:
-        return User.objects.get(username=username)
+        return User.objects.get(username__iexact=username)
     except User.DoesNotExist:
         return None
 
@@ -69,26 +69,92 @@ def get_first_user_for_designation(designation_name):
     return None
 
 
+def user_has_designation(user, designation_name):
+    """Return True if user has the given designation (case-insensitive)."""
+    return HoldsDesignation.objects.filter(
+        user=user,
+        designation__name__iexact=designation_name,
+    ).exists()
+
+
+def user_has_designation_contains(user, designation_keyword):
+    """Return True if user has a designation containing the given keyword."""
+    return HoldsDesignation.objects.filter(
+        user=user,
+        designation__name__icontains=designation_keyword,
+    ).exists()
+
+
 # ==================== LEAVE SELECTORS ====================
 
 def get_pending_ug_leaves():
     """Get all pending UG leave requests."""
-    return LeaveFormTable.objects.filter(status=LeaveStatusChoices.PENDING)
+    return LeaveFormTable.objects.filter(approved=False, rejected=False)
+
+
+def get_pending_ug_leaves_for_hod(hod_username):
+    """Get pending UG leave requests assigned to a specific HOD."""
+    return LeaveFormTable.objects.filter(
+        approved=False,
+        rejected=False,
+        hod__iexact=hod_username,
+    )
 
 
 def get_pending_pg_leaves_for_ta():
     """Get all pending PG leave requests (for TA approval)."""
-    return LeavePG.objects.filter(status=LeaveStatusChoices.PENDING)
+    return LeavePG.objects.filter(ta_approved=False, ta_rejected=False)
+
+
+def get_pending_pg_leaves_for_ta_user(ta_username):
+    """Get pending PG leave requests assigned to a specific TA supervisor."""
+    return LeavePG.objects.filter(
+        ta_approved=False,
+        ta_rejected=False,
+        ta_supervisor__iexact=ta_username,
+    )
 
 
 def get_pending_pg_leaves_for_thesis():
     """Get PG leave requests pending thesis supervisor approval."""
-    return LeavePG.objects.filter(status=F('ta_supervisor'))
+    return LeavePG.objects.filter(
+        ta_approved=True,
+        ta_rejected=False,
+        thesis_approved=False,
+        thesis_rejected=False,
+    )
+
+
+def get_pending_pg_leaves_for_thesis_user(thesis_username):
+    """Get PG leave requests pending review for a specific thesis supervisor."""
+    return LeavePG.objects.filter(
+        ta_approved=True,
+        ta_rejected=False,
+        thesis_approved=False,
+        thesis_rejected=False,
+        thesis_supervisor__iexact=thesis_username,
+    )
 
 
 def get_pending_pg_leaves_for_hod():
     """Get PG leave requests pending HOD approval."""
-    return LeavePG.objects.filter(status=F('thesis_supervisor'))
+    return LeavePG.objects.filter(
+        thesis_approved=True,
+        thesis_rejected=False,
+        hod_approved=False,
+        hod_rejected=False,
+    )
+
+
+def get_pending_pg_leaves_for_hod_user(hod_username):
+    """Get PG leave requests pending approval for a specific HOD."""
+    return LeavePG.objects.filter(
+        thesis_approved=True,
+        thesis_rejected=False,
+        hod_approved=False,
+        hod_rejected=False,
+        hod__iexact=hod_username,
+    )
 
 
 def get_ug_leaves_by_roll_no(roll_no_id):
@@ -99,6 +165,28 @@ def get_ug_leaves_by_roll_no(roll_no_id):
 def get_pg_leaves_by_roll_no(roll_no_id):
     """Get all PG leave requests for a specific roll number."""
     return LeavePG.objects.filter(roll_no=roll_no_id)
+
+
+def ug_leave_overlap_exists(roll_no, date_from, date_to):
+    """Check if a UG leave overlaps with an existing non-rejected request."""
+    return LeaveFormTable.objects.filter(
+        roll_no=roll_no,
+        rejected=False,
+        date_from__lte=date_to,
+        date_to__gte=date_from,
+    ).exists()
+
+
+def pg_leave_overlap_exists(roll_no, date_from, date_to):
+    """Check if a PG leave overlaps with an existing non-rejected workflow request."""
+    return LeavePG.objects.filter(
+        roll_no=roll_no,
+        ta_rejected=False,
+        thesis_rejected=False,
+        hod_rejected=False,
+        date_from__lte=date_to,
+        date_to__gte=date_from,
+    ).exists()
 
 
 def get_leave_by_id(leave_id, is_pg=False):
@@ -124,10 +212,10 @@ def serialize_ug_leave(leave):
             "address": leave.address,
             "purpose": leave.purpose,
             "hodCredential": leave.hod,
-            "mobileNumber": leave.stud_mobile_no,
-            "parentsMobile": leave.parent_mobile_no,
-            "mobileDuringLeave": leave.leave_mobile_no,
-            "semester": leave.curr_sem,
+            "mobileNumber": None,
+            "parentsMobile": None,
+            "mobileDuringLeave": None,
+            "semester": None,
             "academicYear": leave.date_of_application.year,
             "dateOfApplication": leave.date_of_application,
         },
@@ -148,10 +236,10 @@ def serialize_pg_leave(leave):
             "address": leave.address,
             "purpose": leave.purpose,
             "hodCredential": leave.hod,
-            "mobileNumber": leave.stud_mobile_no,
+            "mobileNumber": leave.mobile_no,
             "parentsMobile": leave.parent_mobile_no,
-            "mobileDuringLeave": leave.leave_mobile_no,
-            "semester": leave.curr_sem,
+            "mobileDuringLeave": leave.alt_mobile_no,
+            "semester": leave.Semester,
             "academicYear": leave.date_of_application.year,
             "dateOfApplication": leave.date_of_application,
         },
@@ -160,16 +248,43 @@ def serialize_pg_leave(leave):
 
 def serialize_leave_status(leave, roll_no_id):
     """Serialize leave status for student view."""
+    if hasattr(leave, 'approved'):
+        status_text = (
+            LeaveStatusChoices.APPROVED
+            if leave.approved
+            else LeaveStatusChoices.REJECTED
+            if leave.rejected
+            else LeaveStatusChoices.PENDING
+        )
+        is_final = leave.approved or leave.rejected
+    else:
+        is_rejected = any([
+            leave.ta_rejected,
+            leave.thesis_rejected,
+            leave.hod_rejected,
+        ])
+        status_text = (
+            LeaveStatusChoices.APPROVED
+            if leave.hod_approved
+            else LeaveStatusChoices.REJECTED
+            if is_rejected
+            else LeaveStatusChoices.PENDING
+        )
+        is_final = leave.hod_approved or leave.hod_rejected
+
     return {
+        "id": leave.id,
         "rollNo": roll_no_id,
         "name": leave.student_name,
+        "dateApplied": leave.date_of_application.strftime("%Y-%m-%d") if leave.date_of_application else None,
         "dateFrom": leave.date_from,
         "dateTo": leave.date_to,
         "leaveType": leave.leave_type,
         "attachment": leave.upload_file.url if leave.upload_file else None,
         "purpose": leave.purpose,
         "address": leave.address,
-        "action": leave.status,
+        "action": status_text,
+        "canWithdraw": not is_final,
     }
 
 
@@ -228,6 +343,7 @@ def serialize_bonafide_status(bonafide):
         "dateApplied": bonafide.date_of_applications.strftime("%Y-%m-%d") if bonafide.date_of_applications else None,
         "status": status,
         "downloadUrl": download_url,
+        "canWithdraw": not bonafide.approve and not bonafide.reject,
     }
 
 

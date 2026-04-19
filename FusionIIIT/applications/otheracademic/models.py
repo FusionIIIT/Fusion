@@ -52,12 +52,9 @@ class LeaveFormTable(models.Model):
     address = models.CharField(max_length=100)
     purpose = models.TextField()
     leave_type = models.CharField(max_length=20, choices=LeaveTypeChoices.choices)
-    status = models.CharField(max_length=20, choices=LeaveStatusChoices.choices, default=LeaveStatusChoices.PENDING)
+    approved = models.BooleanField(default=False)
+    rejected = models.BooleanField(default=False)
     hod = models.CharField(max_length=100)
-    stud_mobile_no = models.CharField(max_length=15, null=True, blank=True)
-    parent_mobile_no = models.CharField(max_length=15, null=True, blank=True)
-    leave_mobile_no = models.CharField(max_length=15, null=True, blank=True)
-    curr_sem = models.IntegerField(null=True)
 
     class Meta:
         db_table = 'LeaveFormTable'
@@ -80,6 +77,9 @@ class LeavePG(models.Model):
     """
 
     student_name = models.CharField(max_length=100)
+    programme = models.CharField(max_length=100)
+    discipline = models.CharField(max_length=100)
+    Semester = models.CharField(max_length=100)
     roll_no = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     date_from = models.DateField()
     date_to = models.DateField()
@@ -88,14 +88,18 @@ class LeavePG(models.Model):
     address = models.CharField(max_length=100)
     purpose = models.TextField()
     leave_type = models.CharField(max_length=20, choices=LeaveTypePGChoices.choices)
-    status = models.CharField(max_length=20, choices=LeaveStatusChoices.choices, default=LeaveStatusChoices.PENDING)
+    mobile_no = models.CharField(max_length=100)
+    parent_mobile_no = models.CharField(max_length=100)
+    alt_mobile_no = models.CharField(max_length=100)
+    ta_approved = models.BooleanField(default=False)
+    ta_rejected = models.BooleanField(default=False)
+    thesis_approved = models.BooleanField(default=False)
+    thesis_rejected = models.BooleanField(default=False)
+    hod_approved = models.BooleanField(default=False)
+    hod_rejected = models.BooleanField(default=False)
     hod = models.CharField(max_length=100)
     ta_supervisor = models.CharField(max_length=100)
     thesis_supervisor = models.CharField(max_length=100)
-    stud_mobile_no = models.CharField(max_length=15, null=True, blank=True)
-    parent_mobile_no = models.CharField(max_length=15, null=True, blank=True)
-    leave_mobile_no = models.CharField(max_length=15, null=True, blank=True)
-    curr_sem = models.IntegerField(null=True)
 
     class Meta:
         db_table = 'LeavePG'

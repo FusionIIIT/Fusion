@@ -13,6 +13,8 @@ urlpatterns = [
     path('update-leave-status-thesis/', views.UpdateLeaveStatusThesis.as_view(), name='update-leave-status-thesis'),
     path('get-leave-requests/', views.GetLeaveRequests.as_view(), name='get-leave-requests'),
     path('get-pg-leave-requests/', views.GetPGLeaveRequests.as_view(), name='get-pg-leave-requests'),
+    path('withdraw-ug-leave/<int:leave_id>/', views.WithdrawUGLeave.as_view(), name='withdraw-ug-leave'),
+    path('withdraw-pg-leave/<int:leave_id>/', views.WithdrawPGLeave.as_view(), name='withdraw-pg-leave'),
 
     #Bonafide_form URLs
     path('bonafide-form-submit/', views.BonafideFormSubmitView.as_view(), name='bonafide-form-submit'), 
@@ -20,6 +22,7 @@ urlpatterns = [
     path('admin-updates/',views.UpdateBonafideStatus.as_view(),name='admin-updates'),
     path('bonafide-certificate-upload/<int:bonafide_id>/', views.UploadBonafideCertificate.as_view(), name='bonafide-certificate-upload'),
     path('bonafide-status/',views.GetBonafideStatus.as_view(),name='bonafide-status'),
+    path('withdraw-bonafide/<int:bonafide_id>/', views.WithdrawBonafide.as_view(), name='withdraw-bonafide'),
 
     #TA_Assiistantship URLs
     path('assistantship-form-submit/',views.AssistantshipFormSubmitView.as_view(),name='assistantship-form-submit'),
