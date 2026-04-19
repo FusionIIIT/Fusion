@@ -578,3 +578,22 @@ def iwd_notif(sender,recipient,type):
     if type == "Request_rejected": 
         verb = "Request rejected by " + sender.username + "." 
     notify.send(sender=sender,recipient=recipient,url=url,module=module,verb=verb)
+
+def scholarships_notif(sender, recipient, type):
+    url = 'spacs:spacs'
+    module = 'Scholarship Portal'
+    verb = ''
+    if type == 'scholarship_approved':
+        verb = "Your scholarship application has been approved."
+    elif type == 'scholarship_rejected':
+        verb = "Your scholarship application has been rejected."
+    elif type == 'scholarship_under_review':
+        verb = "Your scholarship application is under review."
+    elif type == 'scholarship_disbursed':
+        verb = "Your scholarship amount has been disbursed."
+    elif type == 'award_received':
+        verb = "Congratulations! You have received an award."
+    else:
+        verb = f"Scholarship update: {type}"
+    from notifications.signals import notify
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)

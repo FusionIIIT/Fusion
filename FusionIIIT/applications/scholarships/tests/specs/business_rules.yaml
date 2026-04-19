@@ -1,0 +1,130 @@
+###############################################################################
+# SPACS (Scholarships & Awards) Module — Business Rule Test Designs
+# Spec Source: BusinessRules.md
+# Guide Reference: BackendTestingGuide.md §5.2
+#
+# Total BRs: 12  |  Min Tests Per BR: 2 (1 Valid + 1 Invalid)
+# Required BR Tests: 2 × 12 = 24
+###############################################################################
+
+business_rules:
+
+  - id: "BR-SPACS-001"
+    title: "Eligibility Must Be Satisfied"
+    description: "Student must satisfy scholarship-specific eligibility criteria when applying."
+    valid_tests:
+      - input_action: "POST /applications/ with student meeting all criteria (CPI >= min, no backlogs)"
+        expected_result: "Application accepted; record created"
+    invalid_tests:
+      - input_action: "POST /applications/ with student CPI below scholarship minimum_cgpa"
+        expected_result: "Rejected with eligibility error; no application created"
+
+  - id: "BR-SPACS-002"
+    title: "No Duplicate Applications"
+    description: "Student must not submit more than one application for the same scholarship in the same cycle."
+    valid_tests:
+      - input_action: "POST /mcm-applications/ as student with no prior MCM application"
+        expected_result: "Application created; HTTP 201"
+    invalid_tests:
+      - input_action: "POST /mcm-applications/ as student who already has an MCM application"
+        expected_result: "Rejected; duplicate application error"
+
+  - id: "BR-SPACS-003"
+    title: "Use of Previously Uploaded Documents"
+    description: "System should allow reuse of valid previously uploaded documents."
+    valid_tests:
+      - input_action: "POST /mcm-applications/ with document link URLs (previously uploaded)"
+        expected_result: "Application accepted with existing document links"
+    invalid_tests:
+      - input_action: "POST /student/submit/mcm/ without income_certificate file"
+        expected_result: "Rejected; income certificate file is required"
+
+  - id: "BR-SPACS-004"
+    title: "Application Completeness Validation"
+    description: "All required fields and documents must be filled before submission."
+    valid_tests:
+      - input_action: "POST /mcm-applications/ with all required fields filled"
+        expected_result: "Application created; HTTP 201"
+    invalid_tests:
+      - input_action: "POST /mcm-applications/ with required fields missing (e.g., student_full_name=blank)"
+        expected_result: "Rejected with validation error listing missing fields"
+
+  - id: "BR-SPACS-005"
+    title: "Application Review Access"
+    description: "Only authorized SPACS staff can view and review submitted applications."
+    valid_tests:
+      - input_action: "GET /mcm-applications/ as user with spacsassistant designation"
+        expected_result: "All applications returned; access granted"
+    invalid_tests:
+      - input_action: "GET /mcm-applications/ as student (sees only own applications, not all)"
+        expected_result: "Only student's own applications returned; cannot see others"
+
+  - id: "BR-SPACS-007"
+    title: "Draft Save on Timeout or Error"
+    description: "Application draft is saved on session timeout or error."
+    valid_tests:
+      - input_action: "POST /mcm-applications/ with partial data to save initial application"
+        expected_result: "Application record persisted with submitted data"
+    invalid_tests:
+      - input_action: "POST /mcm-applications/ with completely empty required fields"
+        expected_result: "Validation error; no application created"
+
+  - id: "BR-SPACS-008"
+    title: "Notification on Status Change"
+    description: "System must notify stakeholders on application status changes."
+    valid_tests:
+      - input_action: "PATCH /mcm-applications/<pk>/ changing status from pending to verified (triggers notification logic)"
+        expected_result: "Status changed; notification attempt triggered in service layer"
+    invalid_tests:
+      - input_action: "GET /mcm-applications/<pk>/ (read-only, no status change)"
+        expected_result: "No notification triggered; status unchanged"
+
+  - id: "BR-SPACS-009"
+    title: "Withdrawal Before Review"
+    description: "Students can withdraw only before review is started."
+    valid_tests:
+      - input_action: "Student views own pending application (pre-review, status=pending)"
+        expected_result: "Application visible; status indicates pre-review state"
+    invalid_tests:
+      - input_action: "Student attempts status change on application in verified/approved state"
+        expected_result: "Blocked; cannot modify applications past review stage"
+
+  - id: "BR-SPACS-010"
+    title: "Only Owner Can Edit or Withdraw the Application"
+    description: "Only the student who created the application may edit it."
+    valid_tests:
+      - input_action: "PATCH /mcm-applications/<pk>/ as the application owner (student who created it)"
+        expected_result: "Modification accepted (if status allows)"
+    invalid_tests:
+      - input_action: "PATCH /mcm-applications/<pk>/ as a different student (not the owner)"
+        expected_result: "Application not in queryset; cannot modify"
+
+  - id: "BR-SPACS-012"
+    title: "Download/Print Access Control"
+    description: "Only authorized users can download/view application details."
+    valid_tests:
+      - input_action: "GET /mcm-applications/<pk>/ as the owning student"
+        expected_result: "Application data returned; HTTP 200"
+    invalid_tests:
+      - input_action: "GET /mcm-applications/<pk>/ as non-owner student"
+        expected_result: "Empty queryset or no data; cannot access others' applications"
+
+  - id: "BR-SPACS-013"
+    title: "Escalation & SLA for Reviews"
+    description: "Review tasks exceeding SLA thresholds trigger reminders/escalation."
+    valid_tests:
+      - input_action: "PATCH /mcm-applications/<pk>/ status=verified within SLA (convener acting on verified)"
+        expected_result: "Status changed normally; no escalation needed"
+    invalid_tests:
+      - input_action: "Convener attempts to act on non-verified application"
+        expected_result: "Blocked; convener can only act on verified applications"
+
+  - id: "BR-SPACS-014"
+    title: "Catalog Versioning & Published Source of Truth"
+    description: "Only active/published scholarship types may be used for applications."
+    valid_tests:
+      - input_action: "POST /applications/ referencing an ExtendedScholarshipType with is_active=True"
+        expected_result: "Application accepted; uses active catalogue entry"
+    invalid_tests:
+      - input_action: "POST /applications/ referencing an ExtendedScholarshipType with is_active=False"
+        expected_result: "Rejected; scholarship is no longer active"

@@ -1,282 +1,430 @@
-import datetime
-
 from django.db import models
-
 from applications.academic_information.models import Student
-from applications.globals.models import ExtraInfo
 
+class AwardTypeChoices(models.TextChoices):
+    MCM = 'MCM', 'Merit-cum-Means Scholarship'
+    CONVENER = 'CONVENER', 'Convener Award'
+    DIRECTOR_GOLD = 'DIRECTOR_GOLD', 'Director Gold Medal'
+    DIRECTOR_SILVER = 'DIRECTOR_SILVER', 'Director Silver Medal'
+    PROFICIENCY = 'PROFICIENCY', 'Proficiency Medal'
 
-class Constants:
-    STATUS_CHOICES = (
-        ('Complete', 'COMPLETE'),
-        ('Incomplete', 'INCOMPLETE'),
-        ('Reject', 'REJECT'),
-        ('Accept', 'ACCEPT')
-
-    )
-    TIME = (
-        ('0', '12 Midnight'),
-        ('1am', '1'),
-        ('2am', '2'),
-        ('3am', '3'),
-        ('4am', '4'),
-        ('5am', '5'),
-        ('6am', '6'),
-        ('7am', '7'),
-        ('8am', '8'),
-        ('9am', '9'),
-        ('10am', '10'),
-        ('11am', '11'),
-        ('12 Noon', '12'),
-        ('1pm', '13'),
-        ('2pm', '14'),
-        ('3pm', '15'),
-        ('4pm', '16'),
-        ('5pm', '17'),
-        ('6pm', '18'),
-        ('7pm', '19'),
-        ('8pm', '20'),
-        ('9pm', '21'),
-        ('10pm', '22'),
-        ('11pm', '23'),
-        ('12 Midnight', '0')
-    )
-    BATCH = (
-        ('UG1', 'UG1'),
-        ('UG2', 'UG2'),
-        ('UG3', 'UG3'),
-        ('UG4', 'UG4'),
-        ('PG1', 'PG1'),
-        ('PG2', 'PG2')
-    )
-    FATHER_OCC_CHOICE = (
-        ('government', 'Government'),
-        ('private', 'Private'),
-        ('public', 'Public'),
-        ('business', 'Business'),
-        ('medical', 'Medical'),
-        ('consultant', 'Consultant'),
-        ('pensioners', 'Pensioners')
-    )
-    MOTHER_OCC_CHOICES = (
-        ('EMPLOYED', 'EMPLOYED'),
-        ('HOUSE_WIFE', 'HOUSE_WIFE')
-    )
-    HOUSE_TYPE_CHOICES = (
-        ('RENTED', 'RENTED'),
-        ('OWNED', 'OWNED')
-    )
-
+class ApplicationStatusChoices(models.TextChoices):
+    PENDING = 'PENDING', 'Pending'
+    APPROVED = 'APPROVED', 'Approved'
+    REJECTED = 'REJECTED', 'Rejected'
 
 class Award_and_scholarship(models.Model):
-    award_name = models.CharField(max_length=100, default='')
-    catalog = models.TextField(max_length=5000)
+    award_name = models.CharField(max_length=100, unique=True)
+    catalog = models.TextField(help_text="Description and eligibility criteria")
+    award_type = models.CharField(max_length=50, choices=AwardTypeChoices.choices, default=AwardTypeChoices.MCM)
 
     class Meta:
-        db_table = 'Award_and_scholarship'
+        db_table = 'spacs_award_catalog'
 
     def __str__(self):
         return self.award_name
 
+class Release(models.Model):
+    award = models.ForeignKey(Award_and_scholarship, on_delete=models.CASCADE, related_name='releases')
+    startdate = models.DateField()
+    enddate = models.DateField()
+    batch = models.CharField(max_length=20, help_text="e.g., UG1, UG2, 2021")
+    programme = models.CharField(max_length=50, help_text="e.g., B.Tech, M.Tech")
+    notif_visible = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'spacs_release'
+
+    def __str__(self):
+        return f"{self.award.award_name} ({self.batch} - {self.programme})"
+
+class Application(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='scholarship_applications')
+    award = models.ForeignKey(Award_and_scholarship, on_delete=models.CASCADE)
+    applied_flag = models.BooleanField(default=True)
+    status = models.CharField(max_length=20, choices=ApplicationStatusChoices.choices, default=ApplicationStatusChoices.PENDING)
+    remarks = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'spacs_application'
+        unique_together = ('student', 'award')
+
+    def __str__(self):
+        return f"{self.student.id} - {self.award.award_name}"
 
 class Mcm(models.Model):
-    brother_name = models.CharField(max_length=30, null=True)
-    brother_occupation = models.TextField(max_length=100, null=True)
-    sister_name = models.CharField(max_length=30, null=True)
-    sister_occupation = models.TextField(max_length=100, null=True)
+    application = models.OneToOneField(Application, on_delete=models.CASCADE, related_name='mcm_details')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    brother_name = models.CharField(max_length=100, blank=True, null=True)
+    brother_occupation = models.CharField(max_length=100, blank=True, null=True)
+    sister_name = models.CharField(max_length=100, blank=True, null=True)
+    sister_occupation = models.CharField(max_length=100, blank=True, null=True)
     income_father = models.IntegerField(default=0)
     income_mother = models.IntegerField(default=0)
     income_other = models.IntegerField(default=0)
-    father_occ = models.CharField(max_length=10,
-                                  choices=Constants.FATHER_OCC_CHOICE,
-                                  default='')
-    mother_occ = models.CharField(max_length=10,
-                                  choices=Constants.MOTHER_OCC_CHOICES,
-                                  default='')
-    father_occ_desc = models.CharField(max_length=30, null=True)
-    mother_occ_desc = models.CharField(max_length=30, null=True)
-    four_wheeler = models.IntegerField(blank=True, null=True)
-    four_wheeler_desc = models.CharField(max_length=30, null=True)
-    two_wheeler = models.IntegerField(blank=True, null=True)
-    two_wheeler_desc = models.CharField(max_length=30, null=True)
-    house = models.CharField(max_length=10, null=True)
-    plot_area = models.IntegerField(blank=True, null=True)
-    constructed_area = models.IntegerField(blank=True, null=True)
-    school_fee = models.IntegerField(blank=True, null=True)
-    school_name = models.CharField(max_length=30, null=True)
-    bank_name = models.CharField(max_length=100, null=True)
-    loan_amount = models.IntegerField(blank=True, null=True)
-    college_fee = models.IntegerField(blank=True, null=True)
-    college_name = models.CharField(max_length=30, null=True)
-    income_certificate = models.FileField(null=True, blank=True)
-    forms = models.FileField(null=True, blank=True)
-    status = models.CharField(max_length=10, choices=Constants.STATUS_CHOICES, default='INCOMPLETE')
-    student = models.ForeignKey(Student,
-                                on_delete=models.CASCADE, related_name='mcm_info')
-    annual_income = models.IntegerField(default=0)
-    date = models.DateField(default=datetime.date.today)
-    award_id = models.ForeignKey(Award_and_scholarship, default=4, on_delete=models.CASCADE)
-
+    annual_income = models.IntegerField(default=0, help_text="Calculated total income")
+    father_occ = models.CharField(max_length=100, blank=True, null=True)
+    mother_occ = models.CharField(max_length=100, blank=True, null=True)
+    income_certificate = models.FileField(upload_to='scholarships/income_certs/')
 
     class Meta:
-        db_table = 'Mcm'
+        db_table = 'spacs_mcm'
 
-    def __str__(self):
-        return str(self.student)
-
-
-class Notional_prize(models.Model):
-    spi = models.FloatField()
-    cpi = models.FloatField()
-    year = models.CharField(max_length=10, choices=Constants.BATCH)
-    award_id = models.ForeignKey(Award_and_scholarship, default=4, on_delete=models.CASCADE)
-
+class BaseMedalDetails(models.Model):
+    correspondence_address = models.TextField()
+    financial_assistance = models.TextField(blank=True, null=True)
+    grand_total = models.FloatField(default=0.0)
+    nearest_policestation = models.CharField(max_length=100)
+    nearest_railwaystation = models.CharField(max_length=100)
 
     class Meta:
-        db_table = 'Notional_prize'
+        abstract = True
 
-#Addition: a column programme added
+class Director_gold(BaseMedalDetails):
+    application = models.OneToOneField(Application, on_delete=models.CASCADE, related_name='gold_details')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    relevant_document = models.FileField(upload_to='scholarships/gold_docs/')
+    academic_achievements = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'spacs_director_gold'
+
+class Director_silver(BaseMedalDetails):
+    application = models.OneToOneField(Application, on_delete=models.CASCADE, related_name='silver_details')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    relevant_document = models.FileField(upload_to='scholarships/silver_docs/')
+
+    class Meta:
+        db_table = 'spacs_director_silver'
+
+class Proficiency_dm(BaseMedalDetails):
+    application = models.OneToOneField(Application, on_delete=models.CASCADE, related_name='proficiency_details')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    relevant_document = models.FileField(upload_to='scholarships/proficiency_docs/')
+    title_of_project = models.CharField(max_length=200, blank=True, null=True)
+
+    class Meta:
+        db_table = 'spacs_proficiency_dm'
+
 class Previous_winner(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    programme = models.CharField(max_length=10,default='B.Tech')
-    year = models.IntegerField(default=datetime.datetime.now().year)
-    award_id = models.ForeignKey(Award_and_scholarship, on_delete=models.CASCADE)
+    award = models.ForeignKey(Award_and_scholarship, on_delete=models.CASCADE)
+    year = models.IntegerField()
 
     class Meta:
-        db_table = 'Previous_winner'
+        db_table = 'spacs_previous_winner'
 
 
-class Release(models.Model):
-    date_time = models.DateTimeField(default=datetime.datetime.now, blank=True)
-    programme = models.CharField(max_length=10,default='B.Tech')
-    startdate = models.DateField(default=datetime.date.today)
-    enddate = models.DateField()
-    award = models.CharField(default='',max_length=50)
-    remarks = models.TextField(max_length=500,default='')
-    batch = models.TextField(default='all')
-    notif_visible = models.IntegerField(default=1)
+# ========== EXTENDED SCHOLARSHIP MODELS ==========
+
+class ExtendedScholarshipType(models.Model):
+    """Comprehensive scholarship type with full eligibility criteria and programme/batch targeting"""
+    CATEGORY_CHOICES = [
+        ('MERIT', 'Merit-based'),
+        ('NEED', 'Need-based'),
+        ('CATEGORY', 'Category-based'),
+        ('SPORTS', 'Sports'),
+        ('CULTURAL', 'Cultural'),
+        ('RESEARCH', 'Research'),
+        ('EXTERNAL', 'External/Government'),
+    ]
+
+    name = models.CharField(max_length=200, unique=True)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    description = models.TextField()
+    amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    frequency = models.CharField(max_length=20, default='Annual')
+    eligibility_criteria = models.TextField()
+    max_backlogs = models.IntegerField(default=0)
+    applicable_categories = models.CharField(max_length=50, blank=True, help_text="Comma-separated: GEN,SC,ST,OBC")
+    minimum_cgpa = models.FloatField(null=True, blank=True)
+    maximum_income = models.IntegerField(null=True, blank=True, help_text="Maximum annual family income for need-based")
+    applicable_programmes = models.ManyToManyField(
+        'programme_curriculum.Programme', blank=True, related_name='scholarship_types'
+    )
+    applicable_batches = models.ManyToManyField(
+        'programme_curriculum.Batch', blank=True, related_name='scholarship_types'
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'Release'
+        db_table = 'spacs_extended_scholarship_type'
 
-# new class added for keeping track of notifications and applied application by students
-class Notification(models.Model):
-    release_id = models.ForeignKey(Release,default=None, on_delete=models.CASCADE)
-    student_id = models.ForeignKey(Student, on_delete = models.CASCADE)
-    notification_mcm_flag = models.BooleanField(default=False)
-    notification_convocation_flag = models.BooleanField(default=False)
-    invite_mcm_accept_flag = models.BooleanField(default=False)
-    invite_convocation_accept_flag = models.BooleanField(default=False)
     def __str__(self):
-        return str(self.student_id)
+        return f"{self.name} ({self.category})"
+
+
+class ScholarshipApplication(models.Model):
+    """Full lifecycle scholarship application linked to ExtendedScholarshipType"""
+    STATUS_CHOICES = [
+        ('PENDING', 'Pending'),
+        ('UNDER_REVIEW', 'Under Review'),
+        ('APPROVED', 'Approved'),
+        ('REJECTED', 'Rejected'),
+        ('DISBURSED', 'Disbursed'),
+    ]
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='extended_scholarship_applications')
+    scholarship_type = models.ForeignKey(ExtendedScholarshipType, on_delete=models.CASCADE, related_name='applications')
+    academic_year = models.CharField(max_length=9, help_text="Format: 2024-25")
+    semester = models.IntegerField()
+    category_at_application = models.CharField(max_length=10, blank=True)
+    application_date = models.DateTimeField(auto_now_add=True)
+    supporting_documents = models.FileField(upload_to='scholarships/documents/', null=True, blank=True)
+    remarks = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
+    reviewed_by = models.ForeignKey(
+        'globals.ExtraInfo', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='reviewed_scholarship_applications'
+    )
+    review_date = models.DateTimeField(null=True, blank=True)
+    review_remarks = models.TextField(blank=True)
+    amount_approved = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    disbursement_date = models.DateTimeField(null=True, blank=True)
+    transaction_reference = models.CharField(max_length=100, blank=True)
 
     class Meta:
-        db_table = 'Notification'
-
-class Application(models.Model):
-    application_id = models.CharField(max_length = 100, primary_key=True)
-    student_id = models.ForeignKey(ExtraInfo, on_delete = models.CASCADE)
-    applied_flag = models.BooleanField(default=False)
-    award = models.CharField(max_length = 30)
+        db_table = 'spacs_scholarship_application'
+        unique_together = ['student', 'scholarship_type', 'academic_year', 'semester']
 
     def __str__(self):
-        return str(self.application_id)
+        return f"{self.student} - {self.scholarship_type.name} ({self.academic_year})"
+
+
+class Award(models.Model):
+    """General institutional awards (academic, sports, cultural, etc.)"""
+    AWARD_CATEGORY = [
+        ('ACADEMIC', 'Academic Excellence'),
+        ('RESEARCH', 'Research'),
+        ('SPORTS', 'Sports'),
+        ('CULTURAL', 'Cultural'),
+        ('INNOVATION', 'Innovation'),
+        ('LEADERSHIP', 'Leadership'),
+        ('COMMUNITY', 'Community Service'),
+    ]
+
+    name = models.CharField(max_length=200)
+    category = models.CharField(max_length=20, choices=AWARD_CATEGORY)
+    description = models.TextField()
+    criteria = models.TextField()
+    prize_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    certificate_provided = models.BooleanField(default=True)
+    applicable_programmes = models.ManyToManyField(
+        'programme_curriculum.Programme', blank=True, related_name='awards'
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'Application'
+        db_table = 'spacs_general_award'
 
-class Director_silver(models.Model):
-    nearest_policestation = models.TextField(max_length=30, default='station')
-    nearest_railwaystation = models.TextField(max_length=30, default='station')
-    correspondence_address = models.TextField(max_length=150, null=True)
+    def __str__(self):
+        return f"{self.name} ({self.category})"
+
+
+class AwardRecipient(models.Model):
+    """Record of students who received general awards"""
+    award = models.ForeignKey(Award, on_delete=models.CASCADE, related_name='recipients')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='award_receipts')
+    academic_year = models.CharField(max_length=9)
+    award_date = models.DateField()
+    citation = models.TextField(blank=True)
+    certificate_issued = models.BooleanField(default=False)
+    awarded_by = models.ForeignKey(
+        'globals.ExtraInfo', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='awarded_recipients'
+    )
+
+    class Meta:
+        db_table = 'spacs_award_recipient'
+        unique_together = ['award', 'student', 'academic_year']
+
+    def __str__(self):
+        return f"{self.student} - {self.award.name} ({self.academic_year})"
+
+
+class MeritList(models.Model):
+    """Batch-wise generated merit list"""
+    batch = models.CharField(max_length=20)
+    programme = models.CharField(max_length=50, null=True, blank=True)
+    academic_year = models.CharField(max_length=9)
+    semester = models.IntegerField()
+    generated_date = models.DateTimeField(auto_now_add=True)
+    generated_by = models.CharField(max_length=50, null=True, blank=True)
+
+    class Meta:
+        db_table = 'spacs_merit_list'
+        unique_together = ['batch', 'programme', 'academic_year', 'semester']
+
+    def __str__(self):
+        return f"Merit List - {self.batch} {self.programme} ({self.academic_year} S{self.semester})"
+
+
+class MeritListEntry(models.Model):
+    """Individual student entry in a merit list"""
+    merit_list = models.ForeignKey(MeritList, on_delete=models.CASCADE, related_name='entries')
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    award_id = models.ForeignKey(Award_and_scholarship, on_delete=models.CASCADE)
-    award_type = models.CharField(max_length=50, null=True)
-    status = models.CharField(max_length=10, choices=Constants.STATUS_CHOICES,default='INCOMPLETE')
-    relevant_document = models.FileField(null=True, blank=True)
-    date = models.DateField(default=datetime.date.today)
-    financial_assistance = models.TextField(max_length=1000 ,null=True)
-    grand_total = models.IntegerField(null=True)
-    inside_achievements = models.TextField(max_length=1000, null=True)
-    justification = models.TextField(max_length=1000, null=True)
-    outside_achievements = models.TextField(max_length=1000, null=True)
-
+    rank = models.IntegerField()
+    cgpa = models.FloatField(null=True, blank=True)
+    total_credits = models.IntegerField(null=True, blank=True)
+    eligible_for_scholarships = models.BooleanField(default=False)
+    remarks = models.TextField(blank=True)
 
     class Meta:
-        db_table = 'Director_silver'
+        db_table = 'spacs_merit_list_entry'
+        unique_together = ['merit_list', 'student']
+        ordering = ['rank']
+
+    def __str__(self):
+        return f"Rank {self.rank}: {self.student.id}"
 
 
-class Proficiency_dm(models.Model):
-    relevant_document = models.FileField(null=True, blank=True)
-    title_name = models.CharField(max_length=30, null=True)
+class ScholarshipEligibilityLog(models.Model):
+    """Audit log for eligibility checks"""
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    award_id = models.ForeignKey(Award_and_scholarship, on_delete=models.CASCADE)
-    award_type = models.CharField(max_length=50, null=True)
-    status = models.CharField(max_length=10, choices=Constants.STATUS_CHOICES,default='INCOMPLETE')
-    nearest_policestation = models.TextField(max_length=30, default='station')
-    nearest_railwaystation = models.TextField(max_length=30, default='station')
-    correspondence_address = models.TextField(max_length=150, null=True)
-    no_of_students = models.IntegerField(default=1)
-    date = models.DateField(default=datetime.date.today)
-    roll_no1 = models.IntegerField(default=0)
-    roll_no2 = models.IntegerField(default=0)
-    roll_no3 = models.IntegerField(default=0)
-    roll_no4 = models.IntegerField(default=0)
-    roll_no5 = models.IntegerField(default=0)
-    financial_assistance = models.TextField(max_length=1000 ,null=True)
-    brief_description = models.TextField(max_length=1000 ,null=True)
-    justification = models.TextField(max_length=1000 ,null=True)
-    grand_total = models.IntegerField(null=True)
-    ece_topic = models.CharField(max_length=25,null=True)
-    cse_topic = models.CharField(max_length=25,null=True)
-    mech_topic = models.CharField(max_length=25,null=True)
-    design_topic = models.CharField(max_length=25,null=True)
-    ece_percentage = models.IntegerField(null=True)
-    cse_percentage = models.IntegerField(null=True)
-    mech_percentage = models.IntegerField(null=True)
-    design_percentage = models.IntegerField(null=True)
-    correspondence_address = models.CharField(max_length=100, null=True)
-    financial_assistance = models.TextField(max_length=1000, null=True)
-    grand_total = models.IntegerField(null=True)
-    nearest_policestation = models.CharField(max_length=25, null=True)
-    nearest_railwaystation = models.CharField(max_length=25, null=True)
+    scholarship = models.ForeignKey(Award_and_scholarship, on_delete=models.CASCADE)
+    checked_date = models.DateTimeField(auto_now_add=True)
+    is_eligible = models.BooleanField()
+    reasons = models.TextField(blank=True)
+    cgpa_at_check = models.FloatField(null=True, blank=True)
+    backlog_count = models.IntegerField(default=0)
+    dues_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    class Meta:
+        db_table = 'spacs_eligibility_log'
+
+    def __str__(self):
+        return f"{self.student.id} - {self.scholarship.award_name} - {'Eligible' if self.is_eligible else 'Not Eligible'}"
+
+
+class NotificationLog(models.Model):
+    """Log of scholarship-related notifications sent to students"""
+    recipient_student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    notification_type = models.CharField(max_length=50)
+    related_application = models.ForeignKey(Application, on_delete=models.CASCADE, null=True, blank=True)
+    message = models.TextField()
+    sent_date = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'spacs_notification_log'
+
+    def __str__(self):
+        return f"{self.notification_type} to {self.recipient_student.id}"
+
+class McmApplication(models.Model):
+    class Status(models.TextChoices):
+        PENDING = 'pending', 'Pending'
+        REVERTED = 'reverted', 'Reverted'
+        VERIFIED = 'verified', 'Verified'
+        APPROVED = 'approved', 'Approved'
+        REJECTED = 'rejected', 'Rejected'
+
+    # Base Data
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='mcm_latest_applications')
+    email = models.EmailField(max_length=255, blank=True, null=True)
+    student_full_name = models.CharField(max_length=255)
+    roll_no = models.CharField(max_length=50)
+    batch = models.CharField(max_length=50)
+    programme = models.CharField(max_length=100)
+    mobile_no = models.CharField(max_length=20)
+    father_name = models.CharField(max_length=255)
+    mother_name = models.CharField(max_length=255)
+    category = models.CharField(max_length=50)
+    current_cpi = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
+    current_spi = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
+    jee_uceed_rank = models.CharField(max_length=100, blank=True, null=True)
+    annual_income = models.CharField(max_length=100)
+    postal_address = models.TextField()
+
+    # Link Fields
+    father_income_certificate_link = models.URLField(max_length=500, blank=True, null=True)
+    mother_income_certificate_link = models.URLField(max_length=500, blank=True, null=True)
+    caste_certificate_link = models.URLField(max_length=500, blank=True, null=True)
+    jee_uceed_scorecard_link = models.URLField(max_length=500, blank=True, null=True)
+    undertaking_form_link = models.URLField(max_length=500, blank=True, null=True)
+    questionnaire_cum_application_link = models.URLField(max_length=500, blank=True, null=True)
+    form_ab_link = models.URLField(max_length=500, blank=True, null=True)
+    form_d_link = models.URLField(max_length=500, blank=True, null=True)
+    declaration_yes = models.CharField(max_length=10, default='Yes')
+
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    revert_reason = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'mcm_applications'
+
+    def __str__(self):
+        return f"{self.student_full_name} ({self.roll_no}) - {self.status}"
+
+class SingleParentApplication(models.Model):
+    class Status(models.TextChoices):
+        PENDING = 'pending', 'Pending'
+        REVERTED = 'reverted', 'Reverted'
+        VERIFIED = 'verified', 'Verified'
+        APPROVED = 'approved', 'Approved'
+        REJECTED = 'rejected', 'Rejected'
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='single_parent_applications')
+
+    # Basic details
+    email = models.EmailField(max_length=255, blank=True, null=True)
+    student_full_name = models.CharField(max_length=255)
+    roll_no = models.CharField(max_length=50)
+    batch = models.CharField(max_length=50)
+    programme = models.CharField(max_length=100)
+
+    # Contact details
+    mobile_no = models.CharField(max_length=20)
+    postal_address = models.TextField()
+
+    # Family details
+    father_name = models.CharField(max_length=255)
+    mother_name = models.CharField(max_length=255)
+    category = models.CharField(max_length=50)
+    current_cpi = models.DecimalField(max_digits=4, decimal_places=2)
+
+    # Required uploads
+    caste_certificate = models.URLField(max_length=500, blank=True, null=True)
+    undertaking_form = models.URLField(max_length=500, blank=True, null=True)
+    death_certificate = models.URLField(max_length=500, blank=True, null=True)
+    affidavit_no_earning_member = models.URLField(max_length=500, blank=True, null=True)
+
+    declaration_yes = models.CharField(max_length=10, default='Yes')
+
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    revert_reason = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'single_parent_application'
+
+    def __str__(self):
+        return f"{self.student_full_name} ({self.roll_no}) - {self.status}"
+
+
+
+
+class MeritListRecord(models.Model):
+    batch = models.CharField(max_length=50)
+    branch = models.CharField(max_length=100)
+    full_name = models.CharField(max_length=255)
+    roll_no = models.CharField(max_length=50)
+    cpi = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
 
 
     class Meta:
-        db_table = 'Proficiency_dm'
+        db_table = 'merit_list'
+
+    def __str__(self):
+        return f"{self.roll_no} - {self.batch} - {self.branch}"
 
 
-class Director_gold(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    status = models.CharField(max_length=10,choices=Constants.STATUS_CHOICES, default='INCOMPLETE')
-    correspondence_address = models.TextField(max_length=40, default='address')
-    nearest_policestation = models.TextField(max_length=30, default='station')
-    nearest_railwaystation = models.TextField(max_length=30, default='station')
-    relevant_document = models.FileField(null=True, blank=True)
-    date = models.DateField(default=datetime.date.today)
-    award_id = models.ForeignKey(Award_and_scholarship, default=4, on_delete=models.CASCADE)
-    financial_assistance = models.TextField(max_length=1000 ,null=True)
-    academic_achievements = models.TextField(max_length=1000 ,null=True)
-    science_inside = models.TextField(max_length=1000 ,null=True)
-    science_outside = models.TextField(max_length=1000 ,null=True)
-    games_inside = models.TextField(max_length=1000 ,null=True)
-    games_outside = models.TextField(max_length=1000 ,null=True)
-    cultural_inside = models.TextField(max_length=1000 ,null=True)
-    cultural_outside = models.TextField(max_length=1000 ,null=True)
-    social = models.TextField(max_length=1000 ,null=True)
-    corporate = models.TextField(max_length=1000 ,null=True)
-    hall_activities = models.TextField(max_length=1000 ,null=True)
-    gymkhana_activities = models.TextField(max_length=1000 ,null=True)
-    institute_activities = models.TextField(max_length=1000 ,null=True)
-    counselling_activities = models.TextField(max_length=1000 ,null=True)
-    other_activities = models.TextField(max_length=1000 ,null=True)
-    justification = models.TextField(max_length=1000 ,null=True)
-    grand_total = models.IntegerField(null=True)
-    correspondence_address = models.CharField(max_length=100, null=True)
-    financial_assistance = models.TextField(max_length=1000, null=True)
-    grand_total = models.IntegerField(null=True)
-    nearest_policestation = models.CharField(max_length=25, null=True)
-    nearest_railwaystation = models.CharField(max_length=25, null=True)
 
-    class Meta:
-        db_table = 'Director_gold'
+
+

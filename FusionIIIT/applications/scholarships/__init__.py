@@ -1,0 +1,1 @@
+# scholarships package init
