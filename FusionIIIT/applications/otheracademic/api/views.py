@@ -5,10 +5,12 @@ All business logic is in services.py, all DB queries are in selectors.py.
 """
 from datetime import datetime
 
+from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 from notifications.signals import notify
 
 from applications.otheracademic import services, selectors
@@ -22,6 +24,8 @@ from .serializers import (
     AssistantshipFormInputSerializer,
     AssistantshipStatusUpdateSerializer,
     NoDuesStatusSerializer,
+    NoDuesVerificationSerializer,
+    NoDuesCertificateSerializer,
 )
 
 
@@ -686,3 +690,482 @@ class WithdrawAssistantship(APIView):
             return Response({"message": "Assistantship form withdrawn successfully."}, status=status.HTTP_200_OK)
         except services.AssistantshipServiceError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ==================== NO-DUES VIEWS ====================
+
+def _normalize_designation(name):
+    return str(name).strip().lower().replace(" ", "_")
+
+
+def _ensure_no_dues_approver_designations():
+    from applications.globals.models import Designation
+
+    required_designations = [
+        ("librarian", "Librarian"),
+        ("mess_incharge", "Mess Incharge"),
+        ("lab_supervisor", "Lab Supervisor"),
+        ("hostel_warden", "Hostel Warden"),
+    ]
+
+    for name, full_name in required_designations:
+        Designation.objects.get_or_create(
+            name=name,
+            defaults={"full_name": full_name, "type": "administrative"},
+        )
+
+
+def _get_user_no_dues_roles(user):
+    role_names = user.current_designation.values_list("designation__name", flat=True)
+    return {_normalize_designation(role_name) for role_name in role_names}
+
+
+NO_DUES_ROLE_DEPARTMENT_MAP = {
+    "librarian": {"library"},
+    "mess_incharge": {"mess"},
+    "hostel_warden": {"hostel"},
+    "lab_supervisor": {
+        "ece",
+        "physics_lab",
+        "mechatronics_lab",
+        "cc",
+        "workshop",
+        "signal_processing_lab",
+        "vlsi",
+        "design_studio",
+        "design_project",
+    },
+    "acadadmin": {"acad_admin"},
+}
+
+NO_DUES_APPROVER_ROLES = set(NO_DUES_ROLE_DEPARTMENT_MAP.keys())
+
+
+def _approval_status(clear_flag, notclear_flag):
+    if clear_flag:
+        return "clear"
+    if notclear_flag:
+        return "not_clear"
+    return "pending"
+
+
+def _lab_supervisor_status(no_dues):
+    lab_departments = {
+        "ece",
+        "physics_lab",
+        "mechatronics_lab",
+        "cc",
+        "workshop",
+        "signal_processing_lab",
+        "vlsi",
+        "design_studio",
+        "design_project",
+    }
+    has_clear = any(getattr(no_dues, f"{dept}_clear") for dept in lab_departments)
+    has_not_clear = any(getattr(no_dues, f"{dept}_notclear") for dept in lab_departments)
+
+    if has_not_clear:
+        return "not_clear"
+    if has_clear:
+        return "clear"
+    return "pending"
+
+
+def _no_dues_role_statuses(no_dues):
+    return {
+        "librarian": _approval_status(no_dues.library_clear, no_dues.library_notclear),
+        "mess_incharge": _approval_status(no_dues.mess_clear, no_dues.mess_notclear),
+        "hostel_warden": _approval_status(no_dues.hostel_clear, no_dues.hostel_notclear),
+        "lab_supervisor": _lab_supervisor_status(no_dues),
+        "acad_admin": _approval_status(no_dues.account_clear, no_dues.account_notclear),
+    }
+
+
+def _no_dues_progress_summary(no_dues):
+    statuses = _no_dues_role_statuses(no_dues)
+    cleared_count = sum(1 for status_value in statuses.values() if status_value == "clear")
+    not_cleared_count = sum(1 for status_value in statuses.values() if status_value == "not_clear")
+    pending_count = sum(1 for status_value in statuses.values() if status_value == "pending")
+    total_count = len(statuses)
+
+    return {
+        "statuses": statuses,
+        "cleared_count": cleared_count,
+        "not_cleared_count": not_cleared_count,
+        "pending_count": pending_count,
+        "total_count": total_count,
+        "progress_percentage": (cleared_count / total_count * 100) if total_count > 0 else 0,
+        "all_clear": cleared_count == total_count and not_cleared_count == 0,
+    }
+
+
+class InitiateNoDuesView(APIView):
+    """Initiate no-dues clearance process for a student."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            from applications.globals.models import ExtraInfo
+
+            extra_info = ExtraInfo.objects.get(user=request.user)
+
+            if NoDues.objects.filter(roll_no=extra_info).exists():
+                return Response(
+                    {"error": "No-Dues clearance already initiated. You cannot initiate again."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            no_dues = NoDues.objects.create(
+                roll_no=extra_info,
+                name=request.user.get_full_name() or request.user.username,
+            )
+
+            serializer = NoDuesStatusSerializer(no_dues)
+            return Response(
+                {
+                    "message": "No-Dues clearance initiated successfully",
+                    "data": serializer.data,
+                },
+                status=status.HTTP_201_CREATED,
+            )
+
+        except ExtraInfo.DoesNotExist:
+            return Response(
+                {"error": "Student information not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GetNoDuesStatusView(APIView):
+    """Get current no-dues status for a student."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            from applications.globals.models import ExtraInfo
+
+            extra_info = ExtraInfo.objects.get(user=request.user)
+            no_dues = NoDues.objects.get(roll_no=extra_info)
+
+            serializer = NoDuesStatusSerializer(no_dues)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except NoDues.DoesNotExist:
+            return Response(
+                {"error": "No-Dues record not found. Please initiate first."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except ExtraInfo.DoesNotExist:
+            return Response(
+                {"error": "Student information not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+
+class VerifyNoDuesView(APIView):
+    """Verify no-dues clearance for a department."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            from applications.globals.models import ExtraInfo
+
+            _ensure_no_dues_approver_designations()
+
+            roll_no = request.data.get('roll_no')
+            department = request.data.get('department')
+            is_clear = request.data.get('is_clear')
+
+            if not all([roll_no, department, is_clear is not None]):
+                return Response(
+                    {"error": "roll_no, department, and is_clear are required"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            user_roles = _get_user_no_dues_roles(request.user)
+            approver_roles = user_roles.intersection(NO_DUES_APPROVER_ROLES)
+            has_non_admin_role = any(role_name != 'acadadmin' for role_name in approver_roles)
+
+            if not approver_roles:
+                return Response(
+                    {
+                        "error": "Only librarian, mess incharge, lab supervisor, or hostel warden can verify no-dues."
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            allowed_departments = set()
+            for role_name in approver_roles:
+                allowed_departments.update(NO_DUES_ROLE_DEPARTMENT_MAP[role_name])
+
+            if department not in allowed_departments:
+                return Response(
+                    {"error": f"You are not authorized to verify department: {department}"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            extra_info = ExtraInfo.objects.get(id=roll_no)
+            no_dues = NoDues.objects.get(roll_no=extra_info)
+
+            dept_field_map = {
+                'library': ('library_clear', 'library_notclear'),
+                'hostel': ('hostel_clear', 'hostel_notclear'),
+                'mess': ('mess_clear', 'mess_notclear'),
+                'lab_supervisor': ('ece_clear', 'ece_notclear'),
+                'acad_admin': ('account_clear', 'account_notclear'),
+                'ece': ('ece_clear', 'ece_notclear'),
+                'physics_lab': ('physics_lab_clear', 'physics_lab_notclear'),
+                'mechatronics_lab': ('mechatronics_lab_clear', 'mechatronics_lab_notclear'),
+                'cc': ('cc_clear', 'cc_notclear'),
+                'workshop': ('workshop_clear', 'workshop_notclear'),
+                'signal_processing_lab': ('signal_processing_lab_clear', 'signal_processing_lab_notclear'),
+                'vlsi': ('vlsi_clear', 'vlsi_notclear'),
+                'design_studio': ('design_studio_clear', 'design_studio_notclear'),
+                'design_project': ('design_project_clear', 'design_project_notclear'),
+                'bank': ('bank_clear', 'bank_notclear'),
+                'icard_dsa': ('icard_dsa_clear', 'icard_dsa_notclear'),
+                'account': ('account_clear', 'account_notclear'),
+                'btp_supervisor': ('btp_supervisor_clear', 'btp_supervisor_notclear'),
+                'discipline_office': ('discipline_office_clear', 'discipline_office_notclear'),
+                'student_gymkhana': ('student_gymkhana_clear', 'student_gymkhana_notclear'),
+                'alumni': ('alumni_clear', 'alumni_notclear'),
+                'placement_cell': ('placement_cell_clear', 'placement_cell_notclear'),
+            }
+
+            if department == 'acad_admin':
+                statuses = _no_dues_role_statuses(no_dues)
+                first_four_clear = all(
+                    statuses[role_name] == 'clear'
+                    for role_name in ['librarian', 'mess_incharge', 'hostel_warden', 'lab_supervisor']
+                )
+                if not first_four_clear:
+                    return Response(
+                        {"error": "Acad Admin can finalize only after all four authorities clear."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+            if department == 'lab_supervisor':
+                lab_departments = [
+                    'ece',
+                    'physics_lab',
+                    'mechatronics_lab',
+                    'cc',
+                    'workshop',
+                    'signal_processing_lab',
+                    'vlsi',
+                    'design_studio',
+                    'design_project',
+                ]
+                for lab_dept in lab_departments:
+                    clear_field, notclear_field = dept_field_map[lab_dept]
+                    if is_clear:
+                        setattr(no_dues, clear_field, True)
+                        setattr(no_dues, notclear_field, False)
+                    else:
+                        setattr(no_dues, clear_field, False)
+                        setattr(no_dues, notclear_field, True)
+            else:
+                clear_field, notclear_field = dept_field_map[department]
+
+                if is_clear:
+                    setattr(no_dues, clear_field, True)
+                    setattr(no_dues, notclear_field, False)
+                else:
+                    setattr(no_dues, clear_field, False)
+                    setattr(no_dues, notclear_field, True)
+
+            no_dues.save()
+
+            if is_clear:
+                approval_label_map = {
+                    'library': 'Librarian',
+                    'mess': 'Mess Incharge',
+                    'hostel': 'Hostel Warden',
+                    'lab_supervisor': 'Lab Supervisor',
+                    'acad_admin': 'Acad Admin',
+                }
+                approval_label = approval_label_map.get(department, department)
+                notify.send(
+                    sender=request.user,
+                    recipient=no_dues.roll_no.user,
+                    url='/other-academics',
+                    module='Other Academic',
+                    verb=f'Your no-dues request was approved by {approval_label}.',
+                )
+
+            serializer = NoDuesStatusSerializer(no_dues)
+            return Response(
+                {
+                    "message": f"No-Dues cleared by {department}",
+                    "data": serializer.data,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        except NoDues.DoesNotExist:
+            return Response(
+                {"error": "No-Dues record not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class TrackNoDuesProgressView(APIView):
+    """Track progress of no-dues clearance."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            from applications.globals.models import ExtraInfo
+
+            extra_info = ExtraInfo.objects.get(user=request.user)
+            no_dues = NoDues.objects.get(roll_no=extra_info)
+            summary = _no_dues_progress_summary(no_dues)
+
+            return Response({
+                "roll_no": extra_info.id,
+                "name": no_dues.name,
+                "cleared": summary["cleared_count"],
+                "not_cleared": summary["not_cleared_count"],
+                "pending": summary["pending_count"],
+                "total": summary["total_count"],
+                "progress_percentage": summary["progress_percentage"],
+                "departments": summary["statuses"],
+                "all_clear": summary["all_clear"],
+            }, status=status.HTTP_200_OK)
+
+        except NoDues.DoesNotExist:
+            return Response(
+                {"error": "No-Dues record not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except ExtraInfo.DoesNotExist:
+            return Response(
+                {"error": "Student information not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+
+class ListPendingNoDuesView(APIView):
+    """List all students with pending no-dues clearance requests."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            _ensure_no_dues_approver_designations()
+
+            user_roles = _get_user_no_dues_roles(request.user)
+            approver_roles = user_roles.intersection(NO_DUES_APPROVER_ROLES)
+            has_non_admin_role = any(role_name != 'acadadmin' for role_name in approver_roles)
+            if not approver_roles:
+                return Response(
+                    {
+                        "error": "Only librarian, mess incharge, lab supervisor, or hostel warden can view pending no-dues requests."
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            pending_clearances = NoDues.objects.all()
+
+            data = []
+            for no_dues in pending_clearances:
+                summary = _no_dues_progress_summary(no_dues)
+                statuses = summary["statuses"]
+                first_four_clear = all(
+                    statuses[role_name] == 'clear'
+                    for role_name in ['librarian', 'mess_incharge', 'hostel_warden', 'lab_supervisor']
+                )
+
+                show_for_non_admin_queue = has_non_admin_role and not first_four_clear
+                show_for_acadadmin_queue = (
+                    'acadadmin' in approver_roles
+                    and first_four_clear
+                    and statuses['acad_admin'] != 'clear'
+                )
+
+                if not (show_for_non_admin_queue or show_for_acadadmin_queue):
+                    continue
+
+                available_approvals = []
+                if has_non_admin_role:
+                    non_admin_targets = [
+                        ('library', 'librarian'),
+                        ('mess', 'mess_incharge'),
+                        ('hostel', 'hostel_warden'),
+                        ('lab_supervisor', 'lab_supervisor'),
+                    ]
+                    available_approvals.extend(
+                        target
+                        for target, status_key in non_admin_targets
+                        if statuses.get(status_key) == 'pending'
+                    )
+
+                if 'acadadmin' in approver_roles and first_four_clear and statuses.get('acad_admin') == 'pending':
+                    available_approvals.append('acad_admin')
+
+                if summary["all_clear"]:
+                    continue
+
+                data.append({
+                    'roll_no': no_dues.roll_no.id,
+                    'name': no_dues.name,
+                    'cleared_count': summary["cleared_count"],
+                    'total_count': summary["total_count"],
+                    'progress_percentage': summary["progress_percentage"],
+                    'departments': summary["statuses"],
+                    'available_approvals': list(dict.fromkeys(available_approvals)),
+                })
+
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+class DownloadNoDuesCertificateView(APIView):
+    """Download no-dues certificate (if fully cleared)."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            from applications.globals.models import ExtraInfo
+            from django.http import HttpResponse
+            from io import BytesIO
+
+            extra_info = ExtraInfo.objects.get(user=request.user)
+            no_dues = NoDues.objects.get(roll_no=extra_info)
+            summary = _no_dues_progress_summary(no_dues)
+
+            if not summary["all_clear"]:
+                return Response(
+                    {"error": "Student has not cleared all departments yet"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            blank_pdf = b"""%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << >> >>\nendobj\n4 0 obj\n<< /Length 0 >>\nstream\n\nendstream\nendobj\nxref\n0 5\n0000000000 65535 f \n0000000010 00000 n \n0000000061 00000 n \n0000000118 00000 n \n0000000243 00000 n \ntrailer\n<< /Root 1 0 R /Size 5 >>\nstartxref\n284\n%%EOF"""
+
+            response = HttpResponse(blank_pdf, content_type="application/pdf")
+            response["Content-Disposition"] = f'attachment; filename="{extra_info.id}_nodues.pdf"'
+            response["Content-Length"] = str(len(blank_pdf))
+            return response
+
+        except NoDues.DoesNotExist:
+            return Response(
+                {"error": "No-Dues record not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except ExtraInfo.DoesNotExist:
+            return Response(
+                {"error": "Student information not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except Exception as e:
+            return Response(
+                {"error": f"Error generating certificate: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
