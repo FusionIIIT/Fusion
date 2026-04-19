@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 
 from applications.otheracademic import services, selectors
 from applications.otheracademic.models import LeaveStatusChoices
@@ -94,6 +95,9 @@ class FetchPendingLeaveRequests(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
+        if not selectors.user_has_designation_contains(request.user, "hod"):
+            raise PermissionDenied("Only HOD can access this queue.")
+
         # Get pending UG leaves
         pending_ug = selectors.get_pending_ug_leaves_for_hod(request.user.username)
         data = [selectors.serialize_ug_leave(leave) for leave in pending_ug]
@@ -131,14 +135,20 @@ class UpdateLeaveStatus(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
+        if not selectors.user_has_designation_contains(request.user, "hod"):
+            raise PermissionDenied("Only HOD can approve or reject leave requests.")
+
         serializer = LeaveStatusUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         approved_ids = serializer.validated_data.get('approvedLeaves', [])
         rejected_ids = serializer.validated_data.get('rejectedLeaves', [])
 
-        services.update_ug_leave_status(approved_ids, rejected_ids, request.user)
-        services.update_pg_leave_status_hod(approved_ids, rejected_ids, request.user)
+        try:
+            services.update_ug_leave_status(approved_ids, rejected_ids, request.user)
+            services.update_pg_leave_status_hod(approved_ids, rejected_ids, request.user)
+        except services.LeaveServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({"message": "Leave statuses updated successfully."})
 
@@ -154,7 +164,10 @@ class UpdateLeaveStatusTA(APIView):
         approved_ids = serializer.validated_data.get('approvedLeaves', [])
         rejected_ids = serializer.validated_data.get('rejectedLeaves', [])
 
-        services.update_pg_leave_status_ta(approved_ids, rejected_ids, request.user)
+        try:
+            services.update_pg_leave_status_ta(approved_ids, rejected_ids, request.user)
+        except services.LeaveServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({"message": "Leave statuses updated successfully."})
 
@@ -170,7 +183,10 @@ class UpdateLeaveStatusThesis(APIView):
         approved_ids = serializer.validated_data.get('approvedLeaves', [])
         rejected_ids = serializer.validated_data.get('rejectedLeaves', [])
 
-        services.update_pg_leave_status_thesis(approved_ids, rejected_ids, request.user)
+        try:
+            services.update_pg_leave_status_thesis(approved_ids, rejected_ids, request.user)
+        except services.LeaveServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({"message": "Leave statuses updated successfully."})
 
@@ -261,6 +277,9 @@ class FetchPendingBonafideRequests(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
+        if not selectors.user_has_designation(request.user, "acadadmin"):
+            raise PermissionDenied("Only Academic Administrator can access bonafide verification queue.")
+
         pending_bonafides = selectors.get_pending_bonafides()
         data = [selectors.serialize_pending_bonafide(b) for b in pending_bonafides]
         return Response(data)
@@ -271,6 +290,9 @@ class UpdateBonafideStatus(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
+        if not selectors.user_has_designation(request.user, "acadadmin"):
+            raise PermissionDenied("Only Academic Administrator can verify bonafide requests.")
+
         serializer = BonafideStatusUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -292,6 +314,9 @@ class UploadBonafideCertificate(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, bonafide_id, *args, **kwargs):
+        if not selectors.user_has_designation(request.user, "acadadmin"):
+            raise PermissionDenied("Only Academic Administrator can upload bonafide certificates.")
+
         certificate = request.FILES.get("certificate")
         if not certificate:
             return Response(
@@ -299,15 +324,10 @@ class UploadBonafideCertificate(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        bonafide = selectors.get_bonafide_by_id(bonafide_id)
-        if not bonafide:
-            return Response(
-                {"error": "Bonafide request not found."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        bonafide.download_file = certificate
-        bonafide.save(update_fields=["download_file"])
+        try:
+            bonafide = services.upload_bonafide_certificate(bonafide_id, certificate)
+        except services.BonafideServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(
             {
@@ -333,6 +353,12 @@ class GetBonafideStatus(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        if str(request.user.extrainfo.id) != str(roll_no):
+            return Response(
+                {"error": "You can only view your own bonafide status."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         try:
             bonafide_requests = selectors.get_bonafides_by_roll_no(roll_no)
             response_data = [selectors.serialize_bonafide_status(b) for b in bonafide_requests]
@@ -345,6 +371,18 @@ class GetBonafideStatus(APIView):
                 {"error": "An error occurred while fetching bonafide status.", "details": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+
+class WithdrawBonafide(APIView):
+    """Withdraw a pending bonafide request."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, bonafide_id, *args, **kwargs):
+        try:
+            services.withdraw_bonafide(request.user, bonafide_id)
+            return Response({"message": "Bonafide request withdrawn successfully."}, status=status.HTTP_200_OK)
+        except services.BonafideServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # ==================== ASSISTANTSHIP VIEWS ====================

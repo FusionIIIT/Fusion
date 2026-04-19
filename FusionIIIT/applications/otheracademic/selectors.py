@@ -69,6 +69,22 @@ def get_first_user_for_designation(designation_name):
     return None
 
 
+def user_has_designation(user, designation_name):
+    """Return True if user has the given designation (case-insensitive)."""
+    return HoldsDesignation.objects.filter(
+        user=user,
+        designation__name__iexact=designation_name,
+    ).exists()
+
+
+def user_has_designation_contains(user, designation_keyword):
+    """Return True if user has a designation containing the given keyword."""
+    return HoldsDesignation.objects.filter(
+        user=user,
+        designation__name__icontains=designation_keyword,
+    ).exists()
+
+
 # ==================== LEAVE SELECTORS ====================
 
 def get_pending_ug_leaves():
@@ -149,6 +165,28 @@ def get_ug_leaves_by_roll_no(roll_no_id):
 def get_pg_leaves_by_roll_no(roll_no_id):
     """Get all PG leave requests for a specific roll number."""
     return LeavePG.objects.filter(roll_no=roll_no_id)
+
+
+def ug_leave_overlap_exists(roll_no, date_from, date_to):
+    """Check if a UG leave overlaps with an existing non-rejected request."""
+    return LeaveFormTable.objects.filter(
+        roll_no=roll_no,
+        rejected=False,
+        date_from__lte=date_to,
+        date_to__gte=date_from,
+    ).exists()
+
+
+def pg_leave_overlap_exists(roll_no, date_from, date_to):
+    """Check if a PG leave overlaps with an existing non-rejected workflow request."""
+    return LeavePG.objects.filter(
+        roll_no=roll_no,
+        ta_rejected=False,
+        thesis_rejected=False,
+        hod_rejected=False,
+        date_from__lte=date_to,
+        date_to__gte=date_from,
+    ).exists()
 
 
 def get_leave_by_id(leave_id, is_pg=False):
@@ -305,6 +343,7 @@ def serialize_bonafide_status(bonafide):
         "dateApplied": bonafide.date_of_applications.strftime("%Y-%m-%d") if bonafide.date_of_applications else None,
         "status": status,
         "downloadUrl": download_url,
+        "canWithdraw": not bonafide.approve and not bonafide.reject,
     }
 
 

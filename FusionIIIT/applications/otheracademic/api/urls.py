@@ -22,6 +22,7 @@ urlpatterns = [
     path('admin-updates/',views.UpdateBonafideStatus.as_view(),name='admin-updates'),
     path('bonafide-certificate-upload/<int:bonafide_id>/', views.UploadBonafideCertificate.as_view(), name='bonafide-certificate-upload'),
     path('bonafide-status/',views.GetBonafideStatus.as_view(),name='bonafide-status'),
+    path('withdraw-bonafide/<int:bonafide_id>/', views.WithdrawBonafide.as_view(), name='withdraw-bonafide'),
 
     #TA_Assiistantship URLs
     path('assistantship-form-submit/',views.AssistantshipFormSubmitView.as_view(),name='assistantship-form-submit'),
