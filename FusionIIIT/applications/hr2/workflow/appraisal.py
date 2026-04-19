@@ -5,10 +5,15 @@ from django.utils import timezone
 from applications.hr2.constants.form_types import FormType
 
 WF_SUBMITTED = "submitted"
-WF_HR_APPROVED = "hr_approved"
+WF_FORWARDED_REVIEWER = "forwarded_to_reviewer"
+WF_REVIEWER_APPROVED = "reviewer_approved"
+WF_REVIEWER_REJECTED = "reviewer_rejected"
+WF_HR_APPROVED = "hr_approved"  # Legacy/Direct if needed
 WF_HR_REJECTED = "hr_rejected"
 
-TERMINAL_STATUSES = frozenset({WF_HR_APPROVED, WF_HR_REJECTED})
+TERMINAL_STATUSES = frozenset(
+    {WF_REVIEWER_APPROVED, WF_REVIEWER_REJECTED, WF_HR_APPROVED, WF_HR_REJECTED}
+)
 
 
 def append_workflow_event(form, new_status, username, remarks="", **extra_fields):

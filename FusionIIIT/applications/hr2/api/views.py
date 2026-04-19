@@ -33,7 +33,7 @@ from applications.hr2.api.serializers import (
 )
 from applications.filetracking.models import File
 from applications.leave.models import LeaveType
-from applications.globals.models import ExtraInfo
+from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from applications.hr2.models import (
     CPDAAdvanceform,
     LeaveBalance,
@@ -64,7 +64,6 @@ from applications.filetracking.sdk.methods import (
     get_current_file_owner,
     get_current_file_owner_designation,
 )
-from applications.globals.models import HoldsDesignation
 
 
 User = get_user_model()
@@ -400,11 +399,18 @@ def _submit_appraisal_application(request, form_data, user_info):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    receiver = (user_info.get("receiver_name") or "").strip()
-    recv_desig = (user_info.get("receiver_designation") or "").strip()
+    # Appraisal routing: HR Admin first for reviewer assignment
+    hr_admin_user, hr_admin_desig = leave_wf.resolve_hr_admin()
+    if hr_admin_user:
+        receiver = hr_admin_user
+        recv_desig = hr_admin_desig
+    else:
+        receiver = (user_info.get("receiver_name") or "").strip()
+        recv_desig = (user_info.get("receiver_designation") or "").strip()
+
     if not receiver or not recv_desig:
         return None, Response(
-            {"detail": "Approver username and designation are required."},
+            {"detail": "HR Admin is not configured and no fallback approver was provided."},
             status=status.HTTP_400_BAD_REQUEST,
         )
     uploader_desig = (
@@ -1133,6 +1139,128 @@ class AppraisalWorkflowHandle(Hr2AuthenticatedAPIView):
             )
 
         username = request.user.username
+
+        if action == "assign_reviewer":
+            if not ltc_wf.designation_is_hr_admin(designation):
+                return Response(
+                    {"detail": "Only HR Admin can assign a reviewer."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            reviewer_username = request.data.get("reviewer_username")
+            reviewer_designation = request.data.get("reviewer_designation")
+            if not reviewer_username or not reviewer_designation:
+                return Response(
+                    {"detail": "Reviewer username and designation are required."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if reviewer_username == form.created_by.username:
+                return Response(
+                    {"detail": "Reviewer cannot be the employee themselves."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Validation: Reviewer user must exist
+            try:
+                receiver_user = User.objects.get(username=reviewer_username)
+            except User.DoesNotExist:
+                return Response(
+                    {"detail": f"Reviewer user '{reviewer_username}' not found."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Validation: Reviewer designation must exist
+            try:
+                # First try exact match
+                receiver_desig_obj = Designation.objects.get(name=reviewer_designation)
+            except Designation.DoesNotExist:
+                # If exact match fails, try to resolve if it's a generic role like "HOD"
+                holds = HoldsDesignation.objects.filter(
+                    working=receiver_user, designation__name__icontains=reviewer_designation
+                )
+                if holds.count() == 1:
+                    # Auto-resolve to the only matching designation they hold
+                    receiver_desig_obj = holds.first().designation
+                    reviewer_designation = receiver_desig_obj.name
+                elif holds.count() > 1:
+                    names = ", ".join([h.designation.name for h in holds])
+                    return Response(
+                        {"detail": f"User holds multiple matching roles ({names}). Please specify the exact designation."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                else:
+                    return Response(
+                        {"detail": f"Designation '{reviewer_designation}' not found or not held by user."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+            # Final check: Does user hold this designation?
+            if not HoldsDesignation.objects.filter(working=receiver_user, designation=receiver_desig_obj).exists():
+                return Response(
+                    {"detail": f"User '{reviewer_username}' does not hold the designation '{reviewer_designation}'."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            with transaction.atomic():
+                appraisal_wf.append_workflow_event(
+                    form,
+                    appraisal_wf.WF_FORWARDED_REVIEWER,
+                    username,
+                    remarks or f"Assigned reviewer: {reviewer_username}",
+                )
+                forward_form_file(
+                    file_id=str(file_id),
+                    receiver=reviewer_username,
+                    receiver_designation=reviewer_designation,
+                    remarks=remarks or f"Forwarded to reviewer: {reviewer_username}",
+                    file_extra_JSON={
+                        "type": FormType.APPRAISAL,
+                        "workflow_status": appraisal_wf.WF_FORWARDED_REVIEWER,
+                    },
+                )
+                appraisal_wf.sync_file_extra_workflow(file_obj, appraisal_wf.WF_FORWARDED_REVIEWER)
+            return Response({"detail": f"Forwarded to reviewer: {reviewer_username}"})
+
+        if action == "reviewer_approve":
+            if form.workflow_status != appraisal_wf.WF_FORWARDED_REVIEWER:
+                 return Response(
+                    {"detail": "Application is not awaiting reviewer decision."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            with transaction.atomic():
+                appraisal_wf.append_workflow_event(
+                    form,
+                    appraisal_wf.WF_REVIEWER_APPROVED,
+                    username,
+                    remarks or "Approved by reviewer",
+                    approved=True,
+                    approved_by=request.user,
+                    approvedDate=datetime.date.today(),
+                )
+                appraisal_wf.sync_file_extra_workflow(file_obj, appraisal_wf.WF_REVIEWER_APPROVED)
+                archive_form_file(file_id=str(file_id))
+            return Response({"detail": "Approved by reviewer."})
+
+        if action == "reviewer_reject":
+             if form.workflow_status != appraisal_wf.WF_FORWARDED_REVIEWER:
+                 return Response(
+                    {"detail": "Application is not awaiting reviewer decision."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+             if not remarks:
+                return Response(
+                    {"detail": "Remarks are required when rejecting."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+             with transaction.atomic():
+                appraisal_wf.append_workflow_event(
+                    form,
+                    appraisal_wf.WF_REVIEWER_REJECTED,
+                    username,
+                    remarks,
+                    approved=False,
+                )
+                appraisal_wf.sync_file_extra_workflow(file_obj, appraisal_wf.WF_REVIEWER_REJECTED)
+                archive_form_file(file_id=str(file_id))
+             return Response({"detail": "Rejected by reviewer."})
 
         if action == "hr_admin_approve":
             if not ltc_wf.designation_is_hr_admin(designation):
@@ -2462,7 +2590,14 @@ class LeaveSubmit(Hr2AuthenticatedAPIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        hod_username, hod_designation = leave_wf.resolve_hod_for_applicant(request.user)
+        # BR-HR-028: Director self-sanction
+        is_director = HoldsDesignation.objects.filter(working=request.user, designation__name__iexact="Director").exists()
+        if is_director:
+            hod_username = request.user.username
+            hod_designation = "Director"
+        else:
+            hod_username, hod_designation = leave_wf.resolve_hod_for_applicant(request.user)
+
         if not hod_username:
             hod_username = (user_info.get("receiver_name") or "").strip()
             hod_designation = (user_info.get("receiver_designation") or "").strip()
@@ -2579,9 +2714,14 @@ class LeaveFileHandle(Hr2AuthenticatedAPIView):
                 action = "hr_reject"
 
         if action == "hod_approve":
-            if not leave_wf.designation_is_hod(current_role):
+            # BR-HR-028: Director self-sanction
+            is_director_self_sanction = HoldsDesignation.objects.filter(
+                working=request.user, designation__name__iexact="Director"
+            ).exists() and form.created_by == request.user
+
+            if not leave_wf.designation_is_hod(current_role) and not is_director_self_sanction:
                 return Response({"detail": "Only HOD can approve at this step."}, status=status.HTTP_403_FORBIDDEN)
-            if not leave_wf.hod_covers_applicant(current_role, form.created_by):
+            if not is_director_self_sanction and not leave_wf.hod_covers_applicant(current_role, form.created_by):
                 return Response(
                     {"detail": "You are not the HOD for this applicant's department."},
                     status=status.HTTP_403_FORBIDDEN,
@@ -2607,16 +2747,21 @@ class LeaveFileHandle(Hr2AuthenticatedAPIView):
                 leave_wf.sync_file_extra_workflow(file_obj, leave_wf.WF_HOD_APPROVED)
             return Response(
                 {
-                    "detail": "Approved by HOD. Forwarded to HR Admin.",
+                    "detail": f"Approved by {'Director' if is_director_self_sanction else 'HOD'}. Forwarded to HR Admin.",
                     "workflow_status": form.workflow_status,
                 },
                 status=status.HTTP_200_OK,
             )
 
         if action == "hod_reject":
-            if not leave_wf.designation_is_hod(current_role):
+            # BR-HR-028: Director self-sanction
+            is_director_self_sanction = HoldsDesignation.objects.filter(
+                working=request.user, designation__name__iexact="Director"
+            ).exists() and form.created_by == request.user
+
+            if not leave_wf.designation_is_hod(current_role) and not is_director_self_sanction:
                 return Response({"detail": "Only HOD can reject at this step."}, status=status.HTTP_403_FORBIDDEN)
-            if not leave_wf.hod_covers_applicant(current_role, form.created_by):
+            if not is_director_self_sanction and not leave_wf.hod_covers_applicant(current_role, form.created_by):
                 return Response(
                     {"detail": "You are not the HOD for this applicant's department."},
                     status=status.HTTP_403_FORBIDDEN,
