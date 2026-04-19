@@ -296,6 +296,39 @@ def _submit_ltc_application(request, form_data, user_info):
         (dict, None) with serialized form data on success,
         (None, Response) on error.
     """
+    four_years_ago = datetime.date.today() - relativedelta(years=4)
+
+    # 1. Check self-declared previous LTC date in the current form
+    declared_date_str = form_data.get("certifiedThatAdvanceTakenOn")
+    if declared_date_str:
+        from dateutil import parser
+        try:
+            declared_date = parser.parse(str(declared_date_str)).date()
+            if declared_date > four_years_ago:
+                return None, Response(
+                    {"detail": f"LTC claims are only allowed once every 4 years. You declared your last advance was taken on {declared_date.strftime('%Y-%m-%d')}."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        except Exception:
+            pass
+
+    # 2. Check previous LTC forms in the database
+    last_ltc = LTCform.objects.filter(
+        created_by=request.user
+    ).exclude(
+        workflow_status="hr_rejected"
+    ).order_by('-id').first()
+    
+    if last_ltc:
+        last_date = last_ltc.submissionDate or last_ltc.leaveStartDate or last_ltc.dateOfDepartureForFamily or getattr(last_ltc, "approvedDate", None)
+        if not last_date:
+            last_date = datetime.date.today()
+        if last_date > four_years_ago:
+            return None, Response(
+                {"detail": f"LTC claims are only allowed once every 4 years. Your last claim was on {last_date.strftime('%Y-%m-%d')}."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
     receiver = (user_info.get("receiver_name") or "").strip()
     recv_desig = (user_info.get("receiver_designation") or "").strip()
     if not receiver or not recv_desig:
@@ -426,12 +459,14 @@ class LTC(Hr2APIView):
         is_complete, message = _is_profile_complete_for_ltc(request.user)
         if not is_complete:
             return Response({"detail": message}, status=status.HTTP_400_BAD_REQUEST)
+            
         if isinstance(request.data, list):
             form_data = request.data[0] if len(request.data) > 0 else {}
             user_info = request.data[1] if len(request.data) > 1 else {}
         else:
             form_data = request.data.get("form_data", request.data)
             user_info = request.data.get("user_info", {})
+
         data, err = _submit_ltc_application(request, form_data, user_info)
         if err:
             return err
