@@ -186,14 +186,25 @@ class AwardApplicationView(APIView):
             return Response({'error': 'Student profile not found.'}, status=404)
 
         # ── 1. Check Deadline ──────────────────────────────────────────────────
-        with connection.cursor() as cur:
-            cur.execute("SELECT setting_value FROM awards_settings WHERE setting_key = 'application_deadline'")
-            row = cur.fetchone()
-        deadline_str = row[0] if row else "2026-05-01 23:59:59"
-        deadline_dt = timezone.make_aware(datetime.strptime(deadline_str, '%Y-%m-%d %H:%M:%S'))
+        deadline_val = "2026-05-01 23:59:59"
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT setting_value FROM awards_settings WHERE setting_key = 'application_deadline'")
+            res = cursor.fetchone()
+            if res:
+                deadline_val = res[0]
+
+        from django.conf import settings
+        deadline_dt = datetime.strptime(deadline_val, '%Y-%m-%d %H:%M:%S')
         
-        if timezone.now() > deadline_dt:
-            return Response({'error': f'The application deadline ({deadline_str}) has passed.'}, status=403)
+        # Ensure consistency in awareness
+        now = timezone.now()
+        if settings.USE_TZ:
+            deadline_dt = timezone.make_aware(deadline_dt)
+        elif timezone.is_aware(deadline_dt):
+            deadline_dt = timezone.make_naive(deadline_dt)
+
+        if now > deadline_dt:
+            return Response({'error': f'The application deadline ({deadline_val}) has passed.'}, status=403)
 
         # ── 2. Validate Award Type ─────────────────────────────────────────────
         award_type = str(request.data.get('award_type', '')).upper()
@@ -215,37 +226,41 @@ class AwardApplicationView(APIView):
         if not form_data.get('_declaration'):
             return Response({'error': 'You must accept the declaration to submit.'}, status=400)
 
-        # ── 4. Check for existing application (No multiple submissions) ───────
-        with connection.cursor() as cur:
-            cur.execute("SELECT id FROM awards_award_application WHERE student_id=%s AND award_type=%s",
-                        [student['roll_no'], award_type])
-            existing = cur.fetchone()
-            if existing:
-                return Response({'error': 'You have already submitted an application for this award. Duplicate submissions are not allowed.'}, status=400)
+        # ── 4. Save Application (UPSERT approach) ──────────────────────────────
+        try:
+            cpi = calculate_cpi_for_roll(student['roll_no'])
+            form_data.update({
+                'roll_no':   student['roll_no'],
+                'name':      student['name'],
+                'programme': student['programme'],
+                'batch':     student['batch'],
+                'cpi':       cpi,
+                'branch':    student['branch'],
+            })
 
-        # ── 5. Save Application ────────────────────────────────────────────────
-        cpi = calculate_cpi_for_roll(student['roll_no'])
-        form_data.update({
-            'roll_no':   student['roll_no'],
-            'name':      student['name'],
-            'programme': student['programme'],
-            'batch':     student['batch'],
-            'cpi':       cpi,
-            'branch':    student['branch'],
-        })
-
-        form_data_json = json.dumps(form_data)
-        with connection.cursor() as cur:
-            cur.execute(
-                """INSERT INTO awards_award_application (student_id, award_type, form_data, created_at, updated_at)
-                    VALUES (%s, %s, %s, NOW(), NOW()) RETURNING id""",
-                [student['roll_no'], award_type, form_data_json]
-            )
-            new_id = cur.fetchone()[0]
-            return Response({'id': new_id, 'created': True,
-                                'award_type': award_type,
-                                'award_label': AWARD_TYPE_LABELS[award_type],
-                                'message': 'Application submitted successfully.'}, status=201)
+            form_data_json = json.dumps(form_data)
+            with connection.cursor() as cur:
+                cur.execute(
+                    """INSERT INTO awards_award_application (student_id, award_type, form_data, created_at, updated_at)
+                       VALUES (%s, %s, %s, NOW(), NOW())
+                       ON CONFLICT (student_id, award_type) 
+                       DO UPDATE SET form_data = EXCLUDED.form_data, updated_at = NOW()
+                       RETURNING id""",
+                    [student['roll_no'], award_type, form_data_json]
+                )
+                res = cur.fetchone()
+                if not res:
+                    return Response({'error': 'Failed to save application.'}, status=500)
+                new_id = res[0]
+                return Response({'id': new_id, 'created': True,
+                                 'award_type': award_type,
+                                 'award_label': AWARD_TYPE_LABELS[award_type],
+                                 'message': 'Application saved successfully.'}, status=201)
+        except Exception as e:
+            error_msg = str(e)
+            if 'relation "awards_award_application" does not exist' in error_msg:
+                error_msg = "Database tables are not set up. Please run 'python create_awards_tables.py' on the server."
+            return Response({'error': f'Database error: {error_msg}'}, status=500)
 
 
 # =============================================================================

@@ -1,42 +1,41 @@
-﻿from django.urls import path
+from django.conf.urls import url
 from . import views
 
 urlpatterns = [
     # Student Views
-    path('student-profile/', views.StudentProfileLookupAPIView.as_view(), name='api-student-profile'),
-    path('active-awards/', views.ActiveAwardsAPIView.as_view(), name='api-active-awards'),
-    path('student/applications/', views.StudentApplicationsAPIView.as_view(), name='api-student-applications'),
-    path('student/submit/mcm/', views.McmSubmissionAPIView.as_view(), name='api-submit-mcm'),
-    path('student/submit/medal/', views.MedalSubmissionAPIView.as_view(), name='api-submit-medal'),
+    url(r'^student-profile/$', views.StudentProfileLookupAPIView.as_view(), name='api-student-profile'),
+    url(r'^active-awards/$', views.ActiveAwardsAPIView.as_view(), name='api-active-awards'),
+    url(r'^student/applications/$', views.StudentApplicationsAPIView.as_view(), name='api-student-applications'),
+    url(r'^student/submit/mcm/$', views.McmSubmissionAPIView.as_view(), name='api-submit-mcm'),
+    url(r'^student/submit/medal/$', views.MedalSubmissionAPIView.as_view(), name='api-submit-medal'),
 
     # Convener Views (legacy MCM/medal)
-    path('convener/application/<int:application_id>/review/', views.ConvenerActionAPIView.as_view(), name='api-convener-review'),
+    url(r'^convener/application/(?P<application_id>\d+)/review/$', views.ConvenerActionAPIView.as_view(), name='api-convener-review'),
 
     # Scholarship Types
-    path('types/', views.ScholarshipTypesAPIView.as_view(), name='api-scholarship-types'),
+    url(r'^types/$', views.ScholarshipTypesAPIView.as_view(), name='api-scholarship-types'),
 
     # Scholarship Applications (full lifecycle)
-    path('applications/', views.ScholarshipApplicationsAPIView.as_view(), name='api-scholarship-applications'),
-    path('applications/<int:application_id>/approve/', views.ScholarshipApplicationApproveAPIView.as_view(), name='api-scholarship-application-approve'),
+    url(r'^applications/$', views.ScholarshipApplicationsAPIView.as_view(), name='api-scholarship-applications'),
+    url(r'^applications/(?P<application_id>\d+)/approve/$', views.ScholarshipApplicationApproveAPIView.as_view(), name='api-scholarship-application-approve'),
 
     # General Awards Management
-    path('awards/', views.AwardsManagementAPIView.as_view(), name='api-awards-management'),
-    path('awards/<int:award_id>/', views.AwardDetailAPIView.as_view(), name='api-award-detail'),
+    url(r'^awards/$', views.AwardsManagementAPIView.as_view(), name='api-awards-management'),
+    url(r'^awards/(?P<award_id>\d+)/$', views.AwardDetailAPIView.as_view(), name='api-award-detail'),
 
     # Merit Lists
-    path('merit-list/', views.MeritListAPIView.as_view(), name='api-merit-list-all'),
-    path('merit-list/<str:batch_id>/', views.MeritListAPIView.as_view(), name='api-merit-list'),
-    path('generate-merit-list/', views.GenerateMeritListAPIView.as_view(), name='api-generate-merit-list'),
-    path('convenor/mcm-merit-list/', views.ConvenorMcmMeritListAPIView.as_view(), name='api-convenor-mcm-merit-list'),
+    url(r'^merit-list/$', views.MeritListAPIView.as_view(), name='api-merit-list-all'),
+    url(r'^merit-list/(?P<batch_id>[^/]+)/$', views.MeritListAPIView.as_view(), name='api-merit-list'),
+    url(r'^generate-merit-list/$', views.GenerateMeritListAPIView.as_view(), name='api-generate-merit-list'),
+    url(r'^convenor/mcm-merit-list/$', views.ConvenorMcmMeritListAPIView.as_view(), name='api-convenor-mcm-merit-list'),
 
     # Eligibility and Statistics
-    path('eligible-students/<int:scholarship_id>/', views.EligibleStudentsAPIView.as_view(), name='api-eligible-students'),
-    path('check-eligibility/', views.StudentEligibilityCheckAPIView.as_view(), name='api-check-eligibility'),
-    path('statistics/batch/', views.BatchStatisticsAPIView.as_view(), name='api-batch-statistics'),
-    path('mcm-applications/', views.McmApplicationViewSet.as_view({'get': 'list', 'post': 'create'}), name='api-mcm-applications'),
-    path('mcm-applications/<int:pk>/', views.McmApplicationViewSet.as_view({'get': 'retrieve', 'patch': 'partial_update'}), name='api-mcm-application-detail'),
-    path('single-parent-applications/', views.SingleParentApplicationViewSet.as_view({'get': 'list', 'post': 'create'}), name='api-single-parent-applications'),
-    path('single-parent-applications/<int:pk>/', views.SingleParentApplicationViewSet.as_view({'get': 'retrieve', 'patch': 'partial_update'}), name='api-single-parent-application-detail'),
+    url(r'^eligible-students/(?P<scholarship_id>\d+)/$', views.EligibleStudentsAPIView.as_view(), name='api-eligible-students'),
+    url(r'^check-eligibility/$', views.StudentEligibilityCheckAPIView.as_view(), name='api-check-eligibility'),
+    url(r'^statistics/batch/$', views.BatchStatisticsAPIView.as_view(), name='api-batch-statistics'),
+    url(r'^mcm-applications/$', views.McmApplicationViewSet.as_view({'get': 'list', 'post': 'create'}), name='api-mcm-applications'),
+    url(r'^mcm-applications/(?P<pk>\d+)/$', views.McmApplicationViewSet.as_view({'get': 'retrieve', 'patch': 'partial_update'}), name='api-mcm-application-detail'),
+    url(r'^single-parent-applications/$', views.SingleParentApplicationViewSet.as_view({'get': 'list', 'post': 'create'}), name='api-single-parent-applications'),
+    url(r'^single-parent-applications/(?P<pk>\d+)/$', views.SingleParentApplicationViewSet.as_view({'get': 'retrieve', 'patch': 'partial_update'}), name='api-single-parent-application-detail'),
+    url(r'^settings/$', views.ScholarshipSettingsView.as_view(), name='api-scholarship-settings'),
 ]
-
-

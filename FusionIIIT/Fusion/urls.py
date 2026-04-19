@@ -27,6 +27,8 @@ from applications.globals.views import RateLimitedPasswordResetView
 
 
 urlpatterns = [
+    url(r'^scholarships/api/', include('applications.scholarships.api.urls')),
+    url(r'^awards/api/', include('applications.awardsScholarships.api.urls_awards')),
     url(r'^', include('applications.globals.urls')),
     url(r'^feeds/', include('applications.feeds.urls')),
     url(r'^admin/', admin.site.urls),
@@ -50,8 +52,6 @@ urlpatterns = [
     url(r'^placement/', include('applications.placement_cell.urls')),
     url(r'^filetracking/', include('applications.filetracking.urls')),
     url(r'^spacs/', include('applications.scholarships.urls')),
-    url(r'^scholarships/api/', include('applications.scholarships.api.urls')),
-    url(r'^awards/api/', include('applications.awardsScholarships.api.urls_awards')),
     url(r'^visitorhostel/', include('applications.visitor_hostel.urls')),
     url(r'^office/', include('applications.office_module.urls')),
     url(r'^finance/', include('applications.finance_accounts.urls')),
@@ -97,5 +97,3 @@ urlpatterns = [
         name='password_reset_complete',
     ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-

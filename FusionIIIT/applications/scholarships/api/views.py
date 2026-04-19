@@ -7,8 +7,33 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError as DRFValidationError
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from django.db import connection
+from django.conf import settings
+from datetime import datetime
 from applications.academic_information.models import Student
 from applications.globals.models import HoldsDesignation
+
+def check_scholarship_deadline():
+    """Helper to check if current time is before the application deadline."""
+    deadline_val = "2026-05-01 23:59:59"
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT setting_value FROM scholarships_settings WHERE setting_key = 'application_deadline'")
+            res = cursor.fetchone()
+            if res:
+                deadline_val = res[0]
+    except:
+        pass
+    
+    deadline_dt = datetime.strptime(deadline_val, '%Y-%m-%d %H:%M:%S')
+    now = timezone.now()
+    if settings.USE_TZ:
+        deadline_dt = timezone.make_aware(deadline_dt)
+    elif timezone.is_aware(deadline_dt):
+        deadline_dt = timezone.make_naive(deadline_dt)
+    
+    if now > deadline_dt:
+        raise DRFValidationError({"detail": f"The application deadline ({deadline_val}) has passed."})
 
 from . import serializers
 from .. import selectors, services
@@ -660,6 +685,7 @@ class McmApplicationViewSet(viewsets.ModelViewSet):
             raise DRFValidationError({"detail": "Minimum CPI should be 7.0 or more for SC/ST."})
 
     def perform_create(self, serializer):
+        check_scholarship_deadline()
         student = selectors.get_student_by_user(self.request.user)
         if not student:
             raise DRFValidationError({"detail": "Student profile required."})
@@ -792,6 +818,7 @@ class SingleParentApplicationViewSet(viewsets.ModelViewSet):
             })
 
     def perform_create(self, serializer):
+        check_scholarship_deadline()
         student = selectors.get_student_by_user(self.request.user)
         if not student:
             raise DRFValidationError({"detail": "Student profile required."})
@@ -887,6 +914,44 @@ class ConvenorMcmMeritListAPIView(APIView):
         ]
 
         return Response(data, status=status.HTTP_200_OK)
+
+
+class ScholarshipSettingsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        deadline = "2026-05-01 23:59:59"
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT setting_value FROM scholarships_settings WHERE setting_key = 'application_deadline'")
+                row = cursor.fetchone()
+                if row:
+                    deadline = row[0]
+        except:
+            pass
+        return Response({'application_deadline': deadline})
+
+    def post(self, request):
+        if not (_is_admin(request.user) or _has_designation(request.user, ["spacsassistant", "spacsconvenor"])):
+            return Response({"error": "Unauthorized access."}, status=status.HTTP_403_FORBIDDEN)
+            
+        new_deadline = request.data.get('application_deadline')
+        if not new_deadline:
+            return Response({'error': 'application_deadline is required.'}, status=400)
+        
+        try:
+            datetime.strptime(new_deadline, '%Y-%m-%d %H:%M:%S')
+        except ValueError:
+            return Response({'error': 'Invalid format. Use YYYY-MM-DD HH:MM:SS'}, status=400)
+
+        with connection.cursor() as cursor:
+            # Update if exists
+            cursor.execute("UPDATE scholarships_settings SET setting_value = %s, updated_at = NOW() WHERE setting_key = 'application_deadline'", [new_deadline])
+            if cursor.rowcount == 0:
+                # Insert if not
+                cursor.execute("INSERT INTO scholarships_settings (setting_key, setting_value, updated_at) VALUES ('application_deadline', %s, NOW())", [new_deadline])
+        
+        return Response({'message': 'Deadline updated successfully.', 'application_deadline': new_deadline})
 
 
 
