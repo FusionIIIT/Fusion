@@ -12,9 +12,13 @@ from .views_awards import (
     AwardApplicationListView,
     AwardApplicationExportView,
     StudentAwardApplicationsView,
+    AwardSettingsView,
 )
 
 urlpatterns = [
+    # ── Config ────────────────────────────────────────────────────────────────
+    url(r'^settings/$',              AwardSettingsView.as_view(),          name='awards-settings'),
+
     # ── Student ──────────────────────────────────────────────────────────────
     url(r'^student-profile/$',       AwardsStudentProfileView.as_view(),   name='awards-student-profile'),
     url(r'^student-applications/$',  StudentAwardApplicationsView.as_view(),name='awards-my-applications'),

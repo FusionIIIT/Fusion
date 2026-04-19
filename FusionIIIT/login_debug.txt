@@ -16,3 +16,4 @@ AUTH_FAIL: 23bcs095 -> [ErrorDetail(string='Invalid credentials.', code='invalid
 AUTH_FAIL: 23bcs095 -> [ErrorDetail(string='Invalid credentials.', code='invalid')]
 AUTH_FAIL: 23bcs095 -> [ErrorDetail(string='Invalid credentials.', code='invalid')]
 AUTH_FAIL: 23bcs095 -> [ErrorDetail(string='Invalid credentials.', code='invalid')]
+AUTH_FAIL: spacs_asst -> [ErrorDetail(string='Invalid credentials.', code='invalid')]

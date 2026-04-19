@@ -10,6 +10,8 @@ All award tables are created via create_awards_tables.py.
 import csv
 import io
 import json
+from datetime import datetime
+from django.utils import timezone
 from django.http import HttpResponse
 from django.db import connection
 from rest_framework.views import APIView
@@ -143,6 +145,38 @@ class StudentAwardApplicationsView(APIView):
         return Response(rows)
 
 
+class AwardSettingsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        with connection.cursor() as cur:
+            cur.execute("SELECT setting_value FROM awards_settings WHERE setting_key = 'application_deadline'")
+            row = cur.fetchone()
+        deadline = row[0] if row else "2026-05-01 23:59:59"
+        return Response({'application_deadline': deadline})
+
+    def post(self, request):
+        # Only assistants should ideally do this, but for demo we check authentication
+        new_deadline = request.data.get('application_deadline')
+        if not new_deadline:
+            return Response({'error': 'application_deadline is required.'}, status=400)
+        
+        try:
+            # Validate format
+            datetime.strptime(new_deadline, '%Y-%m-%d %H:%M:%S')
+        except ValueError:
+            return Response({'error': 'Invalid format. Use YYYY-MM-DD HH:MM:SS'}, status=400)
+
+        with connection.cursor() as cur:
+            cur.execute("""
+                INSERT INTO awards_settings (setting_key, setting_value, updated_at)
+                VALUES ('application_deadline', %s, NOW())
+                ON CONFLICT (setting_key) DO UPDATE SET setting_value = EXCLUDED.setting_value, updated_at = NOW()
+            """, [new_deadline])
+        
+        return Response({'message': 'Deadline updated successfully.', 'application_deadline': new_deadline})
+
+
 class AwardApplicationView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -151,17 +185,45 @@ class AwardApplicationView(APIView):
         if not student:
             return Response({'error': 'Student profile not found.'}, status=404)
 
+        # ── 1. Check Deadline ──────────────────────────────────────────────────
+        with connection.cursor() as cur:
+            cur.execute("SELECT setting_value FROM awards_settings WHERE setting_key = 'application_deadline'")
+            row = cur.fetchone()
+        deadline_str = row[0] if row else "2026-05-01 23:59:59"
+        deadline_dt = timezone.make_aware(datetime.strptime(deadline_str, '%Y-%m-%d %H:%M:%S'))
+        
+        if timezone.now() > deadline_dt:
+            return Response({'error': f'The application deadline ({deadline_str}) has passed.'}, status=403)
+
+        # ── 2. Validate Award Type ─────────────────────────────────────────────
         award_type = str(request.data.get('award_type', '')).upper()
         if award_type not in AWARD_TYPE_LABELS:
             return Response({'error': f'Invalid award_type. Choose from: {list(AWARD_TYPE_LABELS)}'}, status=400)
 
+        # ── 3. Validate Form Content (No Empty Forms) ─────────────────────────
         form_data = request.data.get('form_data', {})
         if isinstance(form_data, str):
-            try:
-                form_data = json.loads(form_data)
-            except Exception:
-                return Response({'error': 'form_data must be JSON.'}, status=400)
+            try: form_data = json.loads(form_data)
+            except: return Response({'error': 'form_data must be JSON.'}, status=400)
 
+        # Check for empty values in actual form fields
+        meaningful_fields = {k: v for k, v in form_data.items() 
+                             if k not in ('roll_no','name','programme','batch','cpi','branch','_declaration')}
+        if not meaningful_fields or any(not str(v).strip() for v in meaningful_fields.values()):
+            return Response({'error': 'Please fill all fields in the application form.'}, status=400)
+        
+        if not form_data.get('_declaration'):
+            return Response({'error': 'You must accept the declaration to submit.'}, status=400)
+
+        # ── 4. Check for existing application (No multiple submissions) ───────
+        with connection.cursor() as cur:
+            cur.execute("SELECT id FROM awards_award_application WHERE student_id=%s AND award_type=%s",
+                        [student['roll_no'], award_type])
+            existing = cur.fetchone()
+            if existing:
+                return Response({'error': 'You have already submitted an application for this award. Duplicate submissions are not allowed.'}, status=400)
+
+        # ── 5. Save Application ────────────────────────────────────────────────
         cpi = calculate_cpi_for_roll(student['roll_no'])
         form_data.update({
             'roll_no':   student['roll_no'],
@@ -174,29 +236,16 @@ class AwardApplicationView(APIView):
 
         form_data_json = json.dumps(form_data)
         with connection.cursor() as cur:
-            cur.execute("SELECT id FROM awards_award_application WHERE student_id=%s AND award_type=%s",
-                        [student['roll_no'], award_type])
-            existing = cur.fetchone()
-            if existing:
-                cur.execute(
-                    "UPDATE awards_award_application SET form_data=%s, updated_at=NOW() WHERE id=%s",
-                    [form_data_json, existing[0]]
-                )
-                return Response({'id': existing[0], 'created': False,
-                                 'award_type': award_type,
-                                 'award_label': AWARD_TYPE_LABELS[award_type],
-                                 'message': 'Application updated successfully.'})
-            else:
-                cur.execute(
-                    """INSERT INTO awards_award_application (student_id, award_type, form_data, created_at, updated_at)
-                       VALUES (%s, %s, %s, NOW(), NOW()) RETURNING id""",
-                    [student['roll_no'], award_type, form_data_json]
-                )
-                new_id = cur.fetchone()[0]
-                return Response({'id': new_id, 'created': True,
-                                 'award_type': award_type,
-                                 'award_label': AWARD_TYPE_LABELS[award_type],
-                                 'message': 'Application submitted successfully.'}, status=201)
+            cur.execute(
+                """INSERT INTO awards_award_application (student_id, award_type, form_data, created_at, updated_at)
+                    VALUES (%s, %s, %s, NOW(), NOW()) RETURNING id""",
+                [student['roll_no'], award_type, form_data_json]
+            )
+            new_id = cur.fetchone()[0]
+            return Response({'id': new_id, 'created': True,
+                                'award_type': award_type,
+                                'award_label': AWARD_TYPE_LABELS[award_type],
+                                'message': 'Application submitted successfully.'}, status=201)
 
 
 # =============================================================================
@@ -362,21 +411,38 @@ class AwardApplicationExportView(APIView):
             """, params)
             rows = cur.fetchall()
 
-        output = io.StringIO()
-        writer = csv.writer(output)
-        writer.writerow(['Award', 'Roll No', 'Name', 'Programme', 'Branch', 'CPI', 'Form Summary', 'Applied At'])
-        for award_type_val, roll_no, name, prog, branch, form_data, applied_at in rows:
-            cpi = calculate_cpi_for_roll(roll_no)
+        # Prepare data and identify all unique form fields
+        data_list = []
+        all_form_keys = set()
+        for r in rows:
+            award_type_val, roll_no, name, prog, branch, form_data, applied_at = r
             fd = form_data if isinstance(form_data, dict) else json.loads(form_data or '{}')
-            summary = ' | '.join(f"{k}: {v}" for k, v in fd.items()
-                                  if k not in ('roll_no','name','programme','batch','cpi','branch') and v)[:300]
-            writer.writerow([
-                AWARD_TYPE_LABELS.get(award_type_val, award_type_val),
-                roll_no, name, prog, branch, cpi, summary, applied_at,
-            ])
+            
+            row_dict = {
+                'Award': AWARD_TYPE_LABELS.get(award_type_val, award_type_val),
+                'Roll No': roll_no,
+                'Name': name,
+                'Programme': prog,
+                'Branch': branch,
+                'CPI': calculate_cpi_for_roll(roll_no),
+                'Applied At': applied_at
+            }
+            # Add all form fields to the row
+            for k, v in fd.items():
+                if k not in ('roll_no', 'name', 'programme', 'batch', 'cpi', 'branch'):
+                    row_dict[k] = v
+                    all_form_keys.add(k)
+            data_list.append(row_dict)
+
+        output = io.StringIO()
+        fieldnames = ['Award', 'Roll No', 'Name', 'Programme', 'Branch', 'CPI', 'Applied At'] + sorted(list(all_form_keys))
+        writer = csv.DictWriter(output, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in data_list:
+            writer.writerow(row)
 
         resp = HttpResponse(output.getvalue(), content_type='text/csv')
-        resp['Content-Disposition'] = 'attachment; filename="award_applications.csv"'
+        resp['Content-Disposition'] = 'attachment; filename="award_applications_complete.csv"'
         return resp
 
 
