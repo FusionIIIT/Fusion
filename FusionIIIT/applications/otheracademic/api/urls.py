@@ -13,6 +13,8 @@ urlpatterns = [
     path('update-leave-status-thesis/', views.UpdateLeaveStatusThesis.as_view(), name='update-leave-status-thesis'),
     path('get-leave-requests/', views.GetLeaveRequests.as_view(), name='get-leave-requests'),
     path('get-pg-leave-requests/', views.GetPGLeaveRequests.as_view(), name='get-pg-leave-requests'),
+    path('withdraw-ug-leave/<int:leave_id>/', views.WithdrawUGLeave.as_view(), name='withdraw-ug-leave'),
+    path('withdraw-pg-leave/<int:leave_id>/', views.WithdrawPGLeave.as_view(), name='withdraw-pg-leave'),
 
     #Bonafide_form URLs
     path('bonafide-form-submit/', views.BonafideFormSubmitView.as_view(), name='bonafide-form-submit'), 

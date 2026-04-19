@@ -74,11 +74,9 @@ def submit_ug_leave(
         address=address,
         purpose=purpose,
         date_of_application=date.today(),
-        stud_mobile_no=mobile_number,
-        parent_mobile_no=parents_mobile,
-        leave_mobile_no=mobile_during_leave,
-        curr_sem=int(semester) if semester else None,
-        hod=hod_credential,
+        approved=False,
+        rejected=False,
+        hod=hod_user.username,
     )
 
     # Get uploader designation for file tracking
@@ -139,6 +137,9 @@ def submit_pg_leave(
     # Create leave record
     leave = LeavePG.objects.create(
         student_name=f"{user.first_name}{user.last_name}",
+        programme="",
+        discipline="",
+        Semester=str(semester) if semester else "",
         roll_no=user.extrainfo,
         date_from=date_from,
         date_to=date_to,
@@ -147,13 +148,18 @@ def submit_pg_leave(
         address=address,
         purpose=purpose,
         date_of_application=date.today(),
-        stud_mobile_no=mobile_number,
-        parent_mobile_no=parents_mobile,
-        leave_mobile_no=mobile_during_leave,
-        curr_sem=int(semester) if semester else None,
-        hod=hod_credential,
-        ta_supervisor=ta_supervisor_credential,
-        thesis_supervisor=thesis_supervisor_credential,
+        mobile_no=mobile_number or "",
+        parent_mobile_no=parents_mobile or "",
+        alt_mobile_no=mobile_during_leave or "",
+        ta_approved=False,
+        ta_rejected=False,
+        thesis_approved=False,
+        thesis_rejected=False,
+        hod_approved=False,
+        hod_rejected=False,
+        hod=hod_user.username,
+        ta_supervisor=ta_user.username,
+        thesis_supervisor=thesis_user.username,
     )
 
     # Get uploader designation for file tracking
@@ -173,43 +179,211 @@ def submit_pg_leave(
     )
 
     # Send notification to TA supervisor
-    otheracademic_notif(user, ta_user, 'pg_leave_at', leave.id, 'student', "A new leave application")
+    otheracademic_notif(user, ta_user, 'pg_leave_ta', leave.id, 'student', "A new leave application")
 
     return leave
 
 
-def update_ug_leave_status(approved_ids, rejected_ids):
+def update_ug_leave_status(approved_ids, rejected_ids, actor_user):
     """Update status of UG leave requests (by HOD)."""
     if approved_ids:
-        LeaveFormTable.objects.filter(id__in=approved_ids).update(status=LeaveStatusChoices.APPROVED)
+        LeaveFormTable.objects.filter(id__in=approved_ids).update(approved=True, rejected=False)
+        for leave_id in approved_ids:
+            leave = selectors.get_leave_by_id(leave_id, is_pg=False)
+            if leave:
+                student = selectors.get_user_by_extrainfo_id(leave.roll_no_id)
+                if student:
+                    otheracademic_notif(
+                        actor_user,
+                        student,
+                        'ug_leave_hod_approve',
+                        leave.id,
+                        'admin',
+                        "Your leave request has been approved by HOD.",
+                    )
     if rejected_ids:
-        LeaveFormTable.objects.filter(id__in=rejected_ids).update(status=LeaveStatusChoices.REJECTED)
+        LeaveFormTable.objects.filter(id__in=rejected_ids).update(approved=False, rejected=True)
+        for leave_id in rejected_ids:
+            leave = selectors.get_leave_by_id(leave_id, is_pg=False)
+            if leave:
+                student = selectors.get_user_by_extrainfo_id(leave.roll_no_id)
+                if student:
+                    otheracademic_notif(
+                        actor_user,
+                        student,
+                        'ug_leave_hod_approve',
+                        leave.id,
+                        'admin',
+                        "Your leave request has been rejected by HOD.",
+                    )
 
 
-def update_pg_leave_status_hod(approved_ids, rejected_ids):
+def update_pg_leave_status_hod(approved_ids, rejected_ids, actor_user):
     """Update status of PG leave requests (by HOD - final approval)."""
     if approved_ids:
-        LeavePG.objects.filter(id__in=approved_ids).update(status=LeaveStatusChoices.APPROVED)
+        LeavePG.objects.filter(id__in=approved_ids).update(hod_approved=True, hod_rejected=False)
+        for leave_id in approved_ids:
+            leave = selectors.get_leave_by_id(leave_id, is_pg=True)
+            if leave:
+                student = selectors.get_user_by_extrainfo_id(leave.roll_no_id)
+                if student:
+                    otheracademic_notif(
+                        actor_user,
+                        student,
+                        'pg_leave_ta_approve',
+                        leave.id,
+                        'admin',
+                        "Your PG leave request has been approved by HOD.",
+                    )
     if rejected_ids:
-        LeavePG.objects.filter(id__in=rejected_ids).update(status=LeaveStatusChoices.REJECTED)
+        LeavePG.objects.filter(id__in=rejected_ids).update(hod_approved=False, hod_rejected=True)
+        for leave_id in rejected_ids:
+            leave = selectors.get_leave_by_id(leave_id, is_pg=True)
+            if leave:
+                student = selectors.get_user_by_extrainfo_id(leave.roll_no_id)
+                if student:
+                    otheracademic_notif(
+                        actor_user,
+                        student,
+                        'pg_leave_ta_approve',
+                        leave.id,
+                        'admin',
+                        "Your PG leave request has been rejected by HOD.",
+                    )
 
 
-def update_pg_leave_status_ta(approved_ids, rejected_ids):
+def update_pg_leave_status_ta(approved_ids, rejected_ids, actor_user):
     """Update status of PG leave requests (by TA supervisor)."""
-    from django.db.models import F
     if approved_ids:
-        LeavePG.objects.filter(id__in=approved_ids).update(status=F('ta_supervisor'))
+        LeavePG.objects.filter(id__in=approved_ids).update(ta_approved=True, ta_rejected=False)
+        for leave_id in approved_ids:
+            leave = selectors.get_leave_by_id(leave_id, is_pg=True)
+            if leave:
+                thesis_user = selectors.get_user_by_username(leave.thesis_supervisor)
+                student = selectors.get_user_by_extrainfo_id(leave.roll_no_id)
+                if thesis_user:
+                    otheracademic_notif(
+                        actor_user,
+                        thesis_user,
+                        'pg_leave_thesis',
+                        leave.id,
+                        'student',
+                        "A PG leave request is forwarded to you for thesis supervisor review.",
+                    )
+                if student:
+                    otheracademic_notif(
+                        actor_user,
+                        student,
+                        'pg_leave_ta_approve',
+                        leave.id,
+                        'admin',
+                        "Your PG leave request has been approved by TA supervisor and moved to thesis supervisor.",
+                    )
     if rejected_ids:
-        LeavePG.objects.filter(id__in=rejected_ids).update(status=LeaveStatusChoices.REJECTED)
+        LeavePG.objects.filter(id__in=rejected_ids).update(ta_approved=False, ta_rejected=True)
+        for leave_id in rejected_ids:
+            leave = selectors.get_leave_by_id(leave_id, is_pg=True)
+            if leave:
+                student = selectors.get_user_by_extrainfo_id(leave.roll_no_id)
+                if student:
+                    otheracademic_notif(
+                        actor_user,
+                        student,
+                        'pg_leave_ta_approve',
+                        leave.id,
+                        'admin',
+                        "Your PG leave request has been rejected at TA supervisor level.",
+                    )
 
 
-def update_pg_leave_status_thesis(approved_ids, rejected_ids):
+def update_pg_leave_status_thesis(approved_ids, rejected_ids, actor_user):
     """Update status of PG leave requests (by Thesis supervisor)."""
-    from django.db.models import F
     if approved_ids:
-        LeavePG.objects.filter(id__in=approved_ids).update(status=F('thesis_supervisor'))
+        LeavePG.objects.filter(id__in=approved_ids).update(thesis_approved=True, thesis_rejected=False)
+        for leave_id in approved_ids:
+            leave = selectors.get_leave_by_id(leave_id, is_pg=True)
+            if leave:
+                hod_user = selectors.get_user_by_username(leave.hod)
+                student = selectors.get_user_by_extrainfo_id(leave.roll_no_id)
+                if hod_user:
+                    otheracademic_notif(
+                        actor_user,
+                        hod_user,
+                        'pg_leave_hod',
+                        leave.id,
+                        'student',
+                        "A PG leave request is forwarded to you for HOD review.",
+                    )
+                if student:
+                    otheracademic_notif(
+                        actor_user,
+                        student,
+                        'pg_leave_ta_approve',
+                        leave.id,
+                        'admin',
+                        "Your PG leave request has been approved by thesis supervisor and moved to HOD.",
+                    )
     if rejected_ids:
-        LeavePG.objects.filter(id__in=rejected_ids).update(status=LeaveStatusChoices.REJECTED)
+        LeavePG.objects.filter(id__in=rejected_ids).update(thesis_approved=False, thesis_rejected=True)
+        for leave_id in rejected_ids:
+            leave = selectors.get_leave_by_id(leave_id, is_pg=True)
+            if leave:
+                student = selectors.get_user_by_extrainfo_id(leave.roll_no_id)
+                if student:
+                    otheracademic_notif(
+                        actor_user,
+                        student,
+                        'pg_leave_ta_approve',
+                        leave.id,
+                        'admin',
+                        "Your PG leave request has been rejected at thesis supervisor level.",
+                    )
+
+
+def withdraw_ug_leave(user, leave_id):
+    """Allow student to withdraw a UG leave request before final HOD decision."""
+    leave = selectors.get_leave_by_id(leave_id, is_pg=False)
+    if not leave:
+        raise LeaveServiceError("Leave request not found.")
+    if leave.roll_no_id != user.extrainfo.id:
+        raise LeaveServiceError("You are not authorized to withdraw this leave request.")
+    if leave.approved or leave.rejected:
+        raise LeaveServiceError("Cannot withdraw a leave request that has already been verified by HOD.")
+
+    hod_user = selectors.get_user_by_username(leave.hod)
+    if hod_user:
+        otheracademic_notif(
+            user,
+            hod_user,
+            'ug_leave_hod',
+            leave.id,
+            'student',
+            "A leave request has been withdrawn by the student.",
+        )
+    leave.delete()
+
+
+def withdraw_pg_leave(user, leave_id):
+    """Allow student to withdraw a PG leave request before final HOD decision."""
+    leave = selectors.get_leave_by_id(leave_id, is_pg=True)
+    if not leave:
+        raise LeaveServiceError("Leave request not found.")
+    if leave.roll_no_id != user.extrainfo.id:
+        raise LeaveServiceError("You are not authorized to withdraw this leave request.")
+    if leave.hod_approved or leave.hod_rejected:
+        raise LeaveServiceError("Cannot withdraw a leave request that has already been verified by HOD.")
+
+    hod_user = selectors.get_user_by_username(leave.hod)
+    if hod_user:
+        otheracademic_notif(
+            user,
+            hod_user,
+            'pg_leave_hod',
+            leave.id,
+            'student',
+            "A PG leave request has been withdrawn by the student.",
+        )
+    leave.delete()
 
 
 # ==================== BONAFIDE SERVICES ====================

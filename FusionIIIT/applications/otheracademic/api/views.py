@@ -95,11 +95,11 @@ class FetchPendingLeaveRequests(APIView):
 
     def get(self, request, *args, **kwargs):
         # Get pending UG leaves
-        pending_ug = selectors.get_pending_ug_leaves()
+        pending_ug = selectors.get_pending_ug_leaves_for_hod(request.user.username)
         data = [selectors.serialize_ug_leave(leave) for leave in pending_ug]
 
         # Get pending PG leaves (for HOD)
-        pending_pg = selectors.get_pending_pg_leaves_for_hod()
+        pending_pg = selectors.get_pending_pg_leaves_for_hod_user(request.user.username)
         for leave in pending_pg:
             data.append(selectors.serialize_pg_leave(leave))
 
@@ -111,7 +111,7 @@ class FetchPendingLeaveRequestsTA(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        pending_leaves = selectors.get_pending_pg_leaves_for_ta()
+        pending_leaves = selectors.get_pending_pg_leaves_for_ta_user(request.user.username)
         data = [selectors.serialize_pg_leave(leave) for leave in pending_leaves]
         return Response(data)
 
@@ -121,7 +121,7 @@ class FetchPendingLeaveRequestsThesis(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        pending_leaves = selectors.get_pending_pg_leaves_for_thesis()
+        pending_leaves = selectors.get_pending_pg_leaves_for_thesis_user(request.user.username)
         data = [selectors.serialize_pg_leave(leave) for leave in pending_leaves]
         return Response(data)
 
@@ -137,8 +137,8 @@ class UpdateLeaveStatus(APIView):
         approved_ids = serializer.validated_data.get('approvedLeaves', [])
         rejected_ids = serializer.validated_data.get('rejectedLeaves', [])
 
-        services.update_ug_leave_status(approved_ids, rejected_ids)
-        services.update_pg_leave_status_hod(approved_ids, rejected_ids)
+        services.update_ug_leave_status(approved_ids, rejected_ids, request.user)
+        services.update_pg_leave_status_hod(approved_ids, rejected_ids, request.user)
 
         return Response({"message": "Leave statuses updated successfully."})
 
@@ -154,7 +154,7 @@ class UpdateLeaveStatusTA(APIView):
         approved_ids = serializer.validated_data.get('approvedLeaves', [])
         rejected_ids = serializer.validated_data.get('rejectedLeaves', [])
 
-        services.update_pg_leave_status_ta(approved_ids, rejected_ids)
+        services.update_pg_leave_status_ta(approved_ids, rejected_ids, request.user)
 
         return Response({"message": "Leave statuses updated successfully."})
 
@@ -170,7 +170,7 @@ class UpdateLeaveStatusThesis(APIView):
         approved_ids = serializer.validated_data.get('approvedLeaves', [])
         rejected_ids = serializer.validated_data.get('rejectedLeaves', [])
 
-        services.update_pg_leave_status_thesis(approved_ids, rejected_ids)
+        services.update_pg_leave_status_thesis(approved_ids, rejected_ids, request.user)
 
         return Response({"message": "Leave statuses updated successfully."})
 
@@ -180,7 +180,7 @@ class GetLeaveRequests(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        roll_no_id = request.query_params.get('roll_no')
+        roll_no_id = request.user.extrainfo.id
 
         leave_requests = selectors.get_ug_leaves_by_roll_no(roll_no_id)
         data = [selectors.serialize_leave_status(leave, roll_no_id) for leave in leave_requests]
@@ -193,12 +193,36 @@ class GetPGLeaveRequests(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        roll_no_id = request.query_params.get('roll_no')
+        roll_no_id = request.user.extrainfo.id
 
         leave_requests = selectors.get_pg_leaves_by_roll_no(roll_no_id)
         data = [selectors.serialize_leave_status(leave, roll_no_id) for leave in leave_requests]
 
         return Response(data, status=status.HTTP_200_OK)
+
+
+class WithdrawUGLeave(APIView):
+    """Withdraw a UG leave request before HOD verifies it."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, leave_id, *args, **kwargs):
+        try:
+            services.withdraw_ug_leave(request.user, leave_id)
+            return Response({"message": "Leave request withdrawn successfully."}, status=status.HTTP_200_OK)
+        except services.LeaveServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class WithdrawPGLeave(APIView):
+    """Withdraw a PG leave request before HOD verifies it."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, leave_id, *args, **kwargs):
+        try:
+            services.withdraw_pg_leave(request.user, leave_id)
+            return Response({"message": "PG leave request withdrawn successfully."}, status=status.HTTP_200_OK)
+        except services.LeaveServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # ==================== BONAFIDE VIEWS ====================
