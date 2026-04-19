@@ -244,3 +244,78 @@ class AssistantshipStatusSerializer(serializers.Serializer):
     bank_account = serializers.CharField()
     status = serializers.CharField()
     approvalStages = serializers.DictField()
+
+# ==================== NO-DUES SERIALIZERS ====================
+
+class NoDuesStatusSerializer(serializers.ModelSerializer):
+    """Output serializer for no-dues status."""
+    roll_no_value = serializers.CharField(source='roll_no.roll_no', read_only=True)
+    
+    class Meta:
+        model = NoDues
+        fields = [
+            'id',
+            'roll_no_value',
+            'name',
+            'library_clear',
+            'library_notclear',
+            'hostel_clear',
+            'hostel_notclear',
+            'mess_clear',
+            'mess_notclear',
+            'ece_clear',
+            'ece_notclear',
+            'physics_lab_clear',
+            'physics_lab_notclear',
+            'mechatronics_lab_clear',
+            'mechatronics_lab_notclear',
+            'cc_clear',
+            'cc_notclear',
+            'workshop_clear',
+            'workshop_notclear',
+            'signal_processing_lab_clear',
+            'signal_processing_lab_notclear',
+            'vlsi_clear',
+            'vlsi_notclear',
+            'design_studio_clear',
+            'design_studio_notclear',
+            'design_project_clear',
+            'design_project_notclear',
+            'bank_clear',
+            'bank_notclear',
+            'icard_dsa_clear',
+            'icard_dsa_notclear',
+            'account_clear',
+            'account_notclear',
+            'btp_supervisor_clear',
+            'btp_supervisor_notclear',
+            'discipline_office_clear',
+            'discipline_office_notclear',
+            'student_gymkhana_clear',
+            'student_gymkhana_notclear',
+            'alumni_clear',
+            'alumni_notclear',
+            'placement_cell_clear',
+            'placement_cell_notclear',
+        ]
+
+
+class NoDuesInitiateSerializer(serializers.Serializer):
+    """Input serializer for initiating no-dues clearance."""
+    pass  # No input needed for initiation, just triggers creation
+
+
+class NoDuesVerificationSerializer(serializers.Serializer):
+    """Input serializer for department to verify no-dues clearance."""
+    no_dues_id = serializers.IntegerField()
+    department = serializers.CharField(max_length=100)
+    is_clear = serializers.BooleanField()
+
+
+class NoDuesCertificateSerializer(serializers.Serializer):
+    """Output serializer for no-dues certificate."""
+    roll_no = serializers.CharField()
+    name = serializers.CharField()
+    all_clear = serializers.BooleanField()
+    issued_date = serializers.DateTimeField()
+    certificate_url = serializers.CharField(allow_null=True)
