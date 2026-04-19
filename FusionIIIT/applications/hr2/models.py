@@ -346,6 +346,19 @@ class LeaveBalance(models.Model):
         super().save(*args, **kwargs)
 
 
+class CPDABalance(models.Model):
+    """CPDA balance tracking for faculty: available = allotted - used."""
+
+    id = models.AutoField(primary_key=True)
+    employeeId = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE)
+    cpda_allotted = models.DecimalField(max_digits=10, decimal_places=2, default=300000.00)
+    cpda_used = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    @property
+    def cpda_balance(self):
+        return self.cpda_allotted - self.cpda_used
+
+
 class Appraisalform(BaseForm):
     """Faculty/staff appraisal with workflow (see hr2.workflow.appraisal)."""
 

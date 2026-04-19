@@ -536,6 +536,50 @@ class CPDAAdvance(Hr2APIView):
             form_data = request.data.get("form_data", request.data)
             user_info = request.data.get("user_info", {})
         user_info = user_info or {}
+
+        from applications.hr2.models import CPDABalance
+        from applications.globals.models import ExtraInfo
+
+        # BR-HR-402: Check expense category
+        approved_categories = ["Books", "Contingency", "Conferences/Workshops", "Software", "Equipment/Hardware", "Others"]
+        purpose = form_data.get("purpose", "")
+        if purpose not in approved_categories:
+            return Response(
+                {"detail": f"Invalid expense category. Must be one of: {', '.join(approved_categories)}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # BR-HR-401: Check balance
+        amount_required = 0
+        try:
+            amount_required = float(form_data.get("amountRequired", 0))
+        except (ValueError, TypeError):
+            pass
+
+        if amount_required <= 0:
+            return Response(
+                {"detail": "Advance amount must be greater than zero."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        extra_info = ExtraInfo.objects.filter(user=request.user).first()
+        if not extra_info:
+            return Response({"detail": "Employee profile not found."}, status=status.HTTP_400_BAD_REQUEST)
+
+        cpda_bal, _ = CPDABalance.objects.get_or_create(
+            employeeId=extra_info,
+            defaults={'cpda_allotted': 300000.00, 'cpda_used': 0.00}
+        )
+
+        if amount_required > float(cpda_bal.cpda_balance):
+            return Response(
+                {"detail": f"Insufficient CPDA balance. Your available balance is Rs. {cpda_bal.cpda_balance}."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Pre-fill balance on form for the accountant to see
+        form_data["balanceAvailable"] = cpda_bal.cpda_balance
+
         serializer = self.serializer_class(data=form_data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -895,6 +939,25 @@ class CPDAAdvanceWorkflowHandle(Hr2AuthenticatedAPIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             with transaction.atomic():
+                from applications.hr2.models import CPDABalance
+                from applications.globals.models import ExtraInfo
+                
+                # Fetch balance and update cpda_used
+                extra_info = ExtraInfo.objects.filter(user=form.created_by).first()
+                if extra_info:
+                    cpda_bal, _ = CPDABalance.objects.get_or_create(
+                        employeeId=extra_info,
+                        defaults={'cpda_allotted': 300000.00, 'cpda_used': 0.00}
+                    )
+                    amount_advanced = form.amountRequired or form.advanceDueAdjustment or form.advanceAmountPDA or 0
+                    try:
+                        amount_advanced = float(amount_advanced)
+                    except (ValueError, TypeError):
+                        amount_advanced = 0.0
+                    
+                    cpda_bal.cpda_used = float(cpda_bal.cpda_used) + amount_advanced
+                    cpda_bal.save()
+
                 cpda_wf.append_workflow_event(
                     form,
                     cpda_wf.WF_ACCOUNTANT_PROCESSED,
@@ -905,7 +968,7 @@ class CPDAAdvanceWorkflowHandle(Hr2AuthenticatedAPIView):
                 cpda_wf.archive_tracked_file_if_workflow_closed(
                     file_id, form.workflow_status
                 )
-            return Response({"detail": "Processing completed.", "workflow_status": form.workflow_status})
+            return Response({"detail": "Processing completed. Balance updated.", "workflow_status": form.workflow_status})
 
         return Response({"detail": "Unknown or missing action."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1186,7 +1249,32 @@ class CPDAReimbursement(Hr2APIView):
             form, data=form_payload, context={"request": request}
         )
         if serializer.is_valid():
-            serializer.save()
+            with transaction.atomic():
+                previous_approved = form.approved is True
+                updated_form = serializer.save()
+                now_approved = updated_form.approved is True
+
+                # BR-HR-403: Deduct CPDA balance when a claim is approved
+                if not previous_approved and now_approved:
+                    from applications.hr2.models import CPDABalance
+
+                    applicant = updated_form.created_by
+                    if applicant:
+                        extra_info = ExtraInfo.objects.filter(user=applicant).first()
+                        if extra_info:
+                            cpda_bal, _ = CPDABalance.objects.get_or_create(
+                                employeeId=extra_info,
+                                defaults={'cpda_allotted': 300000.00, 'cpda_used': 0.00},
+                            )
+                            amount_claimed = updated_form.adjustmentSubmitted or 0
+                            try:
+                                amount_claimed = float(amount_claimed)
+                            except (ValueError, TypeError):
+                                amount_claimed = 0.0
+                            if amount_claimed > 0:
+                                cpda_bal.cpda_used = float(cpda_bal.cpda_used) + amount_claimed
+                                cpda_bal.save()
+
             forward_form_file(
                 file_id=receiver["file_id"],
                 receiver=receiver["receiver"],
@@ -1589,7 +1677,23 @@ class CheckLeaveBalance(Hr2AuthenticatedAPIView):
                 "balance": int(leave_balance.vacationLeave or 0),
             },
         }
-        return Response({"leave_balance": leave_balance_summary}, status=status.HTTP_200_OK)
+
+        # Add CPDA balance tracking
+        from applications.hr2.models import CPDABalance
+        cpda_bal, _ = CPDABalance.objects.get_or_create(
+            employeeId=extrainfo,
+            defaults={'cpda_allotted': 300000.00, 'cpda_used': 0.00}
+        )
+        cpda_summary = {
+            "allotted": float(cpda_bal.cpda_allotted),
+            "taken": float(cpda_bal.cpda_used),
+            "balance": float(cpda_bal.cpda_balance)
+        }
+
+        return Response({
+            "leave_balance": leave_balance_summary,
+            "cpda_balance": cpda_summary
+        }, status=status.HTTP_200_OK)
 
     def put(self, request, *args, **kwargs):
         if not _is_hr_admin(request.user):
@@ -2085,9 +2189,53 @@ class CpdaClaimSubmit(Hr2AuthenticatedAPIView):
         else:
             form_data = request.data.get("form_data", request.data)
             user_info = request.data.get("user_info", {})
+
+        from applications.hr2.models import CPDABalance
+        from applications.globals.models import ExtraInfo
+
+        # BR-HR-402: Check expense category
+        approved_categories = ["Books", "Contingency", "Conferences/Workshops", "Software", "Equipment/Hardware", "Others"]
+        purpose = form_data.get("purpose", "")
+        if purpose not in approved_categories:
+            return Response(
+                {"detail": f"Invalid expense category. Must be one of: {', '.join(approved_categories)}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # BR-HR-401: Check balance
+        amount_claimed = 0
+        try:
+            amount_claimed = float(form_data.get("adjustmentSubmitted", 0))
+        except (ValueError, TypeError):
+            pass
+
+        if amount_claimed <= 0:
+            return Response(
+                {"detail": "Claim amount must be greater than zero."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        extra_info = ExtraInfo.objects.filter(user=request.user).first()
+        if not extra_info:
+            return Response({"detail": "Employee profile not found."}, status=status.HTTP_400_BAD_REQUEST)
+
+        cpda_bal, _ = CPDABalance.objects.get_or_create(
+            employeeId=extra_info, 
+            defaults={'cpda_allotted': 300000.00, 'cpda_used': 0.00}
+        )
+
+        if amount_claimed > float(cpda_bal.cpda_balance):
+            return Response(
+                {"detail": f"Insufficient CPDA balance. Your available balance is Rs. {cpda_bal.cpda_balance}."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Pre-fill balance on form for the accountant to see
+        form_data["balanceAvailable"] = cpda_bal.cpda_balance
+
         serializer = self.serializer_class(data=form_data)
         if serializer.is_valid():
-            instance = serializer.save()
+            instance = serializer.save(created_by=request.user)
             try:
                 create_form_file(
                     uploader=user_info.get("uploader_name", request.user.username),
