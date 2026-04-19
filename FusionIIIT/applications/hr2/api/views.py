@@ -17,8 +17,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from applications.hr2.workflow import leave_wf
 from applications.hr2.api.permissions import ModuleAccessHRPermission
 from applications.hr2.constants.form_types import FormType
+from applications.hr2.constants.leave_balance_map import LEAVE_TYPE_TO_ALLOTTED_USED
 from applications.hr2.api.serializers import (
     Appraisal_serializer,
     CPDAAdvance_serializer,
@@ -29,9 +31,10 @@ from applications.hr2.api.serializers import (
     ResponsibilityActionSerializer,
 )
 from applications.filetracking.models import File
+from applications.leave.models import LeaveType
+from applications.globals.models import ExtraInfo
 from applications.hr2.models import (
     CPDAAdvanceform,
-    ExtraInfo,
     LeaveBalance,
     EmpConfidentialDetails,
     LeaveForm,
@@ -70,20 +73,6 @@ _FORM_TYPE_TO_SERIALIZER = {
     FormType.CPDA_REIMBURSEMENT: CPDAReimbursement_serializer,
     FormType.LEAVE: Leave_serializer,
     FormType.APPRAISAL: Appraisal_serializer,
-}
-
-_LEAVE_TYPE_TO_ALLOTTED_USED = {
-    "casual": ("casual_leave_allotted", "casual_leave_used"),
-    "special casual leave": ("special_casual_leave_allotted", "special_casual_leave_used"),
-    "special casual": ("special_casual_leave_allotted", "special_casual_leave_used"),
-    "earned": ("earned_leave_allotted", "earned_leave_used"),
-    "earned leave": ("earned_leave_allotted", "earned_leave_used"),
-    "commuted": ("commuted_leave_allotted", "commuted_leave_used"),
-    "commuted leave": ("commuted_leave_allotted", "commuted_leave_used"),
-    "restricted holiday": ("restricted_holiday_allotted", "restricted_holiday_used"),
-    "station leave": ("station_leave_allotted", "station_leave_used"),
-    "vacation": ("vacation_leave_allotted", "vacation_leave_used"),
-    "vacation leave": ("vacation_leave_allotted", "vacation_leave_used"),
 }
 
 
@@ -162,24 +151,65 @@ def _is_profile_complete_for_ltc(user):
 
 
 def _decrement_leave_balance_on_approval(form):
-    leave_type = (form.natureOfLeave or "").strip().lower()
-    fields = _LEAVE_TYPE_TO_ALLOTTED_USED.get(leave_type)
+    """Decrement HR2 ``LeaveBalance`` used counters by computed working days (ceil)."""
+    import math
+
+    leave_type_key = (form.natureOfLeave or "").strip().lower()
+    fields = LEAVE_TYPE_TO_ALLOTTED_USED.get(leave_type_key)
     if not fields:
         return False, "Unsupported leave type for balance update."
 
+    days = getattr(form, "applied_leave_days", None)
+    if days is None:
+        deduct_units = 1
+    else:
+        deduct_units = max(1, int(math.ceil(float(days))))
+
     allotted_f, used_f = fields
-    leave_balance = LeaveBalance.objects.filter(employeeId_id=form.employeeId).first()
+    applicant = getattr(form, "created_by", None)
+    if not applicant:
+        return False, "Leave application has no creator."
+    extra = ExtraInfo.objects.filter(user=applicant).first()
+    if not extra:
+        return False, "Employee profile not found for applicant."
+    leave_balance = LeaveBalance.objects.filter(employeeId=extra).first()
     if not leave_balance:
         return False, "Leave balance record not found for employee."
 
     allotted = int(getattr(leave_balance, allotted_f, 0) or 0)
     used = int(getattr(leave_balance, used_f, 0) or 0)
-    if allotted - used < 1:
+    if allotted - used < deduct_units:
         return False, "Insufficient leave balance to approve this leave."
 
-    setattr(leave_balance, used_f, used + 1)
+    setattr(leave_balance, used_f, used + deduct_units)
     leave_balance.save()
     return True, ""
+
+
+def _decrement_legacy_leaves_count_on_approval(form):
+    """Update ``applications.leave.LeavesCount`` using the same day count as the leave module."""
+    from applications.leave.models import LeavesCount
+
+    applicant = form.created_by
+    if not applicant:
+        return
+    lt = getattr(form, "leave_type", None)
+    if lt is None:
+        return
+    if not form.leaveStartDate or not form.leaveEndDate:
+        return
+    days = form.applied_leave_days
+    if days is None:
+        return
+    year = form.leaveStartDate.year
+    try:
+        lc = LeavesCount.objects.get(user=applicant, leave_type=lt, year=year)
+    except LeavesCount.DoesNotExist:
+        return
+    if float(lc.remaining_leaves) < float(days):
+        return
+    lc.remaining_leaves = float(lc.remaining_leaves) - float(days)
+    lc.save(update_fields=["remaining_leaves"])
 
 
 def _ensure_rejection_remarks_if_rejecting(receiver, form_payload):
@@ -1130,9 +1160,21 @@ class Leave(Hr2APIView):
 
     def post(self, request):
         user_info = request.data[1]
-        serializer = self.serializer_class(data=request.data[0])
+        form_data = request.data[0]
+        if hasattr(form_data, "dict"):
+            form_data = form_data.dict()
+        elif not isinstance(form_data, dict):
+            form_data = dict(form_data)
+        else:
+            form_data = dict(form_data)
+        _, bind_err = _apply_submitter_leave_identifiers(form_data, request.user)
+        if bind_err is not None:
+            return bind_err
+        serializer = self.serializer_class(
+            data=form_data, context={"request": request}
+        )
         if serializer.is_valid():
-            instance = serializer.save()
+            instance = serializer.save(created_by=request.user)
             create_form_file(
                 uploader=request.user.username,
                 uploader_designation=user_info["uploader_designation"],
@@ -1326,6 +1368,31 @@ class LeaveFormInitials(Hr2AuthenticatedAPIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+class LeaveTypesForHr(Hr2AuthenticatedAPIView):
+    """Expose ``applications.leave.LeaveType`` options for the HR leave form (reuse leave module)."""
+
+    def get(self, request):
+        extra = ExtraInfo.objects.filter(user=request.user).first()
+        user_type = (getattr(extra, "user_type", None) or "faculty").strip().lower()
+        qs = LeaveType.objects.all().order_by("name")
+        if user_type == "faculty":
+            qs = qs.filter(for_faculty=True)
+        elif user_type == "staff":
+            qs = qs.filter(for_staff=True)
+        rows = [
+            {
+                "id": lt.id,
+                "name": lt.name,
+                "requires_proof": lt.requires_proof,
+                "requires_address": lt.requires_address,
+                "authority_forwardable": lt.authority_forwardable,
+                "max_in_year": lt.max_in_year,
+            }
+            for lt in qs
+        ]
+        return Response({"leave_types": rows}, status=status.HTTP_200_OK)
 
 
 # ============================================================================
@@ -1790,11 +1857,29 @@ class FormTypeTrack(Hr2AuthenticatedAPIView):
                         payload["workflow_history"] = row.workflow_history or []
             except (File.DoesNotExist, ValueError, TypeError):
                 pass
+        elif form_type_slug == "leave":
+            try:
+                f_obj = File.objects.get(pk=file_id)
+                if (f_obj.file_extra_JSON or {}).get("type") == FormType.LEAVE:
+                    row = LeaveForm.objects.filter(pk=int(f_obj.src_object_id)).first()
+                    if row:
+                        payload["workflow_status"] = row.workflow_status
+                        payload["workflow_history"] = row.workflow_history or []
+            except (File.DoesNotExist, ValueError, TypeError):
+                pass
         return Response(payload)
 
 
+def _leave_tracking_file_for_form(form_pk: int):
+    """Return the newest filetracking row for an HR LeaveForm, if any."""
+    for f in File.objects.filter(src_object_id=str(int(form_pk))).order_by("-id"):
+        if (f.file_extra_JSON or {}).get("type") == FormType.LEAVE:
+            return f
+    return None
+
+
 class FormTypeFormDetail(Hr2AuthenticatedAPIView):
-    """Fetch a single form's data by form type slug and file id."""
+    """Fetch a single form's data by form type slug and file or (for leave) form primary key."""
 
     def get(self, request, form_type_slug, form_id):
         form_type = _URL_SLUG_TO_FORM_TYPE.get(form_type_slug)
@@ -1805,11 +1890,27 @@ class FormTypeFormDetail(Hr2AuthenticatedAPIView):
         if not serializer_cls:
             return Response({"detail": "Unknown form type."}, status=status.HTTP_400_BAD_REQUEST)
 
+        file_obj = None
+        real_form_id = None
         try:
             file_obj = File.objects.get(pk=form_id)
             real_form_id = int(file_obj.src_object_id)
         except (File.DoesNotExist, ValueError, TypeError):
-            return Response({"detail": "File not found or invalid format."}, status=status.HTTP_404_NOT_FOUND)
+            if form_type_slug == "leave":
+                try:
+                    real_form_id = int(form_id)
+                    LeaveForm.objects.get(pk=real_form_id)
+                    file_obj = _leave_tracking_file_for_form(real_form_id)
+                except (LeaveForm.DoesNotExist, ValueError, TypeError):
+                    return Response(
+                        {"detail": "File not found or invalid format."},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+            else:
+                return Response(
+                    {"detail": "File not found or invalid format."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
 
         try:
             form = get_form_for_type_and_id(form_type, real_form_id)
@@ -1817,7 +1918,43 @@ class FormTypeFormDetail(Hr2AuthenticatedAPIView):
             return Response({"detail": "Form not found."}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = serializer_cls(form, many=False)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        data = serializer.data
+        if form_type_slug == "leave":
+            data = {**data, "file_id": str(file_obj.pk) if file_obj else None}
+        return Response(data, status=status.HTTP_200_OK)
+
+
+class LeaveEmployeeRequests(Hr2AuthenticatedAPIView):
+    """List leave applications for the current user (workflow status + dates)."""
+
+    serializer_class = Leave_serializer
+
+    def get(self, request):
+        lookup = (request.query_params.get("name") or "").strip()
+        if lookup and lookup != request.user.username:
+            return Response(
+                {"detail": "You may only list your own leave requests."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        from_date = request.query_params.get("from_date")
+        qs = LeaveForm.objects.filter(created_by=request.user).order_by("-submissionDate", "-id")
+        if from_date:
+            try:
+                d0 = datetime.datetime.strptime(from_date.strip(), "%Y-%m-%d").date()
+                qs = qs.filter(submissionDate__gte=d0)
+            except ValueError:
+                pass
+        serialized = self.serializer_class(qs, many=True).data
+        rows = []
+        for row in serialized:
+            d = dict(row)
+            try:
+                fid = _leave_tracking_file_for_form(int(d["id"]))
+                d["file_id"] = str(fid.pk) if fid else None
+            except (TypeError, ValueError):
+                d["file_id"] = None
+            rows.append(d)
+        return Response(rows, status=status.HTTP_200_OK)
 
 
 # ============================================================================
@@ -1941,99 +2078,417 @@ class AppraisalSubmit(Hr2AuthenticatedAPIView):
 # Leave-specific views
 # ============================================================================
 
+def _apply_submitter_leave_identifiers(form_data, user):
+    """Bind ``employeeId`` / ``pfNo`` to integer values the serializer accepts.
+
+    ``LeaveForm`` stores these as ``IntegerField``s, but ``ExtraInfo.id`` is a
+    ``CharField`` primary key (often non-numeric). Assigning ``extra.id`` makes
+    DRF raise "A valid integer is required." We therefore store the submitter's
+    numeric ``User.pk`` on the form; ``LeaveBalance`` is resolved via
+    ``ExtraInfo`` + ``created_by`` instead of this integer.
+    """
+    extra = ExtraInfo.objects.filter(user=user).first()
+    if not extra:
+        return (
+            None,
+            Response(
+                {
+                    "detail": (
+                        "Employee profile not found for your account. "
+                        "Ask an administrator to link your login to ExtraInfo."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            ),
+        )
+    try:
+        uid = int(user.pk)
+    except (TypeError, ValueError):
+        return (
+            None,
+            Response(
+                {"detail": "Could not determine a numeric user id for this account."},
+                status=status.HTTP_400_BAD_REQUEST,
+            ),
+        )
+    for k in ("employeeId", "pfNo"):
+        form_data.pop(k, None)
+    form_data["employeeId"] = uid
+    form_data["pfNo"] = uid
+    return extra, None
+
+
+def _leave_submit_payload_from_request(request, user_info):
+    """Normalize multipart/JSON payloads into Leave_serializer input.
+
+    Accepts legacy frontend keys (purpose, department, pfno) and maps them to
+    model fields.     Reuses leave-module leave-type naming for balance deduction
+    (see ``applications.hr2.constants.leave_balance_map``).
+    """
+    def _as_bool(v):
+        if v in (None, "", False):
+            return False
+        if isinstance(v, bool):
+            return v
+        return str(v).strip().lower() in ("1", "true", "yes", "on")
+
+    if isinstance(request.data, list):
+        raw = request.data[0] if len(request.data) > 0 else {}
+        user_info = user_info or (request.data[1] if len(request.data) > 1 else {})
+    elif hasattr(request.data, "get"):
+        raw = request.data.get("form_data", request.data)
+    else:
+        raw = request.data
+
+    if hasattr(raw, "dict"):
+        raw = raw.dict()
+    elif not isinstance(raw, dict):
+        raw = dict(raw)
+
+    def pick(*keys):
+        for k in keys:
+            v = raw.get(k)
+            if v in (None, ""):
+                continue
+            if isinstance(v, str) and not v.strip():
+                continue
+            return v
+        return None
+
+    def _int_or_none(val):
+        if val in (None, ""):
+            return None
+        try:
+            return int(str(val).strip())
+        except (TypeError, ValueError):
+            return None
+
+    extra = ExtraInfo.objects.filter(user=request.user).first()
+    employee_id = _int_or_none(pick("employeeId", "employee_id"))
+    if employee_id is None and getattr(request, "user", None) and request.user.is_authenticated:
+        try:
+            employee_id = int(request.user.pk)
+        except (TypeError, ValueError):
+            employee_id = None
+
+    pf_no = _int_or_none(pick("pfNo", "pf_no", "pfno"))
+    if pf_no is None and getattr(request, "user", None) and request.user.is_authenticated:
+        try:
+            pf_no = int(request.user.pk)
+        except (TypeError, ValueError):
+            pf_no = None
+
+    department = pick("departmentInfo", "department_info", "department")
+    lt_raw = pick("leave_type", "leaveType", "leave_type_id")
+    leave_type_val = None
+    if lt_raw not in (None, ""):
+        try:
+            leave_type_val = int(lt_raw)
+        except (TypeError, ValueError):
+            leave_type_val = None
+
+    nature = pick("natureOfLeave", "nature_of_leave")
+    if not nature and leave_type_val is not None:
+        # Resolve the leave type ID to its name from the Leave module
+        try:
+            lt_obj = LeaveType.objects.get(pk=leave_type_val)
+            nature = lt_obj.name
+        except LeaveType.DoesNotExist:
+            nature = "casual"
+    if not nature and leave_type_val is None:
+        nature = "casual"
+    purpose = pick("purposeOfLeave", "purpose_of_leave", "purpose")
+
+    acad = (pick("academicResponsibility", "academic_responsibility") or "").strip()
+    admin_resp = (
+        pick(
+            "addministrativeResponsibiltyAssigned",
+            "administrativeResponsibility",
+            "administrative_responsibility",
+        )
+        or ""
+    ).strip()
+
+    payload = {
+        "name": pick("name"),
+        "designation": pick("designation"),
+        "submissionDate": pick("submissionDate", "submission_date"),
+        "departmentInfo": department,
+        "natureOfLeave": nature if nature not in (None, "") else "casual",
+        "leaveStartDate": pick("leaveStartDate", "leave_start_date"),
+        "leaveEndDate": pick("leaveEndDate", "leave_end_date"),
+        "purposeOfLeave": purpose,
+        "addressDuringLeave": (pick("addressDuringLeave", "address_during_leave") or "").strip(),
+        "start_half": _as_bool(pick("start_half", "startHalf")),
+        "end_half": _as_bool(pick("end_half", "endHalf")),
+        "leave_info": (pick("leave_info", "leaveInfo") or "").strip(),
+    }
+    if employee_id is not None:
+        payload["employeeId"] = employee_id
+    if pf_no is not None:
+        payload["pfNo"] = pf_no
+    if acad:
+        payload["academicResponsibility"] = acad
+    if admin_resp:
+        payload["addministrativeResponsibiltyAssigned"] = admin_resp
+    if leave_type_val is not None:
+        payload["leave_type"] = leave_type_val
+
+    def _keep_field(key, val):
+        if key in ("start_half", "end_half"):
+            return True
+        return val is not None
+
+    return {k: v for k, v in payload.items() if _keep_field(k, v)}, user_info or {}
+
+
 class LeaveSubmit(Hr2AuthenticatedAPIView):
     """Submit a leave form (POST)."""
     serializer_class = Leave_serializer
 
     def post(self, request):
         if isinstance(request.data, list):
-            form_data = request.data[0] if len(request.data) > 0 else {}
             user_info = request.data[1] if len(request.data) > 1 else {}
         else:
-            form_data = request.data.get("form_data", request.data)
-            user_info = request.data.get("user_info", {})
-        serializer = self.serializer_class(data=form_data)
-        if serializer.is_valid():
-            instance = serializer.save()
-            try:
+            user_info = request.data.get("user_info", {}) or {}
+
+        form_data, user_info = _leave_submit_payload_from_request(request, user_info)
+        extra, bind_err = _apply_submitter_leave_identifiers(form_data, request.user)
+        if bind_err is not None:
+            return bind_err
+
+        serializer = self.serializer_class(
+            data=form_data, context={"request": request}
+        )
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        hod_username, hod_designation = leave_wf.resolve_hod_for_applicant(request.user)
+        if not hod_username:
+            hod_username = (user_info.get("receiver_name") or "").strip()
+            hod_designation = (user_info.get("receiver_designation") or "").strip()
+        if not hod_username or not hod_designation:
+            return Response(
+                {
+                    "detail": (
+                        "No HOD is configured for your department. "
+                        "Ask an administrator to assign an HOD, or pass receiver_name and "
+                        "receiver_designation in user_info."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        uploader_desig = (
+            (user_info.get("uploader_designation") or "").strip()
+            or _get_user_primary_designation(request.user)
+            or ""
+        )
+        if not uploader_desig:
+            return Response(
+                {"detail": "Your designation could not be determined. Cannot submit."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            with transaction.atomic():
+                instance = serializer.save(created_by=request.user)
+                leave_wf.append_workflow_event(
+                    instance,
+                    leave_wf.WF_SUBMITTED,
+                    request.user.username,
+                    "Form submitted",
+                )
                 create_form_file(
                     uploader=user_info.get("uploader_name", request.user.username),
-                    uploader_designation=user_info.get("uploader_designation", _get_user_primary_designation(request.user) or ""),
-                    receiver=user_info.get("receiver_name", ""),
-                    receiver_designation=user_info.get("receiver_designation", ""),
+                    uploader_designation=uploader_desig,
+                    receiver=hod_username,
+                    receiver_designation=hod_designation,
                     src_object_id=str(instance.id),
                     form_type=FormType.LEAVE,
+                    file_extra_JSON={
+                        "type": FormType.LEAVE,
+                        "workflow_status": leave_wf.WF_SUBMITTED,
+                        "leaveStartDate": str(instance.leaveStartDate)
+                        if instance.leaveStartDate
+                        else "",
+                        "leaveEndDate": str(instance.leaveEndDate)
+                        if instance.leaveEndDate
+                        else "",
+                    },
                 )
-            except Exception as e:
-                import logging
-                logging.getLogger(__name__).error("File tracking failed for Leave: %s", e)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logging.getLogger(__name__).error("Leave submit failed: %s", e)
+            return Response(
+                {"detail": f"Leave submission failed: {e!s}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        refreshed = LeaveForm.objects.get(pk=instance.pk)
+        return Response(self.serializer_class(refreshed).data, status=status.HTTP_200_OK)
 
 
 class LeaveFileHandle(Hr2AuthenticatedAPIView):
-    """Handle a leave file action (forward/approve/reject)."""
+    """Handle a leave file action (hod_approve, hod_reject, hr_approve, hr_reject)."""
     serializer_class = Leave_serializer
 
     def post(self, request, file_id):
-        permission_error = _ensure_current_owner_with_designation(
-            request, file_id=file_id, receiver_payload=request.data,
-        )
-        if permission_error:
-            return permission_error
+        # Verify the requesting user is the current file owner
+        try:
+            current_owner = get_current_file_owner(file_id)
+            current_owner_designation = get_current_file_owner_designation(file_id)
+        except Exception:
+            return Response(
+                {"detail": "Unable to verify current owner for this file."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if current_owner != request.user:
+            return Response(
+                {"detail": "Only the current owner can perform this action."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         action = request.data.get("action")
-        receiver = request.data.get("receiver")
-        receiver_designation = request.data.get("receiver_designation")
-        remarks = request.data.get("remarks", "")
+        remarks = (request.data.get("remarks") or "").strip()
 
-        if action == "forward" and receiver and receiver_designation:
-            forward_form_file(
-                file_id=str(file_id),
-                receiver=receiver,
-                receiver_designation=receiver_designation,
-                remarks=remarks,
-                file_extra_JSON=request.data.get("file_extra_JSON", {"type": FormType.LEAVE}),
+        try:
+            file_obj = File.objects.get(pk=file_id)
+            form = LeaveForm.objects.get(pk=int(file_obj.src_object_id))
+        except (File.DoesNotExist, LeaveForm.DoesNotExist, ValueError):
+            return Response({"detail": "File or Form not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if form.workflow_status in leave_wf.TERMINAL_STATUSES:
+            return Response({"detail": "Workflow is already closed."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Auto-resolve role from file tracking designation
+        current_role = (
+            current_owner_designation.name
+            if current_owner_designation
+            else (_get_user_primary_designation(request.user) or "")
+        )
+
+        if action == "accept":
+            if form.workflow_status == leave_wf.WF_SUBMITTED:
+                action = "hod_approve"
+            elif form.workflow_status == leave_wf.WF_HOD_APPROVED:
+                action = "hr_approve"
+        elif action == "reject":
+            if form.workflow_status == leave_wf.WF_SUBMITTED:
+                action = "hod_reject"
+            elif form.workflow_status == leave_wf.WF_HOD_APPROVED:
+                action = "hr_reject"
+
+        if action == "hod_approve":
+            if not leave_wf.designation_is_hod(current_role):
+                return Response({"detail": "Only HOD can approve at this step."}, status=status.HTTP_403_FORBIDDEN)
+            if not leave_wf.hod_covers_applicant(current_role, form.created_by):
+                return Response(
+                    {"detail": "You are not the HOD for this applicant's department."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            hr_admin_user, hr_admin_desig = leave_wf.resolve_hr_admin()
+            if not hr_admin_user:
+                return Response(
+                    {"detail": "HR Admin is not configured (no user holds the HR Admin designation)."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            with transaction.atomic():
+                leave_wf.append_workflow_event(
+                    form, leave_wf.WF_HOD_APPROVED, request.user.username, remarks or "Approved by HOD"
+                )
+                forward_form_file(
+                    file_id=str(file_id),
+                    receiver=hr_admin_user,
+                    receiver_designation=hr_admin_desig,
+                    remarks=remarks or "Approved by HOD — forwarded to HR Admin",
+                    file_extra_JSON={"type": FormType.LEAVE, "workflow_status": leave_wf.WF_HOD_APPROVED},
+                )
+                file_obj.refresh_from_db()
+                leave_wf.sync_file_extra_workflow(file_obj, leave_wf.WF_HOD_APPROVED)
+            return Response(
+                {
+                    "detail": "Approved by HOD. Forwarded to HR Admin.",
+                    "workflow_status": form.workflow_status,
+                },
+                status=status.HTTP_200_OK,
             )
-            return Response({"detail": "File forwarded."}, status=status.HTTP_200_OK)
 
-        if action == "archive":
-            if archive_form_file(file_id=str(file_id)):
-                return Response({"detail": "File archived."}, status=status.HTTP_200_OK)
-            return Response({"detail": "Failed to archive."}, status=status.HTTP_400_BAD_REQUEST)
+        if action == "hod_reject":
+            if not leave_wf.designation_is_hod(current_role):
+                return Response({"detail": "Only HOD can reject at this step."}, status=status.HTTP_403_FORBIDDEN)
+            if not leave_wf.hod_covers_applicant(current_role, form.created_by):
+                return Response(
+                    {"detail": "You are not the HOD for this applicant's department."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            if not remarks:
+                return Response(
+                    {"detail": "Remarks are required when rejecting."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            with transaction.atomic():
+                leave_wf.append_workflow_event(
+                    form,
+                    leave_wf.WF_HOD_REJECTED,
+                    request.user.username,
+                    remarks,
+                    approved=False,
+                )
+                leave_wf.sync_file_extra_workflow(file_obj, leave_wf.WF_HOD_REJECTED)
+                leave_wf.archive_tracked_file_if_workflow_closed(file_id, leave_wf.WF_HOD_REJECTED)
+            return Response(
+                {"detail": "Rejected by HOD. Workflow closed.", "workflow_status": form.workflow_status},
+                status=status.HTTP_200_OK,
+            )
 
-        # Default: try to update form and forward
-        form_id = request.data.get("form_id")
-        if form_id:
-            try:
-                form = get_form_for_type_and_id(FormType.LEAVE, form_id)
-            except Exception:
-                return Response({"detail": "Form not found."}, status=status.HTTP_404_NOT_FOUND)
-            form_payload = request.data.get("form_data", {})
-            rem_err = _ensure_rejection_remarks_if_rejecting(request.data, form_payload)
-            if rem_err:
-                return rem_err
-            serializer = self.serializer_class(form, data=form_payload, context={"request": request})
-            if serializer.is_valid():
-                with transaction.atomic():
-                    previous_approved = form.approved is True
-                    updated_form = serializer.save()
-                    now_approved = updated_form.approved is True
-                    if not previous_approved and now_approved:
-                        success, message = _decrement_leave_balance_on_approval(updated_form)
-                        if not success:
-                            transaction.set_rollback(True)
-                            return Response({"detail": message}, status=status.HTTP_400_BAD_REQUEST)
-                if receiver and receiver_designation:
-                    forward_form_file(
-                        file_id=str(file_id),
-                        receiver=receiver,
-                        receiver_designation=receiver_designation,
-                        remarks=remarks,
-                        file_extra_JSON=request.data.get("file_extra_JSON", {"type": FormType.LEAVE}),
-                    )
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if action == "hr_approve":
+            if not leave_wf.designation_is_hr_admin(current_role):
+                return Response({"detail": "Only HR Admin can approve at this step."}, status=status.HTTP_403_FORBIDDEN)
+            with transaction.atomic():
+                success, message = _decrement_leave_balance_on_approval(form)
+                if not success:
+                    transaction.set_rollback(True)
+                    return Response({"detail": message}, status=status.HTTP_400_BAD_REQUEST)
+                _decrement_legacy_leaves_count_on_approval(form)
+                leave_wf.append_workflow_event(
+                    form,
+                    leave_wf.WF_HR_APPROVED,
+                    request.user.username,
+                    remarks or "Approved by HR Admin",
+                    approved=True,
+                    approved_by=request.user,
+                    approvedDate=datetime.date.today(),
+                )
+                leave_wf.sync_file_extra_workflow(file_obj, leave_wf.WF_HR_APPROVED)
+                leave_wf.archive_tracked_file_if_workflow_closed(file_id, leave_wf.WF_HR_APPROVED)
+            return Response(
+                {"detail": "Approved by HR Admin. Workflow closed.", "workflow_status": form.workflow_status},
+                status=status.HTTP_200_OK,
+            )
+
+        if action == "hr_reject":
+            if not leave_wf.designation_is_hr_admin(current_role):
+                return Response({"detail": "Only HR Admin can reject at this step."}, status=status.HTTP_403_FORBIDDEN)
+            if not remarks:
+                return Response(
+                    {"detail": "Remarks are required when rejecting."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            with transaction.atomic():
+                leave_wf.append_workflow_event(
+                    form,
+                    leave_wf.WF_HR_REJECTED,
+                    request.user.username,
+                    remarks,
+                    approved=False,
+                )
+                leave_wf.sync_file_extra_workflow(file_obj, leave_wf.WF_HR_REJECTED)
+                leave_wf.archive_tracked_file_if_workflow_closed(file_id, leave_wf.WF_HR_REJECTED)
+            return Response(
+                {"detail": "Rejected by HR Admin. Workflow closed.", "workflow_status": form.workflow_status},
+                status=status.HTTP_200_OK,
+            )
 
         return Response({"detail": "Invalid action."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -2117,8 +2572,12 @@ class FormTrackGeneric(Hr2AuthenticatedAPIView):
         return Response({"file_history": history}, status=status.HTTP_200_OK)
 
 
-class EmployeeDetail(Hr2APIView):
-    """Get employee info by employee/user id."""
+class EmployeeDetail(Hr2AuthenticatedAPIView):
+    """Get employee info by Django ``User`` primary key.
+
+    Uses ``Hr2AuthenticatedAPIView`` so HOD/inbox handlers can resolve usernames without
+    requiring HR module access (see ``ModuleAccessHRPermission`` on ``Hr2APIView``).
+    """
 
     def get(self, request, employee_id):
         try:

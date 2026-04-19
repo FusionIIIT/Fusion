@@ -240,6 +240,43 @@ class CPDAAdvanceform(BaseForm):
     workflow_history = models.JSONField(default=list, blank=True)
 
 class LeaveForm(BaseForm):
+    WORKFLOW_STATUS_CHOICES = (
+        ("submitted", "Submitted"),
+        ("hod_approved", "Approved by HOD"),
+        ("hod_rejected", "Rejected by HOD"),
+        ("hr_approved", "Approved by HR"),
+        ("hr_rejected", "Rejected by HR"),
+    )
+    workflow_status = models.CharField(
+        max_length=40,
+        choices=WORKFLOW_STATUS_CHOICES,
+        default="submitted",
+        db_index=True,
+    )
+    workflow_history = models.JSONField(blank=True, default=list)
+
+    # Aligns with ``applications.leave`` (LeaveType / LeaveSegment semantics).
+    leave_type = models.ForeignKey(
+        "leave.LeaveType",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="hr2_leave_forms",
+    )
+    start_half = models.BooleanField(default=False)
+    end_half = models.BooleanField(default=False)
+    applied_leave_days = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Working leave days computed like LeaveSegment (get_leave_days).",
+    )
+    leave_info = models.TextField(
+        max_length=500,
+        blank=True,
+        null=True,
+        help_text="Extra information (e.g. station leave details), like EmployeeCommonForm.leave_info.",
+    )
+
     departmentInfo = models.CharField(max_length=40, null=True)
     natureOfLeave = models.TextField(max_length=40, null=True)
     leaveStartDate = models.DateField(blank=True, null=True)

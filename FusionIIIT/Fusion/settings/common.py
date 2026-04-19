@@ -289,3 +289,8 @@ ALLOW_PASS_RESET = True
 SESSION_COOKIE_AGE = 15 * 60
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_SAVE_EVERY_REQUEST = True
+
+# Monkey patch for django.conf.urls.url (removed in Django 4+)
+import django.urls
+import django.conf.urls
+django.conf.urls.url = django.urls.re_path

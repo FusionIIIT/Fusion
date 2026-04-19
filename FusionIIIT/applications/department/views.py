@@ -1,4 +1,4 @@
-from cgitb import html
+# removed cgitb
 from datetime import date
 import json
 from multiprocessing import Process

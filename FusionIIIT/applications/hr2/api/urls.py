@@ -28,6 +28,8 @@ urlpatterns = [
     path('cpda/claim/submit', views.CpdaClaimSubmit.as_view(), name='cpda_claim_submit'),
 
     # --- Leave-specific endpoints ---
+    path('leave/my-requests', views.LeaveEmployeeRequests.as_view(), name='leave_my_requests'),
+    path('leave/types', views.LeaveTypesForHr.as_view(), name='leave_types_hr'),
     path('leave/submit', views.LeaveSubmit.as_view(), name='leave_submit'),
     path('leave/handle/<int:file_id>/', views.LeaveFileHandle.as_view(), name='leave_file_handle'),
     path('leave/academic/<int:file_id>/', views.LeaveAcademicResponsibility.as_view(), name='leave_academic'),

@@ -1,8 +1,13 @@
 import datetime
+import math
 import re
 
 from rest_framework import serializers
 
+from applications.leave.helpers import get_leave_days
+from applications.leave.models import LeaveType, LeavesCount
+from applications.globals.models import ExtraInfo
+from applications.hr2.constants.leave_balance_map import LEAVE_TYPE_TO_ALLOTTED_USED
 from applications.hr2.models import (
     LTCform,
     CPDAAdvanceform,
@@ -11,6 +16,44 @@ from applications.hr2.models import (
     Appraisalform,
     LeaveBalance,
 )
+
+
+def _leave_type_to_hr_balance_key(leave_type: LeaveType) -> str:
+    """Map ``leave.LeaveType.name`` to keys used by HR2 ``_LEAVE_TYPE_TO_ALLOTTED_USED``."""
+    name = (leave_type.name or "").strip().lower()
+    rules = (
+        ("station", "station leave"),
+        ("vacation", "vacation leave"),
+        ("restricted", "restricted holiday"),
+        ("special casual", "special casual leave"),
+        ("commuted", "commuted leave"),
+        ("earned", "earned leave"),
+        ("casual", "casual"),
+    )
+    for needle, key in rules:
+        if needle in name:
+            return key
+    return name or "casual"
+
+
+def _resolve_leave_type_from_attrs(attrs, instance):
+    lt = attrs.get("leave_type")
+    if isinstance(lt, LeaveType):
+        return lt
+    if lt not in (None, ""):
+        try:
+            pk = int(lt)
+            return LeaveType.objects.filter(pk=pk).first()
+        except (TypeError, ValueError):
+            pass
+    if instance and getattr(instance, "leave_type_id", None):
+        return instance.leave_type
+    name = (attrs.get("natureOfLeave") or "").strip()
+    if not name:
+        return None
+    return LeaveType.objects.filter(name__iexact=name).first() or LeaveType.objects.filter(
+        name__icontains=name
+    ).first()
 
 
 def _validate_approved_status_transition(instance, attrs):
@@ -381,6 +424,13 @@ class CPDAReimbursement_serializer(serializers.ModelSerializer):
 
 class Leave_serializer(serializers.ModelSerializer):
     has_leave_pdf = serializers.SerializerMethodField()
+    leave_type_name = serializers.SerializerMethodField()
+    leave_balance_category = serializers.SerializerMethodField()
+    application_type = serializers.SerializerMethodField()
+    created_by_username = serializers.SerializerMethodField()
+    leave_type = serializers.PrimaryKeyRelatedField(
+        queryset=LeaveType.objects.all(), required=False, allow_null=True
+    )
 
     class Meta:
         model = LeaveForm
@@ -392,30 +442,126 @@ class Leave_serializer(serializers.ModelSerializer):
             "submissionDate",
             "pfNo",
             "departmentInfo",
+            "leave_type",
+            "leave_type_name",
+            "leave_balance_category",
+            "application_type",
             "natureOfLeave",
             "leaveStartDate",
             "leaveEndDate",
+            "start_half",
+            "end_half",
+            "applied_leave_days",
+            "leave_info",
             "purposeOfLeave",
             "addressDuringLeave",
             "academicResponsibility",
-            "academicResponsibility_status",
             "addministrativeResponsibiltyAssigned",
-            "adminResponsibility_status",
             "approved",
             "approvedDate",
             "created_by",
+            "created_by_username",
             "approved_by",
             "leave_pdf_file",
             "has_leave_pdf",
+            "workflow_status",
+            "workflow_history",
         ]
+        read_only_fields = [
+            "workflow_status",
+            "workflow_history",
+            "created_by",
+            "approved_by",
+        ]
+        extra_kwargs = {
+            "employeeId": {"allow_null": True, "required": False},
+            "pfNo": {"allow_null": True, "required": False},
+            "academicResponsibility": {"allow_blank": True, "required": False},
+            "addministrativeResponsibiltyAssigned": {
+                "allow_blank": True,
+                "required": False,
+            },
+            "addressDuringLeave": {"allow_blank": True, "required": False},
+            "leave_info": {"allow_blank": True, "required": False},
+        }
+
+    def to_internal_value(self, data):
+        """Coerce ``employeeId`` / ``pfNo`` from multipart (strings, blanks, lists) to int or omit."""
+        if data is not None and hasattr(data, "keys"):
+            if hasattr(data, "lists"):
+                base = {k: data.get(k) for k in data.keys()}
+            else:
+                base = dict(data) if isinstance(data, dict) else dict(data)
+            for k in ("employeeId", "pfNo"):
+                if k not in base:
+                    continue
+                v = base[k]
+                if isinstance(v, (list, tuple)) and len(v) > 0:
+                    v = v[-1]
+                if v in (None, ""):
+                    base.pop(k, None)
+                    continue
+                if isinstance(v, str) and v.strip().lower() in ("null", "undefined", "none"):
+                    base.pop(k, None)
+                    continue
+                try:
+                    base[k] = int(str(v).strip())
+                except (TypeError, ValueError):
+                    try:
+                        base[k] = int(float(str(v).strip()))
+                    except (TypeError, ValueError):
+                        base.pop(k, None)
+            request = self.context.get("request")
+            if request and getattr(request, "user", None) and request.user.is_authenticated:
+                extra = ExtraInfo.objects.filter(user=request.user).first()
+                if extra:
+                    # LeaveForm uses IntegerField; ExtraInfo.id is CharField PK (often non-numeric).
+                    try:
+                        uid = int(request.user.pk)
+                    except (TypeError, ValueError):
+                        uid = None
+                    if uid is not None:
+                        if base.get("employeeId") in (None, ""):
+                            base["employeeId"] = uid
+                        if base.get("pfNo") in (None, ""):
+                            base["pfNo"] = uid
+            data = base
+        return super().to_internal_value(data)
 
     def get_has_leave_pdf(self, obj):
         return bool(
             getattr(obj, "leave_pdf", None) or getattr(obj, "leave_pdf_file", None)
         )
 
+    def get_leave_type_name(self, obj):
+        lt = getattr(obj, "leave_type", None)
+        return lt.name if lt else None
+
+    def get_leave_balance_category(self, obj):
+        """Normalized key aligned with ``leave_balance_map`` / HR ``LeaveBalance`` columns."""
+        lt = getattr(obj, "leave_type", None)
+        if lt is not None:
+            return _leave_type_to_hr_balance_key(lt)
+        nature = (getattr(obj, "natureOfLeave", None) or "").strip().lower()
+        return nature if nature else "casual"
+
+    def get_application_type(self, obj):
+        """UI label: self-service / file workflow uses the online form (vs legacy offline paperwork)."""
+        return "Online"
+
+    def get_created_by_username(self, obj):
+        u = getattr(obj, "created_by", None)
+        return getattr(u, "username", None) if u else None
+
     def validate(self, attrs):
         attrs = _validate_approved_status_transition(self.instance, attrs)
+        if self.instance is None:
+            purpose = (attrs.get("purposeOfLeave") or "").strip()
+            if not purpose:
+                raise serializers.ValidationError(
+                    {"purposeOfLeave": "Purpose of leave is required."}
+                )
+
         leave_start = attrs.get("leaveStartDate")
         if leave_start is None and self.instance:
             leave_start = self.instance.leaveStartDate
@@ -438,14 +584,115 @@ class Leave_serializer(serializers.ModelSerializer):
                 }
             )
 
+        lt = _resolve_leave_type_from_attrs(attrs, self.instance)
+        if self.instance is None and lt is None:
+            raise serializers.ValidationError(
+                {"leave_type": "Select a leave type (from the leave module catalog)."}
+            )
+        if lt is None:
+            return attrs
+
+        start_half = attrs.get("start_half")
+        if start_half is None and self.instance is not None:
+            start_half = self.instance.start_half
+        end_half = attrs.get("end_half")
+        if end_half is None and self.instance is not None:
+            end_half = self.instance.end_half
+        start_half = bool(start_half)
+        end_half = bool(end_half)
+
+        if leave_start and leave_end and leave_start == leave_end and start_half and end_half:
+            raise serializers.ValidationError(
+                {
+                    "start_half": "Cannot take both start and end half-day on the same date.",
+                    "end_half": "Cannot take both start and end half-day on the same date.",
+                }
+            )
+
+        addr = (attrs.get("addressDuringLeave") or "").strip()
+        if self.instance:
+            addr = addr or (self.instance.addressDuringLeave or "").strip()
+        if lt.requires_address and not addr:
+            raise serializers.ValidationError(
+                {
+                    "addressDuringLeave": f"{lt.name} requires an out-of-station / address during leave.",
+                }
+            )
+
+        request = self.context.get("request")
+        has_doc = bool(attrs.get("leave_pdf_file"))
+        if not has_doc and request is not None:
+            has_doc = bool(getattr(request, "FILES", None) and request.FILES.get("leave_pdf_file"))
+        if self.instance and getattr(self.instance, "leave_pdf", None):
+            has_doc = True
+        if self.instance and getattr(self.instance, "leave_pdf_file", None):
+            has_doc = True
+        if lt.requires_proof and not has_doc:
+            raise serializers.ValidationError(
+                {"leave_pdf_file": f"{lt.name} requires supporting document upload."}
+            )
+
+        if not leave_start or not leave_end:
+            raise serializers.ValidationError(
+                {"leaveStartDate": "Leave start and end dates are required."}
+            )
+
+        days = float(
+            get_leave_days(leave_start, leave_end, lt, start_half, end_half)
+        )
+        attrs["applied_leave_days"] = days
+        attrs["natureOfLeave"] = _leave_type_to_hr_balance_key(lt)[:40]
+        attrs["leave_type"] = lt
+        purpose = (attrs.get("purposeOfLeave") or "").strip()
+        if len(purpose) > 40:
+            attrs["purposeOfLeave"] = purpose[:40]
+        attrs["start_half"] = start_half
+        attrs["end_half"] = end_half
+
+        applicant = request.user if request and request.user.is_authenticated else None
+        if applicant and self.instance is None:
+            year = leave_start.year
+            try:
+                lc = LeavesCount.objects.get(user=applicant, leave_type=lt, year=year)
+                if float(lc.remaining_leaves) + 1e-9 < days:
+                    raise serializers.ValidationError(
+                        {
+                            "leave_type": (
+                                f"Insufficient {lt.name} balance in leave module for {year}: "
+                                f"need {days} day(s), have {lc.remaining_leaves}."
+                            )
+                        }
+                    )
+            except LeavesCount.DoesNotExist:
+                pass
+
+            extra_info = ExtraInfo.objects.filter(user=applicant).first()
+            if extra_info:
+                lb = LeaveBalance.objects.filter(employeeId=extra_info).first()
+                if lb:
+                    bal_key = _leave_type_to_hr_balance_key(lt)
+                    fields = LEAVE_TYPE_TO_ALLOTTED_USED.get(bal_key)
+                    if fields:
+                        allotted_f, used_f = fields
+                        allotted = int(getattr(lb, allotted_f, 0) or 0)
+                        used = int(getattr(lb, used_f, 0) or 0)
+                        need = max(1, int(math.ceil(days)))
+                        if allotted - used < need:
+                            raise serializers.ValidationError(
+                                {
+                                    "leave_type": (
+                                        f"Insufficient HR leave balance for {lt.name}: "
+                                        f"need {need} day(s), available {allotted - used}."
+                                    )
+                                }
+                            )
+
         return attrs
 
     def update(self, instance, validated_data):
         request = self.context.get("request")
-        # Handle approval metadata (approved_by, approvedDate) via shared helper
         validated_data = _set_approved_by_and_date_on_approval(instance, validated_data, request)
 
-        # Handle PDF file upload: read bytes into leave_pdf binary field
         leave_pdf_file = validated_data.get("leave_pdf_file")
         if leave_pdf_file:
             try:
@@ -458,7 +705,6 @@ class Leave_serializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
     def create(self, validated_data):
-        # Handle PDF file upload: read bytes into leave_pdf binary field
         leave_pdf_file = validated_data.get("leave_pdf_file")
         if leave_pdf_file:
             try:
@@ -467,13 +713,7 @@ class Leave_serializer(serializers.ModelSerializer):
                     leave_pdf_file.seek(0)
             except Exception:
                 pass
-        
-        # Set responsibility statuses to 'pending' by default if not provided (BR-HR-006, BR-HR-007)
-        if "academicResponsibility_status" not in validated_data:
-            validated_data["academicResponsibility_status"] = "pending"
-        if "adminResponsibility_status" not in validated_data:
-            validated_data["adminResponsibility_status"] = "pending"
-        
+
         return LeaveForm.objects.create(**validated_data)
 
 
