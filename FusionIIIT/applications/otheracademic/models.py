@@ -5,6 +5,7 @@ from django.db import models
 from django import forms
 from django.contrib.auth.models import User
 from applications.academic_information.models import Student
+from applications.programme_curriculum.models import Course as ProgrammeCourse
 from django.core.exceptions import ValidationError
 
 
@@ -250,6 +251,78 @@ class AssistantshipClaimFormStatusUpd(models.Model):
 
     class Meta:
         db_table = 'AssistantshipClaimFormStausUpd'
+
+
+class PGTAAssignment(models.Model):
+    """Stores TA subject assignment for PG students by dept admin."""
+
+    pg_student = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE)
+    subject = models.ForeignKey(ProgrammeCourse, on_delete=models.CASCADE)
+    assigned_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'PGTAAssignment'
+
+    def __str__(self):
+        return f"{self.pg_student_id} -> {self.subject.code}"
+
+
+class PGFacultySupervisorAssignment(models.Model):
+    """Stores faculty supervisor assignment for PG students by dept admin."""
+
+    pg_student = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE)
+    faculty_supervisor = models.ForeignKey(User, on_delete=models.CASCADE)
+    assigned_by = models.ForeignKey(
+        User,
+        related_name="pg_faculty_supervisor_assigned_by",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'PGFacultySupervisorAssignment'
+
+    def __str__(self):
+        return f"{self.pg_student_id} -> {self.faculty_supervisor.username}"
+
+
+class PGTAAssignmentHistory(models.Model):
+    """Immutable history of TA subject assignments."""
+
+    pg_student = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
+    subject = models.ForeignKey(ProgrammeCourse, on_delete=models.CASCADE)
+    assigned_by = models.ForeignKey(
+        User,
+        related_name="pg_ta_assignment_history_assigned_by",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+    changed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'PGTAAssignmentHistory'
+
+
+class PGFacultySupervisorAssignmentHistory(models.Model):
+    """Immutable history of faculty supervisor assignments."""
+
+    pg_student = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
+    faculty_supervisor = models.ForeignKey(User, on_delete=models.CASCADE)
+    assigned_by = models.ForeignKey(
+        User,
+        related_name="pg_faculty_supervisor_assignment_history_assigned_by",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+    changed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'PGFacultySupervisorAssignmentHistory'
 
     
 

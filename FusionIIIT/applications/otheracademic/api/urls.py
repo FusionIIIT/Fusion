@@ -40,6 +40,10 @@ urlpatterns = [
     path('director-update-status/', views.DirectorUpdateAssistantshipStatus.as_view(), name='director-update-status'),
     path('get_assistantship_status/', views.GetAssistantshipStatus.as_view(), name='get_assistantship_status'),
     path('withdraw-assistantship/<int:form_id>/', views.WithdrawAssistantship.as_view(), name='withdraw-assistantship'),
+    path('ta-assignment-options/', views.FetchTAAssignmentOptions.as_view(), name='ta-assignment-options'),
+    path('ta-assignment-update/', views.UpdateTAAssignments.as_view(), name='ta-assignment-update'),
+    path('faculty-supervisor-assignment-options/', views.FetchFacultySupervisorAssignmentOptions.as_view(), name='faculty-supervisor-assignment-options'),
+    path('faculty-supervisor-assignment-update/', views.UpdateFacultySupervisorAssignments.as_view(), name='faculty-supervisor-assignment-update'),
     # path('assistantship-status-update/', views.UpdateAssistantshipStatus.as_view(), name='assistantship-status-update'),
 
     # No-Dues URLs

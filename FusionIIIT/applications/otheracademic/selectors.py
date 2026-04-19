@@ -11,10 +11,17 @@ from applications.otheracademic.models import (
     LeavePG,
     BonafideFormTableUpdated,
     AssistantshipClaimFormStatusUpd,
+    PGTAAssignment,
+    PGFacultySupervisorAssignment,
+    PGTAAssignmentHistory,
+    PGFacultySupervisorAssignmentHistory,
     NoDues,
     LeaveStatusChoices,
 )
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
+from applications.globals.models import Faculty
+from applications.academic_information.models import Student
+from applications.programme_curriculum.models import Course as ProgrammeCourse
 
 
 # ==================== USER/DESIGNATION SELECTORS ====================
@@ -60,13 +67,47 @@ def get_first_user_for_designation(designation_name):
         designation = Designation.objects.get(name=designation_name)
         user_ids = HoldsDesignation.objects.filter(
             designation_id=designation.id
-        ).values_list('user_id', flat=True)
+        ).order_by("user_id").values_list('user_id', flat=True)
 
         if user_ids.exists():
             return User.objects.get(id=user_ids[0])
     except (Designation.DoesNotExist, User.DoesNotExist):
         pass
     return None
+
+
+def get_users_for_designation(designation_name):
+    """Get all users who hold a specific designation."""
+    try:
+        designation = Designation.objects.get(name=designation_name)
+    except Designation.DoesNotExist:
+        return User.objects.none()
+
+    user_ids = HoldsDesignation.objects.filter(
+        designation_id=designation.id
+    ).values_list("user_id", flat=True)
+    return User.objects.filter(id__in=user_ids).order_by("id").distinct()
+
+
+def get_first_user_for_designation_contains(designation_keyword):
+    """Get first user with a designation containing the given keyword."""
+    user_ids = HoldsDesignation.objects.filter(
+        designation__name__icontains=designation_keyword
+    ).values_list("user_id", flat=True)
+    if user_ids.exists():
+        try:
+            return User.objects.get(id=user_ids[0])
+        except User.DoesNotExist:
+            return None
+    return None
+
+
+def get_users_for_designation_contains(designation_keyword):
+    """Get all users with a designation containing the given keyword."""
+    user_ids = HoldsDesignation.objects.filter(
+        designation__name__icontains=designation_keyword
+    ).values_list("user_id", flat=True)
+    return User.objects.filter(id__in=user_ids).distinct()
 
 
 def user_has_designation(user, designation_name):
@@ -384,9 +425,10 @@ def get_pending_assistantships_for_thesis():
 
 
 def get_pending_assistantships_for_hod():
-    """Get assistantship forms pending Department Admin approval."""
+    """Get assistantship forms pending Department Admin verification."""
     return AssistantshipClaimFormStatusUpd.objects.filter(
         TA_approved=True,
+        TA_rejected=False,
         HOD_approved=False,
         HOD_rejected=False
     )
@@ -396,6 +438,7 @@ def get_pending_assistantships_for_hod_user(hod_username):
     """Get assistantship forms pending for a specific Department Admin user."""
     return AssistantshipClaimFormStatusUpd.objects.filter(
         TA_approved=True,
+        TA_rejected=False,
         HOD_approved=False,
         HOD_rejected=False,
         hod__iexact=hod_username,
@@ -411,18 +454,27 @@ def get_assistantship_by_id(form_id):
 
 
 def get_pending_assistantships_for_acad_admin():
-    """Get assistantship forms pending Academic Admin approval."""
+    """Get assistantship forms pending Academic Admin disbursement audit."""
     return AssistantshipClaimFormStatusUpd.objects.filter(
         TA_approved=True,
+        TA_rejected=False,
         HOD_approved=True,
-        Acad_approved=False,
-        Acad_rejected=False
-    )
+        HOD_rejected=False,
+        Acad_approved=True,
+        Acad_rejected=False,
+    ).exclude(remark="Stipend disbursed (audit completed)")
 
 
 def get_pending_assistantships_for_dean():
-    """Get assistantship forms pending Dean Academic approval."""
-    return AssistantshipClaimFormStatusUpd.objects.none()
+    """Get assistantship forms pending HOD approval."""
+    return AssistantshipClaimFormStatusUpd.objects.filter(
+        TA_approved=True,
+        TA_rejected=False,
+        HOD_approved=True,
+        HOD_rejected=False,
+        Acad_approved=False,
+        Acad_rejected=False,
+    )
 
 
 def get_pending_assistantships_for_director():
@@ -465,3 +517,75 @@ def get_nodues_by_roll_no(roll_no):
 def get_all_nodues_requests():
     """Get all no dues requests."""
     return NoDues.objects.all()
+
+
+# ==================== PG TA ASSIGNMENT SELECTORS ====================
+
+def get_pg_students_for_assignment():
+    """Get PG students (M.Tech/PhD/M.Des) for assignment workflows."""
+    return Student.objects.select_related("id__user").filter(
+        programme__in=["M.Tech", "PhD", "M.Des"]
+    ).exclude(id__id__iexact="23BCS229").order_by("id__id")
+
+
+def get_pg_students_for_ta_assignment():
+    """Get PG students (M.Tech/PhD/M.Des) for TA assignment."""
+    return get_pg_students_for_assignment()
+
+
+def get_subject_options_for_ta_assignment():
+    """Get available subjects from programme curriculum."""
+    return ProgrammeCourse.objects.filter(working_course=True).order_by("code", "name")
+
+
+def get_all_pg_ta_assignments():
+    """Get existing TA assignments for PG students."""
+    return PGTAAssignment.objects.select_related("pg_student", "subject")
+
+
+def get_pg_ta_assignment_for_student(pg_student_id):
+    """Get TA assignment row for a PG student."""
+    try:
+        return PGTAAssignment.objects.get(pg_student_id=pg_student_id)
+    except PGTAAssignment.DoesNotExist:
+        return None
+
+
+def get_faculty_members_for_supervisor_assignment():
+    """Get faculty users for faculty supervisor assignment dropdown."""
+    return Faculty.objects.select_related("id__user").order_by("id__id")
+
+
+def get_all_pg_faculty_supervisor_assignments():
+    """Get existing faculty supervisor assignments for PG students."""
+    return PGFacultySupervisorAssignment.objects.select_related(
+        "pg_student", "faculty_supervisor", "assigned_by"
+    )
+
+
+def get_pg_ta_assignment_history(pg_student_id=None):
+    """Get TA assignment history rows."""
+    qs = PGTAAssignmentHistory.objects.select_related("pg_student", "subject", "assigned_by")
+    if pg_student_id:
+        qs = qs.filter(pg_student_id=pg_student_id)
+    return qs.order_by("-changed_at")
+
+
+def get_pg_faculty_supervisor_assignment_history(pg_student_id=None):
+    """Get faculty supervisor assignment history rows."""
+    qs = PGFacultySupervisorAssignmentHistory.objects.select_related(
+        "pg_student", "faculty_supervisor", "assigned_by"
+    )
+    if pg_student_id:
+        qs = qs.filter(pg_student_id=pg_student_id)
+    return qs.order_by("-changed_at")
+
+
+def get_pg_faculty_supervisor_assignment_for_student(pg_student_id):
+    """Get faculty supervisor assignment row for a PG student."""
+    try:
+        return PGFacultySupervisorAssignment.objects.select_related("faculty_supervisor").get(
+            pg_student_id=pg_student_id
+        )
+    except PGFacultySupervisorAssignment.DoesNotExist:
+        return None

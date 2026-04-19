@@ -6,12 +6,17 @@ Views should call these services instead of containing business logic directly.
 from datetime import date, datetime
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.db import transaction
 
 from applications.otheracademic.models import (
     LeaveFormTable,
     LeavePG,
     BonafideFormTableUpdated,
     AssistantshipClaimFormStatusUpd,
+    PGTAAssignment,
+    PGFacultySupervisorAssignment,
+    PGTAAssignmentHistory,
+    PGFacultySupervisorAssignmentHistory,
     NoDues,
     LeaveStatusChoices,
     LeaveTypeChoices,
@@ -35,6 +40,11 @@ class BonafideServiceError(Exception):
 
 class AssistantshipServiceError(Exception):
     """Custom exception for assistantship-related service errors."""
+    pass
+
+
+class TAAssignmentServiceError(Exception):
+    """Custom exception for PG TA assignment-related errors."""
     pass
 
 
@@ -626,16 +636,39 @@ def submit_assistantship(
     if selectors.assistantship_exists_for_period(user.extrainfo, date_from, date_to):
         raise AssistantshipServiceError("Form for this period already exists.")
 
-    # Validate faculty supervisor username passed from form.
-    ta_supervisor_user = selectors.get_user_by_username(ta_supervisor)
-    if not ta_supervisor_user:
-        raise AssistantshipServiceError("Faculty Supervisor username not found.")
+    # PG-only eligibility for assistantship.
+    is_pg_student = selectors.get_pg_students_for_assignment().filter(id=user.extrainfo).exists()
+    if not is_pg_student:
+        raise AssistantshipServiceError("Only PG students can submit assistantship claims.")
+
+    # Resolve assigned faculty supervisor for this PG student (if configured).
+    supervisor_assignment = selectors.get_pg_faculty_supervisor_assignment_for_student(
+        user.extrainfo.id
+    )
+    if not supervisor_assignment:
+        raise AssistantshipServiceError(
+            "Faculty Supervisor is not assigned for this PG student. Please contact Department Admin."
+        )
+
+    ta_supervisor_user = supervisor_assignment.faculty_supervisor
+    if ta_supervisor and ta_supervisor_user.username.lower() != str(ta_supervisor).lower():
+        raise AssistantshipServiceError(
+            "Faculty Supervisor does not match the configured assignment for this PG student."
+        )
 
     # Resolve Department Admin for next stage.
-    dept_admin_user = (
-        selectors.get_first_user_for_designation("dept_admin")
-        or selectors.get_first_user_for_designation("deptadmin")
-    )
+    dept_admin_user = None
+    if hod:
+        candidate = selectors.get_user_by_username(hod)
+        if candidate and selectors.user_has_designation(candidate, "dept_admin"):
+            dept_admin_user = candidate
+
+    if not dept_admin_user:
+        dept_admin_user = (
+            selectors.get_first_user_for_designation("dept_admin")
+            or selectors.get_first_user_for_designation("deptadmin")
+        )
+
     if not dept_admin_user:
         raise AssistantshipServiceError("Department Admin is not configured.")
 
@@ -694,7 +727,10 @@ def update_assistantship_status_ta(approved_ids, rejected_ids, actor_user):
             form.save(update_fields=["TA_approved", "TA_rejected"])
 
             student_user = selectors.get_user_by_extrainfo_id(form.roll_no_id)
-            dept_admin_user = selectors.get_user_by_username(form.hod)
+            dept_admin_users = selectors.get_users_for_designation("dept_admin")
+            if not dept_admin_users.exists():
+                dept_admin_users = selectors.get_users_for_designation("deptadmin")
+
             if student_user:
                 otheracademic_notif(
                     actor_user,
@@ -704,7 +740,7 @@ def update_assistantship_status_ta(approved_ids, rejected_ids, actor_user):
                     "admin",
                     "Your assistantship form has been verified by Faculty Supervisor.",
                 )
-            if dept_admin_user:
+            for dept_admin_user in dept_admin_users:
                 otheracademic_notif(
                     actor_user,
                     dept_admin_user,
@@ -748,25 +784,23 @@ def update_assistantship_status_thesis(approved_ids, rejected_ids):
 
 
 def update_assistantship_status_hod(approved_ids, rejected_ids, actor_user):
-    """Update assistantship status by Department Admin (final stage)."""
+    """Update assistantship status by Department Admin (stage 2 verification)."""
     if approved_ids:
         for form_id in approved_ids:
             form = selectors.get_assistantship_by_id(form_id)
             if not form:
                 continue
-            if form.hod.lower() != actor_user.username.lower():
-                raise AssistantshipServiceError("You can only approve forms assigned to you.")
             if not form.TA_approved or form.TA_rejected:
                 raise AssistantshipServiceError("Department Admin can act only after Faculty Supervisor verification.")
             if form.HOD_approved or form.HOD_rejected:
-                raise AssistantshipServiceError("This assistantship form is already finalized.")
+                raise AssistantshipServiceError("This assistantship form is already reviewed by Department Admin.")
 
             form.HOD_approved = True
             form.HOD_rejected = False
-            form.remark = "Stipend marked for disbursement"
             form.save(update_fields=["HOD_approved", "HOD_rejected", "remark"])
 
             student_user = selectors.get_user_by_extrainfo_id(form.roll_no_id)
+            hod_users = selectors.get_users_for_designation_contains("hod")
             if student_user:
                 otheracademic_notif(
                     actor_user,
@@ -774,23 +808,32 @@ def update_assistantship_status_hod(approved_ids, rejected_ids, actor_user):
                     "ast_ta_accept",
                     form.id,
                     "admin",
-                    "Your assistantship has been approved by Department Admin and marked for disbursement.",
+                    "Your assistantship has been verified by Department Admin and forwarded to HOD.",
+                )
+            for hod_user in hod_users:
+                if hod_user.id == actor_user.id:
+                    continue
+                otheracademic_notif(
+                    actor_user,
+                    hod_user,
+                    "ast_hod",
+                    form.id,
+                    "admin",
+                    "A verified assistantship form is waiting for HOD approval.",
                 )
     if rejected_ids:
         for form_id in rejected_ids:
             form = selectors.get_assistantship_by_id(form_id)
             if not form:
                 continue
-            if form.hod.lower() != actor_user.username.lower():
-                raise AssistantshipServiceError("You can only approve forms assigned to you.")
             if not form.TA_approved or form.TA_rejected:
                 raise AssistantshipServiceError("Department Admin can act only after Faculty Supervisor verification.")
             if form.HOD_approved or form.HOD_rejected:
-                raise AssistantshipServiceError("This assistantship form is already finalized.")
+                raise AssistantshipServiceError("This assistantship form is already reviewed by Department Admin.")
 
             form.HOD_approved = False
             form.HOD_rejected = True
-            form.remark = "Disbursement stopped due to rejection"
+            form.remark = "Rejected by Department Admin"
             form.save(update_fields=["HOD_approved", "HOD_rejected", "remark"])
 
             student_user = selectors.get_user_by_extrainfo_id(form.roll_no_id)
@@ -828,17 +871,124 @@ def withdraw_assistantship(user, form_id):
     form.delete()
 
 
-def update_assistantship_status_acad_admin(approved_ids, rejected_ids):
-    """Update assistantship status by Academic Admin."""
+def update_assistantship_status_acad_admin(approved_ids, rejected_ids, actor_user):
+    """Update assistantship status by Academic Admin (stage 5 disbursement audit)."""
     if approved_ids:
-        AssistantshipClaimFormStatusUpd.objects.filter(id__in=approved_ids).update(Acad_approved=True, Acad_rejected=False)
+        for form_id in approved_ids:
+            form = selectors.get_assistantship_by_id(form_id)
+            if not form:
+                continue
+            if not form.Acad_approved or form.Acad_rejected:
+                raise AssistantshipServiceError(
+                    "Academic Admin can disburse only after HOD approval."
+                )
+            if form.remark == "Stipend disbursed (audit completed)":
+                raise AssistantshipServiceError("This assistantship form is already marked as disbursed.")
+
+            form.remark = "Stipend disbursed (audit completed)"
+            form.save(update_fields=["remark"])
+
+            student_user = selectors.get_user_by_extrainfo_id(form.roll_no_id)
+            if student_user and actor_user:
+                otheracademic_notif(
+                    actor_user,
+                    student_user,
+                    "ast_ta_accept",
+                    form.id,
+                    "admin",
+                    "Your assistantship stipend has been marked as disbursed by Academic Admin.",
+                )
+
     if rejected_ids:
-        AssistantshipClaimFormStatusUpd.objects.filter(id__in=rejected_ids).update(Acad_approved=False, Acad_rejected=True)
+        for form_id in rejected_ids:
+            form = selectors.get_assistantship_by_id(form_id)
+            if not form:
+                continue
+            if not form.Acad_approved or form.Acad_rejected:
+                raise AssistantshipServiceError(
+                    "Academic Admin can act only after HOD approval."
+                )
+            if form.remark == "Stipend disbursed (audit completed)":
+                raise AssistantshipServiceError("Cannot reject after stipend is marked disbursed.")
+
+            form.remark = "Disbursement held by Academic Admin"
+            form.save(update_fields=["remark"])
+
+            student_user = selectors.get_user_by_extrainfo_id(form.roll_no_id)
+            if student_user and actor_user:
+                otheracademic_notif(
+                    actor_user,
+                    student_user,
+                    "ast_ta_accept",
+                    form.id,
+                    "admin",
+                    "Your assistantship disbursement has been put on hold by Academic Admin.",
+                )
 
 
-def update_assistantship_status_dean(approved_ids, rejected_ids):
-    """Update assistantship status by Dean Academic."""
-    return None
+def update_assistantship_status_dean(approved_ids, rejected_ids, actor_user):
+    """Update assistantship status by HOD (stage 4 final approval/rejection)."""
+    if approved_ids:
+        for form_id in approved_ids:
+            form = selectors.get_assistantship_by_id(form_id)
+            if not form:
+                continue
+            if not form.HOD_approved or form.HOD_rejected:
+                raise AssistantshipServiceError("HOD can act only after Department Admin verification.")
+            if form.Acad_approved or form.Acad_rejected:
+                raise AssistantshipServiceError("This assistantship form is already reviewed by HOD.")
+
+            form.Acad_approved = True
+            form.Acad_rejected = False
+            form.remark = "Approved by HOD"
+            form.save(update_fields=["Acad_approved", "Acad_rejected", "remark"])
+
+            student_user = selectors.get_user_by_extrainfo_id(form.roll_no_id)
+            acad_admin_user = selectors.get_first_user_for_designation("acadadmin")
+            if student_user and actor_user:
+                otheracademic_notif(
+                    actor_user,
+                    student_user,
+                    "ast_ta_accept",
+                    form.id,
+                    "admin",
+                    "Your assistantship has been approved by HOD and forwarded to Academic Admin for disbursement audit.",
+                )
+            if acad_admin_user and actor_user:
+                otheracademic_notif(
+                    actor_user,
+                    acad_admin_user,
+                    "ast_hod",
+                    form.id,
+                    "admin",
+                    "An HOD-approved assistantship form is waiting for disbursement audit.",
+                )
+
+    if rejected_ids:
+        for form_id in rejected_ids:
+            form = selectors.get_assistantship_by_id(form_id)
+            if not form:
+                continue
+            if not form.HOD_approved or form.HOD_rejected:
+                raise AssistantshipServiceError("HOD can act only after Department Admin verification.")
+            if form.Acad_approved or form.Acad_rejected:
+                raise AssistantshipServiceError("This assistantship form is already reviewed by HOD.")
+
+            form.Acad_approved = False
+            form.Acad_rejected = True
+            form.remark = "Rejected by HOD"
+            form.save(update_fields=["Acad_approved", "Acad_rejected", "remark"])
+
+            student_user = selectors.get_user_by_extrainfo_id(form.roll_no_id)
+            if student_user and actor_user:
+                otheracademic_notif(
+                    actor_user,
+                    student_user,
+                    "ast_ta_accept",
+                    form.id,
+                    "admin",
+                    "Your assistantship has been rejected by HOD.",
+                )
 
 
 def update_assistantship_status_director(approved_ids, rejected_ids):
@@ -852,13 +1002,14 @@ def get_assistantship_status_text(form):
     Returns 'Rejected', 'Approved', or 'Pending'.
     """
     is_rejected = any([
-        form.HOD_rejected,
         form.TA_rejected,
+        form.HOD_rejected,
+        form.Acad_rejected,
     ])
 
     if is_rejected:
         return "Rejected"
-    elif form.HOD_approved:
+    elif form.remark == "Stipend disbursed (audit completed)":
         return "Approved"
     else:
         return "Pending"
@@ -869,6 +1020,7 @@ def get_assistantship_approval_stages(form):
     stages = {
         "Faculty_Supervisor": ("TA_approved", "TA_rejected"),
         "Department_Admin": ("HOD_approved", "HOD_rejected"),
+        "HOD": ("Acad_approved", "Acad_rejected"),
     }
 
     result = {}
@@ -880,8 +1032,212 @@ def get_assistantship_approval_stages(form):
         else:
             result[stage_name] = "Pending"
 
-    result["Stipend_Disbursement"] = (
-        "Marked for Disbursement" if form.HOD_approved else "Not Marked"
-    )
+    if form.remark == "Stipend disbursed (audit completed)":
+        result["Acad_Admin_Audit"] = "Disbursed"
+    elif form.Acad_approved and not form.Acad_rejected:
+        result["Acad_Admin_Audit"] = "Pending"
+    elif form.Acad_rejected:
+        result["Acad_Admin_Audit"] = "On Hold"
+    else:
+        result["Acad_Admin_Audit"] = "Pending"
 
     return result
+
+
+# ==================== PG TA ASSIGNMENT SERVICES ====================
+
+def get_pg_ta_assignment_options():
+    """Return PG students, subject options, and existing TA assignments."""
+    students = selectors.get_pg_students_for_ta_assignment()
+    subjects = selectors.get_subject_options_for_ta_assignment()
+    assignments = selectors.get_all_pg_ta_assignments()
+
+    assignment_map = {row.pg_student_id: row for row in assignments}
+
+    student_rows = []
+    for student in students:
+        existing = assignment_map.get(student.id_id)
+        full_name = f"{student.id.user.first_name} {student.id.user.last_name}".strip() or student.id.user.username
+        student_rows.append({
+            "roll_no": student.id_id,
+            "name": full_name,
+            "programme": student.programme,
+            "assigned_subject_id": existing.subject_id if existing else None,
+            "assigned_subject": (
+                f"{existing.subject.code} - {existing.subject.name}" if existing else None
+            ),
+        })
+
+    subject_rows = [
+        {
+            "id": subject.id,
+            "code": subject.code,
+            "name": subject.name,
+            "label": f"{subject.code} - {subject.name}",
+        }
+        for subject in subjects
+    ]
+
+    return {
+        "students": student_rows,
+        "subjects": subject_rows,
+    }
+
+
+def upsert_pg_ta_assignments(assignments, actor_user):
+    """Create or update TA assignments for PG students."""
+    if not isinstance(assignments, list) or not assignments:
+        raise TAAssignmentServiceError("At least one assignment is required.")
+
+    updated_count = 0
+    with transaction.atomic():
+        for item in assignments:
+            roll_no = item.get("roll_no")
+            subject_id = item.get("subject_id")
+
+            if not roll_no or not subject_id:
+                raise TAAssignmentServiceError("Each assignment must include roll_no and subject_id.")
+
+            student_user = selectors.get_user_by_username(str(roll_no))
+            if not student_user:
+                raise TAAssignmentServiceError(f"Student '{roll_no}' not found.")
+
+            student = selectors.get_pg_students_for_ta_assignment().filter(id=student_user.extrainfo).first()
+            if not student:
+                raise TAAssignmentServiceError(f"Student '{roll_no}' is not a PG student.")
+
+            subject = selectors.get_subject_options_for_ta_assignment().filter(id=subject_id).first()
+            if not subject:
+                raise TAAssignmentServiceError(f"Subject id '{subject_id}' not found.")
+
+            PGTAAssignment.objects.update_or_create(
+                pg_student=student_user.extrainfo,
+                defaults={
+                    "subject": subject,
+                    "assigned_by": actor_user,
+                },
+            )
+            PGTAAssignmentHistory.objects.create(
+                pg_student=student_user.extrainfo,
+                subject=subject,
+                assigned_by=actor_user,
+            )
+            updated_count += 1
+
+    return updated_count
+
+
+def get_pg_faculty_supervisor_assignment_options():
+    """Return PG students, faculty options, and existing faculty supervisor assignments."""
+    students = selectors.get_pg_students_for_assignment()
+    faculties = selectors.get_faculty_members_for_supervisor_assignment()
+    assignments = selectors.get_all_pg_faculty_supervisor_assignments()
+
+    assignment_map = {row.pg_student_id: row for row in assignments}
+
+    student_rows = []
+    for student in students:
+        existing = assignment_map.get(student.id_id)
+        full_name = f"{student.id.user.first_name} {student.id.user.last_name}".strip() or student.id.user.username
+        student_rows.append({
+            "roll_no": student.id_id,
+            "name": full_name,
+            "programme": student.programme,
+            "assigned_faculty_id": existing.faculty_supervisor_id if existing else None,
+            "assigned_faculty": (
+                existing.faculty_supervisor.get_full_name().strip() or existing.faculty_supervisor.username
+            ) if existing else None,
+        })
+
+    faculty_rows = []
+    for faculty in faculties:
+        user = faculty.id.user
+        label_name = user.get_full_name().strip() or user.username
+        faculty_rows.append(
+            {
+                "id": user.id,
+                "username": user.username,
+                "name": label_name,
+                "label": f"{label_name} ({user.username})",
+            }
+        )
+
+    return {
+        "students": student_rows,
+        "faculties": faculty_rows,
+    }
+
+
+def upsert_pg_faculty_supervisor_assignments(assignments, actor_user):
+    """Create or update faculty supervisor assignments for PG students."""
+    if not isinstance(assignments, list) or not assignments:
+        raise TAAssignmentServiceError("At least one assignment is required.")
+
+    valid_faculty_user_ids = set(
+        selectors.get_faculty_members_for_supervisor_assignment().values_list("id__user_id", flat=True)
+    )
+
+    designation, _ = Designation.objects.get_or_create(
+        name="faculty_supervisor",
+        defaults={"full_name": "Faculty Supervisor", "type": "academic"},
+    )
+
+    updated_count = 0
+    with transaction.atomic():
+        for item in assignments:
+            roll_no = item.get("roll_no")
+            faculty_user_id = item.get("faculty_user_id")
+
+            if not roll_no or not faculty_user_id:
+                raise TAAssignmentServiceError("Each assignment must include roll_no and faculty_user_id.")
+
+            student_user = selectors.get_user_by_username(str(roll_no))
+            if not student_user:
+                raise TAAssignmentServiceError(f"Student '{roll_no}' not found.")
+
+            student = selectors.get_pg_students_for_assignment().filter(id=student_user.extrainfo).first()
+            if not student:
+                raise TAAssignmentServiceError(f"Student '{roll_no}' is not a valid PG student for assignment.")
+
+            try:
+                faculty_user_id = int(faculty_user_id)
+            except (TypeError, ValueError):
+                raise TAAssignmentServiceError("Invalid faculty_user_id.")
+
+            if faculty_user_id not in valid_faculty_user_ids:
+                raise TAAssignmentServiceError(f"Faculty user id '{faculty_user_id}' is not valid.")
+
+            faculty_user = User.objects.filter(id=faculty_user_id).first()
+            if not faculty_user:
+                raise TAAssignmentServiceError(f"Faculty user id '{faculty_user_id}' not found.")
+
+            # BR-52: restrict to faculty from relevant student department when both are available.
+            student_department_id = getattr(student_user.extrainfo, "department_id", None)
+            faculty_department_id = getattr(faculty_user.extrainfo, "department_id", None)
+            if student_department_id and faculty_department_id and student_department_id != faculty_department_id:
+                raise TAAssignmentServiceError(
+                    "Faculty Supervisor must belong to the student's department."
+                )
+
+            PGFacultySupervisorAssignment.objects.update_or_create(
+                pg_student=student_user.extrainfo,
+                defaults={
+                    "faculty_supervisor": faculty_user,
+                    "assigned_by": actor_user,
+                },
+            )
+
+            PGFacultySupervisorAssignmentHistory.objects.create(
+                pg_student=student_user.extrainfo,
+                faculty_supervisor=faculty_user,
+                assigned_by=actor_user,
+            )
+
+            HoldsDesignation.objects.get_or_create(
+                user=faculty_user,
+                working=faculty_user,
+                designation=designation,
+            )
+            updated_count += 1
+
+    return updated_count

@@ -90,3 +90,29 @@ class AssistantshipAPITestCase(TestCase):
         """Test that Academic Admin pending requests requires authentication."""
         response = self.client.get('/otheracademic/api/acadadmin-pending-requests/')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_ta_assignment_options_requires_auth(self):
+        """Test that TA assignment options requires authentication."""
+        response = self.client.get('/otheracademic/api/ta-assignment-options/')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_faculty_supervisor_assignment_options_requires_auth(self):
+        """Test that faculty supervisor assignment options requires authentication."""
+        response = self.client.get('/otheracademic/api/faculty-supervisor-assignment-options/')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_ta_assignment_options_forbidden_without_dept_admin_role(self):
+        """Authenticated non-dept-admin user should be forbidden."""
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get('/otheracademic/api/ta-assignment-options/')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_faculty_supervisor_assignment_update_forbidden_without_dept_admin_role(self):
+        """Authenticated non-dept-admin user should be forbidden."""
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(
+            '/otheracademic/api/faculty-supervisor-assignment-update/',
+            {'assignments': [{'roll_no': '23MCS111', 'faculty_user_id': 1}]},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

@@ -23,6 +23,8 @@ from .serializers import (
     BonafideStatusUpdateSerializer,
     AssistantshipFormInputSerializer,
     AssistantshipStatusUpdateSerializer,
+    TAAssignmentUpdateSerializer,
+    FacultySupervisorAssignmentUpdateSerializer,
     NoDuesStatusSerializer,
     NoDuesVerificationSerializer,
     NoDuesCertificateSerializer,
@@ -530,7 +532,7 @@ class HODFetchPendingAssistantshipRequests(APIView):
         if not selectors.user_has_designation(request.user, "dept_admin"):
             raise PermissionDenied("Only Department Admin can access this queue.")
         try:
-            pending_forms = selectors.get_pending_assistantships_for_hod_user(request.user.username)
+            pending_forms = selectors.get_pending_assistantships_for_hod()
             response_data = [selectors.serialize_assistantship_pending(form) for form in pending_forms]
             return Response(response_data, status=status.HTTP_200_OK)
         except Exception as e:
@@ -562,53 +564,69 @@ class HODUpdateAssistantshipStatus(APIView):
 
 
 class AcadAdminFetchPendingAssistantshipRequests(APIView):
-    """Fetch pending assistantship requests for Academic Admin approval."""
+    """Fetch pending assistantship requests for Academic Admin disbursement audit."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        if not selectors.user_has_designation(request.user, "acadadmin"):
+            raise PermissionDenied("Only Academic Admin can access this queue.")
         pending_forms = selectors.get_pending_assistantships_for_acad_admin()
         response_data = [selectors.serialize_assistantship_pending(form) for form in pending_forms]
         return Response(response_data, status=status.HTTP_200_OK)
 
 
 class AcadAdminUpdateAssistantshipStatus(APIView):
-    """Update assistantship status (Academic Admin approval)."""
+    """Update assistantship status (Academic Admin disbursement audit)."""
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
+        if not selectors.user_has_designation(request.user, "acadadmin"):
+            raise PermissionDenied("Only Academic Admin can update this stage.")
+
         serializer = AssistantshipStatusUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         approved_ids = serializer.validated_data.get('approvedRequests', [])
         rejected_ids = serializer.validated_data.get('rejectedRequests', [])
 
-        services.update_assistantship_status_acad_admin(approved_ids, rejected_ids)
-        return Response({"message": "Assistantship statuses updated successfully."})
+        try:
+            services.update_assistantship_status_acad_admin(approved_ids, rejected_ids, request.user)
+            return Response({"message": "Assistantship statuses updated successfully."})
+        except services.AssistantshipServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class DeanAcadFetchPendingAssistantshipRequests(APIView):
-    """Fetch pending assistantship requests for Dean Academic approval."""
+    """Fetch pending assistantship requests for HOD approval."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        if not selectors.user_has_designation_contains(request.user, "hod"):
+            raise PermissionDenied("Only HOD can access this queue.")
         pending_forms = selectors.get_pending_assistantships_for_dean()
         response_data = [selectors.serialize_assistantship_pending(form) for form in pending_forms]
         return Response(response_data, status=status.HTTP_200_OK)
 
 
 class DeanAcadUpdateAssistantshipStatus(APIView):
-    """Update assistantship status (Dean Academic approval)."""
+    """Update assistantship status (HOD approval/rejection)."""
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
+        if not selectors.user_has_designation_contains(request.user, "hod"):
+            raise PermissionDenied("Only HOD can update this stage.")
+
         serializer = AssistantshipStatusUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         approved_ids = serializer.validated_data.get('approvedRequests', [])
         rejected_ids = serializer.validated_data.get('rejectedRequests', [])
 
-        services.update_assistantship_status_dean(approved_ids, rejected_ids)
-        return Response({"message": "Assistantship statuses updated successfully."})
+        try:
+            services.update_assistantship_status_dean(approved_ids, rejected_ids, request.user)
+            return Response({"message": "Assistantship statuses updated successfully."})
+        except services.AssistantshipServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class DirectorFetchPendingAssistantshipRequests(APIView):
@@ -690,6 +708,103 @@ class WithdrawAssistantship(APIView):
             return Response({"message": "Assistantship form withdrawn successfully."}, status=status.HTTP_200_OK)
         except services.AssistantshipServiceError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FetchTAAssignmentOptions(APIView):
+    """Fetch PG students and subjects for dept_admin TA assignment."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not selectors.user_has_designation(request.user, "dept_admin"):
+            raise PermissionDenied("Only Department Admin can access TA assignment options.")
+
+        try:
+            data = services.get_pg_ta_assignment_options()
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": "Error fetching TA assignment options", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+class UpdateTAAssignments(APIView):
+    """Create/update TA subject assignments for PG students by dept_admin."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if not selectors.user_has_designation(request.user, "dept_admin"):
+            raise PermissionDenied("Only Department Admin can update TA assignments.")
+
+        serializer = TAAssignmentUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            updated_count = services.upsert_pg_ta_assignments(
+                serializer.validated_data.get("assignments", []),
+                request.user,
+            )
+            return Response(
+                {"message": "TA assignments updated successfully.", "updated_count": updated_count},
+                status=status.HTTP_200_OK,
+            )
+        except services.TAAssignmentServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(
+                {"error": "Error updating TA assignments", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+class FetchFacultySupervisorAssignmentOptions(APIView):
+    """Fetch PG students and faculty options for dept_admin supervisor assignment."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not selectors.user_has_designation(request.user, "dept_admin"):
+            raise PermissionDenied("Only Department Admin can access supervisor assignment options.")
+
+        try:
+            data = services.get_pg_faculty_supervisor_assignment_options()
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": "Error fetching faculty supervisor assignment options", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+class UpdateFacultySupervisorAssignments(APIView):
+    """Create/update faculty supervisor assignments for PG students by dept_admin."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if not selectors.user_has_designation(request.user, "dept_admin"):
+            raise PermissionDenied("Only Department Admin can update faculty supervisor assignments.")
+
+        serializer = FacultySupervisorAssignmentUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            updated_count = services.upsert_pg_faculty_supervisor_assignments(
+                serializer.validated_data.get("assignments", []),
+                request.user,
+            )
+            return Response(
+                {
+                    "message": "Faculty supervisor assignments updated successfully.",
+                    "updated_count": updated_count,
+                },
+                status=status.HTTP_200_OK,
+            )
+        except services.TAAssignmentServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(
+                {"error": "Error updating faculty supervisor assignments", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 # ==================== NO-DUES VIEWS ====================

@@ -245,6 +245,36 @@ class AssistantshipStatusSerializer(serializers.Serializer):
     status = serializers.CharField()
     approvalStages = serializers.DictField()
 
+
+class TAAssignmentItemSerializer(serializers.Serializer):
+    """Single TA assignment entry."""
+    roll_no = serializers.CharField(max_length=20)
+    subject_id = serializers.IntegerField(min_value=1)
+
+
+class TAAssignmentUpdateSerializer(serializers.Serializer):
+    """Payload for bulk TA assignment updates."""
+    assignments = serializers.ListField(
+        child=TAAssignmentItemSerializer(),
+        required=True,
+        allow_empty=False,
+    )
+
+
+class FacultySupervisorAssignmentItemSerializer(serializers.Serializer):
+    """Single faculty supervisor assignment entry."""
+    roll_no = serializers.CharField(max_length=20)
+    faculty_user_id = serializers.IntegerField(min_value=1)
+
+
+class FacultySupervisorAssignmentUpdateSerializer(serializers.Serializer):
+    """Payload for bulk faculty supervisor assignment updates."""
+    assignments = serializers.ListField(
+        child=FacultySupervisorAssignmentItemSerializer(),
+        required=True,
+        allow_empty=False,
+    )
+
 # ==================== NO-DUES SERIALIZERS ====================
 
 class NoDuesStatusSerializer(serializers.ModelSerializer):

@@ -2,18 +2,10 @@
 Tests for otheracademic services.
 """
 from django.test import TestCase
-from django.contrib.auth.models import User
 from unittest.mock import patch, MagicMock
 from datetime import date
 
 from applications.otheracademic import services
-from applications.otheracademic.models import (
-    LeaveFormTable,
-    LeavePG,
-    BonafideFormTableUpdated,
-    AssistantshipClaimFormStatusUpd,
-    LeaveStatusChoices,
-)
 
 
 class LeaveServicesTestCase(TestCase):
@@ -73,13 +65,10 @@ class AssistantshipServicesTestCase(TestCase):
     def test_get_assistantship_status_text_rejected(self):
         """Test status text when rejected at any stage."""
         form = MagicMock()
-        form.Director_rejected = True
-        form.Dean_rejected = False
-        form.AcadAdmin_rejected = False
-        form.HOD_rejected = False
         form.TA_rejected = False
-        form.Ths_rejected = False
-        form.Director_approved = False
+        form.HOD_rejected = False
+        form.Acad_rejected = True
+        form.remark = ""
 
         result = services.get_assistantship_status_text(form)
         self.assertEqual(result, "Rejected")
@@ -87,13 +76,10 @@ class AssistantshipServicesTestCase(TestCase):
     def test_get_assistantship_status_text_approved(self):
         """Test status text when fully approved."""
         form = MagicMock()
-        form.Director_rejected = False
-        form.Dean_rejected = False
-        form.AcadAdmin_rejected = False
-        form.HOD_rejected = False
         form.TA_rejected = False
-        form.Ths_rejected = False
-        form.Director_approved = True
+        form.HOD_rejected = False
+        form.Acad_rejected = False
+        form.remark = "Stipend disbursed (audit completed)"
 
         result = services.get_assistantship_status_text(form)
         self.assertEqual(result, "Approved")
@@ -101,13 +87,10 @@ class AssistantshipServicesTestCase(TestCase):
     def test_get_assistantship_status_text_pending(self):
         """Test status text when pending."""
         form = MagicMock()
-        form.Director_rejected = False
-        form.Dean_rejected = False
-        form.AcadAdmin_rejected = False
-        form.HOD_rejected = False
         form.TA_rejected = False
-        form.Ths_rejected = False
-        form.Director_approved = False
+        form.HOD_rejected = False
+        form.Acad_rejected = False
+        form.remark = ""
 
         result = services.get_assistantship_status_text(form)
         self.assertEqual(result, "Pending")
@@ -117,19 +100,87 @@ class AssistantshipServicesTestCase(TestCase):
         form = MagicMock()
         form.TA_approved = True
         form.TA_rejected = False
-        form.Ths_approved = False
-        form.Ths_rejected = True
-        form.HOD_approved = False
+        form.HOD_approved = True
         form.HOD_rejected = False
-        form.AcadAdmin_approved = False
-        form.AcadAdmin_rejected = False
-        form.Dean_approved = False
-        form.Dean_rejected = False
-        form.Director_approved = False
-        form.Director_rejected = False
+        form.Acad_approved = True
+        form.Acad_rejected = False
+        form.remark = "Stipend disbursed (audit completed)"
 
         result = services.get_assistantship_approval_stages(form)
 
-        self.assertEqual(result['TA_Supervisor'], 'Approved')
-        self.assertEqual(result['Thesis_Supervisor'], 'Rejected')
-        self.assertEqual(result['HOD'], 'Pending')
+        self.assertEqual(result['Faculty_Supervisor'], 'Approved')
+        self.assertEqual(result['Department_Admin'], 'Approved')
+        self.assertEqual(result['HOD'], 'Approved')
+        self.assertEqual(result['Acad_Admin_Audit'], 'Disbursed')
+
+    @patch('applications.otheracademic.services.otheracademic_notif')
+    @patch('applications.otheracademic.services.AssistantshipClaimFormStatusUpd.objects.create')
+    @patch('applications.otheracademic.services.selectors.get_first_user_for_designation')
+    @patch('applications.otheracademic.services.selectors.assistantship_exists_for_period')
+    @patch('applications.otheracademic.services.selectors.get_pg_faculty_supervisor_assignment_for_student')
+    def test_submit_assistantship_uses_assigned_supervisor(
+        self,
+        mock_get_assignment,
+        mock_exists,
+        mock_get_dept_admin,
+        mock_create,
+        mock_notif,
+    ):
+        """Submission should use configured faculty supervisor assignment."""
+        student_user = MagicMock()
+        student_user.extrainfo.id = "23MCS111"
+        student_user.first_name = "PG"
+        student_user.last_name = "Student"
+
+        assigned_supervisor = MagicMock()
+        assigned_supervisor.username = "fac1"
+        mock_get_assignment.return_value = MagicMock(faculty_supervisor=assigned_supervisor)
+        mock_exists.return_value = False
+        mock_get_dept_admin.return_value = MagicMock(username="dept1")
+        mock_create.return_value = MagicMock(id=101)
+
+        services.submit_assistantship(
+            user=student_user,
+            discipline="CSE",
+            date_from=date(2026, 4, 1),
+            date_to=date(2026, 4, 30),
+            date_applied=date(2026, 4, 1),
+            bank_account="123",
+            signature_file="sig.jpg",
+            ta_supervisor="fac1",
+            thesis_supervisor="",
+            hod="",
+            applicability="monthly",
+        )
+
+        self.assertTrue(mock_create.called)
+        kwargs = mock_create.call_args.kwargs
+        self.assertEqual(kwargs["ta_supervisor"], "fac1")
+
+    @patch('applications.otheracademic.services.selectors.get_pg_faculty_supervisor_assignment_for_student')
+    @patch('applications.otheracademic.services.selectors.assistantship_exists_for_period')
+    def test_submit_assistantship_fails_without_supervisor_assignment(
+        self,
+        mock_exists,
+        mock_get_assignment,
+    ):
+        """Submission should fail when no supervisor is assigned and no valid fallback is provided."""
+        student_user = MagicMock()
+        student_user.extrainfo.id = "23MCS111"
+        mock_exists.return_value = False
+        mock_get_assignment.return_value = None
+
+        with self.assertRaises(services.AssistantshipServiceError):
+            services.submit_assistantship(
+                user=student_user,
+                discipline="CSE",
+                date_from=date(2026, 4, 1),
+                date_to=date(2026, 4, 30),
+                date_applied=date(2026, 4, 1),
+                bank_account="123",
+                signature_file="sig.jpg",
+                ta_supervisor="",
+                thesis_supervisor="",
+                hod="",
+                applicability="monthly",
+            )
