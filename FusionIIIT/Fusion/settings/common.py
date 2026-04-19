@@ -89,30 +89,7 @@ CELERY_BEAT_SCHEDULE = {
     'leave-migration-task': {
         'task': 'applications.leave.tasks.execute_leave_migrations',
         'schedule': crontab(minute='1', hour='0')
-    },
-    # T22: Analytics Dashboard
-    'aggregate_daily_analytics': {
-        'task': 'applications.otheracademic.analytics_tasks.aggregate_daily_analytics',
-        'schedule': crontab(minute='0', hour='10'),  # Daily 10 AM
-    },
-    'generate_weekly_analytics_summary': {
-        'task': 'applications.otheracademic.analytics_tasks.generate_weekly_analytics_summary',
-        'schedule': crontab(minute='0', hour='11', day_of_week='1'),  # Weekly Monday 11 AM
-    },
-    'cleanup_old_analytics': {
-        'task': 'applications.otheracademic.analytics_tasks.cleanup_old_analytics',
-        'schedule': crontab(minute='0', hour='3', day_of_week='0'),  # Weekly Sunday 3 AM
-    },
-    # T23: User Feedback System
-    'send_unanswered_feedback_reminder': {
-        'task': 'applications.otheracademic.analytics_tasks.send_unanswered_feedback_reminder',
-        'schedule': crontab(minute='0', hour='14'),  # Daily 2 PM
-    },
-    # T24: System Verification
-    'run_system_health_check': {
-        'task': 'applications.otheracademic.analytics_tasks.run_system_health_check',
-        'schedule': crontab(minute='0', hour='6'),  # Daily 6 AM
-    },
+    }
 }
 
 # Application definition

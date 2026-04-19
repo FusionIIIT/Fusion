@@ -58,7 +58,6 @@ class LeaveFormTable(models.Model):
     parent_mobile_no = models.CharField(max_length=15, null=True, blank=True)
     leave_mobile_no = models.CharField(max_length=15, null=True, blank=True)
     curr_sem = models.IntegerField(null=True)
-    rejection_remarks = models.TextField(blank=True, null=True, help_text="Remarks provided when rejecting the leave request")
 
     class Meta:
         db_table = 'LeaveFormTable'
@@ -97,7 +96,6 @@ class LeavePG(models.Model):
     parent_mobile_no = models.CharField(max_length=15, null=True, blank=True)
     leave_mobile_no = models.CharField(max_length=15, null=True, blank=True)
     curr_sem = models.IntegerField(null=True)
-    rejection_remarks = models.TextField(blank=True, null=True, help_text="Remarks provided when rejecting the leave request")
 
     class Meta:
         db_table = 'LeavePG'
@@ -138,34 +136,12 @@ class LeavePGUpdTable(models.Model):
         db_table = 'LeavePGUpdTable'
 
 
-class GraduateSeminarStatusChoices(models.TextChoices):
-    """Status choices for graduate seminar submissions."""
-    PENDING = 'Pending', 'Pending'
-    APPROVED = 'Approved', 'Approved'
-    REJECTED = 'Rejected', 'Rejected'
-
-
 class GraduateSeminarFormTable(models.Model):
     """Graduate seminar form model."""
 
-    roll_no = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
+    roll_no = models.CharField(max_length=20)
     semester = models.CharField(max_length=100)
     date_of_seminar = models.DateField()
-    theme_of_work = models.TextField()
-    place = models.CharField(max_length=255)
-    time = models.TimeField()
-    work_done_till_previous_sem = models.TextField()
-    specific_contri_in_cur_sem = models.TextField()
-    future_plan = models.TextField()
-    quality_of_work = models.CharField(max_length=10)  # Score or rating
-    quantity_of_work = models.CharField(max_length=10)  # Score or rating
-    status = models.CharField(
-        max_length=20,
-        choices=GraduateSeminarStatusChoices.choices,
-        default=GraduateSeminarStatusChoices.PENDING
-    )
-    date_of_submission = models.DateField(auto_now_add=True)
-    remarks = models.TextField(blank=True, null=True)
 
     class Meta:
         db_table = 'GraduateSeminarFormTable'
@@ -183,7 +159,6 @@ class BonafideFormTableUpdated(models.Model):
     approve = models.BooleanField(default=False)
     reject = models.BooleanField(default=False)
     download_file = models.CharField(max_length=20, default='unavailable')
-    rejection_remarks = models.TextField(blank=True, null=True, help_text="Remarks provided when rejecting the bonafide request")
 
     class Meta:
         db_table = 'BonafideFormTableUpdated'

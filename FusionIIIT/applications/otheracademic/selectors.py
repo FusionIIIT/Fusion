@@ -12,7 +12,6 @@ from applications.otheracademic.models import (
     BonafideFormTableUpdated,
     AssistantshipClaimFormStatusUpd,
     NoDues,
-    GraduateSeminarFormTable,
     LeaveStatusChoices,
 )
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
@@ -327,78 +326,3 @@ def get_nodues_by_roll_no(roll_no):
 def get_all_nodues_requests():
     """Get all no dues requests."""
     return NoDues.objects.all()
-
-
-# ==================== GRADUATE SEMINAR SELECTORS ====================
-
-def get_pending_graduate_seminar_forms():
-    """Get all pending graduate seminar forms."""
-    return GraduateSeminarFormTable.objects.filter(status='Pending')
-
-
-def get_graduate_seminar_forms_by_roll_no(roll_no_id):
-    """Get all graduate seminar forms for a specific roll number."""
-    return GraduateSeminarFormTable.objects.filter(roll_no=roll_no_id)
-
-
-def serialize_graduate_seminar_form(form):
-    """Serialize a graduate seminar form for API response."""
-    student_name = ""
-    if form.roll_no and form.roll_no.user:
-        student_name = form.roll_no.user.get_full_name()
-    
-    return {
-        "id": form.id,
-        "roll_no": form.roll_no.roll_no if form.roll_no else "",
-        "student_name": student_name,
-        "semester": form.semester,
-        "date_of_seminar": form.date_of_seminar.strftime('%Y-%m-%d'),
-        "theme_of_work": form.theme_of_work,
-        "place": form.place,
-        "time": form.time.strftime('%H:%M') if form.time else "",
-        "work_done_till_previous_sem": form.work_done_till_previous_sem,
-        "specific_contri_in_cur_sem": form.specific_contri_in_cur_sem,
-        "future_plan": form.future_plan,
-        "quality_of_work": form.quality_of_work,
-        "quantity_of_work": form.quantity_of_work,
-        "status": form.status,
-        "date_of_submission": form.date_of_submission.strftime('%Y-%m-%d'),
-        "remarks": form.remarks or "",
-    }
-
-
-def get_nodues_records_by_department(department):
-    """Get all no dues records."""
-    return NoDues.objects.all()
-
-
-def serialize_nodues_record(record, department):
-    """Serialize a no dues record for API response."""
-    # Map department to field names
-    department_field_map = {
-        "hostel": ("hostel_clear", "hostel_notclear"),
-        "library": ("library_clear", "library_notclear"),
-        "mess": ("mess_clear", "mess_notclear"),
-        "ece": ("ece_clear", "ece_notclear"),
-        "physics_lab": ("physics_lab_clear", "physics_lab_notclear"),
-        "bank": ("bank_clear", "bank_notclear"),
-        "icard_dsa": ("icard_dsa_clear", "icard_dsa_notclear"),
-        "design_studio": ("design_studio_clear", "design_studio_notclear"),
-        "discipline_office": ("discipline_office_clear", "discipline_office_notclear"),
-        "account": ("account_clear", "account_notclear"),
-    }
-    
-    clear_field, notclear_field = department_field_map.get(department, ("hostel_clear", "hostel_notclear"))
-    is_clear = getattr(record, clear_field, False)
-    is_notclear = getattr(record, notclear_field, False)
-    
-    return {
-        "id": record.id,
-        "roll_no": record.roll_no.roll_no if record.roll_no else "",
-        "name": record.name,
-        "is_clear": is_clear,
-        "is_notclear": is_notclear,
-        "status": "Clear" if is_clear else ("Not Clear" if is_notclear else "Pending"),
-    }
-
-
