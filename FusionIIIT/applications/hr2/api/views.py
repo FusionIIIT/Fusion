@@ -12,6 +12,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.http import HttpResponse
+from dateutil.relativedelta import relativedelta
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -40,6 +41,7 @@ from applications.hr2.models import (
     LeaveForm,
     LTCform,
     Appraisalform,
+    Employee,
 )
 from applications.hr2.workflow import appraisal as appraisal_wf
 from applications.hr2.workflow import cpda_advance as cpda_wf
@@ -350,6 +352,20 @@ def _submit_appraisal_application(request, form_data, user_info):
     window_error = _ensure_appraisal_submission_window()
     if window_error:
         return None, window_error
+
+    employee = Employee.objects.filter(extra_info__user=request.user).first()
+    if not employee or not employee.date_of_joining:
+        return None, Response(
+            {"detail": "Your date of joining is missing in the system. Cannot submit appraisal."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    one_year_ago = datetime.date.today() - relativedelta(years=1)
+    if employee.date_of_joining > one_year_ago:
+        return None, Response(
+            {"detail": "You must have completed a minimum of 1 year of service to submit an appraisal."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     receiver = (user_info.get("receiver_name") or "").strip()
     recv_desig = (user_info.get("receiver_designation") or "").strip()
