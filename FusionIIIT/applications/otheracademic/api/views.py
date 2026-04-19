@@ -437,12 +437,14 @@ class AssistantshipFormSubmitView(APIView):
 
 
 class TA_SupervisorFetchPendingAssistantshipRequests(APIView):
-    """Fetch pending assistantship requests for TA supervisor approval."""
+    """Fetch pending assistantship requests for faculty supervisor approval."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        if not selectors.user_has_designation(request.user, "faculty_supervisor"):
+            raise PermissionDenied("Only Faculty Supervisor can access this queue.")
         try:
-            pending_forms = selectors.get_pending_assistantships_for_ta()
+            pending_forms = selectors.get_pending_assistantships_for_ta_user(request.user.username)
             response_data = [selectors.serialize_assistantship_pending(form) for form in pending_forms]
             return Response(response_data, status=status.HTTP_200_OK)
         except Exception as e:
@@ -453,10 +455,13 @@ class TA_SupervisorFetchPendingAssistantshipRequests(APIView):
 
 
 class TA_SupervisorUpdateAssistantshipStatus(APIView):
-    """Update assistantship status (TA supervisor approval)."""
+    """Update assistantship status (faculty supervisor approval)."""
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        if not selectors.user_has_designation(request.user, "faculty_supervisor"):
+            raise PermissionDenied("Only Faculty Supervisor can review assistantship forms.")
+
         serializer = AssistantshipStatusUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -464,8 +469,10 @@ class TA_SupervisorUpdateAssistantshipStatus(APIView):
         rejected_ids = serializer.validated_data.get('rejectedRequests', [])
 
         try:
-            services.update_assistantship_status_ta(approved_ids, rejected_ids)
+            services.update_assistantship_status_ta(approved_ids, rejected_ids, request.user)
             return Response({"message": "Assistantship statuses updated successfully"}, status=status.HTTP_200_OK)
+        except services.AssistantshipServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response(
                 {"error": "Error updating assistantship status", "details": str(e)},
@@ -511,12 +518,14 @@ class Ths_SupervisorUpdateAssistantshipStatus(APIView):
 
 
 class HODFetchPendingAssistantshipRequests(APIView):
-    """Fetch pending assistantship requests for HOD approval."""
+    """Fetch pending assistantship requests for Department Admin approval."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        if not selectors.user_has_designation(request.user, "dept_admin"):
+            raise PermissionDenied("Only Department Admin can access this queue.")
         try:
-            pending_forms = selectors.get_pending_assistantships_for_hod()
+            pending_forms = selectors.get_pending_assistantships_for_hod_user(request.user.username)
             response_data = [selectors.serialize_assistantship_pending(form) for form in pending_forms]
             return Response(response_data, status=status.HTTP_200_OK)
         except Exception as e:
@@ -527,18 +536,24 @@ class HODFetchPendingAssistantshipRequests(APIView):
 
 
 class HODUpdateAssistantshipStatus(APIView):
-    """Update assistantship status (HOD approval)."""
+    """Update assistantship status (Department Admin final approval)."""
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
+        if not selectors.user_has_designation(request.user, "dept_admin"):
+            raise PermissionDenied("Only Department Admin can approve assistantship forms.")
+
         serializer = AssistantshipStatusUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         approved_ids = serializer.validated_data.get('approvedRequests', [])
         rejected_ids = serializer.validated_data.get('rejectedRequests', [])
 
-        services.update_assistantship_status_hod(approved_ids, rejected_ids)
-        return Response({"message": "Assistantship statuses updated successfully."})
+        try:
+            services.update_assistantship_status_hod(approved_ids, rejected_ids, request.user)
+            return Response({"message": "Assistantship statuses updated successfully."})
+        except services.AssistantshipServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AcadAdminFetchPendingAssistantshipRequests(APIView):
@@ -630,6 +645,12 @@ class GetAssistantshipStatus(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        if str(request.user.extrainfo.id) != str(roll_no):
+            return Response(
+                {"error": "You can only view your own assistantship status."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         try:
             assistantship_requests = selectors.get_assistantships_by_roll_no(roll_no)
 
@@ -637,10 +658,12 @@ class GetAssistantshipStatus(APIView):
                 "rollNo": form.roll_no.id,
                 "name": form.student_name,
                 "discipline": form.discipline,
+                "id": form.id,
                 "dateApplied": form.dateApplied.strftime("%Y-%m-%d") if form.dateApplied else None,
                 "bank_account": form.bank_account,
                 "status": services.get_assistantship_status_text(form),
                 "approvalStages": services.get_assistantship_approval_stages(form),
+                "canWithdraw": not form.TA_approved and not form.TA_rejected,
             } for form in assistantship_requests]
 
             return Response(response_data, status=status.HTTP_200_OK)
@@ -650,3 +673,15 @@ class GetAssistantshipStatus(APIView):
                 {"error": "An error occurred while fetching assistantship status.", "details": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class WithdrawAssistantship(APIView):
+    """Withdraw assistantship form before faculty supervisor review."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, form_id, *args, **kwargs):
+        try:
+            services.withdraw_assistantship(request.user, form_id)
+            return Response({"message": "Assistantship form withdrawn successfully."}, status=status.HTTP_200_OK)
+        except services.AssistantshipServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

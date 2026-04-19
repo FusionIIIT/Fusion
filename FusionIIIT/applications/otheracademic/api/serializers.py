@@ -216,12 +216,8 @@ class AssistantshipFormSerializer(serializers.ModelSerializer):
             'Ths_rejected',
             'HOD_approved',
             'HOD_rejected',
-            'Dean_approved',
-            'Dean_rejected',
-            'Director_approved',
-            'Director_rejected',
-            'AcadAdmin_approved',
-            'AcadAdmin_rejected',
+            'Acad_approved',
+            'Acad_rejected',
         ]
 
 

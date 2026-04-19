@@ -39,5 +39,6 @@ urlpatterns = [
     path('director-pending-requests/', views.DirectorFetchPendingAssistantshipRequests.as_view(), name='director-pending-requests'),
     path('director-update-status/', views.DirectorUpdateAssistantshipStatus.as_view(), name='director-update-status'),
     path('get_assistantship_status/', views.GetAssistantshipStatus.as_view(), name='get_assistantship_status'),
+    path('withdraw-assistantship/<int:form_id>/', views.WithdrawAssistantship.as_view(), name='withdraw-assistantship'),
     # path('assistantship-status-update/', views.UpdateAssistantshipStatus.as_view(), name='assistantship-status-update'),
 ]
