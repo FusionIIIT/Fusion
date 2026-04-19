@@ -263,6 +263,38 @@ class UpdateBonafideStatus(APIView):
             )
 
 
+class UploadBonafideCertificate(APIView):
+    """Upload certificate file for a bonafide request (admin action)."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, bonafide_id, *args, **kwargs):
+        certificate = request.FILES.get("certificate")
+        if not certificate:
+            return Response(
+                {"error": "certificate file is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        bonafide = selectors.get_bonafide_by_id(bonafide_id)
+        if not bonafide:
+            return Response(
+                {"error": "Bonafide request not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        bonafide.download_file = certificate
+        bonafide.save(update_fields=["download_file"])
+
+        return Response(
+            {
+                "message": "Certificate uploaded successfully.",
+                "bonafideId": bonafide.id,
+                "downloadUrl": request.build_absolute_uri(bonafide.download_file.url),
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
 class GetBonafideStatus(APIView):
     """Get bonafide status for a specific student."""
     permission_classes = [IsAuthenticated]
@@ -280,6 +312,9 @@ class GetBonafideStatus(APIView):
         try:
             bonafide_requests = selectors.get_bonafides_by_roll_no(roll_no)
             response_data = [selectors.serialize_bonafide_status(b) for b in bonafide_requests]
+            for item in response_data:
+                if item.get("downloadUrl"):
+                    item["downloadUrl"] = request.build_absolute_uri(item["downloadUrl"])
             return Response(response_data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response(

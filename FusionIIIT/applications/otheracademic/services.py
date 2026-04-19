@@ -226,7 +226,8 @@ def submit_bonafide(user, branch, semester, purpose, download_file=None):
         semester_types=semester,
         purposes=purpose,
         date_of_applications=date.today(),
-        download_file=download_file.name if download_file else "unavailable",
+        # Certificate is uploaded by admin after approval.
+        download_file=None,
         approve=False,
         reject=False,
     )

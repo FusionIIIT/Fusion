@@ -158,7 +158,7 @@ class BonafideFormTableUpdated(models.Model):
     date_of_applications = models.DateField()
     approve = models.BooleanField(default=False)
     reject = models.BooleanField(default=False)
-    download_file = models.CharField(max_length=20, default='unavailable')
+    download_file = models.FileField(upload_to='Bonafide', blank=True, null=True)
 
     class Meta:
         db_table = 'BonafideFormTableUpdated'

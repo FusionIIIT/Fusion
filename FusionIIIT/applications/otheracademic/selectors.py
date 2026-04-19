@@ -210,7 +210,16 @@ def serialize_pending_bonafide(bonafide):
 def serialize_bonafide_status(bonafide):
     """Serialize bonafide status for student view."""
     status = "Approved" if bonafide.approve else "Rejected" if bonafide.reject else "Pending"
+    download_url = None
+    if bonafide.download_file:
+        try:
+            download_url = bonafide.download_file.url
+        except ValueError:
+            # File field can be empty or point to a non-resolved path.
+            download_url = None
+
     return {
+        "id": bonafide.id,
         "rollNo": bonafide.roll_nos_id,
         "name": bonafide.student_names,
         "branch": bonafide.branch_types,
@@ -218,6 +227,7 @@ def serialize_bonafide_status(bonafide):
         "purpose": bonafide.purposes,
         "dateApplied": bonafide.date_of_applications.strftime("%Y-%m-%d") if bonafide.date_of_applications else None,
         "status": status,
+        "downloadUrl": download_url,
     }
 
 

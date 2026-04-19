@@ -156,6 +156,7 @@ class BonafideStatusSerializer(serializers.Serializer):
     purpose = serializers.CharField()
     dateApplied = serializers.DateField()
     status = serializers.CharField()
+    downloadUrl = serializers.CharField(allow_null=True, required=False)
 
 
 class BonafideStatusUpdateSerializer(serializers.Serializer):
