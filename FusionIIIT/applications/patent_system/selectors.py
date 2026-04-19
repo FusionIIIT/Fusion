@@ -30,6 +30,7 @@ the Django migration completes:
 
 from django.db.models import Q, Count
 from django.shortcuts import get_object_or_404
+from django.utils.timezone import now
 
 from .models import (
     Application, ApplicationStatus, DecisionStatus,
@@ -307,6 +308,12 @@ def get_pending_consent_applications(user):
 # PCC Admin selectors
 # ---------------------------------------------------------------------------
 
+def _calculate_priority_score(app):
+    """BR-PMS-015 — Calculate priority score based on days since submission."""
+    if not app.submitted_date:
+        return 0
+    return (now() - app.submitted_date).days
+
 def get_new_applications_pcc():
     """Applications with Submitted / Reviewed / Resubmitted status (UC-005 old)."""
     statuses = [ApplicationStatus.SUBMITTED, ApplicationStatus.REVIEWED, ApplicationStatus.RESUBMITTED]
@@ -321,7 +328,10 @@ def get_new_applications_pcc():
             "department": info.get("department", "Unknown"),
             "submitted_on": a.submitted_date.strftime("%Y-%m-%d") if a.submitted_date else "Unknown",
             "status": a.status,
+            "priority_score": _calculate_priority_score(a),
         }
+    # Sort the dictionary based on priority_score descending (highest score/oldest first)
+    result = dict(sorted(result.items(), key=lambda item: item[1]["priority_score"], reverse=True))
     return result
 
 
@@ -348,7 +358,10 @@ def get_ongoing_applications_pcc():
             "department": info.get("department", "Unknown"),
             "submitted_on": a.submitted_date.strftime("%Y-%m-%d") if a.submitted_date else "Unknown",
             "status": a.status,
+            "priority_score": _calculate_priority_score(a),
         }
+    # Sort the dictionary based on priority_score descending (highest score/oldest first)
+    result = dict(sorted(result.items(), key=lambda item: item[1]["priority_score"], reverse=True))
     return result
 
 
@@ -411,11 +424,13 @@ def get_pcc_application_detail(application_id):
 # Director selectors
 # ---------------------------------------------------------------------------
 
-def get_director_new_applications():
+def get_director_new_applications(user=None):
     """Applications forwarded for Director's review."""
-    apps = Application.objects.filter(
-        status=ApplicationStatus.FORWARDED
-    ).select_related("primary_applicant")
+    qs = Application.objects.filter(status=ApplicationStatus.FORWARDED)
+    if user:
+        qs = qs.filter(assigned_director=user)
+        
+    apps = qs.select_related("primary_applicant")
     result = {}
     for a in apps:
         info = _enrich_applicant_info(a.primary_applicant.user) if a.primary_applicant else {}
@@ -429,7 +444,7 @@ def get_director_new_applications():
     return result
 
 
-def get_director_reviewed_applications():
+def get_director_reviewed_applications(user=None):
     """Applications the director has already acted on."""
     statuses = [
         ApplicationStatus.APPROVED,
@@ -443,7 +458,11 @@ def get_director_reviewed_applications():
         ApplicationStatus.PATENT_GRANTED,
         ApplicationStatus.PATENT_REFUSED,
     ]
-    apps = Application.objects.filter(status__in=statuses).select_related("primary_applicant")
+    qs = Application.objects.filter(status__in=statuses)
+    if user:
+        qs = qs.filter(assigned_director=user)
+        
+    apps = qs.select_related("primary_applicant")
     result = {}
     for a in apps:
         info = _enrich_applicant_info(a.primary_applicant.user) if a.primary_applicant else {}

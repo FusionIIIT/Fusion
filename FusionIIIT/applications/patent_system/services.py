@@ -8,12 +8,14 @@ from datetime import timedelta
 from django.utils.timezone import now
 from django.contrib.auth.models import User
 from django.db import transaction, models
+from django.shortcuts import get_object_or_404
 
 from .models import (
     Application, ApplicationStatus, DecisionStatus,
     Applicant, Inventor, AuditLog, Budget, BudgetDecision,
     ApplicationSectionI, ApplicationSectionII, ApplicationSectionIII,
-    CommunicationLog, AttorneyAssignment, PatentabilityAssessment,
+    CommunicationLog, CommunicationDirection, ConfidentialityLevel,
+    AttorneyAssignment, PatentabilityAssessment,
     FilingRecord, PatentabilityRecommendation,
     PatentNotification, NotificationType, ApplicationDocument,
 )
@@ -141,8 +143,8 @@ VALID_TRANSITIONS = {
     ApplicationStatus.APPEAL_UNDER_REVIEW: [ApplicationStatus.APPEAL_APPROVED, ApplicationStatus.APPEAL_REJECTED],
     ApplicationStatus.APPEAL_APPROVED: [ApplicationStatus.FORWARDED],  # Goes back to director review
     ApplicationStatus.APPEAL_REJECTED: [ApplicationStatus.EXPIRED, ApplicationStatus.WITHDRAWN],
-    ApplicationStatus.PATENTABILITY_CHECK_STARTED: [ApplicationStatus.PATENTABILITY_CHECK_COMPLETED],
-    ApplicationStatus.PATENTABILITY_CHECK_COMPLETED: [ApplicationStatus.SEARCH_REPORT_GENERATED],
+    ApplicationStatus.PATENTABILITY_CHECK_STARTED: [ApplicationStatus.PATENTABILITY_CHECK_COMPLETED, ApplicationStatus.NEEDS_REVISION],
+    ApplicationStatus.PATENTABILITY_CHECK_COMPLETED: [ApplicationStatus.SEARCH_REPORT_GENERATED, ApplicationStatus.NEEDS_REVISION],
     ApplicationStatus.SEARCH_REPORT_GENERATED: [ApplicationStatus.PATENT_FILED],
     ApplicationStatus.PATENT_FILED: [ApplicationStatus.PATENT_PUBLISHED],
     ApplicationStatus.PATENT_PUBLISHED: [ApplicationStatus.PATENT_GRANTED, ApplicationStatus.PATENT_REFUSED],
@@ -356,6 +358,8 @@ def assign_to_director(user, application_id, director_user_id=None):
             director = User.objects.get(id=director_user_id)
         except User.DoesNotExist:
             raise NotFoundError("Director user not found.")
+        
+        # pass the User object to the conflict checker
         _check_director_conflict(director, application)
         application.assigned_director = director
 
@@ -383,6 +387,9 @@ def director_review(user, application_id, decision, feedback=""):
         raise ValidationError(
             f"Application must be 'Forwarded for Director's Review'. Current: {application.status}"
         )
+
+    if application.assigned_director and application.assigned_director != user:
+        raise UnauthorizedError("You are not the assigned director for this application.")
 
     _check_director_conflict(user, application)
 
@@ -535,7 +542,7 @@ def pcc_review_application(user, application_id, comments=""):
 # ── UC-007: Forward to Director (PCC Admin) ──────────────────────────────
 
 @transaction.atomic
-def forward_to_director(user, application_id, comments=""):
+def forward_to_director(user, application_id, comments="", director_id=None):
     """PCC Admin forwards a reviewed application to Director."""
     assert_pcc_admin(user)
     try:
@@ -560,6 +567,13 @@ def forward_to_director(user, application_id, comments=""):
 
     if comments and len(comments) > 1000:
         raise ValidationError("Comments must be ≤ 1000 characters.")
+
+    if director_id:
+        try:
+            director_user = User.objects.get(id=director_id)
+            application.assigned_director = director_user
+        except User.DoesNotExist:
+            raise ValidationError("Specified Director does not exist.")
 
     prev = application.status
     application.status = ApplicationStatus.FORWARDED
@@ -1552,3 +1566,159 @@ def get_analytics_summary(year=None, department=None):
         ],
         "department_distribution": dept_dist,
     }
+
+
+# ---------------------------------------------------------------------------
+# UC-011: Receive & Respond to Office Actions
+# ---------------------------------------------------------------------------
+
+@transaction.atomic
+def record_office_action(user, application_id, data, attachment=None):
+    """
+    PCC Admin logs a new Office Action received from the Patent Office.
+    We don't have an OfficeAction model, so we use CommunicationLog
+    and set the application status to NEEDS_REVISION.
+    """
+    assert_pcc_admin(user)
+    app = get_object_or_404(Application, id=application_id)
+    
+    subject = data.get("subject", "Office Action Received")
+    body = data.get("body", "")
+    deadline = data.get("deadline_date")
+    
+    comm = CommunicationLog.objects.create(
+        application=app,
+        logged_by=user,
+        direction=CommunicationDirection.INCOMING,
+        external_party_name="Patent Office",
+        subject=f"[Office Action] {subject}",
+        body=body,
+        attachment=attachment,
+        confidentiality_level=ConfidentialityLevel.CONFIDENTIAL
+    )
+    
+    _audit(app, user, "Recieved Office Action", prev=app.status, new=ApplicationStatus.NEEDS_REVISION, details=subject)
+    
+    app.status = ApplicationStatus.NEEDS_REVISION
+    app.resubmission_deadline = deadline if deadline else (now() + timedelta(days=60))
+    app.save()
+
+    PatentNotification.objects.create(
+        recipient=app.primary_applicant.user,
+        application=app,
+        notification_type=NotificationType.ACTION_REQUIRED,
+        title="Office Action Received: Revision Required",
+        message=f"The patent office has issued an objection/requirement. Deadline: {app.resubmission_deadline.strftime('%Y-%m-%d')}.",
+        deadline_date=app.resubmission_deadline
+    )
+    return comm
+
+@transaction.atomic
+def submit_office_action_response(user, application_id, data, attachment=None):
+    """
+    Applicant provides materials to respond to the Office Action.
+    """
+    app = get_object_or_404(Application, id=application_id)
+    assert_applicant(user, app)
+    
+    body = data.get("body", "Applicant responded with revisions.")
+    
+    comm = CommunicationLog.objects.create(
+        application=app,
+        logged_by=user,
+        direction=CommunicationDirection.OUTGOING,
+        subject="[Office Action Response] Revisions Submitted",
+        body=body,
+        attachment=attachment,
+        confidentiality_level=ConfidentialityLevel.INTERNAL
+    )
+    
+    _audit(app, user, "Submitted Office Action Response", prev=app.status, new=ApplicationStatus.RESUBMITTED)
+    app.status = ApplicationStatus.RESUBMITTED
+    app.save()
+    
+    # Notify PCC Admin
+    pcc_admins = User.objects.filter(extrainfo__designation__name__icontains="PCC")
+    for admin in pcc_admins:
+        PatentNotification.objects.create(
+            recipient=admin,
+            application=app,
+            notification_type=NotificationType.STATUS_CHANGE,
+            title="Applicant Responded to Office Action",
+            message=f"Applicant {user.username} has provided revisions for {app.title}."
+        )
+    return comm
+
+
+# ---------------------------------------------------------------------------
+# UC-013: Track Post-Grant Maintenance & Renewals
+# ---------------------------------------------------------------------------
+
+@transaction.atomic
+def record_maintenance_fee(user, application_id, data, receipt=None):
+    """
+    PCC Admin pays a renewal/maintenance fee. Track via the Budget and CommunicationLog.
+    """
+    assert_pcc_admin(user)
+    app = get_object_or_404(Application, id=application_id)
+    amount = float(data.get("amount", 0.0))
+    remarks = data.get("remarks", "Maintenance fee / Renewal paid.")
+    
+    # Update the Budget's administrative_cost tally
+    budget, _ = Budget.objects.get_or_create(application=app)
+    budget.administrative_cost += amount
+    budget.remarks = f"{budget.remarks}\n[Renewal] Added {amount}: {remarks}"
+    budget.save()
+    
+    comm = CommunicationLog.objects.create(
+        application=app,
+        logged_by=user,
+        direction=CommunicationDirection.OUTGOING,
+        external_party_name="Patent Office (Renewal)",
+        subject="[Maintenance/Renewal Fee Provided]",
+        body=remarks,
+        attachment=receipt,
+        confidentiality_level=ConfidentialityLevel.INTERNAL
+    )
+    
+    _audit(app, user, "Recorded Patent Renewal/Maintenance Fee", details=f"Amount: {amount}. {remarks}")
+    return comm
+
+
+# ---------------------------------------------------------------------------
+# UC-017: Track Licensing & Tech Transfer Requests
+# ---------------------------------------------------------------------------
+
+@transaction.atomic
+def record_licensing_interest(user, application_id, data, document=None):
+    """
+    Record that a third party is interested in licensing the patent.
+    """
+    app = get_object_or_404(Application, id=application_id)
+    
+    company_name = data.get("company_name", "Unknown Company")
+    contact_email = data.get("contact_email", "")
+    terms = data.get("proposed_terms", "Awaiting formal terms.")
+    
+    comm = CommunicationLog.objects.create(
+        application=app,
+        logged_by=user,
+        direction=CommunicationDirection.INCOMING,
+        external_party_name=company_name,
+        external_party_email=contact_email,
+        subject=f"[Licensing Interest] {company_name}",
+        body=f"Proposed Terms/Notes:\n{terms}",
+        attachment=document,
+        confidentiality_level=ConfidentialityLevel.CONFIDENTIAL
+    )
+    
+    _audit(app, user, "Recorded Licensing Inquiry", details=f"Company: {company_name}")
+    
+    PatentNotification.objects.create(
+        recipient=app.primary_applicant.user,
+        application=app,
+        notification_type=NotificationType.ACTION_REQUIRED,
+        title="New Licensing Opportunity",
+        message=f"{company_name} is interested in licensing your patent {app.title}."
+    )
+    return comm

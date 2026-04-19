@@ -27,6 +27,7 @@ urlpatterns = [
     path("pccAdmin/applications/new/", views.new_applications, name="pms_pcc_new"),
     path("pccAdmin/applications/new/review/<int:application_id>/", views.review_application, name="pms_pcc_review"),
     path("pccAdmin/applications/new/forward/<int:application_id>/", views.forward_application, name="pms_pcc_forward"),
+    path("pccAdmin/directors/", views.get_directors, name="pms_pcc_directors"),
     path("pccAdmin/applications/new/requestModification/<int:application_id>/", views.request_application_modification, name="pms_pcc_modify"),
     path("pccAdmin/applications/ongoing/", views.ongoing_applications, name="pms_pcc_ongoing"),
     path("pccAdmin/applications/ongoing/changeStatus/<int:application_id>/", views.change_application_status, name="pms_pcc_change_status"),

@@ -17,6 +17,8 @@ from rest_framework.decorators import (
     api_view, permission_classes, authentication_classes,
 )
 
+from applications.globals.models import Designation, HoldsDesignation
+
 from ..models import ApplicationStatus, Document, PatentNotification, ApplicationDocument
 from .. import services, selectors
 from .serializers import (
@@ -184,6 +186,27 @@ def review_application(request, application_id):
     return _service_response(_do)
 
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def get_directors(request):
+    """Get list of users with Director designation."""
+    try:
+        designation = Designation.objects.get(name="Director")
+        holds_designation = HoldsDesignation.objects.filter(designation=designation).select_related('user')
+        directors = [
+            {
+                "id": hd.user.id,
+                "name": f"{hd.user.first_name} {hd.user.last_name}".strip() or hd.user.username,
+                "email": hd.user.email
+            }
+            for hd in holds_designation
+        ]
+        return JsonResponse({"directors": directors}, safe=False)
+    except Designation.DoesNotExist:
+        return JsonResponse({"directors": []}, safe=False)
+
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
@@ -192,7 +215,8 @@ def forward_application(request, application_id):
     def _do():
         data = json.loads(request.body or "{}")
         comments = data.get("comments", "")
-        app = services.forward_to_director(request.user, application_id, comments)
+        director_id = data.get("director_id", None)
+        app = services.forward_to_director(request.user, application_id, comments, director_id)
         return JsonResponse({
             "message": "Application forwarded to Director.",
             "application_id": app.id,
@@ -389,7 +413,7 @@ def analytics(request):
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def director_new_applications(request):
-    return JsonResponse({"applications": selectors.get_director_new_applications()}, safe=False)
+    return JsonResponse({"applications": selectors.get_director_new_applications(user=request.user)}, safe=False)
 
 
 @api_view(["POST"])
@@ -438,7 +462,7 @@ def director_reject(request):
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def director_reviewed_applications(request):
-    return JsonResponse({"applications": selectors.get_director_reviewed_applications()}, safe=False)
+    return JsonResponse({"applications": selectors.get_director_reviewed_applications(user=request.user)}, safe=False)
 
 
 @api_view(["GET"])
