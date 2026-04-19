@@ -1,0 +1,103 @@
+workflows:
+  - id: "WF-HR2-001"
+    title: "Leave application approval flow"
+    description: "Employee applies → HOD/Registrar/Director decides → balance updates on approval"
+    e2e_tests:
+      - scenario: "Employee applies and leave is approved"
+        expected_final_state: "approval_status=APPROVED, leave balance reduced"
+      - scenario: "Employee applies and leave is forwarded then approved"
+        expected_final_state: "approval_status=APPROVED, current_approver_role=Director"
+    negative_tests:
+      - scenario: "Employee applies and leave is rejected"
+        expected_final_state: "approval_status=REJECTED, leave balance unchanged"
+
+  - id: "WF-HR2-002"
+    title: "Leave withdrawal flow"
+    description: "Employee withdraws pending/forwarded leave"
+    e2e_tests:
+      - scenario: "Employee withdraws pending leave"
+        expected_final_state: "approval_status=WITHDRAWN"
+    negative_tests:
+      - scenario: "Employee tries to withdraw approved leave"
+        expected_final_state: "Request rejected with withdrawal error"
+
+  - id: "WF-HR2-003"
+    title: "Leave cancellation flow"
+    description: "Employee requests cancellation → approver decides → balance restored on approval"
+    e2e_tests:
+      - scenario: "Cancellation approved"
+        expected_final_state: "cancel_status=APPROVED, approval_status=CANCELLED, leave balance restored"
+    negative_tests:
+      - scenario: "Cancellation requested after start date"
+        expected_final_state: "Request rejected with cancellation window error"
+
+  - id: "WF-HR2-004"
+    title: "Leave extension flow"
+    description: "Employee requests extension → approver decides → balance adjusted on approval"
+    e2e_tests:
+      - scenario: "Extension approved with sufficient balance"
+        expected_final_state: "extension_status=APPROVED, end_date updated, balance reduced"
+    negative_tests:
+      - scenario: "Extension approved with insufficient balance"
+        expected_final_state: "Request rejected with insufficient balance error"
+
+  - id: "WF-HR2-005"
+    title: "Nominee response flow"
+    description: "Nominee sees request → accepts or declines"
+    e2e_tests:
+      - scenario: "Nominee accepts"
+        expected_final_state: "nominee_status=ACCEPTED"
+    negative_tests:
+      - scenario: "Non-nominee responds"
+        expected_final_state: "Request rejected with 403"
+
+  - id: "WF-HR2-006"
+    title: "Document request flow"
+    description: "HOD requests documents → employee submits"
+    e2e_tests:
+      - scenario: "HOD requests, employee submits"
+        expected_final_state: "document_request_status=SUBMITTED"
+    negative_tests:
+      - scenario: "Employee submits without request"
+        expected_final_state: "Request rejected with no request error"
+
+  - id: "WF-HR2-007"
+    title: "LTC approval flow"
+    description: "Employee applies → HR forwards → accountant approves/rejects"
+    e2e_tests:
+      - scenario: "LTC forwarded and approved"
+        expected_final_state: "approval_status=APPROVED, accountant_status=APPROVED"
+    negative_tests:
+      - scenario: "LTC rejected"
+        expected_final_state: "approval_status=REJECTED"
+
+  - id: "WF-HR2-008"
+    title: "CPDA advance approval flow"
+    description: "Employee applies → HR forwards → accountant/director decides"
+    e2e_tests:
+      - scenario: "HR forwards to accountant and approves"
+        expected_final_state: "approval_status=APPROVED, accountant_processing_status=APPROVED"
+      - scenario: "Forwarded to director then approved"
+        expected_final_state: "accountant_processing_status=DIRECTOR_APPROVED, approval_status=FORWARDED"
+    negative_tests:
+      - scenario: "CPDA advance rejected"
+        expected_final_state: "approval_status=REJECTED"
+
+  - id: "WF-HR2-009"
+    title: "CPDA reimbursement decision flow"
+    description: "Employee submits reimbursement → approver approves/rejects"
+    e2e_tests:
+      - scenario: "CPDA reimbursement approved"
+        expected_final_state: "approval_status=APPROVED"
+    negative_tests:
+      - scenario: "CPDA reimbursement rejected"
+        expected_final_state: "approval_status=REJECTED"
+
+  - id: "WF-HR2-010"
+    title: "Appraisal form review flow"
+    description: "Employee submits → HOD reviews → Director approves"
+    e2e_tests:
+      - scenario: "HOD forwards to director"
+        expected_final_state: "status=REVIEWED"
+      - scenario: "Director approves"
+        expected_final_state: "status=APPROVED"

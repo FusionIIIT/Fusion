@@ -18,7 +18,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from applications.globals.models import ExtraInfo
-from applications.hr2.models import EmpDependents
+# from applications.hr2.models import EmpDependents  # Model does not exist
 
 def datetime_handler(date):
     '''
@@ -463,21 +463,23 @@ def compounder_view_handler(request):
         data = {'status': status, 'stock': stock}
         return JsonResponse(data)
     elif 'user_for_dependents' in request.POST:
-        user = request.POST.get('user_for_dependents')
-        if not User.objects.filter(username__iexact = user).exists():
-            return JsonResponse({"status":-1})
-        user_id = User.objects.get(username__iexact = user)
-        info = ExtraInfo.objects.get(user = user_id)
-        dep_info = EmpDependents.objects.filter(extra_info = info)
-        dep=[]
-        for d in dep_info:
-            obj={}
-            obj['name'] = d.name
-            obj['relation'] = d.relationship 
-            dep.append(obj)
-        if(len(dep) == 0) :
-            return JsonResponse({'status':-2})
-        return JsonResponse({'status':1,'dep':dep}) 
+        # EmpDependents model does not exist - functionality disabled
+        return JsonResponse({"status":-2})
+        # user = request.POST.get('user_for_dependents')
+        # if not User.objects.filter(username__iexact = user).exists():
+        #     return JsonResponse({"status":-1})
+        # user_id = User.objects.get(username__iexact = user)
+        # info = ExtraInfo.objects.get(user = user_id)
+        # dep_info = EmpDependents.objects.filter(extra_info = info)
+        # dep=[]
+        # for d in dep_info:
+        #     obj={}
+        #     obj['name'] = d.name
+        #     obj['relation'] = d.relationship 
+        #     dep.append(obj)
+        # if(len(dep) == 0) :
+        #     return JsonResponse({'status':-2})
+        # return JsonResponse({'status':1,'dep':dep}) 
     elif 'prescribe_b' in request.POST:
         user_id = request.POST.get('user')
         doctor_id = request.POST.get('doctor')

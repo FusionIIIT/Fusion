@@ -1,0 +1,87 @@
+artifact_type,artifact_id,artifact_title,status
+UC,UC-HR2-001,List employees,Partially Implemented
+UC,UC-HR2-002,View employee details,Incorrectly Implemented
+UC,UC-HR2-003,Update employee details,Incorrectly Implemented
+UC,UC-HR2-004,Apply for leave,Partially Implemented
+UC,UC-HR2-005,View leave applications,Implemented Correctly
+UC,UC-HR2-006,Withdraw leave application,Partially Implemented
+UC,UC-HR2-007,Request leave cancellation,Partially Implemented
+UC,UC-HR2-008,Request leave extension,Partially Implemented
+UC,UC-HR2-009,View leave balance,Implemented Correctly
+UC,UC-HR2-010,Download leave application,Partially Implemented
+UC,UC-HR2-011,Submit LTC application,Partially Implemented
+UC,UC-HR2-012,Submit CPDA advance,Partially Implemented
+UC,UC-HR2-013,Submit appraisal form,Partially Implemented
+UC,UC-HR2-014,View leave application details,Partially Implemented
+UC,UC-HR2-015,Update leave application,Partially Implemented
+UC,UC-HR2-016,Delete leave application,Incorrectly Implemented
+UC,UC-HR2-017,Approve or reject leave,Partially Implemented
+UC,UC-HR2-018,Nominee dashboard,Incorrectly Implemented
+UC,UC-HR2-019,Nominee decision,Partially Implemented
+UC,UC-HR2-020,Request leave documents,Partially Implemented
+UC,UC-HR2-021,Submit leave documents,Partially Implemented
+UC,UC-HR2-022,Cancellation decision,Partially Implemented
+UC,UC-HR2-023,Extension decision,Partially Implemented
+UC,UC-HR2-024,Record attendance,Incorrectly Implemented
+UC,UC-HR2-025,View attendance,Implemented Correctly
+UC,UC-HR2-026,List appraisal periods,Partially Implemented
+UC,UC-HR2-027,Submit appraisal (performance),Partially Implemented
+UC,UC-HR2-028,List appraisals,Implemented Correctly
+UC,UC-HR2-029,List training programs,Implemented Correctly
+UC,UC-HR2-030,Nominate for training,Partially Implemented
+UC,UC-HR2-031,View training nominations,Implemented Correctly
+UC,UC-HR2-032,Submit promotion application,Partially Implemented
+UC,UC-HR2-033,View promotion applications,Implemented Correctly
+UC,UC-HR2-034,View faculty workload,Partially Implemented
+UC,UC-HR2-035,Submit LTC update,Partially Implemented
+UC,UC-HR2-036,View LTC applications,Implemented Correctly
+UC,UC-HR2-037,Download LTC application,Partially Implemented
+UC,UC-HR2-038,Withdraw LTC application,Partially Implemented
+UC,UC-HR2-039,Approve or reject LTC,Partially Implemented
+UC,UC-HR2-040,View CPDA advances,Implemented Correctly
+UC,UC-HR2-041,View CPDA advance details,Partially Implemented
+UC,UC-HR2-042,Download CPDA advance,Partially Implemented
+UC,UC-HR2-043,Withdraw CPDA advance,Partially Implemented
+UC,UC-HR2-044,Decide CPDA advance,Partially Implemented
+UC,UC-HR2-045,Submit CPDA reimbursement,Partially Implemented
+UC,UC-HR2-046,View CPDA reimbursements,Implemented Correctly
+UC,UC-HR2-047,View CPDA reimbursement details,Partially Implemented
+UC,UC-HR2-048,Decide CPDA reimbursement,Partially Implemented
+UC,UC-HR2-049,List appraisal forms,Implemented Correctly
+UC,UC-HR2-050,View appraisal form details,Partially Implemented
+UC,UC-HR2-051,Download appraisal form,Partially Implemented
+UC,UC-HR2-052,Review appraisal form,Partially Implemented
+BR,BR-HR2-001,Leave start date cannot be in the past,Partially Implemented
+BR,BR-HR2-002,Leave end date must be on/after start date,Partially Implemented
+BR,BR-HR2-003,Total days must match date range,Partially Implemented
+BR,BR-HR2-004,Leave requests cannot overlap,Partially Implemented
+BR,BR-HR2-005,Leave balance must be sufficient,Partially Implemented
+BR,BR-HR2-006,Nominee employee must exist,Partially Implemented
+BR,BR-HR2-007,Only owner can withdraw leave,Partially Implemented
+BR,BR-HR2-008,Cancellation only before start date,Partially Implemented
+BR,BR-HR2-009,Leave delete only when pending,Partially Implemented
+BR,BR-HR2-010,Cancellation requires approved leave and no prior request,Partially Implemented
+BR,BR-HR2-011,Extension requires approved leave before end date,Partially Implemented
+BR,BR-HR2-012,Extension approval needs balance,Partially Implemented
+BR,BR-HR2-013,Document request requires HOD role,Partially Implemented
+BR,BR-HR2-014,Document submit requires owner and request,Partially Implemented
+BR,BR-HR2-015,Nominee decision only by nominee,Partially Implemented
+BR,BR-HR2-016,Leave decision action must be valid,Partially Implemented
+BR,BR-HR2-017,Leave balance record must exist,Partially Implemented
+BR,BR-HR2-018,Leave application requires employee profile,Partially Implemented
+BR,BR-HR2-019,LTC withdrawal only when pending,Incorrectly Implemented
+BR,BR-HR2-020,LTC decision action must be valid,Partially Implemented
+BR,BR-HR2-021,CPDA advance withdrawal only when pending,Incorrectly Implemented
+BR,BR-HR2-022,CPDA advance decision action must be valid,Partially Implemented
+BR,BR-HR2-023,Download access restricted to owner or staff,Partially Implemented
+BR,BR-HR2-024,Appraisal review sets status,Partially Implemented
+WF,WF-HR2-001,Leave application approval flow,Incorrectly Implemented
+WF,WF-HR2-002,Leave withdrawal flow,Incorrectly Implemented
+WF,WF-HR2-003,Leave cancellation flow,Incorrectly Implemented
+WF,WF-HR2-004,Leave extension flow,Incorrectly Implemented
+WF,WF-HR2-005,Nominee response flow,Incorrectly Implemented
+WF,WF-HR2-006,Document request flow,Incorrectly Implemented
+WF,WF-HR2-007,LTC approval flow,Partially Implemented
+WF,WF-HR2-008,CPDA advance approval flow,Partially Implemented
+WF,WF-HR2-009,CPDA reimbursement decision flow,Incorrectly Implemented
+WF,WF-HR2-010,Appraisal form review flow,Partially Implemented
