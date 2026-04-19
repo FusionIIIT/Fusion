@@ -37,4 +37,12 @@ urlpatterns = [
     path('director-update-status/', views.DirectorUpdateAssistantshipStatus.as_view(), name='director-update-status'),
     path('get_assistantship_status/', views.GetAssistantshipStatus.as_view(), name='get_assistantship_status'),
     # path('assistantship-status-update/', views.UpdateAssistantshipStatus.as_view(), name='assistantship-status-update'),
+
+    # No-Dues URLs
+    path('no-dues-initiate/', views.InitiateNoDuesView.as_view(), name='no-dues-initiate'),
+    path('no-dues-status/', views.GetNoDuesStatusView.as_view(), name='no-dues-status'),
+    path('no-dues-verify/', views.VerifyNoDuesView.as_view(), name='no-dues-verify'),
+    path('no-dues-track/', views.TrackNoDuesProgressView.as_view(), name='no-dues-track'),
+    path('no-dues-pending/', views.ListPendingNoDuesView.as_view(), name='no-dues-pending'),
+    path('no-dues-certificate/', views.DownloadNoDuesCertificateView.as_view(), name='no-dues-certificate'),
 ]
