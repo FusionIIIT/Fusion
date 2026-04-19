@@ -9,7 +9,6 @@ from applications.otheracademic.models import (
     BonafideFormTableUpdated,
     AssistantshipClaimFormStatusUpd,
     NoDues,
-    GraduateSeminarFormTable,
     LeaveTypeChoices,
     LeaveTypePGChoices,
 )
@@ -248,65 +247,3 @@ class AssistantshipStatusSerializer(serializers.Serializer):
     bank_account = serializers.CharField()
     status = serializers.CharField()
     approvalStages = serializers.DictField()
-
-
-# ==================== GRADUATE SEMINAR SERIALIZERS ====================
-
-class GraduateSeminarFormInputSerializer(serializers.Serializer):
-    """Input serializer for graduate seminar form submission."""
-    semester = serializers.CharField(max_length=100)
-    date_of_seminar = serializers.DateField()
-    theme_of_work = serializers.CharField()
-    place = serializers.CharField(max_length=255)
-    time = serializers.TimeField()
-    work_done_till_previous_sem = serializers.CharField()
-    specific_contri_in_cur_sem = serializers.CharField()
-    future_plan = serializers.CharField()
-    quality_of_work = serializers.CharField(max_length=10)
-    quantity_of_work = serializers.CharField(max_length=10)
-
-
-class GraduateSeminarFormSerializer(serializers.ModelSerializer):
-    """Output serializer for graduate seminar form."""
-    student_name = serializers.SerializerMethodField()
-    
-    class Meta:
-        model = GraduateSeminarFormTable
-        fields = [
-            'id',
-            'roll_no',
-            'student_name',
-            'semester',
-            'date_of_seminar',
-            'theme_of_work',
-            'place',
-            'time',
-            'work_done_till_previous_sem',
-            'specific_contri_in_cur_sem',
-            'future_plan',
-            'quality_of_work',
-            'quantity_of_work',
-            'status',
-            'date_of_submission',
-            'remarks',
-        ]
-    
-    def get_student_name(self, obj):
-        """Get student name from ExtraInfo."""
-        return obj.roll_no.user.get_full_name() if obj.roll_no and obj.roll_no.user else ""
-
-
-class GraduateSeminarStatusUpdateSerializer(serializers.Serializer):
-    """Input serializer for updating graduate seminar status."""
-    approvedRequests = serializers.ListField(
-        child=serializers.IntegerField(),
-        required=False,
-        default=[]
-    )
-    rejectedRequests = serializers.ListField(
-        child=serializers.IntegerField(),
-        required=False,
-        default=[]
-    )
-    remarks = serializers.CharField(max_length=500, required=False, allow_blank=True)
-
