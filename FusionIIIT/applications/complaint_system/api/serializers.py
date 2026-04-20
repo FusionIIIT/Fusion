@@ -87,12 +87,16 @@ class StudentComplainSerializers(serializers.ModelSerializer):
             if priority not in dict(ComplaintPriority.CHOICES):
                 raise serializers.ValidationError({'priority': 'Invalid priority'})
 
+            attrs.setdefault('complaint_type', 'internet')  # Use valid complaint type, not priority
             attrs.setdefault('status', ComplaintStatus.PENDING)
             attrs.setdefault('remarks', 'Pending')
             attrs.setdefault('reason', 'None')
             attrs.setdefault('comment', 'None')
             attrs.setdefault('priority', ComplaintPriority.STANDARD)
             attrs.setdefault('is_draft', draft_mode)
+            # In draft mode, allow empty details
+            if draft_mode and 'details' not in attrs:
+                attrs['details'] = ''
             priority = attrs['priority']
             if not draft_mode:
                 attrs['sla_deadline'] = timezone.now() + timedelta(hours=COMPLAINT_SLA_HOURS.get(priority, 72))

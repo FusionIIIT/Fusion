@@ -9,6 +9,7 @@ from rest_framework.test import APITestCase
 from applications.complaint_system.models import (
 	Caretaker,
 	ComplaintEvent,
+	ComplaintStatus,
 	SectionIncharge,
 	StudentComplain,
 	VerificationStatus,
@@ -250,6 +251,7 @@ class ComplaintApiTests(APITestCase):
 	def test_create_draft_allows_partial_payload_and_skips_sla(self):
 		self._auth(self.student_user)
 		payload = {
+			'complaint_type': 'internet',
 			'location': 'hall-3',
 			'details': '',
 			'is_draft': True,
@@ -375,6 +377,35 @@ class ComplaintApiTests(APITestCase):
 		self.assertIsNotNone(event)
 		self.assertEqual(event.note, 'Needs supervisor review')
 		self.assertTrue(mocked_notif.called)
+
+	def test_supervisor_can_update_escalated_complaint(self):
+		self._auth(self.staff_user)
+		response = self.client.post(
+			f'/complaint/api/escalate/{self.complaint_1.id}',
+			{'escalation_reason': 'Needs supervisor resolution'},
+			format='json',
+		)
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+		self._auth(self.faculty_user)
+		response = self.client.post(
+			f'/complaint/api/caretaker-action/{self.complaint_1.id}',
+			{
+				'status': ComplaintStatus.RESOLVED,
+				'remarks': 'Supervisor resolved the escalated issue',
+				'progress_notes': 'Issue resolved after escalation review',
+			},
+			format='json',
+		)
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		self.complaint_1.refresh_from_db()
+		self.assertEqual(self.complaint_1.status, ComplaintStatus.RESOLVED)
+		self.assertEqual(self.complaint_1.remarks, 'Supervisor resolved the escalated issue')
+		event = ComplaintEvent.objects.filter(
+			complaint=self.complaint_1,
+			action='caretaker_progress_update',
+		).first()
+		self.assertIsNotNone(event)
 
 	@patch('applications.complaint_system.escalation.complaint_system_notif')
 	def test_auto_escalation_job_escalates_overdue_complaints(self, mocked_notif):
@@ -622,6 +653,8 @@ class ComplaintApiTests(APITestCase):
 			format='json',
 		)
 
+		# Complainant must request reopen, not the caretaker
+		self._auth(self.student_user)
 		response = self.client.post(
 			f'/complaint/api/reopen/{self.complaint_1.id}',
 			{'reopen_reason': '   '},
