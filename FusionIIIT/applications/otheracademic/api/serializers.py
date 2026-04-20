@@ -249,7 +249,26 @@ class AssistantshipStatusSerializer(serializers.Serializer):
 class TAAssignmentItemSerializer(serializers.Serializer):
     """Single TA assignment entry."""
     roll_no = serializers.CharField(max_length=20)
-    subject_id = serializers.IntegerField(min_value=1)
+    subject_ids = serializers.ListField(
+        child=serializers.IntegerField(min_value=1),
+        required=False,
+        allow_empty=True,
+    )
+    subject_id = serializers.IntegerField(min_value=1, required=False)
+
+    def validate(self, attrs):
+        subject_ids = attrs.get("subject_ids")
+        subject_id = attrs.get("subject_id")
+
+        if subject_ids is not None:
+            attrs["subject_ids"] = list(dict.fromkeys(subject_ids))
+        elif subject_id is not None:
+            attrs["subject_ids"] = [subject_id]
+        else:
+            raise serializers.ValidationError("Provide subject_ids or subject_id.")
+
+        attrs.pop("subject_id", None)
+        return attrs
 
 
 class TAAssignmentUpdateSerializer(serializers.Serializer):

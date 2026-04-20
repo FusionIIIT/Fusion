@@ -1052,20 +1052,28 @@ def get_pg_ta_assignment_options():
     subjects = selectors.get_subject_options_for_ta_assignment()
     assignments = selectors.get_all_pg_ta_assignments()
 
-    assignment_map = {row.pg_student_id: row for row in assignments}
+    assignment_map = {}
+    for row in assignments:
+        assignment_map.setdefault(row.pg_student_id, []).append(row)
 
     student_rows = []
     for student in students:
-        existing = assignment_map.get(student.id_id)
+        existing_assignments = assignment_map.get(student.id_id, [])
         full_name = f"{student.id.user.first_name} {student.id.user.last_name}".strip() or student.id.user.username
         student_rows.append({
             "roll_no": student.id_id,
             "name": full_name,
             "programme": student.programme,
-            "assigned_subject_id": existing.subject_id if existing else None,
-            "assigned_subject": (
-                f"{existing.subject.code} - {existing.subject.name}" if existing else None
-            ),
+            "assigned_subject_ids": [row.subject_id for row in existing_assignments],
+            "assigned_subjects": [
+                {
+                    "id": row.subject_id,
+                    "code": row.subject.code,
+                    "name": row.subject.name,
+                    "label": f"{row.subject.code} - {row.subject.name}",
+                }
+                for row in existing_assignments
+            ],
         })
 
     subject_rows = [
@@ -1085,19 +1093,32 @@ def get_pg_ta_assignment_options():
 
 
 def upsert_pg_ta_assignments(assignments, actor_user):
-    """Create or update TA assignments for PG students."""
+    """Create, update, or remove TA assignments for PG students."""
     if not isinstance(assignments, list) or not assignments:
         raise TAAssignmentServiceError("At least one assignment is required.")
 
     updated_count = 0
-    with transaction.atomic():
-        for item in assignments:
-            roll_no = item.get("roll_no")
+    desired_subjects_by_student = {}
+
+    for item in assignments:
+        roll_no = item.get("roll_no")
+        subject_ids = item.get("subject_ids")
+
+        if not roll_no:
+            raise TAAssignmentServiceError("Each assignment must include roll_no.")
+
+        if subject_ids is None:
             subject_id = item.get("subject_id")
+            subject_ids = [subject_id] if subject_id else []
 
-            if not roll_no or not subject_id:
-                raise TAAssignmentServiceError("Each assignment must include roll_no and subject_id.")
+        if not isinstance(subject_ids, list):
+            raise TAAssignmentServiceError("subject_ids must be a list of subject ids.")
 
+        clean_subject_ids = [int(subject_id) for subject_id in subject_ids if subject_id]
+        desired_subjects_by_student.setdefault(str(roll_no), set()).update(clean_subject_ids)
+
+    with transaction.atomic():
+        for roll_no, desired_subject_ids in desired_subjects_by_student.items():
             student_user = selectors.get_user_by_username(str(roll_no))
             if not student_user:
                 raise TAAssignmentServiceError(f"Student '{roll_no}' not found.")
@@ -1106,23 +1127,39 @@ def upsert_pg_ta_assignments(assignments, actor_user):
             if not student:
                 raise TAAssignmentServiceError(f"Student '{roll_no}' is not a PG student.")
 
-            subject = selectors.get_subject_options_for_ta_assignment().filter(id=subject_id).first()
-            if not subject:
-                raise TAAssignmentServiceError(f"Subject id '{subject_id}' not found.")
+            existing_assignments = {
+                row.subject_id: row
+                for row in PGTAAssignment.objects.filter(pg_student=student_user.extrainfo)
+            }
 
-            PGTAAssignment.objects.update_or_create(
-                pg_student=student_user.extrainfo,
-                defaults={
-                    "subject": subject,
-                    "assigned_by": actor_user,
-                },
+            subjects_qs = selectors.get_subject_options_for_ta_assignment().filter(
+                id__in=desired_subject_ids
             )
-            PGTAAssignmentHistory.objects.create(
-                pg_student=student_user.extrainfo,
-                subject=subject,
-                assigned_by=actor_user,
-            )
-            updated_count += 1
+            found_subjects = {subject.id: subject for subject in subjects_qs}
+            missing_subject_ids = desired_subject_ids - set(found_subjects)
+            if missing_subject_ids:
+                missing_list = ", ".join(str(subject_id) for subject_id in sorted(missing_subject_ids))
+                raise TAAssignmentServiceError(f"Subject id(s) '{missing_list}' not found.")
+
+            for subject_id in desired_subject_ids:
+                subject = found_subjects[subject_id]
+                if subject_id not in existing_assignments:
+                    PGTAAssignment.objects.create(
+                        pg_student=student_user.extrainfo,
+                        subject=subject,
+                        assigned_by=actor_user,
+                    )
+                    PGTAAssignmentHistory.objects.create(
+                        pg_student=student_user.extrainfo,
+                        subject=subject,
+                        assigned_by=actor_user,
+                    )
+                    updated_count += 1
+
+            for subject_id, assignment in existing_assignments.items():
+                if subject_id not in desired_subjects_by_student[roll_no]:
+                    assignment.delete()
+                    updated_count += 1
 
     return updated_count
 

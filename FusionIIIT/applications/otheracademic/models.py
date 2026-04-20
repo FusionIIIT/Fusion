@@ -256,13 +256,19 @@ class AssistantshipClaimFormStatusUpd(models.Model):
 class PGTAAssignment(models.Model):
     """Stores TA subject assignment for PG students by dept admin."""
 
-    pg_student = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE)
+    pg_student = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     subject = models.ForeignKey(ProgrammeCourse, on_delete=models.CASCADE)
     assigned_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'PGTAAssignment'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['pg_student', 'subject'],
+                name='uniq_pg_ta_assignment_student_subject',
+            )
+        ]
 
     def __str__(self):
         return f"{self.pg_student_id} -> {self.subject.code}"

@@ -540,15 +540,16 @@ def get_subject_options_for_ta_assignment():
 
 def get_all_pg_ta_assignments():
     """Get existing TA assignments for PG students."""
-    return PGTAAssignment.objects.select_related("pg_student", "subject")
+    return PGTAAssignment.objects.select_related("pg_student", "subject").order_by(
+        "pg_student__id", "subject__code", "subject__name"
+    )
 
 
 def get_pg_ta_assignment_for_student(pg_student_id):
-    """Get TA assignment row for a PG student."""
-    try:
-        return PGTAAssignment.objects.get(pg_student_id=pg_student_id)
-    except PGTAAssignment.DoesNotExist:
-        return None
+    """Get TA assignment rows for a PG student."""
+    return PGTAAssignment.objects.select_related("subject", "assigned_by").filter(
+        pg_student_id=pg_student_id
+    ).order_by("subject__code", "subject__name")
 
 
 def get_faculty_members_for_supervisor_assignment():
