@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.utils import timezone
 from decimal import Decimal
-from applications.globals.models import ExtraInfo
+from applications.hr2 import selectors as hr2_selectors
 from ..models import (
     Employee, ServiceHistory, LeaveType, EmployeeLeaveBalance, LeaveApplicationNew,
     AppraisalPeriod, PerformanceAppraisalNew, TrainingProgram, TrainingNomination,
@@ -106,20 +106,17 @@ class LeaveApplicationSerializer(serializers.ModelSerializer):
             employee = None
             request = self.context.get('request') if hasattr(self, 'context') else None
             if request and hasattr(request, 'user'):
-                try:
-                    employee = request.user.extrainfo
-                except ExtraInfo.DoesNotExist:
-                    employee = None
+                employee = hr2_selectors.get_employee_for_user(request.user)
             if employee is None:
                 employee_id = data.get('employee_id')
                 if employee_id:
-                    employee = ExtraInfo.objects.filter(id=employee_id).first()
+                    employee = hr2_selectors.get_employee_by_id_optional(employee_id)
             if employee is not None:
-                overlapping = LeaveApplicationNew.objects.filter(
+                overlapping = hr2_selectors.has_overlapping_leave(
                     employee=employee,
-                    approval_status__in=['PENDING', 'FORWARDED', 'APPROVED'],
-                    start_date__lte=end_date,
-                    end_date__gte=start_date,
+                    start_date=start_date,
+                    end_date=end_date,
+                    exclude_id=self.instance.id if self.instance is not None else None,
                 )
                 if self.instance is not None:
                     overlapping = overlapping.exclude(id=self.instance.id)
@@ -144,36 +141,35 @@ class LeaveApplicationSerializer(serializers.ModelSerializer):
                         raise serializers.ValidationError({'start_date': 'Leave dates overlap with an existing leave request.'})
                 leave_type_name = data.get('leave_type')
                 if leave_type_name and data.get('total_days') is not None:
-                    leave_type = LeaveType.objects.filter(name__iexact=leave_type_name).first()
+                    leave_type = hr2_selectors.get_leave_type_by_name(leave_type_name)
                     if leave_type:
                         year = start_date.year
-                        balance = EmployeeLeaveBalance.objects.filter(
+                        balance = hr2_selectors.get_leave_balance_for_employee_year(
                             employee=employee,
                             leave_type=leave_type,
                             year=year,
-                        ).first()
+                        )
                         if balance is None:
-                            balance = EmployeeLeaveBalance.objects.filter(
+                            balance = hr2_selectors.get_latest_leave_balance_for_employee(
                                 employee=employee,
                                 leave_type=leave_type,
-                            ).order_by('-year').first()
+                            )
                         if balance is None:
                             raise serializers.ValidationError({'leave_type': 'Leave balance not found for this leave type.'})
                         if Decimal(str(data.get('total_days'))) > (balance.current_balance or 0):
                             raise serializers.ValidationError({'total_days': 'Requested days exceed remaining leave balance.'})
         nominee_id = (data.get('nominee_employee_id') or '').strip()
         if nominee_id:
-            nominee = ExtraInfo.objects.filter(id=nominee_id).first()
+            nominee = hr2_selectors.get_employee_by_id_optional(nominee_id)
             if not nominee:
                 raise serializers.ValidationError({'nominee_employee_id': 'Employee not found.'})
             if employee is not None and str(employee.id) == nominee_id:
                 raise serializers.ValidationError({'nominee_employee_id': 'Nominee must be different from the applicant.'})
             if start_date and end_date:
-                nominee_overlapping = LeaveApplicationNew.objects.filter(
+                nominee_overlapping = hr2_selectors.has_overlapping_leave(
                     employee=nominee,
-                    approval_status__in=['PENDING', 'FORWARDED', 'APPROVED'],
-                    start_date__lte=end_date,
-                    end_date__gte=start_date,
+                    start_date=start_date,
+                    end_date=end_date,
                 ).exists()
                 if nominee_overlapping:
                     raise serializers.ValidationError({'nominee_employee_id': 'Nominee has overlapping pending or approved leave.'})
@@ -189,7 +185,7 @@ class LeaveApplicationSerializer(serializers.ModelSerializer):
     def get_nominee_employee_name(self, obj):
         if not obj.handover_to:
             return ''
-        nominee = ExtraInfo.objects.filter(id=obj.handover_to).first()
+        nominee = hr2_selectors.get_employee_by_id_optional(obj.handover_to)
         if not nominee:
             return ''
         return nominee.user.get_full_name() or nominee.user.username
@@ -258,6 +254,24 @@ class LTCApplicationSerializer(serializers.ModelSerializer):
             'employee': {'required': False},
         }
 
+    def validate(self, data):
+        travel_start_date = data.get('travel_start_date')
+        travel_end_date = data.get('travel_end_date')
+        if travel_start_date and travel_end_date and travel_start_date > travel_end_date:
+            raise serializers.ValidationError({'travel_end_date': 'Travel end date must be on or after start date.'})
+
+        previous_ltc_used = data.get('previous_ltc_used')
+        last_ltc_date = data.get('last_ltc_date')
+        if previous_ltc_used and not last_ltc_date:
+            raise serializers.ValidationError({'last_ltc_date': 'Last LTC date is required when previous LTC was used.'})
+
+        numeric_fields = ['ticket_cost', 'accommodation_cost', 'other_expenses', 'total_amount_claimed']
+        for field in numeric_fields:
+            value = data.get(field)
+            if value is not None and value < 0:
+                raise serializers.ValidationError({field: 'Amount must be a non-negative number.'})
+        return data
+
 class CPDAAdvanceSerializer(serializers.ModelSerializer):
     employee_id = serializers.CharField(write_only=True, required=False)
 
@@ -269,6 +283,19 @@ class CPDAAdvanceSerializer(serializers.ModelSerializer):
             'employee': {'required': False},
         }
 
+    def validate(self, data):
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+        if start_date and end_date and start_date > end_date:
+            raise serializers.ValidationError({'end_date': 'End date must be on or after start date.'})
+
+        numeric_fields = ['registration_fee', 'travel_expense', 'accommodation_expense', 'other_expenses', 'total_amount']
+        for field in numeric_fields:
+            value = data.get(field)
+            if value is not None and value < 0:
+                raise serializers.ValidationError({field: 'Amount must be a non-negative number.'})
+        return data
+
 class CPDAReimbursementSerializer(serializers.ModelSerializer):
     employee_id = serializers.CharField(write_only=True, required=False)
 
@@ -277,13 +304,54 @@ class CPDAReimbursementSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['id', 'applied_date', 'approval_status']
 
+    def validate(self, data):
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+        if start_date and end_date and start_date > end_date:
+            raise serializers.ValidationError({'end_date': 'End date must be on or after start date.'})
+
+        numeric_fields = ['registration_fee', 'travel_expense', 'accommodation_expense', 'other_expenses', 'total_amount']
+        for field in numeric_fields:
+            value = data.get(field)
+            if value is not None and value < 0:
+                raise serializers.ValidationError({field: 'Amount must be a non-negative number.'})
+        return data
+
 class AppraisalFormSerializer(serializers.ModelSerializer):
     employee_id = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         model = AppraisalFormNew
         fields = '__all__'
-        read_only_fields = ['id', 'status', 'submitted_at']
+        read_only_fields = [
+            'id',
+            'status',
+            'submitted_at',
+            'assigned_reviewer_role',
+            'assigned_reviewer',
+            'assigned_by',
+            'assigned_at',
+        ]
         extra_kwargs = {
             'employee': {'required': False},
         }
+
+    def validate(self, data):
+        required_fields = [
+            'employee_name',
+            'department',
+            'designation',
+            'appraisal_year',
+            'self_summary',
+            'key_responsibilities',
+            'achievements',
+            'goals_achieved',
+            'future_goals',
+        ]
+        errors = {}
+        for field in required_fields:
+            if not str(data.get(field, '')).strip():
+                errors[field] = 'This field is required.'
+        if errors:
+            raise serializers.ValidationError(errors)
+        return data

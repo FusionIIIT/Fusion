@@ -66,4 +66,5 @@ urlpatterns = [
     path('appraisal-forms/<int:pk>/', views.AppraisalFormDetailView.as_view(), name='appraisal-form-detail'),
     path('appraisal-forms/<int:pk>/download/', views.AppraisalFormDownloadView.as_view(), name='appraisal-form-download'),
     path('appraisal-forms/<int:pk>/review/', views.AppraisalReviewView.as_view(), name='appraisal-form-review'),
+    path('appraisal-forms/<int:pk>/assign/', views.AppraisalAssignView.as_view(), name='appraisal-form-assign'),
 ]
