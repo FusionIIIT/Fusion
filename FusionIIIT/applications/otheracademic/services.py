@@ -96,8 +96,10 @@ def submit_ug_leave(
         raise LeaveServiceError(f"HOD with username '{hod_credential}' not found.")
 
     # Create leave record
+    student_name = (user.get_full_name() or "").strip() or user.username
+
     leave = LeaveFormTable.objects.create(
-        student_name=f"{user.first_name}{user.last_name}",
+        student_name=student_name,
         roll_no=user.extrainfo,
         date_from=parsed_date_from,
         date_to=parsed_date_to,
@@ -106,6 +108,10 @@ def submit_ug_leave(
         address=address,
         purpose=purpose,
         date_of_application=date.today(),
+        stud_mobile_no=mobile_number or "",
+        parent_mobile_no=parents_mobile or "",
+        leave_mobile_no=mobile_during_leave or "",
+        curr_sem=int(semester) if semester not in (None, "") else None,
         approved=False,
         rejected=False,
         hod=hod_user.username,
