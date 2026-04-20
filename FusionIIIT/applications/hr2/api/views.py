@@ -1028,6 +1028,62 @@ class LTCWorkflowHandle(Hr2AuthenticatedAPIView):
                     {"detail": "Application is not awaiting HR approval."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
+
+            # BR-HR-LTC-001: Threshold-based routing
+            amount = form.amountOfAdvanceRequired or 0
+            if amount > ltc_wf.LTC_FINANCIAL_THRESHOLD:
+                applicant_extra = ExtraInfo.objects.filter(user=form.created_by).first()
+                if not applicant_extra:
+                    return Response({"detail": "Applicant profile not found."}, status=status.HTTP_400_BAD_REQUEST)
+                
+                user_type = (applicant_extra.user_type or "").lower()
+                if user_type == "faculty":
+                    receiver_user, receiver_desig = ltc_wf.resolve_director()
+                    forward_status = ltc_wf.WF_FORWARDED_DIRECTOR
+                    msg_detail = "Above threshold; forwarded to Director for sanction."
+                else:
+                    # Non-teaching staff
+                    receiver_user, receiver_desig = ltc_wf.resolve_registrar()
+                    forward_status = ltc_wf.WF_FORWARDED_REGISTRAR
+                    msg_detail = "Above threshold; forwarded to Registrar for sanction."
+                
+                if not receiver_user:
+                    authority = "Director" if user_type == "faculty" else "Registrar"
+                    return Response({"detail": f"Sanctioning authority ({authority}) is not configured."}, status=status.HTTP_400_BAD_REQUEST)
+
+                with transaction.atomic():
+                    ltc_wf.append_workflow_event(
+                        form,
+                        ltc_wf.WF_HR_APPROVED,
+                        username,
+                        remarks or f"Approved by HR; amount (Rs. {amount}) exceeds threshold.",
+                    )
+                    forward_form_file(
+                        file_id=str(file_id),
+                        receiver=receiver_user,
+                        receiver_designation=receiver_desig,
+                        remarks=remarks or f"Forwarded to {receiver_desig} for sanction.",
+                        file_extra_JSON={
+                            "type": FormType.LTC,
+                            "workflow_status": forward_status,
+                        },
+                    )
+                    ltc_wf.append_workflow_event(
+                        form,
+                        forward_status,
+                        username,
+                        remarks or f"Forwarded to {receiver_desig}",
+                    )
+                    file_obj.refresh_from_db()
+                    ltc_wf.sync_file_extra_workflow(file_obj, forward_status)
+                
+                refreshed = get_form_for_type_and_id(FormType.LTC, form.id)
+                return Response({
+                    "detail": msg_detail,
+                    "workflow_status": refreshed.workflow_status,
+                    "form": LTC_serializer(refreshed).data,
+                })
+
             acct_user, acct_desig = ltc_wf.resolve_accountant()
             if not acct_user:
                 return Response(
@@ -1096,6 +1152,85 @@ class LTCWorkflowHandle(Hr2AuthenticatedAPIView):
                     approved=False,
                 )
                 ltc_wf.sync_file_extra_workflow(file_obj, ltc_wf.WF_HR_REJECTED)
+                archive_form_file(file_id=str(file_id))
+            return Response({"detail": "Rejected.", "workflow_status": form.workflow_status})
+
+        if action in ("director_approve", "registrar_approve"):
+            is_dir = "director" in action
+            if is_dir and not ltc_wf.designation_is_director(designation):
+                return Response({"detail": "Only the Director can perform this action."}, status=status.HTTP_403_FORBIDDEN)
+            if not is_dir and not ltc_wf.designation_is_registrar(designation):
+                return Response({"detail": "Only the Registrar can perform this action."}, status=status.HTTP_403_FORBIDDEN)
+            
+            wait_status = ltc_wf.WF_FORWARDED_DIRECTOR if is_dir else ltc_wf.WF_FORWARDED_REGISTRAR
+            if form.workflow_status != wait_status:
+                return Response({"detail": "Application is not awaiting your approval."}, status=status.HTTP_400_BAD_REQUEST)
+            
+            acct_user, acct_desig = ltc_wf.resolve_accountant()
+            if not acct_user:
+                 return Response({"detail": "Accountant is not configured."}, status=status.HTTP_400_BAD_REQUEST)
+
+            with transaction.atomic():
+                approved_status = ltc_wf.WF_DIRECTOR_APPROVED if is_dir else ltc_wf.WF_REGISTRAR_APPROVED
+                ltc_wf.append_workflow_event(
+                    form,
+                    approved_status,
+                    username,
+                    remarks or f"Approved by {designation}",
+                    approved=True,
+                    approved_by=request.user,
+                    approvedDate=datetime.date.today(),
+                )
+                forward_form_file(
+                    file_id=str(file_id),
+                    receiver=acct_user,
+                    receiver_designation=acct_desig,
+                    remarks=remarks or f"Approved by {designation}; forwarded to Accountant",
+                    file_extra_JSON={
+                        "type": FormType.LTC,
+                        "workflow_status": ltc_wf.WF_WITH_ACCOUNTANT,
+                    },
+                )
+                ltc_wf.append_workflow_event(
+                    form,
+                    ltc_wf.WF_WITH_ACCOUNTANT,
+                    username,
+                    remarks or "Forwarded to Accountant",
+                )
+                file_obj.refresh_from_db()
+                ltc_wf.sync_file_extra_workflow(file_obj, ltc_wf.WF_WITH_ACCOUNTANT)
+            
+            refreshed = get_form_for_type_and_id(FormType.LTC, form.id)
+            return Response({
+                "detail": "Approved and sent to Accountant.",
+                "workflow_status": refreshed.workflow_status,
+                "form": LTC_serializer(refreshed).data,
+            })
+
+        if action in ("director_reject", "registrar_reject"):
+            is_dir = "director" in action
+            if is_dir and not ltc_wf.designation_is_director(designation):
+                return Response({"detail": "Only the Director can perform this action."}, status=status.HTTP_403_FORBIDDEN)
+            if not is_dir and not ltc_wf.designation_is_registrar(designation):
+                return Response({"detail": "Only the Registrar can perform this action."}, status=status.HTTP_403_FORBIDDEN)
+            
+            wait_status = ltc_wf.WF_FORWARDED_DIRECTOR if is_dir else ltc_wf.WF_FORWARDED_REGISTRAR
+            if form.workflow_status != wait_status:
+                return Response({"detail": "Application is not awaiting your decision."}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if not remarks:
+                 return Response({"detail": "Remarks are required when rejecting."}, status=status.HTTP_400_BAD_REQUEST)
+
+            with transaction.atomic():
+                rejected_status = ltc_wf.WF_DIRECTOR_REJECTED if is_dir else ltc_wf.WF_REGISTRAR_REJECTED
+                ltc_wf.append_workflow_event(
+                    form,
+                    rejected_status,
+                    username,
+                    remarks,
+                    approved=False,
+                )
+                ltc_wf.sync_file_extra_workflow(file_obj, rejected_status)
                 archive_form_file(file_id=str(file_id))
             return Response({"detail": "Rejected.", "workflow_status": form.workflow_status})
 
