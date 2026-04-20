@@ -7,6 +7,7 @@ urlpatterns = [
 	path('create-proposal/', views.create_proposal, name='create_proposal'),
 	path('created-requests/', views.created_requests, name='created_requests'),
 	path('view-file/', views.view_file, name='view_file'),
+	path('dean-pending-requests/', views.dean_pending_requests, name='dean_pending_requests'),
 	path('dean-processed-requests/', views.dean_processed_requests, name='dean_processed_requests'),
 	path('handle-director-approval/', views.handle_director_approval, name='handle_director_approval'),
 	path('forward-request/', views.forward_request, name='handle_engineer_process_requests'),

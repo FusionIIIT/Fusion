@@ -499,6 +499,44 @@ def dean_processed_requests(request):
 
     return Response(obj)
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def dean_pending_requests(request):
+
+    '''
+        get requests in Dean/HOD inbox that are forwarded by IWD Admin
+        and awaiting Dean/HOD processing
+    '''
+
+    obj = []
+    desg = _resolve_iwd_designation(request)
+    if not desg:
+        return Response(obj)
+
+    inbox_files = view_inbox(
+        username=request.user.username,
+        designation=desg,
+        src_module="IWD"
+    )
+
+    for result in inbox_files:
+        src_object_id = result['src_object_id']
+        request_object = Requests.objects.filter(
+            id=src_object_id,
+            iwdAdminApproval=1,
+            deanProcessed=0,
+            directorApproval=0,
+        ).first()
+        if request_object:
+            element = _serialize_request_overview(
+                request_object,
+                File.objects.filter(src_object_id=request_object.id, src_module="IWD").first(),
+            )
+            obj.append(element)
+
+    return Response(obj)
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def handle_dean_process_request(request):
@@ -1473,6 +1511,8 @@ def audit_document_view(request):
         bill = _latest_bill_for_request(request_obj.id)
         if not bill:
             continue
+        if bill.audit:
+            continue
         bill_items = BillItems.objects.filter(bill=bill)
         file_url = bill.file.url if getattr(bill, 'file', None) else None
         obj.append({
@@ -2159,6 +2199,19 @@ def create_proposal(request):
     if request.FILES.get("supporting_documents"):
         data["supporting_documents"] = request.FILES["supporting_documents"]
 
+    def _to_bool(value):
+        if isinstance(value, bool):
+            return value
+        if value is None:
+            return None
+        if isinstance(value, str):
+            normalized = value.strip().lower()
+            if normalized in {"true", "1", "yes", "on"}:
+                return True
+            if normalized in {"false", "0", "no", "off", ""}:
+                return False
+        return bool(value)
+
     # Parse items[] from FormData
     items = defaultdict(dict)
     for key in request.data:
@@ -2235,7 +2288,9 @@ def create_proposal(request):
                 proposal.save()
 
                 # ===== NEW: Set budget-based routing and SLA deadlines =====
-                is_priority = data.get("isPriority", False)
+                is_priority = _to_bool(data.get("isPriority"))
+                if is_priority is None:
+                    is_priority = bool(request_instance.isPriority)
                 finalize_proposal_and_set_routing(request_id, proposal.id, is_priority=is_priority)
                 # ===== END NEW ROUTING LOGIC =====
 
