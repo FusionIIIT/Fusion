@@ -272,6 +272,12 @@ def _has_supervisor_access(extra, complaint):
     ).exists()
 
 
+def _can_supervisor_manage_escalated(extra, complaint):
+    if complaint is None or complaint.status != ComplaintStatus.ESCALATED:
+        return False
+    return _has_supervisor_access(extra, complaint)
+
+
 def _supervisor_scope_query(extra):
     if extra is None:
         return Q(pk__in=[])
@@ -293,7 +299,16 @@ def _caretaker_for_user(extra):
 
 
 def _is_assigned_caretaker(extra, complaint):
-    if extra is None or complaint.assigned_to is None:
+    if extra is None:
+        return False
+    
+    # Allow if caretaker oversees the complaint's area
+    caretaker = Caretaker.objects.filter(staff_id=extra).first()
+    if caretaker and caretaker.area == complaint.location:
+        return True
+    
+    # Allow if caretaker is the secincharge of the assigned worker
+    if complaint.assigned_to is None:
         return False
     sec = complaint.assigned_to.secincharge_id
     if sec is None or sec.staff_id_id is None:
@@ -371,9 +386,10 @@ def student_complain_api(request):
     if _is_superuser(user):
         complain = StudentComplain.objects.all().order_by('-complaint_date')
     elif extra.user_type in ('student', 'staff', 'faculty'):
-        # Default to own complaints; role-specific expanded access below.
-        complain = StudentComplain.objects.filter(complainer=extra)
+        # Start with own complaints (always visible to complainant)
+        base_query = Q(complainer=extra)
 
+        # Add role-specific expanded access: caretaker and supervisor scope
         scope_query = Q()
         caretaker = Caretaker.objects.filter(staff_id=extra).first()
         if caretaker:
@@ -383,8 +399,11 @@ def student_complain_api(request):
         if supervisor_scope.children:
             scope_query |= supervisor_scope
 
+        # Combine own complaints with scope access
         if scope_query:
-            complain = StudentComplain.objects.filter(scope_query)
+            base_query |= scope_query
+
+        complain = StudentComplain.objects.filter(base_query)
     else:
         complain = StudentComplain.objects.none()
 
@@ -937,10 +956,17 @@ def caretaker_action_api(request, c_id):
         return Response({'message': 'Draft complaints cannot be updated by caretaker'}, status=status.HTTP_400_BAD_REQUEST)
 
     caretaker = _caretaker_for_user(extra)
-    if caretaker is None and not _is_superuser(user):
+    can_supervisor_manage = _can_supervisor_manage_escalated(extra, complaint)
+    if caretaker is None and not _is_superuser(user) and not can_supervisor_manage:
         return Response({'message': 'Only caretakers can update complaint progress'}, status=status.HTTP_403_FORBIDDEN)
 
-    if not _is_superuser(user) and not _is_assigned_caretaker(extra, complaint):
+    can_update = _is_assigned_caretaker(extra, complaint) or can_supervisor_manage
+    if not _is_superuser(user) and not can_update:
+        if complaint.status == ComplaintStatus.ESCALATED:
+            return Response(
+                {'message': 'Only assigned caretaker or matching supervisor can update this escalated complaint'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         return Response({'message': 'Only assigned caretaker can update this complaint'}, status=status.HTTP_403_FORBIDDEN)
 
     incoming_status = request.data.get('status')
