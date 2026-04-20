@@ -290,10 +290,16 @@ def get_leave_by_id(leave_id, is_pg=False):
 
 def serialize_ug_leave(leave):
     """Serialize a UG leave request to dictionary format."""
+    mobile_number = getattr(leave, "stud_mobile_no", None) or getattr(leave, "mobile_no", None)
+    parents_mobile = getattr(leave, "parent_mobile_no", None)
+    mobile_during_leave = getattr(leave, "leave_mobile_no", None) or getattr(leave, "alt_mobile_no", None)
+    semester = getattr(leave, "curr_sem", None)
+    student_user = getattr(getattr(leave.roll_no, "user", None), "get_full_name", lambda: "")()
+    student_name = (student_user or leave.student_name or getattr(getattr(leave.roll_no, "user", None), "username", "")).strip()
     return {
         "id": leave.id,
         "rollNo": leave.roll_no.id,
-        "name": leave.student_name,
+        "name": student_name,
         "form": leave.upload_file.url if leave.upload_file else None,
         "details": {
             "dateFrom": leave.date_from,
@@ -302,10 +308,10 @@ def serialize_ug_leave(leave):
             "address": leave.address,
             "purpose": leave.purpose,
             "hodCredential": leave.hod,
-            "mobileNumber": None,
-            "parentsMobile": None,
-            "mobileDuringLeave": None,
-            "semester": None,
+            "mobileNumber": mobile_number,
+            "parentsMobile": parents_mobile,
+            "mobileDuringLeave": mobile_during_leave,
+            "semester": str(semester) if semester is not None else None,
             "academicYear": leave.date_of_application.year,
             "dateOfApplication": leave.date_of_application,
         },
@@ -362,10 +368,13 @@ def serialize_leave_status(leave, roll_no_id):
         )
         is_final = leave.hod_approved or leave.hod_rejected
 
+    student_user = getattr(getattr(leave.roll_no, "user", None), "get_full_name", lambda: "")()
+    student_name = (student_user or leave.student_name or getattr(getattr(leave.roll_no, "user", None), "username", "")).strip()
+
     return {
         "id": leave.id,
         "rollNo": roll_no_id,
-        "name": leave.student_name,
+        "name": student_name,
         "dateApplied": leave.date_of_application.strftime("%Y-%m-%d") if leave.date_of_application else None,
         "dateFrom": leave.date_from,
         "dateTo": leave.date_to,
