@@ -43,3 +43,50 @@ def get_latest_bill_for_request(request_id):
 
 def get_work_order_by_request(request_id):
     return WorkOrder.objects.filter(request_id=request_id).first()
+
+
+# ===== INVENTORY SELECTORS =====
+
+def list_inventory_items(**filters):
+    from .models import InventoryItem
+    return InventoryItem.objects.filter(**filters).order_by('name')
+
+
+def get_inventory_item(item_id):
+    from .models import InventoryItem
+    return InventoryItem.objects.filter(id=item_id).first()
+
+
+def list_inventory_transactions(item_id=None, request_id=None):
+    from .models import InventoryTransaction
+    qs = InventoryTransaction.objects.all()
+    if item_id:
+        qs = qs.filter(item_id=item_id)
+    if request_id:
+        qs = qs.filter(request_id=request_id)
+    return qs.order_by('-timestamp')
+
+
+# ===== FEEDBACK SELECTORS =====
+
+def list_feedback_for_request(request_id):
+    from .models import Feedback
+    return Feedback.objects.filter(request_id=request_id).order_by('-created_at')
+
+
+def get_feedback_by_id(feedback_id):
+    from .models import Feedback
+    return Feedback.objects.filter(id=feedback_id).first()
+
+
+# ===== SLA SELECTORS =====
+
+def list_escalations(**filters):
+    from .models import SLAEscalation
+    return SLAEscalation.objects.filter(**filters).order_by('-created_at')
+
+
+def get_escalation_by_id(escalation_id):
+    from .models import SLAEscalation
+    return SLAEscalation.objects.filter(id=escalation_id).first()
+

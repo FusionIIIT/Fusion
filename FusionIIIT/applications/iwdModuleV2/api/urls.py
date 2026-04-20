@@ -42,5 +42,20 @@ urlpatterns = [
 	path('settle-bills-view/', views.settle_bills_view, name='settleBillsView'),
 	path('handle-settle-bill-request/', views.handle_settle_bill_requests, name='handleSettleBillRequest'),
 
+	# ===== NEWLY IMPLEMENTED ENDPOINTS (UC-29, UC-30, UC-31) =====
+	path('sla-dashboard/', views.sla_dashboard, name='slaDashboard'),
+	
+	# Inventory Management (UC-30)
+	path('inventory-items/', views.list_inventory_items, name='listInventoryItems'),
+	path('inventory-transactions/', views.inventory_transactions, name='inventoryTransactions'),
+	path('issue-materials/', views.issue_materials, name='issueMaterials'),
+	path('receive-materials/', views.receive_materials, name='receiveMaterials'),
+	
+	# Feedback & Reopening (UC-31)
+	path('feedback-history/', views.feedback_history, name='feedbackHistory'),
+	path('submit-feedback/', views.submit_feedback, name='submitFeedback'),
+	path('reopen-request/', views.reopen_request, name='reopenRequest'),
 
+	# SLA Monitoring extras
+	path('sla-escalations/', views.sla_escalations, name='slaEscalations'),
 ]

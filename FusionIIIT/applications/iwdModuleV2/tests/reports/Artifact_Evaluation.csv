@@ -1,0 +1,67 @@
+Artifact ID,Artifact Type,Tests,Pass,Partial,Fail,Final Status,Remarks
+UC-01,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-02,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-03,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-04,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-05,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-06,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-07,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-08,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-09,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-10,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-11,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-12,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-13,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-14,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-15,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-16,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-17,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-18,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-19,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-20,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-21,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-22,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-23,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-24,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-25,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-26,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-27,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-28,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-29,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-30,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-31,UC,3,3,0,0,Implemented Correctly,3/3 passed
+BR-001,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-002,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-003,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-004,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-005,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-006,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-007,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-008,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-009,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-010,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-011,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-012,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-013,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-014,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-015,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-016,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-017,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-018,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-019,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-020,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-021,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-022,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-023,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-024,BR,2,2,0,0,Enforced Correctly,2/2 passed
+WF-01,WF,2,2,0,0,Complete,2/2 passed
+WF-02,WF,2,2,0,0,Complete,2/2 passed
+WF-03,WF,2,2,0,0,Complete,2/2 passed
+WF-04,WF,2,2,0,0,Complete,2/2 passed
+WF-05,WF,2,2,0,0,Complete,2/2 passed
+WF-06,WF,2,2,0,0,Complete,2/2 passed
+WF-07,WF,2,2,0,0,Complete,2/2 passed
+WF-08,WF,2,2,0,0,Complete,2/2 passed
+WF-09,WF,2,2,0,0,Complete,2/2 passed
+WF-10,WF,2,2,0,0,Complete,2/2 passed
+WF-11,WF,2,2,0,0,Complete,2/2 passed
