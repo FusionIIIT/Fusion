@@ -28,10 +28,59 @@ from applications.programme_curriculum.models import Course as ProgrammeCourse
 
 def get_user_by_username(username):
     """Get a user by username, returns None if not found."""
-    try:
-        return User.objects.get(username__iexact=username)
-    except User.DoesNotExist:
+    if username is None:
         return None
+
+    token = str(username).strip()
+    if not token:
+        return None
+
+    # Prefer exact match first to avoid ambiguous iexact collisions.
+    user = User.objects.filter(username=token).first()
+    if user:
+        return user
+
+    return User.objects.filter(username__iexact=token).order_by("id").first()
+
+
+def resolve_user_from_credential(credential):
+    """Resolve a user from username, full name, or designation-like credential."""
+    if credential is None:
+        return None
+
+    token = str(credential).strip()
+    if not token:
+        return None
+
+    # 1) Direct username match
+    user = get_user_by_username(token)
+    if user:
+        return user
+
+    # 2) Full-name match ("First Last" or underscore variants)
+    normalized = " ".join(token.replace("_", " ").split())
+    parts = normalized.split()
+    if len(parts) >= 2:
+        first = parts[0]
+        last = " ".join(parts[1:])
+        user = User.objects.filter(first_name__iexact=first, last_name__iexact=last).first()
+        if user:
+            return user
+
+    # 3) Designation name exact/partial match; prefer active holder (`working`)
+    hold = HoldsDesignation.objects.filter(
+        designation__name__iexact=token
+    ).select_related("working").order_by("id").first()
+    if hold and hold.working:
+        return hold.working
+
+    hold = HoldsDesignation.objects.filter(
+        designation__name__icontains=token
+    ).select_related("working").order_by("id").first()
+    if hold and hold.working:
+        return hold.working
+
+    return None
 
 
 def get_user_by_extrainfo_id(extrainfo_id):

@@ -59,7 +59,13 @@
                             <td>{{ entry.semester_types }}</td>
                             <td>{{ entry.purposes }}</td>
                             <td>{{ entry.date_of_applications }}</td>
-                            <td><a href='{{ entry.download_file.url }}'>Download</a></td>
+                            <td>
+                                {% if entry.download_file %}
+                                    <a href='{{ entry.download_file.url }}'>Download</a>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
                             <td>
                                 {% if entry.approve %}
                                     Approved

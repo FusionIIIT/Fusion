@@ -1,3 +1,5 @@
+import ast
+
 from django.contrib.auth import get_user_model
 from applications.academic_information.models import Student
 from applications.eis.api.views import profile as eis_profile
@@ -110,6 +112,9 @@ def auth_view(request):
 def notification(request):
     user_notifications = request.user.notifications.all().order_by('-timestamp')
     active_role = getattr(getattr(request.user, 'extrainfo', None), 'last_selected_role', None)
+    active_role = active_role.strip().lower() if isinstance(active_role, str) and active_role.strip() else None
+    if active_role and 'hod' in active_role:
+        active_role = 'hod'
 
     filtered_notifications = []
     for notification_obj in user_notifications:
@@ -125,6 +130,7 @@ def notification(request):
                 parsed_data = {}
 
         recipient_role = parsed_data.get('recipient_role')
+        recipient_role = recipient_role.strip().lower() if isinstance(recipient_role, str) and recipient_role.strip() else None
 
         if active_role and recipient_role and recipient_role != active_role:
             continue

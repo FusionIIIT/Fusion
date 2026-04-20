@@ -91,7 +91,7 @@ def submit_ug_leave(
         raise LeaveServiceError("Overlapping leave request already exists for the selected dates.")
 
     # Validate HOD exists
-    hod_user = selectors.get_user_by_username(hod_credential)
+    hod_user = selectors.resolve_user_from_credential(hod_credential)
     if not hod_user:
         raise LeaveServiceError(f"HOD with username '{hod_credential}' not found.")
 
@@ -166,15 +166,15 @@ def submit_pg_leave(
         raise LeaveServiceError("Overlapping leave request already exists for the selected dates.")
 
     # Validate all supervisors exist
-    ta_user = selectors.get_user_by_username(ta_supervisor_credential)
+    ta_user = selectors.resolve_user_from_credential(ta_supervisor_credential)
     if not ta_user:
         raise LeaveServiceError(f"TA Supervisor with username '{ta_supervisor_credential}' not found.")
 
-    thesis_user = selectors.get_user_by_username(thesis_supervisor_credential)
+    thesis_user = selectors.resolve_user_from_credential(thesis_supervisor_credential)
     if not thesis_user:
         raise LeaveServiceError(f"Thesis Supervisor with username '{thesis_supervisor_credential}' not found.")
 
-    hod_user = selectors.get_user_by_username(hod_credential)
+    hod_user = selectors.resolve_user_from_credential(hod_credential)
     if not hod_user:
         raise LeaveServiceError(f"HOD with username '{hod_credential}' not found.")
 
@@ -519,8 +519,8 @@ def submit_bonafide(user, branch, semester, purpose, download_file=None):
         semester_types=semester,
         purposes=purpose,
         date_of_applications=date.today(),
-        # Certificate is uploaded by admin after approval.
-        download_file=None,
+        # Store an optional supporting document uploaded at submission time.
+        download_file=download_file,
         approve=False,
         reject=False,
     )
@@ -587,12 +587,12 @@ def update_bonafide_status(approved_ids, rejected_ids, actor_user):
 
 
 def upload_bonafide_certificate(bonafide_id, certificate):
-    """Upload bonafide certificate only after approval."""
+    """Upload bonafide certificate for a pending or approved request."""
     bonafide = selectors.get_bonafide_by_id(bonafide_id)
     if not bonafide:
         raise BonafideServiceError("Bonafide request not found.")
-    if not bonafide.approve or bonafide.reject:
-        raise BonafideServiceError("Certificate can be uploaded only for approved bonafide requests.")
+    if bonafide.reject:
+        raise BonafideServiceError("Certificate cannot be uploaded for a rejected bonafide request.")
 
     bonafide.download_file = certificate
     bonafide.save(update_fields=["download_file"])
