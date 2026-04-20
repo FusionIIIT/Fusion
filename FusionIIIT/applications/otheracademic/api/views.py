@@ -840,6 +840,7 @@ NO_DUES_ROLE_DEPARTMENT_MAP = {
     "mess_incharge": {"mess"},
     "hostel_warden": {"hostel"},
     "lab_supervisor": {
+        "lab_supervisor",
         "ece",
         "physics_lab",
         "mechatronics_lab",
