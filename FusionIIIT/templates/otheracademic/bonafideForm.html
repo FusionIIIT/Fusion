@@ -34,7 +34,7 @@
             <div class="ui segment">
                 <h2 class="ui header">Bonafide Form</h2>
                
-                <form id="bonafideForm" class="ui form" method="POST" action="{% url 'otheracademic:bonafide_form_submit' %}">
+                <form id="bonafideForm" class="ui form" method="POST" enctype="multipart/form-data" action="{% url 'otheracademic:bonafide_form_submit' %}">
                     {% csrf_token %}
                     {% comment %} <div class="field">
                         <label for="name">Name</label>
@@ -59,6 +59,10 @@
                     <div class="field">
                         <label>Date of Application</label>
                         <input type="date" name="date_of_application" style="display: inline-block; width: auto;" required>
+                    </div>
+                    <div class="field">
+                        <label for="related_document">Supporting Document</label>
+                        <input type="file" id="related_document" name="related_document" accept=".pdf,.doc,.docx,.txt,image/*">
                     </div>
                     <button type="submit" class="ui blue button submit-button">Submit</button>
                 </form>

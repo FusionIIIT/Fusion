@@ -687,7 +687,7 @@ def bonafide_form_submit(request):
                 date_of_applications = data.get('date_of_application'),
                 approve=False,  # Initially not approved
                 reject=False,  # Initially not rejected
-                download_file = "not available",
+            download_file = file,
             )
         messages.success(request,'form submitted successfully')
         bonafide.save()
@@ -722,7 +722,7 @@ def approve_bonafide(request, leave_id):
     leave_entry = BonafideFormTableUpdated.objects.get(id=leave_id)
     leave_entry.approve = True
     leave_entry.save()
-    bonafide_aceptor = User.objects.get(username=leave_entry.roll_nos_id)
+    bonafide_aceptor = leave_entry.roll_nos.user
     message='A Bonafide uploaded'
     otheracademic_notif(request.user,bonafide_aceptor, 'bonafide_accept', 1, 'student', message)
     return redirect('/otheracademic/bonafideApproveForm')  # Redirect to appropriate page after approval
@@ -734,7 +734,7 @@ def reject_bonafide(request, leave_id):
     leave_entry = BonafideFormTableUpdated.objects.get(id=leave_id)
     leave_entry.reject = True
     leave_entry.save()
-    bonafide_aceptor = User.objects.get(username=leave_entry.roll_no_id)
+    bonafide_aceptor = leave_entry.roll_nos.user
     message='A Bonafide rejected'
     otheracademic_notif(request.user,bonafide_aceptor, 'bonafide_accept', 1, 'student', message)
     return redirect('/otheracademic/bonafideApproveForm')  # Redirect to appropriate page after rejection
