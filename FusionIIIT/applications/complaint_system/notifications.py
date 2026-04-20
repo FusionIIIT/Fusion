@@ -1,6 +1,7 @@
+from django.db.models import Q
 from notification.views import complaint_system_notif
 
-from applications.complaint_system.models import ComplaintEvent, ComplaintStatus, Supervisor
+from applications.complaint_system.models import ComplaintEvent, ComplaintStatus, Supervisor, Caretaker
 
 
 STATUS_LABELS = {
@@ -59,10 +60,25 @@ def _worker_user(worker):
     return getattr(worker.secincharge_id.staff_id, 'user', None)
 
 
+def _location_caretaker_users(complaint):
+    recipients = []
+    seen = set()
+    queryset = Caretaker.objects.select_related('staff_id', 'staff_id__user').filter(area=complaint.location)
+    for caretaker in queryset:
+        user = getattr(caretaker.staff_id, 'user', None)
+        if user is None or user.id in seen:
+            continue
+        recipients.append(user)
+        seen.add(user.id)
+    return recipients
+
+
 def _supervisor_users(complaint):
     recipients = []
     seen = set()
-    queryset = Supervisor.objects.select_related('sup_id', 'sup_id__user').filter(type=complaint.complaint_type)
+    queryset = Supervisor.objects.select_related('sup_id', 'sup_id__user').filter(
+        Q(type=complaint.complaint_type) & (Q(area='') | Q(area=complaint.location))
+    )
     for supervisor in queryset:
         user = getattr(supervisor.sup_id, 'user', None)
         if user is None or user.id in seen:
@@ -75,7 +91,6 @@ def _supervisor_users(complaint):
 def notify_complaint_created(complaint, actor=None):
     sender_user = getattr(actor, 'user', None) or getattr(complaint.complainer, 'user', None)
     complainer_user = getattr(complaint.complainer, 'user', None)
-    caretaker_user = _assigned_caretaker_user(complaint)
 
     _notify(
         sender_user,
@@ -85,20 +100,34 @@ def notify_complaint_created(complaint, actor=None):
         student_view=True,
     )
 
-    if caretaker_user:
-        _notify(
-            sender_user,
-            caretaker_user,
-            complaint,
-            f'New complaint assigned: {complaint.complaint_ref or complaint.id} ({complaint.complaint_type} at {complaint.location}).',
-            student_view=False,
-        )
+    notified_ids = {getattr(complainer_user, 'id', None)}
+
+    for c_user in _location_caretaker_users(complaint):
+        if c_user.id not in notified_ids:
+            _notify(
+                sender_user,
+                c_user,
+                complaint,
+                f'New complaint registered in your area: {complaint.complaint_ref or complaint.id} ({complaint.complaint_type} at {complaint.location}).',
+                student_view=False,
+            )
+            notified_ids.add(c_user.id)
+
+    for s_user in _supervisor_users(complaint):
+        if s_user.id not in notified_ids:
+            _notify(
+                sender_user,
+                s_user,
+                complaint,
+                f'New complaint registered in your department: {complaint.complaint_ref or complaint.id} ({complaint.complaint_type} at {complaint.location}).',
+                student_view=False,
+            )
+            notified_ids.add(s_user.id)
 
 
 def notify_status_change(complaint, from_status, to_status, actor=None, remarks=''):
     sender_user = getattr(actor, 'user', None) or getattr(complaint.complainer, 'user', None)
     complainer_user = getattr(complaint.complainer, 'user', None)
-    caretaker_user = _assigned_caretaker_user(complaint)
 
     from_label = STATUS_LABELS.get(from_status, str(from_status))
     to_label = STATUS_LABELS.get(to_status, str(to_status))
@@ -106,8 +135,18 @@ def notify_status_change(complaint, from_status, to_status, actor=None, remarks=
     message = f'Complaint {complaint.complaint_ref or complaint.id} moved from {from_label} to {to_label}.{suffix}'
 
     _notify(sender_user, complainer_user, complaint, message, student_view=True)
-    if caretaker_user and caretaker_user.id != getattr(complainer_user, 'id', None):
-        _notify(sender_user, caretaker_user, complaint, message, student_view=False)
+    
+    notified_ids = {getattr(complainer_user, 'id', None)}
+
+    for c_user in _location_caretaker_users(complaint):
+        if c_user.id not in notified_ids:
+            _notify(sender_user, c_user, complaint, message, student_view=False)
+            notified_ids.add(c_user.id)
+
+    for s_user in _supervisor_users(complaint):
+        if s_user.id not in notified_ids:
+            _notify(sender_user, s_user, complaint, message, student_view=False)
+            notified_ids.add(s_user.id)
 
 
 def notify_reopen_requested(complaint, actor=None, reason=''):
