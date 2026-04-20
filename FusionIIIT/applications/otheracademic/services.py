@@ -48,6 +48,16 @@ class TAAssignmentServiceError(Exception):
     pass
 
 
+def _get_bonafide_admin_recipients():
+    """Return all academic-admin users eligible for bonafide notifications."""
+    recipients = selectors.get_users_for_designation("acadadmin")
+    if recipients.exists():
+        return recipients
+
+    # Backward-compatible fallback for alternate naming in some deployments.
+    return selectors.get_users_for_designation("acad_admin")
+
+
 # ==================== LEAVE SERVICES ====================
 
 def submit_ug_leave(
@@ -515,16 +525,15 @@ def submit_bonafide(user, branch, semester, purpose, download_file=None):
         reject=False,
     )
 
-    # Notify academic admin
-    acad_admin_user = selectors.get_first_user_for_designation("acadadmin")
-    if acad_admin_user:
+    # Notify all academic admins
+    for acad_admin_user in _get_bonafide_admin_recipients():
         otheracademic_notif(
             user,
             acad_admin_user,
-            'bonafide',
+            'bonafide_acadadmin',
             bonafide_form.id,
             'student',
-            "A new Bonafide application has been submitted."
+            "A Bonafide request is pending for your approval."
         )
 
     return bonafide_form
@@ -600,12 +609,11 @@ def withdraw_bonafide(user, bonafide_id):
     if bonafide.approve or bonafide.reject:
         raise BonafideServiceError("Only pending bonafide requests can be withdrawn.")
 
-    acad_admin_user = selectors.get_first_user_for_designation("acadadmin")
-    if acad_admin_user:
+    for acad_admin_user in _get_bonafide_admin_recipients():
         otheracademic_notif(
             user,
             acad_admin_user,
-            'bonafide',
+            'bonafide_acadadmin',
             bonafide.id,
             'student',
             "A Bonafide application has been withdrawn by the student.",
