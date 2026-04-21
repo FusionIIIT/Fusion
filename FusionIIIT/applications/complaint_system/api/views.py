@@ -11,7 +11,7 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 from rest_framework.response import Response
 from django.utils import timezone
 from django.utils.dateparse import parse_date, parse_datetime
-from applications.globals.models import User, ExtraInfo, HoldsDesignation
+from applications.globals.models import User, ExtraInfo
 from applications.complaint_system.models import (
     Caretaker,
     ComplaintEvent,
@@ -197,14 +197,7 @@ def _get_request_extra_info(request):
 
 
 def _is_superuser(user):
-    if bool(user and user.is_superuser):
-        return True
-    if user:
-        return HoldsDesignation.objects.filter(
-            user=user,
-            designation__name__in=['complaint_admin', 'complaint_system_admin']
-        ).exists()
-    return False
+    return bool(user and user.is_superuser)
 
 
 def _can_manage_complaint(user, extra, complaint):
@@ -272,9 +265,10 @@ def _has_supervisor_access(extra, complaint):
     if extra is None or complaint is None:
         return False
     return Supervisor.objects.filter(
-        Q(area='') | Q(area=complaint.location),
         sup_id=extra,
         type=complaint.complaint_type,
+    ).filter(
+        Q(area='') | Q(area=complaint.location)
     ).exists()
 
 
@@ -291,10 +285,10 @@ def _supervisor_scope_query(extra):
     mappings = Supervisor.objects.filter(sup_id=extra).values_list('type', 'area')
     scope_query = Q(pk__in=[])
     for complaint_type, area in mappings:
-        query = Q(complaint_type=complaint_type, is_draft=False)
         if area:
-            query &= Q(location=area)
-        scope_query |= query
+            scope_query |= Q(complaint_type=complaint_type, location=area, is_draft=False)
+        else:
+            scope_query |= Q(complaint_type=complaint_type, is_draft=False)
     return scope_query
 
 
@@ -355,7 +349,7 @@ def complaint_details_api(request,detailcomp_id1):
     complaint_detail = get_object_or_404(StudentComplain, id=detailcomp_id1)
 
     if not _can_manage_complaint(user, extra, complaint_detail):
-        return Response({'message': 'Unauthorized: You do not have permission to access or modify this specific complaint.'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'message': 'Access denied'}, status=status.HTTP_403_FORBIDDEN)
 
     complaint_detail_serialized = _complaint_payload(complaint_detail)
     if complaint_detail.worker_id is None:
@@ -533,7 +527,7 @@ def edit_complain_api(request,c_id):
         return Response({'message': 'The complaint does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
     if not _can_manage_complaint(user, extra, complain):
-        return Response({'message': 'Unauthorized: You do not have permission to access or modify this specific complaint.'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'message': 'Access denied'}, status=status.HTTP_403_FORBIDDEN)
 
     if request.method == 'DELETE':
         complain.delete()
@@ -615,13 +609,6 @@ def edit_complain_api(request,c_id):
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def worker_api(request):
-    user, extra = _get_request_extra_info(request)
-    is_admin = _is_superuser(user)
-    is_caretaker = Caretaker.objects.filter(staff_id=extra).exists() if extra else False
-    is_supervisor = Supervisor.objects.filter(sup_id=extra).exists() if extra else False
-
-    if not (is_admin or is_caretaker or is_supervisor):
-        return Response({'message': 'Unauthorized: Only caretakers, supervisors, or admins can access worker data.'}, status=status.HTTP_403_FORBIDDEN)
 
     if request.method == 'GET':
         worker = Workers.objects.all()
@@ -632,9 +619,11 @@ def worker_api(request):
         return Response(data=resp, status=status.HTTP_200_OK)
 
     elif request.method == 'POST':
-        if not (is_admin or is_caretaker):
-            return Response({'message': 'Unauthorized: Only caretakers or admins can manage workers.'}, status=status.HTTP_403_FORBIDDEN)
-        
+        _, extra = _get_request_extra_info(request)
+        try:
+            caretaker = Caretaker.objects.get(staff_id=extra)
+        except Caretaker.DoesNotExist:
+            return Response({'message': 'Logged in user does not have permission'}, status=status.HTTP_403_FORBIDDEN)
         serializer = serializers.WorkersSerializers(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -645,22 +634,18 @@ def worker_api(request):
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def edit_worker_api(request,w_id):
-    user, extra = _get_request_extra_info(request)
-    is_admin = _is_superuser(user)
-    is_caretaker = Caretaker.objects.filter(staff_id=extra).exists() if extra else False
-
-    if not (is_admin or is_caretaker):
-        return Response({'message': 'Unauthorized: Only caretakers or admins can manage workers.'}, status=status.HTTP_403_FORBIDDEN)
-
+    _, extra = _get_request_extra_info(request)
+    try:
+        caretaker = Caretaker.objects.get(staff_id=extra)
+    except Caretaker.DoesNotExist:
+        return Response({'message': 'Logged in user does not have permission'}, status=status.HTTP_403_FORBIDDEN)
     try:
         worker = Workers.objects.get(id=w_id)
     except Workers.DoesNotExist:
         return Response({'message': 'The worker does not exist'}, status=status.HTTP_404_NOT_FOUND)
-        
     if request.method == 'DELETE':
         worker.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-        
     serializer = serializers.WorkersSerializers(worker, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
@@ -671,12 +656,6 @@ def edit_worker_api(request,w_id):
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def caretaker_api(request):
-    user, extra = _get_request_extra_info(request)
-    is_admin = _is_superuser(user)
-    is_supervisor = Supervisor.objects.filter(sup_id=extra).exists() if extra else False
-
-    if not (is_admin or is_supervisor):
-        return Response({'message': 'Unauthorized: Only supervisors or admins can access caretaker data.'}, status=status.HTTP_403_FORBIDDEN)
 
     if request.method == 'GET':
         caretaker = Caretaker.objects.all()
@@ -687,6 +666,11 @@ def caretaker_api(request):
         return Response(data=resp, status=status.HTTP_200_OK)
 
     elif request.method == 'POST':
+        _, extra = _get_request_extra_info(request)
+        try:
+            supervisor = Supervisor.objects.get(sup_id=extra)
+        except Supervisor.DoesNotExist:
+            return Response({'message': 'Logged in user does not have permission'}, status=status.HTTP_403_FORBIDDEN)
         serializer = serializers.CaretakerSerializers(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -697,22 +681,18 @@ def caretaker_api(request):
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def edit_caretaker_api(request,c_id):
-    user, extra = _get_request_extra_info(request)
-    is_admin = _is_superuser(user)
-    is_supervisor = Supervisor.objects.filter(sup_id=extra).exists() if extra else False
-
-    if not (is_admin or is_supervisor):
-        return Response({'message': 'Unauthorized: Only supervisors or admins can manage caretakers.'}, status=status.HTTP_403_FORBIDDEN)
-
+    _, extra = _get_request_extra_info(request)
+    try:
+        supervisor = Supervisor.objects.get(sup_id=extra)
+    except Supervisor.DoesNotExist:
+        return Response({'message': 'Logged in user does not have permission'}, status=status.HTTP_403_FORBIDDEN)
     try:
         caretaker = Caretaker.objects.get(id=c_id)
     except Caretaker.DoesNotExist:
         return Response({'message': 'The Caretaker does not exist'}, status=status.HTTP_404_NOT_FOUND)
-        
     if request.method == 'DELETE':
         caretaker.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-        
     serializer = serializers.CaretakerSerializers(caretaker, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
@@ -723,12 +703,6 @@ def edit_caretaker_api(request,c_id):
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def supervisor_api(request):
-    user, extra = _get_request_extra_info(request)
-    is_admin = _is_superuser(user)
-    is_supervisor = Supervisor.objects.filter(sup_id=extra).exists() if extra else False
-
-    if not (is_admin or is_supervisor):
-        return Response({'message': 'Unauthorized: Only supervisors or admins can access supervisor data.'}, status=status.HTTP_403_FORBIDDEN)
 
     if request.method == 'GET':
         supervisor = Supervisor.objects.all()
@@ -739,12 +713,9 @@ def supervisor_api(request):
         return Response(data=resp, status=status.HTTP_200_OK)
 
     elif request.method == 'POST':
-        if not is_admin:
-            return Response({'message': 'Unauthorized: Only admins can assign or manage supervisors.'}, status=status.HTTP_403_FORBIDDEN)
-            
-        area = str(request.data.get('area', '')).strip()
-        if not area:
-            return Response({'message': 'area is required for supervisor mapping'}, status=status.HTTP_400_BAD_REQUEST)
+        user, _ = _get_request_extra_info(request)
+        if not _is_superuser(user):
+            return Response({'message': 'Logged in user does not have permission'}, status=status.HTTP_403_FORBIDDEN)
         serializer = serializers.SupervisorSerializers(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -757,7 +728,7 @@ def supervisor_api(request):
 def edit_supervisor_api(request,s_id):
     user, _ = _get_request_extra_info(request)
     if not _is_superuser(user):
-        return Response({'message': 'Unauthorized: Only admins can modify or delete supervisors.'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'message': 'Logged in user does not have permission'}, status=status.HTTP_403_FORBIDDEN)
     try:
         supervisor = Supervisor.objects.get(id=s_id)
     except Supervisor.DoesNotExist:
@@ -765,12 +736,6 @@ def edit_supervisor_api(request,s_id):
     if request.method == 'DELETE':
         supervisor.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-    if 'area' in request.data:
-        area = str(request.data.get('area', '')).strip()
-        if not area:
-            return Response({'message': 'area is required for supervisor mapping'}, status=status.HTTP_400_BAD_REQUEST)
-
     serializer = serializers.SupervisorSerializers(supervisor, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
@@ -802,7 +767,7 @@ def escalate_complaint_api(request, c_id):
     
     # Check if user can manage this complaint
     if not _can_manage_complaint(user, extra, complaint):
-        return Response({'message': 'Unauthorized: You do not have permission to access or modify this specific complaint.'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'message': 'Access denied'}, status=status.HTTP_403_FORBIDDEN)
     
     escalation_reason = request.data.get('escalation_reason', '')
     if not str(escalation_reason).strip():
@@ -823,7 +788,7 @@ def complaint_history_api(request, c_id):
     user, extra = _get_request_extra_info(request)
     complaint = get_object_or_404(StudentComplain, id=c_id)
     if not _can_manage_complaint(user, extra, complaint):
-        return Response({'message': 'Unauthorized: You do not have permission to access or modify this specific complaint.'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'message': 'Access denied'}, status=status.HTTP_403_FORBIDDEN)
     return Response({'events': _serialize_events(complaint)}, status=status.HTTP_200_OK)
 
 
@@ -839,7 +804,7 @@ def reopen_complaint_api(request, c_id):
 
     if not _is_complainant(extra, complaint) and not _is_superuser(user):
         if not _has_supervisor_access(extra, complaint):
-            return Response({'message': 'Unauthorized: You do not have permission to access or modify this specific complaint.'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'message': 'Access denied'}, status=status.HTTP_403_FORBIDDEN)
 
     reopen_reason = request.data.get('reopen_reason', '')
     if not str(reopen_reason).strip():
@@ -899,7 +864,7 @@ def verify_complaint_api(request, c_id):
     if complaint.is_draft:
         return Response({'message': 'Draft complaints cannot be verified'}, status=status.HTTP_400_BAD_REQUEST)
     if not _can_manage_complaint(user, extra, complaint) and not _is_complainant(extra, complaint):
-        return Response({'message': 'Unauthorized: You do not have permission to access or modify this specific complaint.'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'message': 'Access denied'}, status=status.HTTP_403_FORBIDDEN)
 
     verification_source = str(request.data.get('verification_source', '')).strip().lower()
     if not verification_source:
@@ -1118,7 +1083,7 @@ def bulk_complaint_action_api(request):
                 return Response({'message': 'Draft complaints are not eligible for bulk action'}, status=status.HTTP_400_BAD_REQUEST)
 
             if not _can_oversee_complaint(user, extra, complaint):
-                return Response({'message': 'Unauthorized: You do not have permission to access or modify this specific complaint.'}, status=status.HTTP_403_FORBIDDEN)
+                return Response({'message': 'Access denied'}, status=status.HTTP_403_FORBIDDEN)
 
             if action == 'reassign':
                 previous_worker = complaint.assigned_to
