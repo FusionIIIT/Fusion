@@ -147,7 +147,7 @@ VALID_TRANSITIONS = {
     ApplicationStatus.PATENTABILITY_CHECK_COMPLETED: [ApplicationStatus.SEARCH_REPORT_GENERATED, ApplicationStatus.NEEDS_REVISION],
     ApplicationStatus.SEARCH_REPORT_GENERATED: [ApplicationStatus.PATENT_FILED],
     ApplicationStatus.PATENT_FILED: [ApplicationStatus.PATENT_PUBLISHED],
-    ApplicationStatus.PATENT_PUBLISHED: [ApplicationStatus.PATENT_GRANTED, ApplicationStatus.PATENT_REFUSED],
+    ApplicationStatus.PATENT_PUBLISHED: [ApplicationStatus.PATENT_GRANTED, ApplicationStatus.PATENT_REFUSED, ApplicationStatus.REJECTED],
 }
 
 
