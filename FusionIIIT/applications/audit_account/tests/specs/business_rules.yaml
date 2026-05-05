@@ -1,0 +1,130 @@
+###############################################################################
+# AUDIT ACCOUNT Module — Business Rule Test Designs
+# Spec Source: Code analysis and model constraints
+# Guide Reference: BackendTestingGuide.md §5.2
+#
+# Total BRs: 12  |  Min Tests Per BR: 2 (1 Valid + 1 Invalid)
+# Required BR Tests: 2 × 12 = 24
+###############################################################################
+
+business_rules:
+
+  - id: "AUDIT-BR-001"
+    title: "Budget Availability Check"
+    description: "Requests must not exceed available department budget."
+    valid_tests:
+      - input_action: "Submit request where amount <= department remaining budget"
+        expected_result: "Request accepted; budget validation passes"
+    invalid_tests:
+      - input_action: "Submit request where amount > department remaining budget"
+        expected_result: "Rejected with budget exceeded error"
+
+  - id: "AUDIT-BR-002"
+    title: "Document Attachment Required"
+    description: "All requests must have supporting documents attached before submission."
+    valid_tests:
+      - input_action: "Submit request with at least one document attached"
+        expected_result: "Request accepted; documents saved"
+    invalid_tests:
+      - input_action: "Submit request without any documents"
+        expected_result: "Rejected with document required error"
+
+  - id: "AUDIT-BR-003"
+    title: "Role-Based Access Control"
+    description: "Users can only perform actions permitted by their roles."
+    valid_tests:
+      - input_action: "Finance user validates submitted request"
+        expected_result: "Action permitted; request status updated"
+    invalid_tests:
+      - input_action: "Student user attempts to approve request"
+        expected_result: "Rejected with insufficient permissions error"
+
+  - id: "AUDIT-BR-004"
+    title: "Amount-Based Approval Routing"
+    description: "Requests are routed based on amount thresholds (HOD/Dean/Director)."
+    valid_tests:
+      - input_action: "Submit request with amount <= HOD threshold"
+        expected_result: "Routed to HOD for approval"
+    invalid_tests:
+      - input_action: "Submit high-value request without proper routing"
+        expected_result: "Rejected or escalated to higher authority"
+
+  - id: "AUDIT-BR-005"
+    title: "Status Transition Rules"
+    description: "Requests can only transition through valid status sequences."
+    valid_tests:
+      - input_action: "Move request from SUBMITTED to FINANCE_VALIDATED"
+        expected_result: "Status transition allowed"
+    invalid_tests:
+      - input_action: "Attempt direct transition from DRAFT to APPROVED"
+        expected_result: "Rejected; invalid status transition"
+
+  - id: "AUDIT-BR-006"
+    title: "Owner-Only Modifications"
+    description: "Only the request owner can modify draft requests."
+    valid_tests:
+      - input_action: "Request owner edits their own draft"
+        expected_result: "Modification accepted"
+    invalid_tests:
+      - input_action: "Different user attempts to edit someone else's draft"
+        expected_result: "Rejected; not the owner"
+
+  - id: "AUDIT-BR-007"
+    title: "High-Value TA Escalation"
+    description: "High-value TA requests require authority approval."
+    valid_tests:
+      - input_action: "High-value TA approved by appropriate authority"
+        expected_result: "TA approved; high_value flag handled correctly"
+    invalid_tests:
+      - input_action: "High-value TA approved only by finance"
+        expected_result: "Rejected; requires authority approval"
+
+  - id: "AUDIT-BR-008"
+    title: "Audit Observation Access"
+    description: "Only authorized users can create/view audit observations."
+    valid_tests:
+      - input_action: "Auditor creates observation for request"
+        expected_result: "Observation created; linked to request"
+    invalid_tests:
+      - input_action: "Student attempts to create audit observation"
+        expected_result: "Rejected; auditor role required"
+
+  - id: "AUDIT-BR-009"
+    title: "Date Validation"
+    description: "Travel dates and deadlines must be valid (future dates, logical ranges)."
+    valid_tests:
+      - input_action: "Create TA with future travel dates (start < end)"
+        expected_result: "TA created; dates validated"
+    invalid_tests:
+      - input_action: "Create TA with start_date > end_date"
+        expected_result: "Rejected with invalid date range error"
+
+  - id: "AUDIT-BR-010"
+    title: "Unique Department Budget Heads"
+    description: "Each department-budget_head combination must be unique."
+    valid_tests:
+      - input_action: "Create budget for department-budget_head that doesn't exist"
+        expected_result: "Budget created successfully"
+    invalid_tests:
+      - input_action: "Create budget for existing department-budget_head pair"
+        expected_result: "Rejected with uniqueness constraint error"
+
+  - id: "AUDIT-BR-011"
+    title: "Observation Response Deadline"
+    description: "Observations can have response deadlines that must be future dates."
+    valid_tests:
+      - input_action: "Create observation with future response deadline"
+        expected_result: "Observation created with deadline set"
+    invalid_tests:
+      - input_action: "Create observation with past response deadline"
+        expected_result: "Rejected with invalid deadline error"
+
+  - id: "AUDIT-BR-012"
+    title: "Request Type Constraints"
+    description: "Requests must specify valid type (EXPENSE or VOUCHER)."
+    valid_tests:
+      - input_action: "Create request with type=EXPENSE"
+        expected_result: "Request created with correct type"
+    invalid_tests:
+      - input_action: "Create request with invalid type"
+        expected_result: "Rejected with invalid type error"

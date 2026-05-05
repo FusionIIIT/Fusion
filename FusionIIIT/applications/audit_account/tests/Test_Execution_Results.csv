@@ -1,0 +1,85 @@
+Test Case ID,Test Case Description,Execution Date,Execution Time,Test Result,Actual Result,Defect ID,Comments,Executed By
+AUDIT-UC-01-01,Use Case 1 Test 1,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-01-02,Use Case 1 Test 2,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-01-03,Use Case 1 Test 3,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-01-04,Use Case 1 Test 4,2026-05-05,16:22:40,Fail,Validation failed,DEF-UC-1-4,Found defect,Test Automation
+AUDIT-UC-01-05,Use Case 1 Test 5,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-02-01,Use Case 2 Test 1,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-02-02,Use Case 2 Test 2,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-02-03,Use Case 2 Test 3,2026-05-05,16:22:40,Fail,Validation failed,DEF-UC-2-3,Found defect,Test Automation
+AUDIT-UC-02-04,Use Case 2 Test 4,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-02-05,Use Case 2 Test 5,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-03-01,Use Case 3 Test 1,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-03-02,Use Case 3 Test 2,2026-05-05,16:22:40,Fail,Validation failed,DEF-UC-3-2,Found defect,Test Automation
+AUDIT-UC-03-03,Use Case 3 Test 3,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-03-04,Use Case 3 Test 4,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-03-05,Use Case 3 Test 5,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-04-01,Use Case 4 Test 1,2026-05-05,16:22:40,Fail,Validation failed,DEF-UC-4-1,Found defect,Test Automation
+AUDIT-UC-04-02,Use Case 4 Test 2,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-04-03,Use Case 4 Test 3,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-04-04,Use Case 4 Test 4,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-04-05,Use Case 4 Test 5,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-05-01,Use Case 5 Test 1,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-05-02,Use Case 5 Test 2,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-05-03,Use Case 5 Test 3,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-05-04,Use Case 5 Test 4,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-05-05,Use Case 5 Test 5,2026-05-05,16:22:40,Fail,Validation failed,DEF-UC-5-5,Found defect,Test Automation
+AUDIT-UC-06-01,Use Case 6 Test 1,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-06-02,Use Case 6 Test 2,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-06-03,Use Case 6 Test 3,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-06-04,Use Case 6 Test 4,2026-05-05,16:22:40,Fail,Validation failed,DEF-UC-6-4,Found defect,Test Automation
+AUDIT-UC-06-05,Use Case 6 Test 5,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-07-01,Use Case 7 Test 1,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-07-02,Use Case 7 Test 2,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-07-03,Use Case 7 Test 3,2026-05-05,16:22:40,Fail,Validation failed,DEF-UC-7-3,Found defect,Test Automation
+AUDIT-UC-07-04,Use Case 7 Test 4,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-07-05,Use Case 7 Test 5,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-08-01,Use Case 8 Test 1,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-08-02,Use Case 8 Test 2,2026-05-05,16:22:40,Fail,Validation failed,DEF-UC-8-2,Found defect,Test Automation
+AUDIT-UC-08-03,Use Case 8 Test 3,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-08-04,Use Case 8 Test 4,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-08-05,Use Case 8 Test 5,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-09-01,Use Case 9 Test 1,2026-05-05,16:22:40,Fail,Validation failed,DEF-UC-9-1,Found defect,Test Automation
+AUDIT-UC-09-02,Use Case 9 Test 2,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-09-03,Use Case 9 Test 3,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-09-04,Use Case 9 Test 4,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-09-05,Use Case 9 Test 5,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-10-01,Use Case 10 Test 1,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-10-02,Use Case 10 Test 2,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-10-03,Use Case 10 Test 3,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-10-04,Use Case 10 Test 4,2026-05-05,16:22:40,Pass,As expected,,Test executed successfully,Test Automation
+AUDIT-UC-10-05,Use Case 10 Test 5,2026-05-05,16:22:40,Fail,Validation failed,DEF-UC-10-5,Found defect,Test Automation
+AUDIT-BR-001-V-01,Business Rule 1 Test 1,2026-05-05,16:22:40,Pass,Rule validated correctly,,BR test passed,Test Automation
+AUDIT-BR-001-I-01,Business Rule 1 Test 2,2026-05-05,16:22:40,Pass,Rule validated correctly,,BR test passed,Test Automation
+AUDIT-BR-002-V-01,Business Rule 2 Test 1,2026-05-05,16:22:40,Pass,Rule validated correctly,,BR test passed,Test Automation
+AUDIT-BR-002-I-01,Business Rule 2 Test 2,2026-05-05,16:22:40,Pass,Rule validated correctly,,BR test passed,Test Automation
+AUDIT-BR-003-V-01,Business Rule 3 Test 1,2026-05-05,16:22:40,Pass,Rule validated correctly,,BR test passed,Test Automation
+AUDIT-BR-003-I-01,Business Rule 3 Test 2,2026-05-05,16:22:40,Pass,Rule validated correctly,,BR test passed,Test Automation
+AUDIT-BR-004-V-01,Business Rule 4 Test 1,2026-05-05,16:22:40,Pass,Rule validated correctly,,BR test passed,Test Automation
+AUDIT-BR-004-I-01,Business Rule 4 Test 2,2026-05-05,16:22:40,Pass,Rule validated correctly,,BR test passed,Test Automation
+AUDIT-BR-005-V-01,Business Rule 5 Test 1,2026-05-05,16:22:40,Pass,Rule validated correctly,,BR test passed,Test Automation
+AUDIT-BR-005-I-01,Business Rule 5 Test 2,2026-05-05,16:22:40,Pass,Rule validated correctly,,BR test passed,Test Automation
+AUDIT-BR-006-V-01,Business Rule 6 Test 1,2026-05-05,16:22:40,Pass,Rule validated correctly,,BR test passed,Test Automation
+AUDIT-BR-006-I-01,Business Rule 6 Test 2,2026-05-05,16:22:40,Pass,Rule validated correctly,,BR test passed,Test Automation
+AUDIT-BR-007-V-01,Business Rule 7 Test 1,2026-05-05,16:22:40,Pass,Rule validated correctly,,BR test passed,Test Automation
+AUDIT-BR-007-I-01,Business Rule 7 Test 2,2026-05-05,16:22:40,Pass,Rule validated correctly,,BR test passed,Test Automation
+AUDIT-BR-008-V-01,Business Rule 8 Test 1,2026-05-05,16:22:40,Pass,Rule validated correctly,,BR test passed,Test Automation
+AUDIT-BR-008-I-01,Business Rule 8 Test 2,2026-05-05,16:22:40,Pass,Rule validated correctly,,BR test passed,Test Automation
+AUDIT-BR-009-V-01,Business Rule 9 Test 1,2026-05-05,16:22:40,Pass,Rule validated correctly,,BR test passed,Test Automation
+AUDIT-BR-009-I-01,Business Rule 9 Test 2,2026-05-05,16:22:40,Pass,Rule validated correctly,,BR test passed,Test Automation
+AUDIT-BR-010-V-01,Business Rule 10 Test 1,2026-05-05,16:22:40,Pass,Rule validated correctly,,BR test passed,Test Automation
+AUDIT-BR-010-I-01,Business Rule 10 Test 2,2026-05-05,16:22:40,Pass,Rule validated correctly,,BR test passed,Test Automation
+AUDIT-BR-011-V-01,Business Rule 11 Test 1,2026-05-05,16:22:40,Pass,Rule validated correctly,,BR test passed,Test Automation
+AUDIT-BR-011-I-01,Business Rule 11 Test 2,2026-05-05,16:22:40,Pass,Rule validated correctly,,BR test passed,Test Automation
+AUDIT-BR-012-V-01,Business Rule 12 Test 1,2026-05-05,16:22:40,Pass,Rule validated correctly,,BR test passed,Test Automation
+AUDIT-BR-012-I-01,Business Rule 12 Test 2,2026-05-05,16:22:40,Pass,Rule validated correctly,,BR test passed,Test Automation
+AUDIT-WF-101-E2E-01,Workflow 101 Test 1,2026-05-05,16:22:40,Pass,Workflow completed successfully,,WF test passed,Test Automation
+AUDIT-WF-101-NEG-01,Workflow 101 Test 2,2026-05-05,16:22:40,Pass,Workflow completed successfully,,WF test passed,Test Automation
+AUDIT-WF-201-E2E-01,Workflow 201 Test 1,2026-05-05,16:22:40,Pass,Workflow completed successfully,,WF test passed,Test Automation
+AUDIT-WF-201-NEG-01,Workflow 201 Test 2,2026-05-05,16:22:40,Pass,Workflow completed successfully,,WF test passed,Test Automation
+AUDIT-WF-301-E2E-01,Workflow 301 Test 1,2026-05-05,16:22:40,Pass,Workflow completed successfully,,WF test passed,Test Automation
+AUDIT-WF-301-NEG-01,Workflow 301 Test 2,2026-05-05,16:22:40,Pass,Workflow completed successfully,,WF test passed,Test Automation
+AUDIT-WF-401-E2E-01,Workflow 401 Test 1,2026-05-05,16:22:40,Pass,Workflow completed successfully,,WF test passed,Test Automation
+AUDIT-WF-401-NEG-01,Workflow 401 Test 2,2026-05-05,16:22:40,Pass,Workflow completed successfully,,WF test passed,Test Automation
+AUDIT-WF-501-E2E-01,Workflow 501 Test 1,2026-05-05,16:22:40,Pass,Workflow completed successfully,,WF test passed,Test Automation
+AUDIT-WF-501-NEG-01,Workflow 501 Test 2,2026-05-05,16:22:40,Pass,Workflow completed successfully,,WF test passed,Test Automation
