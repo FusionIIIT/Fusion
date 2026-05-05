@@ -76,3 +76,7 @@ package-lock.json
 
 .DS_Store
 **/generated.pdf
+
+
+# module specific testing files
+Fusion\FusionIIIT\applications\audit_account\tests
