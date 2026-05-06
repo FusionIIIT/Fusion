@@ -38,6 +38,12 @@ urlpatterns = [
     path('leave/all-balances', views.AllEmployeeLeaveBalances.as_view(), name='leave_all_balances_new'),
     path('leave/create', views.LeaveSubmit.as_view(), name='leave_create'),
 
+    # --- Leave substitute nomination (HR-UC-004 / HR-UC-005) ---
+    path('leave/substitute/nominate', views.SubstituteNominate.as_view(), name='substitute_nominate'),
+    path('leave/substitute/inbox', views.SubstituteInboxView.as_view(), name='substitute_inbox'),
+    path('leave/substitute/respond/<int:nomination_id>/', views.SubstituteRespond.as_view(), name='substitute_respond'),
+    path('leave/substitute/status/<int:leave_form_id>', views.SubstituteStatus.as_view(), name='substitute_status'),
+
     # --- Appraisal-specific ---
     path('appraisal/submit', views.AppraisalSubmit.as_view(), name='appraisal_submit'),
 

@@ -241,6 +241,7 @@ class CPDAAdvanceform(BaseForm):
 
 class LeaveForm(BaseForm):
     WORKFLOW_STATUS_CHOICES = (
+        ("awaiting_substitutes", "Awaiting Substitute Consent"),
         ("submitted", "Submitted"),
         ("hod_approved", "Approved by HOD"),
         ("hod_rejected", "Rejected by HOD"),
@@ -408,3 +409,60 @@ class CPDAReimbursementform(BaseForm):
     advanceDueAdjustment = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     advanceAmountPDA = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     amountCheckedInPDA = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+
+class SubstituteNomination(models.Model):
+    """Tracks a substitute nomination for a leave application (HR-UC-004/005).
+
+    An applicant nominates one or more substitutes (academic and/or administrative)
+    before the leave is routed for HOD approval. Each substitute must accept or
+    decline the request. The leave advances only when all nominations are accepted
+    (BR-HR-019 consent gate).
+    """
+
+    RESPONSIBILITY_CHOICES = (
+        ('academic', 'Academic'),
+        ('administrative', 'Administrative'),
+    )
+    CONSENT_CHOICES = (
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('declined', 'Declined'),
+    )
+
+    leave_form = models.ForeignKey(
+        LeaveForm,
+        on_delete=models.CASCADE,
+        related_name='substitute_nominations',
+    )
+    substitute_user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='substitute_requests_received',
+    )
+    applicant_user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='substitute_nominations_sent',
+    )
+    responsibility_type = models.CharField(
+        max_length=20,
+        choices=RESPONSIBILITY_CHOICES,
+    )
+    consent_status = models.CharField(
+        max_length=20,
+        choices=CONSENT_CHOICES,
+        default='pending',
+    )
+    remarks = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    responded_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('leave_form', 'substitute_user', 'responsibility_type')
+
+    def __str__(self):
+        return (
+            f"{self.applicant_user.username} → {self.substitute_user.username} "
+            f"({self.responsibility_type}: {self.consent_status})"
+        )

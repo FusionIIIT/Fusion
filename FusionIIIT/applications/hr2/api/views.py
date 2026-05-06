@@ -118,6 +118,49 @@ def _ensure_current_owner_with_designation(request, file_id, receiver_payload=No
     return None
 
 
+def _get_leave_file_for_form(leave_form):
+    return File.objects.filter(src_object_id=str(leave_form.id)).order_by('-id').first()
+
+
+def _forward_leave_file_to_user(file_obj, receiver_username, receiver_designation, remarks, workflow_status):
+    if not file_obj:
+        return False
+    forward_form_file(
+        file_id=str(file_obj.id),
+        receiver=receiver_username,
+        receiver_designation=receiver_designation,
+        remarks=remarks,
+        file_extra_JSON={
+            "type": FormType.LEAVE,
+            "workflow_status": workflow_status,
+        },
+    )
+    leave_wf.sync_file_extra_workflow(file_obj, workflow_status)
+    return True
+
+
+def _return_leave_file_to_applicant(leave_form, remarks):
+    file_obj = _get_leave_file_for_form(leave_form)
+    if not file_obj:
+        return False
+
+    applicant = leave_form.created_by
+    if get_current_file_owner(file_obj.id) == applicant:
+        return False
+
+    applicant_designation = _get_user_primary_designation(applicant)
+    if not applicant_designation:
+        return False
+
+    return _forward_leave_file_to_user(
+        file_obj,
+        receiver_username=applicant.username,
+        receiver_designation=applicant_designation,
+        remarks=remarks,
+        workflow_status=leave_wf.WF_AWAITING_SUBSTITUTES,
+    )
+
+
 def _is_hr_admin(user):
     return HoldsDesignation.objects.filter(
         working=user,
@@ -1764,6 +1807,7 @@ class LeaveFormInitials(Hr2AuthenticatedAPIView):
         return Response(
             {
                 "name": full_name or request.user.username,
+                "username": request.user.username,
                 "last_selected_role": designation,
                 "pfno": extra_info.id,
                 "department": getattr(extra_info.department, "name", "") or "",
@@ -2762,22 +2806,57 @@ class LeaveSubmit(Hr2AuthenticatedAPIView):
         try:
             with transaction.atomic():
                 instance = serializer.save(created_by=request.user)
+
+                # Check if inline substitute nominations were provided
+                nominations_data = []
+                raw_noms = None
+                if hasattr(request.data, "get"):
+                    raw_noms = request.data.get("substitute_nominations")
+                elif isinstance(request.data, list) and len(request.data) > 2:
+                    raw_noms = request.data[2]
+
+                logger = logging.getLogger(__name__)
+                logger.info(f"LeaveSubmit: raw_noms type={type(raw_noms)}, raw_noms={raw_noms}")
+
+                if isinstance(raw_noms, str):
+                    import json
+                    try:
+                        nominations_data = json.loads(raw_noms)
+                        logger.info(f"Parsed JSON nominations: {nominations_data}")
+                    except json.JSONDecodeError as je:
+                        logger.error(f"Failed to parse JSON nominations: {je}")
+                        nominations_data = []
+                elif isinstance(raw_noms, list):
+                    nominations_data = raw_noms
+                    logger.info(f"Raw nominations is already a list: {nominations_data}")
+
+                has_nominations = bool(nominations_data)
+                logger = logging.getLogger(__name__)
+                logger.info(f"LeaveSubmit: has_nominations={has_nominations}, nominations_data={nominations_data}")
+                
+                initial_wf_status = leave_wf.WF_AWAITING_SUBSTITUTES if has_nominations else leave_wf.WF_SUBMITTED
+
                 leave_wf.append_workflow_event(
                     instance,
-                    leave_wf.WF_SUBMITTED,
+                    initial_wf_status,
                     request.user.username,
-                    "Form submitted",
+                    "Form submitted" + (" — awaiting substitute consent" if has_nominations else ""),
                 )
+                # Determine initial receiver. If awaiting substitutes, create the file with the applicant first
+                # and then forward it to the first substitute nominee for consent.
+                initial_receiver = request.user.username if has_nominations else hod_username
+                initial_receiver_desig = uploader_desig if has_nominations else hod_designation
+
                 create_form_file(
                     uploader=user_info.get("uploader_name", request.user.username),
                     uploader_designation=uploader_desig,
-                    receiver=hod_username,
-                    receiver_designation=hod_designation,
+                    receiver=initial_receiver,
+                    receiver_designation=initial_receiver_desig,
                     src_object_id=str(instance.id),
                     form_type=FormType.LEAVE,
                     file_extra_JSON={
                         "type": FormType.LEAVE,
-                        "workflow_status": leave_wf.WF_SUBMITTED,
+                        "workflow_status": initial_wf_status,
                         "leaveStartDate": str(instance.leaveStartDate)
                         if instance.leaveStartDate
                         else "",
@@ -2786,6 +2865,99 @@ class LeaveSubmit(Hr2AuthenticatedAPIView):
                         else "",
                     },
                 )
+
+                # Create SubstituteNomination records inline
+                created_substitute_users = []
+                if has_nominations:
+                    from applications.hr2.models import SubstituteNomination
+
+                    for nom in nominations_data:
+                        sub_username = (nom.get("username") or "").strip()
+                        resp_type = (nom.get("responsibility_type") or "").strip().lower()
+                        logger.info(f"Processing nomination: username={sub_username}, resp_type={resp_type}")
+
+                        if not sub_username or resp_type not in ("academic", "administrative"):
+                            logger.info(f"Skipping nomination: invalid username or resp_type")
+                            continue
+                        if sub_username == request.user.username:
+                            logger.info(f"Skipping nomination: self-nomination")
+                            continue
+
+                        try:
+                            sub_user = User.objects.get(username=sub_username)
+                        except User.DoesNotExist:
+                            logger.info(f"Skipping nomination: user {sub_username} not found")
+                            continue
+
+                        # BR-HR-005: No overlapping leaves
+                        overlapping = LeaveForm.objects.filter(
+                            created_by=sub_user,
+                            workflow_status__in=[
+                                leave_wf.WF_SUBMITTED,
+                                leave_wf.WF_HOD_APPROVED,
+                                leave_wf.WF_HR_APPROVED,
+                                leave_wf.WF_AWAITING_SUBSTITUTES,
+                            ],
+                            leaveStartDate__lte=instance.leaveEndDate,
+                            leaveEndDate__gte=instance.leaveStartDate,
+                        ).exists()
+                        if overlapping:
+                            logger.info(f"Skipping nomination: overlapping leave for {sub_username}")
+                            continue
+
+                        nomination, created = SubstituteNomination.objects.get_or_create(
+                            leave_form=instance,
+                            substitute_user=sub_user,
+                            responsibility_type=resp_type,
+                            defaults={"applicant_user": request.user},
+                        )
+                        logger.info(f"SubstituteNomination created={created} for {sub_username}")
+                        created_substitute_users.append(sub_user)
+                
+                logger.info(f"Total substitutes created: {len(created_substitute_users)}")
+
+                # If inline substitute nominations were provided, forward the leave file to the
+                # first pending substitute nominee for consent.
+                if created_substitute_users:
+                    from applications.hr2.models import SubstituteNomination
+
+                    file_obj = _get_leave_file_for_form(instance)
+                    logger.info(f"Got leave file: {file_obj.id if file_obj else None}")
+                    if file_obj:
+                        first_nomination = (
+                            SubstituteNomination.objects
+                            .filter(leave_form=instance, consent_status='pending')
+                            .select_related('substitute_user')
+                            .order_by('created_at')
+                            .first()
+                        )
+                        logger.info(f"First pending nomination: {first_nomination}")
+                        if first_nomination:
+                            sub_user = first_nomination.substitute_user
+                            logger.info(f"Forwarding file to substitute: {sub_user.username}")
+                            sub_designation = HoldsDesignation.objects.filter(
+                                working=sub_user,
+                            ).select_related('designation').first()
+                            logger.info(f"Substitute designation: {sub_designation.designation.name if sub_designation else None}")
+                            if sub_designation:
+                                try:
+                                    _forward_leave_file_to_user(
+                                        file_obj,
+                                        receiver_username=sub_user.username,
+                                        receiver_designation=sub_designation.designation.name,
+                                        remarks="Substitute nomination sent — awaiting consent",
+                                        workflow_status=leave_wf.WF_AWAITING_SUBSTITUTES,
+                                    )
+                                    logger.info(f"Successfully forwarded file to {sub_user.username}")
+                                except Exception as fwd_exc:
+                                    logger.error(f"Failed to forward file to substitute: {fwd_exc}")
+                        else:
+                            logger.warning("No first nomination found even though created_substitute_users is not empty")
+                    else:
+                        logger.warning("File object not found for leave form")
+                else:
+                    logger.info("No substitute nominations created, file stays with applicant or goes to HOD")
+
         except Exception as e:
             logging.getLogger(__name__).error("Leave submit failed: %s", e)
             return Response(
@@ -3123,6 +3295,313 @@ class LtcCreate(Hr2AuthenticatedAPIView):
         if err:
             return err
         return Response(data, status=status.HTTP_200_OK)
+
+
+# ============================================================================
+# Substitute Nomination Views (HR-UC-004, HR-UC-005)
+# ============================================================================
+
+class SubstituteNominate(Hr2AuthenticatedAPIView):
+    """Nominate substitute(s) for a leave form (HR-UC-004).
+
+    POST body: { "leave_form_id": int, "nominations": [ { "username": str, "responsibility_type": "academic"|"administrative" }, ... ] }
+    """
+
+    def post(self, request):
+        from applications.hr2.models import SubstituteNomination
+
+        leave_form_id = request.data.get("leave_form_id")
+        nominations = request.data.get("nominations", [])
+
+        if not leave_form_id:
+            return Response(
+                {"detail": "leave_form_id is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not nominations or not isinstance(nominations, list):
+            return Response(
+                {"detail": "nominations must be a non-empty list."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            leave_form = LeaveForm.objects.get(pk=leave_form_id)
+        except LeaveForm.DoesNotExist:
+            return Response(
+                {"detail": "Leave form not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Only the applicant (creator) can nominate substitutes
+        if leave_form.created_by != request.user:
+            return Response(
+                {"detail": "Only the leave applicant can nominate substitutes."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        created = []
+        errors = []
+        for nom in nominations:
+            sub_username = (nom.get("username") or "").strip()
+            resp_type = (nom.get("responsibility_type") or "").strip().lower()
+
+            if not sub_username:
+                errors.append("Substitute username is required.")
+                continue
+            if resp_type not in ("academic", "administrative"):
+                errors.append(f"Invalid responsibility type: {resp_type}")
+                continue
+
+            # BR-HR-005: Substitute ≠ applicant
+            if sub_username == request.user.username:
+                errors.append("You cannot nominate yourself as a substitute.")
+                continue
+
+            try:
+                sub_user = User.objects.get(username=sub_username)
+            except User.DoesNotExist:
+                errors.append(f"User '{sub_username}' not found.")
+                continue
+
+            # BR-HR-005: No overlapping approved leaves for substitute
+            overlapping = LeaveForm.objects.filter(
+                created_by=sub_user,
+                workflow_status__in=[
+                    leave_wf.WF_SUBMITTED,
+                    leave_wf.WF_HOD_APPROVED,
+                    leave_wf.WF_HR_APPROVED,
+                    leave_wf.WF_AWAITING_SUBSTITUTES,
+                ],
+                leaveStartDate__lte=leave_form.leaveEndDate,
+                leaveEndDate__gte=leave_form.leaveStartDate,
+            ).exists()
+            if overlapping:
+                errors.append(
+                    f"'{sub_username}' has overlapping leave during this period."
+                )
+                continue
+
+            # Check for duplicate nomination
+            if SubstituteNomination.objects.filter(
+                leave_form=leave_form,
+                substitute_user=sub_user,
+                responsibility_type=resp_type,
+            ).exists():
+                errors.append(
+                    f"'{sub_username}' is already nominated as {resp_type} substitute."
+                )
+                continue
+
+            nomination = SubstituteNomination.objects.create(
+                leave_form=leave_form,
+                substitute_user=sub_user,
+                applicant_user=request.user,
+                responsibility_type=resp_type,
+            )
+            created.append({
+                "id": nomination.id,
+                "substitute": sub_username,
+                "responsibility_type": resp_type,
+                "consent_status": "pending",
+            })
+
+        # If any nominations were created, move workflow to awaiting_substitutes and
+        # forward the leave file to the first substitute nominee.
+        if created and leave_form.workflow_status in (
+            leave_wf.WF_SUBMITTED,
+            leave_wf.WF_AWAITING_SUBSTITUTES,
+        ):
+            if leave_form.workflow_status == leave_wf.WF_SUBMITTED:
+                leave_wf.append_workflow_event(
+                    leave_form,
+                    leave_wf.WF_AWAITING_SUBSTITUTES,
+                    request.user.username,
+                    "Substitute nomination(s) sent — awaiting consent",
+                )
+
+            try:
+                file_obj = File.objects.filter(src_object_id=str(leave_form.id)).order_by('-id').first()
+                if file_obj and created:
+                    first_substitute_username = created[0]['substitute']
+                    sub_user = User.objects.filter(username=first_substitute_username).first()
+                    if sub_user:
+                        sub_designation = HoldsDesignation.objects.filter(
+                            working=sub_user,
+                        ).select_related('designation').first()
+                        if sub_designation:
+                            _forward_leave_file_to_user(
+                                file_obj,
+                                receiver_username=sub_user.username,
+                                receiver_designation=sub_designation.designation.name,
+                                remarks="Substitute nomination sent — awaiting consent",
+                                workflow_status=leave_wf.WF_AWAITING_SUBSTITUTES,
+                            )
+            except Exception as exc:
+                logging.getLogger(__name__).exception(
+                    "Failed to forward leave file to substitute after nomination: %s",
+                    exc,
+                )
+
+        return Response(
+            {
+                "detail": f"{len(created)} nomination(s) created.",
+                "created": created,
+                "errors": errors,
+            },
+            status=status.HTTP_200_OK if created else status.HTTP_400_BAD_REQUEST,
+        )
+
+
+class SubstituteInboxView(Hr2AuthenticatedAPIView):
+    """List pending substitute requests for the logged-in user (HR-UC-005)."""
+
+    def get(self, request):
+        from applications.hr2.models import SubstituteNomination
+        from applications.hr2.api.serializers import SubstituteNominationSerializer
+
+        nominations = (
+            SubstituteNomination.objects
+            .filter(substitute_user=request.user, consent_status='pending')
+            .select_related('leave_form', 'applicant_user', 'substitute_user')
+            .order_by('-created_at')
+        )
+        serializer = SubstituteNominationSerializer(nominations, many=True)
+        return Response(
+            {"substitute_inbox": serializer.data},
+            status=status.HTTP_200_OK,
+        )
+
+
+class SubstituteRespond(Hr2AuthenticatedAPIView):
+    """Accept or decline a substitute nomination (HR-UC-005).
+
+    POST body: { "action": "accept"|"decline", "remarks": "..." }
+    """
+
+    def post(self, request, nomination_id):
+        from applications.hr2.models import SubstituteNomination
+
+        action = (request.data.get("action") or "").strip().lower()
+        remarks = (request.data.get("remarks") or "").strip()
+
+        if action not in ("accept", "decline"):
+            return Response(
+                {"detail": "action must be 'accept' or 'decline'."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            nomination = SubstituteNomination.objects.select_related(
+                'leave_form'
+            ).get(pk=nomination_id)
+        except SubstituteNomination.DoesNotExist:
+            return Response(
+                {"detail": "Nomination not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Only the nominated substitute can respond
+        if nomination.substitute_user != request.user:
+            return Response(
+                {"detail": "Only the nominated substitute can respond."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if nomination.consent_status != 'pending':
+            return Response(
+                {"detail": f"Already responded: {nomination.consent_status}."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        from django.utils import timezone
+
+        nomination.consent_status = 'accepted' if action == 'accept' else 'declined'
+        nomination.remarks = remarks
+        nomination.responded_at = timezone.now()
+        nomination.save()
+
+        result_msg = f"Substitute request {nomination.consent_status}."
+
+        # Record substitute response in the leave workflow history.
+        leave_wf.append_workflow_event(
+            nomination.leave_form,
+            nomination.leave_form.workflow_status,
+            request.user.username,
+            (
+                "Substitute accepted — awaiting remaining substitute consent"
+                if action == 'accept'
+                else "Substitute declined — returned to applicant for a new substitute or HOD escalation"
+            ),
+        )
+
+        # BR-HR-019: Check if all substitutes accepted → advance workflow
+        if action == 'accept':
+            advanced, advance_msg = leave_wf.check_and_advance_substitute_consent(
+                nomination.leave_form
+            )
+            if advanced:
+                result_msg += f" {advance_msg}"
+            else:
+                _return_leave_file_to_applicant(
+                    nomination.leave_form,
+                    "Substitute accepted — awaiting remaining substitute consent",
+                )
+        else:
+            _return_leave_file_to_applicant(
+                nomination.leave_form,
+                "Substitute declined — returned to applicant for a new substitute or HOD escalation",
+            )
+            result_msg += " Returned to applicant for a new substitute or HOD escalation."
+
+        return Response(
+            {
+                "detail": result_msg,
+                "consent_status": nomination.consent_status,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class SubstituteStatus(Hr2AuthenticatedAPIView):
+    """Get substitute nomination status for a leave form."""
+
+    def get(self, request, leave_form_id):
+        from applications.hr2.models import SubstituteNomination
+        from applications.hr2.api.serializers import SubstituteNominationSerializer
+
+        try:
+            leave_form = LeaveForm.objects.get(pk=leave_form_id)
+        except LeaveForm.DoesNotExist:
+            return Response(
+                {"detail": "Leave form not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        nominations = (
+            SubstituteNomination.objects
+            .filter(leave_form=leave_form)
+            .select_related('substitute_user', 'applicant_user')
+            .order_by('responsibility_type', 'created_at')
+        )
+        serializer = SubstituteNominationSerializer(nominations, many=True)
+
+        all_accepted = (
+            nominations.exists()
+            and not nominations.exclude(consent_status='accepted').exists()
+        )
+        any_declined = nominations.filter(consent_status='declined').exists()
+        any_pending = nominations.filter(consent_status='pending').exists()
+
+        return Response(
+            {
+                "nominations": serializer.data,
+                "all_accepted": all_accepted,
+                "any_declined": any_declined,
+                "any_pending": any_pending,
+                "total": nominations.count(),
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 # ============================================================================

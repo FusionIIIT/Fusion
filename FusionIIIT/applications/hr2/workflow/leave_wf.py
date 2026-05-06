@@ -11,6 +11,7 @@ from django.utils import timezone
 
 from applications.globals.models import Designation, ExtraInfo, HoldsDesignation
 
+WF_AWAITING_SUBSTITUTES = "awaiting_substitutes"
 WF_SUBMITTED = "submitted"
 WF_HOD_APPROVED = "hod_approved"
 WF_HOD_REJECTED = "hod_rejected"
@@ -134,3 +135,80 @@ def sync_file_extra_workflow(file_obj, workflow_status):
     extra["workflow_status"] = workflow_status
     file_obj.file_extra_JSON = extra
     file_obj.save(update_fields=["file_extra_JSON"])
+
+
+def check_and_advance_substitute_consent(leave_form):
+    """Check if all substitute nominations for a leave form are accepted.
+
+    If all are accepted (BR-HR-019 consent gate), advance the workflow from
+    ``awaiting_substitutes`` to ``submitted`` and forward the file to HOD.
+
+    Returns:
+        (advanced: bool, message: str)
+    """
+    from applications.hr2.models import SubstituteNomination
+
+    nominations = SubstituteNomination.objects.filter(leave_form=leave_form)
+    if not nominations.exists():
+        return False, "No substitute nominations found."
+
+    pending = nominations.filter(consent_status='pending').count()
+    declined = nominations.filter(consent_status='declined').count()
+
+    if declined > 0:
+        return False, "One or more substitutes declined the request."
+
+    if pending > 0:
+        return False, f"{pending} substitute(s) have not yet responded."
+
+    # All accepted — advance workflow if still awaiting
+    if leave_form.workflow_status != WF_AWAITING_SUBSTITUTES:
+        return False, "Leave is not in awaiting_substitutes state."
+
+    from applications.filetracking.models import File
+    from applications.hr2.services import forward_form_file, create_form_file
+    from applications.hr2.constants.form_types import FormType
+
+    # Resolve HOD and forward
+    hod_username, hod_designation = resolve_hod_for_applicant(leave_form.created_by)
+
+    # BR-HR-028: Director self-sanction
+    is_director = HoldsDesignation.objects.filter(
+        working=leave_form.created_by, designation__name__iexact="Director"
+    ).exists()
+    if is_director:
+        hod_username = leave_form.created_by.username
+        hod_designation = "Director"
+
+    if not hod_username:
+        return False, "No HOD configured for applicant's department."
+
+    append_workflow_event(
+        leave_form,
+        WF_SUBMITTED,
+        leave_form.created_by.username,
+        "All substitutes accepted — forwarded to HOD",
+    )
+
+    # Find the file tracking entry for this leave and forward it
+    try:
+        file_obj = File.objects.filter(
+            src_object_id=str(leave_form.id),
+        ).order_by('-id').first()
+
+        if file_obj:
+            forward_form_file(
+                file_id=str(file_obj.id),
+                receiver=hod_username,
+                receiver_designation=hod_designation,
+                remarks="All substitutes consented — forwarded for approval",
+                file_extra_JSON={
+                    "type": FormType.LEAVE,
+                    "workflow_status": WF_SUBMITTED,
+                },
+            )
+            sync_file_extra_workflow(file_obj, WF_SUBMITTED)
+    except Exception:
+        pass
+
+    return True, "All substitutes accepted. Leave forwarded to HOD."

@@ -15,6 +15,7 @@ from applications.hr2.models import (
     LeaveForm,
     Appraisalform,
     LeaveBalance,
+    SubstituteNomination,
 )
 
 
@@ -807,3 +808,87 @@ class ResponsibilityActionSerializer(serializers.Serializer):
                 {"remarks": "Remarks are required when rejecting a responsibility."}
             )
         return attrs
+
+
+class SubstituteNominationSerializer(serializers.ModelSerializer):
+    """Serializer for substitute nomination records (HR-UC-004/005)."""
+    substitute_username = serializers.SerializerMethodField()
+    substitute_name = serializers.SerializerMethodField()
+    substitute_department = serializers.SerializerMethodField()
+    applicant_username = serializers.SerializerMethodField()
+    applicant_name = serializers.SerializerMethodField()
+    leave_start_date = serializers.SerializerMethodField()
+    leave_end_date = serializers.SerializerMethodField()
+    leave_purpose = serializers.SerializerMethodField()
+    leave_form_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SubstituteNomination
+        fields = [
+            'id',
+            'leave_form',
+            'leave_form_id',
+            'substitute_user',
+            'substitute_username',
+            'substitute_name',
+            'substitute_department',
+            'applicant_user',
+            'applicant_username',
+            'applicant_name',
+            'responsibility_type',
+            'consent_status',
+            'remarks',
+            'created_at',
+            'responded_at',
+            'leave_start_date',
+            'leave_end_date',
+            'leave_purpose',
+        ]
+        read_only_fields = [
+            'id', 'created_at', 'responded_at',
+            'substitute_username', 'substitute_name', 'substitute_department',
+            'applicant_username', 'applicant_name',
+            'leave_start_date', 'leave_end_date', 'leave_purpose',
+            'leave_form_id',
+        ]
+
+    def get_substitute_username(self, obj):
+        return obj.substitute_user.username if obj.substitute_user else None
+
+    def get_substitute_name(self, obj):
+        u = obj.substitute_user
+        if not u:
+            return None
+        return f"{u.first_name} {u.last_name}".strip() or u.username
+
+    def get_substitute_department(self, obj):
+        if not obj.substitute_user:
+            return ''
+        extra = ExtraInfo.objects.filter(user=obj.substitute_user).first()
+        if extra and hasattr(extra, 'department') and extra.department:
+            return getattr(extra.department, 'name', '')
+        return ''
+
+    def get_applicant_username(self, obj):
+        return obj.applicant_user.username if obj.applicant_user else None
+
+    def get_applicant_name(self, obj):
+        u = obj.applicant_user
+        if not u:
+            return None
+        return f"{u.first_name} {u.last_name}".strip() or u.username
+
+    def get_leave_form_id(self, obj):
+        return obj.leave_form_id if obj.leave_form_id else None
+
+    def get_leave_start_date(self, obj):
+        lf = obj.leave_form
+        return str(lf.leaveStartDate) if lf and lf.leaveStartDate else None
+
+    def get_leave_end_date(self, obj):
+        lf = obj.leave_form
+        return str(lf.leaveEndDate) if lf and lf.leaveEndDate else None
+
+    def get_leave_purpose(self, obj):
+        lf = obj.leave_form
+        return lf.purposeOfLeave if lf else None
