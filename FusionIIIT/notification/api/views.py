@@ -25,10 +25,12 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.db.models import Count, Q
+from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.contrib.auth.models import User
 from notifications.models import Notification
+from applications.globals.models import HoldsDesignation
 
 from ..models import Announcements, AnnouncementRecipients
 from ..services import NotificationService
@@ -45,6 +47,7 @@ from .serializers import (
     AnnouncementDetailSerializer,
     CreateAnnouncementWithRecipientsSerializer,
     NotificationModuleStatsSerializer,
+    split_announcement_message,
 )
 
 
@@ -240,6 +243,65 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
     search_fields = ['message', 'module']
     ordering_fields = ['created_at', 'published_at']
     ordering = ['-created_at']
+
+    @staticmethod
+    def _announcement_notification_qs(announcement):
+        try:
+            ct = ContentType.objects.get_for_model(Announcements)
+            return Notification.objects.filter(
+                Q(target_content_type=ct, target_object_id=str(announcement.id)) |
+                Q(action_object_content_type=ct, action_object_object_id=str(announcement.id))
+            )
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error getting notification queryset for announcement {announcement.id}: {str(e)}")
+            return Notification.objects.none()  # Return empty queryset if error
+
+    @classmethod
+    def _cleanup_related_notifications(cls, announcement):
+        try:
+            notification_qs = cls._announcement_notification_qs(announcement)
+            if notification_qs.exists():
+                notification_qs.delete()
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error cleaning up notifications for announcement {announcement.id}: {str(e)}")
+            # Don't raise the error, just log it and continue
+
+    @staticmethod
+    def _can_create_announcement(user):
+        """Allow admins and faculty/staff designations to create announcements."""
+        if user.is_staff or user.is_superuser:
+            return True
+
+        extra_info = getattr(user, 'extrainfo', None)
+        user_type = (getattr(extra_info, 'user_type', '') or '').strip().lower()
+
+        # Primary profile type-based access
+        if user_type in ['faculty', 'staff']:
+            return True
+
+        # Explicit deny for student/guest unless they also hold allowed designations
+        allowed_keywords = [
+            'professor',
+            'faculty',
+            'dean',
+            'hod',
+            'head',
+            'registrar',
+            'admin',
+            'staff',
+        ]
+
+        designations = HoldsDesignation.objects.filter(working=user).select_related('designation')
+        for holds in designations:
+            designation_name = str(getattr(holds.designation, 'name', '')).strip().lower()
+            if any(keyword in designation_name for keyword in allowed_keywords):
+                return True
+
+        return False
     
     def get_queryset(self):
         """
@@ -250,8 +312,73 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
         """
         if self.request.user.is_staff or self.request.user.is_superuser:
             return Announcements.objects.all()
+
+        # For non-staff users, build a unified query that includes both
+        # announcements visible to them AND announcements they created
+        from django.utils import timezone
         
-        return get_announcements_for_user(self.request.user)
+        # Base queryset with same filters as get_announcements_for_user
+        base_qs = Announcements.objects.filter(
+            is_active=True,
+            is_published=True
+        ).exclude(
+            expiry_date__lt=timezone.now()
+        )
+        
+        # Get user's profile information
+        try:
+            extra_info = self.request.user.extrainfo
+        except ExtraInfo.DoesNotExist:
+            # If no profile, only show all_users announcements + own announcements
+            return base_qs.filter(
+                Q(target_group='all_users') | Q(created_by=self.request.user)
+            ).distinct().order_by('priority', '-created_at')
+        
+        user_type = extra_info.user_type
+        department = extra_info.department
+        username = (self.request.user.username or '').upper()
+        
+        # Build the same filter query as in get_announcements_for_user
+        filter_query = Q(target_group='all_users')
+        
+        # Filter by user type
+        if user_type == 'student':
+            filter_query |= Q(target_group='students')
+            # Roll-number based targeting
+            if 'BCS' in username:
+                filter_query |= Q(target_group='batch', batch__iexact='BCS')
+            if 'BEC' in username:
+                filter_query |= Q(target_group='batch', batch__iexact='BEC')
+            if 'BME' in username:
+                filter_query |= Q(target_group='batch', batch__iexact='BME')
+            # Add regex patterns for UG/PG
+            import re
+            if re.match(r'^\d{2}B[A-Z]{2}\d{3}$', username):
+                filter_query |= Q(target_group='batch', batch__iexact='UG')
+            if re.match(r'^\d{2}M[A-Z]{2}\d{3}$', username):
+                filter_query |= Q(target_group='batch', batch__iexact='PG')
+        elif user_type == 'faculty':
+            filter_query |= Q(target_group='faculty')
+        elif user_type == 'staff':
+            filter_query |= Q(target_group='staff')
+        
+        # Filter by department
+        if department:
+            filter_query |= Q(
+                target_group='department',
+                department=department
+            )
+        
+        # Filter by specific users
+        filter_query |= Q(
+            target_group='specific_users',
+            recipients__user=extra_info
+        )
+        
+        # Include announcements created by the user
+        filter_query |= Q(created_by=self.request.user)
+        
+        return base_qs.filter(filter_query).distinct().order_by('priority', '-created_at')
     
     def get_serializer_class(self):
         """Use different serializer for different actions"""
@@ -267,11 +394,12 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
         """
         Create a new announcement.
         
-        Only staff/admins can create announcements.
+        Allowed for: admins, superusers, faculty, and staff users.
+        Students cannot create announcements.
         """
-        if not (request.user.is_staff or request.user.is_superuser):
+        if not self._can_create_announcement(request.user):
             return Response(
-                {'detail': 'You do not have permission to create announcements.'},
+                {'detail': 'Only faculty members or admins can create announcements.'},
                 status=status.HTTP_403_FORBIDDEN
             )
         
@@ -284,9 +412,15 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
         serializer.validated_data['published_at'] = timezone.now()
         
         announcement = serializer.save()
+
+        # Send notifications immediately for published announcements
+        notification_count = NotificationService.create_announcement_notifications(announcement)
         
         return Response(
-            AnnouncementDetailSerializer(announcement).data,
+            {
+                **AnnouncementDetailSerializer(announcement).data,
+                'notifications_sent': notification_count,
+            },
             status=status.HTTP_201_CREATED
         )
     
@@ -296,21 +430,44 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
         
         Only the creator or admins can update announcements.
         """
-        announcement = self.get_object()
-        
-        # Check permissions
-        if not (request.user.is_staff or request.user == announcement.created_by):
-            return Response(
-                {'detail': 'You do not have permission to update this announcement.'},
-                status=status.HTTP_403_FORBIDDEN
+        try:
+            announcement = self.get_object()
+            
+            # Check permissions
+            if not (request.user.is_staff or request.user == announcement.created_by):
+                return Response(
+                    {'detail': 'You do not have permission to update this announcement.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            serializer = CreateAnnouncementWithRecipientsSerializer(
+                announcement,
+                data=request.data,
+                partial=True,
             )
-        
-        serializer = self.get_serializer(announcement, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        
-        serializer.save()
-        
-        return Response(AnnouncementDetailSerializer(announcement).data)
+            serializer.is_valid(raise_exception=True)
+            
+            serializer.save()
+
+            # Regenerate announcement notifications to reflect updated targeting/content
+            if announcement.is_published and announcement.is_active:
+                try:
+                    self._cleanup_related_notifications(announcement)
+                    NotificationService.create_announcement_notifications(announcement)
+                except Exception as e:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Error updating notifications for announcement {announcement.id}: {str(e)}")
+            
+            return Response(AnnouncementDetailSerializer(announcement).data)
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error updating announcement: {str(e)}")
+            return Response(
+                {'detail': f'Error updating announcement: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
     
     def destroy(self, request, *args, **kwargs):
         """
@@ -318,22 +475,40 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
         
         Only the creator or admins can delete announcements.
         """
-        announcement = self.get_object()
-        
-        # Check permissions
-        if not (request.user.is_staff or request.user == announcement.created_by):
+        try:
+            announcement = self.get_object()
+            
+            # Check permissions
+            if not (request.user.is_staff or request.user == announcement.created_by):
+                return Response(
+                    {'detail': 'You do not have permission to delete this announcement.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            # Clean up related notifications first
+            try:
+                self._cleanup_related_notifications(announcement)
+            except Exception as e:
+                # Log the error but continue with deletion
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Error cleaning up notifications for announcement {announcement.id}: {str(e)}")
+            
+            # Delete the announcement
+            announcement.delete()
+            
             return Response(
-                {'detail': 'You do not have permission to delete this announcement.'},
-                status=status.HTTP_403_FORBIDDEN
+                {'message': 'Announcement deleted successfully'},
+                status=status.HTTP_204_NO_CONTENT
             )
-        
-        announcement.is_active = False
-        announcement.save()
-        
-        return Response(
-            {'message': 'Announcement deleted successfully'},
-            status=status.HTTP_204_NO_CONTENT
-        )
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error deleting announcement: {str(e)}")
+            return Response(
+                {'detail': f'Error deleting announcement: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
     
     @action(detail=True, methods=['post'])
     def publish(self, request, pk=None):
@@ -380,7 +555,10 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def my_announcements(self, request):
         """Get announcements created by the current user"""
-        announcements = Announcements.objects.filter(created_by=request.user).order_by('-created_at')
+        announcements = Announcements.objects.filter(
+            created_by=request.user,
+            is_active=True,
+        ).order_by('-created_at')
         
         serializer = AnnouncementListSerializer(announcements, many=True)
         
@@ -393,15 +571,36 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
     def statistics(self, request, pk=None):
         """Get statistics for an announcement"""
         announcement = self.get_object()
-        
-        # Get recipient count based on target group
-        recipients = AnnouncementRecipients.objects.filter(announcement=announcement)
-        total_recipients = recipients.count()
+        notification_qs = self._announcement_notification_qs(announcement).filter(deleted=False)
+        total_recipients = notification_qs.count()
+
+        # Keep AnnouncementRecipients read flags in sync with actual notification read state.
+        if announcement.target_group == 'specific_users':
+            read_user_ids = set(
+                notification_qs.filter(unread=False).values_list('recipient_id', flat=True)
+            )
+            recipients = AnnouncementRecipients.objects.filter(
+                announcement=announcement
+            ).select_related('user__user')
+
+            for recipient in recipients:
+                recipient_user_id = getattr(recipient.user, 'user_id', None)
+                should_be_read = recipient_user_id in read_user_ids
+
+                if should_be_read and not recipient.is_read:
+                    recipient.is_read = True
+                    recipient.read_at = timezone.now()
+                    recipient.save(update_fields=['is_read', 'read_at'])
+                elif not should_be_read and recipient.is_read:
+                    recipient.is_read = False
+                    recipient.read_at = None
+                    recipient.save(update_fields=['is_read', 'read_at'])
         
         if total_recipients == 0:
             return Response({
                 'announcement_id': announcement.id,
                 'message': announcement.message,
+                'title': split_announcement_message(announcement.message).get('title', ''),
                 'target_group': announcement.get_target_group_display(),
                 'total_recipients': 0,
                 'read_count': 0,
@@ -409,18 +608,54 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
                 'read_percentage': 0,
             })
         
-        read_count = recipients.filter(is_read=True).count()
-        unread_count = total_recipients - read_count
+        read_count = notification_qs.filter(unread=False).count()
+        unread_count = notification_qs.filter(unread=True).count()
         read_percentage = (read_count / total_recipients * 100) if total_recipients > 0 else 0
         
         return Response({
             'announcement_id': announcement.id,
             'message': announcement.message,
+            'title': split_announcement_message(announcement.message).get('title', ''),
             'target_group': announcement.get_target_group_display(),
             'total_recipients': total_recipients,
             'read_count': read_count,
             'unread_count': unread_count,
             'read_percentage': round(read_percentage, 2),
+        })
+
+    @action(detail=False, methods=['get'])
+    def student_roll_numbers(self, request):
+        """Return dynamic student roll numbers for announcement targeting."""
+        students = User.objects.filter(
+            is_active=True,
+            extrainfo__user_type__iexact='student',
+            username__regex=r'^\d{2}[BM][A-Z]{2}\d{3}$',
+        ).order_by('username')
+
+        results = []
+        for student in students:
+            roll = (student.username or '').upper()
+            if 'BCS' in roll:
+                branch = 'CSE'
+            elif 'BEC' in roll:
+                branch = 'ECE'
+            elif 'BME' in roll:
+                branch = 'ME'
+            elif 'MCS' in roll:
+                branch = 'PG'
+            else:
+                branch = 'OTHER'
+
+            programme = 'PG' if roll[2:3] == 'M' else 'UG'
+            results.append({
+                'username': roll,
+                'programme': programme,
+                'branch': branch,
+            })
+
+        return Response({
+            'count': len(results),
+            'results': results,
         })
     
     @action(detail=False, methods=['get'])
@@ -437,3 +672,40 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
             'count': len(announcements),
             'results': serializer.data,
         })
+    
+    @action(detail=True, methods=['post'])
+    def mark_as_read(self, request, pk=None):
+        """
+        Mark an announcement as read for the current user.
+        Updates AnnouncementRecipients.is_read and read_at fields.
+        Implements Data Integrity requirement: read tracking for specific users.
+        """
+        announcement = self.get_object()
+        
+        try:
+            extra_info = request.user.extrainfo
+        except Exception:
+            return Response(
+                {'detail': 'User profile not found.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            recipient = AnnouncementRecipients.objects.get(
+                announcement=announcement,
+                user=extra_info
+            )
+            if not recipient.is_read:
+                recipient.is_read = True
+                recipient.read_at = timezone.now()
+                recipient.save(update_fields=['is_read', 'read_at'])
+            
+            return Response({
+                'message': 'Announcement marked as read.',
+                'read_at': recipient.read_at,
+            })
+        except AnnouncementRecipients.DoesNotExist:
+            # User is not a specific recipient — still acknowledge (broadcast announcements)
+            return Response({
+                'message': 'Acknowledged.',
+            })

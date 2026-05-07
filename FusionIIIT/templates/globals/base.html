@@ -96,14 +96,15 @@
     <script>
         function newNotification() {
 
-            // console.log('A new Notification added!');
+            var parent = document.getElementById("new-message-list");
+
+            // Guard: element only exists on dashboard pages, not on login/register
+            if (!parent) return;
 
             var notifactionName = document.createTextNode("Kanishka Munshi");
             var notificationEmail = document.createTextNode("gmail@zlatan.com");
             var notificationMessage = document.createTextNode("I have decided to go on a leave!");
             var space = document.createElement("br");
-
-            var parent = document.getElementById("new-message-list");
 
             var itemDiv = document.createElement("div");
             itemDiv.className = "item";

@@ -11,8 +11,11 @@ instead of calling these functions directly.
 This layer exists ONLY for backward compatibility with existing modules.
 """
 
+import logging
 from notifications.signals import notify
 from .services import NotificationService
+
+logger = logging.getLogger(__name__)
 
 
 def leave_module_notif(sender, recipient, type, date=None):
@@ -397,36 +400,25 @@ def department_notif(sender, recipient, type):
                 module=module,
                 verb=verb,
                 flag=flag)
-def examination_notif(sender, recipient, type):
-    url='examination:examination'
-    module='examination'
-    sender = sender
-    recipient = recipient
-    verb = type
-    flag = "announcement"
-
-    notify.send(sender=sender,
-                recipient=recipient,
-                url=url,
-                module=module,
-                verb=verb,
-                flag=flag)
-def examination_notif(sender, recipient, type,request):
-    url='examination:examination'
-    module='examination'
-    sender = sender
-    recipient = recipient
+def examination_notif(sender, recipient, type, request=None):
+    """
+    Unified examination notification handler.
+    Note: request parameter kept for backward compatibility but not used.
+    """
+    url = 'examination:examination'
+    module = 'examination'
     verb = type
     flag = "examination"
 
-    notify.send(sender=sender,
-                recipient=recipient,
-                url=url,
-                module=module,
-                verb=verb,
-                flag=flag)
-    print("test3")
-    # return render(request, 'examination/announcement_req.html')
+    notify.send(
+        sender=sender,
+        recipient=recipient,
+        url=url,
+        module=module,
+        verb=verb,
+        flag=flag
+    )
+    logger.info("Examination notification sent: %s → %s", verb, recipient.username)
 
 
 

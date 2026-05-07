@@ -16,10 +16,13 @@ Usage Example:
 """
 
 import hashlib
+import logging
 from django.contrib.auth.models import User
 from notifications.signals import notify
 from .models import Announcements, AnnouncementRecipients, RegisteredModule
 from applications.globals.models import ExtraInfo
+
+logger = logging.getLogger(__name__)
 
 
 class IdempotencyHelper:
@@ -78,7 +81,7 @@ class IdempotencyHelper:
             
             return existing
         except Exception as e:
-            print(f"Error checking duplicate notification: {str(e)}")
+            logger.error("Error checking duplicate notification: %s", str(e))
             return False  # On error, allow the notification to go through
 
 
@@ -119,7 +122,10 @@ class NotificationService:
                     target=target_id
                 )
                 if is_duplicate:
-                    print(f"Duplicate notification prevented: {verb} from {sender.username} to {recipient.username}")
+                    logger.warning(
+                        "Duplicate notification prevented: '%s' from %s to %s",
+                        verb, sender.username, recipient.username
+                    )
                     return False  # Don't send duplicate
             
             # Generate hash for deduplication tracking
@@ -137,7 +143,10 @@ class NotificationService:
             # Validate module if API key provided (T-NT-04)
             if 'api_key' in kwargs:
                 if not NotificationService.validate_module_registration(kwargs.get('module_name'), kwargs['api_key']):
-                    print(f"Unauthorized module attempted to send notification: {kwargs.get('module_name')}")
+                    logger.warning(
+                        "Unauthorized module attempted to send notification: %s",
+                        kwargs.get('module_name')
+                    )
                     return False
             
             notify.send(
@@ -151,7 +160,7 @@ class NotificationService:
             )
             return True
         except Exception as e:
-            print(f"Error sending notification: {str(e)}")
+            logger.error("Error sending notification: %s", str(e))
             return False
     
     @staticmethod
@@ -176,7 +185,7 @@ class NotificationService:
         except RegisteredModule.DoesNotExist:
             return False
         except Exception as e:
-            print(f"Error validating module registration: {str(e)}")
+            logger.error("Error validating module registration: %s", str(e))
             return False
     
     # ==================== LEAVE MODULE ====================
@@ -390,11 +399,12 @@ class NotificationService:
                             user=extra_info
                         )
                     except ExtraInfo.DoesNotExist:
+                        logger.warning("ExtraInfo not found for user_id=%s when creating announcement recipients", user_id)
                         continue
             
             return announcement
         except Exception as e:
-            print(f"Error creating announcement: {str(e)}")
+            logger.error("Error creating announcement: %s", str(e))
             return None
     
     @staticmethod
@@ -476,19 +486,14 @@ class NotificationService:
         users_to_notify = set()
         
         try:
-            print(f"\n[Notification] Starting notification creation for announcement ID {announcement.id}")
-            print(f"[Notification] Target group: {announcement.target_group}")
+            logger.info("[Notification] Starting notification creation for announcement ID %s", announcement.id)
+            logger.info("[Notification] Target group: %s", announcement.target_group)
             
             # Determine target users based on target_group
             if announcement.target_group == 'all_users':
-                # Include ALL active users (with and without ExtraInfo, including superusers)
                 all_users = User.objects.filter(is_active=True)
-                print(f"[Notification] Total active users in system: {all_users.count()}")
-                for u in all_users:
-                    print(f"[Notification]   - User: {u.username} (id={u.id}, is_staff={u.is_staff})")
-                
                 users_to_notify = set(all_users.values_list('id', flat=True))
-                print(f"[Notification] all_users target: Found {len(users_to_notify)} eligible users")
+                logger.info("[Notification] all_users target: Found %d eligible users", len(users_to_notify))
             
             elif announcement.target_group == 'students':
                 users_to_notify = set(
@@ -519,30 +524,55 @@ class NotificationService:
                 )
             
             elif announcement.target_group == 'batch':
-                users_to_notify = set(
-                    User.objects.filter(
-                        extrainfo__student__batch=announcement.batch
-                    ).values_list('id', flat=True)
+                audience_code = (announcement.batch or '').strip().upper()
+
+                student_qs = User.objects.filter(
+                    extrainfo__user_type__iexact='student',
+                    is_active=True,
                 )
+
+                if audience_code == 'BCS':
+                    student_qs = student_qs.filter(username__icontains='BCS')
+                elif audience_code == 'BEC':
+                    student_qs = student_qs.filter(username__icontains='BEC')
+                elif audience_code == 'BME':
+                    student_qs = student_qs.filter(username__icontains='BME')
+                elif audience_code == 'UG':
+                    student_qs = student_qs.filter(username__regex=r'^\d{2}B[A-Z]{2}\d{3}$')
+                elif audience_code == 'PG':
+                    student_qs = student_qs.filter(username__regex=r'^\d{2}M[A-Z]{2}\d{3}$')
+                else:
+                    # Backward compatibility: exact batch matching
+                    student_qs = User.objects.filter(
+                        extrainfo__student__batch=announcement.batch
+                    )
+
+                users_to_notify = set(student_qs.values_list('id', flat=True))
             
             elif announcement.target_group == 'specific_users':
                 # Get users from AnnouncementRecipients
                 recipients = announcement.recipients.all()
-                users_to_notify = set(recipients.values_list('user_id', flat=True))
+                # recipients.user points to ExtraInfo, so notify by linked auth.User id
+                users_to_notify = set(recipients.values_list('user__user_id', flat=True))
             
             # Create AnnouncementRecipients entries and send notifications
-            print(f"[Notification] Preparing to notify {len(users_to_notify)} users for announcement: {announcement.message[:50]}")
+            logger.info(
+                "[Notification] Preparing to notify %d users for announcement: '%s'",
+                len(users_to_notify), announcement.message[:50]
+            )
             
             for user_id in users_to_notify:
                 try:
                     user = User.objects.get(id=user_id)
-                    print(f"[Notification] Processing user {user.username} (id={user_id})")
                     
                     # Get ExtraInfo for the user (required for AnnouncementRecipients)
                     try:
                         extra_info = ExtraInfo.objects.get(user_id=user_id)
                     except ExtraInfo.DoesNotExist:
-                        print(f"[Notification]   - WARNING: No ExtraInfo for user {user.username}, skipping")
+                        logger.warning(
+                            "[Notification] No ExtraInfo for user %s (id=%d), skipping",
+                            user.username, user_id
+                        )
                         continue
                     
                     # Create recipient entry if not exists
@@ -551,10 +581,8 @@ class NotificationService:
                         user=extra_info,
                         defaults={'is_read': False}
                     )
-                    print(f"[Notification]   - Recipient entry {'created' if created else 'already exists'}")
                     
                     # Send django-notifications-hq notification
-                    print(f"[Notification]   - Sending django-notifications-hq notification...")
                     notify.send(
                         sender=announcement.created_by,
                         recipient=user,
@@ -562,24 +590,25 @@ class NotificationService:
                         description=announcement.message[:100],
                         action_object=announcement,
                         target=announcement,
-                        data={'module': announcement.module, 'type': 'announcement'}
+                        data={
+                            'module': announcement.module,
+                            'type': 'announcement',
+                            'announcement_id': announcement.id,
+                        }
                     )
-                    print(f"[Notification]   - Notification sent successfully!")
                     
                     recipient_count += 1
                 
                 except User.DoesNotExist:
-                    print(f"[Notification] ERROR: User {user_id} not found")
+                    logger.error("[Notification] User %d not found", user_id)
                     continue
                 except Exception as e:
-                    print(f"[Notification] ERROR notifying user {user_id}: {str(e)}")
-                    import traceback
-                    traceback.print_exc()
+                    logger.error("[Notification] Error notifying user %d: %s", user_id, str(e))
                     continue
             
-            print(f"[Notification] Total notifications created: {recipient_count}\n")
+            logger.info("[Notification] Total notifications created: %d", recipient_count)
             return recipient_count
         
         except Exception as e:
-            print(f"Error creating announcement notifications: {str(e)}")
+            logger.error("Error creating announcement notifications: %s", str(e))
             return 0

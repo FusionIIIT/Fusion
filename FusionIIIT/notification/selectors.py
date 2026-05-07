@@ -13,12 +13,16 @@ Usage Example:
     announcements = get_announcements_for_user(user=request.user)
 """
 
+import logging
+import re
 from django.db.models import Q, QuerySet, Prefetch
 from django.contrib.auth.models import User
 from notifications.models import Notification
 from .models import Announcements, AnnouncementRecipients
 from applications.globals.models import ExtraInfo
 from typing import Optional, List
+
+logger = logging.getLogger(__name__)
 
 
 # ============================================================================
@@ -45,7 +49,8 @@ def get_user_notifications(
     Returns:
         QuerySet of Notification objects
     """
-    queryset = Notification.objects.filter(recipient=user)
+    # Use select_related to prevent N+1 queries on actor (sender) field
+    queryset = Notification.objects.filter(recipient=user).select_related('actor')
     
     if not include_deleted:
         queryset = queryset.filter(deleted=False)
@@ -63,12 +68,12 @@ def get_user_notifications(
             -n.timestamp.timestamp()
         ))
         if limit:
-            notifications = notifications[:limit]
+            notifications = notifications[:int(limit)]
         return notifications
     else:
         queryset = queryset.order_by('-timestamp')
         if limit:
-            queryset = queryset[:limit]
+            queryset = queryset[:int(limit)]
         return queryset
 
 
@@ -205,7 +210,7 @@ def get_announcements_for_user(user: User) -> QuerySet:
     announcements = Announcements.objects.filter(
         is_active=True,
         is_published=True
-    ).exclude(
+    ).select_related('created_by', 'department').exclude(
         expiry_date__lt=timezone.now()  # Exclude if expiry_date is in the past
     )
     
@@ -222,6 +227,7 @@ def get_announcements_for_user(user: User) -> QuerySet:
     
     user_type = extra_info.user_type
     department = extra_info.department
+    username = (user.username or '').upper()
     
     # Build filter query
     filter_query = Q(target_group='all_users')
@@ -229,6 +235,18 @@ def get_announcements_for_user(user: User) -> QuerySet:
     # Filter by user type
     if user_type == 'student':
         filter_query |= Q(target_group='students')
+
+        # Roll-number based targeting via `batch` code
+        if 'BCS' in username:
+            filter_query |= Q(target_group='batch', batch__iexact='BCS')
+        if 'BEC' in username:
+            filter_query |= Q(target_group='batch', batch__iexact='BEC')
+        if 'BME' in username:
+            filter_query |= Q(target_group='batch', batch__iexact='BME')
+        if re.match(r'^\d{2}B[A-Z]{2}\d{3}$', username):
+            filter_query |= Q(target_group='batch', batch__iexact='UG')
+        if re.match(r'^\d{2}M[A-Z]{2}\d{3}$', username):
+            filter_query |= Q(target_group='batch', batch__iexact='PG')
         
         # Filter by batch if student
         if hasattr(extra_info, 'student') and extra_info.student:

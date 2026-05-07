@@ -81,9 +81,17 @@ def auth_view(request):
     designation_list = list(HoldsDesignation.objects.all().filter(working = request.user).values_list('designation'))
     designation_id = [designation for designations in designation_list for designation in designations]
     designation_info = []
+
+    # Include primary user_type first (student/faculty/staff), then all held designations.
+    # This keeps role handling consistent with login API and avoids falling back to Guest-User.
+    if extra_info.user_type:
+        designation_info.append(str(extra_info.user_type))
+
     for id in designation_id :
         name_ = get_object_or_404(Designation, id = id)
-        designation_info.append(str(name_.name))
+        designation_name = str(name_.name)
+        if designation_name not in designation_info:
+            designation_info.append(designation_name)
 
     accessible_modules = {}
     
