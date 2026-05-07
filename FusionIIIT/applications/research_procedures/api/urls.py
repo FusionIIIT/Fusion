@@ -5,4 +5,3 @@ router = DefaultRouter()
 router.register(r'patent', PatentViewSet)
 
 urlpatterns = router.urls
-print("URL patterns",urlpatterns)

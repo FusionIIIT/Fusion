@@ -8,6 +8,9 @@ from applications.placement_cell.models import (Achievement, Course, Education,
                                                 Project, Publication, Skill)
 from django.shortcuts import get_object_or_404, redirect
 
+
+
+
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import status
@@ -238,21 +241,66 @@ def profile_delete(request, id):
         return Response({'message': 'Patent deleted successfully'}, status=status.HTTP_200_OK)
     return Response({'error': 'Wrong attribute'}, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['POST'])
+@api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def NotificationRead(request):
+    if request.method == 'GET':
+        # Handle GET request to fetch notifications
+        notifications = request.user.notifications.all()
+        serializer = serializers.NotificationSerializer(notifications, many=True)
+        return Response({'notifications': serializer.data}, status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        # Handle POST request to mark notification as read
+        try:
+            notifId=int(request.data['id'])
+            user=request.user
+            notification = get_object_or_404(Notification, recipient=request.user, id=notifId)
+            notification.mark_as_read()
+            response ={
+                'message':'notification successfully marked as read.'
+            }
+            return Response(response,status=status.HTTP_200_OK)
+        except:
+            response ={
+                'error':'Failed, notification is not marked as read.'
+            }
+            return Response(response,status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def notification_delete(request):
     try:
         notifId=int(request.data['id'])
         user=request.user
         notification = get_object_or_404(Notification, recipient=request.user, id=notifId)
-        notification.mark_as_read()
+        notification.delete()
         response ={
-            'message':'notfication successfully marked as seen.'
+            'message':'notification successfully deleted.'
         }
         return Response(response,status=status.HTTP_200_OK)
     except:
         response ={
-            'error':'Failed, notification is not marked as seen.'
+            'error':'Failed, notification could not be deleted.'
+        }
+        return Response(response,status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def notification_unread(request):
+    try:
+        notifId=int(request.data['id'])
+        user=request.user
+        notification = get_object_or_404(Notification, recipient=request.user, id=notifId)
+        notification.mark_as_unread()
+        response ={
+            'message':'notification successfully marked as unread.'
+        }
+        return Response(response,status=status.HTTP_200_OK)
+    except:
+        response ={
+            'error':'Failed, notification could not be marked as unread.'
         }
         return Response(response,status=status.HTTP_404_NOT_FOUND)

@@ -4,14 +4,20 @@ services:
     image: postgres:13-alpine
     restart: always
     volumes:
-      - /private/var/lib/postgresql:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     environment:
-      - PGDATA=/var/lib/postgresql/data/some_name/
       - POSTGRES_DB=fusionlab
       - POSTGRES_USER=fusion_admin
-      - POSTGRES_PASSWORD=hello123
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-hello123}
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fusion_admin -d fusionlab"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+  
   app:
     build:
       context: .
@@ -21,8 +27,31 @@ services:
       - .:/home/app
     ports:
       - 8000:8000
-    command: /bin/bash docker-entrypoint.sh
+    command: bash docker-entrypoint.sh
     environment:
       - DB_HOST=db
+      - DB_NAME=fusionlab
+      - DB_USER=fusion_admin
+      - DB_PASSWORD=${DB_PASSWORD:-hello123}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ../Fusion-client
+      dockerfile: Dockerfile.dev
+    restart: always
+    volumes:
+      - ../Fusion-client:/app
+      - /app/node_modules
+    ports:
+      - 5173:5173
+    depends_on:
+      - app
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+
+volumes:
+  postgres_data:
+

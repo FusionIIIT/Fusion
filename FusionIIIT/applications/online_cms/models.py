@@ -4,9 +4,24 @@ from applications.academic_information.models import Course, Student, Curriculum
 from applications.academic_procedures.models import Register
 from applications.globals.models import ExtraInfo
 
+#course modules created by faculty to organize content
+class CourseModule(models.Model):
+    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    module_name = models.CharField(max_length=100)
+    description = models.TextField(max_length=500, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', 'created_at']
+
+    def __str__(self):
+        return '{} - {}'.format(self.course_id, self.module_name)
+
 #the documents in the course (slides , ppt) added by the faculty  and can be downloaded by the students
 class CourseDocuments(models.Model):
     course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    module = models.ForeignKey(CourseModule, on_delete=models.CASCADE, null=True, blank=True)
     upload_time = models.DateTimeField(auto_now=True)
     description = models.CharField(max_length=100)
     document_name = models.CharField(max_length=40)
@@ -67,7 +82,7 @@ class Question(models.Model):
 class Quiz(models.Model):
     course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
     quiz_name = models.CharField(max_length=20)
-    end_time = models.DateTimeField()
+    end_time = models.DateTimeField(null=True, blank=True)
     start_time = models.DateTimeField()
     d_day = models.CharField(max_length=2)
     d_hour = models.CharField(max_length=2)
@@ -77,6 +92,9 @@ class Quiz(models.Model):
     description = models.TextField(max_length=1000)
     rules = models.TextField(max_length=2000)
     total_score = models.IntegerField(default=0)
+    announcement = models.TextField(max_length=2000, null=True, blank=True)  # Quiz announcement text
+    announced_at = models.DateTimeField(null=True, blank=True)  # Timestamp when quiz was announced
+    announced = models.BooleanField(default=False)  # Flag to track if quiz has been announced
 
     def __str__(self):
         return '{} - {} - {} - {} - {}'.format(
@@ -121,9 +139,9 @@ class PracticeQuestion(models.Model):
 
     def __str__(self):
         return '{} - {} - {} - {} - {} - {} - {} - {} - {}'.format(
-            self.pk, self.quiz_id, self.options1,
+            self.pk, self.prac_quiz_id, self.options1,
             self.options2, self.options3, self.options4,
-            self.options5, self.answer, self.announcement)
+            self.options5, self.answer, self.question)
 
 #answer given by the student in the quiz is stored here to check properly the answers
 class StudentAnswer(models.Model):

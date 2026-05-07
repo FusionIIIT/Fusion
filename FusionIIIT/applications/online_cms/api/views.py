@@ -4,11 +4,25 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.utils import timezone
 from django.utils.dateparse import parse_date, parse_datetime
-from . import services, models
+from django.db import IntegrityError
+from datetime import timedelta
+import logging
+from .. import services, models
 from applications.academic_information.models import Student, Student_attendance
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 class BaseCourseView(APIView):
     permission_classes = [IsAuthenticated]
+    def get_course_or_error(self, request, course_code):
+        curr = services.get_course_obj(course_code)
+        if not curr:
+            return Response({'detail': 'Course not found'}, status=404)
+        if not self.check_enrollment(request, course_code):
+            return Response({'detail': 'Not enrolled in this course'}, status=403)
+        return curr
+
     
     def check_enrollment(self, request, course_code):
         return services.is_enrolled(request.user, course_code)
@@ -25,25 +39,34 @@ class ApiCourseList(APIView):
 
 class ApiCourseDashboard(BaseCourseView):
     def get(self, request, course_code):
-        if not self.check_enrollment(request, course_code):
-            return Response({'detail': 'Not enrolled in this course'}, status=403)
+        curr = self.get_course_or_error(request, course_code)
+        if isinstance(curr, Response):
+            return curr
         
-        curr = services.get_course_obj(course_code)
-        if not curr:
-            return Response({'detail': 'Course not found'}, status=404)
+        # Get the actual Course object - handle both old and new systems consistently
+        if hasattr(curr, 'course_id'):
+            # This is from the old curriculum system or MockCurriculum
+            course_obj = curr.course_id
+        else:
+            # This is a direct Course object from new system
+            course_obj = curr
         
-        assignments_count = models.Assignment.objects.filter(course_id=curr.course_id).count()
-        documents_count = models.CourseDocuments.objects.filter(course_id=curr.course_id).count()
+        assignments_count = models.Assignment.objects.filter(course_id=course_obj).count()
+        documents_count = models.CourseDocuments.objects.filter(course_id=course_obj).count()
+        
+        # Get course name from either old or new system
+        course_name = getattr(course_obj, 'course_name', None) or getattr(course_obj, 'name', 'Unknown')
+        course_details = getattr(course_obj, 'course_details', getattr(course_obj, 'syllabus', ''))
         
         return Response({
             "courseCode": course_code,
-            "courseName": curr.course_id.course_name,
-            "courseDetails": curr.course_id.course_details,
-            "credits": curr.credits,
-            "semester": curr.sem,
-            "programme": curr.course_id.program_id.name if curr.course_id.program_id else "",
-            "branch": curr.course_id.branch_id.name if getattr(curr.course_id, "branch_id", None) else "",
-            "batch": curr.course_id.batch_id.name if getattr(curr.course_id, "batch_id", None) else "",
+            "courseName": course_name,
+            "courseDetails": course_details,
+            "credits": curr.credits if hasattr(curr, 'credits') else course_obj.credit,
+            "semester": curr.sem if hasattr(curr, 'sem') else 1,
+            "programme": "",
+            "branch": "",
+            "batch": "",
             "counts": {
                 "assignments": assignments_count,
                 "documents": documents_count
@@ -52,12 +75,19 @@ class ApiCourseDashboard(BaseCourseView):
 
 class ApiAssignments(BaseCourseView):
     def get(self, request, course_code):
-        if not self.check_enrollment(request, course_code):
-            return Response({'detail': 'Not enrolled in this course'}, status=403)
+        curr = self.get_course_or_error(request, course_code)
+        if isinstance(curr, Response):
+            return curr
         
-        curr = services.get_course_obj(course_code)
-        course = curr.course_id
-        assignments = models.Assignment.objects.filter(course_id=course).order_by('-upload_time')
+        # Get the actual Course object - handle both old and new systems consistently
+        if hasattr(curr, 'course_id'):
+            # This is from the old curriculum system or MockCurriculum
+            course_obj = curr.course_id
+        else:
+            # This is a direct Course object from new system
+            course_obj = curr
+        
+        assignments = models.Assignment.objects.filter(course_id=course_obj).order_by('-upload_time')
 
         extra_info, is_student_user = self.get_role_info(request)
         student_obj = None
@@ -112,6 +142,17 @@ class ApiAddAssignment(BaseCourseView):
             return Response({'detail': 'Faculty only'}, status=403)
             
         curr = services.get_course_obj(course_code)
+        if not curr:
+            return Response({'detail': 'Course not found'}, status=404)
+        
+        # Get the actual Course object - handle both old and new systems consistently
+        if hasattr(curr, 'course_id'):
+            # This is from the old curriculum system or MockCurriculum
+            course_obj = curr.course_id
+        else:
+            # This is a direct Course object from new system
+            course_obj = curr
+        
         data = request.data
 
         deadline = data.get('deadline')
@@ -125,42 +166,53 @@ class ApiAddAssignment(BaseCourseView):
             return Response({'detail': 'title is required'}, status=400)
         if deadline_dt is None:
             return Response({'detail': 'deadline is required (ISO datetime or YYYY-MM-DD)'}, status=400)
-
         a = models.Assignment.objects.create(
-            course_id=curr.course_id,
+            course_id=course_obj,
             assignment_name=data.get('title'),
             submit_date=deadline_dt,
         )
         return Response({'id': a.pk})
 
 class ApiUploadAssignment(BaseCourseView):
-    # Allow both form-data (legacy) and JSON (link submission from new UI)
     parser_classes = [MultiPartParser, FormParser, JSONParser]
+
     def post(self, request, course_code):
         if not self.check_enrollment(request, course_code):
             return Response({'detail': 'Not enrolled in this course'}, status=403)
+
         extra_info, is_student_user = self.get_role_info(request)
         if not is_student_user:
             return Response({'detail': 'Student only'}, status=403)
-            
+
         assignment_id = request.data.get('assignment_id')
         submission_link = request.data.get('submission_link') or request.data.get('upload_url') or request.data.get('link')
+
         if not submission_link:
             return Response({'detail': 'submission_link is required'}, status=400)
 
         a = models.Assignment.objects.get(pk=assignment_id)
+
         if timezone.now() > a.submit_date:
             return Response({'detail': 'Submission deadline has passed'}, status=400)
-            
+
         student = Student.objects.get(id=extra_info)
-        sub = models.StudentAssignment.objects.create(
+
+        # 🔥 KEY CHANGE: update or create
+        sub, created = models.StudentAssignment.objects.update_or_create(
             student_id=student,
             assignment_id=a,
-            upload_url=submission_link,
-            assign_name=a.assignment_name,
+            defaults={
+                'upload_url': submission_link,
+                'assign_name': a.assignment_name,
+                'upload_time': timezone.now(),  # ensures updated timestamp
+            }
         )
-        return Response({'id': sub.pk, 'submittedAt': timezone.now().isoformat()})
 
+        return Response({
+            'id': sub.pk,
+            'submittedAt': sub.upload_time.isoformat(),
+            'message': 'Created' if created else 'Updated'
+        })
 class ApiGradeAssignment(BaseCourseView):
     def post(self, request, course_code, pk=None):
         if not self.check_enrollment(request, course_code):
@@ -189,11 +241,18 @@ class ApiDeleteAssignment(BaseCourseView):
 
 class ApiDocuments(BaseCourseView):
     def get(self, request, course_code):
-        if not self.check_enrollment(request, course_code):
-            return Response({'detail': 'Not enrolled in this course'}, status=403)
-            
-        curr = services.get_course_obj(course_code)
-        docs = models.CourseDocuments.objects.filter(course_id=curr.course_id)
+        curr = self.get_course_or_error(request, course_code)
+        if isinstance(curr, Response):
+            return curr
+        
+        # Get the actual Course object - handle both old and new systems consistently
+        if hasattr(curr, 'course_id'):
+            # This is from the old curriculum system or MockCurriculum
+            course_obj = curr.course_id
+        else:
+            # This is a direct Course object from new system
+            course_obj = curr
+        docs = models.CourseDocuments.objects.filter(course_id=course_obj)
         res = []
         for d in docs:
             raw_url = (d.document_url or '').strip() if hasattr(d, 'document_url') else ''
@@ -228,6 +287,16 @@ class ApiAddDocument(BaseCourseView):
             return Response({'detail': 'Faculty only'}, status=403)
             
         curr = services.get_course_obj(course_code)
+        if not curr:
+            return Response({'detail': 'Course not found'}, status=404)
+        
+        # Get the actual Course object - handle both old and new systems consistently
+        if hasattr(curr, 'course_id'):
+            # This is from the old curriculum system or MockCurriculum
+            course_obj = curr.course_id
+        else:
+            # This is a direct Course object from new system
+            course_obj = curr
 
         title = (request.data.get('title') or request.data.get('document_name') or '').strip()
         description = (request.data.get('description') or '').strip()
@@ -250,7 +319,7 @@ class ApiAddDocument(BaseCourseView):
         description = description[:100]
 
         doc = models.CourseDocuments.objects.create(
-            course_id=curr.course_id,
+            course_id=course_obj,
             description=description,
             document_name=title or 'Material',
             document_url=url,
@@ -275,15 +344,23 @@ class ApiDeleteDocument(BaseCourseView):
 
 class ApiForum(BaseCourseView):
     def get(self, request, course_code):
-        if not self.check_enrollment(request, course_code):
-            return Response({'detail': 'Not enrolled in this course'}, status=403)
-        curr = services.get_course_obj(course_code)
+        curr = self.get_course_or_error(request, course_code)
+        if isinstance(curr, Response):
+            return curr
+        
+        # Get the actual Course object - handle both old and new systems consistently
+        if hasattr(curr, 'course_id'):
+            # This is from the old curriculum system or MockCurriculum
+            course_obj = curr.course_id
+        else:
+            # This is a direct Course object from new system
+            course_obj = curr
 
         # Forum rows are messages. ForumReply is an edge table: parent (forum_ques) -> child (forum_reply).
-        messages = models.Forum.objects.filter(course_id=curr.course_id).select_related('commenter_id', 'commenter_id__user').order_by('comment_time')
+        messages = models.Forum.objects.filter(course_id=course_obj).select_related('commenter_id', 'commenter_id__user').order_by('comment_time')
         edges = models.ForumReply.objects.filter(
-            forum_ques__course_id=curr.course_id,
-            forum_reply__course_id=curr.course_id,
+            forum_ques__course_id=course_obj,
+            forum_reply__course_id=course_obj,
         ).select_related('forum_ques', 'forum_reply')
 
         by_id = {}
@@ -337,9 +414,18 @@ class ApiForum(BaseCourseView):
 
 class ApiForumNew(BaseCourseView):
     def post(self, request, course_code):
-        if not self.check_enrollment(request, course_code):
-            return Response({'detail': 'Not enrolled in this course'}, status=403)
-        curr = services.get_course_obj(course_code)
+        curr = self.get_course_or_error(request, course_code)
+        if isinstance(curr, Response):
+            return curr
+        
+        # Get the actual Course object - handle both old and new systems consistently
+        if hasattr(curr, 'course_id'):
+            # This is from the old curriculum system or MockCurriculum
+            course_obj = curr.course_id
+        else:
+            # This is a direct Course object from new system
+            course_obj = curr
+        
         extra_info, _ = self.get_role_info(request)
 
         msg = (request.data.get('message') or request.data.get('question') or request.data.get('comment') or '').strip()
@@ -347,7 +433,7 @@ class ApiForumNew(BaseCourseView):
             return Response({'detail': 'message is required'}, status=400)
 
         f = models.Forum.objects.create(
-            course_id=curr.course_id,
+            course_id=course_obj,
             commenter_id=extra_info,
             comment=msg,
         )
@@ -407,28 +493,49 @@ class ApiForumRemove(BaseCourseView):
 
 class ApiQuizzes(BaseCourseView):
     def get(self, request, course_code):
-        if not self.check_enrollment(request, course_code):
-            return Response({'detail': 'Not enrolled in this course'}, status=403)
-        curr = services.get_course_obj(course_code)
+        curr = self.get_course_or_error(request, course_code)
+        if isinstance(curr, Response):
+            return curr
+        
+        # Get the actual Course object - handle both old and new systems consistently
+        if hasattr(curr, 'course_id'):
+            # This is from the old curriculum system or MockCurriculum
+            course_obj = curr.course_id
+        else:
+            # This is a direct Course object from new system
+            course_obj = curr
+        
         extra_info, is_student_user = self.get_role_info(request)
         
-        quizzes = models.Quiz.objects.filter(course_id=curr.course_id)
+        quizzes = models.Quiz.objects.filter(course_id=course_obj)
         res = []
-        now = timezone.now()
         for q in quizzes:
             if is_student_user:
+                # For students: show all quizzes except those already completed
                 student = models.Student.objects.get(id=extra_info)
                 has_finished = models.QuizResult.objects.filter(quiz_id=q, student_id=student, finished=True).exists()
-                if not (q.start_time <= now <= q.end_time and not has_finished):
-                    continue
+                if has_finished:
+                    continue  # Skip this quiz, student has already completed it
                     
+            duration_minutes = 0
+            if q.start_time and q.end_time:
+                delta = q.end_time - q.start_time
+                duration_minutes = int(delta.total_seconds() // 60)
+            elif hasattr(q, 'd_day') and hasattr(q, 'd_hour') and hasattr(q, 'd_minute'):
+                try:
+                    duration_minutes = (
+                        int(q.d_day or 0) * 1440 + int(q.d_hour or 0) * 60 + int(q.d_minute or 0)
+                    )
+                except (ValueError, TypeError):
+                    duration_minutes = 0
+
             res.append({
                 'id': q.pk,
                 'title': getattr(q, 'title', getattr(q, 'quiz_name', '')),
                 'description': q.description if hasattr(q, 'description') else '',
                 'startTime': q.start_time.isoformat(),
-                'endTime': q.end_time.isoformat(),
-                'duration': getattr(q, 'duration', getattr(q, 'd_time', 0)),
+                'endTime': q.end_time.isoformat() if q.end_time else None,
+                'duration': duration_minutes,
                 'negativeMarks': getattr(q, 'negative_marks', 0),
                 'totalQuestions': q.number_of_question if hasattr(q, 'number_of_question') else 0
             })
@@ -436,57 +543,107 @@ class ApiQuizzes(BaseCourseView):
 
 class ApiCreateQuiz(BaseCourseView):
     def post(self, request, course_code):
-        if not self.check_enrollment(request, course_code):
-            return Response({'detail': 'Not enrolled in this course'}, status=403)
-        extra_info, is_student_user = self.get_role_info(request)
-        if is_student_user: return Response({'detail': 'Faculty only'}, status=403)
+        try:
+            if not self.check_enrollment(request, course_code):
+                return Response({'detail': 'Not enrolled in this course'}, status=403)
+            extra_info, is_student_user = self.get_role_info(request)
+            if is_student_user:
+                return Response({'detail': 'Faculty only'}, status=403)
             
-        curr = services.get_course_obj(course_code)
-        d = request.data
+            curr = services.get_course_obj(course_code)
+            if not curr:
+                return Response({'detail': 'Course not found'}, status=404)
+            
+            # Get the actual Course object
+            course_obj = curr.course_id if hasattr(curr, 'course_id') else curr
+            
+            d = request.data
 
-        title = (d.get('title') or '').strip()
-        if not title:
-            return Response({'detail': 'title is required'}, status=400)
+            title = (d.get('title') or '').strip()
+            if not title:
+                return Response({'detail': 'title is required'}, status=400)
 
-        start_raw = d.get('start_time')
-        end_raw = d.get('end_time')
-        start_dt = parse_datetime(start_raw) if isinstance(start_raw, str) else None
-        end_dt = parse_datetime(end_raw) if isinstance(end_raw, str) else None
-        if start_dt is None or end_dt is None:
-            return Response({'detail': 'start_time and end_time must be ISO datetimes'}, status=400)
+            start_raw = d.get('start_time')
+            duration_raw = d.get('duration')
+            end_raw = d.get('end_time')
+            start_dt = parse_datetime(start_raw) if isinstance(start_raw, str) else None
+            end_dt = None
 
-        if timezone.is_naive(start_dt):
-            start_dt = timezone.make_aware(start_dt)
-        if timezone.is_naive(end_dt):
-            end_dt = timezone.make_aware(end_dt)
+            if start_dt is None:
+                return Response({'detail': 'start_time must be an ISO datetime'}, status=400)
 
-        if end_dt <= start_dt:
-            return Response({'detail': 'end_time must be after start_time'}, status=400)
+            if timezone.is_naive(start_dt):
+                start_dt = timezone.make_aware(start_dt)
 
-        delta = end_dt - start_dt
-        total_minutes = int(delta.total_seconds() // 60)
-        days = total_minutes // (60 * 24)
-        hours = (total_minutes % (60 * 24)) // 60
-        minutes = total_minutes % 60
+            if duration_raw is not None:
+                try:
+                    duration_val = int(duration_raw)
+                except (ValueError, TypeError):
+                    return Response({'detail': 'duration must be an integer (minutes)'}, status=400)
 
-        q = models.Quiz.objects.create(
-            course_id=curr.course_id,
-            quiz_name=title[:20],
-            start_time=start_dt,
-            end_time=end_dt,
-            d_day=str(days).zfill(2),
-            d_hour=str(hours).zfill(2),
-            d_minute=str(minutes).zfill(2),
-            negative_marks=float(d.get('negative_marks') or 0),
-            description=(d.get('description') or '').strip(),
-            rules=(d.get('rules') or '').strip(),
-        )
-        return Response({'id': q.pk})
+                if duration_val <= 0:
+                    return Response({'detail': 'duration must be a positive number'}, status=400)
+
+                end_dt = start_dt + timedelta(minutes=duration_val)
+            elif isinstance(end_raw, str):
+                end_dt = parse_datetime(end_raw)
+                if end_dt is None:
+                    return Response({'detail': 'end_time must be an ISO datetime when provided'}, status=400)
+                if timezone.is_naive(end_dt):
+                    end_dt = timezone.make_aware(end_dt)
+            else:
+                return Response({'detail': 'Either duration or end_time must be provided'}, status=400)
+
+            if end_dt <= start_dt:
+                return Response({'detail': 'end_time must be after start_time'}, status=400)
+
+            delta = end_dt - start_dt
+            total_minutes = int(delta.total_seconds() // 60)
+            days = total_minutes // (60 * 24)
+            hours = (total_minutes % (60 * 24)) // 60
+            minutes = total_minutes % 60
+
+            q = models.Quiz.objects.create(
+                course_id=course_obj,
+                quiz_name=title[:20],
+                start_time=start_dt,
+                end_time=end_dt,
+                d_day=str(days).zfill(2),
+                d_hour=str(hours).zfill(2),
+                d_minute=str(minutes).zfill(2),
+                negative_marks=float(d.get('negative_marks') or 0),
+                description=(d.get('description') or '').strip(),
+                rules=(d.get('rules') or '').strip(),
+            )
+            return Response({
+                'id': q.pk,
+                'title': q.quiz_name,
+                'description': q.description,
+                'startTime': q.start_time.isoformat(),
+                'endTime': q.end_time.isoformat(),
+                'negativeMarks': q.negative_marks,
+            })
+        except IntegrityError as e:
+            logger.error(f"Database integrity error creating quiz: {e}")
+            return Response({'detail': 'Database error occurred'}, status=500)
+        except Exception as e:
+            logger.error(f"Error creating quiz: {e}")
+            return Response({'detail': 'An error occurred while creating the quiz'}, status=500)
 
 class ApiQuizDetail(BaseCourseView):
     def get(self, request, course_code, quiz_id):
-        if not self.check_enrollment(request, course_code):
-            return Response({'detail': 'Not enrolled in this course'}, status=403)
+        curr = self.get_course_or_error(request, course_code)
+        if isinstance(curr, Response):
+            return curr
+        
+        # Get the actual Course object - handle both old and new systems consistently
+        if hasattr(curr, 'course_id'):
+            # This is from the old curriculum system or MockCurriculum
+            course_obj = curr.course_id
+        else:
+            # This is a direct Course object from new system
+            course_obj = curr
+        
         q = models.Quiz.objects.get(pk=quiz_id)
         extra_info, is_student_user = self.get_role_info(request)
         if is_student_user:
@@ -523,6 +680,18 @@ class ApiQuizSubmit(BaseCourseView):
         extra_info, is_student_user = self.get_role_info(request)
         if not is_student_user: return Response({'detail': 'Student only'}, status=403)
             
+        curr = services.get_course_obj(course_code)
+        if not curr:
+            return Response({'detail': 'Course not found'}, status=404)
+        
+        # Get the actual Course object - handle both old and new systems consistently
+        if hasattr(curr, 'course_id'):
+            # This is from the old curriculum system or MockCurriculum
+            course_obj = curr.course_id
+        else:
+            # This is a direct Course object from new system
+            course_obj = curr
+        
         q = models.Quiz.objects.get(pk=quiz_id)
         if timezone.now() > q.end_time:
             return Response({'detail': 'Quiz has ended'}, status=403)
@@ -561,33 +730,115 @@ class ApiQuizSubmit(BaseCourseView):
 
 class ApiRemoveQuiz(BaseCourseView):
     def delete(self, request, course_code, quiz_id):
-        if not self.check_enrollment(request, course_code):
-            return Response({'detail': 'Not enrolled' }, status=403)
+        curr = self.get_course_or_error(request, course_code)
+        if isinstance(curr, Response):
+            return curr
         extra_info, is_student_user = self.get_role_info(request)
         if is_student_user: return Response({'detail': 'Faculty only'}, status=403)
+        
+        curr = services.get_course_obj(course_code)
+        if not curr:
+            return Response({'detail': 'Course not found'}, status=404)
+        
+        # Get the actual Course object - handle both old and new systems consistently
+        if hasattr(curr, 'course_id'):
+            # This is from the old curriculum system or MockCurriculum
+            course_obj = curr.course_id
+        else:
+            # This is a direct Course object from new system
+            course_obj = curr
+        
         models.Quiz.objects.filter(pk=quiz_id).delete()
         return Response(status=204)
 
 class ApiAttendance(BaseCourseView):
     def get(self, request, course_code):
-        if not self.check_enrollment(request, course_code):
-            return Response({'detail': 'Not enrolled'}, status=403)
+        curr = self.get_course_or_error(request, course_code)
+        if isinstance(curr, Response):
+            return curr
+        curr = services.get_course_obj(course_code)
+        if not curr:
+            return Response({'detail': 'Course not found'}, status=404)
+        
+        # Get the actual Course object - handle both old and new systems consistently
+        if hasattr(curr, 'course_id'):
+            # This is from the old curriculum system or MockCurriculum
+            course_obj = curr.course_id
+        else:
+            # This is a direct Course object from new system
+            course_obj = curr
 
         extra_info, is_student_user = self.get_role_info(request)
 
         if is_student_user:
-            student = Student.objects.get(id=extra_info)
-            recs = Student_attendance.objects.filter(
-                instructor_id__curriculum_id__course_code=course_code,
-                student_id=student,
+            # For students, try both new and old system attendance records
+            from applications.academic_information.models import CourseAttendance
+            
+            student_username = extra_info.user.username if hasattr(extra_info, 'user') else str(extra_info)
+            logger.info(f"[Student Attendance] User: {request.user.username}, Course: {course_code}, StudentUsername: {student_username}")
+            
+            # Try new system first
+            recs_new = CourseAttendance.objects.filter(
+                course_code=course_code,
+                student_id=student_username
             ).order_by('date')
-            return Response([{'date': r.date.isoformat(), 'present': r.present} for r in recs])
+            logger.info(f"[Student Attendance] New system records found: {recs_new.count()}")
+            
+            if recs_new.exists():
+                # Found in new system
+                res = {}
+                for r in recs_new:
+                    d = r.date.isoformat()
+                    if d not in res:
+                        res[d] = []
+                    res[d].append({
+                        'present': r.present,
+                    })
+                return Response(res)
+            else:
+                # Try old system
+                try:
+                    student = Student.objects.get(id=extra_info)
+                    recs_old = Student_attendance.objects.filter(
+                        instructor_id__curriculum_id__course_code=course_code,
+                        student_id=student,
+                    ).order_by('date')
+                    logger.info(f"[Student Attendance] Old system records found: {recs_old.count()}")
+                    return Response([{'date': r.date.isoformat(), 'present': r.present} for r in recs_old])
+                except Student.DoesNotExist:
+                    logger.warning(f"[Student Attendance] Student not found for {request.user.username}")
+                    return Response([])
 
         # faculty
         link = services.get_instructor_link(extra_info, course_code)
         if not link:
             return Response({'detail': 'Not an instructor for this course'}, status=403)
 
+        # Check if this is a MockInstructorLink (from new system)
+        if hasattr(link, '__class__') and 'MockInstructorLink' in str(link.__class__):
+            # New system - use CourseAttendance model
+            from applications.academic_information.models import CourseAttendance
+            
+            # Get instructor user ID
+            instructor_user_id = extra_info if isinstance(extra_info, int) else extra_info.user.id if hasattr(extra_info, 'user') else extra_info
+            
+            recs = CourseAttendance.objects.filter(
+                course_code=course_code,
+                instructor_id=instructor_user_id
+            ).order_by('date')
+            res = {}
+            for r in recs:
+                d = r.date.isoformat()
+                if d not in res:
+                    res[d] = []
+                res[d].append({
+                    'student_id': r.student_id,
+                    'name': r.student_id,
+                    'present': r.present,
+                })
+            return Response(res)
+
+        # Old system
         recs = Student_attendance.objects.filter(instructor_id=link).select_related(
             'student_id', 'student_id__id', 'student_id__id__user'
         ).order_by('date')
@@ -605,11 +856,24 @@ class ApiAttendance(BaseCourseView):
         return Response(res)
 
     def post(self, request, course_code):
-        if not self.check_enrollment(request, course_code):
-            return Response({'detail': 'Not enrolled'}, status=403)
+        curr = self.get_course_or_error(request, course_code)
+        if isinstance(curr, Response):
+            return curr
         extra_info, is_student_user = self.get_role_info(request)
         if is_student_user:
             return Response({'detail': 'Faculty only'}, status=403)
+
+        curr = services.get_course_obj(course_code)
+        if not curr:
+            return Response({'detail': 'Course not found'}, status=404)
+        
+        # Get the actual Course object - handle both old and new systems consistently
+        if hasattr(curr, 'course_id'):
+            # This is from the old curriculum system or MockCurriculum
+            course_obj = curr.course_id
+        else:
+            # This is a direct Course object from new system
+            course_obj = curr
 
         link = services.get_instructor_link(extra_info, course_code)
         if not link:
@@ -624,53 +888,106 @@ class ApiAttendance(BaseCourseView):
         if not isinstance(atts, list):
             return Response({'detail': 'attendance must be a list'}, status=400)
 
+        # Check if this is a MockInstructorLink (from new system)
+        is_new_system = hasattr(link, '__class__') and 'MockInstructorLink' in str(link.__class__)
+
+        # Get instructor user ID
+        if is_new_system:
+            instructor_user_id = extra_info if isinstance(extra_info, int) else extra_info.user.id if hasattr(extra_info, 'user') else extra_info
+
         count = 0
         for att in atts:
             sid = att.get('student_id')
             present = bool(att.get('present'))
             if not sid:
                 continue
-            student = Student.objects.filter(id__user__username=sid).first()
-            if not student:
-                continue
-            rec, _ = Student_attendance.objects.get_or_create(
-                instructor_id=link,
-                student_id=student,
-                date=dt,
-            )
-            rec.present = present
-            rec.save()
-            count += 1
+            
+            if is_new_system:
+                # New system - use CourseAttendance model
+                from applications.academic_information.models import CourseAttendance
+                rec, _ = CourseAttendance.objects.get_or_create(
+                    student_id=sid,
+                    course_code=course_code,
+                    instructor_id=instructor_user_id,
+                    date=dt,
+                )
+                rec.present = present
+                rec.save()
+                count += 1
+            else:
+                # Old system
+                student = Student.objects.filter(id__user__username=sid).first()
+                if not student:
+                    continue
+                rec, _ = Student_attendance.objects.get_or_create(
+                    instructor_id=link,
+                    student_id=student,
+                    date=dt,
+                )
+                rec.present = present
+                rec.save()
+                count += 1
 
         return Response({'status': 'saved', 'count': count})
 
 
 class ApiAttendanceRoster(BaseCourseView):
     def get(self, request, course_code):
-        if not self.check_enrollment(request, course_code):
-            return Response({'detail': 'Not enrolled'}, status=403)
-        extra_info, is_student_user = self.get_role_info(request)
-        if is_student_user:
-            return Response({'detail': 'Faculty only'}, status=403)
+        try:
+            if not self.check_enrollment(request, course_code):
+                return Response({'detail': 'Not enrolled'}, status=403)
+            extra_info, is_student_user = self.get_role_info(request)
+            if is_student_user:
+                return Response({'detail': 'Faculty only'}, status=403)
+            curr = services.get_course_obj(course_code)
+            if not curr:
+                return Response({'detail': 'Course not found'}, status=404)
+            
+            # Get the actual Course object - handle both old and new systems consistently
+            if hasattr(curr, 'course_id'):
+                # This is from the old curriculum system or MockCurriculum
+                course_obj = curr.course_id
+            else:
+                # This is a direct Course object from new system
+                course_obj = curr
 
-        link = services.get_instructor_link(extra_info, course_code)
-        if not link:
-            return Response({'detail': 'Not an instructor for this course'}, status=403)
+            link = services.get_instructor_link(extra_info, course_code)
+            if not link:
+                return Response({'detail': 'Not an instructor for this course'}, status=403)
 
-        roster = services.get_course_roster(course_code)
-        return Response(roster)
+            roster = services.get_course_roster(course_code)
+            if not roster:
+                logger.warning(f"Empty roster for course {course_code}, instructor {extra_info}")
+                return Response([], safe=True)
+            return Response(roster)
+        except Exception as e:
+            logger.error(f"Error getting attendance roster for course {course_code}: {e}")
+            return Response({'detail': 'An error occurred while fetching the roster'}, status=500)
 
 class ApiQuestionBank(BaseCourseView):
     def get(self, request, course_code):
-        if not self.check_enrollment(request, course_code): return Response({'detail': 'Not enrolled'}, status=403)
+        curr = self.get_course_or_error(request, course_code)
+        if isinstance(curr, Response):
+            return curr
         extra_info, is_student_user = self.get_role_info(request)
         if is_student_user: return Response({'detail': 'Faculty only'}, status=403)
         
         curr = services.get_course_obj(course_code)
+        if not curr:
+            return Response({'detail': 'Course not found'}, status=404)
+        
+        # Get the actual Course object - handle both old and new systems consistently
+        if hasattr(curr, 'course_id'):
+            # This is from the old curriculum system or MockCurriculum
+            course_obj = curr.course_id
+        else:
+            # This is a direct Course object from new system
+            course_obj = curr
+        
         # Using a dummy implementation or empty list if no models exist for QB since it wasn't specified completely in models
         # Assuming we might have QuestionBank models if not we send empty array 
         try:
-            banks = models.QuestionBank.objects.filter(course_id=curr.course_id)
+            banks = models.QuestionBank.objects.filter(course_id=course_obj)
             return Response([{'id': b.pk, 'title': b.name} for b in banks])
         except:
             return Response([])
@@ -689,11 +1006,21 @@ class ApiAddQuestion(BaseCourseView):
 
 class ApiGrading(BaseCourseView):
     def get(self, request, course_code):
-        if not self.check_enrollment(request, course_code): return Response({'detail': 'Not enrolled'}, status=403)
-        curr = services.get_course_obj(course_code)
+        curr = self.get_course_or_error(request, course_code)
+        if isinstance(curr, Response):
+            return curr
+        
+        # Get the actual Course object - handle both old and new systems consistently
+        if hasattr(curr, 'course_id'):
+            # This is from the old curriculum system or MockCurriculum
+            course_obj = curr.course_id
+        else:
+            # This is a direct Course object from new system
+            course_obj = curr
+        
         extra_info, is_student_user = self.get_role_info(request)
         
-        schemes = models.GradingScheme.objects.filter(course_id=curr.course_id)
+        schemes = models.GradingScheme.objects.filter(course_id=course_obj)
         if is_student_user:
             student = models.Student.objects.get(id=extra_info)
             evals = models.StudentEvaluation.objects.filter(student=student, scheme__in=schemes)
@@ -708,19 +1035,32 @@ class ApiGrading(BaseCourseView):
 
 class ApiCreateGradingScheme(BaseCourseView):
     def post(self, request, course_code):
-        if not self.check_enrollment(request, course_code): return Response({'detail': 'Not enrolled'}, status=403)
+        curr = self.get_course_or_error(request, course_code)
+        if isinstance(curr, Response):
+            return curr
         extra_info, is_student_user = self.get_role_info(request)
         if is_student_user: return Response({'detail': 'Faculty only'}, status=403)
         
         curr = services.get_course_obj(course_code)
+        if not curr:
+            return Response({'detail': 'Course not found'}, status=404)
+        
+        # Get the actual Course object - handle both old and new systems consistently
+        if hasattr(curr, 'course_id'):
+            # This is from the old curriculum system or MockCurriculum
+            course_obj = curr.course_id
+        else:
+            # This is a direct Course object from new system
+            course_obj = curr
+        
         w = float(request.data.get('weightage', 0))
-        schemes = models.GradingScheme.objects.filter(course_id=curr.course_id)
+        schemes = models.GradingScheme.objects.filter(course_id=course_obj)
         total = sum([s.weightage for s in schemes])
         if total + w > 100:
             return Response({'detail': 'Total weightage cannot exceed 100'}, status=400)
             
         gs = models.GradingScheme.objects.create(
-            course_id=curr.course_id,
+            course_id=course_obj,
             component=request.data.get('component'),
             weightage=w,
             max_marks=float(request.data.get('max_marks', 0))
@@ -729,7 +1069,9 @@ class ApiCreateGradingScheme(BaseCourseView):
 
 class ApiEvaluate(BaseCourseView):
     def post(self, request, course_code):
-        if not self.check_enrollment(request, course_code): return Response({'detail': 'Not enrolled'}, status=403)
+        curr = self.get_course_or_error(request, course_code)
+        if isinstance(curr, Response):
+            return curr
         extra_info, is_student_user = self.get_role_info(request)
         if is_student_user: return Response({'detail': 'Faculty only'}, status=403)
         
@@ -746,13 +1088,26 @@ class ApiEvaluate(BaseCourseView):
 
 class ApiStudentGrades(BaseCourseView):
     def get(self, request, course_code):
-        if not self.check_enrollment(request, course_code): return Response({'detail': 'Not enrolled'}, status=403)
+        curr = self.get_course_or_error(request, course_code)
+        if isinstance(curr, Response):
+            return curr
         extra_info, is_student_user = self.get_role_info(request)
         if not is_student_user: return Response({'detail': 'Student only'}, status=403)
         
         curr = services.get_course_obj(course_code)
+        if not curr:
+            return Response({'detail': 'Course not found'}, status=404)
+        
+        # Get the actual Course object - handle both old and new systems consistently
+        if hasattr(curr, 'course_id'):
+            # This is from the old curriculum system or MockCurriculum
+            course_obj = curr.course_id
+        else:
+            # This is a direct Course object from new system
+            course_obj = curr
+        
         student = models.Student.objects.get(id=extra_info)
-        schemes = models.GradingScheme.objects.filter(course_id=curr.course_id)
+        schemes = models.GradingScheme.objects.filter(course_id=course_obj)
         
         res = []
         total_w = 0

@@ -236,6 +236,31 @@ class Student_attendance(models.Model):
         return self.course_id
 
 
+class CourseAttendance(models.Model):
+    '''
+        Purpose: Store attendance for courses in the new CourseInstructor system
+        
+        ATTRIBUTES:
+        student_id(User) - the student username
+        course_code(str) - the course code
+        instructor_id(int) - the instructor user ID
+        date(DateField) - the date for which attendance is recorded
+        present(Boolean) - whether the student was present
+    '''
+    student_id = models.CharField(max_length=100)  # Student username
+    course_code = models.CharField(max_length=20)  # Course code like CS101
+    instructor_id = models.IntegerField()  # Instructor user ID
+    date = models.DateField()
+    present = models.BooleanField(default=False)
+    
+    class Meta:
+        db_table = 'course_attendance'
+        unique_together = ('student_id', 'course_code', 'instructor_id', 'date')
+    
+    def __str__(self):
+        return f"{self.student_id} - {self.course_code} - {self.date}"
+
+
 class Meeting(models.Model):
     '''
         Current Purpose : stores the information regarding a meeting which was conducted by the academic department

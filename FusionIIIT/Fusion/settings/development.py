@@ -1,25 +1,31 @@
+import os
 from Fusion.settings.common import *
+from datetime import timedelta
+import warnings
 
 DEBUG = True
 
-SECRET_KEY = '=&w9due426k@l^ju1=s1)fj1rnpf0ok8xvjwx+62_nc-f12-8('
+# WARNING: Use strong secret key in production. Generate with: python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+if not os.environ.get('SECRET_KEY'):
+    warnings.warn('SECRET_KEY not set in environment. Using development key. NEVER use in production!')
+SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-key-only-for-development-change-in-production')
 
-ALLOWED_HOSTS = ['*']
+# Development: Allow localhost only. Set ALLOWED_HOSTS in production via environment
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'fusionlab',
-        'USER': 'postgres',
-        'PASSWORD': '2304',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': os.environ.get('DB_NAME', 'fusionlab'),
+        'USER': os.environ.get('DB_USER', 'fusion_admin'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', os.environ.get('POSTGRES_PASSWORD', 'postgres_default')),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',

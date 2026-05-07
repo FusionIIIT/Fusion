@@ -1,10 +1,20 @@
 from Fusion.settings.common import *
+import os
+import sys
 
-DEBUG = True
+DEBUG = False
+
+# Validate required environment variables for production
+REQUIRED_ENV_VARS = ['SECRET_KEY', 'DB_PASSWORD', 'MAIL_PASSWORD']
+missing_vars = [var for var in REQUIRED_ENV_VARS if not os.environ.get(var)]
+if missing_vars:
+    print(f"ERROR: Missing required environment variables: {', '.join(missing_vars)}", file=sys.stderr)
+    print("Please set all required environment variables before starting production server.", file=sys.stderr)
+    sys.exit(1)
 
 SECRET_KEY = os.environ['SECRET_KEY']
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '172.27.16.216']
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
 
 # password of sender
 EMAIL_HOST_PASSWORD = os.environ['MAIL_PASSWORD']
@@ -14,10 +24,10 @@ EMAIL_HOST_PASSWORD = os.environ['MAIL_PASSWORD']
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'fusionlab',
-        'HOST': 'localhost',
-        'USER': 'fusion_admin',
-        'PASSWORD': 'hello123',
+        'NAME': os.environ.get('DB_NAME', 'fusionlab'),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'USER': os.environ.get('DB_USER', 'fusion_admin'),
+        'PASSWORD': os.environ['DB_PASSWORD'],
     }
 }
 

@@ -81,11 +81,11 @@ def academic_procedures(request):
     
     des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
     
-    if str(des.designation) == "student":
+    if des and str(des.designation) == "student":
         obj = Student.objects.select_related('id','id__user','id__department').get(id = user_details.id)
         return HttpResponseRedirect('/academic-procedures/stu/')
         # return HttpResponseRedirect('/logout/')
-    elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor" :
+    elif des and (str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor"):
         return HttpResponseRedirect('/academic-procedures/fac/')
         # return HttpResponseRedirect('/logout/')
 

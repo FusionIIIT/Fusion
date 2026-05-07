@@ -19,9 +19,15 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-CLIENT_ID = '187004491411-frc3j36n04o9k0imgnbl02qg42vkq36f.apps.googleusercontent.com'
-CLIENT_SECRET = 'enHu3RD0yBvCM_9C0HQmEp0z'
+# SECURITY WARNING: Google OAuth credentials MUST be set via environment variables
+# Never commit credentials to version control
+CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
+CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', '')
+
+if not CLIENT_ID or not CLIENT_SECRET:
+    import warnings
+    warnings.warn('Google OAuth credentials not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables.')
+
 # SECURITY WARNING: don't run with debug turned on in production!
 
 # Google authentication
@@ -246,7 +252,7 @@ USE_I18N = True
 
 USE_L10N = False
 
-USE_TZ = False
+USE_TZ = True
 
 SITE_ID = 1
 # Static files (CSS, JavaScript, Images)
@@ -278,7 +284,16 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
 YOUTUBE_DATA_API_KEY = 'api_key'
 
 
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_ALLOW_ALL = False
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    # Add your production domain here
+]
 ALLOW_PASS_RESET = True
 
 
@@ -291,7 +306,3 @@ REST_FRAMEWORK = {
 }
 
 from datetime import timedelta
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-}

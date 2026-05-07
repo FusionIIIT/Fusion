@@ -854,7 +854,6 @@ def supervisor(request):
                     {'all_caretaker': all_caretaker, 'all_complaint': all_complaint,
                    'overduecomplaint': overduecomplaint, 'area': area,'num':num})
     else:
-        print('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
         y = ExtraInfo.objects.all().select_related('user','department').get(id=y.id)
         try:
             a = get_object_or_404(Supervisor, sup_id=y)

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import *
+from ..models import *
 from applications.academic_information.models import Course, Curriculum
 
 class CourseSerializer(serializers.ModelSerializer):

@@ -280,7 +280,7 @@ class ApiQuizzes(BaseCourseView):
             if is_student_user:
                 student = models.Student.objects.get(id=extra_info)
                 has_finished = models.QuizResult.objects.filter(quiz_id=q, student_id=student, finished=True).exists()
-                if not (q.start_time <= now <= q.end_time and not has_finished):
+                if not (q.start_time <= now and (q.end_time is None or now <= q.end_time) and not has_finished):
                     continue
                     
             res.append({
@@ -288,7 +288,7 @@ class ApiQuizzes(BaseCourseView):
                 'title': getattr(q, 'title', getattr(q, 'quiz_name', '')),
                 'description': q.description if hasattr(q, 'description') else '',
                 'startTime': q.start_time.isoformat(),
-                'endTime': q.end_time.isoformat(),
+                'endTime': q.end_time.isoformat() if q.end_time else None,
                 'duration': getattr(q, 'duration', getattr(q, 'd_time', 0)),
                 'negativeMarks': getattr(q, 'negative_marks', 0),
                 'totalQuestions': q.number_of_question if hasattr(q, 'number_of_question') else 0
@@ -309,7 +309,7 @@ class ApiCreateQuiz(BaseCourseView):
         if hasattr(q, 'title'): q.title = d.get('title')
         if hasattr(q, 'description'): q.description = d.get('description', '')
         q.start_time = d.get('start_time')
-        q.end_time = d.get('end_time')
+        q.end_time = d.get('end_time')  # Can be None now
         if hasattr(q, 'd_time'): q.d_time = d.get('duration', 0)
         if hasattr(q, 'duration'): q.duration = d.get('duration', 0)
         if hasattr(q, 'negative_marks'): q.negative_marks = d.get('negative_marks', 0)
@@ -323,7 +323,7 @@ class ApiQuizDetail(BaseCourseView):
         q = models.Quiz.objects.get(pk=quiz_id)
         extra_info, is_student_user = self.get_role_info(request)
         if is_student_user:
-            if timezone.now() > q.end_time:
+            if q.end_time and timezone.now() > q.end_time:
                 return Response({'detail': 'Quiz has ended'}, status=403)
             student = models.Student.objects.get(id=extra_info)
             if models.QuizResult.objects.filter(quiz_id=q, student_id=student, finished=True).exists():

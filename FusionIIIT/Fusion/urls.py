@@ -26,7 +26,7 @@ from . import api_auth
 
 urlpatterns = [
     # API AUTH
-    url(r'^api/auth/login/$', api_auth.TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    url(r'^api/auth/login/$', api_auth.CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     url(r'^api/token/refresh/$', api_auth.TokenRefreshView.as_view(), name='token_refresh'),
     url(r'^api/auth/me/$', api_auth.AuthMeView.as_view(), name='api_auth_me'),
 
@@ -60,8 +60,7 @@ urlpatterns = [
     url(r'^gymkhana/', include('applications.gymkhana.urls')),
     url(r'^library/', include('applications.library.urls')),
     url(r'^establishment/', include('applications.establishment.urls')),
-    url(r'^ocms/', include(('applications.online_cms.urls', 'online_cms'), namespace='online_cms')),
-    url(r'^api/online_cms/', include(('applications.online_cms.urls', 'online_cms'), namespace='online_cms_api')),
+url(r'^ocms/api/', include('applications.online_cms.api.urls')),
     url(r'^counselling/', include('applications.counselling_cell.urls')),
     url(r'^hostelmanagement/', include('applications.hostel_management.urls')),
     url(r'^income-expenditure/', include('applications.income_expenditure.urls')),
