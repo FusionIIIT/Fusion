@@ -1,148 +1,127 @@
-from attr import fields
-from django.contrib.auth import get_user_model
-from rest_framework.authtoken.models import Token
 from rest_framework import serializers
-from applications.gymkhana.models import Club_info,Session_info,Event_info
-from applications.gymkhana.models import Club_member,Club_budget,Club_report,Fest_budget,Fest,Registration_form,Budget,Budget_Comments,Event_Comments,Achievements,ClubPosition, EventInput, EventReport, YearlyPlan, YearlyPlanEvents
 
-# class Voting_choicesSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Voting_choices
-#         fields = ['poll_event', 'title', 'description', 'votes']
+from applications.gymkhana.models import (
+    ClubCategory,
+    Club_info,
+    Club_member,
+    Event_info,
+    Session_info,
+    Venue,
+)
 
 
-class Club_infoSerializer(serializers.ModelSerializer):
+class ClubSerializer(serializers.ModelSerializer):
+    co_ordinator = serializers.CharField(source="co_ordinator.id.id", read_only=True)
+    co_coordinator = serializers.CharField(source="co_coordinator.id.id", read_only=True)
+    faculty_incharge = serializers.CharField(source="faculty_incharge.id.id", read_only=True)
 
     class Meta:
         model = Club_info
-        fields = ['club_name', 'category', 'co_ordinator', 'co_coordinator', 'faculty_incharge', 'club_file', 'activity_calender', 'description', 'alloted_budget', 'spent_budget', 'avail_budget', 'status', 'head_changed_on', 'created_on']
+        fields = (
+            "club_name",
+            "club_website",
+            "category",
+            "co_ordinator",
+            "co_coordinator",
+            "faculty_incharge",
+            "description",
+            "alloted_budget",
+            "spent_budget",
+            "avail_budget",
+            "status",
+            "head_changed_on",
+            "created_on",
+        )
 
 
+class ClubCreateSerializer(serializers.Serializer):
+    club_name = serializers.CharField(max_length=50)
+    category = serializers.ChoiceField(choices=ClubCategory.choices)
+    co_ordinator = serializers.CharField(max_length=20)
+    co_coordinator = serializers.CharField(max_length=20)
+    faculty_incharge = serializers.CharField(max_length=256)
+    description = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
-class EmptySerializer(serializers.Serializer):
-    pass
 
-class Club_memberSerializer(serializers.ModelSerializer):
+class ClubMemberSerializer(serializers.ModelSerializer):
+    member_id = serializers.CharField(source="member.id.id", read_only=True)
+    club_name = serializers.CharField(source="club.club_name", read_only=True)
+
     class Meta:
         model = Club_member
-        fields = ['member','club','description', 'status','remarks','id']
-    
+        fields = ("id", "member_id", "club_name", "description", "status", "remarks")
 
-# class Core_teamSerializer(serializers.ModelSerializer):
 
-#     class Meta:
-#         model=Core_team
-#         fields=('all')
+class ClubMemberCreateSerializer(serializers.Serializer):
+    member_id = serializers.CharField(max_length=20)
+    description = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
-class Club_DetailsSerializer(serializers.ModelSerializer):
+
+class EventSerializer(serializers.ModelSerializer):
+    club_name = serializers.CharField(source="club.club_name", read_only=True)
+
     class Meta:
-        model=Club_info
-        fields=['club_name',"co_ordinator","co_coordinator","activity_calender","category",'faculty_incharge',"club_file", "status" ,"description"]
+        model = Event_info
+        fields = (
+            "id",
+            "club_name",
+            "event_name",
+            "incharge",
+            "venue",
+            "date",
+            "start_time",
+            "end_time",
+            "event_poster",
+            "details",
+            "status",
+        )
 
-class Session_infoSerializer(serializers.ModelSerializer):
+
+class EventCreateSerializer(serializers.ModelSerializer):
+    venue = serializers.ChoiceField(choices=Venue.choices)
+
+    class Meta:
+        model = Event_info
+        fields = (
+            "event_name",
+            "incharge",
+            "venue",
+            "date",
+            "start_time",
+            "end_time",
+            "event_poster",
+            "details",
+        )
+
+
+class SessionSerializer(serializers.ModelSerializer):
+    club_name = serializers.CharField(source="club.club_name", read_only=True)
+
     class Meta:
         model = Session_info
-        fields = [ 'venue', 'date', 'start_time', 'end_time', 'details','status','session_poster','id', 'club']
+        fields = (
+            "id",
+            "club_name",
+            "venue",
+            "date",
+            "start_time",
+            "end_time",
+            "session_poster",
+            "details",
+            "status",
+        )
 
 
-
-class event_infoserializer(serializers.ModelSerializer):
-
-    class Meta:
-        model=Event_info
-        fields=['club','event_name','incharge','start_date','end_date','venue','start_time','id','details','status','end_time','details','file_id']
-
-class club_budgetserializer(serializers.ModelSerializer):
-
-    class Meta:
-        model=Club_budget
-        fields=['club','budget_for','budget_amt','budget_file','status','id','description','remarks','file_id']
-class Club_reportSerializers(serializers.ModelSerializer):
-    class Meta:
-        model = Club_report
-        fields = ['club', 'incharge' , 'event_name' , 'date' , 'event_details' ]
-
-class Fest_budgerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=Fest_budget
-        fields=['fest','budget_amt','budget_file','year','status']
-
-class Registration_formSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=Registration_form
-        fields=['roll','user_name','branch','cpi','programme']
-
-# class Voting_pollSerializer(serializers.ModelSerializer):
-
-#     class Meta:
-#         model=Voting_polls
-#         fields=['title','pub_date','exp_date','created_by','groups','id','description']
-class BudgetSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Budget
-        fields = '__all__'
-        extra_kwargs = {
-            'budget_file': {'required': False},  # <- allow optional on update
-        }
-class AchievementsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Achievements
-        fields = ['id', 'club_name', 'title', 'achievement']
-class Budget_CommentsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Budget_Comments
-        fields = ['budget_id', 'commentator_designation', 'comment', 'comment_date', 'comment_time']
-class Event_CommentsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Event_Comments
-        fields = ['event_id', 'commentator_designation', 'comment', 'comment_date', 'comment_time']
-class ClubPositionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ClubPosition
-        fields = ['id', 'name', 'position', 'club']
-
-class FestSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=Fest
-        fields= ['id', 'name', 'category', 'description', 'date', 'link']
-
-class EventInputSerializer(serializers.ModelSerializer):
-    # Use event name for dropdown-like functionality
-    event = serializers.SlugRelatedField(
-        queryset=Event_info.objects.all(), 
-        slug_field='id')
+class SessionCreateSerializer(serializers.ModelSerializer):
+    venue = serializers.ChoiceField(choices=Venue.choices)
 
     class Meta:
-        model = EventInput
-        fields = ['id', 'event', 'description','images']
-
-class EventReportSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = EventReport
-        fields = '__all__'
-class YearlyPlanEventsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = YearlyPlanEvents
-        fields = [
-            'id',
-            'event_name',
-            'tentative_start_date',
-            'tentative_end_date',
-            'budget',
-            'description'
-        ]
-
-class YearlyPlanSerializer(serializers.ModelSerializer):
-    events = YearlyPlanEventsSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = YearlyPlan
-        fields = [
-            'id',
-            'club',
-            'year',
-            'status',
-            'file_link',
-            'file_id',
-            'events'
-        ]
+        model = Session_info
+        fields = (
+            "venue",
+            "date",
+            "start_time",
+            "end_time",
+            "session_poster",
+            "details",
+        )

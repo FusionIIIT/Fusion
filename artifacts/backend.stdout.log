@@ -1,0 +1,3 @@
+Performing system checks...
+
+URL patterns [<URLPattern 'projects'>, <URLPattern 'view_project_info/<id>/'>, <URLPattern 'view_project_inventory/<pj_id>/' [name='view_project_inventory']>, <URLPattern 'view_project_staff/<pj_id>/' [name='view_project_staff']>, <URLPattern 'view_financial_outlay/<pid>/' [name='view_financial_outlay']>, <URLPattern 'view_staff_details/<pid>/' [name='view_staff_details']>]

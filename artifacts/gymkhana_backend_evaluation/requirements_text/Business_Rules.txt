@@ -1,0 +1,288 @@
+BUSINESS RULES DOCUMENT
+Gymkhana Module
+BR001: Valid Student Coordinator
+Business Rule ID
+BR001
+Rule Name
+Valid Student Coordinator
+Description
+Co-ordinator must be a valid student in Student table
+Source
+views.py - new_club() checking ExtraInfo.objects.filter(user_type='student')
+Rationale
+Ensures data integrity and prevents orphaned references
+Enforcement
+Validated by checking student existence in ExtraInfo table
+BR002: Valid Faculty Incharge
+Business Rule ID
+BR002
+Rule Name
+Valid Faculty Incharge
+Description
+Faculty_incharge must be valid faculty member in Faculty table
+Source
+views.py - new_club() checking ExtraInfo.objects.filter(user_type='faculty')
+Rationale
+Ensures proper faculty oversight of clubs
+Enforcement
+Validated by checking faculty existence in ExtraInfo table
+BR003: No Venue Time Conflicts
+Business Rule ID
+BR003
+Rule Name
+No Venue Time Conflicts
+Description
+Sessions and events cannot overlap in same venue at same date/time
+Source
+views.py - conflict_algorithm_session() and conflict_algorithm_event()
+Rationale
+Prevents double-booking of venues
+Enforcement
+Algorithms check overlapping time slots: if slots[i][0] < counter: flag=1
+BR004: Valid Time Range
+Business Rule ID
+BR004
+Rule Name
+Valid Time Range
+Description
+start_time must be before end_time
+Source
+models.py - Session_info and Event_info models
+Rationale
+Ensures logical time ordering
+Enforcement
+Implicitly enforced by conflict algorithms
+BR005: Multiple Club Applications
+Business Rule ID
+BR005
+Rule Name
+Multiple Club Applications
+Description
+Student can apply to multiple clubs
+Source
+models.py - Club_member with no unique constraint on member
+Rationale
+Students should participate in multiple clubs
+Enforcement
+No database constraint prevents multiple memberships
+BR006: Duplicate Application Prevention
+Business Rule ID
+BR006
+Rule Name
+Duplicate Application Prevention
+Description
+Student cannot submit duplicate applications to same club
+Source
+views.py - club_membership() with try-except
+Rationale
+Prevents spam and maintains clean records
+Enforcement
+Database integrity error: result='error'
+BR007: Club Head Authorization
+Business Rule ID
+BR007
+Rule Name
+Club Head Authorization
+Description
+Only club co-ordinator/co-coordinator can approve memberships
+Source
+views.py - coordinator_club() checking user match
+Rationale
+Ensures proper authorization
+Enforcement
+coordinator_club() returns club only if user matches leadership
+BR008: Status Transition on Approval
+Business Rule ID
+BR008
+Rule Name
+Status Transition on Approval
+Description
+Approval changes status from 'open' to 'confirmed'
+Source
+views.py - approve() function: club_member.status='confirmed'
+Rationale
+Tracks application lifecycle
+Enforcement
+Explicit assignment in approve() function
+BR009: Minimum Poll Choices
+Business Rule ID
+BR009
+Rule Name
+Minimum Poll Choices
+Description
+Voting poll must have ≥2 choices
+Source
+views.py - voting_poll() creating Voting_choices
+Rationale
+Poll needs multiple options to be meaningful
+Enforcement
+Implicitly enforced by UI
+BR010: Poll Target Groups
+Business Rule ID
+BR010
+Rule Name
+Poll Target Groups
+Description
+Polls target specific batches and branches as JSON
+Source
+views.py - get_target_user() converting to JSON
+Rationale
+Enables targeted polling
+Enforcement
+get_target_user() creates JSON dictionary
+BR011: One Vote Per Student Per Poll
+Business Rule ID
+BR011
+Rule Name
+One Vote Per Student Per Poll
+Description
+Student can vote only once per poll
+Source
+views.py - vote() creating Voting_voters record
+Rationale
+Ensures fair voting
+Enforcement
+Voting_voters.create() throws exception if duplicate
+BR012: Atomic Vote Increment
+Business Rule ID
+BR012
+Rule Name
+Atomic Vote Increment
+Description
+Vote count increments atomically
+Source
+views.py - vote(): choice.votes+=1; choice.save()
+Rationale
+Maintains accurate counts
+Enforcement
+Database transaction ensures atomicity
+BR013: Leadership Succession
+Business Rule ID
+BR013
+Rule Name
+Leadership Succession
+Description
+Old leadership removed when new leadership assigned
+Source
+views.py - change_head() deleting old HoldsDesignation
+Rationale
+Prevents multiple active leaders
+Enforcement
+HoldsDesignation.filter().delete()
+BR014: Designation Tracking
+Business Rule ID
+BR014
+Rule Name
+Designation Tracking
+Description
+HoldsDesignation records track current club leadership
+Source
+views.py - change_head() creating HoldsDesignation
+Rationale
+Maintains authorization tracking
+Enforcement
+HoldsDesignation.objects.create()
+BR015: Non-Negative Budget
+Business Rule ID
+BR015
+Rule Name
+Non-Negative Budget
+Description
+Budget amount must be ≥0
+Source
+models.py - Club_budget.budget_amt IntegerField default=0
+Rationale
+Budgets cannot be negative
+Enforcement
+Database field type constraint
+BR016: Budget File Required
+Business Rule ID
+BR016
+Rule Name
+Budget File Required
+Description
+Budget request must include file
+Source
+models.py - Club_budget.budget_file FileField null=False
+Rationale
+Requires documentation
+Enforcement
+Database constraint: null=False
+BR017: Report File Required
+Business Rule ID
+BR017
+Rule Name
+Report File Required
+Description
+Event reports must include details file
+Source
+models.py - Club_report.event_details FileField null=False
+Rationale
+Requires documentation
+Enforcement
+Database constraint: null=False
+BR018: Date Time Concatenation
+Business Rule ID
+BR018
+Rule Name
+Date Time Concatenation
+Description
+Event report date and time concatenated for storage
+Source
+views.py - club_report(): date=date+' '+time
+Rationale
+Stores complete timestamp
+Enforcement
+String concatenation before saving
+BR019: Status Enumeration
+Business Rule ID
+BR019
+Rule Name
+Status Enumeration
+Description
+Status must be: open, confirmed, or rejected
+Source
+models.py - Constants.status choices
+Rationale
+Standardizes status values
+Enforcement
+CharField with choices=Constants.status
+BR020: Category Enumeration
+Business Rule ID
+BR020
+Rule Name
+Category Enumeration
+Description
+Club category: Technical, Sports, or Cultural
+Source
+models.py - Constants.categoryCh choices
+Rationale
+Categorizes clubs
+Enforcement
+CharField with choices=Constants.categoryCh
+BR021: Cascade Delete
+Business Rule ID
+BR021
+Rule Name
+Cascade Delete
+Description
+Deleting referenced entity deletes dependent records
+Source
+models.py - ForeignKey on_delete=models.CASCADE
+Rationale
+Maintains referential integrity
+Enforcement
+Database CASCADE constraint
+BR022: Primary Key Uniqueness
+Business Rule ID
+BR022
+Rule Name
+Primary Key Uniqueness
+Description
+Primary keys must be unique
+Source
+models.py - Primary key definitions
+Rationale
+Ensures unique identification
+Enforcement
+Database PRIMARY KEY constraint

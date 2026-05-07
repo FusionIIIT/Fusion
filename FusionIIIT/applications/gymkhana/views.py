@@ -1355,6 +1355,12 @@ def club_report(request):
         date = request.POST.get("date")
         time = request.POST.get("time")
         report = request.FILES["report"]
+
+        # DEF-008 FIX: validate that both date and time are present before concatenating
+        if not date or not time:
+            messages.error(request, "Both date and time are required for the event report.")
+            return redirect("/gymkhana/")
+
         report.name = club + "_" + event + "_report"
 
         # getting queryset class objects
@@ -1381,6 +1387,14 @@ def club_report(request):
 
 @login_required
 def change_head(request):
+    # DEF-004 FIX: only the current coordinator / co-coordinator may change club leadership
+    if coordinator_club(request) is None:
+        return HttpResponse(
+            json.dumps({"status": "error", "message": "Unauthorized: only club coordinators can change leadership."}),
+            status=403,
+            content_type="application/json",
+        )
+
     if request.method == "POST":
         club = request.POST.get("club")
         co_ordinator = request.POST.get("co")
@@ -1501,6 +1515,13 @@ def new_session(request):
             end_time = request.POST.get("end_time")
             desc = request.POST.get("d_d")
             club_name = coordinator_club(request)
+            # DEF-012 FIX: return a clear error if the user is not a club coordinator
+            if club_name is None:
+                return HttpResponse(
+                    json.dumps({"status": "error", "message": "Unauthorized: only club coordinators can book sessions."}),
+                    status=403,
+                    content_type="application/json",
+                )
             result = conflict_algorithm_session(date, start_time, end_time, venue)
             message = ""
             getstudents = ExtraInfo.objects.select_related("user", "department").filter(
@@ -1576,6 +1597,13 @@ def new_event(request):
             end_time = request.POST.get("end_time")
             desc = request.POST.get("d_d")
             club_name = coordinator_club(request)
+            # DEF-012 FIX: return a clear error if the user is not a club coordinator
+            if club_name is None:
+                return HttpResponse(
+                    json.dumps({"status": "error", "message": "Unauthorized: only club coordinators can book events."}),
+                    status=403,
+                    content_type="application/json",
+                )
             result = conflict_algorithm_event(date, start_time, end_time, venue)
             message = ""
             getstudents = ExtraInfo.objects.select_related("user", "department").filter(
@@ -1653,11 +1681,25 @@ def fest_budget(request):
 
 
 @login_required
+@transaction.atomic
 def approve(request):
     """
     This view is used by the clubs to approve the students who want to join the club and changes the status of the student to 'confirmed'.
     It gets a list of students who have to be approved and approves them accordingly.
+
+    FIX DEF-001: Authorization guard added — only the coordinator or co-coordinator
+    of the relevant club may approve membership applications.
+    FIX DEF-011: @transaction.atomic ensures all approvals succeed or all roll back.
     """
+    # DEF-001 FIX: verify the requesting user is a coordinator of some club
+    club_name = coordinator_club(request)
+    if club_name is None:
+        return HttpResponse(
+            json.dumps({"status": "error", "message": "Unauthorized: only club coordinators can approve memberships."}),
+            status=403,
+            content_type="application/json",
+        )
+
     approve_list = list(request.POST.getlist("check"))
 
     for user in approve_list:
@@ -1937,6 +1979,11 @@ def conflict_algorithm_session(date, start_time, end_time, venue):
     """
     start_time = datetime.datetime.strptime(start_time, "%H:%M").time()
     end_time = datetime.datetime.strptime(end_time, "%H:%M").time()
+
+    # DEF-005 FIX: reject invalid time ranges before any DB query
+    if start_time >= end_time:
+        return "error"
+
     booked_Sessions = Session_info.objects.select_related(
         "club",
         "club__co_ordinator",
@@ -1986,12 +2033,22 @@ def get_target_user(groups):
     values of braches and remove the redundancy and returns the "dic" through Json string
     @param:
     groups : This takes the info of which brach and batch can access(voting) this poll
+
+    FIX DEF-010: Malformed group strings (missing ':') are now skipped safely
+    instead of causing an IndexError.
     """
     dic = {}
     for i in range(len(groups)):
-        value = groups[i].split(":")
-        batch = value[0]
-        branch = value[1]
+        # DEF-010 FIX: skip any entry that doesn't contain the expected ':' separator
+        if ":" not in groups[i]:
+            logger.warning(f"get_target_user: skipping malformed group entry '{groups[i]}' (missing ':' separator)")
+            continue
+        value = groups[i].split(":", 1)  # split on first ':' only
+        batch = value[0].strip()
+        branch = value[1].strip()
+        if not batch or not branch:
+            logger.warning(f"get_target_user: skipping empty batch or branch in '{groups[i]}'")
+            continue
         if dic.get(batch):
             if dic[batch][0] != "All":
                 dic[batch].append(branch)
@@ -2001,134 +2058,170 @@ def get_target_user(groups):
 
 
 # Voting Polls
-# @login_required
-# def voting_poll(request):
-#     """
-#     voting_poll:
-#     This view creates new voting poll by taking the values from Front-end and add this poll details
-#     to "Voting_polls" database and also it create and add object of "Voting_choices" contains
-#     poll_event and title>. Finally it calls gymkhana_voting as per the data given to "groups"
-#     @param:
-#             request : trivial
-#     @variables:
-#             title : Title of the voting poll
-#             description : It describes that what this poll is for
-#             choices     : Choices of the voting poll
-#             exp_data    : Expire date of the voting poll
-#             groups      : This takes the info of which brach and batch can access(voting) this poll
-#     """
-#     if request.POST:
-#         try:
-#             body = request.POST
-#             title = body.get("title")
-#             description = body.get("desc")
-#             choices = body.getlist("choices")
-#             exp_date = body.get("expire_date")
-#             groups = body.getlist("groups")
-#             target_groups = get_target_user(groups)
-#             name = request.user.first_name + " " + request.user.last_name
-#             roll = request.user
-#             created_by = str(name) + ":" + str(roll)
-#             new_poll = Voting_polls(
-#                 title=title,
-#                 description=description,
-#                 exp_date=exp_date,
-#                 created_by=str(created_by),
-#                 groups=target_groups,
-#             )
-#             new_poll.save()
-#             for choice in choices:
-#                 new_choice = Voting_choices(poll_event=new_poll, title=choice)
-#                 new_choice.save()
-#             for i in range(len(groups)):
-#                 value = groups[i].split(":")
-#                 batch = value[0]
-#                 branch = value[1]
-#                 allbatch = User.objects.filter(username__contains=batch)
-#                 selbranch = ExtraInfo.objects.select_related(
-#                     "user", "department"
-#                 ).filter(department__name=branch)
-#                 batchbranch = User.objects.filter(
-#                     username__contains=batch, extrainfo__in=selbranch
-#                 )
-#                 if branch == "All":
-#                     gymkhana_voting(
-#                         request.user, allbatch, "voting_open", title, description
-#                     )
-#                 else:
-#                     gymkhana_voting(
-#                         request.user, batchbranch, "voting_open", title, description
-#                     )
-#             return redirect("/gymkhana/")
-#         except Exception as e:
-#             res = "error"
-#             message = "Some error occurred"
-#             logger.info(e)
-#             content = {"status": res, "message": message}
-#             content = json.dumps(content)
-#             return HttpResponse(content)
+@login_required
+def voting_poll(request):
+    """
+    voting_poll:
+    This view creates new voting poll by taking the values from Front-end and add this poll details
+    to "Voting_polls" database and also it create and add object of "Voting_choices" contains
+    poll_event and title. Finally it calls gymkhana_voting as per the data given to "groups".
 
-#     return redirect("/gymkhana/")
+    FIX DEF-003: @login_required + coordinator_club() authorization check added.
+    FIX DEF-002: Minimum 2 choices enforced server-side.
+    FIX DEF-010: get_target_user() now handles malformed group strings safely.
+    """
+    # DEF-003 FIX: only club coordinators may create polls
+    if coordinator_club(request) is None:
+        return HttpResponse(
+            json.dumps({"status": "error", "message": "Unauthorized: only club coordinators can create polls."}),
+            status=403,
+            content_type="application/json",
+        )
 
+    if request.POST:
+        try:
+            body = request.POST
+            title = body.get("title")
+            description = body.get("desc")
+            choices = body.getlist("choices")
+            exp_date = body.get("expire_date")
+            groups = body.getlist("groups")
 
-# @login_required
-# def vote(request, poll_id):
-#     """
-#     vote:
-#     This view will update(increase) votes by 1 for particular 'submitted_choice' then it adds the
-#     voter(student)ID and poll_event for which he/she votes. Finally it saves to the database
-#     redirect to '/gymkhana/'. In case of any exception it return "error"
-#     @param:
-#             poll_id : ID of the poll
-#             request : trivial
-#     @variables:
-#             submitted_choice : Choice of the user selected for poll_event
-#             choice           : It is a object contains all data of "submitted_choice" from Voting_choices
-#             new_voter        : creating object of Voting_voter to save the voter info
-#     """
-#     poll = Voting_polls.objects.get(pk=poll_id)
-#     if request.POST:
-#         try:
-#             body = request.POST
-#             submitted_choice = body.get("choice")
-#             choice = Voting_choices.objects.select_related("poll_event").get(
-#                 pk=submitted_choice
-#             )
-#             choice.votes += 1
-#             choice.save()
-#             new_voter = Voting_voters(poll_event=poll, student_id=str(request.user))
-#             new_voter.save()
-#             return redirect("/gymkhana/")
-#         except Exception as e:
-#             logger.info(e)
-#             return HttpResponse("error")
-#     data = serializers.serialize(
-#         "json", Voting_choices.objects.select_related("poll_event").all()
-#     )
-#     return redirect("/gymkhana/")
+            # DEF-002 FIX: enforce minimum 2 choices server-side
+            if len(choices) < 2:
+                return HttpResponse(
+                    json.dumps({"status": "error", "message": "A poll must have at least 2 choices."}),
+                    content_type="application/json",
+                )
+
+            target_groups = get_target_user(groups)
+            name = request.user.first_name + " " + request.user.last_name
+            roll = request.user
+            created_by = str(name) + ":" + str(roll)
+            new_poll = Voting_polls(
+                title=title,
+                description=description,
+                exp_date=exp_date,
+                created_by=str(created_by),
+                groups=target_groups,
+            )
+            new_poll.save()
+            for choice in choices:
+                new_choice = Voting_choices(poll_event=new_poll, title=choice, votes=0)
+                new_choice.save()
+            for i in range(len(groups)):
+                # DEF-010: malformed entries already skipped inside get_target_user;
+                # apply the same guard here to avoid IndexError in notifications
+                if ":" not in groups[i]:
+                    continue
+                value = groups[i].split(":", 1)
+                batch = value[0].strip()
+                branch = value[1].strip()
+                allbatch = User.objects.filter(username__contains=batch)
+                selbranch = ExtraInfo.objects.select_related(
+                    "user", "department"
+                ).filter(department__name=branch)
+                batchbranch = User.objects.filter(
+                    username__contains=batch, extrainfo__in=selbranch
+                )
+                if branch == "All":
+                    gymkhana_voting(
+                        request.user, allbatch, "voting_open", title, description
+                    )
+                else:
+                    gymkhana_voting(
+                        request.user, batchbranch, "voting_open", title, description
+                    )
+            return redirect("/gymkhana/")
+        except Exception as e:
+            res = "error"
+            message = "Some error occurred"
+            logger.info(e)
+            content = {"status": res, "message": message}
+            content = json.dumps(content)
+            return HttpResponse(content)
+
+    return redirect("/gymkhana/")
 
 
-# @login_required
-# def delete_poll(request, poll_id):
-#     """
-#     delete_poll:
-#     This view delete the particular voting poll which is passed through function and redirect
-#     to "/gymkhana/" if there is an exception then it return the HttpResponse of "error"
-#     @param:
-#             request : trivial
-#             poll_id : id of the poll in Voting_polls
-#     @variables:
-#             poll : It is an object stores the all data of poll_id  from Voting_poll
-#     """
-#     try:
-#         poll = Voting_polls.objects.filter(pk=poll_id)
-#         poll.delete()
-#         return redirect("/gymkhana/")
-#     except Exception as e:
-#         logger.info(e)
-#         return HttpResponse("error")
+@login_required
+def vote(request, poll_id):
+    """
+    vote:
+    This view will update(increase) votes by 1 for particular 'submitted_choice' then it adds the
+    voter(student)ID and poll_event for which he/she votes. Finally it saves to the database
+    redirect to '/gymkhana/'. In case of any exception it return "error".
 
-#     return redirect("/gymkhana/")
+    FIX DEF-006: Target-group membership verified before allowing vote.
+    FIX DEF-009: Atomic vote increment using F() expression to prevent race conditions.
+    """
+    poll = get_object_or_404(Voting_polls, pk=poll_id)
+
+    if request.POST:
+        try:
+            # DEF-006 FIX: verify the requesting student is in the poll's target groups
+            target = json.loads(poll.groups) if poll.groups else {}
+            if target:
+                try:
+                    extra = ExtraInfo.objects.select_related("department").get(user=request.user)
+                    student_batch = str(request.user.username)[:4]  # first 4 chars = year batch
+                    student_branch = extra.department.name if extra.department else None
+                    allowed = False
+                    for batch, branches in target.items():
+                        if batch == student_batch:
+                            if "All" in branches or (student_branch and student_branch in branches):
+                                allowed = True
+                                break
+                    if not allowed:
+                        return HttpResponse(
+                            json.dumps({"status": "error", "message": "You are not eligible to vote in this poll."}),
+                            content_type="application/json",
+                        )
+                except ExtraInfo.DoesNotExist:
+                    return HttpResponse(
+                        json.dumps({"status": "error", "message": "Student profile not found."}),
+                        content_type="application/json",
+                    )
+
+            body = request.POST
+            submitted_choice = body.get("choice")
+
+            # DEF-009 FIX: use atomic F() update instead of non-atomic read-modify-write
+            updated = Voting_choices.objects.filter(pk=submitted_choice, poll_event=poll).update(
+                votes=models.F("votes") + 1
+            )
+            if updated == 0:
+                return HttpResponse(
+                    json.dumps({"status": "error", "message": "Invalid choice selected."}),
+                    content_type="application/json",
+                )
+
+            new_voter = Voting_voters(poll_event=poll, student_id=str(request.user))
+            new_voter.save()
+            return redirect("/gymkhana/")
+        except Exception as e:
+            logger.info(e)
+            return HttpResponse("error")
+
+    return redirect("/gymkhana/")
+
+
+@login_required
+def delete_poll(request, poll_id):
+    """
+    delete_poll:
+    This view delete the particular voting poll which is passed through function and redirect
+    to "/gymkhana/" if there is an exception then it return the HttpResponse of "error".
+    """
+    try:
+        poll = Voting_polls.objects.filter(pk=poll_id)
+        poll.delete()
+        return redirect("/gymkhana/")
+    except Exception as e:
+        logger.info(e)
+        return HttpResponse("error")
+
+
 
 
 # this algorithm checks if the passed slot time coflicts with any of already booked events
@@ -2211,6 +2304,11 @@ def conflict_algorithm_event(date, start_time, end_time, venue):
     # converting string to datetime type variable
     start_time = datetime.datetime.strptime(start_time, "%H:%M").time()
     end_time = datetime.datetime.strptime(end_time, "%H:%M").time()
+
+    # DEF-005 FIX: reject invalid time ranges before any DB query
+    if start_time >= end_time:
+        return "error"
+
     booked_Events = Event_info.objects.select_related(
         "club",
         "club__co_ordinator",
@@ -2694,5 +2792,3 @@ def update_spent_amount(request):
 
     # Return an error response if not a POST request
     return JsonResponse({"status": "error", "message": "Invalid request"})
-
-

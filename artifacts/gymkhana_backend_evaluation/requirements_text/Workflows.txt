@@ -1,0 +1,109 @@
+WORKFLOWS DOCUMENT
+Gymkhana Module
+WF001: Club Creation Workflow
+Description: Process for creating a new club
+Workflow Steps:
+1. Academic staff initiates club creation (POST /gymkhana/new_club/)
+2. System validates coordinator exists: ExtraInfo.objects.filter(user_type='student')
+3. System validates co-coordinator exists
+4. System validates faculty exists: ExtraInfo.objects.filter(user_type='faculty')
+5. System retrieves Student objects via get_object_or_404(Student, id=CO)
+6. System retrieves Faculty object via get_object_or_404(Faculty, id=FACUL)
+7. System creates Club_info(club_name, category, co_ordinator, co_coordinator, faculty_incharge, description)
+8. System saves Club_info with status='open'
+9. System redirects to /gymkhana/
+WF002: Session Booking Workflow
+Description: Process for booking a club session
+Workflow Steps:
+1. Club head initiates session booking (POST /gymkhana/new_session/)
+2. System calls coordinator_club(request) to identify user's club
+3. System receives: venue_type, session_poster, date, start_time, end_time, description
+4. System calls conflict_algorithm_session(date, start_time, end_time, venue)
+5. conflict_algorithm_session() converts times: datetime.strptime(start_time, '%H:%M').time()
+6. Retrieves existing sessions: Session_info.objects.filter(date=date, venue=venue)
+7. Creates sorted slots list: slots = [(start_time, end_time)] + existing slots
+8. Checks overlaps: if slots[i][0] < counter: flag=1
+9. If no conflicts: Creates Session_info(club, venue, date, start_time, end_time, session_poster, details)
+10. Gets students: ExtraInfo.objects.filter(user_type='student')
+11. Calls gymkhana_session(request.user, recipients, 'new_session', club_name, desc, venue)
+12. Returns JSON: {'status':'success', 'message':'Session booked Successfully'}
+WF003: Membership Application Workflow
+Description: Process for students applying to clubs
+Workflow Steps:
+1. Student initiates application (POST /gymkhana/club_membership/)
+2. System receives: user_name (format: 'id - username'), club, achievements
+3. System parses: USER = user_name.split(' - ')
+4. System retrieves: User.objects.get(username=USER[1])
+5. System retrieves: ExtraInfo.objects.get(id=USER[0], user=user_name)
+6. System retrieves: Student.objects.get(id=extra)
+7. System retrieves: Club_info.objects.get(club_name=club)
+8. System creates: Club_member(member=student, club=club_name, description=achievements, status='open')
+9. System returns JSON: {'status':'success', 'message':'Form dispatched for further process'}
+WF004: Membership Approval Workflow
+Description: Process for club heads approving memberships
+Workflow Steps:
+1. Club head selects applications (POST /gymkhana/approve/)
+2. System receives: check[] (list of 'user,club' strings), remarks{user}
+3. For each user in approve_list:
+4.   Parse: user.split(',') → [user_info, club_name]
+5.   Parse: info = user_info.split(' - ') → [id, username]
+6.   Retrieve: User.objects.get(username=info[1])
+7.   Retrieve: ExtraInfo.objects.get(id=info[0], user=user_name)
+8.   Retrieve: Student.objects.get(id=extra)
+9.   Retrieve: Club_member.objects.get(club=club_name, member=student)
+10.   Update: club_member.status = 'confirmed'
+11.   Update: club_member.remarks = remarks[0]
+12.   Save: club_member.save()
+13. System redirects to /gymkhana/
+WF005: Voting Poll Creation Workflow
+Description: Process for creating voting polls
+Workflow Steps:
+1. Club head initiates poll creation (POST /gymkhana/voting_poll/)
+2. System receives: title, desc, choices[] (list), expire_date, groups[] (list of 'batch:branch')
+3. System calls get_target_user(groups) to convert to JSON
+4. get_target_user() parses: value.split(':') → [batch, branch]
+5. Builds dictionary: dic[batch] = [branch, ...]
+6. Returns: json.dumps(dic)
+7. System creates created_by: str(name) + ':' + str(roll)
+8. System creates: Voting_polls(title, description, exp_date, created_by, groups=target_groups)
+9. System saves new_poll
+10. For each choice in choices:
+11.   Create: Voting_choices(poll_event=new_poll, title=choice, votes=0)
+12. For each group in groups:
+13.   Parse: batch, branch = value.split(':')
+14.   If branch=='All': Get User.objects.filter(username__contains=batch)
+15.   Else: Filter by ExtraInfo.objects.filter(department__name=branch)
+16.   Call: gymkhana_voting(request.user, recipients, 'voting_open', title, description)
+17. System redirects to /gymkhana/
+WF006: Poll Voting Workflow
+Description: Process for students voting in polls
+Workflow Steps:
+1. Student views active polls
+2. Student selects poll and submits vote (POST /gymkhana/{poll_id}/)
+3. System retrieves: Voting_polls.objects.get(pk=poll_id)
+4. System receives: choice (id of selected choice)
+5. System retrieves: Voting_choices.objects.get(pk=submitted_choice)
+6. System increments: choice.votes += 1
+7. System saves: choice.save()
+8. System creates: Voting_voters(poll_event=poll, student_id=str(request.user))
+9. System saves new_voter
+10. System redirects to /gymkhana/
+11. Exception handling: If duplicate vote → return 'error'
+WF007: Leadership Change Workflow
+Description: Process for changing club leadership
+Workflow Steps:
+1. Current club head initiates change (POST /gymkhana/change_head/)
+2. System receives: club, co (new coordinator username), coco (new co-coordinator username), date, time
+3. System retrieves: Student.objects.get(id__user__username=co_ordinator)
+4. System retrieves: Student.objects.get(id__user__username=co_coordinator)
+5. System retrieves: Club_info.objects.get(club_name=club)
+6. System stores: old_co_ordinator = club_info.co_ordinator
+7. System stores: old_co_coordinator = club_info.co_coordinator
+8. System updates: club_info.co_ordinator = co_ordinator_student
+9. System updates: club_info.co_coordinator = co_coordinator_student
+10. System saves: club_info.save()
+11. System creates: HoldsDesignation(user=User.objects.get(username=co_ordinator), working=same, designation='co-ordinator')
+12. System creates: HoldsDesignation for new co-coordinator
+13. System deletes: HoldsDesignation.objects.filter(user__username=old_co_ordinator, designation__name='co-ordinator')
+14. System deletes: HoldsDesignation for old co-coordinator
+15. System returns JSON: {'status':'success', 'message':'Successfully changed !!!'}

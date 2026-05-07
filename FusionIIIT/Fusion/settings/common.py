@@ -117,6 +117,7 @@ INSTALLED_APPS = [
     'applications.library',
     'applications.notifications_extension',
     'applications.gymkhana',
+    'applications.gymkhana_v1',
     'applications.office_module',
     'applications.globals',
     'applications.central_mess',

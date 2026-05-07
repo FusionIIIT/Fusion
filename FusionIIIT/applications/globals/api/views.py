@@ -2,7 +2,6 @@ from django.contrib.auth import get_user_model
 from applications.academic_information.models import Student
 from applications.eis.api.views import profile as eis_profile
 from applications.globals.models import (HoldsDesignation,Designation)
-from applications.gymkhana.api.views import coordinator_club
 from applications.placement_cell.models import (Achievement, Course, Education,
                                                 Experience, Has, Patent,
                                                 Project, Publication, Skill)

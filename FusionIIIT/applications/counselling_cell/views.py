@@ -7,7 +7,6 @@ from django.contrib.auth.models import User
 from applications.academic_information.models import Student
 import django. utils. timezone as timezone
 from collections import defaultdict
-import openpyxl
 
 
 from .models import (
@@ -194,6 +193,7 @@ def assign_student_to_sg(request):
     # third_year_students = Student.objects.filter(batch=year-3)
     
     if request.method == 'POST' and request.FILES:
+        import openpyxl
         profiles=request.FILES['mappedStudent']
         # excel = xlrd.open_workbook(file_contents=profiles.read())
         wb_obj = openpyxl.load_workbook(profiles)

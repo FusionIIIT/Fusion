@@ -1,0 +1,295 @@
+USE CASES DOCUMENT
+Gymkhana Module
+UC001: Create New Club
+Use Case ID
+UC001
+Use Case Name
+Create New Club
+Actor
+Academic Staff/Dean
+Preconditions
+User is authenticated with administrative privileges
+Postconditions
+New club created with status 'open'
+Main Flow
+1. User navigates to new club creation page
+2. System retrieves student and faculty lists
+3. User enters club name and selects category
+4. User selects co-ordinator from student list
+5. User selects co-coordinator from student list
+6. User selects faculty incharge
+7. User enters club description
+8. System validates coordinator exists in Student table
+9. System validates co-coordinator exists in Student table
+10. System validates faculty exists in Faculty table
+11. System creates Club_info record with status='open'
+12. System displays success message
+Alternate Flows
+8a. If coordinator doesn't exist: Display error 'The entered roll number of the co_ordinator does not exist'
+9a. If co-coordinator doesn't exist: Display error 'The entered roll number of the co_coordinator does not exist'
+10a. If faculty doesn't exist: Display error 'The entered faculty incharge does not exist'
+Business Rules
+BR001: Co-ordinator must be valid student
+BR002: Faculty incharge must be valid faculty
+UC002: Book Club Session
+Use Case ID
+UC002
+Use Case Name
+Book Club Session
+Actor
+Club Head (Co-ordinator/Co-coordinator)
+Preconditions
+User is authenticated as club coordinator or co-coordinator
+Postconditions
+Session booked if no venue/time conflicts
+Main Flow
+1. System identifies user's club via coordinator_club()
+2. User selects venue type from Constants.venue
+3. User selects specific venue
+4. User selects session date
+5. User enters start and end time
+6. User uploads session poster (optional)
+7. User enters session description
+8. System calls conflict_algorithm_session(date, start_time, end_time, venue)
+9. System retrieves all Session_info matching date and venue
+10. System converts times to time objects
+11. System creates sorted time slots list
+12. System checks for overlapping periods
+13. If no conflicts: System creates Session_info record
+14. System calls gymkhana_session() to notify students
+15. System displays 'Session booked Successfully'
+Alternate Flows
+12a. If conflicts exist: return 'error'
+12b. Display 'The selected time slot conflicts with already booked session'
+Business Rules
+BR003: No overlapping sessions in same venue
+BR004: start_time < end_time
+UC003: Book Club Event
+Use Case ID
+UC003
+Use Case Name
+Book Club Event
+Actor
+Club Head (Co-ordinator/Co-coordinator)
+Preconditions
+User is authenticated as club coordinator or co-coordinator
+Postconditions
+Event booked if no venue/time conflicts
+Main Flow
+1. System identifies user's club
+2. User enters event name
+3. User enters faculty incharge name
+4. User selects venue type and specific venue
+5. User selects event date
+6. User enters start and end time
+7. User uploads event poster
+8. User enters event description
+9. System calls conflict_algorithm_event(date, start_time, end_time, venue)
+10. System retrieves all Event_info matching date and venue
+11. System checks for overlapping time periods
+12. If no conflicts: System creates Event_info record
+13. System calls gymkhana_event() to notify students
+14. System displays 'Form dispatched for further process'
+Alternate Flows
+11a. If conflicts exist: Display 'Selected time slot conflicts with already booked session'
+Business Rules
+BR003: No overlapping events
+BR004: start_time < end_time
+UC004: Apply for Club Membership
+Use Case ID
+UC004
+Use Case Name
+Apply for Club Membership
+Actor
+Student
+Preconditions
+Student authenticated; Club exists and confirmed
+Postconditions
+Membership application created with status='open'
+Main Flow
+1. Student navigates to club membership page
+2. System displays available clubs
+3. Student selects club
+4. Student enters achievements/description
+5. System parses user_name to extract roll and username
+6. System retrieves User object by username
+7. System retrieves ExtraInfo by id and user
+8. System retrieves Student by ExtraInfo
+9. System retrieves Club_info by club_name
+10. System creates Club_member(member=Student, club=Club_info, description, status='open')
+11. System displays 'Form dispatched for further process'
+Alternate Flows
+10a. If duplicate application: Display 'Some error occurred'
+Business Rules
+BR005: Student can apply to multiple clubs
+BR006: No duplicate applications to same club
+UC005: Approve Club Membership
+Use Case ID
+UC005
+Use Case Name
+Approve Club Membership
+Actor
+Club Head
+Preconditions
+Membership applications exist with status='open'
+Postconditions
+Selected applications approved with status='confirmed'
+Main Flow
+1. System displays pending applications for club
+2. User selects applications to approve
+3. User enters remarks (optional)
+4. For each application:
+5.   Parse user info to get roll and username
+6.   Retrieve User, ExtraInfo, Student objects
+7.   Retrieve Club_member by club and student
+8.   Update Club_member.status='confirmed'
+9.   Update Club_member.remarks
+10.   Save Club_member
+11. System displays 'Successfully Approved !!!'
+Alternate Flows
+None
+Business Rules
+BR007: Only club heads can approve
+BR008: Status changes to 'confirmed'
+UC006: Create Voting Poll
+Use Case ID
+UC006
+Use Case Name
+Create Voting Poll
+Actor
+Club Head
+Preconditions
+User authenticated as club coordinator/co-coordinator
+Postconditions
+Poll created with choices and target groups
+Main Flow
+1. User enters poll title and description
+2. User enters multiple choice options
+3. User selects expiration date
+4. User selects target groups (batch:branch)
+5. System calls get_target_user(groups) to create JSON
+6. System creates Voting_polls record
+7. For each choice: Create Voting_choices(poll_event, title, votes=0)
+8. For each target group:
+9.   Parse batch and branch
+10.   If branch=='All': Get all users with batch
+11.   Else: Filter by batch and branch
+12.   Call gymkhana_voting() to notify users
+13. System displays success
+Alternate Flows
+None
+Business Rules
+BR009: Poll needs ≥2 choices
+BR010: Groups stored as JSON
+UC007: Vote in Poll
+Use Case ID
+UC007
+Use Case Name
+Vote in Poll
+Actor
+Student
+Preconditions
+Student authenticated; Poll active; Student in target group
+Postconditions
+Vote recorded and count incremented
+Main Flow
+1. System displays active polls for student
+2. Student selects poll
+3. System shows poll details and choices
+4. Student selects one choice
+5. System retrieves Voting_choices by id
+6. System increments votes by 1
+7. System saves Voting_choices
+8. System creates Voting_voters(poll_event, student_id)
+9. System displays success
+Alternate Flows
+8a. If already voted: Display 'error'
+Business Rules
+BR011: One vote per student per poll
+BR012: Atomic vote increment
+UC008: Change Club Leadership
+Use Case ID
+UC008
+Use Case Name
+Change Club Leadership
+Actor
+Current Club Head
+Preconditions
+User is current coordinator/co-coordinator
+Postconditions
+Club leadership updated; HoldsDesignation updated
+Main Flow
+1. User selects club
+2. User enters new co-ordinator username
+3. User enters new co-coordinator username
+4. User enters change date and time
+5. System retrieves Student for new co-ordinator
+6. System retrieves Student for new co-coordinator
+7. System retrieves Club_info
+8. System stores old leadership
+9. System updates Club_info.co_ordinator and co_coordinator
+10. System saves Club_info
+11. System creates HoldsDesignation for new co-ordinator
+12. System creates HoldsDesignation for new co-coordinator
+13. System deletes HoldsDesignation for old leaders
+14. System displays 'Successfully changed !!!'
+Alternate Flows
+None
+Business Rules
+BR013: Old leadership removed
+BR014: HoldsDesignation tracks current roles
+UC009: Request Club Budget
+Use Case ID
+UC009
+Use Case Name
+Request Club Budget
+Actor
+Club Head
+Preconditions
+User is club head; Club confirmed
+Postconditions
+Budget request created with status='open'
+Main Flow
+1. User selects club
+2. User enters budget purpose
+3. User enters budget amount
+4. User uploads budget file
+5. User enters description
+6. System renames file to '{club}_budget'
+7. System retrieves Club_info
+8. System creates Club_budget(club, budget_amt, budget_file, budget_for, description, status='open')
+9. System displays 'Successfully requested for the budget !!!'
+Alternate Flows
+None
+Business Rules
+BR015: Budget amount ≥0
+BR016: Budget file required
+UC010: Submit Club Event Report
+Use Case ID
+UC010
+Use Case Name
+Submit Club Event Report
+Actor
+Club Head
+Preconditions
+User is club head; Event occurred
+Postconditions
+Event report submitted
+Main Flow
+1. User selects club
+2. User enters student incharge (id-username)
+3. User enters event name
+4. User enters event description
+5. User enters date and time
+6. User uploads report file
+7. System parses user info
+8. System retrieves User, ExtraInfo objects
+9. System retrieves Club_info
+10. System renames file to '{club}_{event}_report'
+11. System creates Club_report(club, incharge, event_name, date=date+time, event_details, description)
+12. System displays 'Successfully updated the report !!!'
+Alternate Flows
+None
+Business Rules
+BR017: Report file required
+BR018: Date and time concatenated

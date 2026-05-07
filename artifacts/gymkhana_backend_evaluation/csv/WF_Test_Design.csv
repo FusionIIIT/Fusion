@@ -1,0 +1,15 @@
+Test ID,WF ID,Test Category,Scenario,Expected Final State
+WF001-T01,WF001,End-to-End paths,Club Creation Workflow completes successfully for the documented actor and inputs,Club Creation Workflow reaches its documented successful final state for UC001
+WF001-T02,WF001,Negative,Club Creation Workflow handles its documented alternate/negative path safely,Club Creation Workflow rejects or safely handles its documented alternate/negative path
+WF002-T01,WF002,End-to-End paths,Session Booking Workflow completes successfully for the documented actor and inputs,Session Booking Workflow reaches its documented successful final state for UC002
+WF002-T02,WF002,Negative,Session Booking Workflow handles its documented alternate/negative path safely,Session Booking Workflow rejects or safely handles its documented alternate/negative path
+WF003-T01,WF003,End-to-End paths,Membership Application Workflow completes successfully for the documented actor and inputs,Membership Application Workflow reaches its documented successful final state for UC004
+WF003-T02,WF003,Negative,Membership Application Workflow handles its documented alternate/negative path safely,Membership Application Workflow rejects or safely handles its documented alternate/negative path
+WF004-T01,WF004,End-to-End paths,Membership Approval Workflow completes successfully for the documented actor and inputs,Membership Approval Workflow reaches its documented successful final state for UC005
+WF004-T02,WF004,Negative,Membership Approval Workflow handles its documented alternate/negative path safely,Membership Approval Workflow rejects or safely handles its documented alternate/negative path
+WF005-T01,WF005,End-to-End paths,Voting Poll Creation Workflow completes successfully for the documented actor and inputs,Voting Poll Creation Workflow reaches its documented successful final state for UC006
+WF005-T02,WF005,Negative,Voting Poll Creation Workflow handles its documented alternate/negative path safely,Voting Poll Creation Workflow rejects or safely handles its documented alternate/negative path
+WF006-T01,WF006,End-to-End paths,Poll Voting Workflow completes successfully for the documented actor and inputs,Poll Voting Workflow reaches its documented successful final state for UC007
+WF006-T02,WF006,Negative,Poll Voting Workflow handles its documented alternate/negative path safely,Poll Voting Workflow rejects or safely handles its documented alternate/negative path
+WF007-T01,WF007,End-to-End paths,Leadership Change Workflow completes successfully for the documented actor and inputs,Leadership Change Workflow reaches its documented successful final state for UC008
+WF007-T02,WF007,Negative,Leadership Change Workflow handles its documented alternate/negative path safely,Leadership Change Workflow rejects or safely handles its documented alternate/negative path

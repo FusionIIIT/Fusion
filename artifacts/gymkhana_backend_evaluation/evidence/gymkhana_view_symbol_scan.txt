@@ -1,0 +1,19 @@
+Gymkhana view symbol scan
+========================
+Expected legacy UC handlers found in applications.gymkhana.views:
+- new_club: present
+- new_session: present
+- new_event: present
+- club_membership: present
+- approve: present
+- change_head: present
+- club_budget: present
+- club_report: present
+Missing legacy UC handlers referenced by requirements and urls.py:
+- voting_poll: missing/commented out
+- vote: missing/commented out
+- delete_poll: missing/commented out
+Startup/import blocker:
+- applications.gymkhana.urls imports applications.gymkhana.api.views
+- applications.gymkhana.api.views imports applications.gymkhana.selectors
+- applications.gymkhana.selectors imports missing Budget model

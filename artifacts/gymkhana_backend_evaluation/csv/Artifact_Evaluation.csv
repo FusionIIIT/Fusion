@@ -1,0 +1,40 @@
+Artifact ID,Artifact Type,Tests,Pass,Partial,Fail,Final Status,Remarks
+UC001,UC,"UC001-T01, UC001-T02, UC001-T03",1,0,2,Partially Implemented,"Legacy handler exists, but routed execution is blocked by gymkhana URL/API import failures."
+UC002,UC,"UC002-T01, UC002-T02, UC002-T03",1,0,2,Partially Implemented,"Legacy handler exists, but routed execution is blocked by gymkhana URL/API import failures."
+UC003,UC,"UC003-T01, UC003-T02, UC003-T03",1,0,2,Partially Implemented,"Legacy handler exists, but routed execution is blocked by gymkhana URL/API import failures."
+UC004,UC,"UC004-T01, UC004-T02, UC004-T03",1,0,2,Partially Implemented,"Legacy handler exists, but routed execution is blocked by gymkhana URL/API import failures."
+UC005,UC,"UC005-T01, UC005-T02, UC005-T03",1,0,2,Partially Implemented,"Legacy handler exists, but routed execution is blocked by gymkhana URL/API import failures."
+UC006,UC,"UC006-T01, UC006-T02, UC006-T03",0,0,3,Not Implemented,Requirement-mapped voting handlers are absent/commented out in the backend code.
+UC007,UC,"UC007-T01, UC007-T02, UC007-T03",0,0,3,Not Implemented,Requirement-mapped voting handlers are absent/commented out in the backend code.
+UC008,UC,"UC008-T01, UC008-T02, UC008-T03",1,0,2,Partially Implemented,"Legacy handler exists, but routed execution is blocked by gymkhana URL/API import failures."
+UC009,UC,"UC009-T01, UC009-T02, UC009-T03",1,0,2,Partially Implemented,"Legacy handler exists, but routed execution is blocked by gymkhana URL/API import failures."
+UC010,UC,"UC010-T01, UC010-T02, UC010-T03",1,0,2,Partially Implemented,"Legacy handler exists, but routed execution is blocked by gymkhana URL/API import failures."
+BR001,BR,"BR001-T01, BR001-T02",0,2,0,Partially Enforced,"Coordinator validation logic exists in the mapped handler, but runtime verification is blocked."
+BR002,BR,"BR002-T01, BR002-T02",0,2,0,Partially Enforced,"Faculty validation logic exists in the mapped handler, but runtime verification is blocked."
+BR003,BR,"BR003-T01, BR003-T02",0,2,0,Partially Enforced,"Conflict detection helpers exist, but routed backend execution is blocked."
+BR004,BR,"BR004-T01, BR004-T02",0,1,1,Incorrectly Enforced,Rule is only implicitly described and not backed by clear backend validation.
+BR005,BR,"BR005-T01, BR005-T02",2,0,0,Enforced Correctly,Model structure permits a student to belong to multiple clubs.
+BR006,BR,"BR006-T01, BR006-T02",0,0,2,Not Enforced,Duplicate same-club application prevention is not backed by model constraints.
+BR007,BR,"BR007-T01, BR007-T02",0,2,0,Partially Enforced,"Authorization helper exists, but routed verification is blocked."
+BR008,BR,"BR008-T01, BR008-T02",1,1,0,Partially Enforced,"Status transition logic exists, but invalid-path enforcement could not be fully exercised."
+BR009,BR,"BR009-T01, BR009-T02",0,0,2,Not Enforced,Minimum choice count is not backed by executable backend logic.
+BR010,BR,"BR010-T01, BR010-T02",0,0,2,Not Enforced,Poll target-group rule depends on a missing voting backend flow.
+BR011,BR,"BR011-T01, BR011-T02",0,0,2,Not Enforced,One-vote-per-student rule is not enforced in the backend implementation.
+BR012,BR,"BR012-T01, BR012-T02",0,0,2,Not Enforced,Atomic increment rule is not backed by an executable backend path.
+BR013,BR,"BR013-T01, BR013-T02",0,2,0,Partially Enforced,"Leadership change code exists, but complete runtime enforcement could not be validated."
+BR014,BR,"BR014-T01, BR014-T02",1,1,0,Partially Enforced,"Designation tracking logic exists, but full runtime enforcement could not be completed."
+BR015,BR,"BR015-T01, BR015-T02",1,0,1,Incorrectly Enforced,Budget rule allows negative values at the model-validation level.
+BR016,BR,"BR016-T01, BR016-T02",2,0,0,Enforced Correctly,Budget file requirement is clearly backed by model constraints.
+BR017,BR,"BR017-T01, BR017-T02",2,0,0,Enforced Correctly,Report file requirement is clearly backed by model constraints.
+BR018,BR,"BR018-T01, BR018-T02",1,1,0,Partially Enforced,"Concatenation logic exists, but invalid-path handling was not fully verified."
+BR019,BR,"BR019-T01, BR019-T02",0,1,1,Incorrectly Enforced,Status choices deviate from the documented three-value enumeration.
+BR020,BR,"BR020-T01, BR020-T02",1,1,0,Partially Enforced,"Configured choices match the specification, but invalid-path runtime proof is incomplete."
+BR021,BR,"BR021-T01, BR021-T02",2,0,0,Enforced Correctly,Cascade delete is backed by model definitions.
+BR022,BR,"BR022-T01, BR022-T02",2,0,0,Enforced Correctly,Primary-key uniqueness is structurally enforced.
+WF001,WF,"WF001-T01, WF001-T02",0,0,2,Incorrect,"Workflow handler exists, but routed end-to-end execution is blocked by startup/import failures."
+WF002,WF,"WF002-T01, WF002-T02",0,0,2,Incorrect,"Workflow handler exists, but routed end-to-end execution is blocked by startup/import failures."
+WF003,WF,"WF003-T01, WF003-T02",0,0,2,Incorrect,"Workflow handler exists, but routed end-to-end execution is blocked by startup/import failures."
+WF004,WF,"WF004-T01, WF004-T02",0,0,2,Incorrect,"Workflow handler exists, but routed end-to-end execution is blocked by startup/import failures."
+WF005,WF,"WF005-T01, WF005-T02",0,0,2,Missing,Documented voting workflow has no executable backend handler.
+WF006,WF,"WF006-T01, WF006-T02",0,0,2,Missing,Documented voting workflow has no executable backend handler.
+WF007,WF,"WF007-T01, WF007-T02",0,0,2,Incorrect,"Workflow handler exists, but routed end-to-end execution is blocked by startup/import failures."

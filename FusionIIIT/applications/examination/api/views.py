@@ -21,9 +21,6 @@ from rest_framework.views import APIView
 from django.db.models import IntegerField
 from django.db.models.functions import Cast
 from rest_framework.parsers import MultiPartParser, FormParser
-from openpyxl import Workbook
-from openpyxl.utils import get_column_letter
-from openpyxl.styles import Alignment, Font, PatternFill, Border, Side
 import traceback
 from applications.academic_information.models import Course
 from reportlab.lib import colors
@@ -35,6 +32,14 @@ from reportlab.lib.units import inch
 from django.core.exceptions import ObjectDoesNotExist
 from collections import defaultdict
 from django.db.models import Case, When, IntegerField
+
+
+def _load_openpyxl_exports():
+    from openpyxl import Workbook
+    from openpyxl.styles import Alignment, Font, PatternFill, Border, Side
+    from openpyxl.utils import get_column_letter
+
+    return Workbook, Alignment, Font, PatternFill, Border, Side, get_column_letter
 
 grade_conversion = {
     "O": 1.0, "A+": 1.0, "A": 0.9, "B+": 0.8, "B": 0.7,
@@ -1285,6 +1290,7 @@ class GenerateResultAPI(APIView):
             
             courses = Courses.objects.filter(id__in=course_ids)
             courses_map = {course.id: course.credit for course in courses}
+            Workbook, Alignment, Font, PatternFill, Border, Side, get_column_letter = _load_openpyxl_exports()
 
             wb = Workbook()
             ws = wb.active
