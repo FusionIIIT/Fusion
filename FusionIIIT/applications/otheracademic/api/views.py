@@ -1,886 +1,378 @@
+"""
+API views for otheracademic module.
+Views are thin - they validate input, call services/selectors, and return responses.
+All business logic is in services.py, all DB queries are in selectors.py.
+"""
+from datetime import datetime
+
+from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import LeaveFormSerializer  ,BonafideFormSerializer 
-from datetime import date
-from datetime import datetime
-from django.shortcuts import render
-from django.contrib import messages
-from django.shortcuts import render, get_object_or_404, redirect,render
-from rest_framework.permissions import IsAuthenticated  
-from rest_framework.decorators import api_view, permission_classes
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
-from applications.otheracademic.models import (LeaveFormTable, BonafideFormTableUpdated, GraduateSeminarFormTable,AssistantshipClaimFormStatusUpd, LeavePG, NoDues)
-from datetime import date
-from applications.filetracking.models import File
-from applications.filetracking.sdk.methods import create_file
-from notification.views import otheracademic_notif
-from applications.filetracking.models import *
-from applications.filetracking.sdk.methods import *
-from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
-from django.http import JsonResponse
-from django.db.models import F
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
+from notifications.signals import notify
 
+from applications.otheracademic import services, selectors
+from applications.otheracademic.models import LeaveStatusChoices, NoDues
+from .serializers import (
+    LeaveFormInputSerializer,
+    LeavePGInputSerializer,
+    LeaveStatusUpdateSerializer,
+    BonafideFormInputSerializer,
+    BonafideStatusUpdateSerializer,
+    AssistantshipFormInputSerializer,
+    AssistantshipStatusUpdateSerializer,
+    TAAssignmentUpdateSerializer,
+    FacultySupervisorAssignmentUpdateSerializer,
+    NoDuesStatusSerializer,
+    NoDuesVerificationSerializer,
+    NoDuesCertificateSerializer,
+)
+
+
+# ==================== LEAVE VIEWS ====================
 
 class LeaveFormSubmitView(APIView):
-    permission_classes = [IsAuthenticated] 
+    """Submit a UG leave application."""
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        # Extract data from the request
         data = request.POST
         file = request.FILES.get('related_document')
-        hodname = data.get('hod_credential')
-        print(data.get('mobile_number'),data.get('parents_mobile'),"hello ab")
-        
-        # Create a new LeaveFormTable instance and save it to the database
-        leave = LeaveFormTable.objects.create(
-            student_name=request.user.first_name+request.user.last_name,
-            roll_no=request.user.extrainfo,
-            date_from=data.get('date_from'),
-            date_to=data.get('date_to'),
-            leave_type=data.get('leave_type'),
-            upload_file=file,
-            address=data.get('address'),
-            purpose=data.get('purpose'),
-            date_of_application=date.today(),
-            # approved=False,  # Initially not approved
-            # rejected=False,  # Initially not rejected
-            stud_mobile_no=data.get('mobile_number'),
-            parent_mobile_no=data.get('parents_mobile'),
-            leave_mobile_no=data.get('mobile_during_leave'),
-            curr_sem=int(data.get('semester')),
-            hod=data.get('hod_credential')
-        )
-        print(data.get('mobile_number'),data.get('parents_mobile'))
-        
-        leave_hod = User.objects.get(username=hodname)
-        receiver_value = User.objects.get(username=request.user.username)
-        receiver_value_designation = HoldsDesignation.objects.filter(user=receiver_value)
-        lis = list(receiver_value_designation)
-        obj = lis[0].designation
 
-        file_id = create_file(
-            uploader=request.user.username,
-            uploader_designation=obj,
-            receiver=leave_hod,
-            receiver_designation="student",
-            src_module="otheracademic",
-            src_object_id=leave.id,
-            file_extra_JSON={"value": 2},
-            attached_file=None,
-            subject='ug_leave'
-        )
-
-        # new_tracking = Tracking.objects.create(
-        #     file_id=file_id,  # The newly created file object
-        #     uploader=request.user.username,
-        #     uploader_designation=obj,
-        #     receiver=leave_hod,
-        #     receive_design=receiver_designation_obj,  # Receiver's designation object
-        #     tracking_extra_JSON=file_extra_JSON,  # Additional metadata in JSON format
-        #     remarks=f"File with id:{file_id} created by {uploader} and sent to {receiver}"  # Remarks for this tracking event
-        # )
-
-        message = "A new leave application"
-        otheracademic_notif(request.user, leave_hod, 'ug_leave_hod', leave.id, 'student', message)
-    
-        return Response({"message": "You successfully submitted your form"}, status=status.HTTP_201_CREATED)
-    
+        try:
+            leave = services.submit_ug_leave(
+                user=request.user,
+                date_from=data.get('date_from'),
+                date_to=data.get('date_to'),
+                leave_type=data.get('leave_type'),
+                address=data.get('address'),
+                purpose=data.get('purpose'),
+                hod_credential=data.get('hod_credential'),
+                semester=data.get('semester'),
+                mobile_number=data.get('mobile_number'),
+                parents_mobile=data.get('parents_mobile'),
+                mobile_during_leave=data.get('mobile_during_leave'),
+                upload_file=file,
+            )
+            return Response(
+                {"message": "You successfully submitted your form"},
+                status=status.HTTP_201_CREATED
+            )
+        except services.LeaveServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LeavePGSubmitView(APIView):
-    permission_classes = [IsAuthenticated] 
+    """Submit a PG leave application."""
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        # Extract data from the request
         data = request.POST
         file = request.FILES.get('related_document')
-        hodname = data.get('hod_credential')
-        ta_super = data.get('ta_superCredential')
-        thesis_super = data.get('thesis_superCredential')
-        print(data,"hello ab")
-        
-        leave = LeavePG.objects.create(
-            student_name=request.user.first_name+request.user.last_name,
-            roll_no=request.user.extrainfo,
-            date_from=data.get('date_from'),
-            date_to=data.get('date_to'),
-            leave_type=data.get('leave_type'),
-            upload_file=file,
-            address=data.get('address'),
-            purpose=data.get('purpose'),
-            date_of_application=date.today(),
-            stud_mobile_no=data.get('mobile_number'),
-            parent_mobile_no=data.get('parents_mobile'),
-            leave_mobile_no=data.get('mobile_during_leave'),
-            curr_sem=int(data.get('semester')),
-            hod=data.get('hod_credential'),
-            ta_supervisor=data.get('ta_superCredential'),
-            thesis_supervisor=data.get('thesis_superCredential'),
-        )
-        print(data.get('ta_superCredential'),data.get('thesis_supercredential'),"check point")
-        
-        leave_ta = User.objects.get(username=ta_super)
-        leave_thesis = User.objects.get(username=thesis_super)
-        leave_hod = User.objects.get(username=hodname)
-        receiver_value = User.objects.get(username=request.user.username)
-        receiver_value_designation = HoldsDesignation.objects.filter(user=receiver_value)
-        lis = list(receiver_value_designation)
-        obj = lis[0].designation
 
-        file_id = create_file(
-            uploader=request.user.username,
-            uploader_designation=obj,
-            receiver=leave_hod,
-            receiver_designation="student",
-            src_module="otheracademic",
-            src_object_id=leave.id,
-            file_extra_JSON={"value": 2},
-            attached_file=None,
-            subject='pg_leave'
-        )
-
-        # new_tracking = Tracking.objects.create(
-        #     file_id=file_id,  # The newly created file object
-        #     uploader=request.user.username,
-        #     uploader_designation=obj,
-        #     receiver=leave_hod,
-        #     receive_design=receiver_designation_obj,  # Receiver's designation object
-        #     tracking_extra_JSON=file_extra_JSON,  # Additional metadata in JSON format
-        #     remarks=f"File with id:{file_id} created by {uploader} and sent to {receiver}"  # Remarks for this tracking event
-        # )
-
-        message = "A new leave application"
-        otheracademic_notif(request.user, leave_ta, 'pg_leave_at', leave.id, 'student', message)
-    
-        return Response({"message": "You successfully submitted your form"}, status=status.HTTP_201_CREATED)
-
-
+        try:
+            leave = services.submit_pg_leave(
+                user=request.user,
+                date_from=data.get('date_from'),
+                date_to=data.get('date_to'),
+                leave_type=data.get('leave_type'),
+                address=data.get('address'),
+                purpose=data.get('purpose'),
+                hod_credential=data.get('hod_credential'),
+                ta_supervisor_credential=data.get('ta_superCredential'),
+                thesis_supervisor_credential=data.get('thesis_superCredential'),
+                semester=data.get('semester'),
+                mobile_number=data.get('mobile_number'),
+                parents_mobile=data.get('parents_mobile'),
+                mobile_during_leave=data.get('mobile_during_leave'),
+                upload_file=file,
+            )
+            return Response(
+                {"message": "You successfully submitted your form"},
+                status=status.HTTP_201_CREATED
+            )
+        except services.LeaveServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class FetchPendingLeaveRequests(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, *args, **kwargs):  # Add request as a parameter
-        # Filter for pending leave requests
-        pending_leaves = LeaveFormTable.objects.filter(status="Pending")
-        pending_leaves_pg = LeavePG.objects.filter(status=F('thesis_supervisor'))
-
-        # Serialize the data
-        data = [
-            {
-                "id": leave.id,
-                "rollNo": leave.roll_no.id,  # Assuming roll_number is the field in ExtraInfo
-                "name": leave.student_name,
-                "form": leave.upload_file.url if leave.upload_file else None,
-                "details": {
-                    "dateFrom": leave.date_from,
-                    "dateTo": leave.date_to,
-                    "leaveType": leave.leave_type,
-                    "address": leave.address,
-                    "purpose": leave.purpose,
-                    "hodCredential": leave.hod,
-                    "mobileNumber": leave.stud_mobile_no,
-                    "parentsMobile": leave.parent_mobile_no,
-                    "mobileDuringLeave": leave.leave_mobile_no,
-                    "semester": leave.curr_sem,
-                    "academicYear": leave.date_of_application.year,
-                    "dateOfApplication": leave.date_of_application,
-                },
-            }
-            for leave in pending_leaves
-        ]
-
-        for leave_pg in pending_leaves_pg:
-            data.append({
-            "id": leave_pg.id,
-            "rollNo": leave_pg.roll_no.id,  # Adjust this field based on your model
-            "name": leave_pg.student_name,
-            "form": leave_pg.upload_file.url if leave_pg.upload_file else None,
-            "details": {
-                "dateFrom": leave_pg.date_from,
-                "dateTo": leave_pg.date_to,
-                "leaveType": leave_pg.leave_type,
-                "address": leave_pg.address,
-                "purpose": leave_pg.purpose,
-                "hodCredential": leave_pg.hod,
-                "mobileNumber": leave_pg.stud_mobile_no,
-                "parentsMobile": leave_pg.parent_mobile_no,
-                "mobileDuringLeave": leave_pg.leave_mobile_no,
-                "semester": leave_pg.curr_sem,
-                "academicYear": leave_pg.date_of_application.year,
-                "dateOfApplication": leave_pg.date_of_application,
-            },
-        })
-
-        return Response(data)
-    
-
-class FetchPendingLeaveRequestsTA(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, *args, **kwargs):  # Add request as a parameter
-        # Filter for pending leave requests
-        pending_leaves = LeavePG.objects.filter(status="Pending")
-
-        # Serialize the data
-        data = [
-            {
-                "id": leave.id,
-                "rollNo": leave.roll_no.id,  # Assuming roll_number is the field in ExtraInfo
-                "name": leave.student_name,
-                "form": leave.upload_file.url if leave.upload_file else None,
-                "details": {
-                    "dateFrom": leave.date_from,
-                    "dateTo": leave.date_to,
-                    "leaveType": leave.leave_type,
-                    "address": leave.address,
-                    "purpose": leave.purpose,
-                    "hodCredential": leave.hod,
-                    "mobileNumber": leave.stud_mobile_no,
-                    "parentsMobile": leave.parent_mobile_no,
-                    "mobileDuringLeave": leave.leave_mobile_no,
-                    "semester": leave.curr_sem,
-                    "academicYear": leave.date_of_application.year,
-                    "dateOfApplication": leave.date_of_application,
-                },
-            }
-            for leave in pending_leaves
-        ]
-
-        return Response(data)
-    
-
-class FetchPendingLeaveRequestsThesis(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, *args, **kwargs):  # Add request as a parameter
-        # Filter for pending leave requests
-        pending_leaves = LeavePG.objects.filter(status=F('ta_supervisor'))
-
-        # Serialize the data
-        data = [
-            {
-                "id": leave.id,
-                "rollNo": leave.roll_no.id,  # Assuming roll_number is the field in ExtraInfo
-                "name": leave.student_name,
-                "form": leave.upload_file.url if leave.upload_file else None,
-                "details": {
-                    "dateFrom": leave.date_from,
-                    "dateTo": leave.date_to,
-                    "leaveType": leave.leave_type,
-                    "address": leave.address,
-                    "purpose": leave.purpose,
-                    "hodCredential": leave.hod,
-                    "mobileNumber": leave.stud_mobile_no,
-                    "parentsMobile": leave.parent_mobile_no,
-                    "mobileDuringLeave": leave.leave_mobile_no,
-                    "semester": leave.curr_sem,
-                    "academicYear": leave.date_of_application.year,
-                    "dateOfApplication": leave.date_of_application,
-                },
-            }
-            for leave in pending_leaves
-        ]
-
-        return Response(data)
-    
-class UpdateLeaveStatus(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, *args, **kwargs):
-        # Get the list of approved and rejected leave ids from the request
-        approved_leaves_ids = request.data.get('approvedLeaves', [])
-        rejected_leaves_ids = request.data.get('rejectedLeaves', [])
-        approved_leaves_ids1 = request.data.get('approvedLeaves', [])
-        rejected_leaves_ids1 = request.data.get('rejectedLeaves', [])
-        # Update the status of approved leaves
-        approved_leaves = LeaveFormTable.objects.filter(id__in=approved_leaves_ids)
-        approved_leaves.update(status="Approved")
-
-        # Update the status of rejected leaves
-        rejected_leaves = LeaveFormTable.objects.filter(id__in=rejected_leaves_ids)
-        rejected_leaves.update(status="Rejected")
-
-        approved_leaves1 = LeavePG.objects.filter(id__in=approved_leaves_ids1)
-        approved_leaves1.update(status="Approved")
-
-        # Update the status of rejected leaves
-        rejected_leaves1 = LeavePG.objects.filter(id__in=rejected_leaves_ids1)
-        rejected_leaves1.update(status="Rejected")
-
-        return Response({"message": "Leave statuses updated successfully."})
-    
-class UpdateLeaveStatusTA(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, *args, **kwargs):
-        # Get the list of approved and rejected leave ids from the request
-        approved_leaves_ids = request.data.get('approvedLeaves', [])
-        rejected_leaves_ids = request.data.get('rejectedLeaves', [])
-
-        # Update the status of approved leaves
-        approved_leaves = LeavePG.objects.filter(id__in=approved_leaves_ids)
-        approved_leaves.update(status=F('ta_supervisor'))
-
-        # Update the status of rejected leaves
-        rejected_leaves = LeavePG.objects.filter(id__in=rejected_leaves_ids)
-        rejected_leaves.update(status="Rejected")
-
-        return Response({"message": "Leave statuses updated successfully."})
-    
-class UpdateLeaveStatusThesis(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, *args, **kwargs):
-        # Get the list of approved and rejected leave ids from the request
-        approved_leaves_ids = request.data.get('approvedLeaves', [])
-        rejected_leaves_ids = request.data.get('rejectedLeaves', [])
-
-        # Update the status of approved leaves
-        approved_leaves = LeavePG.objects.filter(id__in=approved_leaves_ids)
-        approved_leaves.update(status=F('thesis_supervisor'))
-
-        # Update the status of rejected leaves
-        rejected_leaves = LeavePG.objects.filter(id__in=rejected_leaves_ids)
-        rejected_leaves.update(status="Rejected")
-
-        return Response({"message": "Leave statuses updated successfully."})
-
-class GetLeaveRequests(APIView):
-    
+    """Fetch pending leave requests for HOD approval."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        # Get roll_no and username from query params
-        
-        roll_no_id = request.query_params.get('roll_no')
-        username = request.query_params.get('username')
-        print(roll_no_id,username)
-        
-        # print(f"Received roll_no: {roll_no_id}, username: {username}")
+        if not selectors.user_has_designation_contains(request.user, "hod"):
+            raise PermissionDenied("Only HOD can access this queue.")
+
+        # Get pending UG leaves
+        pending_ug = selectors.get_pending_ug_leaves_for_hod(request.user.username)
+        data = [selectors.serialize_ug_leave(leave) for leave in pending_ug]
+
+        # Get pending PG leaves (for HOD)
+        pending_pg = selectors.get_pending_pg_leaves_for_hod_user(request.user.username)
+        for leave in pending_pg:
+            data.append(selectors.serialize_pg_leave(leave))
+
+        return Response(data)
 
 
-        # # Filter the leave requests based on roll_no and student_name (username)
-        leave_requests = LeaveFormTable.objects.filter(
-            roll_no=roll_no_id
-        )
+class FetchPendingLeaveRequestsTA(APIView):
+    """Fetch pending PG leave requests for TA supervisor approval."""
+    permission_classes = [IsAuthenticated]
 
-        # Serialize the data (assuming the serializer is defined for LeaveFormTable)
-        data = [
-            {
-                "rollNo": roll_no_id,  # Assuming roll_number is the field in ExtraInfo
-                "name": leave.student_name,
-                "dateFrom": leave.date_from,
-                "dateTo": leave.date_to,
-                "leaveType": leave.leave_type,
-                "attachment": leave.upload_file.url if leave.upload_file else None,
-                "purpose": leave.purpose,
-                "address": leave.address,
-                "action": leave.status,
-            }
-            for leave in leave_requests
-        ]
-        print(data) 
+    def get(self, request, *args, **kwargs):
+        pending_leaves = selectors.get_pending_pg_leaves_for_ta_user(request.user.username)
+        data = [selectors.serialize_pg_leave(leave) for leave in pending_leaves]
+        return Response(data)
+
+
+class FetchPendingLeaveRequestsThesis(APIView):
+    """Fetch pending PG leave requests for Thesis supervisor approval."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        pending_leaves = selectors.get_pending_pg_leaves_for_thesis_user(request.user.username)
+        data = [selectors.serialize_pg_leave(leave) for leave in pending_leaves]
+        return Response(data)
+
+
+class UpdateLeaveStatus(APIView):
+    """Update leave status (HOD approval for UG and final approval for PG)."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        if not selectors.user_has_designation_contains(request.user, "hod"):
+            raise PermissionDenied("Only HOD can approve or reject leave requests.")
+
+        serializer = LeaveStatusUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        approved_ids = serializer.validated_data.get('approvedLeaves', [])
+        rejected_ids = serializer.validated_data.get('rejectedLeaves', [])
+
+        try:
+            services.update_ug_leave_status(approved_ids, rejected_ids, request.user)
+            services.update_pg_leave_status_hod(approved_ids, rejected_ids, request.user)
+        except services.LeaveServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"message": "Leave statuses updated successfully."})
+
+
+class UpdateLeaveStatusTA(APIView):
+    """Update PG leave status (TA supervisor approval)."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = LeaveStatusUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        approved_ids = serializer.validated_data.get('approvedLeaves', [])
+        rejected_ids = serializer.validated_data.get('rejectedLeaves', [])
+
+        try:
+            services.update_pg_leave_status_ta(approved_ids, rejected_ids, request.user)
+        except services.LeaveServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"message": "Leave statuses updated successfully."})
+
+
+class UpdateLeaveStatusThesis(APIView):
+    """Update PG leave status (Thesis supervisor approval)."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = LeaveStatusUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        approved_ids = serializer.validated_data.get('approvedLeaves', [])
+        rejected_ids = serializer.validated_data.get('rejectedLeaves', [])
+
+        try:
+            services.update_pg_leave_status_thesis(approved_ids, rejected_ids, request.user)
+        except services.LeaveServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"message": "Leave statuses updated successfully."})
+
+
+class GetLeaveRequests(APIView):
+    """Get leave requests for a specific student (UG)."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        roll_no_id = request.user.extrainfo.id
+
+        leave_requests = selectors.get_ug_leaves_by_roll_no(roll_no_id)
+        data = [selectors.serialize_leave_status(leave, roll_no_id) for leave in leave_requests]
 
         return Response(data, status=status.HTTP_200_OK)
 
 
 class GetPGLeaveRequests(APIView):
-    
+    """Get leave requests for a specific student (PG)."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        # Get roll_no and username from query params
-        
-        roll_no_id = request.query_params.get('roll_no')
-        username = request.query_params.get('username')
-        print(roll_no_id,username)
-        
-        # print(f"Received roll_no: {roll_no_id}, username: {username}")
+        roll_no_id = request.user.extrainfo.id
 
-
-        # # Filter the leave requests based on roll_no and student_name (username)
-        leave_requests = LeavePG.objects.filter(
-            roll_no=roll_no_id
-        )
-
-        # Serialize the data (assuming the serializer is defined for LeaveFormTable)
-        data = [
-            {
-                "rollNo": roll_no_id,  # Assuming roll_number is the field in ExtraInfo
-                "name": leave.student_name,
-                "dateFrom": leave.date_from,
-                "dateTo": leave.date_to,
-                "leaveType": leave.leave_type,
-                "attachment": leave.upload_file.url if leave.upload_file else None,
-                "purpose": leave.purpose,
-                "address": leave.address,
-                "action": leave.status,
-            }
-            for leave in leave_requests
-        ]
-        print(data) 
+        leave_requests = selectors.get_pg_leaves_by_roll_no(roll_no_id)
+        data = [selectors.serialize_leave_status(leave, roll_no_id) for leave in leave_requests]
 
         return Response(data, status=status.HTTP_200_OK)
-    
 
 
-@csrf_exempt  # Exempt CSRF verification for this view
-@login_required
-def leave_form_submit(request):
-    """
-    View function for submitting a leave form.
+class WithdrawUGLeave(APIView):
+    """Withdraw a UG leave request before HOD verifies it."""
+    permission_classes = [IsAuthenticated]
 
-    Description:
-        This function handles form submission for leave requests, processes the data, and saves it to the database.
-        It also notifies the relevant authority about the new leave application.
-    """
-    if request.method == 'POST':
-        # Extract data from the request
-        data = request.POST
-        file = request.FILES.get('related_document')
-        hodname = data.get('hod_credential')
-        
-        # Create a new LeaveFormTable instance and save it to the database
-        leave = LeaveFormTable.objects.create(
-            student_name=request.user.first_name+request.user.last_name,
-            roll_no=request.user.extrainfo,
-            date_from=data.get('date_from'),
-            date_to=data.get('date_to'),
-            leave_type=data.get('leave_type'),
-            upload_file=file,
-            address=data.get('address'),
-            purpose=data.get('purpose'),
-            date_of_application=date.today(),
-            hod=data.get('hod_credential')
-        )
-        
-        leave_hod = User.objects.get(username=hodname)
-        receiver_value = User.objects.get(username=request.user.username)
-        receiver_value_designation = HoldsDesignation.objects.filter(user=receiver_value)
-        lis = list(receiver_value_designation)
-        obj = lis[0].designation
-
-        file_id = create_file(
-            uploader=request.user.username,
-            uploader_designation=obj,
-            receiver=leave_hod,
-            receiver_designation="student",
-            src_module="otheracademic",
-            src_object_id=leave.id,
-            file_extra_JSON={"value": 2},
-            attached_file=None,
-            subject='ug_leave'
-        )
+    def post(self, request, leave_id, *args, **kwargs):
+        try:
+            services.withdraw_ug_leave(request.user, leave_id)
+            return Response({"message": "Leave request withdrawn successfully."}, status=status.HTTP_200_OK)
+        except services.LeaveServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-        message = "A new leave application"
-        otheracademic_notif(request.user, leave_hod, 'ug_leave_hod', leave.id, 'student', message)
-        if leave:
-            messages.success(request, "You successfully submitted your form")
-            
-        # return HttpResponseRedirect('/otheracademic/leaveform')
+class WithdrawPGLeave(APIView):
+    """Withdraw a PG leave request before HOD verifies it."""
+    permission_classes = [IsAuthenticated]
 
+    def post(self, request, leave_id, *args, **kwargs):
+        try:
+            services.withdraw_pg_leave(request.user, leave_id)
+            return Response({"message": "PG leave request withdrawn successfully."}, status=status.HTTP_200_OK)
+        except services.LeaveServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ==================== BONAFIDE VIEWS ====================
 
 class BonafideFormSubmitView(APIView):
-    """
-    API view to handle Bonafide form submission.
-    """
-
-    permission_classes = [IsAuthenticated] 
+    """Submit a bonafide application."""
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        # Extract data from the request
-
         data = request.POST
-        file = request.FILES.get('related_document')  # Handle the file if uploaded
+        file = request.FILES.get('related_document')
 
         try:
-            # Create a new BonafideFormTableUpdated instance and save it to the database
-            bonafide_form = BonafideFormTableUpdated.objects.create(
-                student_names=f"{request.user.first_name} {request.user.last_name}",
-                roll_nos=request.user.extrainfo,  # Assuming `extrainfo` is the user's ExtraInfo instance
-                branch_types=data.get('branch'),
-                semester_types=data.get('semester'),
-                purposes=data.get('purpose'),
-                date_of_applications=date.today(),
-                download_file=file.name if file else "unavailable",
-                approve=False,  # Default value
-                reject=False,  # Default value
+            bonafide = services.submit_bonafide(
+                user=request.user,
+                branch=data.get('branch'),
+                semester=data.get('semester'),
+                purpose=data.get('purpose'),
+                download_file=file,
             )
-
-            # Notify the academic admin about the new bonafide application
-            acad_admin_des_id = Designation.objects.get(name="acadadmin")
-            user_ids = HoldsDesignation.objects.filter(designation_id=acad_admin_des_id.id).values_list('user_id', flat=True)
-
-            if user_ids.exists():
-                bonafide_receiver = User.objects.get(id=user_ids[0])
-                message = "A new Bonafide application has been submitted."
-                otheracademic_notif(
-                    request.user, 
-                    bonafide_receiver, 
-                    'bonafide', 
-                    bonafide_form.id, 
-                    'student', 
-                    message
-                )
-
             return Response(
                 {"message": "Your bonafide form has been successfully submitted."},
                 status=status.HTTP_201_CREATED
             )
-
+        except services.BonafideServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response(
                 {"error": f"An error occurred: {str(e)}"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
 
-
- 
-
- 
 
 class FetchPendingBonafideRequests(APIView):
+    """Fetch pending bonafide requests for admin approval."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        # Fetch Bonafide requests where both approve and reject are False (unseen requests)
-        pending_bonafides = BonafideFormTableUpdated.objects.filter(approve=False, reject=False)
-        
-        # Prepare response data
-        data = [
-            {
-                "id": bonafide.id,
-                "rollNo": bonafide.roll_nos_id,  # Assuming roll_no is a field in ExtraInfo
-                "name": bonafide.student_names,
-                "details": {
-                    "purpose": bonafide.purposes,
-                    "dateOfApplication": bonafide.date_of_applications,
-                    "semester": bonafide.semester_types,
-                },
-            }
-            for bonafide in pending_bonafides
-        ]
-        
+        if not selectors.user_has_designation(request.user, "acadadmin"):
+            raise PermissionDenied("Only Academic Administrator can access bonafide verification queue.")
+
+        pending_bonafides = selectors.get_pending_bonafides()
+        data = [selectors.serialize_pending_bonafide(b) for b in pending_bonafides]
         return Response(data)
 
 
-
- 
-
- 
-
 class UpdateBonafideStatus(APIView):
+    """Update bonafide status (admin approval/rejection)."""
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        # Get the lists of approved and rejected bonafide request IDs from the request body
-        approved_bonafides_ids = request.data.get('approvedBonafides', [])
-        rejected_bonafides_ids = request.data.get('rejectedBonafides', [])
+        if not selectors.user_has_designation(request.user, "acadadmin"):
+            raise PermissionDenied("Only Academic Administrator can verify bonafide requests.")
+
+        serializer = BonafideStatusUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        approved_ids = serializer.validated_data.get('approvedBonafides', [])
+        rejected_ids = serializer.validated_data.get('rejectedBonafides', [])
 
         try:
-            # Update the approve/reject status based on the provided lists
-            if approved_bonafides_ids:
-                BonafideFormTableUpdated.objects.filter(id__in=approved_bonafides_ids).update(approve=True, reject=False)
-                # Notify the respective students about approval
-                for bonafide_id in approved_bonafides_ids:
-                    bonafide_form = BonafideFormTableUpdated.objects.get(id=bonafide_id)
-                    student = User.objects.get(extrainfo=bonafide_form.roll_nos_id)  # Assuming `extrainfo` is the student's unique identifier
-                    # Send notification to the student about the approval
-                    message = f"Your Bonafide application has been appr oved. Please check the status."
-                    otheracademic_notif(
-                        request.user,  # The sender (admin)
-                        student,  # The receiver (student)
-                        'bonafide_accept',  # Notification type
-                        bonafide_form.id,  # The ID of the Bonafide form
-                        'admin',  # The role of the sender
-                        message  # The approval message
-                    )
-
-            if rejected_bonafides_ids:
-                BonafideFormTableUpdated.objects.filter(id__in=rejected_bonafides_ids).update(approve=False, reject=True)
-
-                # Notify the respective students about rejection
-                for bonafide_id in rejected_bonafides_ids:
-                    bonafide_form = BonafideFormTableUpdated.objects.get(id=bonafide_id)
-                    student = User.objects.get(extrainfo=bonafide_form.roll_nos)  # Assuming `extrainfo` is the student's unique identifier
-
-                    # Send notification to the student about the rejection
-                    message = f"Your Bonafide application has been rejected. Please check the status for further details."
-                    otheracademic_notif(
-                        request.user,  # The sender (admin)
-                        student,  # The receiver (student)
-                        'bonafide_accept',  # Notification type
-                        bonafide_form.id,  # The ID of the Bonafide form
-                        'admin',  # The role of the sender
-                        message  # The rejection message
-                    )
-
+            services.update_bonafide_status(approved_ids, rejected_ids, request.user)
             return Response({"message": "Bonafide statuses updated successfully."})
-
-        except Exception as e:
-            return Response({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
-
-
-class GetBonafideStatus(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, *args, **kwargs):
-        # Get roll number and username from the request
-        roll_no = request.data.get("roll_no")
-        username = request.data.get("username")
-
-        # Check if roll number and username are provided
-        if not roll_no or not username:
-            return Response(
-                {"error": "Roll number and username are required."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        try:
-            # Query bonafide forms for the given roll number
-            bonafide_requests = BonafideFormTableUpdated.objects.filter(roll_nos_id=roll_no)
-            
-            # Manually format the response data
-            response_data = [
-                {
-                    "rollNo": bonafide.roll_nos_id,
-                    "name": bonafide.student_names,
-                    "branch": bonafide.branch_types,
-                    "semester": bonafide.semester_types,
-                    "purpose": bonafide.purposes,
-                    "dateApplied": bonafide.date_of_applications.strftime("%Y-%m-%d") if bonafide.date_of_applications else None,
-                    "status": (
-                        "Approved" if bonafide.approve else "Rejected" if bonafide.reject else "Pending"
-                    ),
-                }
-                for bonafide in bonafide_requests
-            ]
-
-            return Response(response_data, status=status.HTTP_200_OK)
-
-        except Exception as e:
-            return Response(
-                {"error": "An error occurred while fetching bonafide status.", "details": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
-
-            return Response({'message': 'Form submitted successfully', 'bonafide_id': bonafide.id}, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-@csrf_exempt  # Exempt CSRF verification for this view
-@login_required
-def leave_form_submit(request):
-    """
-    View function for submitting a leave form.
-
-    Description:
-        This function handles form submission for leave requests, processes the data, and saves it to the database.
-        It also notifies the relevant authority about the new leave application.
-    """
-    if request.method == 'POST':
-        # Extract data from the request
-        data = request.POST
-        file = request.FILES.get('related_document')
-        hodname = data.get('hod_credential')
-        
-        # Create a new LeaveFormTable instance and save it to the database
-        leave = LeaveFormTable.objects.create(
-            student_name=request.user.first_name+request.user.last_name,
-            roll_no=request.user.extrainfo,
-            date_from=data.get('date_from'),
-            date_to=data.get('date_to'),
-            leave_type=data.get('leave_type'),
-            upload_file=file,
-            address=data.get('address'),
-            purpose=data.get('purpose'),
-            date_of_application=date.today(),
-            hod=data.get('hod_credential')
-        )
-        
-        leave_hod = User.objects.get(username=hodname)
-        receiver_value = User.objects.get(username=request.user.username)
-        receiver_value_designation = HoldsDesignation.objects.filter(user=receiver_value)
-        lis = list(receiver_value_designation)
-        obj = lis[0].designation
-
-        file_id = create_file(
-            uploader=request.user.username,
-            uploader_designation=obj,
-            receiver=leave_hod,
-            receiver_designation="student",
-            src_module="otheracademic",
-            src_object_id=leave.id,
-            file_extra_JSON={"value": 2},
-            attached_file=None,
-            subject='ug_leave'
-        )
-
-
-        message = "A new leave application"
-        otheracademic_notif(request.user, leave_hod, 'ug_leave_hod', leave.id, 'student', message)
-        if leave:
-            messages.success(request, "You successfully submitted your form")
-            
-        # return HttpResponseRedirect('/otheracademic/leaveform')
-
-
-        
-
-class BonafideFormSubmitView(APIView):
-    """
-    API view to handle Bonafide form submission.
-    """
-
-    permission_classes = [IsAuthenticated] 
-
-    def post(self, request):
-        # Extract data from the request
-        data = request.POST
-        file = request.FILES.get('related_document')  # Handle the file if uploaded
-
-        try:
-            # Create a new BonafideFormTableUpdated instance and save it to the database
-            bonafide_form = BonafideFormTableUpdated.objects.create(
-                student_names=f"{request.user.first_name} {request.user.last_name}",
-                roll_nos=request.user.extrainfo,  # Assuming `extrainfo` is the user's ExtraInfo instance
-                branch_types=data.get('branch'),
-                semester_types=data.get('semester'),
-                purposes=data.get('purpose'),
-                date_of_applications=date.today(),
-                download_file=file.name if file else "unavailable",
-                approve=False,  # Default value
-                reject=False,  # Default value
-            )
-
-            # Notify the academic admin about the new bonafide application
-            acad_admin_des_id = Designation.objects.get(name="acadadmin")
-            user_ids = HoldsDesignation.objects.filter(designation_id=acad_admin_des_id.id).values_list('user_id', flat=True)
-
-            if user_ids.exists():
-                bonafide_receiver = User.objects.get(id=user_ids[0])
-                message = "A new Bonafide application has been submitted."
-                otheracademic_notif(
-                    request.user, 
-                    bonafide_receiver, 
-                    'bonafide', 
-                    bonafide_form.id, 
-                    'student', 
-                    message
-                )
-
-            return Response(
-                {"message": "Your bonafide form has been successfully submitted."},
-                status=status.HTTP_201_CREATED
-            )
-
         except Exception as e:
             return Response(
                 {"error": f"An error occurred: {str(e)}"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
 
 
- 
-
- 
-
-class FetchPendingBonafideRequests(APIView):
+class UploadBonafideCertificate(APIView):
+    """Upload certificate file for a bonafide request (admin action)."""
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, *args, **kwargs):
-        # Fetch Bonafide requests where both approve and reject are False (unseen requests)
-        pending_bonafides = BonafideFormTableUpdated.objects.filter(approve=False, reject=False)
-        
-        # Prepare response data
-        data = [
+    def post(self, request, bonafide_id, *args, **kwargs):
+        if not selectors.user_has_designation(request.user, "acadadmin"):
+            raise PermissionDenied("Only Academic Administrator can upload bonafide certificates.")
+
+        certificate = request.FILES.get("certificate")
+        if not certificate:
+            return Response(
+                {"error": "certificate file is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            bonafide = services.upload_bonafide_certificate(bonafide_id, certificate)
+        except services.BonafideServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(
             {
-                "id": bonafide.id,
-                "rollNo": bonafide.roll_nos_id,  # Assuming roll_no is a field in ExtraInfo
-                "name": bonafide.student_names,
-                "details": {
-                    "purpose": bonafide.purposes,
-                    "dateOfApplication": bonafide.date_of_applications,
-                    "semester": bonafide.semester_types,
-                },
-            }
-            for bonafide in pending_bonafides
-        ]
-        
-        return Response(data)
-
-
-
- 
-
- 
-
-class UpdateBonafideStatus(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, *args, **kwargs):
-        # Get the lists of approved and rejected bonafide request IDs from the request body
-        approved_bonafides_ids = request.data.get('approvedBonafides', [])
-        rejected_bonafides_ids = request.data.get('rejectedBonafides', [])
-
-        # Update the approve/reject status based on the provided lists
-        if approved_bonafides_ids:
-           BonafideFormTableUpdated.objects.filter(id__in=approved_bonafides_ids).update(approve=True, reject=False)
-
-        if rejected_bonafides_ids:
-            BonafideFormTableUpdated.objects.filter(id__in=rejected_bonafides_ids).update(approve=False, reject=True)
-
-        return Response({"message": "Bonafide statuses updated successfully."})
-
+                "message": "Certificate uploaded successfully.",
+                "bonafideId": bonafide.id,
+                "downloadUrl": request.build_absolute_uri(bonafide.download_file.url),
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class GetBonafideStatus(APIView):
+    """Get bonafide status for a specific student."""
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        # Get roll number and username from the request
         roll_no = request.data.get("roll_no")
         username = request.data.get("username")
 
-        # Check if roll number and username are provided
         if not roll_no or not username:
             return Response(
                 {"error": "Roll number and username are required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        if str(request.user.extrainfo.id) != str(roll_no):
+            return Response(
+                {"error": "You can only view your own bonafide status."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         try:
-            # Query bonafide forms for the given roll number
-            bonafide_requests = BonafideFormTableUpdated.objects.filter(roll_nos_id=roll_no)
-            
-            # Manually format the response data
-            response_data = [
-                {
-                    "rollNo": bonafide.roll_nos_id,
-                    "name": bonafide.student_names,
-                    "branch": bonafide.branch_types,
-                    "semester": bonafide.semester_types,
-                    "purpose": bonafide.purposes,
-                    "dateApplied": bonafide.date_of_applications.strftime("%Y-%m-%d") if bonafide.date_of_applications else None,
-                    "status": (
-                        "Approved" if bonafide.approve else "Rejected" if bonafide.reject else "Pending"
-                    ),
-                }
-                for bonafide in bonafide_requests
-            ]
-
+            bonafide_requests = selectors.get_bonafides_by_roll_no(roll_no)
+            response_data = [selectors.serialize_bonafide_status(b) for b in bonafide_requests]
+            for item in response_data:
+                if item.get("downloadUrl"):
+                    item["downloadUrl"] = request.build_absolute_uri(item["downloadUrl"])
             return Response(response_data, status=status.HTTP_200_OK)
-
         except Exception as e:
             return Response(
                 {"error": "An error occurred while fetching bonafide status.", "details": str(e)},
@@ -888,423 +380,282 @@ class GetBonafideStatus(APIView):
             )
 
 
-            return Response({'message': 'Form submitted successfully', 'bonafide_id': bonafide.id}, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class WithdrawBonafide(APIView):
+    """Withdraw a pending bonafide request."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, bonafide_id, *args, **kwargs):
+        try:
+            services.withdraw_bonafide(request.user, bonafide_id)
+            return Response({"message": "Bonafide request withdrawn successfully."}, status=status.HTTP_200_OK)
+        except services.BonafideServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ==================== ASSISTANTSHIP VIEWS ====================
 
 class AssistantshipFormSubmitView(APIView):
+    """Submit an assistantship claim form."""
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         data = request.POST
-        files=request.FILES
+        files = request.FILES
+
         try:
-            # Log received data for debugging
-            print("Received data:", data)
-            print("Received FILES:", files)
+            # Parse dates
+            date_from = datetime.strptime(data.get('date_from'), '%Y-%m-%d').date()
+            date_to = datetime.strptime(data.get('date_to'), '%Y-%m-%d').date()
+            date_applied = datetime.strptime(data.get('date_applied'), '%Y-%m-%d').date()
+        except (ValueError, TypeError):
+            return Response(
+                {"error": "Invalid date format. Please use YYYY-MM-DD."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-            # Parse dates using datetime.strptime()
-            try:
-                date_from = datetime.strptime(data.get('date_from'), '%Y-%m-%d').date()
-                date_to = datetime.strptime(data.get('date_to'), '%Y-%m-%d').date()
-                date_applied = datetime.strptime(data.get('date_applied'), '%Y-%m-%d').date()
-            except ValueError:
-                return Response({"error": "Invalid date format. Please use YYYY-MM-DD."}, status=400)
+        # Validate date range
+        if date_from > date_to:
+            return Response({"error": "Invalid date range."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Validate dates
-            if not date_from or not date_to or date_from > date_to:
-                return Response({"error": "Invalid date range."}, status=400)
-            #  Check for duplicate form submission
-            if AssistantshipClaimFormStatusUpd.objects.filter(
-                roll_no=request.user.extrainfo,
-                dateFrom=date_from,
-                dateTo=date_to
-            ).exists():
-                return Response({"error": "Form for this period already exists."}, status=400)
+        # Validate signature file
+        signature_file = files.get('signature')
+        if not signature_file:
+            return Response({"error": "Signature file is missing."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Validate HOD user
-            #hod_user = User.objects.filter(username=data.get('hod')).first()
-            #if not hod_user:
-             #   return Response({"error": "HOD username not found."}, status=400)
-            ta_supervisor_user = User.objects.filter(username=data.get('ta_supervisor')).first()
-            if not ta_supervisor_user:
-                return Response({"error": "TA Supervisor username not found."}, status=400)
-
-            thesis_supervisor_user = User.objects.filter(username=data.get('thesis_supervisor')).first()
-            if not thesis_supervisor_user:
-                return Response({"error": "Thesis Supervisor username not found."}, status=400)
-            # Handle signature file
-            signature_file = files.get('signature')
-            if not signature_file:
-                return Response({"error": "Signature file is missing."}, status=400)
-
-
-
-            # Create form
-            assistantship_form = AssistantshipClaimFormStatusUpd.objects.create(
-                roll_no=request.user.extrainfo,
-                student_name=f"{request.user.first_name} {request.user.last_name}",
+        try:
+            assistantship = services.submit_assistantship(
+                user=request.user,
                 discipline=data.get('discipline'),
-                dateFrom=date_from,
-                dateTo=date_to,
+                date_from=date_from,
+                date_to=date_to,
+                date_applied=date_applied,
                 bank_account=data.get('bank_account_no'),
-                student_signature=signature_file,
-                dateApplied=date_applied,
+                signature_file=signature_file,
                 ta_supervisor=data.get('ta_supervisor'),
                 thesis_supervisor=data.get('thesis_supervisor'),
                 hod=data.get('hod'),
                 applicability=data.get('applicability'),
-                
-                # Existing approval/rejection fields
-                TA_approved=False,
-                TA_rejected=False,
-                Ths_approved=False,
-                Ths_rejected=False,
-                HOD_approved=False,
-                HOD_rejected=False,
-                
-
-                # Newly added approval/rejection fields
-                Dean_approved=False,
-                Dean_rejected=False,
-                Director_approved=False,
-                Director_rejected=False,
-                AcadAdmin_approved=False,
-                AcadAdmin_rejected=False,
             )
-
-            # Notify TA Supervisor
-            otheracademic_notif(
-                request.user,
-                ta_supervisor_user,
-                "assistantship_form",
-                assistantship_form.id,
-                "student",
-                "Assistantship form needs your (TA Supervisor) approval."
-            )
-            # Notify Thesis Supervisor
-            otheracademic_notif(
-                request.user,
-                thesis_supervisor_user,
-                "assistantship_form",
-                assistantship_form.id,
-                "student",
-                "Assistantship form needs your (Thesis Supervisor) approval."
-            )
-
-            return Response({"message": "Form submitted successfully."}, status=201)
-
+            return Response({"message": "Form submitted successfully."}, status=status.HTTP_201_CREATED)
+        except services.AssistantshipServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            print("Error occurred:", e)  # Log error for debugging
-            return Response({"error": "An unexpected error occurred."},status=500)
-        
+            return Response({"error": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class TA_SupervisorFetchPendingAssistantshipRequests(APIView):
+    """Fetch pending assistantship requests for faculty supervisor approval."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        if not selectors.user_has_designation(request.user, "faculty_supervisor"):
+            raise PermissionDenied("Only Faculty Supervisor can access this queue.")
         try:
-            # Fetch forms where both TA and Thesis Supervisor have approved but Dept Admin hasn't taken action
-            pending_forms = AssistantshipClaimFormStatusUpd.objects.filter(
-                TA_approved=False,
-                TA_rejected=False
-                # Ths_approved=False,
-                # Ths_rejected=False    
+            pending_forms = selectors.get_pending_assistantships_for_ta_user(request.user.username)
+            response_data = [selectors.serialize_assistantship_pending(form) for form in pending_forms]
+            return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": "Error fetching pending forms", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-            response_data = []
-            for form in pending_forms:
-                response_data.append({
-                    "id": form.id,
-                    "student_name": form.student_name,
-                    "roll_no": form.roll_no.id,
-                    "discipline": form.discipline,
-                    "dateFrom": form.dateFrom.strftime('%Y-%m-%d'),
-                    "dateTo": form.dateTo.strftime('%Y-%m-%d'),
-                    "applicability": form.applicability,
-                    "dateApplied": form.dateApplied.strftime('%Y-%m-%d'),
-                })
 
-            return Response(response_data, status=200)
-
-        except Exception as e:
-            return Response({"error": "Error fetching pending forms", "details": str(e)}, status=500)
-
-     
 class TA_SupervisorUpdateAssistantshipStatus(APIView):
+    """Update assistantship status (faculty supervisor approval)."""
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        """Update assistantship form status based on supervisor approval or rejection."""
+        if not selectors.user_has_designation(request.user, "faculty_supervisor"):
+            raise PermissionDenied("Only Faculty Supervisor can review assistantship forms.")
+
+        serializer = AssistantshipStatusUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        approved_ids = serializer.validated_data.get('approvedRequests', [])
+        rejected_ids = serializer.validated_data.get('rejectedRequests', [])
+
         try:
-            role ="thesis"  # Expecting 'ta' or 'thesis'
-            approved_ids = request.data.get("approvedRequests", [])
-            rejected_ids = request.data.get("rejectedRequests", [])
-
-            if not role or role not in ["ta", "thesis"]:
-                return Response({"error": "Invalid or missing role parameter. Use 'ta' or 'thesis'."}, status=400)
-
-            if not approved_ids and not rejected_ids:
-                return Response({"error": "No forms provided for update."}, status=400)
-
-            # Approving requests
-            if role == "thesis":
-                AssistantshipClaimFormStatusUpd.objects.filter(id__in=approved_ids).update(TA_approved=True)
-                AssistantshipClaimFormStatusUpd.objects.filter(id__in=rejected_ids).update(TA_rejected=True)
-
-            else:
-                AssistantshipClaimFormStatusUpd.objects.filter(id__in=approved_ids).update(Ths_approved=True)
-                AssistantshipClaimFormStatusUpd.objects.filter(id__in=rejected_ids).update(Ths_rejected=True)
-
-            return Response({"message": "Assistantship statuses updated successfully"}, status=200)
-
+            services.update_assistantship_status_ta(approved_ids, rejected_ids, request.user)
+            return Response({"message": "Assistantship statuses updated successfully"}, status=status.HTTP_200_OK)
+        except services.AssistantshipServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({"error": "Error updating assistantship status", "details": str(e)}, status=500)
+            return Response(
+                {"error": "Error updating assistantship status", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
 
 class Ths_SupervisorFetchPendingAssistantshipRequests(APIView):
+    """Fetch pending assistantship requests for Thesis supervisor approval."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         try:
-            # Fetch forms where both TA and Thesis Supervisor have approved but Dept Admin hasn't taken action
-            pending_forms = AssistantshipClaimFormStatusUpd.objects.filter(
-                Ths_approved=False,
-                Ths_rejected=False
-                # Ths_approved=False,
-                # Ths_rejected=False    
+            pending_forms = selectors.get_pending_assistantships_for_thesis()
+            response_data = [selectors.serialize_assistantship_pending(form) for form in pending_forms]
+            return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": "Error fetching pending forms", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-            response_data = []
-            for form in pending_forms:
-                response_data.append({
-                    "id": form.id,
-                    "student_name": form.student_name,
-                    "roll_no": form.roll_no.id,
-                    "discipline": form.discipline,
-                    "dateFrom": form.dateFrom.strftime('%Y-%m-%d'),
-                    "dateTo": form.dateTo.strftime('%Y-%m-%d'),
-                    "applicability": form.applicability,
-                    "dateApplied": form.dateApplied.strftime('%Y-%m-%d'),
-                })
 
-            return Response(response_data, status=200)
-
-        except Exception as e:
-            return Response({"error": "Error fetching pending forms", "details": str(e)}, status=500)
-
-     
 class Ths_SupervisorUpdateAssistantshipStatus(APIView):
+    """Update assistantship status (Thesis supervisor approval)."""
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        """Update assistantship form status based on supervisor approval or rejection."""
+        serializer = AssistantshipStatusUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        approved_ids = serializer.validated_data.get('approvedRequests', [])
+        rejected_ids = serializer.validated_data.get('rejectedRequests', [])
+
         try:
-            role ="thesis"  # Expecting 'ta' or 'thesis'
-            approved_ids = request.data.get("approvedRequests", [])
-            rejected_ids = request.data.get("rejectedRequests", [])
-
-            if not role or role not in ["ta", "thesis"]:
-                return Response({"error": "Invalid or missing role parameter. Use 'ta' or 'thesis'."}, status=400)
-
-            if not approved_ids and not rejected_ids:
-                return Response({"error": "No forms provided for update."}, status=400)
-
-            # Approving requests
-            if role == "ta":
-                AssistantshipClaimFormStatusUpd.objects.filter(id__in=approved_ids).update(TA_approved=True)
-                AssistantshipClaimFormStatusUpd.objects.filter(id__in=rejected_ids).update(TA_rejected=True)
-
-            else:
-                AssistantshipClaimFormStatusUpd.objects.filter(id__in=approved_ids).update(Ths_approved=True)
-                AssistantshipClaimFormStatusUpd.objects.filter(id__in=rejected_ids).update(Ths_rejected=True)
-
-            return Response({"message": "Assistantship statuses updated successfully"}, status=200)
-
+            services.update_assistantship_status_thesis(approved_ids, rejected_ids)
+            return Response({"message": "Assistantship statuses updated successfully"}, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({"error": "Error updating assistantship status", "details": str(e)}, status=500)
-
+            return Response(
+                {"error": "Error updating assistantship status", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class HODFetchPendingAssistantshipRequests(APIView):
+    """Fetch pending assistantship requests for Department Admin approval."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        if not selectors.user_has_designation(request.user, "dept_admin"):
+            raise PermissionDenied("Only Department Admin can access this queue.")
         try:
-            # Fetch forms where both TA and Thesis Supervisor have approved but Dept Admin hasn't taken action
-            pending_forms = AssistantshipClaimFormStatusUpd.objects.filter(
-                TA_approved=True,
-                Ths_approved=True,
-                HOD_approved=False,
-                HOD_rejected=False
+            pending_forms = selectors.get_pending_assistantships_for_hod()
+            response_data = [selectors.serialize_assistantship_pending(form) for form in pending_forms]
+            return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": "Error fetching pending forms", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-            response_data = []
-            for form in pending_forms:
-                response_data.append({
-                    "id": form.id,
-                    "student_name": form.student_name,
-                    "roll_no": form.roll_no.id,
-                    "discipline": form.discipline,
-                    "dateFrom": form.dateFrom.strftime('%Y-%m-%d'),
-                    "dateTo": form.dateTo.strftime('%Y-%m-%d'),
-                    "applicability": form.applicability,
-                    "dateApplied": form.dateApplied.strftime('%Y-%m-%d'),
-                })
-
-            return Response(response_data, status=200)
-
-        except Exception as e:
-            return Response({"error": "Error fetching pending forms", "details": str(e)}, status=500)
 
 class HODUpdateAssistantshipStatus(APIView):
+    """Update assistantship status (Department Admin final approval)."""
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        # Get the lists of approved and rejected bonafide request IDs from the request body
-        approved_hod = request.data.get('approvedRequests', [])
-        rejected_hod = request.data.get('rejectedRequests', [])
+        if not selectors.user_has_designation(request.user, "dept_admin"):
+            raise PermissionDenied("Only Department Admin can approve assistantship forms.")
 
-        # Update the approve/reject status based on the provided lists
-        if approved_hod:
-           AssistantshipClaimFormStatusUpd.objects.filter(id__in=approved_hod).update(HOD_approved=True, HOD_rejected=False)
+        serializer = AssistantshipStatusUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        if rejected_hod:
-            AssistantshipClaimFormStatusUpd.objects.filter(id__in=rejected_hod).update(HOD_approved=False, HOD_rejected=True)
+        approved_ids = serializer.validated_data.get('approvedRequests', [])
+        rejected_ids = serializer.validated_data.get('rejectedRequests', [])
 
-        return Response({"message": "Bonafide statuses updated successfully."})
+        try:
+            services.update_assistantship_status_hod(approved_ids, rejected_ids, request.user)
+            return Response({"message": "Assistantship statuses updated successfully."})
+        except services.AssistantshipServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class AcadAdminFetchPendingAssistantshipRequests(APIView):
+    """Fetch pending assistantship requests for Academic Admin disbursement audit."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        pending_forms = AssistantshipClaimFormStatusUpd.objects.filter(
-            TA_approved=True,
-             Ths_approved=True,
-            HOD_approved=True,
-            AcadAdmin_approved=False,
-            AcadAdmin_rejected=False
-        )
+        if not selectors.user_has_designation(request.user, "acadadmin"):
+            raise PermissionDenied("Only Academic Admin can access this queue.")
+        pending_forms = selectors.get_pending_assistantships_for_acad_admin()
+        response_data = [selectors.serialize_assistantship_pending(form) for form in pending_forms]
+        return Response(response_data, status=status.HTTP_200_OK)
 
-        response_data = [{
-            "id": form.id,
-            "student_name": form.student_name,
-            "roll_no": form.roll_no.id,
-            "discipline": form.discipline,
-            "dateFrom": form.dateFrom.strftime('%Y-%m-%d'),
-            "dateTo": form.dateTo.strftime('%Y-%m-%d'),
-            "applicability": form.applicability,
-            "dateApplied": form.dateApplied.strftime('%Y-%m-%d'),
-        } for form in pending_forms]
 
-        return Response(response_data, status=200)
-     
 class AcadAdminUpdateAssistantshipStatus(APIView):
+    """Update assistantship status (Academic Admin disbursement audit)."""
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        # Get the lists of approved and rejected bonafide request IDs from the request body
-        approved_bonafides_ids = request.data.get('approvedRequests', [])
-        rejected_bonafides_ids = request.data.get('rejectedRequests', [])
+        if not selectors.user_has_designation(request.user, "acadadmin"):
+            raise PermissionDenied("Only Academic Admin can update this stage.")
 
-        # Update the approve/reject status based on the provided lists
-        if approved_bonafides_ids:
-           AssistantshipClaimFormStatusUpd.objects.filter(id__in=approved_bonafides_ids).update(AcadAdmin_approved=True, AcadAdmin_rejected=False)
+        serializer = AssistantshipStatusUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        if rejected_bonafides_ids:
-            AssistantshipClaimFormStatusUpd.objects.filter(id__in=rejected_bonafides_ids).update(AcadAdmin_approved=False, AcadAdmin_rejected=True)
+        approved_ids = serializer.validated_data.get('approvedRequests', [])
+        rejected_ids = serializer.validated_data.get('rejectedRequests', [])
 
-        return Response({"message": "Bonafide statuses updated successfully."})
+        try:
+            services.update_assistantship_status_acad_admin(approved_ids, rejected_ids, request.user)
+            return Response({"message": "Assistantship statuses updated successfully."})
+        except services.AssistantshipServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
 class DeanAcadFetchPendingAssistantshipRequests(APIView):
+    """Fetch pending assistantship requests for HOD approval."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        pending_forms = AssistantshipClaimFormStatusUpd.objects.filter(
-            TA_approved=True,
-            Ths_approved=True,
-            HOD_approved=True,
-            AcadAdmin_approved=True,
-            Dean_approved=False,
-            Dean_rejected=False
-        )
+        if not selectors.user_has_designation_contains(request.user, "hod"):
+            raise PermissionDenied("Only HOD can access this queue.")
+        pending_forms = selectors.get_pending_assistantships_for_dean()
+        response_data = [selectors.serialize_assistantship_pending(form) for form in pending_forms]
+        return Response(response_data, status=status.HTTP_200_OK)
 
-        response_data = [{
-            "id": form.id,
-            "student_name": form.student_name,
-            "roll_no": form.roll_no.id,
-            "discipline": form.discipline,
-            "dateFrom": form.dateFrom.strftime('%Y-%m-%d'),
-            "dateTo": form.dateTo.strftime('%Y-%m-%d'),
-            "applicability": form.applicability,
-            "dateApplied": form.dateApplied.strftime('%Y-%m-%d'),
-        } for form in pending_forms]
 
-        return Response(response_data, status=200)
-
- 
 class DeanAcadUpdateAssistantshipStatus(APIView):
+    """Update assistantship status (HOD approval/rejection)."""
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        # Get the lists of approved and rejected bonafide request IDs from the request body
-        approved_hod = request.data.get('approvedRequests', [])
-        rejected_hod = request.data.get('rejectedRequests', [])
+        if not selectors.user_has_designation_contains(request.user, "hod"):
+            raise PermissionDenied("Only HOD can update this stage.")
 
-        # Update the approve/reject status based on the provided lists
-        if approved_hod:
-           AssistantshipClaimFormStatusUpd.objects.filter(id__in=approved_hod).update(Dean_approved=True, Dean_rejected=False)
+        serializer = AssistantshipStatusUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        if rejected_hod:
-            AssistantshipClaimFormStatusUpd.objects.filter(id__in=rejected_hod).update(Dean_approved=False, Dean_rejected=True)
+        approved_ids = serializer.validated_data.get('approvedRequests', [])
+        rejected_ids = serializer.validated_data.get('rejectedRequests', [])
 
-        return Response({"message": "Bonafide statuses updated successfully."})
-    
+        try:
+            services.update_assistantship_status_dean(approved_ids, rejected_ids, request.user)
+            return Response({"message": "Assistantship statuses updated successfully."})
+        except services.AssistantshipServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
 class DirectorFetchPendingAssistantshipRequests(APIView):
+    """Fetch pending assistantship requests for Director approval."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        pending_forms = AssistantshipClaimFormStatusUpd.objects.filter(
-            TA_approved=True,
-             Ths_approved=True,
-            HOD_approved=True,
-            AcadAdmin_approved=True,
-            Dean_approved=True,
-            Director_approved=False,
-            Director_rejected=False
-        )
+        pending_forms = selectors.get_pending_assistantships_for_director()
+        response_data = [selectors.serialize_assistantship_pending(form) for form in pending_forms]
+        return Response(response_data, status=status.HTTP_200_OK)
 
-        response_data = [{
-            "id": form.id,
-            "student_name": form.student_name,
-            "roll_no": form.roll_no.id,
-            "discipline": form.discipline,
-            "dateFrom": form.dateFrom.strftime('%Y-%m-%d'),
-            "dateTo": form.dateTo.strftime('%Y-%m-%d'),
-            "applicability": form.applicability,
-            "dateApplied": form.dateApplied.strftime('%Y-%m-%d'),
-        } for form in pending_forms]
 
-        return Response(response_data, status=200)
-    
 class DirectorUpdateAssistantshipStatus(APIView):
+    """Update assistantship status (Director approval)."""
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        # Get the lists of approved and rejected bonafide request IDs from the request body
-        approved_hod = request.data.get('approvedRequests', [])
-        rejected_hod = request.data.get('rejectedRequests', [])
+        serializer = AssistantshipStatusUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        # Update the approve/reject status based on the provided lists
-        if approved_hod:
-           AssistantshipClaimFormStatusUpd.objects.filter(id__in=approved_hod).update(Director_approved=True, Director_rejected=False)
+        approved_ids = serializer.validated_data.get('approvedRequests', [])
+        rejected_ids = serializer.validated_data.get('rejectedRequests', [])
 
-        if rejected_hod:
-            AssistantshipClaimFormStatusUpd.objects.filter(id__in=rejected_hod).update(Director_approved=False,Director_rejected=True)
-
-        return Response({"message": "Bonafide statuses updated successfully."})
+        services.update_assistantship_status_director(approved_ids, rejected_ids)
+        return Response({"message": "Assistantship statuses updated successfully."})
 
 
-
-"""class GetAssistantshipStatus(APIView):
+class GetAssistantshipStatus(APIView):
+    """Get assistantship status for a specific student."""
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
@@ -1314,84 +665,623 @@ class DirectorUpdateAssistantshipStatus(APIView):
         if not roll_no or not username:
             return Response(
                 {"error": "Roll number and username are required."},
-                status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if str(request.user.extrainfo.id) != str(roll_no):
+            return Response(
+                {"error": "You can only view your own assistantship status."},
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         try:
-            assistantship_requests = AssistantshipClaimFormStatusUpd.objects.filter(roll_no_id=roll_no)
+            assistantship_requests = selectors.get_assistantships_by_roll_no(roll_no)
 
-            response_data = []
-            for form in assistantship_requests:
-                # Check if ANY stage rejected the form
-                is_rejected = any([
-                    form.Director_rejected,
-                    form.Dean_rejected,
-                    form.AcadAdmin_rejected,
-                    form.HOD_rejected,
-                    form.TA_rejected,
-                    form.Ths_rejected
-                ])
-
-                # If rejected at any stage, status is "Rejected" and cannot be changed later
-                if is_rejected:
-                    status_text = "Rejected"
-                # If Director has approved and no rejections, it's "Approved"
-                elif form.Director_approved:
-                    status_text = "Approved"
-                # Otherwise, it's still "Pending"
-                else:
-                    status_text = "Pending"
-
-                response_data.append({
-                    "rollNo": form.roll_no.id,
-                    "name": form.student_name,
-                    "discipline": form.discipline,
-                    "dateApplied": form.dateApplied.strftime("%Y-%m-%d") if form.dateApplied else None,
-                    "bank_account": form.bank_account,
-                    "status": status_text,
-                })
+            response_data = [{
+                "rollNo": form.roll_no.id,
+                "name": form.student_name,
+                "discipline": form.discipline,
+                "id": form.id,
+                "dateApplied": form.dateApplied.strftime("%Y-%m-%d") if form.dateApplied else None,
+                "bank_account": form.bank_account,
+                "status": services.get_assistantship_status_text(form),
+                "approvalStages": services.get_assistantship_approval_stages(form),
+                "canWithdraw": not form.TA_approved and not form.TA_rejected,
+            } for form in assistantship_requests]
 
             return Response(response_data, status=status.HTTP_200_OK)
 
         except Exception as e:
             return Response(
                 {"error": "An error occurred while fetching assistantship status.", "details": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-"""
 
-class GetAssistantshipStatus(APIView):
+
+class WithdrawAssistantship(APIView):
+    """Withdraw assistantship form before faculty supervisor review."""
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, *args, **kwargs):
-        roll_no = request.data.get("roll_no")
-        username = request.data.get("username")
+    def post(self, request, form_id, *args, **kwargs):
+        try:
+            services.withdraw_assistantship(request.user, form_id)
+            return Response({"message": "Assistantship form withdrawn successfully."}, status=status.HTTP_200_OK)
+        except services.AssistantshipServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        if not roll_no or not username:
-            return Response({"error": "Roll number and username are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+class FetchTAAssignmentOptions(APIView):
+    """Fetch PG students and subjects for dept_admin TA assignment."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not selectors.user_has_designation(request.user, "dept_admin"):
+            raise PermissionDenied("Only Department Admin can access TA assignment options.")
 
         try:
-            assistantship_requests = AssistantshipClaimFormStatusUpd.objects.filter(roll_no_id=roll_no)
-
-            response_data = [{
-                "rollNo": form.roll_no.id,
-                "name": form.student_name,
-                "discipline": form.discipline,
-                "dateApplied": form.dateApplied.strftime("%Y-%m-%d") if form.dateApplied else None,
-                "bank_account": form.bank_account,
-                "status": "Rejected" if any([form.Director_rejected, form.Dean_rejected, form.AcadAdmin_rejected, 
-                                             form.HOD_rejected, form.TA_rejected, form.Ths_rejected]) 
-                          else "Approved" if form.Director_approved else "Pending",
-                "approvalStages": {stage: "Approved" if getattr(form, f"{prefix}_approved") else 
-                                          "Rejected" if getattr(form, f"{prefix}_rejected") else "Pending"
-                                   for stage, prefix in {
-                                       "TA_Supervisor": "TA", "Thesis_Supervisor": "Ths", "HOD": "HOD", 
-                                       "Academic_Admin": "AcadAdmin", "Dean_Academic": "Dean", "Director": "Director"
-                                   }.items()}
-            } for form in assistantship_requests]
-
-            return Response(response_data, status=status.HTTP_200_OK)
-
+            data = services.get_pg_ta_assignment_options()
+            return Response(data, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({"error": "An error occurred while fetching assistantship status.", "details": str(e)}, 
-                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": "Error fetching TA assignment options", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+class UpdateTAAssignments(APIView):
+    """Create/update TA subject assignments for PG students by dept_admin."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if not selectors.user_has_designation(request.user, "dept_admin"):
+            raise PermissionDenied("Only Department Admin can update TA assignments.")
+
+        serializer = TAAssignmentUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            updated_count = services.upsert_pg_ta_assignments(
+                serializer.validated_data.get("assignments", []),
+                request.user,
+            )
+            return Response(
+                {"message": "TA assignments updated successfully.", "updated_count": updated_count},
+                status=status.HTTP_200_OK,
+            )
+        except services.TAAssignmentServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(
+                {"error": "Error updating TA assignments", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+class FetchFacultySupervisorAssignmentOptions(APIView):
+    """Fetch PG students and faculty options for dept_admin supervisor assignment."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not selectors.user_has_designation(request.user, "dept_admin"):
+            raise PermissionDenied("Only Department Admin can access supervisor assignment options.")
+
+        try:
+            data = services.get_pg_faculty_supervisor_assignment_options()
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": "Error fetching faculty supervisor assignment options", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+class UpdateFacultySupervisorAssignments(APIView):
+    """Create/update faculty supervisor assignments for PG students by dept_admin."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if not selectors.user_has_designation(request.user, "dept_admin"):
+            raise PermissionDenied("Only Department Admin can update faculty supervisor assignments.")
+
+        serializer = FacultySupervisorAssignmentUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            updated_count = services.upsert_pg_faculty_supervisor_assignments(
+                serializer.validated_data.get("assignments", []),
+                request.user,
+            )
+            return Response(
+                {
+                    "message": "Faculty supervisor assignments updated successfully.",
+                    "updated_count": updated_count,
+                },
+                status=status.HTTP_200_OK,
+            )
+        except services.TAAssignmentServiceError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(
+                {"error": "Error updating faculty supervisor assignments", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+# ==================== NO-DUES VIEWS ====================
+
+def _normalize_designation(name):
+    return str(name).strip().lower().replace(" ", "_")
+
+
+def _ensure_no_dues_approver_designations():
+    from applications.globals.models import Designation
+
+    required_designations = [
+        ("librarian", "Librarian"),
+        ("mess_incharge", "Mess Incharge"),
+        ("lab_supervisor", "Lab Supervisor"),
+        ("hostel_warden", "Hostel Warden"),
+    ]
+
+    for name, full_name in required_designations:
+        Designation.objects.get_or_create(
+            name=name,
+            defaults={"full_name": full_name, "type": "administrative"},
+        )
+
+
+def _get_user_no_dues_roles(user):
+    role_names = user.current_designation.values_list("designation__name", flat=True)
+    return {_normalize_designation(role_name) for role_name in role_names}
+
+
+NO_DUES_ROLE_DEPARTMENT_MAP = {
+    "librarian": {"library"},
+    "mess_incharge": {"mess"},
+    "hostel_warden": {"hostel"},
+    "lab_supervisor": {
+        "lab_supervisor",
+        "ece",
+        "physics_lab",
+        "mechatronics_lab",
+        "cc",
+        "workshop",
+        "signal_processing_lab",
+        "vlsi",
+        "design_studio",
+        "design_project",
+    },
+    "acadadmin": {"acad_admin"},
+}
+
+NO_DUES_APPROVER_ROLES = set(NO_DUES_ROLE_DEPARTMENT_MAP.keys())
+
+
+def _approval_status(clear_flag, notclear_flag):
+    if clear_flag:
+        return "clear"
+    if notclear_flag:
+        return "not_clear"
+    return "pending"
+
+
+def _lab_supervisor_status(no_dues):
+    lab_departments = {
+        "ece",
+        "physics_lab",
+        "mechatronics_lab",
+        "cc",
+        "workshop",
+        "signal_processing_lab",
+        "vlsi",
+        "design_studio",
+        "design_project",
+    }
+    has_clear = any(getattr(no_dues, f"{dept}_clear") for dept in lab_departments)
+    has_not_clear = any(getattr(no_dues, f"{dept}_notclear") for dept in lab_departments)
+
+    if has_not_clear:
+        return "not_clear"
+    if has_clear:
+        return "clear"
+    return "pending"
+
+
+def _no_dues_role_statuses(no_dues):
+    return {
+        "librarian": _approval_status(no_dues.library_clear, no_dues.library_notclear),
+        "mess_incharge": _approval_status(no_dues.mess_clear, no_dues.mess_notclear),
+        "hostel_warden": _approval_status(no_dues.hostel_clear, no_dues.hostel_notclear),
+        "lab_supervisor": _lab_supervisor_status(no_dues),
+        "acad_admin": _approval_status(no_dues.account_clear, no_dues.account_notclear),
+    }
+
+
+def _no_dues_progress_summary(no_dues):
+    statuses = _no_dues_role_statuses(no_dues)
+    cleared_count = sum(1 for status_value in statuses.values() if status_value == "clear")
+    not_cleared_count = sum(1 for status_value in statuses.values() if status_value == "not_clear")
+    pending_count = sum(1 for status_value in statuses.values() if status_value == "pending")
+    total_count = len(statuses)
+
+    return {
+        "statuses": statuses,
+        "cleared_count": cleared_count,
+        "not_cleared_count": not_cleared_count,
+        "pending_count": pending_count,
+        "total_count": total_count,
+        "progress_percentage": (cleared_count / total_count * 100) if total_count > 0 else 0,
+        "all_clear": cleared_count == total_count and not_cleared_count == 0,
+    }
+
+
+class InitiateNoDuesView(APIView):
+    """Initiate no-dues clearance process for a student."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            from applications.globals.models import ExtraInfo
+
+            extra_info = ExtraInfo.objects.get(user=request.user)
+
+            if NoDues.objects.filter(roll_no=extra_info).exists():
+                return Response(
+                    {"error": "No-Dues clearance already initiated. You cannot initiate again."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            no_dues = NoDues.objects.create(
+                roll_no=extra_info,
+                name=request.user.get_full_name() or request.user.username,
+            )
+
+            serializer = NoDuesStatusSerializer(no_dues)
+            return Response(
+                {
+                    "message": "No-Dues clearance initiated successfully",
+                    "data": serializer.data,
+                },
+                status=status.HTTP_201_CREATED,
+            )
+
+        except ExtraInfo.DoesNotExist:
+            return Response(
+                {"error": "Student information not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GetNoDuesStatusView(APIView):
+    """Get current no-dues status for a student."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            from applications.globals.models import ExtraInfo
+
+            extra_info = ExtraInfo.objects.get(user=request.user)
+            no_dues = NoDues.objects.get(roll_no=extra_info)
+
+            serializer = NoDuesStatusSerializer(no_dues)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except NoDues.DoesNotExist:
+            return Response(
+                {"error": "No-Dues record not found. Please initiate first."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except ExtraInfo.DoesNotExist:
+            return Response(
+                {"error": "Student information not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+
+class VerifyNoDuesView(APIView):
+    """Verify no-dues clearance for a department."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            from applications.globals.models import ExtraInfo
+
+            _ensure_no_dues_approver_designations()
+
+            roll_no = request.data.get('roll_no')
+            department = request.data.get('department')
+            is_clear = request.data.get('is_clear')
+
+            if not all([roll_no, department, is_clear is not None]):
+                return Response(
+                    {"error": "roll_no, department, and is_clear are required"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            user_roles = _get_user_no_dues_roles(request.user)
+            approver_roles = user_roles.intersection(NO_DUES_APPROVER_ROLES)
+            has_non_admin_role = any(role_name != 'acadadmin' for role_name in approver_roles)
+
+            if not approver_roles:
+                return Response(
+                    {
+                        "error": "Only librarian, mess incharge, lab supervisor, or hostel warden can verify no-dues."
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            allowed_departments = set()
+            for role_name in approver_roles:
+                allowed_departments.update(NO_DUES_ROLE_DEPARTMENT_MAP[role_name])
+
+            if department not in allowed_departments:
+                return Response(
+                    {"error": f"You are not authorized to verify department: {department}"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            extra_info = ExtraInfo.objects.get(id=roll_no)
+            no_dues = NoDues.objects.get(roll_no=extra_info)
+
+            dept_field_map = {
+                'library': ('library_clear', 'library_notclear'),
+                'hostel': ('hostel_clear', 'hostel_notclear'),
+                'mess': ('mess_clear', 'mess_notclear'),
+                'lab_supervisor': ('ece_clear', 'ece_notclear'),
+                'acad_admin': ('account_clear', 'account_notclear'),
+                'ece': ('ece_clear', 'ece_notclear'),
+                'physics_lab': ('physics_lab_clear', 'physics_lab_notclear'),
+                'mechatronics_lab': ('mechatronics_lab_clear', 'mechatronics_lab_notclear'),
+                'cc': ('cc_clear', 'cc_notclear'),
+                'workshop': ('workshop_clear', 'workshop_notclear'),
+                'signal_processing_lab': ('signal_processing_lab_clear', 'signal_processing_lab_notclear'),
+                'vlsi': ('vlsi_clear', 'vlsi_notclear'),
+                'design_studio': ('design_studio_clear', 'design_studio_notclear'),
+                'design_project': ('design_project_clear', 'design_project_notclear'),
+                'bank': ('bank_clear', 'bank_notclear'),
+                'icard_dsa': ('icard_dsa_clear', 'icard_dsa_notclear'),
+                'account': ('account_clear', 'account_notclear'),
+                'btp_supervisor': ('btp_supervisor_clear', 'btp_supervisor_notclear'),
+                'discipline_office': ('discipline_office_clear', 'discipline_office_notclear'),
+                'student_gymkhana': ('student_gymkhana_clear', 'student_gymkhana_notclear'),
+                'alumni': ('alumni_clear', 'alumni_notclear'),
+                'placement_cell': ('placement_cell_clear', 'placement_cell_notclear'),
+            }
+
+            if department == 'acad_admin':
+                statuses = _no_dues_role_statuses(no_dues)
+                first_four_clear = all(
+                    statuses[role_name] == 'clear'
+                    for role_name in ['librarian', 'mess_incharge', 'hostel_warden', 'lab_supervisor']
+                )
+                if not first_four_clear:
+                    return Response(
+                        {"error": "Acad Admin can finalize only after all four authorities clear."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+            if department == 'lab_supervisor':
+                lab_departments = [
+                    'ece',
+                    'physics_lab',
+                    'mechatronics_lab',
+                    'cc',
+                    'workshop',
+                    'signal_processing_lab',
+                    'vlsi',
+                    'design_studio',
+                    'design_project',
+                ]
+                for lab_dept in lab_departments:
+                    clear_field, notclear_field = dept_field_map[lab_dept]
+                    if is_clear:
+                        setattr(no_dues, clear_field, True)
+                        setattr(no_dues, notclear_field, False)
+                    else:
+                        setattr(no_dues, clear_field, False)
+                        setattr(no_dues, notclear_field, True)
+            else:
+                clear_field, notclear_field = dept_field_map[department]
+
+                if is_clear:
+                    setattr(no_dues, clear_field, True)
+                    setattr(no_dues, notclear_field, False)
+                else:
+                    setattr(no_dues, clear_field, False)
+                    setattr(no_dues, notclear_field, True)
+
+            no_dues.save()
+
+            if is_clear:
+                approval_label_map = {
+                    'library': 'Librarian',
+                    'mess': 'Mess Incharge',
+                    'hostel': 'Hostel Warden',
+                    'lab_supervisor': 'Lab Supervisor',
+                    'acad_admin': 'Acad Admin',
+                }
+                approval_label = approval_label_map.get(department, department)
+                notify.send(
+                    sender=request.user,
+                    recipient=no_dues.roll_no.user,
+                    url='/other-academics',
+                    module='Other Academic',
+                    verb=f'Your no-dues request was approved by {approval_label}.',
+                )
+
+            serializer = NoDuesStatusSerializer(no_dues)
+            return Response(
+                {
+                    "message": f"No-Dues cleared by {department}",
+                    "data": serializer.data,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        except NoDues.DoesNotExist:
+            return Response(
+                {"error": "No-Dues record not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class TrackNoDuesProgressView(APIView):
+    """Track progress of no-dues clearance."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            from applications.globals.models import ExtraInfo
+
+            extra_info = ExtraInfo.objects.get(user=request.user)
+            no_dues = NoDues.objects.get(roll_no=extra_info)
+            summary = _no_dues_progress_summary(no_dues)
+
+            return Response({
+                "roll_no": extra_info.id,
+                "name": no_dues.name,
+                "cleared": summary["cleared_count"],
+                "not_cleared": summary["not_cleared_count"],
+                "pending": summary["pending_count"],
+                "total": summary["total_count"],
+                "progress_percentage": summary["progress_percentage"],
+                "departments": summary["statuses"],
+                "all_clear": summary["all_clear"],
+            }, status=status.HTTP_200_OK)
+
+        except NoDues.DoesNotExist:
+            return Response(
+                {"error": "No-Dues record not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except ExtraInfo.DoesNotExist:
+            return Response(
+                {"error": "Student information not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+
+class ListPendingNoDuesView(APIView):
+    """List all students with pending no-dues clearance requests."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            _ensure_no_dues_approver_designations()
+
+            user_roles = _get_user_no_dues_roles(request.user)
+            approver_roles = user_roles.intersection(NO_DUES_APPROVER_ROLES)
+            has_non_admin_role = any(role_name != 'acadadmin' for role_name in approver_roles)
+            if not approver_roles:
+                return Response(
+                    {
+                        "error": "Only librarian, mess incharge, lab supervisor, or hostel warden can view pending no-dues requests."
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            pending_clearances = NoDues.objects.all()
+
+            data = []
+            for no_dues in pending_clearances:
+                summary = _no_dues_progress_summary(no_dues)
+                statuses = summary["statuses"]
+                first_four_clear = all(
+                    statuses[role_name] == 'clear'
+                    for role_name in ['librarian', 'mess_incharge', 'hostel_warden', 'lab_supervisor']
+                )
+
+                show_for_non_admin_queue = has_non_admin_role and not first_four_clear
+                show_for_acadadmin_queue = (
+                    'acadadmin' in approver_roles
+                    and first_four_clear
+                    and statuses['acad_admin'] != 'clear'
+                )
+
+                if not (show_for_non_admin_queue or show_for_acadadmin_queue):
+                    continue
+
+                available_approvals = []
+                if has_non_admin_role:
+                    non_admin_targets = [
+                        ('library', 'librarian'),
+                        ('mess', 'mess_incharge'),
+                        ('hostel', 'hostel_warden'),
+                        ('lab_supervisor', 'lab_supervisor'),
+                    ]
+                    available_approvals.extend(
+                        target
+                        for target, status_key in non_admin_targets
+                        if statuses.get(status_key) == 'pending'
+                    )
+
+                if 'acadadmin' in approver_roles and first_four_clear and statuses.get('acad_admin') == 'pending':
+                    available_approvals.append('acad_admin')
+
+                if summary["all_clear"]:
+                    continue
+
+                data.append({
+                    'roll_no': no_dues.roll_no.id,
+                    'name': no_dues.name,
+                    'cleared_count': summary["cleared_count"],
+                    'total_count': summary["total_count"],
+                    'progress_percentage': summary["progress_percentage"],
+                    'departments': summary["statuses"],
+                    'available_approvals': list(dict.fromkeys(available_approvals)),
+                })
+
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+class DownloadNoDuesCertificateView(APIView):
+    """Download no-dues certificate (if fully cleared)."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            from applications.globals.models import ExtraInfo
+            from django.http import HttpResponse
+            from io import BytesIO
+
+            extra_info = ExtraInfo.objects.get(user=request.user)
+            no_dues = NoDues.objects.get(roll_no=extra_info)
+            summary = _no_dues_progress_summary(no_dues)
+
+            if not summary["all_clear"]:
+                return Response(
+                    {"error": "Student has not cleared all departments yet"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            blank_pdf = b"""%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << >> >>\nendobj\n4 0 obj\n<< /Length 0 >>\nstream\n\nendstream\nendobj\nxref\n0 5\n0000000000 65535 f \n0000000010 00000 n \n0000000061 00000 n \n0000000118 00000 n \n0000000243 00000 n \ntrailer\n<< /Root 1 0 R /Size 5 >>\nstartxref\n284\n%%EOF"""
+
+            response = HttpResponse(blank_pdf, content_type="application/pdf")
+            response["Content-Disposition"] = f'attachment; filename="{extra_info.id}_nodues.pdf"'
+            response["Content-Length"] = str(len(blank_pdf))
+            return response
+
+        except NoDues.DoesNotExist:
+            return Response(
+                {"error": "No-Dues record not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except ExtraInfo.DoesNotExist:
+            return Response(
+                {"error": "Student information not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except Exception as e:
+            return Response(
+                {"error": f"Error generating certificate: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )

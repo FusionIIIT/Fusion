@@ -13,12 +13,16 @@ urlpatterns = [
     path('update-leave-status-thesis/', views.UpdateLeaveStatusThesis.as_view(), name='update-leave-status-thesis'),
     path('get-leave-requests/', views.GetLeaveRequests.as_view(), name='get-leave-requests'),
     path('get-pg-leave-requests/', views.GetPGLeaveRequests.as_view(), name='get-pg-leave-requests'),
+    path('withdraw-ug-leave/<int:leave_id>/', views.WithdrawUGLeave.as_view(), name='withdraw-ug-leave'),
+    path('withdraw-pg-leave/<int:leave_id>/', views.WithdrawPGLeave.as_view(), name='withdraw-pg-leave'),
 
     #Bonafide_form URLs
     path('bonafide-form-submit/', views.BonafideFormSubmitView.as_view(), name='bonafide-form-submit'), 
     path('admin-bonafide-requests/',views.FetchPendingBonafideRequests.as_view(),name='admin-bonafide-requests'),
     path('admin-updates/',views.UpdateBonafideStatus.as_view(),name='admin-updates'),
+    path('bonafide-certificate-upload/<int:bonafide_id>/', views.UploadBonafideCertificate.as_view(), name='bonafide-certificate-upload'),
     path('bonafide-status/',views.GetBonafideStatus.as_view(),name='bonafide-status'),
+    path('withdraw-bonafide/<int:bonafide_id>/', views.WithdrawBonafide.as_view(), name='withdraw-bonafide'),
 
     #TA_Assiistantship URLs
     path('assistantship-form-submit/',views.AssistantshipFormSubmitView.as_view(),name='assistantship-form-submit'),
@@ -35,5 +39,18 @@ urlpatterns = [
     path('director-pending-requests/', views.DirectorFetchPendingAssistantshipRequests.as_view(), name='director-pending-requests'),
     path('director-update-status/', views.DirectorUpdateAssistantshipStatus.as_view(), name='director-update-status'),
     path('get_assistantship_status/', views.GetAssistantshipStatus.as_view(), name='get_assistantship_status'),
+    path('withdraw-assistantship/<int:form_id>/', views.WithdrawAssistantship.as_view(), name='withdraw-assistantship'),
+    path('ta-assignment-options/', views.FetchTAAssignmentOptions.as_view(), name='ta-assignment-options'),
+    path('ta-assignment-update/', views.UpdateTAAssignments.as_view(), name='ta-assignment-update'),
+    path('faculty-supervisor-assignment-options/', views.FetchFacultySupervisorAssignmentOptions.as_view(), name='faculty-supervisor-assignment-options'),
+    path('faculty-supervisor-assignment-update/', views.UpdateFacultySupervisorAssignments.as_view(), name='faculty-supervisor-assignment-update'),
     # path('assistantship-status-update/', views.UpdateAssistantshipStatus.as_view(), name='assistantship-status-update'),
+
+    # No-Dues URLs
+    path('no-dues-initiate/', views.InitiateNoDuesView.as_view(), name='no-dues-initiate'),
+    path('no-dues-status/', views.GetNoDuesStatusView.as_view(), name='no-dues-status'),
+    path('no-dues-verify/', views.VerifyNoDuesView.as_view(), name='no-dues-verify'),
+    path('no-dues-track/', views.TrackNoDuesProgressView.as_view(), name='no-dues-track'),
+    path('no-dues-pending/', views.ListPendingNoDuesView.as_view(), name='no-dues-pending'),
+    path('no-dues-certificate/', views.DownloadNoDuesCertificateView.as_view(), name='no-dues-certificate'),
 ]

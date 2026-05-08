@@ -1,3 +1,5 @@
+import ast
+
 from django.contrib.auth import get_user_model
 from applications.academic_information.models import Student
 from applications.eis.api.views import profile as eis_profile
@@ -22,6 +24,7 @@ from applications.globals.models import (ExtraInfo, Feedback, HoldsDesignation,
                                          Issue, IssueImage, DepartmentInfo, ModuleAccess)
 from .utils import get_and_authenticate_user
 from notifications.models import Notification
+import ast
 
 User = get_user_model()
 
@@ -107,7 +110,34 @@ def auth_view(request):
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def notification(request):
-    notifications=serializers.NotificationSerializer(request.user.notifications.all(),many=True).data
+    user_notifications = request.user.notifications.all().order_by('-timestamp')
+    active_role = getattr(getattr(request.user, 'extrainfo', None), 'last_selected_role', None)
+    active_role = active_role.strip().lower() if isinstance(active_role, str) and active_role.strip() else None
+    if active_role and 'hod' in active_role:
+        active_role = 'hod'
+
+    filtered_notifications = []
+    for notification_obj in user_notifications:
+        data = notification_obj.data
+        parsed_data = {}
+
+        if isinstance(data, dict):
+            parsed_data = data
+        elif isinstance(data, str):
+            try:
+                parsed_data = ast.literal_eval(data)
+            except Exception:
+                parsed_data = {}
+
+        recipient_role = parsed_data.get('recipient_role')
+        recipient_role = recipient_role.strip().lower() if isinstance(recipient_role, str) and recipient_role.strip() else None
+
+        if active_role and recipient_role and recipient_role != active_role:
+            continue
+
+        filtered_notifications.append(notification_obj)
+
+    notifications = serializers.NotificationSerializer(filtered_notifications, many=True).data
 
     resp={
         'notifications':notifications, 
