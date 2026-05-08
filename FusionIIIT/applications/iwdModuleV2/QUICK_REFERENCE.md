@@ -163,8 +163,8 @@ def my_endpoint(request):
 
 ### Custom Exceptions
 
-#### `APIException(message, code=None, status_code=None, details=None)`
-Base custom exception for API errors
+Only the following custom exceptions are currently provided by
+`helpers/error_response.py`.
 
 #### `APIValidationError(message, code='VALIDATION_ERROR', details=None)`
 400 error for validation issues
@@ -184,10 +184,16 @@ raise APINotFoundError('User not found', details={'user_id': 123})
 raise APIPermissionError('Admin access required', details={'required_role': 'Admin'})
 ```
 
-#### `APIAuthenticationError(message, code='AUTHENTICATION_FAILED', details=None)`
-401 error for authentication issues
+#### Authentication failures
+401 error responses should be returned directly with `error_response(...)`
+because `helpers/error_response.py` does not define an
+`APIAuthenticationError` exception.
 ```python
-raise APIAuthenticationError('Token expired')
+return error_response(
+    message='Token expired',
+    code='AUTHENTICATION_FAILED',
+    status_code=status.HTTP_401_UNAUTHORIZED
+)
 ```
 
 ---
@@ -228,11 +234,9 @@ from helpers.error_response import (
     handle_api_errors,
     
     # Exceptions
-    APIException,
     APIValidationError,
     APINotFoundError,
     APIPermissionError,
-    APIAuthenticationError,
 )
 ```
 

@@ -1,3 +1,7 @@
+"""DRF serializers for iwdModuleV2 (inside `api/`).
+
+Define serializers and field-level validation here.
+"""
 from rest_framework import serializers
 from applications.globals.models import *
 from applications.iwdModuleV2.models import *
@@ -5,10 +9,7 @@ from applications.ps1.models import *
 from decimal import Decimal
 import json
 from django.utils import timezone
-"""DRF serializers for iwdModuleV2 (inside `api/`).
 
-Define serializers and field-level validation here.
-"""
 class WorkOrderFormSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkOrder

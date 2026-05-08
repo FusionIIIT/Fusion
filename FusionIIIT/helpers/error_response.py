@@ -3,8 +3,14 @@ Error handling utilities for API responses.
 Provides standardized error and success response formatting.
 """
 
+import logging
+
 from rest_framework.response import Response
 from rest_framework import status as http_status
+
+
+DEFAULT_ERROR_CODE = 'UNKNOWN_ERROR'
+logger = logging.getLogger(__name__)
 
 
 # ===== Custom Exception Classes =====
@@ -44,10 +50,9 @@ def error_response(message, code=None, status_code=None, details=None):
 
     payload = {
         'error': message,
+        'code': code or DEFAULT_ERROR_CODE,
+        'status': status_code,
     }
-
-    if code:
-        payload['code'] = code
 
     if details:
         payload['details'] = details
@@ -70,10 +75,10 @@ def success_response(message=None, data=None, status_code=None):
     if status_code is None:
         status_code = http_status.HTTP_200_OK
 
-    payload = {}
-
-    if message:
-        payload['message'] = message
+    payload = {
+        'message': message or '',
+        'status': status_code,
+    }
 
     if data:
         payload['data'] = data
@@ -143,11 +148,11 @@ def handle_api_errors(func):
                 status_code=http_status.HTTP_403_FORBIDDEN
             )
         except Exception as e:
+            logger.exception('Unhandled API exception in %s', func.__name__)
             return error_response(
                 message='An unexpected error occurred',
                 code='INTERNAL_SERVER_ERROR',
-                status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
-                details={'error': str(e)} if str(e) else None
+                status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
     return wrapper

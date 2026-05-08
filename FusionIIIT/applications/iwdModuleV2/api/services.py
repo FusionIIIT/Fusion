@@ -12,6 +12,20 @@ import re
 
 from .serializers import *
 
+def _parse_designation_user_pair(value):
+    value = (value or '').strip()
+    if '|' not in value:
+        return None, None
+
+    receiver_desg, receiver_user = value.split('|', 1)
+    receiver_desg = receiver_desg.strip()
+    receiver_user = receiver_user.strip()
+
+    if not receiver_desg or not receiver_user:
+        return None, None
+
+    return receiver_desg, receiver_user
+
 
 def create_request_service(request, serializer, attachment, role):
 
@@ -19,8 +33,12 @@ def create_request_service(request, serializer, attachment, role):
 
         formObject = serializer.save()
 
-        receiver_desg = "Admin IWD"
-        receiver_user = "kunal"
+        request_data = getattr(request, 'data', None) or request.POST
+        receiver_desg, receiver_user = _parse_designation_user_pair(
+            request_data.get('designation')
+        )
+        if not receiver_desg or not receiver_user:
+            raise ValueError('Receiver designation format is invalid')
 
         receiver_user_obj = User.objects.get(username=receiver_user)
 
@@ -76,10 +94,12 @@ def process_bill_service(request, fileid, remarks, attachment, receiver_user, re
             status="Final Bill Processed"
         )
 
-        request_instance = Requests.objects.get(pk=request_id)
+        vendor_obj = Vendor.objects.filter(work__request_id=request_id).order_by('-id').first()
+        if not vendor_obj:
+            raise ValueError('No vendor found for this request')
 
         bill = Bills.objects.create(
-            request_id=request_instance,
+            vendor=vendor_obj,
             file=attachment
         )
 

@@ -17,7 +17,7 @@ import sys
 import django
 
 # Setup Django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Fusion.settings.base')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Fusion.settings.development')
 sys.path.insert(0, os.path.dirname(__file__))
 
 django.setup()

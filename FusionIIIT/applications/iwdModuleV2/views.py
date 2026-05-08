@@ -19,6 +19,7 @@ from django.http import HttpResponse
 from io import BytesIO
 from django.core.files.base import File as DjangoFile
 from django.db import transaction
+from .selectors import get_latest_bill_for_request
 # Create your views here.
 
 
@@ -484,6 +485,13 @@ def fetchDesignations(request):
 @login_required
 def requestsView(request):
     if request.method == 'POST':
+        desg = request.session.get('currentDesignationSelected')
+        receiver_desg = request.POST['designation']
+        receiver_user, receiver_user_obj = get_receiver_from_designation(receiver_desg)
+
+        if not receiver_user:
+            messages.error(request, "No user assigned to this designation")
+            return redirect('dashboard')
 
         with transaction.atomic():
 
@@ -503,23 +511,13 @@ def requestsView(request):
             formObject.billSettled = 0
             formObject.save()
 
-            request_object = Requests.objects.get(pk=formObject.pk)
-
-            desg = request.session.get('currentDesignationSelected')
-            receiver_desg = request.POST['designation']
-            receiver_user, receiver_user_obj = get_receiver_from_designation(receiver_desg)
-
-            if not receiver_user:
-              messages.error(request, "No user assigned to this designation")
-              return redirect('dashboard')
-
             create_file(
                 uploader=request.user.username,
                 uploader_designation=desg,
                 receiver=receiver_user,
                 receiver_designation=receiver_desg,
                 src_module="IWD",
-                src_object_id=str(request_object.id),
+                src_object_id=str(formObject.id),
                 file_extra_JSON={"value": 2},
                 attached_file=None
             )
@@ -1057,9 +1055,14 @@ def handleProcessedBills(request):
             attachment = request.FILES.get('attachment')
             receiver_desg = request.POST['designation']
             receiver_user, receiver_user_obj = get_receiver_from_designation(receiver_desg)
+            vendor_obj = Vendor.objects.filter(work__request_id=request_id).order_by('-id').first()
 
             if not receiver_user:
                 messages.error(request, "Receiver not found")
+                return redirect('generatedBillsView')
+
+            if not vendor_obj:
+                messages.error(request, "No vendor found for this request")
                 return redirect('generatedBillsView')
 
             forward_file(
@@ -1076,10 +1079,8 @@ def handleProcessedBills(request):
                 status="Final Bill Processed"
             )
 
-            request_instance = Requests.objects.get(pk=request_id)
-
             Bills.objects.create(
-                request_id=request_instance,
+                vendor=vendor_obj,
                 file=attachment
             )
 
@@ -1104,9 +1105,11 @@ def auditDocumentView(request):
 
     for x in inbox_files:
         requestId = x['src_object_id']
-        files = Bills.objects.get(request_id=requestId)
+        files = get_latest_bill_for_request(requestId)
+        if not files:
+            continue
         file_obj= File.objects.get(src_object_id = requestId, src_module = "IWD")
-        element = [files.request_id.id, files.file, files.file.url, file_obj.id, file_obj.id, file_obj.id]
+        element = [requestId, files.file, files.file.url, file_obj.id, file_obj.id, file_obj.id]
         obj.append(element)
 
     return render(request, 'iwdModuleV2/auditDocumentView.html', {'obj' : obj})
@@ -1152,9 +1155,11 @@ def auditDocument(request):
 
         for x in inbox_files:
             requestId = x['src_object_id']
-            files = Bills.objects.get(request_id=requestId)
+            files = get_latest_bill_for_request(requestId)
+            if not files:
+                continue
             file_obj= File.objects.get(src_object_id = requestId, src_module = "IWD")
-            element = [files.request_id.id, files.file, files.file.url, file_obj.id, file_obj.id, file_obj.id]
+            element = [requestId, files.file, files.file.url, file_obj.id, file_obj.id, file_obj.id]
             obj.append(element)
 
         messages.success(request, "File Audit done")
@@ -1179,10 +1184,12 @@ def settleBillsView(request):
     
     for x in inbox_files:
         requestId = x['src_object_id']
-        bills_object = Bills.objects.filter(request_id=requestId).first()
+        bills_object = get_latest_bill_for_request(requestId)
+        if not bills_object:
+            continue
         file_obj= File.objects.get(src_object_id = requestId, src_module = "IWD")
         request_object = Requests.objects.get(id = requestId)
-        element = [bills_object.request_id.id, bills_object.file, bills_object.file.url, request_object.billSettled, file_obj.id, file_obj.id]
+        element = [requestId, bills_object.file, bills_object.file.url, request_object.billSettled, file_obj.id, file_obj.id]
         obj.append(element)
 
     return render(request, 'iwdModuleV2/settleBillsView.html', {'obj' : obj})
