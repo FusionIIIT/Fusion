@@ -1,0 +1,265 @@
+business_rules:
+  - id: "BR-001"
+    title: "Authorization"
+    description: "Users must be authenticated; Access is restricted by role/designation."
+
+    valid_tests:
+      - input_action: "Perform action that should satisfy BR-001"
+        expected_result: "System accepts valid input and preserves expected state transitions."
+
+    invalid_tests:
+      - input_action: "Perform action that should violate BR-001"
+        expected_result: "System rejects invalid input with explicit validation/authorization error and no invalid state change."
+  - id: "BR-002"
+    title: "Constraint"
+    description: "New requests must start in 'Pending' state with all workflow flags set to default (0)."
+
+    valid_tests:
+      - input_action: "Perform action that should satisfy BR-002"
+        expected_result: "System accepts valid input and preserves expected state transitions."
+
+    invalid_tests:
+      - input_action: "Perform action that should violate BR-002"
+        expected_result: "System rejects invalid input with explicit validation/authorization error and no invalid state change."
+  - id: "BR-003"
+    title: "Constraint"
+    description: "Requests must have Name, Description, and Area."
+
+    valid_tests:
+      - input_action: "Perform action that should satisfy BR-003"
+        expected_result: "System accepts valid input and preserves expected state transitions."
+
+    invalid_tests:
+      - input_action: "Perform action that should violate BR-003"
+        expected_result: "System rejects invalid input with explicit validation/authorization error and no invalid state change."
+  - id: "BR-004"
+    title: "Constraint"
+    description: "System must record the username of the request creator."
+
+    valid_tests:
+      - input_action: "Perform action that should satisfy BR-004"
+        expected_result: "System accepts valid input and preserves expected state transitions."
+
+    invalid_tests:
+      - input_action: "Perform action that should violate BR-004"
+        expected_result: "System rejects invalid input with explicit validation/authorization error and no invalid state change."
+  - id: "BR-005"
+    title: "Authorization"
+    description: "Users only see requests assigned to their current designation/role."
+
+    valid_tests:
+      - input_action: "Perform action that should satisfy BR-005"
+        expected_result: "System accepts valid input and preserves expected state transitions."
+
+    invalid_tests:
+      - input_action: "Perform action that should violate BR-005"
+        expected_result: "System rejects invalid input with explicit validation/authorization error and no invalid state change."
+  - id: "BR-006"
+    title: "Authorization"
+    description: "Request must be processed by Dean before moving to Director (unless skipped by policy)."
+
+    valid_tests:
+      - input_action: "Perform action that should satisfy BR-006"
+        expected_result: "System accepts valid input and preserves expected state transitions."
+
+    invalid_tests:
+      - input_action: "Perform action that should violate BR-006"
+        expected_result: "System rejects invalid input with explicit validation/authorization error and no invalid state change."
+  - id: "BR-007"
+    title: "Authorization"
+    description: "IWD Admin must approve request before Proposal creation."
+
+    valid_tests:
+      - input_action: "Perform action that should satisfy BR-007"
+        expected_result: "System accepts valid input and preserves expected state transitions."
+
+    invalid_tests:
+      - input_action: "Perform action that should violate BR-007"
+        expected_result: "System rejects invalid input with explicit validation/authorization error and no invalid state change."
+  - id: "BR-008"
+    title: "Constraint"
+    description: "Only one proposal can be active per request; Director approves the active one."
+
+    valid_tests:
+      - input_action: "Perform action that should satisfy BR-008"
+        expected_result: "System accepts valid input and preserves expected state transitions."
+
+    invalid_tests:
+      - input_action: "Perform action that should violate BR-008"
+        expected_result: "System rejects invalid input with explicit validation/authorization error and no invalid state change."
+  - id: "BR-009"
+    title: "Calculation"
+    description: "Proposal/Work Order budget must be sum of (Item Qty * Price)."
+
+    valid_tests:
+      - input_action: "Perform action that should satisfy BR-009"
+        expected_result: "System accepts valid input and preserves expected state transitions."
+
+    invalid_tests:
+      - input_action: "Perform action that should violate BR-009"
+        expected_result: "System rejects invalid input with explicit validation/authorization error and no invalid state change."
+  - id: "BR-010"
+    title: "Authorization"
+    description: "Work Order cannot be issued without Director Approval (flag=1)."
+
+    valid_tests:
+      - input_action: "Perform action that should satisfy BR-010"
+        expected_result: "System accepts valid input and preserves expected state transitions."
+
+    invalid_tests:
+      - input_action: "Perform action that should violate BR-010"
+        expected_result: "System rejects invalid input with explicit validation/authorization error and no invalid state change."
+  - id: "BR-011"
+    title: "Constraint"
+    description: "Work Order must link to a valid Request and adhere to the approved budget."
+
+    valid_tests:
+      - input_action: "Perform action that should satisfy BR-011"
+        expected_result: "System accepts valid input and preserves expected state transitions."
+
+    invalid_tests:
+      - input_action: "Perform action that should violate BR-011"
+        expected_result: "System rejects invalid input with explicit validation/authorization error and no invalid state change."
+  - id: "BR-012"
+    title: "Integrity"
+    description: "Vendors must be linked to a specific Work Order."
+
+    valid_tests:
+      - input_action: "Perform action that should satisfy BR-012"
+        expected_result: "System accepts valid input and preserves expected state transitions."
+
+    invalid_tests:
+      - input_action: "Perform action that should violate BR-012"
+        expected_result: "System rejects invalid input with explicit validation/authorization error and no invalid state change."
+  - id: "BR-013"
+    title: "Trigger"
+    description: "Work must be marked \"Completed\" before Final Bill processing begins."
+
+    valid_tests:
+      - input_action: "Perform action that should satisfy BR-013"
+        expected_result: "System accepts valid input and preserves expected state transitions."
+
+    invalid_tests:
+      - input_action: "Perform action that should violate BR-013"
+        expected_result: "System rejects invalid input with explicit validation/authorization error and no invalid state change."
+  - id: "BR-014"
+    title: "Constraint"
+    description: "Every state change must update tracking history and notify the receiver."
+
+    valid_tests:
+      - input_action: "Perform action that should satisfy BR-014"
+        expected_result: "System accepts valid input and preserves expected state transitions."
+
+    invalid_tests:
+      - input_action: "Perform action that should violate BR-014"
+        expected_result: "System rejects invalid input with explicit validation/authorization error and no invalid state change."
+  - id: "BR-015"
+    title: "Trigger"
+    description: "System updates billProcessed flag when bills are uploaded/forwarded."
+
+    valid_tests:
+      - input_action: "Perform action that should satisfy BR-015"
+        expected_result: "System accepts valid input and preserves expected state transitions."
+
+    invalid_tests:
+      - input_action: "Perform action that should violate BR-015"
+        expected_result: "System rejects invalid input with explicit validation/authorization error and no invalid state change."
+  - id: "BR-016"
+    title: "Authorization"
+    description: "Final Bill cannot be settled until billAudited (or audit status) is valid."
+
+    valid_tests:
+      - input_action: "Perform action that should satisfy BR-016"
+        expected_result: "System accepts valid input and preserves expected state transitions."
+
+    invalid_tests:
+      - input_action: "Perform action that should violate BR-016"
+        expected_result: "System rejects invalid input with explicit validation/authorization error and no invalid state change."
+  - id: "BR-017"
+    title: "System"
+    description: "Settlement updates billSettled flag and closes the financial workflow."
+
+    valid_tests:
+      - input_action: "Perform action that should satisfy BR-017"
+        expected_result: "System accepts valid input and preserves expected state transitions."
+
+    invalid_tests:
+      - input_action: "Perform action that should violate BR-017"
+        expected_result: "System rejects invalid input with explicit validation/authorization error and no invalid state change."
+  - id: "BR-018"
+    title: "Validation"
+    description: "Prices, Quantities, and Budgets must be non-negative."
+
+    valid_tests:
+      - input_action: "Perform action that should satisfy BR-018"
+        expected_result: "System accepts valid input and preserves expected state transitions."
+
+    invalid_tests:
+      - input_action: "Perform action that should violate BR-018"
+        expected_result: "System rejects invalid input with explicit validation/authorization error and no invalid state change."
+  - id: "BR-019"
+    title: "Constraint"
+    description: "Requests rejected by Admin cannot be updated/modified."
+
+    valid_tests:
+      - input_action: "Perform action that should satisfy BR-019"
+        expected_result: "System accepts valid input and preserves expected state transitions."
+
+    invalid_tests:
+      - input_action: "Perform action that should violate BR-019"
+        expected_result: "System rejects invalid input with explicit validation/authorization error and no invalid state change."
+  - id: "BR-020"
+    title: "Constraint"
+    description: "System must only return valid designations from a predefined list."
+
+    valid_tests:
+      - input_action: "Perform action that should satisfy BR-020"
+        expected_result: "System accepts valid input and preserves expected state transitions."
+
+    invalid_tests:
+      - input_action: "Perform action that should violate BR-020"
+        expected_result: "System rejects invalid input with explicit validation/authorization error and no invalid state change."
+  - id: "BR-021"
+    title: "Constraint"
+    description: "Routing (Admin vs Director) depends on cost bands (e.g., >2.5L)."
+
+    valid_tests:
+      - input_action: "Perform action that should satisfy BR-021"
+        expected_result: "System accepts valid input and preserves expected state transitions."
+
+    invalid_tests:
+      - input_action: "Perform action that should violate BR-021"
+        expected_result: "System rejects invalid input with explicit validation/authorization error and no invalid state change."
+  - id: "BR-022"
+    title: "Constraint"
+    description: "Stock must be checked/issued before procurement is triggered."
+
+    valid_tests:
+      - input_action: "Perform action that should satisfy BR-022"
+        expected_result: "System accepts valid input and preserves expected state transitions."
+
+    invalid_tests:
+      - input_action: "Perform action that should violate BR-022"
+        expected_result: "System rejects invalid input with explicit validation/authorization error and no invalid state change."
+  - id: "BR-023"
+    title: "Trigger"
+    description: "System detects timeouts and sends escalations."
+
+    valid_tests:
+      - input_action: "Perform action that should satisfy BR-023"
+        expected_result: "System accepts valid input and preserves expected state transitions."
+
+    invalid_tests:
+      - input_action: "Perform action that should violate BR-023"
+        expected_result: "System rejects invalid input with explicit validation/authorization error and no invalid state change."
+  - id: "BR-024"
+    title: "Trigger"
+    description: "Post-repair feedback can reopen a case."
+
+    valid_tests:
+      - input_action: "Perform action that should satisfy BR-024"
+        expected_result: "System accepts valid input and preserves expected state transitions."
+
+    invalid_tests:
+      - input_action: "Perform action that should violate BR-024"
+        expected_result: "System rejects invalid input with explicit validation/authorization error and no invalid state change."

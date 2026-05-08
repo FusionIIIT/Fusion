@@ -9,6 +9,7 @@ class Migration(migrations.Migration):
     
     dependencies = [
         ('programme_curriculum', '0025_update_minority_values'),
+        ('academic_procedures', '0013_auto_20250423_1401'),
     ]
 
     operations = [
