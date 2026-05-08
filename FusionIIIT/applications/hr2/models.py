@@ -614,8 +614,8 @@ class LeaveApplicationNew(models.Model):
     )
     nominee_responded_at = models.DateTimeField(null=True, blank=True)
 
-    medical_certificate = models.FileField(upload_to='hr/leave/', blank=True, null=True)
-    attachment_file = models.FileField(upload_to='hr/leave/', blank=True, null=True)
+    medical_certificate = models.CharField(max_length=200, blank=True)
+    attachment_file = models.CharField(max_length=200, blank=True)
 
     applied_date = models.DateField(auto_now_add=True)
     leave_balance_before = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)

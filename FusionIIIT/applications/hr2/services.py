@@ -989,9 +989,40 @@ def seed_hr_demo_data():
         "Administration",
         "Finance",
         "Director Office",
+        "Electronics and Communication Engineering",
     ]
 
     employees = [
+        {
+            "employee_id": "EMP1009",
+            "name": "Dr. Sandeep Kumar",
+            "email": "sandeep.kumar@iiitdmj.ac.in",
+            "phone": "9876543225",
+            "gender": "Male",
+            "dob": "1978-09-14",
+            "department": "Electronics and Communication Engineering",
+            "designation": "Professor and HOD",
+            "role": "HOD",
+            "employment_type": "Permanent",
+            "date_of_joining": "2012-07-01",
+            "reporting_to": "EMP1003",
+            "status": "Active",
+        },
+        {
+            "employee_id": "EMP1008",
+            "name": "Dr. Kiran Reddy",
+            "email": "kiran.reddy@iiitdmj.ac.in",
+            "phone": "9876543220",
+            "gender": "Male",
+            "dob": "1988-03-22",
+            "department": "Electronics and Communication Engineering",
+            "designation": "Associate Professor",
+            "role": "Employee",
+            "employment_type": "Permanent",
+            "date_of_joining": "2017-06-10",
+            "reporting_to": "EMP1009",  # ECE HOD (create this later)
+            "status": "Active",
+        },
         {
             "employee_id": "EMP1001",
             "name": "Rahul Sharma",
@@ -1100,6 +1131,8 @@ def seed_hr_demo_data():
     ]
 
     users = [
+        {"linked_employee_id": "EMP1009", "username": "hod_ece1009", "password": "hod123"},
+        {"linked_employee_id": "EMP1008", "username": "kiran1008", "password": "kiran123"},
         {"linked_employee_id": "EMP1001", "username": "rahul1001", "password": "rahul123"},
         {"linked_employee_id": "EMP1007", "username": "anjali1007", "password": "anjali123"},
         {"linked_employee_id": "EMP1002", "username": "hod1002", "password": "hod123"},
@@ -1117,6 +1150,15 @@ def seed_hr_demo_data():
         "earned_leave": 18,
         "vacation_leave": 20,
         "sabbatical_leave": 0,
+    }
+    leave_balance_hod_ece = {
+        "employee_id": "EMP1009",
+        "casual_leave": 15,
+        "restricted_leave": 8,
+        "medical_leave": 20,
+        "earned_leave": 30,
+        "vacation_leave": 35,
+        "sabbatical_leave": 15,
     }
 
     leave_request = {
@@ -1301,22 +1343,30 @@ def seed_hr_demo_data():
                 defaults={"is_active": True},
             )
 
-        employee_user = ExtraInfo.objects.get(id=leave_balance["employee_id"])
-        year = datetime.date.today().year
-
-        for name, code, value in leave_types:
-            leave_type = LeaveType.objects.get(code=code)
-            EmployeeLeaveBalance.objects.update_or_create(
-                employee=employee_user,
-                leave_type=leave_type,
-                year=year,
-                defaults={
-                    "opening_balance": value,
-                    "accrued": 0,
-                    "availed": 0,
-                    "current_balance": value,
-                },
-            )
+        # Seed leave balances for EMP1001 (default) and EMP1009 (ECE HOD)
+        for lb in [leave_balance, leave_balance_hod_ece]:
+            employee_user = ExtraInfo.objects.get(id=lb["employee_id"])
+            year = datetime.date.today().year
+            for name, code, value in [
+                ("Casual", "CL", lb["casual_leave"]),
+                ("Restricted", "RL", lb["restricted_leave"]),
+                ("Medical", "ML", lb["medical_leave"]),
+                ("Earned", "EL", lb["earned_leave"]),
+                ("Vacation", "VL", lb["vacation_leave"]),
+                ("Sabbatical", "SL", lb["sabbatical_leave"]),
+            ]:
+                leave_type = LeaveType.objects.get(code=code)
+                EmployeeLeaveBalance.objects.update_or_create(
+                    employee=employee_user,
+                    leave_type=leave_type,
+                    year=year,
+                    defaults={
+                        "opening_balance": value,
+                        "accrued": 0,
+                        "availed": 0,
+                        "current_balance": value,
+                    },
+                )
 
         LeaveApplicationNew.objects.get_or_create(
             employee=employee_user,
