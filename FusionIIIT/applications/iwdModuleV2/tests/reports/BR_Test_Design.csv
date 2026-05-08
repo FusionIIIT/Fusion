@@ -1,0 +1,49 @@
+BR_ID,Title,Category,Input/Action,Expected Result
+BR-001,Authorization,Valid,Perform action that should satisfy BR-001,Rule is enforced correctly for valid input
+BR-001,Authorization,Invalid,Perform action that should violate BR-001,System rejects/flags violation of rule
+BR-002,Constraint,Valid,Perform action that should satisfy BR-002,Rule is enforced correctly for valid input
+BR-002,Constraint,Invalid,Perform action that should violate BR-002,System rejects/flags violation of rule
+BR-003,Constraint,Valid,Perform action that should satisfy BR-003,Rule is enforced correctly for valid input
+BR-003,Constraint,Invalid,Perform action that should violate BR-003,System rejects/flags violation of rule
+BR-004,Constraint,Valid,Perform action that should satisfy BR-004,Rule is enforced correctly for valid input
+BR-004,Constraint,Invalid,Perform action that should violate BR-004,System rejects/flags violation of rule
+BR-005,Authorization,Valid,Perform action that should satisfy BR-005,Rule is enforced correctly for valid input
+BR-005,Authorization,Invalid,Perform action that should violate BR-005,System rejects/flags violation of rule
+BR-006,Authorization,Valid,Perform action that should satisfy BR-006,Rule is enforced correctly for valid input
+BR-006,Authorization,Invalid,Perform action that should violate BR-006,System rejects/flags violation of rule
+BR-007,Authorization,Valid,Perform action that should satisfy BR-007,Rule is enforced correctly for valid input
+BR-007,Authorization,Invalid,Perform action that should violate BR-007,System rejects/flags violation of rule
+BR-008,Constraint,Valid,Perform action that should satisfy BR-008,Rule is enforced correctly for valid input
+BR-008,Constraint,Invalid,Perform action that should violate BR-008,System rejects/flags violation of rule
+BR-009,Calculation,Valid,Perform action that should satisfy BR-009,Rule is enforced correctly for valid input
+BR-009,Calculation,Invalid,Perform action that should violate BR-009,System rejects/flags violation of rule
+BR-010,Authorization,Valid,Perform action that should satisfy BR-010,Rule is enforced correctly for valid input
+BR-010,Authorization,Invalid,Perform action that should violate BR-010,System rejects/flags violation of rule
+BR-011,Constraint,Valid,Perform action that should satisfy BR-011,Rule is enforced correctly for valid input
+BR-011,Constraint,Invalid,Perform action that should violate BR-011,System rejects/flags violation of rule
+BR-012,Integrity,Valid,Perform action that should satisfy BR-012,Rule is enforced correctly for valid input
+BR-012,Integrity,Invalid,Perform action that should violate BR-012,System rejects/flags violation of rule
+BR-013,Trigger,Valid,Perform action that should satisfy BR-013,Rule is enforced correctly for valid input
+BR-013,Trigger,Invalid,Perform action that should violate BR-013,System rejects/flags violation of rule
+BR-014,Constraint,Valid,Perform action that should satisfy BR-014,Rule is enforced correctly for valid input
+BR-014,Constraint,Invalid,Perform action that should violate BR-014,System rejects/flags violation of rule
+BR-015,Trigger,Valid,Perform action that should satisfy BR-015,Rule is enforced correctly for valid input
+BR-015,Trigger,Invalid,Perform action that should violate BR-015,System rejects/flags violation of rule
+BR-016,Authorization,Valid,Perform action that should satisfy BR-016,Rule is enforced correctly for valid input
+BR-016,Authorization,Invalid,Perform action that should violate BR-016,System rejects/flags violation of rule
+BR-017,System,Valid,Perform action that should satisfy BR-017,Rule is enforced correctly for valid input
+BR-017,System,Invalid,Perform action that should violate BR-017,System rejects/flags violation of rule
+BR-018,Validation,Valid,Perform action that should satisfy BR-018,Rule is enforced correctly for valid input
+BR-018,Validation,Invalid,Perform action that should violate BR-018,System rejects/flags violation of rule
+BR-019,Constraint,Valid,Perform action that should satisfy BR-019,Rule is enforced correctly for valid input
+BR-019,Constraint,Invalid,Perform action that should violate BR-019,System rejects/flags violation of rule
+BR-020,Constraint,Valid,Perform action that should satisfy BR-020,Rule is enforced correctly for valid input
+BR-020,Constraint,Invalid,Perform action that should violate BR-020,System rejects/flags violation of rule
+BR-021,Constraint,Valid,Perform action that should satisfy BR-021,Rule is enforced correctly for valid input
+BR-021,Constraint,Invalid,Perform action that should violate BR-021,System rejects/flags violation of rule
+BR-022,Constraint,Valid,Perform action that should satisfy BR-022,Rule is enforced correctly for valid input
+BR-022,Constraint,Invalid,Perform action that should violate BR-022,System rejects/flags violation of rule
+BR-023,Trigger,Valid,Perform action that should satisfy BR-023,Rule is enforced correctly for valid input
+BR-023,Trigger,Invalid,Perform action that should violate BR-023,System rejects/flags violation of rule
+BR-024,Trigger,Valid,Perform action that should satisfy BR-024,Rule is enforced correctly for valid input
+BR-024,Trigger,Invalid,Perform action that should violate BR-024,System rejects/flags violation of rule

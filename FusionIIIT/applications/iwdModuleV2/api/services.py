@@ -120,7 +120,8 @@ def create_proposal_service(serializer, items_list, request_instance):
         proposal.save()
 
         Requests.objects.filter(id=request_instance.id).update(
-            activeProposal=proposal.id
+            activeProposal=proposal.id,
+            estimated_budget=total_budget
         )
 
         return proposal

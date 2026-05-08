@@ -797,12 +797,13 @@ def dashboard(request):
     }
     # a=HoldsDesignation.objects.select_related('user','working','designation').filter(designation = user)
     print(context)
-    print(type(user.extrainfo.user_type))
+    user_type = getattr(user.extrainfo, 'user_type', None) if hasattr(user, 'extrainfo') else None
+    print(type(user_type))
     if(request.user.get_username() == 'director'):
         return render(request, "dashboard/director_dashboard2.html", {})
     elif( "dean_rspc" in designation):
         return render(request, "dashboard/dashboard.html", context)
-    elif user.extrainfo.user_type != "student":
+    elif user_type and user_type != "student":
         print ("inside")
         designat = HoldsDesignation.objects.select_related().filter(user=user)
         response = {'designat':designat}
@@ -835,10 +836,12 @@ def   profile(request, username=None):
     print("editable",editable)
     profile = get_object_or_404(ExtraInfo, Q(user=user))
     print("profile",profile)
-    if(str(user.extrainfo.user_type)=='faculty'):
+    user_type = getattr(user.extrainfo, 'user_type', None) if hasattr(user, 'extrainfo') else None
+    user_department = getattr(user.extrainfo, 'department', None) if hasattr(user, 'extrainfo') else None
+    if(user_type == 'faculty'):
         print("profile")
         return HttpResponseRedirect('/eis/profile/' + (username if username else ''))
-    if(str(user.extrainfo.department)=='department: Academics'):
+    if(user_department == 'department: Academics'):
         print("profile2")
         return HttpResponseRedirect('/aims')
     

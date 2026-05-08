@@ -1,49 +1,61 @@
 from django.urls import path
-from rest_framework.routers import DefaultRouter
 from . import views
 
-router = DefaultRouter()
+urlpatterns = [
+	path('fetch-designations/', views.fetch_designations, name='fetch_designations'),
+	path('create-request/', views.create_request, name='create_request'),
+	path('create-proposal/', views.create_proposal, name='create_proposal'),
+	path('created-requests/', views.created_requests, name='created_requests'),
+	path('view-file/', views.view_file, name='view_file'),
+	path('dean-processed-requests/', views.dean_processed_requests, name='dean_processed_requests'),
+	path('handle-director-approval/', views.handle_director_approval, name='handle_director_approval'),
+	path('forward-request/', views.forward_request, name='handle_engineer_process_requests'),
+	path('handle-dean-process-request/', views.handle_dean_process_request, name='handleDeanProcessRequests'),
+	path('rejected-requests-view/', views.rejected_requests, name='rejectedRequests'),
+	path('handle-update-requests/', views.handle_update_requests, name='handleUpdateRequests'),
+	path('director-approved-requests/', views.director_approved_requests, name='issueWorkOrder'),
+	path('issue-work-order/', views.issue_work_order, name='workOrder'),
+	path('requests-in-progress/', views.requests_in_progress, name='requestsInProgress'),
+	path('work-under-progress/', views.work_under_progress, name='workUnderProgress'),
+	path('work-completed/', views.work_completed, name='workCompleted'),
+	path('view-budget/', views.view_budget, name='viewBudget'),
+	path('add-budget/', views.add_budget, name='addBudget'),
+	path('edit-budget/', views.edit_budget, name='editBudget'),
+	path('requests-status/', views.requests_status, name='requestsStatus'),
+	path('audit-document-view/', views.audit_document_view, name='auditDocumentView'),
+	path('audit-document/', views.handle_audit_document, name='auditDocument'),
+	path('get-proposals/', views.get_proposals, name='getProposals'),
+	path('get-items/', views.get_items, name='getItems'),
+	path('handle-admin-approval/', views.handle_admin_approval, name='handleAdminApproval'),
 
-# Main resources
-router.register("requests", views.RequestViewSet, basename="requests")
-router.register("budgets", views.BudgetViewSet, basename="budgets")
-router.register("vendors", views.VendorViewSet, basename="vendors")
-router.register("work", views.WorkViewSet, basename="work")
+	path('issued-work/', views.get_issued_work, name='activeWork'),
+	path('add-vendor/', views.add_vendor, name="addVendor"),
+	path('get-work/', views.get_work, name='getWork'),
+	path('get-vendors/', views.get_vendors, name='getVendors'),
 
-urlpatterns = router.urls + [
+	path('handle-process-bills/', views.handle_process_bills, name='handleProcessedBills'),
 
-    # Request workflows
-    path("requests/<int:pk>/forward/", views.forward_request, name="forward-request"),
-    path("requests/<int:pk>/director-approval/", views.handle_director_approval, name="director-approval"),
-    path("requests/<int:pk>/admin-approval/", views.handle_admin_approval, name="admin-approval"),
-    path("requests/<int:pk>/dean-process/", views.handle_dean_process_request, name="dean-process"),
+	path('engineer-processed-requests/', views.engineer_processed_requests, name='engineerProcessedRequests'),
+	path('handle-bill-generated-requests/', views.handleBillGeneratedRequests, name='handleBillGeneratedRequests'),
+	path('generated-bills-view/', views.generatedBillsView, name='generatedBillsView'),
+	path('generate-bill-pdf/', views.generate_bill_pdf, name='generateBillPdf'),
+	path('settle-bills-view/', views.settle_bills_view, name='settleBillsView'),
+	path('handle-settle-bill-request/', views.handle_settle_bill_requests, name='handleSettleBillRequest'),
 
-    # Status endpoints
-    path("requests-status/", views.requests_status, name="requests-status"),
-    path("rejected-requests/", views.rejected_requests, name="rejected-requests"),
+	# ===== NEWLY IMPLEMENTED ENDPOINTS (UC-29, UC-30, UC-31) =====
+	path('sla-dashboard/', views.sla_dashboard, name='slaDashboard'),
+	
+	# Inventory Management (UC-30)
+	path('inventory-items/', views.list_inventory_items, name='listInventoryItems'),
+	path('inventory-transactions/', views.inventory_transactions, name='inventoryTransactions'),
+	path('issue-materials/', views.issue_materials, name='issueMaterials'),
+	path('receive-materials/', views.receive_materials, name='receiveMaterials'),
+	
+	# Feedback & Reopening (UC-31)
+	path('feedback-history/', views.feedback_history, name='feedbackHistory'),
+	path('submit-feedback/', views.submit_feedback, name='submitFeedback'),
+	path('reopen-request/', views.reopen_request, name='reopenRequest'),
 
-    # Work progress
-    path("work/issued/", views.get_issued_work, name="issued-work"),
-    path("work/progress/", views.work_under_progress, name="work-under-progress"),
-    path("work/completed/", views.work_completed, name="work-completed"),
-
-    # Vendor & proposal endpoints
-    path("proposals/", views.get_proposals, name="proposals"),
-    path("items/", views.get_items, name="items"),
-
-    # Budget APIs
-    path("budget/add/", views.add_budget, name="add-budget"),
-    path("budget/edit/", views.edit_budget, name="edit-budget"),
-    path("budget/view/", views.view_budget, name="view-budget"),
-
-    # Audit APIs
-    path("audit/", views.handle_audit_document, name="audit-document"),
-    path("audit/view/", views.audit_document_view, name="audit-document-view"),
-
-    # Billing APIs
-    path("bills/process/", views.handle_process_bills, name="process-bills"),
-    path("bills/generated/", views.generatedBillsView, name="generated-bills"),
-    path("bills/settle/", views.settle_bills_view, name="settle-bills"),
-    path("bills/settle-request/", views.handle_settle_bill_requests, name="settle-bills-request"),
-
+	# SLA Monitoring extras
+	path('sla-escalations/', views.sla_escalations, name='slaEscalations'),
 ]

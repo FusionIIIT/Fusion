@@ -9,7 +9,7 @@ urlpatterns = [
     path("", views.dashboard, name="dashboard"),
 
     # API Versioning
-    path("api/v1/iwd/", include("applications.iwdModuleV2.api.urls")),
+    path("api/", include("applications.iwdModuleV2.api.urls")),
 
     # Web views
     path("requests/", views.requestsView, name="requests"),
