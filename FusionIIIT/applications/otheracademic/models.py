@@ -5,20 +5,44 @@ from django.db import models
 from django import forms
 from django.contrib.auth.models import User
 from applications.academic_information.models import Student
+from applications.programme_curriculum.models import Course as ProgrammeCourse
 from django.core.exceptions import ValidationError
 
 
-class LeaveFormTable(models.Model):
-    LEAVE_TYPES = (
-        ('Casual', 'Casual'),
-        ('Medical', 'Medical'),
-    )
+# ==================== SHARED TEXT CHOICES ====================
 
-    STATUS_CHOICES = (
-        ('Pending', 'Pending'),
-        ('Approved', 'Approved'),
-        ('Rejected', 'Rejected'),
-    )
+class LeaveTypeChoices(models.TextChoices):
+    """Shared leave type choices for all leave models."""
+    CASUAL = 'Casual', 'Casual'
+    MEDICAL = 'Medical', 'Medical'
+
+
+class LeaveTypePGChoices(models.TextChoices):
+    """Extended leave type choices for PG students."""
+    CASUAL = 'Casual', 'Casual'
+    MEDICAL = 'Medical', 'Medical'
+    VACATION = 'Vacation', 'Vacation'
+    DUTY = 'Duty', 'Duty'
+
+
+class LeaveStatusChoices(models.TextChoices):
+    """Shared status choices for leave requests."""
+    PENDING = 'Pending', 'Pending'
+    APPROVED = 'Approved', 'Approved'
+    REJECTED = 'Rejected', 'Rejected'
+
+
+class BonafideStatusChoices(models.TextChoices):
+    """Status choices for bonafide requests."""
+    PENDING = 'Pending', 'Pending'
+    APPROVED = 'Approved', 'Approved'
+    REJECTED = 'Rejected', 'Rejected'
+
+
+# ==================== MODELS ====================
+
+class LeaveFormTable(models.Model):
+    """UG student leave request model."""
 
     student_name = models.CharField(max_length=100)
     roll_no = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
@@ -28,13 +52,14 @@ class LeaveFormTable(models.Model):
     upload_file = models.FileField(upload_to='leave_documents/', blank=True, null=True)
     address = models.CharField(max_length=100)
     purpose = models.TextField()
-    leave_type = models.CharField(max_length=20, choices=LEAVE_TYPES)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    leave_type = models.CharField(max_length=20, choices=LeaveTypeChoices.choices)
+    stud_mobile_no = models.CharField(max_length=100, blank=True, null=True)
+    parent_mobile_no = models.CharField(max_length=100, blank=True, null=True)
+    leave_mobile_no = models.CharField(max_length=100, blank=True, null=True)
+    curr_sem = models.IntegerField(blank=True, null=True)
+    approved = models.BooleanField(default=False)
+    rejected = models.BooleanField(default=False)
     hod = models.CharField(max_length=100)
-    stud_mobile_no = models.CharField(max_length=15, null=True, blank=True)
-    parent_mobile_no = models.CharField(max_length=15, null=True, blank=True)
-    leave_mobile_no = models.CharField(max_length=15, null=True, blank=True)
-    curr_sem=models.IntegerField(null=True)
 
     class Meta:
         db_table = 'LeaveFormTable'
@@ -43,9 +68,10 @@ class LeaveFormTable(models.Model):
         if self.date_from > self.date_to:
             raise ValidationError('The start date of leave cannot be later than the end date.')
 
+
 class LeavePG(models.Model):
     """
-    Records information related to student leave requests.
+    PG student leave request model.
 
     'leave_from' and 'leave_to' store the start and end date of the leave request.
     'date_of_application' stores the date when the leave request was applied.
@@ -54,21 +80,11 @@ class LeavePG(models.Model):
     'reason' stores the reason for the leave request.
     'leave_type' stores the type of leave from a dropdown.
     """
-    LEAVE_TYPES = (
-        ('Casual', 'Casual'),
-        ('Medical', 'Medical'),
-        ('Vacation', 'Vacation'),
-        ('Duty', 'Duty')
-        
-    )
-
-    STATUS_CHOICES = (
-        ('Pending', 'Pending'),
-        ('Approved', 'Approved'),
-        ('Rejected', 'Rejected'),
-    )
 
     student_name = models.CharField(max_length=100)
+    programme = models.CharField(max_length=100)
+    discipline = models.CharField(max_length=100)
+    Semester = models.CharField(max_length=100)
     roll_no = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     date_from = models.DateField()
     date_to = models.DateField()
@@ -76,45 +92,32 @@ class LeavePG(models.Model):
     upload_file = models.FileField(upload_to='leave_documents/', blank=True, null=True)
     address = models.CharField(max_length=100)
     purpose = models.TextField()
-    leave_type = models.CharField(max_length=20, choices=LEAVE_TYPES)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    leave_type = models.CharField(max_length=20, choices=LeaveTypePGChoices.choices)
+    mobile_no = models.CharField(max_length=100)
+    parent_mobile_no = models.CharField(max_length=100)
+    alt_mobile_no = models.CharField(max_length=100)
+    ta_approved = models.BooleanField(default=False)
+    ta_rejected = models.BooleanField(default=False)
+    thesis_approved = models.BooleanField(default=False)
+    thesis_rejected = models.BooleanField(default=False)
+    hod_approved = models.BooleanField(default=False)
+    hod_rejected = models.BooleanField(default=False)
     hod = models.CharField(max_length=100)
     ta_supervisor = models.CharField(max_length=100)
     thesis_supervisor = models.CharField(max_length=100)
-    stud_mobile_no = models.CharField(max_length=15, null=True, blank=True)
-    parent_mobile_no = models.CharField(max_length=15, null=True, blank=True)
-    leave_mobile_no = models.CharField(max_length=15, null=True, blank=True)
-    curr_sem=models.IntegerField(null=True)
-    
 
     class Meta:
-        db_table='LeavePG'
-        
+        db_table = 'LeavePG'
+
     def clean(self):
         if self.date_from > self.date_to:
             raise ValidationError('The start date of leave cannot be later than the end date.')
 
 
-
 class LeavePGUpdTable(models.Model):
     """
-    Records information related to student leave requests.
-
-    'leave_from' and 'leave_to' store the start and end date of the leave request.
-    'date_of_application' stores the date when the leave request was applied.
-    'related_document' stores any related documents or notes for the leave request.
-    'place' stores the location where the leave is requested.
-    'reason' stores the reason for the leave request.
-    'leave_type' stores the type of leave from a dropdown.
+    PG Leave update table for tracking additional leave information.
     """
-    LEAVE_TYPES = (
-        ('Casual', 'Casual'),
-        ('Medical', 'Medical'),
-        ('Vacation', 'Vacation'),
-        ('Duty', 'Duty')
-        
-    )
-    
 
     student_name = models.CharField(max_length=100)
     roll_no = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
@@ -127,7 +130,7 @@ class LeavePGUpdTable(models.Model):
     upload_file = models.FileField(upload_to='leave_doc')
     address = models.CharField(max_length=100)
     purpose = models.TextField()
-    leave_type = models.CharField(max_length=20, choices=LEAVE_TYPES)
+    leave_type = models.CharField(max_length=20, choices=LeaveTypePGChoices.choices)
     ta_supervisor = models.CharField(max_length=100)
     mobile_no = models.CharField(max_length=100)
     parent_mobile_no = models.CharField(max_length=100)
@@ -136,50 +139,47 @@ class LeavePGUpdTable(models.Model):
     ta_rejected = models.BooleanField()
     hod_approved = models.BooleanField()
     hod_rejected = models.BooleanField()
-    ta_supervisor=models.CharField(max_length=100)
-    hod=models.CharField(max_length=100)
-    
+    hod = models.CharField(max_length=100)
 
     class Meta:
-        db_table='LeavePGUpdTable'
-
+        db_table = 'LeavePGUpdTable'
 
 
 class GraduateSeminarFormTable(models.Model):
-   
+    """Graduate seminar form model."""
+
     roll_no = models.CharField(max_length=20)
-    semester= models.CharField(max_length=100)
+    semester = models.CharField(max_length=100)
     date_of_seminar = models.DateField()
-   
 
     class Meta:
-        db_table='GraduateSeminarFormTable'
-        
+        db_table = 'GraduateSeminarFormTable'
 
 
 class BonafideFormTableUpdated(models.Model):
-   
-    STATUS_CHOICES = (
-        ('Pending', 'Pending'),
-        ('Approved', 'Approved'),
-        ('Rejected', 'Rejected'),
-    )
+    """Bonafide application form model."""
 
     student_names = models.CharField(max_length=100)
     roll_nos = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     branch_types = models.CharField(max_length=50)
     semester_types = models.CharField(max_length=20)
     purposes = models.TextField()
-    date_of_applications= models.DateField()
-    approve = models.BooleanField(default=False)  # Make sure this exists
-    reject = models.BooleanField(default=False)   # Ensu
-    # status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
-    download_file = models.CharField(max_length=20,  default='unavailable')
-   
-    
+    date_of_applications = models.DateField()
+    approve = models.BooleanField(default=False)
+    reject = models.BooleanField(default=False)
+    download_file = models.FileField(upload_to='Bonafide', blank=True, null=True)
 
     class Meta:
-        db_table='BonafideFormTableUpdated'
+        db_table = 'BonafideFormTableUpdated'
+
+    @property
+    def status(self):
+        """Computed status based on approve/reject flags."""
+        if self.approve:
+            return BonafideStatusChoices.APPROVED
+        elif self.reject:
+            return BonafideStatusChoices.REJECTED
+        return BonafideStatusChoices.PENDING
         
 
 
@@ -237,12 +237,8 @@ class AssistantshipClaimFormStatusUpd(models.Model):
     Ths_rejected = models.BooleanField()
     HOD_approved = models.BooleanField()
     HOD_rejected = models.BooleanField()
-    Dean_approved = models.BooleanField(default=False)
-    Dean_rejected = models.BooleanField(default=False)
-    Director_approved = models.BooleanField(default=False)
-    Director_rejected = models.BooleanField(default=False)
-    AcadAdmin_approved = models.BooleanField(default=False)
-    AcadAdmin_rejected = models.BooleanField(default=False)
+    Acad_approved = models.BooleanField(default=False)
+    Acad_rejected = models.BooleanField(default=False)
 
     amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -252,16 +248,91 @@ class AssistantshipClaimFormStatusUpd(models.Model):
     remark = models.TextField(default='')  # New field with an empty default value
 
     def clean(self):
-        start_date = self.cleaned_data['start_date']
-        end_date = self.cleaned_data['end_date']
-
-        if end_date <= start_date:
-            raise forms.ValidationError("End date must be later than start date")
-    
-        return super(AssistantshipClaimFormStatusUpd, self).clean()
+        """Validate that end date is after start date."""
+        if self.dateFrom and self.dateTo and self.dateTo <= self.dateFrom:
+            raise ValidationError("End date must be later than start date")
+        return super().clean()
 
     class Meta:
         db_table = 'AssistantshipClaimFormStausUpd'
+
+
+class PGTAAssignment(models.Model):
+    """Stores TA subject assignment for PG students by dept admin."""
+
+    pg_student = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
+    subject = models.ForeignKey(ProgrammeCourse, on_delete=models.CASCADE)
+    assigned_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'PGTAAssignment'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['pg_student', 'subject'],
+                name='uniq_pg_ta_assignment_student_subject',
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.pg_student_id} -> {self.subject.code}"
+
+
+class PGFacultySupervisorAssignment(models.Model):
+    """Stores faculty supervisor assignment for PG students by dept admin."""
+
+    pg_student = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE)
+    faculty_supervisor = models.ForeignKey(User, on_delete=models.CASCADE)
+    assigned_by = models.ForeignKey(
+        User,
+        related_name="pg_faculty_supervisor_assigned_by",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'PGFacultySupervisorAssignment'
+
+    def __str__(self):
+        return f"{self.pg_student_id} -> {self.faculty_supervisor.username}"
+
+
+class PGTAAssignmentHistory(models.Model):
+    """Immutable history of TA subject assignments."""
+
+    pg_student = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
+    subject = models.ForeignKey(ProgrammeCourse, on_delete=models.CASCADE)
+    assigned_by = models.ForeignKey(
+        User,
+        related_name="pg_ta_assignment_history_assigned_by",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+    changed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'PGTAAssignmentHistory'
+
+
+class PGFacultySupervisorAssignmentHistory(models.Model):
+    """Immutable history of faculty supervisor assignments."""
+
+    pg_student = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
+    faculty_supervisor = models.ForeignKey(User, on_delete=models.CASCADE)
+    assigned_by = models.ForeignKey(
+        User,
+        related_name="pg_faculty_supervisor_assignment_history_assigned_by",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+    changed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'PGFacultySupervisorAssignmentHistory'
 
     
 

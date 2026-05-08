@@ -500,71 +500,103 @@ def course_management_notif(sender, recipient, type,  course, course_name, cours
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb, flag=flag, course_code=course_code, course=course, cname = course_name)
 
 
-def otheracademic_notif(sender, recipient, type, otheracademic_id,student,message):
-    if(type=='ug_leave_hod'):
-        url = ('otheracademic:otheracademic')
-    elif type=='pg_leave_ta' :
-       url = ('otheracademic:leaveApproveTA')
-    elif type=='pg_leave_hod' :
-       url = ('otheracademic:otheracademic')
-    elif type=='ast_ta' :
-       url = ('otheracademic:assistantship_form_approval') 
-    elif type=='ast_thesis' :
-       url = ('otheracademic:assistantship_thesis') 
-    
-    elif type=='ast_acadadmin' :
-       url = ('otheracademic:assistantship_acad_approveform')
-    elif type=='ast_hod' :
-       url = ('otheracademic:assistantship_hod') 
-    elif type=='hostel_nodues' :
-       url = ('otheracademic:hostel_nodues')
-    elif type=='bank_nodues' :
-       url = ('otheracademic:Bank_nodues')
-    elif type=='btp_nodues' :
-       url = ('otheracademic:BTP_nodues')         
-    elif type=='cse_nodues' :
-       url = ('otheracademic:CSE_nodues')                 
-    elif type=='design_nodues' :
-       url = ('otheracademic:Design_nodues')
-    elif type=='acad_nodues' :
-       url = ('otheracademic:dsa_nodues')   
-    elif type=='ece_nodues' :
-       url = ('otheracademic:Ece_nodues')  
-    elif type=='library_nodues' :
-       url = ('otheracademic:library_nodues')   
-    elif type=='mess_nodues' :
-       url = ('otheracademic:mess_nodues')   
-    elif type=='physics_nodues' :
-       url = ('otheracademic:Physics_nodues')
-    elif type=='discipline_nodues' :
-       url = ('otheracademic:discipline_nodues')
-    elif type=='me_nodues' :
-       url = ('otheracademic:ME_nodues')
-    elif type=="ug_leave_hod_approve":
-       url = ('otheracademic:leaveStatus') 
-    elif type=="bonafide_acadadmin":
-       url = ('otheracademic:bonafideApproveForm') 
-    elif type=="bonafide_accept":
-       url = ('otheracademic:bonafideStatus')  
-    elif type=="ast_ta_accept":
-       url = ('otheracademic:assistantship_status')  
-    elif type=="nodues_status":
-       url = ('otheracademic:nodues_status')   
-    elif type=="pg_leave_ta_approve":
-       url = ('otheracademic:leaveStatusPG') 
-    elif type=="pg_leave_thesis":
-       url = ('otheracademic:leaveApproveThesis')                   
-    else:
-        url=('otheracademic:otheracademic')
+def otheracademic_notif(sender, recipient, type, otheracademic_id, student, message):
+    recipient_role = None
 
-    
-    module='otheracademic'
-    sender = sender
-    recipient = recipient
+    if type == 'ug_leave_hod':
+        url = 'otheracademic:otheracademic'
+        recipient_role = 'hod'
+    elif type == 'pg_leave_ta':
+        url = 'otheracademic:leaveApproveTA'
+        recipient_role = 'ta_supervisor'
+    elif type == 'pg_leave_hod':
+        url = 'otheracademic:otheracademic'
+        recipient_role = 'hod'
+    elif type == 'ast_ta':
+        url = 'otheracademic:assistantship_form_approval'
+        recipient_role = 'ta_supervisor'
+    elif type == 'ast_thesis':
+        url = 'otheracademic:assistantship_thesis'
+        recipient_role = 'thesis_supervisor'
+    elif type == 'ast_acadadmin':
+        url = 'otheracademic:assistantship_acad_approveform'
+        recipient_role = 'acadadmin'
+    elif type == 'ast_hod':
+        url = 'otheracademic:assistantship_hod'
+        recipient_role = 'hod'
+    elif type == 'hostel_nodues':
+        url = 'otheracademic:hostel_nodues'
+        recipient_role = 'hostel_warden'
+    elif type == 'bank_nodues':
+        url = 'otheracademic:Bank_nodues'
+        recipient_role = 'bank'
+    elif type == 'btp_nodues':
+        url = 'otheracademic:BTP_nodues'
+        recipient_role = 'btp_supervisor'
+    elif type == 'cse_nodues':
+        url = 'otheracademic:CSE_nodues'
+        recipient_role = 'dept_admin'
+    elif type == 'design_nodues':
+        url = 'otheracademic:Design_nodues'
+        recipient_role = 'design_supervisor'
+    elif type == 'acad_nodues':
+        url = 'otheracademic:dsa_nodues'
+        recipient_role = 'acadadmin'
+    elif type == 'ece_nodues':
+        url = 'otheracademic:Ece_nodues'
+        recipient_role = 'lab_supervisor'
+    elif type == 'library_nodues':
+        url = 'otheracademic:library_nodues'
+        recipient_role = 'librarian'
+    elif type == 'mess_nodues':
+        url = 'otheracademic:mess_nodues'
+        recipient_role = 'mess_incharge'
+    elif type == 'physics_nodues':
+        url = 'otheracademic:Physics_nodues'
+        recipient_role = 'lab_supervisor'
+    elif type == 'discipline_nodues':
+        url = 'otheracademic:discipline_nodues'
+        recipient_role = 'discipline_office'
+    elif type == 'me_nodues':
+        url = 'otheracademic:ME_nodues'
+        recipient_role = 'lab_supervisor'
+    elif type == 'ug_leave_hod_approve':
+        url = 'otheracademic:leaveStatus'
+        recipient_role = 'student'
+    elif type == 'bonafide_acadadmin':
+        url = 'otheracademic:bonafideApproveForm'
+        recipient_role = 'acadadmin'
+    elif type == 'bonafide_accept':
+        url = 'otheracademic:bonafideStatus'
+        recipient_role = 'student'
+    elif type == 'ast_ta_accept':
+        url = 'otheracademic:assistantship_status'
+        recipient_role = 'student'
+    elif type == 'nodues_status':
+        url = 'otheracademic:nodues_status'
+        recipient_role = 'student'
+    elif type == 'pg_leave_ta_approve':
+        url = 'otheracademic:leaveStatusPG'
+        recipient_role = 'student'
+    elif type == 'pg_leave_thesis':
+        url = 'otheracademic:leaveApproveThesis'
+        recipient_role = 'student'
+    else:
+        url = 'otheracademic:otheracademic'
+
+    module = 'otheracademic'
     verb = message
     description = otheracademic_id
 
-    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb,description=description)
+    notify.send(
+        sender=sender,
+        recipient=recipient,
+        url=url,
+        module=module,
+        verb=verb,
+        description=description,
+        recipient_role=recipient_role,
+    )
 def iwd_notif(sender,recipient,type):   
     module= 'iwdModuleV2'
     url= 'iwdModuleV2:iwdModuleV2'
