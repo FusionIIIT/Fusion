@@ -1,0 +1,122 @@
+workflows:
+  - id: "WF-01"
+    title: "Standard Request Approval"
+    description: "Pending → Approved by Admin"
+
+    e2e_tests:
+      - scenario: "Standard Request Approval complete flow"
+        expected_final_state: "Workflow reaches the defined terminal/next state and persists tracking metadata."
+
+    negative_tests:
+      - scenario: "Standard Request Approval interrupted/failed flow"
+        expected_final_state: "Workflow halts safely with 4xx/guard response and no invalid transition."
+  - id: "WF-02"
+    title: "Dean Routing Path"
+    description: "Pending → Dean Processed"
+
+    e2e_tests:
+      - scenario: "Dean Routing Path complete flow"
+        expected_final_state: "Workflow reaches the defined terminal/next state and persists tracking metadata."
+
+    negative_tests:
+      - scenario: "Dean Routing Path interrupted/failed flow"
+        expected_final_state: "Workflow halts safely with 4xx/guard response and no invalid transition."
+  - id: "WF-03"
+    title: "Work Execution"
+    description: "WO Issued → In Progress"
+
+    e2e_tests:
+      - scenario: "Work Execution complete flow"
+        expected_final_state: "Workflow reaches the defined terminal/next state and persists tracking metadata."
+
+    negative_tests:
+      - scenario: "Work Execution interrupted/failed flow"
+        expected_final_state: "Workflow halts safely with 4xx/guard response and no invalid transition."
+  - id: "WF-04"
+    title: "Bill Processing"
+    description: "Completed → Bill Processed"
+
+    e2e_tests:
+      - scenario: "Bill Processing complete flow"
+        expected_final_state: "Workflow reaches the defined terminal/next state and persists tracking metadata."
+
+    negative_tests:
+      - scenario: "Bill Processing interrupted/failed flow"
+        expected_final_state: "Workflow halts safely with 4xx/guard response and no invalid transition."
+  - id: "WF-05"
+    title: "Request Update Loop"
+    description: "Rejected → Updated"
+
+    e2e_tests:
+      - scenario: "Request Update Loop complete flow"
+        expected_final_state: "Workflow reaches the defined terminal/next state and persists tracking metadata."
+
+    negative_tests:
+      - scenario: "Request Update Loop interrupted/failed flow"
+        expected_final_state: "Workflow halts safely with 4xx/guard response and no invalid transition."
+  - id: "WF-06"
+    title: "Rejection Path"
+    description: "Pending → Rejected"
+
+    e2e_tests:
+      - scenario: "Rejection Path complete flow"
+        expected_final_state: "Workflow reaches the defined terminal/next state and persists tracking metadata."
+
+    negative_tests:
+      - scenario: "Rejection Path interrupted/failed flow"
+        expected_final_state: "Workflow halts safely with 4xx/guard response and no invalid transition."
+  - id: "WF-07"
+    title: "Budget Management"
+    description: "Approved estimate leads to stock check and procurement/issue path."
+
+    e2e_tests:
+      - scenario: "Budget Management complete flow"
+        expected_final_state: "Workflow reaches the defined terminal/next state and persists tracking metadata."
+
+    negative_tests:
+      - scenario: "Budget Management interrupted/failed flow"
+        expected_final_state: "Workflow halts safely with 4xx/guard response and no invalid transition."
+  - id: "WF-08"
+    title: "Inventory & Procurement"
+    description: "Approved → Stock Checked"
+
+    e2e_tests:
+      - scenario: "Inventory & Procurement complete flow"
+        expected_final_state: "Workflow reaches the defined terminal/next state and persists tracking metadata."
+
+    negative_tests:
+      - scenario: "Inventory & Procurement interrupted/failed flow"
+        expected_final_state: "Workflow halts safely with 4xx/guard response and no invalid transition."
+  - id: "WF-09"
+    title: "Complaint Assignment (SLA)"
+    description: "Submitted → SLA Started"
+
+    e2e_tests:
+      - scenario: "Complaint Assignment (SLA) complete flow"
+        expected_final_state: "Workflow reaches the defined terminal/next state and persists tracking metadata."
+
+    negative_tests:
+      - scenario: "Complaint Assignment (SLA) interrupted/failed flow"
+        expected_final_state: "Workflow halts safely with 4xx/guard response and no invalid transition."
+  - id: "WF-10"
+    title: "Feedback & Closure"
+    description: "Settled → Ready for Feedback"
+
+    e2e_tests:
+      - scenario: "Feedback & Closure complete flow"
+        expected_final_state: "Workflow reaches the defined terminal/next state and persists tracking metadata."
+
+    negative_tests:
+      - scenario: "Feedback & Closure interrupted/failed flow"
+        expected_final_state: "Workflow halts safely with 4xx/guard response and no invalid transition."
+  - id: "WF-11"
+    title: "Generate PDF Bill"
+    description: "Completed → PDF Generated"
+
+    e2e_tests:
+      - scenario: "Generate PDF Bill complete flow"
+        expected_final_state: "Workflow reaches the defined terminal/next state and persists tracking metadata."
+
+    negative_tests:
+      - scenario: "Generate PDF Bill interrupted/failed flow"
+        expected_final_state: "Workflow halts safely with 4xx/guard response and no invalid transition."

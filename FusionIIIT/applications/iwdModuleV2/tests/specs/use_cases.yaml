@@ -1,0 +1,714 @@
+use_cases:
+  - id: "UC-01"
+    title: "Fetch Eligible Designations"
+    description: "Retrieve list of roles/designations for workflow."
+    actors: "Auth User"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "Fetch Eligible Designations executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-01"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "Fetch Eligible Designations with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-01 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "Fetch Eligible Designations with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-01 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-02"
+    title: "Create Request"
+    description: "Create a new maintenance/work request or complaint."
+    actors: "Auth User"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "Create Request executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-02"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "Create Request with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-02 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "Create Request with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-02 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-03"
+    title: "View Inbox / Assigned Requests"
+    description: "View requests assigned to the logged-in user."
+    actors: "Auth User"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "View Inbox / Assigned Requests executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-03"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "View Inbox / Assigned Requests with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-03 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "View Inbox / Assigned Requests with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-03 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-04"
+    title: "View File / Details"
+    description: "View full file details and tracking history."
+    actors: "Auth User"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "View File / Details executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-04"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "View File / Details with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-04 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "View File / Details with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-04 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-05"
+    title: "Dean Approval"
+    description: "Dean reviews and processes the request."
+    actors: "Dean"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "Dean Approval executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-05"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "Dean Approval with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-05 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "Dean Approval with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-05 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-06"
+    title: "Dean Processed Requests"
+    description: "List of requests processed by the Dean."
+    actors: "Dean"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "Dean Processed Requests executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-06"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "Dean Processed Requests with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-06 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "Dean Processed Requests with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-06 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-07"
+    title: "Forward Request"
+    description: "Forward the request file to the next authority."
+    actors: "Auth User"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "Forward Request executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-07"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "Forward Request with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-07 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "Forward Request with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-07 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-08"
+    title: "Handle Director Approval"
+    description: "Director approves or rejects the request/proposal."
+    actors: "Director"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "Handle Director Approval executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-08"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "Handle Director Approval with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-08 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "Handle Director Approval with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-08 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-09"
+    title: "Director Approved Requests"
+    description: "View list of requests approved by Director."
+    actors: "Auth User"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "Director Approved Requests executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-09"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "Director Approved Requests with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-09 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "Director Approved Requests with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-09 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-10"
+    title: "Rejected Requests"
+    description: "View list of rejected requests."
+    actors: "Auth User"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "Rejected Requests executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-10"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "Rejected Requests with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-10 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "Rejected Requests with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-10 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-11"
+    title: "Update Request"
+    description: "Modify or update an existing request."
+    actors: "Auth User"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "Update Request executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-11"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "Update Request with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-11 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "Update Request with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-11 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-12"
+    title: "Create Proposal"
+    description: "Create itemized proposal/estimate for the request."
+    actors: "Engineer"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "Create Proposal executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-12"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "Create Proposal with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-12 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "Create Proposal with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-12 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-13"
+    title: "View Proposals"
+    description: "View proposals linked to a request."
+    actors: "Admin/Eng"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "View Proposals executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-13"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "View Proposals with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-13 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "View Proposals with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-13 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-14"
+    title: "View Proposal Items"
+    description: "View specific items within a proposal."
+    actors: "Admin"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "View Proposal Items executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-14"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "View Proposal Items with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-14 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "View Proposal Items with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-14 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-15"
+    title: "Admin Approval"
+    description: "IWD Admin approves/rejects request or proposal."
+    actors: "Admin"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "Admin Approval executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-15"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "Admin Approval with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-15 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "Admin Approval with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-15 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-16"
+    title: "Issue Work Order"
+    description: "Generate formal work order for approved request."
+    actors: "Admin"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "Issue Work Order executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-16"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "Issue Work Order with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-16 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "Issue Work Order with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-16 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-17"
+    title: "View Work Order"
+    description: "View details of issued work orders."
+    actors: "Auth User"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "View Work Order executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-17"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "View Work Order with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-17 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "View Work Order with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-17 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-18"
+    title: "Add Vendor"
+    description: "Add/Assign vendor to a work order."
+    actors: "Admin"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "Add Vendor executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-18"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "Add Vendor with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-18 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "Add Vendor with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-18 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-19"
+    title: "View Vendors"
+    description: "View list of available vendors."
+    actors: "Auth User"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "View Vendors executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-19"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "View Vendors with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-19 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "View Vendors with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-19 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-20"
+    title: "Work Progress / Monitoring"
+    description: "Track work status (Ongoing/Under Progress)."
+    actors: "Engineer"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "Work Progress / Monitoring executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-20"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "Work Progress / Monitoring with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-20 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "Work Progress / Monitoring with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-20 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-21"
+    title: "Complete Work"
+    description: "Mark the physical work as completed."
+    actors: "Engineer"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "Complete Work executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-21"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "Complete Work with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-21 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "Complete Work with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-21 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-22"
+    title: "Process Bills"
+    description: "Upload and process bills for completed work."
+    actors: "Admin"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "Process Bills executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-22"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "Process Bills with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-22 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "Process Bills with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-22 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-23"
+    title: "Audit Bill"
+    description: "Audit the uploaded bills/documents."
+    actors: "Auditor"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "Audit Bill executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-23"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "Audit Bill with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-23 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "Audit Bill with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-23 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-24"
+    title: "Settle Bill"
+    description: "Final financial settlement of audited bills."
+    actors: "Accounts"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "Settle Bill executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-24"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "Settle Bill with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-24 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "Settle Bill with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-24 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-25"
+    title: "Manage Budget"
+    description: "Add, View, or Edit budget heads."
+    actors: "Admin"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "Manage Budget executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-25"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "Manage Budget with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-25 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "Manage Budget with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-25 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-26"
+    title: "Request Status"
+    description: "Check the current status of a request."
+    actors: "Auth User"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "Request Status executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-26"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "Request Status with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-26 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "Request Status with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-26 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-27"
+    title: "Engineer Processed"
+    description: "View requests processed by Engineer (Inbox logic)."
+    actors: "Engineer"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "Engineer Processed executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-27"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "Engineer Processed with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-27 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "Engineer Processed with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-27 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-28"
+    title: "Generate Bill PDF"
+    description: "Generate a PDF document for the bill."
+    actors: "Admin"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "Generate Bill PDF executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-28"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "Generate Bill PDF with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-28 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "Generate Bill PDF with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-28 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-29"
+    title: "SLA Engine"
+    description: "Monitor timeouts and escalations."
+    actors: "System"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "SLA Engine executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-29"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "SLA Engine with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-29 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "SLA Engine with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-29 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-30"
+    title: "Inventory/Procurement"
+    description: "Check stock and issue materials."
+    actors: "Admin"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "Inventory/Procurement executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-30"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "Inventory/Procurement with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-30 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "Inventory/Procurement with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-30 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."
+  - id: "UC-31"
+    title: "Feedback & Closure"
+    description: "Submit feedback after work completion."
+    actors: "User"
+    preconditions: "User is authenticated and has required designation"
+
+    happy_paths:
+      - scenario: "Feedback & Closure executes successfully"
+        preconditions: "Valid session and valid request data"
+        input_action: "Invoke API flow for UC-31"
+        expected_result: "API returns expected success response and persists expected module state."
+
+    alternate_paths:
+      - scenario: "Feedback & Closure with alternate/invalid but handled input"
+        preconditions: "Authenticated user with non-ideal input"
+        input_action: "Invoke API flow for UC-31 with alternate input"
+        expected_result: "System handles alternate input deterministically with documented response."
+
+    exception_paths:
+      - scenario: "Feedback & Closure with missing auth/invalid precondition"
+        preconditions: "Authentication missing or role mismatch"
+        input_action: "Invoke API flow for UC-31 without required preconditions"
+        expected_result: "Request is blocked with expected 4xx response and actionable error payload."

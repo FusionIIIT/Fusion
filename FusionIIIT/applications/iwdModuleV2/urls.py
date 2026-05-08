@@ -1,73 +1,100 @@
-from django.conf.urls import url, include
-from django.urls import path
+from django.urls import include, path
+
 from . import views
 
-app_name = 'iwdModuleV2'
+app_name = "iwdModuleV2"
 
 urlpatterns = [
+    path("", views.dashboard, name="dashboard"),
+    path("", views.dashboard, name="IWD Dashboard"),
 
-    url(r'^api/', include('applications.iwdModuleV2.api.urls')),
-    url(r'^$', views.dashboard, name='IWD Dashboard'),
-    # url(r'^page1_1/$', views.page1_1, name='IWD Page1.1'),
-    # url(r'page2_1/$', views.page2_1, name='IWD Page2.1'),
-    # url(r'corrigendumInput/$', views.corrigendumInput, name='Corrigendum Input'),
-    # url(r'addendumInput/$', views.addendumInput, name='Addendum Input'),
-    # url(r'milestoneForm/$', views.milestonesForm, name='Milestone Form'),
-    # url(r'technicalBidForm/$', views.TechnicalBidForm, name='Technical Bid Form'),
-    # url(r'extensionForm/$', views.ExtensionOfTimeForm, name='Extension Form'),
-    # url(r'letterOfIntent/$', views.letterOfIntent, name='Letter Of Intent Input'),
-    # url(r'workOrderForm/$', views.workOrderForm, name='Work Order Form'),
-    # url(r'agreement/$', views.AgreementInput, name='Agreement Input'),
-    # url(r'page3_1/$', views.page3_1, name='IWD Page 3.1'),
-    # url(r'noOfEntriesTechnicalBid/$', views.noOfEntriesTechnicalBid, name='IWD Technical Bid'),
-    # url(r'noOfEntriesFinancialBid/$', views.noOfEntriesFinancialBid, name='IWD Financial Bid'),
-    # url(r'page1View/$', views.page1View, name='Page 1 Views'),
-    # url(r'page2View/$', views.page2View, name='Page 2 View'),
-    # url(r'page3View/$', views.page3View, name='Page 3 View'),
-    # url(r'extensionFormView/$', views.extensionFormView, name='Extension Form'),
-    # url(r'AESView/$', views.AESView, name='AES View'),
-    # url(r'financialBidView/$', views.financialBidView, name='Financial Bid View'),
-    # url(r'preBidForm/$', views.PreBidForm, name='Pre Bid Form'),
-    # url(r'AESForm/$', views.AESForm, name='AESForm'),
-    # url('workOrderFormView/$', views.workOrderFormView, name='Work Order Form View'),
-    # url(r'letterOfIntentView', views.letterOfIntentView, name='Letter Of Intent View'),
-    # url(r'preBidDetailsView/$', views.preBidDetailsView, name='Pre Bid Details View'),
-    # url(r'technicalBidView/$', views.technicalBidView, name='Technical Bid View'),
-    # url(r'milestoneView/$', views.milestoneView, name='Milestones'),
-    # url(r'addendumView/$', views.addendumView, name='Addendum View'),
-    # url('agreementView/$', views.agreementView, name='Agreement VIew'),
-    # url(r'corrigendumView/$', views.corrigendumView, name='Corrigendum View'),
-    url(r'^requestsView/',views.requestsView, name='Requests view'),
-    url(r'^createdRequestsView/',views.createdRequests, name='Created Requests view'),
-    url(r'^handleEngineerProcessRequests/', views.handleEngineerProcessRequests, name='Engineer-Process-Requests'),
-    url(r'^engineerProcessedRequestsView/',views.engineerProcessedRequests, name='Engineer-Processed-Requests view'),
-    url(r'^handleDeanProcessRequests/', views.handleDeanProcessRequests, name='Dean-Process-Requests'),
-    url(r'^deanProcessedRequestsView/',views.deanProcessedRequests, name='Dean-Processed-Requests view'),
-    url(r'^handleDirectorApprovalRequests/', views.handleDirectorApprovalRequests, name='Director-Approval-Requests'),
-    url(r'^updateRejectedRequests/', views.updateRejectedRequests, name='Update-Rejected-Requests'),
-    url(r'^handleUpdateRequests/', views.handleUpdateRequests, name='Handle-Update-Requests'),
-    # url('rejectedRequests/', views.rejectedRequests, name='Rejected-Requests'),
-    url(r'^rejectedRequestsView/',views.rejectedRequests, name='Rejected Requests view'),
-    url(r'^requestsStatus/', views.requestsStatus, name='Requests-Status'),
-    url(r'^fetchDesignations/', views.fetchDesignations, name='Fetch-Designations'),
-    url(r'^fetchRequest/', views.fetchRequest, name='Fetch-Request'),
-    url(r'^issueWorkOrder/', views.issueWorkOrder, name='Issue Work Order'),
-    url(r'^workOrder/', views.workOrder, name='Work Order'),
-    url(r'^requestsInProgess/', views.requestsInProgess, name='Requests In Progress'),
-    url(r'^workCompleted/', views.workCompleted, name='Work Completed'),
-    # url(r'^generateFinalBill/', views.generateFinalBill, name='Generate-Final-Bill'),
-    # url(r'^handleBillGeneratedRequests/', views.handleBillGeneratedRequests, name='Handle-Bill-Generated-Requests'),
-    # url(r'^generatedBillsView/', views.generatedBillsView, name='Generated-Bills-View'),
-    # url(r'^handleProcessedBills/', views.handleProcessedBills, name='Handle-Processed-Bills'),
-    # url(r'^auditDocumentView/', views.auditDocumentView, name='Audit-Document-View'),
-    # url(r'^auditDocument/', views.auditDocument, name='Audit-Document'),
-    # url(r'^settleBillsView/', views.settleBillsView, name='Settle-Bills-View'),
-    # url(r'^handleSettleBillRequests/', views.handleSettleBillRequests, name='Handle-Settle-Bill-Requests'),
-    url(r'^viewBudget/', views.viewBudget, name='View-Budget'),
-    url(r'^budget/', views.budget, name='Budget'),
-    url(r'^addBudget/', views.addBudget, name='Add-Budget'),
-    url(r'^editBudgetView/', views.editBudgetView, name='Edit-Budget-View'),
-    url(r'^editBudget/', views.editBudget, name='Edit-Budget'),
-    path('view_file/<id>/<url>',views.view_file,name="view_file"),
+    path("api/", include("applications.iwdModuleV2.api.urls")),
 
+    path("fetch-designations/", views.fetchDesignations, name="fetch-designations"),
+    path("fetch-designations/", views.fetchDesignations, name="Fetch-Designations"),
+
+    path("requests/", views.requestsView, name="requests"),
+    path("requests/", views.requestsView, name="Requests view"),
+
+    path("created-requests/", views.createdRequests, name="created-requests"),
+    path("created-requests/", views.createdRequests, name="Created Requests view"),
+
+    path("view-file/<int:id>/<str:url>/", views.view_file, name="view-file"),
+    path("view_file/<int:id>/<str:url>/", views.view_file, name="View-File"),
+
+    path("handle-engineer-process-requests/", views.handleEngineerProcessRequests, name="handle-engineer-process-requests"),
+    path("handle-engineer-process-requests/", views.handleEngineerProcessRequests, name="Handle-Engineer-Process-Requests"),
+
+    path("engineer-processed-requests/", views.engineerProcessedRequests, name="engineer-processed-requests"),
+    path("engineer-processed-requests/", views.engineerProcessedRequests, name="Engineer-Processed-Requests view"),
+
+    path("handle-dean-process-requests/", views.handleDeanProcessRequests, name="handle-dean-process-requests"),
+    path("handle-dean-process-requests/", views.handleDeanProcessRequests, name="Handle-Dean-Process-Requests"),
+
+    path("dean-processed-requests/", views.deanProcessedRequests, name="dean-processed-requests"),
+    path("dean-processed-requests/", views.deanProcessedRequests, name="Dean-Processed-Requests view"),
+
+    path("handle-director-approval-requests/", views.handleDirectorApprovalRequests, name="handle-director-approval-requests"),
+    path("handle-director-approval-requests/", views.handleDirectorApprovalRequests, name="Handle-Director-Approval-Requests"),
+
+    path("rejected-requests/", views.rejectedRequests, name="rejected-requests"),
+    path("rejected-requests/", views.rejectedRequests, name="Rejected Requests view"),
+
+    path("update-rejected-requests/", views.updateRejectedRequests, name="update-rejected-requests"),
+    path("update-rejected-requests/", views.updateRejectedRequests, name="Update-Rejected-Requests"),
+
+    path("handle-update-requests/", views.handleUpdateRequests, name="handle-update-requests"),
+    path("handle-update-requests/", views.handleUpdateRequests, name="Handle-Update-Requests"),
+
+    path("requests-status/", views.requestsStatus, name="requests-status"),
+    path("requests-status/", views.requestsStatus, name="Requests-Status"),
+
+    path("fetch-request/", views.fetchRequest, name="fetch-request"),
+    path("fetch-request/", views.fetchRequest, name="Fetch-Request"),
+
+    path("work-orders/", views.workOrder, name="work-orders"),
+    path("work-orders/", views.workOrder, name="Work Order"),
+
+    path("issue-work-order/", views.issueWorkOrder, name="issue-work-order"),
+    path("issue-work-order/", views.issueWorkOrder, name="Issue Work Order"),
+
+    path("requests-in-progress/", views.requestsInProgess, name="requests-in-progress"),
+    path("requests-in-progress/", views.requestsInProgess, name="Requests In Progress"),
+
+    path("work-completed/", views.workCompleted, name="work-completed"),
+    path("work-completed/", views.workCompleted, name="Work Completed"),
+
+    path("handle-bill-generated-requests/", views.handleBillGeneratedRequests, name="handle-bill-generated-requests"),
+    path("handle-bill-generated-requests/", views.handleBillGeneratedRequests, name="Handle-Bill-Generated-Requests"),
+
+    path("generated-bills/", views.generatedBillsView, name="generated-bills-view"),
+    path("generated-bills/", views.generatedBillsView, name="Generated-Bills-View"),
+
+    path("handle-processed-bills/", views.handleProcessedBills, name="handle-processed-bills"),
+    path("handle-processed-bills/", views.handleProcessedBills, name="Handle-Processed-Bills"),
+
+    path("audit-document/", views.auditDocument, name="audit-document"),
+    path("audit-document/", views.auditDocument, name="Audit-Document"),
+
+    path("audit-document-view/", views.auditDocumentView, name="audit-document-view"),
+    path("audit-document-view/", views.auditDocumentView, name="Audit-Document-View"),
+
+    path("settle-bills/", views.handleSettleBillRequests, name="handle-settle-bill-requests"),
+    path("settle-bills/", views.handleSettleBillRequests, name="Handle-Settle-Bill-Requests"),
+
+    path("settle-bills-view/", views.settleBillsView, name="settle-bills-view"),
+    path("settle-bills-view/", views.settleBillsView, name="Settle-Bills-View"),
+
+    path("budget/", views.budget, name="budget"),
+    path("budget/", views.budget, name="Budget"),
+
+    path("budget/view/", views.viewBudget, name="view-budget"),
+    path("budget/view/", views.viewBudget, name="View-Budget"),
+
+    path("budget/add/", views.addBudget, name="add-budget"),
+    path("budget/add/", views.addBudget, name="Add-Budget"),
+
+    path("budget/edit/", views.editBudget, name="edit-budget"),
+    path("budget/edit/", views.editBudget, name="Edit-Budget"),
+    path("budget/edit/", views.editBudget, name="Edit-Budget-View"),
 ]

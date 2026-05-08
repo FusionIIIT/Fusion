@@ -18,7 +18,8 @@ from reportlab.lib import colors
 from django.http import HttpResponse
 from io import BytesIO
 from django.core.files.base import File as DjangoFile
-
+from django.db import transaction
+from .selectors import get_latest_bill_for_request
 # Create your views here.
 
 
@@ -455,6 +456,18 @@ def dashboard(request):
 #     return render(request, 'iwdModuleV2/ExtensionForm.html', {'extension': extensionObjects})
 
 designations_list = ["Junior Engineer", "Executive Engineer (Civil)", "Electrical_AE", "Electrical_JE", "EE", "Civil_AE", "Civil_JE", "Dean (P&D)", "Director", "Accounts Admin", "Admin IWD", "Auditor"]
+def get_receiver_from_designation(designation_name):
+    designation = Designation.objects.filter(name=designation_name).first()
+
+    if not designation:
+        return None, None
+
+    holder = HoldsDesignation.objects.filter(designation=designation).first()
+
+    if not holder:
+        return None, None
+
+    return holder.user.username, holder.user
 
 @login_required
 def fetchDesignations(request):
@@ -469,43 +482,52 @@ def fetchDesignations(request):
                 holdsDesignations.append(list)
 
     return render(request, 'iwdModuleV2/requestsView.html', {'holdsDesignations' : holdsDesignations})
-
 @login_required
 def requestsView(request):
     if request.method == 'POST':
-        formObject = Requests()
-        formObject.name = request.POST['name']
-        formObject.description = request.POST['description']
-        formObject.area = request.POST['area']
-        formObject.engineerProcessed = 0
-        formObject.directorApproval = 0
-        formObject.deanProcessed = 0
-        formObject.requestCreatedBy = request.user.username
-        formObject.status = "Pending"
-        formObject.issuedWorkOrder = 0
-        formObject.workCompleted = 0
-        formObject.billGenerated = 0
-        formObject.billProcessed = 0
-        formObject.billSettled = 0
-        formObject.save()
-        request_object = Requests.objects.get(pk=formObject.pk)
         desg = request.session.get('currentDesignationSelected')
-        receiver_user, receiver_desg = request.POST['designation'].split('|')
-        create_file(uploader=request.user.username, 
-            uploader_designation=desg, 
-            receiver=receiver_user,
-            receiver_designation=receiver_desg, 
-            src_module="IWD", 
-            src_object_id= str(request_object.id), 
-            file_extra_JSON= {"value": 2}, 
-            attached_file = None)
+        receiver_desg = request.POST['designation']
+        receiver_user, receiver_user_obj = get_receiver_from_designation(receiver_desg)
+
+        if not receiver_user:
+            messages.error(request, "No user assigned to this designation")
+            return redirect('dashboard')
+
+        with transaction.atomic():
+
+            formObject = Requests()
+            formObject.name = request.POST['name']
+            formObject.description = request.POST['description']
+            formObject.area = request.POST['area']
+            formObject.engineerProcessed = 0
+            formObject.directorApproval = 0
+            formObject.deanProcessed = 0
+            formObject.requestCreatedBy = request.user.username
+            formObject.status = "Pending"
+            formObject.issuedWorkOrder = 0
+            formObject.workCompleted = 0
+            formObject.billGenerated = 0
+            formObject.billProcessed = 0
+            formObject.billSettled = 0
+            formObject.save()
+
+            create_file(
+                uploader=request.user.username,
+                uploader_designation=desg,
+                receiver=receiver_user,
+                receiver_designation=receiver_desg,
+                src_module="IWD",
+                src_object_id=str(formObject.id),
+                file_extra_JSON={"value": 2},
+                attached_file=None
+            )
+
+            iwd_notif(request.user, receiver_user_obj, "Request_added")
+
         messages.success(request, "Request Successfully Created")
-        receiver_user_obj = User.objects.get(username=receiver_user)
-        
-        iwd_notif(request.user, receiver_user_obj, "Request_added")
-        
-        eligible = request.session.get('currentDesignationSelected')
-    return render(request, 'iwdModuleV2/dashboard.html', {'eligible' : eligible})
+
+    eligible = request.session.get('currentDesignationSelected')
+    return render(request, 'iwdModuleV2/dashboard.html', {'eligible': eligible})
 
 @login_required
 def createdRequests(request):
@@ -548,54 +570,45 @@ def view_file(request, id, url):
     eligible = request.session.get('currentDesignationSelected')
 
     return render(request, "iwdModuleV2/view_file.html", context= {"file": file1, "tracks": tracks, "current_user": current_user, "holdsDesignations" : holdsDesignations, "url" : url, "eligible" : eligible})
-
 @login_required
 def handleEngineerProcessRequests(request):
     if request.method == 'POST':
-        obj= request.POST
-        
-        fileid = obj.get('fileid')
-        request_id = File.objects.get(id=fileid).src_object_id
-        
-        remarks = obj.get('remarks')
-        attachment = request.FILES.get('attachment')
-        receiver_user, receiver_desg = request.POST['designation'].split('|')
-        
 
-        forward_file(
-            file_id= fileid,
-            receiver= receiver_user,
-            receiver_designation=receiver_desg, 
-            file_extra_JSON= { "message": "Request forwarded."},
-            remarks= remarks,
-            file_attachment= attachment, 
-        )
+        with transaction.atomic():
 
-        Requests.objects.filter(id=request_id).update(engineerProcessed=1, status="Approved by the Engineer")
+            obj = request.POST
+            fileid = obj.get('fileid')
+            request_id = File.objects.get(id=fileid).src_object_id
 
-        obj = []
-        desg = request.session.get('currentDesignationSelected')
+            remarks = obj.get('remarks')
+            attachment = request.FILES.get('attachment')
+            receiver_desg = request.POST['designation']
+            receiver_user, receiver_user_obj = get_receiver_from_designation(receiver_desg)
 
-        inbox_files = view_inbox(
-            username=request.user,
-            designation=desg,
-            src_module="IWD"
-        )
+            if not receiver_user:
+                messages.error(request, "Receiver not found")
+                return redirect('createdRequests')
 
-        for result in inbox_files:
-            src_object_id = result['src_object_id']
-            request_object = Requests.objects.filter(id=src_object_id).first()
-            file_obj= File.objects.get(src_object_id= request_object.id, src_module = "IWD")
-            if request_object:
-                element = [request_object.id, request_object.name, request_object.area, request_object.description, request_object.requestCreatedBy, file_obj.id]
-                obj.append(element)
+            forward_file(
+                file_id=fileid,
+                receiver=receiver_user,
+                receiver_designation=receiver_desg,
+                file_extra_JSON={"message": "Request forwarded."},
+                remarks=remarks,
+                file_attachment=attachment,
+            )
+
+            Requests.objects.filter(id=request_id).update(
+                engineerProcessed=1,
+                status="Approved by the Engineer"
+            )
+
+            receiver_user_obj = User.objects.get(username=receiver_user)
+            iwd_notif(request.user, receiver_user_obj, "file_forward")
 
         messages.success(request, "File Forwarded")
-        receiver_user_obj = User.objects.get(username=receiver_user)
-        
-        iwd_notif(request.user, receiver_user_obj, "file_forward")
 
-    return render(request, 'iwdModuleV2/createdRequests.html', {'obj' : obj})
+    return redirect('createdRequests')
 
 
 @login_required
@@ -620,55 +633,45 @@ def engineerProcessedRequests(request):
             obj.append(element)
 
     return render(request, 'iwdModuleV2/engineerProcessedRequests.html', {'obj' : obj})
-
 @login_required
 def handleDeanProcessRequests(request):
     if request.method == 'POST':
 
-        obj= request.POST
-        
-        fileid = obj.get('fileid')
-        request_id = File.objects.get(id=fileid).src_object_id
-        
-        remarks = obj.get('remarks')
-        attachment = request.FILES.get('attachment')
-        receiver_user, receiver_desg = request.POST['designation'].split('|')
-        
+        with transaction.atomic():
 
-        forward_file(
-            file_id= fileid,
-            receiver= receiver_user,
-            receiver_designation=receiver_desg, 
-            file_extra_JSON= { "message": "Request forwarded."},
-            remarks= remarks,
-            file_attachment= attachment, 
-        )
-        
-        Requests.objects.filter(id=request_id).update(deanProcessed=1, status="Approved by the dean")
-        desg = request.session.get('currentDesignationSelected')
+            obj = request.POST
+            fileid = obj.get('fileid')
+            request_id = File.objects.get(id=fileid).src_object_id
 
-        inbox_files = view_inbox(
-            username=request.user,
-            designation=desg,
-            src_module="IWD"
-        )
+            remarks = obj.get('remarks')
+            attachment = request.FILES.get('attachment')
+            receiver_desg = request.POST['designation']
+            receiver_user, receiver_user_obj = get_receiver_from_designation(receiver_desg)
 
-        obj = []
+            if not receiver_user:
+                messages.error(request, "Receiver not found")
+                return redirect('engineerProcessedRequests')
 
-        for result in inbox_files:
-            src_object_id = result['src_object_id']
-            request_object = Requests.objects.filter(id=src_object_id).first()
-            file_obj= File.objects.get(src_object_id = src_object_id, src_module = "IWD")
-            if request_object:
-                element = [request_object.id, request_object.name, request_object.area, request_object.description, request_object.requestCreatedBy, file_obj.id]
-                obj.append(element)
+            forward_file(
+                file_id=fileid,
+                receiver=receiver_user,
+                receiver_designation=receiver_desg,
+                file_extra_JSON={"message": "Request forwarded."},
+                remarks=remarks,
+                file_attachment=attachment,
+            )
+
+            Requests.objects.filter(id=request_id).update(
+                deanProcessed=1,
+                status="Approved by the dean"
+            )
+
+            receiver_user_obj = User.objects.get(username=receiver_user)
+            iwd_notif(request.user, receiver_user_obj, "file_forward")
 
         messages.success(request, "File Forwarded")
-        receiver_user_obj = User.objects.get(username=receiver_user)
-        
-        iwd_notif(request.user, receiver_user_obj, "file_forward")
 
-    return render(request, 'iwdModuleV2/engineerProcessedRequests.html', {'obj': obj})
+    return redirect('engineerProcessedRequests')
 
 @login_required
 def deanProcessedRequests(request):
@@ -691,62 +694,53 @@ def deanProcessedRequests(request):
             obj.append(element)
 
     return render(request, 'iwdModuleV2/deanProcessedRequests.html', {'obj' : obj})
-
 @login_required
 def handleDirectorApprovalRequests(request):
     if request.method == 'POST':
-        obj= request.POST
-        
-        fileid = obj.get('fileid')
-        request_id = File.objects.get(id=fileid).src_object_id
-        
-        remarks = obj.get('remarks')
-        attachment = request.FILES.get('attachment')
-        receiver_user, receiver_desg = request.POST['designation'].split('|')
-        
 
-        forward_file(
-            file_id= fileid,
-            receiver= receiver_user,
-            receiver_designation=receiver_desg, 
-            file_extra_JSON= { "message": "Request forwarded."},
-            remarks= remarks,
-            file_attachment= attachment, 
-        )
+        with transaction.atomic():
 
-        message = ""
+            obj = request.POST
+            fileid = obj.get('fileid')
+            request_id = File.objects.get(id=fileid).src_object_id
 
-        if (obj.get('action') == 'approve'):
-            message = "Request_approved"
-            Requests.objects.filter(id=request_id).update(directorApproval=1, status="Approved by the director")
-        else:
-            message = "Request_rejected"
-            Requests.objects.filter(id=request_id).update(directorApproval=-1, status="Rejected by the director")
+            remarks = obj.get('remarks')
+            attachment = request.FILES.get('attachment')
+            receiver_desg = request.POST['designation']
+            receiver_user, receiver_user_obj = get_receiver_from_designation(receiver_desg)
 
-        desg = request.session.get('currentDesignationSelected')
+            if not receiver_user:
+                messages.error(request, "Receiver not found")
+                return redirect('deanProcessedRequests')
+            
+            forward_file(
+                file_id=fileid,
+                receiver=receiver_user,
+                receiver_designation=receiver_desg,
+                file_extra_JSON={"message": "Request forwarded."},
+                remarks=remarks,
+                file_attachment=attachment,
+            )
 
-        inbox_files = view_inbox(
-            username=request.user,
-            designation=desg,
-            src_module="IWD"
-        )
+            if obj.get('action') == 'approve':
+                Requests.objects.filter(id=request_id).update(
+                    directorApproval=1,
+                    status="Approved by the director"
+                )
+                message = "Request_approved"
+            else:
+                Requests.objects.filter(id=request_id).update(
+                    directorApproval=-1,
+                    status="Rejected by the director"
+                )
+                message = "Request_rejected"
 
-        obj = []
-
-        for result in inbox_files:
-            src_object_id = result['src_object_id']
-            request_object = Requests.objects.filter(id=src_object_id).first()
-            file_obj= File.objects.get(src_object_id = src_object_id, src_module = "IWD")
-            if request_object:
-                element = [request_object.id, request_object.name, request_object.area, request_object.description, request_object.requestCreatedBy, file_obj.id]
-                obj.append(element)
+            receiver_user_obj = User.objects.get(username=receiver_user)
+            iwd_notif(request.user, receiver_user_obj, message)
 
         messages.success(request, "File forwarded")
-        receiver_user_obj = User.objects.get(username=receiver_user)
-        
-        iwd_notif(request.user, receiver_user_obj, message)
 
-    return render(request, 'iwdModuleV2/deanProcessedRequests.html', {'obj': obj})
+    return redirect('deanProcessedRequests')
 
 @login_required
 def rejectedRequests(request):
@@ -818,7 +812,13 @@ def handleUpdateRequests(request):
     if request.method == 'POST':
         request_id = request.POST.get("id", 0)
         desg = request.session.get('currentDesignationSelected')
-        receiver_user, receiver_desg = request.POST['designation'].split('|')
+        receiver_desg = request.POST['designation']
+        receiver_user, receiver_user_obj = get_receiver_from_designation(receiver_desg)
+
+        if not receiver_user:
+            messages.error(request, "Receiver not found for this designation")
+            return redirect('dashboard')
+        
         Requests.objects.filter(id=request_id).update(name=request.POST['name'],
             description=request.POST['description'],
             area=request.POST['area'],
@@ -1041,58 +1041,55 @@ def generatedBillsView(request):
             obj.append(element)
 
     return render(request, 'iwdModuleV2/generatedBillsRequestsView.html', {'obj' : obj})
-
 @login_required
 def handleProcessedBills(request):
     if request.method == 'POST':
-        obj= request.POST
-        
-        fileid = obj.get('fileid')
-        # filez= File.objects.get(id=fileid)
-        request_id = File.objects.get(id=fileid).src_object_id
-        
-        remarks = obj.get('remarks')
-        attachment = request.FILES.get('attachment')
-        receiver_user, receiver_desg = request.POST['designation'].split('|')
-        
 
-        forward_file(
-            file_id= fileid,
-            receiver= receiver_user,
-            receiver_designation=receiver_desg, 
-            file_extra_JSON= { "message": "Request forwarded."},
-            remarks= remarks,
-            file_attachment= attachment, 
-        )
-        
-        Requests.objects.filter(id=request_id).update(billProcessed=1, status="Final Bill Processed")
-        
+        with transaction.atomic():
 
-        request_instance = Requests.objects.get(pk=request_id)
-        
-        formObject = Bills()
-        formObject.request_id = request_instance
-        formObject.file = attachment
-        formObject.save()
+            obj = request.POST
+            fileid = obj.get('fileid')
+            request_id = File.objects.get(id=fileid).src_object_id
 
-        req_object = Requests.objects.filter(billGenerated=1)
+            remarks = obj.get('remarks')
+            attachment = request.FILES.get('attachment')
+            receiver_desg = request.POST['designation']
+            receiver_user, receiver_user_obj = get_receiver_from_designation(receiver_desg)
+            vendor_obj = Vendor.objects.filter(work__request_id=request_id).order_by('-id').first()
 
-        obj = []
+            if not receiver_user:
+                messages.error(request, "Receiver not found")
+                return redirect('generatedBillsView')
 
-        for result in req_object:
-            request_object = Requests.objects.filter(id=result.id).first()
-            file_obj= File.objects.get(src_object_id = result.id, src_module = "IWD")
-            if request_object:
-                element = [request_object.id, request_object.name, request_object.area, request_object.description, request_object.requestCreatedBy, file_obj.id]
-                obj.append(element)
+            if not vendor_obj:
+                messages.error(request, "No vendor found for this request")
+                return redirect('generatedBillsView')
+
+            forward_file(
+                file_id=fileid,
+                receiver=receiver_user,
+                receiver_designation=receiver_desg,
+                file_extra_JSON={"message": "Request forwarded."},
+                remarks=remarks,
+                file_attachment=attachment,
+            )
+
+            Requests.objects.filter(id=request_id).update(
+                billProcessed=1,
+                status="Final Bill Processed"
+            )
+
+            Bills.objects.create(
+                vendor=vendor_obj,
+                file=attachment
+            )
+
+            receiver_user_obj = User.objects.get(username=receiver_user)
+            iwd_notif(request.user, receiver_user_obj, "file_forward")
 
         messages.success(request, "Bill processed")
 
-        receiver_user_obj = User.objects.get(username=receiver_user)
-        
-        iwd_notif(request.user, receiver_user_obj, "file_forward")
-
-    return render(request, 'iwdModuleV2/generatedBillsRequestsView.html', {'obj' : obj})
+    return redirect('generatedBillsView')
 
 @login_required
 def auditDocumentView(request):
@@ -1108,9 +1105,11 @@ def auditDocumentView(request):
 
     for x in inbox_files:
         requestId = x['src_object_id']
-        files = Bills.objects.get(request_id=requestId)
+        files = get_latest_bill_for_request(requestId)
+        if not files:
+            continue
         file_obj= File.objects.get(src_object_id = requestId, src_module = "IWD")
-        element = [files.request_id.id, files.file, files.file.url, file_obj.id, file_obj.id, file_obj.id]
+        element = [requestId, files.file, files.file.url, file_obj.id, file_obj.id, file_obj.id]
         obj.append(element)
 
     return render(request, 'iwdModuleV2/auditDocumentView.html', {'obj' : obj})
@@ -1125,7 +1124,12 @@ def auditDocument(request):
         
         remarks = obj.get('remarks')
         attachment = request.FILES.get('attachment')
-        receiver_user, receiver_desg = request.POST['designation'].split('|')
+        receiver_desg = request.POST['designation']
+        receiver_user, receiver_user_obj = get_receiver_from_designation(receiver_desg)
+
+        if not receiver_user:
+            messages.error(request, "Receiver not found")
+            return redirect('auditDocumentView')
         
 
         forward_file(
@@ -1151,14 +1155,16 @@ def auditDocument(request):
 
         for x in inbox_files:
             requestId = x['src_object_id']
-            files = Bills.objects.get(request_id=requestId)
+            files = get_latest_bill_for_request(requestId)
+            if not files:
+                continue
             file_obj= File.objects.get(src_object_id = requestId, src_module = "IWD")
-            element = [files.request_id.id, files.file, files.file.url, file_obj.id, file_obj.id, file_obj.id]
+            element = [requestId, files.file, files.file.url, file_obj.id, file_obj.id, file_obj.id]
             obj.append(element)
 
         messages.success(request, "File Audit done")
 
-        receiver_user_obj = User.objects.get(username=receiver_user)
+        
         
         iwd_notif(request.user, receiver_user_obj, "file_forward")
 
@@ -1178,10 +1184,12 @@ def settleBillsView(request):
     
     for x in inbox_files:
         requestId = x['src_object_id']
-        bills_object = Bills.objects.filter(request_id=requestId).first()
+        bills_object = get_latest_bill_for_request(requestId)
+        if not bills_object:
+            continue
         file_obj= File.objects.get(src_object_id = requestId, src_module = "IWD")
         request_object = Requests.objects.get(id = requestId)
-        element = [bills_object.request_id.id, bills_object.file, bills_object.file.url, request_object.billSettled, file_obj.id, file_obj.id]
+        element = [requestId, bills_object.file, bills_object.file.url, request_object.billSettled, file_obj.id, file_obj.id]
         obj.append(element)
 
     return render(request, 'iwdModuleV2/settleBillsView.html', {'obj' : obj})
@@ -1189,31 +1197,19 @@ def settleBillsView(request):
 @login_required
 def handleSettleBillRequests(request):
     if request.method == 'POST':
-        request_id = request.POST.get("id", 0)
 
-        desg = request.session.get('currentDesignationSelected')
+        with transaction.atomic():
 
-        inbox_files = view_inbox(
-            username=request.user,
-            designation=desg,
-            src_module="IWD"
-        )
+            request_id = request.POST.get("id", 0)
 
-        Requests.objects.filter(id=request_id).update(status="Final Bill Settled", billSettled=1)
-
-        obj = []
-        
-        for x in inbox_files:
-            requestId = x['src_object_id']
-            bills_object = Bills.objects.filter(request_id=requestId).first()
-            file_obj= File.objects.get(src_object_id = requestId, src_module = "IWD")
-            request_object = Requests.objects.get(id = requestId)
-            element = [bills_object.request_id.id, bills_object.file, bills_object.file.url, request_object.billSettled, file_obj.id, file_obj.id]
-            obj.append(element)
+            Requests.objects.filter(id=request_id).update(
+                status="Final Bill Settled",
+                billSettled=1
+            )
 
         messages.success(request, "Final Bill settled")
 
-        return render(request, 'iwdModuleV2/settleBillsView.html', {'obj' : obj})
+    return redirect('settleBillsView')
 
 @login_required   
 def viewBudget(request):

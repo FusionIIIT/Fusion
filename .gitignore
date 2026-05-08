@@ -76,3 +76,4 @@ package-lock.json
 
 .DS_Store
 **/generated.pdf
+FusionIIIT/applications/iwdModuleV2/tests/reports/*.csv

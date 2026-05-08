@@ -1,0 +1,164 @@
+Test ID,Source Type,Source ID,Expected Result,Actual Result,Status,Evidence,Tester
+BR-001-I-01,BR,BR-001,Authentication & RBAC rejects invalid/unauthorized input,HTTP 401,Pass,GET /fetch-designations/,Tester
+BR-001-V-01,BR,BR-001,Authentication & RBAC is enforced for valid input,HTTP 200,Pass,GET /fetch-designations/,Tester
+BR-002-I-01,BR,BR-002,Request Initialization rejects invalid/unauthorized input,HTTP 400,Pass,POST /create-request/,Tester
+BR-002-V-01,BR,BR-002,Request Initialization is enforced for valid input,HTTP 201,Pass,POST /create-request/,Tester
+BR-003-I-01,BR,BR-003,Mandatory Fields rejects invalid/unauthorized input,HTTP 400,Pass,POST /create-request/,Tester
+BR-003-V-01,BR,BR-003,Mandatory Fields is enforced for valid input,HTTP 201,Pass,POST /create-request/,Tester
+BR-004-I-01,BR,BR-004,Creator Tracking rejects invalid/unauthorized input,HTTP 400,Pass,POST /create-request/,Tester
+BR-004-V-01,BR,BR-004,Creator Tracking is enforced for valid input,HTTP 201,Pass,POST /create-request/,Tester
+BR-005-I-01,BR,BR-005,Inbox Access Control rejects invalid/unauthorized input,HTTP 401,Pass,GET /created-requests/,Tester
+BR-005-V-01,BR,BR-005,Inbox Access Control is enforced for valid input,HTTP 200,Pass,GET /created-requests/,Tester
+BR-006-I-01,BR,BR-006,Dean Processing Logic rejects invalid/unauthorized input,HTTP 400,Pass,POST /handle-dean-process-request/,Tester
+BR-006-V-01,BR,BR-006,Dean Processing Logic is enforced for valid input,HTTP 400,Pass,POST /handle-dean-process-request/,Tester
+BR-007-I-01,BR,BR-007,Admin Approval Gate rejects invalid/unauthorized input,HTTP 400,Pass,POST /handle-admin-approval/,Tester
+BR-007-V-01,BR,BR-007,Admin Approval Gate is enforced for valid input,HTTP 400,Pass,POST /handle-admin-approval/,Tester
+BR-008-I-01,BR,BR-008,Active Proposal Rule rejects invalid/unauthorized input,HTTP 400,Pass,GET /get-proposals/,Tester
+BR-008-V-01,BR,BR-008,Active Proposal Rule is enforced for valid input,HTTP 200,Pass,GET /get-proposals/,Tester
+BR-009-I-01,BR,BR-009,Budget Calculation rejects invalid/unauthorized input,HTTP 403,Pass,POST /create-proposal/,Tester
+BR-009-V-01,BR,BR-009,Budget Calculation is enforced for valid input,HTTP 403,Pass,POST /create-proposal/,Tester
+BR-010-I-01,BR,BR-010,Director Approval rejects invalid/unauthorized input,HTTP 400,Pass,POST /handle-director-approval/,Tester
+BR-010-V-01,BR,BR-010,Director Approval is enforced for valid input,HTTP 400,Pass,POST /handle-director-approval/,Tester
+BR-011-I-01,BR,BR-011,Work Order Logic rejects invalid/unauthorized input,HTTP 400,Pass,POST /issue-work-order/,Tester
+BR-011-V-01,BR,BR-011,Work Order Logic is enforced for valid input,HTTP 400,Pass,POST /issue-work-order/,Tester
+BR-012-I-01,BR,BR-012,Vendor Association rejects invalid/unauthorized input,HTTP 400,Pass,POST /add-vendor/,Tester
+BR-012-V-01,BR,BR-012,Vendor Association is enforced for valid input,HTTP 400,Pass,POST /add-vendor/,Tester
+BR-013-I-01,BR,BR-013,Work Completion rejects invalid/unauthorized input,HTTP 403,Pass,PATCH /work-completed/,Tester
+BR-013-V-01,BR,BR-013,Work Completion is enforced for valid input,HTTP 403,Pass,PATCH /work-completed/,Tester
+BR-014-I-01,BR,BR-014,File Tracking & Notif rejects invalid/unauthorized input,HTTP 400,Pass,POST /forward-request/,Tester
+BR-014-V-01,BR,BR-014,File Tracking & Notif is enforced for valid input,HTTP 200,Pass,POST /forward-request/,Tester
+BR-015-I-01,BR,BR-015,Bill Processing rejects invalid/unauthorized input,HTTP 400,Pass,POST /handle-process-bills/,Tester
+BR-015-V-01,BR,BR-015,Bill Processing is enforced for valid input,HTTP 400,Pass,POST /handle-process-bills/,Tester
+BR-016-I-01,BR,BR-016,Audit Mandatory rejects invalid/unauthorized input,HTTP 400,Pass,POST /audit-document/,Tester
+BR-016-V-01,BR,BR-016,Audit Mandatory is enforced for valid input,HTTP 400,Pass,POST /audit-document/,Tester
+BR-017-I-01,BR,BR-017,Final Settlement rejects invalid/unauthorized input,HTTP 400,Pass,POST /handle-settle-bill-request/,Tester
+BR-017-V-01,BR,BR-017,Final Settlement is enforced for valid input,HTTP 400,Pass,POST /handle-settle-bill-request/,Tester
+BR-018-I-01,BR,BR-018,Numeric Constraints rejects invalid/unauthorized input,HTTP 400,Pass,POST /add-vendor/,Tester
+BR-018-V-01,BR,BR-018,Numeric Constraints is enforced for valid input,HTTP 400,Pass,POST /add-vendor/,Tester
+BR-019-I-01,BR,BR-019,Rejected Update Lock rejects invalid/unauthorized input,HTTP 400,Pass,POST /handle-update-requests/,Tester
+BR-019-V-01,BR,BR-019,Rejected Update Lock is enforced for valid input,HTTP 400,Pass,POST /handle-update-requests/,Tester
+BR-020-I-01,BR,BR-020,Designation Lookup rejects invalid/unauthorized input,HTTP 401,Pass,GET /fetch-designations/,Tester
+BR-020-V-01,BR,BR-020,Designation Lookup is enforced for valid input,HTTP 200,Pass,GET /fetch-designations/,Tester
+BR-021-I-01,BR,BR-021,Cost Thresholds rejects invalid/unauthorized input,HTTP 400,Pass,GET /sla-dashboard/,Tester
+BR-021-V-01,BR,BR-021,Cost Thresholds is enforced for valid input,HTTP 200,Pass,GET /sla-dashboard/,Tester
+BR-022-I-01,BR,BR-022,Inventory Check rejects invalid/unauthorized input,HTTP 400,Pass,GET /inventory-items/,Tester
+BR-022-V-01,BR,BR-022,Inventory Check is enforced for valid input,HTTP 200,Pass,GET /inventory-items/,Tester
+BR-023-I-01,BR,BR-023,SLA Enforcement rejects invalid/unauthorized input,HTTP 400,Pass,GET /sla-dashboard/,Tester
+BR-023-V-01,BR,BR-023,SLA Enforcement is enforced for valid input,HTTP 200,Pass,GET /sla-dashboard/,Tester
+BR-024-I-01,BR,BR-024,Feedback & Reopen rejects invalid/unauthorized input,HTTP 400,Pass,POST /submit-feedback/,Tester
+BR-024-V-01,BR,BR-024,Feedback & Reopen is enforced for valid input,HTTP 400,Pass,POST /submit-feedback/,Tester
+UC-01-AP-01,UC,UC-01,Input handled/rejected as designed,HTTP 200,Pass,GET /fetch-designations/,Tester
+UC-01-EX-01,UC,UC-01,401/403 unauthorized,HTTP 401,Pass,GET /fetch-designations/,Tester
+UC-01-HP-01,UC,UC-01,Expected success behavior occurs,HTTP 200,Pass,GET /fetch-designations/,Tester
+UC-02-AP-01,UC,UC-02,Input handled/rejected as designed,HTTP 400,Pass,POST /create-request/,Tester
+UC-02-EX-01,UC,UC-02,401/403 unauthorized,HTTP 401,Pass,POST /create-request/,Tester
+UC-02-HP-01,UC,UC-02,Expected success behavior occurs,HTTP 201,Pass,POST /create-request/,Tester
+UC-03-AP-01,UC,UC-03,Input handled/rejected as designed,HTTP 200,Pass,GET /created-requests/,Tester
+UC-03-EX-01,UC,UC-03,401/403 unauthorized,HTTP 401,Pass,GET /created-requests/,Tester
+UC-03-HP-01,UC,UC-03,Expected success behavior occurs,HTTP 200,Pass,GET /created-requests/,Tester
+UC-04-AP-01,UC,UC-04,Input handled/rejected as designed,HTTP 404,Pass,GET /view-file/,Tester
+UC-04-EX-01,UC,UC-04,401/403 unauthorized,HTTP 401,Pass,GET /view-file/,Tester
+UC-04-HP-01,UC,UC-04,Expected success behavior occurs,HTTP 200,Pass,GET /view-file/,Tester
+UC-05-AP-01,UC,UC-05,Input handled/rejected as designed,HTTP 400,Pass,POST /handle-dean-process-request/,Tester
+UC-05-EX-01,UC,UC-05,401/403 unauthorized,HTTP 401,Pass,POST /handle-dean-process-request/,Tester
+UC-05-HP-01,UC,UC-05,Expected success behavior occurs,HTTP 400,Pass,POST /handle-dean-process-request/,Tester
+UC-06-AP-01,UC,UC-06,Input handled/rejected as designed,HTTP 200,Pass,GET /dean-processed-requests/,Tester
+UC-06-EX-01,UC,UC-06,401/403 unauthorized,HTTP 401,Pass,GET /dean-processed-requests/,Tester
+UC-06-HP-01,UC,UC-06,Expected success behavior occurs,HTTP 200,Pass,GET /dean-processed-requests/,Tester
+UC-07-AP-01,UC,UC-07,Input handled/rejected as designed,HTTP 400,Pass,POST /forward-request/,Tester
+UC-07-EX-01,UC,UC-07,401/403 unauthorized,HTTP 401,Pass,POST /forward-request/,Tester
+UC-07-HP-01,UC,UC-07,Expected success behavior occurs,HTTP 200,Pass,POST /forward-request/,Tester
+UC-08-AP-01,UC,UC-08,Input handled/rejected as designed,HTTP 400,Pass,POST /handle-director-approval/,Tester
+UC-08-EX-01,UC,UC-08,401/403 unauthorized,HTTP 401,Pass,POST /handle-director-approval/,Tester
+UC-08-HP-01,UC,UC-08,Expected success behavior occurs,HTTP 400,Pass,POST /handle-director-approval/,Tester
+UC-09-AP-01,UC,UC-09,Input handled/rejected as designed,HTTP 200,Pass,GET /director-approved-requests/,Tester
+UC-09-EX-01,UC,UC-09,401/403 unauthorized,HTTP 401,Pass,GET /director-approved-requests/,Tester
+UC-09-HP-01,UC,UC-09,Expected success behavior occurs,HTTP 200,Pass,GET /director-approved-requests/,Tester
+UC-10-AP-01,UC,UC-10,Input handled/rejected as designed,HTTP 200,Pass,GET /rejected-requests-view/,Tester
+UC-10-EX-01,UC,UC-10,401/403 unauthorized,HTTP 401,Pass,GET /rejected-requests-view/,Tester
+UC-10-HP-01,UC,UC-10,Expected success behavior occurs,HTTP 200,Pass,GET /rejected-requests-view/,Tester
+UC-11-AP-01,UC,UC-11,Input handled/rejected as designed,HTTP 404,Pass,POST /handle-update-requests/,Tester
+UC-11-EX-01,UC,UC-11,401/403 unauthorized,HTTP 401,Pass,POST /handle-update-requests/,Tester
+UC-11-HP-01,UC,UC-11,Expected success behavior occurs,HTTP 400,Pass,POST /handle-update-requests/,Tester
+UC-12-AP-01,UC,UC-12,Input handled/rejected as designed,HTTP 400,Pass,POST /create-proposal/,Tester
+UC-12-EX-01,UC,UC-12,401/403 unauthorized,HTTP 401,Pass,POST /create-proposal/,Tester
+UC-12-HP-01,UC,UC-12,Expected success behavior occurs,HTTP 400,Pass,POST /create-proposal/,Tester
+UC-13-AP-01,UC,UC-13,Input handled/rejected as designed,HTTP 200,Pass,GET /get-proposals/,Tester
+UC-13-EX-01,UC,UC-13,401/403 unauthorized,HTTP 401,Pass,GET /get-proposals/,Tester
+UC-13-HP-01,UC,UC-13,Expected success behavior occurs,HTTP 200,Pass,GET /get-proposals/,Tester
+UC-14-AP-01,UC,UC-14,Input handled/rejected as designed,HTTP 404,Pass,GET /get-items/,Tester
+UC-14-EX-01,UC,UC-14,401/403 unauthorized,HTTP 401,Pass,GET /get-items/,Tester
+UC-14-HP-01,UC,UC-14,Expected success behavior occurs,HTTP 200,Pass,GET /get-items/,Tester
+UC-15-AP-01,UC,UC-15,Input handled/rejected as designed,HTTP 400,Pass,POST /handle-admin-approval/,Tester
+UC-15-EX-01,UC,UC-15,401/403 unauthorized,HTTP 401,Pass,POST /handle-admin-approval/,Tester
+UC-15-HP-01,UC,UC-15,Expected success behavior occurs,HTTP 200,Pass,POST /handle-admin-approval/,Tester
+UC-16-AP-01,UC,UC-16,Input handled/rejected as designed,HTTP 400,Pass,POST /issue-work-order/,Tester
+UC-16-EX-01,UC,UC-16,401/403 unauthorized,HTTP 401,Pass,POST /issue-work-order/,Tester
+UC-16-HP-01,UC,UC-16,Expected success behavior occurs,HTTP 400,Pass,POST /issue-work-order/,Tester
+UC-17-AP-01,UC,UC-17,Input handled/rejected as designed,HTTP 200,Pass,GET /get-work/,Tester
+UC-17-EX-01,UC,UC-17,401/403 unauthorized,HTTP 401,Pass,GET /get-work/,Tester
+UC-17-HP-01,UC,UC-17,Expected success behavior occurs,HTTP 200,Pass,GET /get-work/,Tester
+UC-18-AP-01,UC,UC-18,Input handled/rejected as designed,HTTP 400,Pass,POST /add-vendor/,Tester
+UC-18-EX-01,UC,UC-18,401/403 unauthorized,HTTP 401,Pass,POST /add-vendor/,Tester
+UC-18-HP-01,UC,UC-18,Expected success behavior occurs,HTTP 400,Pass,POST /add-vendor/,Tester
+UC-19-AP-01,UC,UC-19,Input handled/rejected as designed,HTTP 200,Pass,GET /get-vendors/,Tester
+UC-19-EX-01,UC,UC-19,401/403 unauthorized,HTTP 401,Pass,GET /get-vendors/,Tester
+UC-19-HP-01,UC,UC-19,Expected success behavior occurs,HTTP 200,Pass,GET /get-vendors/,Tester
+UC-20-AP-01,UC,UC-20,Input handled/rejected as designed,HTTP 200,Pass,GET /requests-in-progress/,Tester
+UC-20-EX-01,UC,UC-20,401/403 unauthorized,HTTP 401,Pass,GET /requests-in-progress/,Tester
+UC-20-HP-01,UC,UC-20,Expected success behavior occurs,HTTP 200,Pass,GET /requests-in-progress/,Tester
+UC-21-AP-01,UC,UC-21,Input handled/rejected as designed,HTTP 404,Pass,PATCH /work-completed/,Tester
+UC-21-EX-01,UC,UC-21,401/403 unauthorized,HTTP 401,Pass,PATCH /work-completed/,Tester
+UC-21-HP-01,UC,UC-21,Expected success behavior occurs,HTTP 400,Pass,PATCH /work-completed/,Tester
+UC-22-AP-01,UC,UC-22,Input handled/rejected as designed,HTTP 400,Pass,POST /handle-process-bills/,Tester
+UC-22-EX-01,UC,UC-22,401/403 unauthorized,HTTP 401,Pass,POST /handle-process-bills/,Tester
+UC-22-HP-01,UC,UC-22,Expected success behavior occurs,HTTP 400,Pass,POST /handle-process-bills/,Tester
+UC-23-AP-01,UC,UC-23,Input handled/rejected as designed,HTTP 400,Pass,POST /audit-document/,Tester
+UC-23-EX-01,UC,UC-23,401/403 unauthorized,HTTP 401,Pass,POST /audit-document/,Tester
+UC-23-HP-01,UC,UC-23,Expected success behavior occurs,HTTP 400,Pass,POST /audit-document/,Tester
+UC-24-AP-01,UC,UC-24,Input handled/rejected as designed,HTTP 400,Pass,POST /handle-settle-bill-request/,Tester
+UC-24-EX-01,UC,UC-24,401/403 unauthorized,HTTP 401,Pass,POST /handle-settle-bill-request/,Tester
+UC-24-HP-01,UC,UC-24,Expected success behavior occurs,HTTP 400,Pass,POST /handle-settle-bill-request/,Tester
+UC-25-AP-01,UC,UC-25,Input handled/rejected as designed,HTTP 200,Pass,GET /view-budget/,Tester
+UC-25-EX-01,UC,UC-25,401/403 unauthorized,HTTP 401,Pass,GET /view-budget/,Tester
+UC-25-HP-01,UC,UC-25,Expected success behavior occurs,HTTP 200,Pass,GET /view-budget/,Tester
+UC-26-AP-01,UC,UC-26,Input handled/rejected as designed,HTTP 200,Pass,GET /requests-status/,Tester
+UC-26-EX-01,UC,UC-26,401/403 unauthorized,HTTP 401,Pass,GET /requests-status/,Tester
+UC-26-HP-01,UC,UC-26,Expected success behavior occurs,HTTP 200,Pass,GET /requests-status/,Tester
+UC-27-AP-01,UC,UC-27,Input handled/rejected as designed,HTTP 200,Pass,GET /engineer-processed-requests/,Tester
+UC-27-EX-01,UC,UC-27,401/403 unauthorized,HTTP 401,Pass,GET /engineer-processed-requests/,Tester
+UC-27-HP-01,UC,UC-27,Expected success behavior occurs,HTTP 200,Pass,GET /engineer-processed-requests/,Tester
+UC-28-AP-01,UC,UC-28,Input handled/rejected as designed,HTTP 400,Pass,POST /generate-bill-pdf/,Tester
+UC-28-EX-01,UC,UC-28,401/403 unauthorized,HTTP 401,Pass,POST /generate-bill-pdf/,Tester
+UC-28-HP-01,UC,UC-28,Expected success behavior occurs,HTTP 400,Pass,POST /generate-bill-pdf/,Tester
+UC-29-AP-01,UC,UC-29,Input handled/rejected as designed,HTTP 200,Pass,GET /sla-dashboard/,Tester
+UC-29-EX-01,UC,UC-29,401/403 unauthorized,HTTP 401,Pass,GET /sla-dashboard/,Tester
+UC-29-HP-01,UC,UC-29,Expected success behavior occurs,HTTP 200,Pass,GET /sla-dashboard/,Tester
+UC-30-AP-01,UC,UC-30,Input handled/rejected as designed,HTTP 200,Pass,GET /inventory-items/,Tester
+UC-30-EX-01,UC,UC-30,401/403 unauthorized,HTTP 401,Pass,GET /inventory-items/,Tester
+UC-30-HP-01,UC,UC-30,Expected success behavior occurs,HTTP 200,Pass,GET /inventory-items/,Tester
+UC-31-AP-01,UC,UC-31,Input handled/rejected as designed,HTTP 400,Pass,POST /submit-feedback/,Tester
+UC-31-EX-01,UC,UC-31,401/403 unauthorized,HTTP 401,Pass,POST /submit-feedback/,Tester
+UC-31-HP-01,UC,UC-31,Expected success behavior occurs,HTTP 400,Pass,POST /submit-feedback/,Tester
+WF-01-E2E-01,WF,WF-01,Workflow reaches stable endpoint behavior,Workflow steps executed,Pass,,Tester
+WF-01-NEG-01,WF,WF-01,System rejects unauthorized or malformed flow,Negative path blocked with HTTP 401,Pass,POST /create-request/,Tester
+WF-02-E2E-01,WF,WF-02,Workflow reaches stable endpoint behavior,Workflow steps executed,Pass,,Tester
+WF-02-NEG-01,WF,WF-02,System rejects unauthorized or malformed flow,Negative path blocked with HTTP 401,Pass,POST /create-request/,Tester
+WF-03-E2E-01,WF,WF-03,Workflow reaches stable endpoint behavior,Workflow steps executed,Pass,,Tester
+WF-03-NEG-01,WF,WF-03,System rejects unauthorized or malformed flow,Negative path blocked with HTTP 401,Pass,POST /issue-work-order/,Tester
+WF-04-E2E-01,WF,WF-04,Workflow reaches stable endpoint behavior,Workflow steps executed,Pass,,Tester
+WF-04-NEG-01,WF,WF-04,System rejects unauthorized or malformed flow,Negative path blocked with HTTP 401,Pass,POST /handle-process-bills/,Tester
+WF-05-E2E-01,WF,WF-05,Workflow reaches stable endpoint behavior,Workflow steps executed,Pass,,Tester
+WF-05-NEG-01,WF,WF-05,System rejects unauthorized or malformed flow,Negative path blocked with HTTP 401,Pass,POST /handle-admin-approval/,Tester
+WF-06-E2E-01,WF,WF-06,Workflow reaches stable endpoint behavior,Workflow steps executed,Pass,,Tester
+WF-06-NEG-01,WF,WF-06,System rejects unauthorized or malformed flow,Negative path blocked with HTTP 401,Pass,POST /handle-admin-approval/,Tester
+WF-07-E2E-01,WF,WF-07,Workflow reaches stable endpoint behavior,Workflow steps executed,Pass,,Tester
+WF-07-NEG-01,WF,WF-07,System rejects unauthorized or malformed flow,Negative path blocked with HTTP 401,Pass,GET /view-budget/,Tester
+WF-08-E2E-01,WF,WF-08,Workflow reaches stable endpoint behavior,Workflow steps executed,Pass,,Tester
+WF-08-NEG-01,WF,WF-08,System rejects unauthorized or malformed flow,Negative path blocked with HTTP 401,Pass,GET /inventory-items/,Tester
+WF-09-E2E-01,WF,WF-09,Workflow reaches stable endpoint behavior,Workflow steps executed,Pass,,Tester
+WF-09-NEG-01,WF,WF-09,System rejects unauthorized or malformed flow,Negative path blocked with HTTP 401,Pass,POST /create-request/,Tester
+WF-10-E2E-01,WF,WF-10,Workflow reaches stable endpoint behavior,Workflow steps executed,Pass,,Tester
+WF-10-NEG-01,WF,WF-10,System rejects unauthorized or malformed flow,Negative path blocked with HTTP 401,Pass,POST /handle-settle-bill-request/,Tester
+WF-11-E2E-01,WF,WF-11,Workflow reaches stable endpoint behavior,Workflow steps executed,Pass,,Tester
+WF-11-NEG-01,WF,WF-11,System rejects unauthorized or malformed flow,Negative path blocked with HTTP 401,Pass,PATCH /work-completed/,Tester

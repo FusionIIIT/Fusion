@@ -19,34 +19,41 @@ def user_logged_in_middleware(get_response):
                 design = HoldsDesignation.objects.select_related('user','designation').filter(working=request.user)
 
                 designation=[]
-                if str(user.extrainfo.user_type) == "student":
-                    designation.append(str(user.extrainfo.user_type))
+                # Safely access extrainfo - it may not exist for all users
+                user_type = getattr(user.extrainfo, 'user_type', None) if hasattr(user, 'extrainfo') else None
+
+                if user_type and str(user_type) == "student":
+                    designation.append(str(user_type))
 
 
                 for i in design:
-                    if str(i.designation) != str(user.extrainfo.user_type):
+                    if user_type and str(i.designation) != str(user_type):
                         print('-------')
                         print(i.designation)
-                        print(user.extrainfo.user_type)
+                        print(user_type)
                         print('')
                         designation.append(str(i.designation))
 
                 for i in designation:
                     print(i)
 
-                request.session['currentDesignationSelected'] = designation[0]
-                request.session['allDesignations'] = designation 
-                first_designation = designation[0]
-                module_access = ModuleAccess.objects.filter(designation=first_designation).first()
-                
-                if module_access:
-                    access_rights = {}
-    
-                    field_names = [field.name for field in ModuleAccess._meta.get_fields() if field.name not in ['id', 'designation']]
-    
-                    for field_name in field_names:
-                        access_rights[field_name] = getattr(module_access, field_name)
-    
+                access_rights = {}
+
+                if designation:
+                    request.session['currentDesignationSelected'] = designation[0]
+                    request.session['allDesignations'] = designation
+                    first_designation = designation[0]
+                    module_access = ModuleAccess.objects.filter(designation=first_designation).first()
+
+                    if module_access:
+                        field_names = [field.name for field in ModuleAccess._meta.get_fields() if field.name not in ['id', 'designation']]
+                        for field_name in field_names:
+                            access_rights[field_name] = getattr(module_access, field_name)
+                else:
+                    # User has no designations, set defaults
+                    request.session['currentDesignationSelected'] = None
+                    request.session['allDesignations'] = []
+
                 request.session['moduleAccessRights'] = access_rights           
                 print("logged iN")
                 

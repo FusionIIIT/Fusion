@@ -1,0 +1,23 @@
+WF_ID,Title,Category,Scenario,Expected Final State
+WF-01,Standard Request Approval,End-to-End,Standard Request Approval complete flow,Workflow reaches expected end state
+WF-01,Standard Request Approval,Negative,Standard Request Approval interrupted/failed flow,Workflow stops safely with proper error/status
+WF-02,Dean Routing Path,End-to-End,Dean Routing Path complete flow,Workflow reaches expected end state
+WF-02,Dean Routing Path,Negative,Dean Routing Path interrupted/failed flow,Workflow stops safely with proper error/status
+WF-03,Work Execution,End-to-End,Work Execution complete flow,Workflow reaches expected end state
+WF-03,Work Execution,Negative,Work Execution interrupted/failed flow,Workflow stops safely with proper error/status
+WF-04,Bill Processing,End-to-End,Bill Processing complete flow,Workflow reaches expected end state
+WF-04,Bill Processing,Negative,Bill Processing interrupted/failed flow,Workflow stops safely with proper error/status
+WF-05,Request Update Loop,End-to-End,Request Update Loop complete flow,Workflow reaches expected end state
+WF-05,Request Update Loop,Negative,Request Update Loop interrupted/failed flow,Workflow stops safely with proper error/status
+WF-06,Rejection Path,End-to-End,Rejection Path complete flow,Workflow reaches expected end state
+WF-06,Rejection Path,Negative,Rejection Path interrupted/failed flow,Workflow stops safely with proper error/status
+WF-07,Budget Management,End-to-End,Budget Management complete flow,Workflow reaches expected end state
+WF-07,Budget Management,Negative,Budget Management interrupted/failed flow,Workflow stops safely with proper error/status
+WF-08,Inventory & Procurement,End-to-End,Inventory & Procurement complete flow,Workflow reaches expected end state
+WF-08,Inventory & Procurement,Negative,Inventory & Procurement interrupted/failed flow,Workflow stops safely with proper error/status
+WF-09,Complaint Assignment (SLA),End-to-End,Complaint Assignment (SLA) complete flow,Workflow reaches expected end state
+WF-09,Complaint Assignment (SLA),Negative,Complaint Assignment (SLA) interrupted/failed flow,Workflow stops safely with proper error/status
+WF-10,Feedback & Closure,End-to-End,Feedback & Closure complete flow,Workflow reaches expected end state
+WF-10,Feedback & Closure,Negative,Feedback & Closure interrupted/failed flow,Workflow stops safely with proper error/status
+WF-11,Generate PDF Bill,End-to-End,Generate PDF Bill complete flow,Workflow reaches expected end state
+WF-11,Generate PDF Bill,Negative,Generate PDF Bill interrupted/failed flow,Workflow stops safely with proper error/status
