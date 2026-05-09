@@ -1,0 +1,44 @@
+Artifact_ID,Artifact_Type,Test_Count,Passed,Failed,Error,Status,Test_Adequacy,Notes
+DB-UC-001,Use Case,3,3,0,0,PASS,100%,Minimum 3 tests required
+DB-UC-002,Use Case,3,3,0,0,PASS,100%,Minimum 3 tests required
+DB-UC-003,Use Case,3,3,0,0,PASS,100%,Minimum 3 tests required
+DB-UC-004,Use Case,3,3,0,0,PASS,100%,Minimum 3 tests required
+DB-UC-005,Use Case,3,3,0,0,PASS,100%,Minimum 3 tests required
+DB-UC-006,Use Case,3,3,0,0,PASS,100%,Minimum 3 tests required
+DB-UC-007,Use Case,3,3,0,0,PASS,100%,Minimum 3 tests required
+DB-UC-008,Use Case,3,3,0,0,PASS,100%,Minimum 3 tests required
+DB-UC-009,Use Case,3,3,0,0,PASS,100%,Minimum 3 tests required
+DB-UC-010,Use Case,3,3,0,0,PASS,100%,Minimum 3 tests required
+DB-UC-011,Use Case,3,3,0,0,PASS,100%,Minimum 3 tests required
+DB-UC-012,Use Case,3,3,0,0,PASS,100%,Minimum 3 tests required
+DB-UC-013,Use Case,3,3,0,0,PASS,100%,Minimum 3 tests required
+DB-UC-014,Use Case,3,3,0,0,PASS,100%,Minimum 3 tests required
+DB-UC-015,Use Case,3,3,0,0,PASS,100%,Minimum 3 tests required
+DB-UC-016,Use Case,3,3,0,0,PASS,100%,Minimum 3 tests required
+DB-UC-017,Use Case,3,3,0,0,PASS,100%,Minimum 3 tests required
+DB-UC-018,Use Case,3,3,0,0,PASS,100%,Minimum 3 tests required
+DB-UC-019,Use Case,3,3,0,0,PASS,100%,Minimum 3 tests required
+DB-UC-020,Use Case,3,3,0,0,PASS,100%,Minimum 3 tests required
+BR-DBS-001,Business Rule,2,2,0,0,PASS,100%,Minimum 2 tests required
+BR-DBS-002,Business Rule,2,2,0,0,PASS,100%,Minimum 2 tests required
+BR-DBS-003,Business Rule,3,3,0,0,PASS,100%,Minimum 2 tests required
+BR-DBS-004,Business Rule,2,2,0,0,PASS,100%,Minimum 2 tests required
+BR-DBS-005,Business Rule,2,2,0,0,PASS,100%,Minimum 2 tests required
+BR-DBS-006,Business Rule,2,2,0,0,PASS,100%,Minimum 2 tests required
+BR-DBS-007,Business Rule,3,3,0,0,PASS,100%,Minimum 2 tests required
+BR-DBS-008,Business Rule,2,2,0,0,PASS,100%,Minimum 2 tests required
+BR-DBS-009,Business Rule,2,2,0,0,PASS,100%,Minimum 2 tests required
+BR-DBS-010,Business Rule,2,2,0,0,PASS,100%,Minimum 2 tests required
+BR-DBS-011,Business Rule,2,2,0,0,PASS,100%,Minimum 2 tests required
+BR-DBS-012,Business Rule,2,2,0,0,PASS,100%,Minimum 2 tests required
+BR-DBS-013,Business Rule,2,2,0,0,PASS,100%,Minimum 2 tests required
+BR-DBS-014,Business Rule,2,2,0,0,PASS,100%,Minimum 2 tests required
+DBS-WF-001,Workflow,2,2,0,0,PASS,100%,Minimum 2 tests required
+DBS-WF-002,Workflow,2,2,0,0,PASS,100%,Minimum 2 tests required
+DBS-WF-003,Workflow,2,2,0,0,PASS,100%,Minimum 2 tests required
+DBS-WF-004,Workflow,2,2,0,0,PASS,100%,Minimum 2 tests required
+DBS-WF-005,Workflow,2,2,0,0,PASS,100%,Minimum 2 tests required
+DBS-WF-006,Workflow,2,2,0,0,PASS,100%,Minimum 2 tests required
+DBS-WF-007,Workflow,2,2,0,0,PASS,100%,Minimum 2 tests required
+DBS-WF-008,Workflow,2,2,0,0,PASS,100%,Minimum 2 tests required
+DBS-WF-009,Workflow,2,2,0,0,PASS,100%,Minimum 2 tests required

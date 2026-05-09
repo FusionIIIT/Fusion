@@ -1,0 +1,685 @@
+use_cases:
+  - id: "DB-UC-001"
+    title: "User Login"
+    description: "Allow users to authenticate with email credentials"
+    actors: "All users"
+    preconditions: "User has valid iiitdmj.ac.in email and password"
+    postconditions: "User session created, token issued, user redirected to dashboard"
+
+    happy_paths:
+      - scenario: "Student logs in with valid credentials"
+        preconditions: "Student registered, session cleared"
+        input_action: "POST /api/auth/login with valid email and password"
+        expected_result: "HTTP 200, token returned, user authenticated"
+
+      - scenario: "Faculty logs in with valid credentials"
+        preconditions: "Faculty registered, session cleared"
+        input_action: "POST /api/auth/login with valid faculty email and password"
+        expected_result: "HTTP 200, token returned, user authenticated"
+
+    alternate_paths:
+      - scenario: "User attempts login with LDAP backend fallback"
+        preconditions: "allauth configured with LDAP"
+        input_action: "POST /api/auth/login with LDAP-style credentials"
+        expected_result: "LDAP provider authenticates or allauth delegates appropriately"
+
+    exception_paths:
+      - scenario: "User provides invalid credentials"
+        preconditions: "User account exists"
+        input_action: "POST /api/auth/login with incorrect password"
+        expected_result: "HTTP 401, error message returned, no token issued"
+
+      - scenario: "User provides non-existent email"
+        preconditions: "No account with this email"
+        input_action: "POST /api/auth/login with non-existent email"
+        expected_result: "HTTP 401, generic error (no user enumeration)"
+
+      - scenario: "User provides non-iiitdmj email format"
+        preconditions: "User tries with non-approved email domain"
+        input_action: "POST /api/auth/login with non-iiitdmj.ac.in email"
+        expected_result: "HTTP 400, domain validation error"
+
+  - id: "DB-UC-002"
+    title: "User Logout"
+    description: "Invalidate user session and clear authentication tokens"
+    actors: "Authenticated users"
+    preconditions: "User is logged in with valid token"
+    postconditions: "Session destroyed, token invalidated, user logged out"
+
+    happy_paths:
+      - scenario: "Student logs out"
+        preconditions: "Student authenticated"
+        input_action: "POST /api/auth/logout"
+        expected_result: "HTTP 200, token deleted, session cleared"
+
+    alternate_paths:
+      - scenario: "User logs out and expects redirect"
+        preconditions: "Logged in, browser-based logout"
+        input_action: "GET /accounts/logout (Django URL)"
+        expected_result: "HTTP 302 redirect to login page"
+
+    exception_paths:
+      - scenario: "User attempts logout without authentication"
+        preconditions: "No active session"
+        input_action: "POST /api/auth/logout"
+        expected_result: "HTTP 401, unauthorized error"
+
+  - id: "DB-UC-003"
+    title: "View Dashboard"
+    description: "Display personalized dashboard based on user role with widgets and notifications"
+    actors: "Authenticated users (student, faculty, staff, director)"
+    preconditions: "User is authenticated, has assigned role/designation"
+    postconditions: "Dashboard rendered with role-appropriate modules and content"
+
+    happy_paths:
+      - scenario: "Student views dashboard"
+        preconditions: "Student logged in, student role assigned"
+        input_action: "GET /dashboard or GET /api/dashboard/context"
+        expected_result: "HTTP 200, student dashboard template, notifications loaded"
+
+      - scenario: "Faculty views dashboard"
+        preconditions: "Faculty logged in, faculty role and designation assigned"
+        input_action: "GET /dashboard"
+        expected_result: "HTTP 200, faculty-specific modules visible"
+
+      - scenario: "Director views dashboard"
+        preconditions: "Director logged in, director designation assigned"
+        input_action: "GET /dashboard"
+        expected_result: "HTTP 200, director-level widgets and analytics"
+
+    alternate_paths:
+      - scenario: "User with multiple designations views dashboard"
+        preconditions: "User holds faculty + admin roles"
+        input_action: "GET /dashboard"
+        expected_result: "Dashboard shows highest-privilege view"
+
+    exception_paths:
+      - scenario: "User with no designations views dashboard"
+        preconditions: "User authenticated, no designations assigned"
+        input_action: "GET /dashboard"
+        expected_result: "HTTP 200, default/student dashboard shown"
+
+  - id: "DB-UC-004"
+    title: "View User Profile"
+    description: "Display user's detailed profile information with contact and personal details"
+    actors: "Authenticated users"
+    preconditions: "User is authenticated, profile record exists"
+    postconditions: "Profile page rendered with user details"
+
+    happy_paths:
+      - scenario: "Student views own profile"
+        preconditions: "Student authenticated"
+        input_action: "GET /profile or GET /api/profile"
+        expected_result: "HTTP 200, profile page with name, DOB, address, phone"
+
+      - scenario: "Faculty views own profile"
+        preconditions: "Faculty authenticated"
+        input_action: "GET /profile"
+        expected_result: "HTTP 200, faculty profile with designation details"
+
+    alternate_paths:
+      - scenario: "View profile of another user (if permission allows)"
+        preconditions: "User has view-other-profile permission"
+        input_action: "GET /api/profile/<user_id>"
+        expected_result: "HTTP 200, public profile information (subset)"
+
+    exception_paths:
+      - scenario: "User views profile of another without permission"
+        preconditions: "No cross-profile permission"
+        input_action: "GET /api/profile/<other_user_id>"
+        expected_result: "HTTP 403, forbidden"
+
+  - id: "DB-UC-005"
+    title: "Update User Profile"
+    description: "Allow users to edit their profile fields (name, DOB, address, phone, about)"
+    actors: "Authenticated users"
+    preconditions: "User is authenticated, viewing own profile"
+    postconditions: "Profile fields updated in database"
+
+    happy_paths:
+      - scenario: "Student updates phone number and address"
+        preconditions: "Student in edit mode"
+        input_action: "PUT /api/profile_update with phone_no=9876543210, address=New St"
+        expected_result: "HTTP 200, profile updated, confirmation message"
+
+      - scenario: "User updates about_me field"
+        preconditions: "User editing profile"
+        input_action: "PUT /api/profile_update with about_me=New Bio"
+        expected_result: "HTTP 200, field updated"
+
+    alternate_paths:
+      - scenario: "User updates DOB"
+        preconditions: "User permitted to change DOB"
+        input_action: "PUT /api/profile_update with date_of_birth=YYYY-MM-DD"
+        expected_result: "HTTP 200, DOB updated"
+
+    exception_paths:
+      - scenario: "User submits invalid phone number"
+        preconditions: "Phone field validated"
+        input_action: "PUT /api/profile_update with phone_no=invalid"
+        expected_result: "HTTP 400, validation error"
+
+      - scenario: "User submits future date of birth"
+        preconditions: "DOB validation enforced"
+        input_action: "PUT /api/profile_update with date_of_birth=2030-01-01"
+        expected_result: "HTTP 400, date cannot be in future"
+
+  - id: "DB-UC-006"
+    title: "View Designations"
+    description: "Display list of designations and roles assigned to user"
+    actors: "Authenticated users"
+    preconditions: "User is authenticated, designations assigned"
+    postconditions: "Designation list rendered with details"
+
+    happy_paths:
+      - scenario: "User views their active designations"
+        preconditions: "User has designations in HoldsDesignation table"
+        input_action: "GET /api/designations or view in dashboard"
+        expected_result: "HTTP 200, list of designations with department info"
+
+      - scenario: "Faculty views designations including department_head"
+        preconditions: "Faculty holds department_head designation"
+        input_action: "GET /api/designations"
+        expected_result: "HTTP 200, designations include full_name and type"
+
+    alternate_paths:
+      - scenario: "User with no designations requests view"
+        preconditions: "User is student with no special roles"
+        input_action: "GET /api/designations"
+        expected_result: "HTTP 200, empty list or default list"
+
+    exception_paths:
+      - scenario: "Unauthorized user attempts to view other's designations"
+        preconditions: "User lacks permission"
+        input_action: "GET /api/designations/<other_user_id>"
+        expected_result: "HTTP 403, forbidden"
+
+  - id: "DB-UC-007"
+    title: "Submit Feedback"
+    description: "Allow users to submit system feedback with 1-5 star rating"
+    actors: "Authenticated users"
+    preconditions: "User is authenticated, feedback form accessible"
+    postconditions: "Feedback record created in database"
+
+    happy_paths:
+      - scenario: "Student submits 5-star feedback with text"
+        preconditions: "Student logged in"
+        input_action: "POST /api/feedback with rating=5, feedback_text=Excellent"
+        expected_result: "HTTP 200/201, feedback created, ID returned"
+
+      - scenario: "User submits 3-star feedback without text"
+        preconditions: "User logged in"
+        input_action: "POST /api/feedback with rating=3, feedback_text=''"
+        expected_result: "HTTP 200/201, feedback accepted without text"
+
+    alternate_paths:
+      - scenario: "Different rating levels (1, 2, 4 stars)"
+        preconditions: "User logged in"
+        input_action: "POST /api/feedback with rating=1-5"
+        expected_result: "HTTP 200/201 for all valid ratings"
+
+    exception_paths:
+      - scenario: "User submits rating > 5"
+        preconditions: "Form validation enforced"
+        input_action: "POST /api/feedback with rating=6"
+        expected_result: "HTTP 400, rating constraint error"
+
+      - scenario: "User submits rating = 0 or negative"
+        preconditions: "Validation enforced"
+        input_action: "POST /api/feedback with rating=0"
+        expected_result: "HTTP 400, invalid rating"
+
+  - id: "DB-UC-008"
+    title: "Update Feedback"
+    description: "Allow users to edit their submitted feedback (rating and text)"
+    actors: "Authenticated users"
+    preconditions: "User has existing feedback record, is editing own feedback"
+    postconditions: "Feedback updated in database"
+
+    happy_paths:
+      - scenario: "User changes rating from 3 to 4 stars"
+        preconditions: "Feedback exists"
+        input_action: "PUT /api/feedback/<id> with rating=4"
+        expected_result: "HTTP 200, feedback updated"
+
+      - scenario: "User adds feedback text to existing feedback"
+        preconditions: "Feedback exists with empty text"
+        input_action: "PUT /api/feedback/<id> with feedback_text=Now adding comment"
+        expected_result: "HTTP 200, text added"
+
+    alternate_paths:
+      - scenario: "User changes rating and text simultaneously"
+        preconditions: "Feedback exists"
+        input_action: "PUT /api/feedback/<id> with rating=2, feedback_text=Changed mind"
+        expected_result: "HTTP 200, both fields updated"
+
+    exception_paths:
+      - scenario: "User attempts to update feedback with invalid rating"
+        preconditions: "Validation enforced"
+        input_action: "PUT /api/feedback/<id> with rating=10"
+        expected_result: "HTTP 400, constraint error"
+
+  - id: "DB-UC-009"
+    title: "View Feedback from Others"
+    description: "Display list of feedback submitted by other users (excluding self)"
+    actors: "Authenticated users"
+    preconditions: "User is authenticated, other feedback exists"
+    postconditions: "Feedback list rendered with average rating"
+
+    happy_paths:
+      - scenario: "User views top 5 feedback entries with average rating"
+        preconditions: "Multiple feedback records exist"
+        input_action: "GET /api/feedback or GET /feedback"
+        expected_result: "HTTP 200, list of top feedbacks, average rating shown"
+
+      - scenario: "User sees feedback from various users"
+        preconditions: "Min 3 different users have submitted feedback"
+        input_action: "GET /api/feedback"
+        expected_result: "HTTP 200, excludes current user's feedback"
+
+    alternate_paths:
+      - scenario: "User requests feedback with pagination"
+        preconditions: "Pagination enabled"
+        input_action: "GET /api/feedback?page=1&limit=10"
+        expected_result: "HTTP 200, paginated feedback list"
+
+    exception_paths:
+      - scenario: "No feedback exists in system"
+        preconditions: "Empty feedback table"
+        input_action: "GET /api/feedback"
+        expected_result: "HTTP 200, empty list"
+
+  - id: "DB-UC-010"
+    title: "Report Issue"
+    description: "Allow users to submit bug reports, feature requests, or system issues"
+    actors: "Authenticated users"
+    preconditions: "User is authenticated, issue form accessible"
+    postconditions: "Issue record created in database"
+
+    happy_paths:
+      - scenario: "Student reports a bug in central_mess module"
+        preconditions: "Student logged in"
+        input_action: "POST /api/issues with title, text, module=central_mess, type=bug_report"
+        expected_result: "HTTP 200/201, issue created, ID returned"
+
+      - scenario: "Faculty requests feature in file_tracking module"
+        preconditions: "Faculty logged in"
+        input_action: "POST /api/issues with type=feature_request, module=file_tracking"
+        expected_result: "HTTP 200/201, feature request created"
+
+      - scenario: "User reports security issue"
+        preconditions: "User logged in"
+        input_action: "POST /api/issues with type=security_issue, title=Potential vulnerability"
+        expected_result: "HTTP 200/201, security issue logged"
+
+    alternate_paths:
+      - scenario: "User reports other type of issue"
+        preconditions: "User logged in"
+        input_action: "POST /api/issues with type=other, description=General concern"
+        expected_result: "HTTP 200/201, issue created"
+
+    exception_paths:
+      - scenario: "User submits issue with missing required fields"
+        preconditions: "Title required"
+        input_action: "POST /api/issues with title='', text=Some text"
+        expected_result: "HTTP 400, title required error"
+
+      - scenario: "User submits invalid module type"
+        preconditions: "Module validation enforced"
+        input_action: "POST /api/issues with module=nonexistent_module"
+        expected_result: "HTTP 400, invalid module"
+
+  - id: "DB-UC-011"
+    title: "Upload Issue Images"
+    description: "Attach images to issue reports for visual documentation"
+    actors: "Authenticated users"
+    preconditions: "User is authenticated, creating or editing issue"
+    postconditions: "Images stored and linked to issue"
+
+    happy_paths:
+      - scenario: "User uploads single PNG image with issue"
+        preconditions: "User in issue creation form"
+        input_action: "POST /api/issues with form-data: images=file.png"
+        expected_result: "HTTP 200/201, image processed and stored"
+
+      - scenario: "User uploads multiple images (3 JPG files)"
+        preconditions: "User creating issue"
+        input_action: "POST with multiple image files"
+        expected_result: "HTTP 200/201, all images linked to issue"
+
+      - scenario: "User uploads GIF image"
+        preconditions: "GIF format supported"
+        input_action: "POST with images=file.gif"
+        expected_result: "HTTP 200/201, GIF accepted"
+
+    alternate_paths:
+      - scenario: "User uploads images to existing issue"
+        preconditions: "Issue already created"
+        input_action: "PUT /api/issues/<id> with new images"
+        expected_result: "HTTP 200, images added to existing issue"
+
+    exception_paths:
+      - scenario: "User uploads file > 5MB"
+        preconditions: "File size validation enforced"
+        input_action: "POST with large_image.jpg (10MB)"
+        expected_result: "HTTP 400, size limit error"
+
+      - scenario: "User uploads corrupted/invalid image"
+        preconditions: "PIL validation enforced"
+        input_action: "POST with corrupted_image.jpg"
+        expected_result: "HTTP 400, image validation error"
+
+      - scenario: "User uploads non-image file (PDF, TXT)"
+        preconditions: "Format validation enforced"
+        input_action: "POST with document.pdf"
+        expected_result: "HTTP 400, file type not supported"
+
+  - id: "DB-UC-012"
+    title: "View Issues"
+    description: "Display list of open and closed issues with filtering and sorting"
+    actors: "Authenticated users"
+    preconditions: "User is authenticated, issues exist in system"
+    postconditions: "Issue list rendered with details and images"
+
+    happy_paths:
+      - scenario: "User views all open issues"
+        preconditions: "Multiple open issues exist"
+        input_action: "GET /api/issues?status=open or GET /issues"
+        expected_result: "HTTP 200, open issues listed with details"
+
+      - scenario: "User views all closed issues"
+        preconditions: "Multiple closed issues exist"
+        input_action: "GET /api/issues?status=closed"
+        expected_result: "HTTP 200, closed issues listed, marked as resolved"
+
+      - scenario: "User views issues with attached images"
+        preconditions: "Issues have images"
+        input_action: "GET /api/issues"
+        expected_result: "HTTP 200, images displayed with issues"
+
+    alternate_paths:
+      - scenario: "User filters issues by module"
+        preconditions: "Filter logic implemented"
+        input_action: "GET /api/issues?module=central_mess"
+        expected_result: "HTTP 200, filtered to that module"
+
+      - scenario: "User sorts issues by date or support count"
+        preconditions: "Sort implemented"
+        input_action: "GET /api/issues?sort=support_count"
+        expected_result: "HTTP 200, sorted list"
+
+    exception_paths:
+      - scenario: "No issues exist in system"
+        preconditions: "Issue table empty"
+        input_action: "GET /api/issues"
+        expected_result: "HTTP 200, empty list"
+
+  - id: "DB-UC-013"
+    title: "Edit Issue"
+    description: "Allow issue reporter to modify issue details after creation"
+    actors: "Issue reporter (owner only)"
+    preconditions: "User is authenticated, owns the issue, issue not closed"
+    postconditions: "Issue details updated in database"
+
+    happy_paths:
+      - scenario: "Issue owner edits issue title and description"
+        preconditions: "User owns issue, issue is open"
+        input_action: "PUT /api/issues/<id> with new title and text"
+        expected_result: "HTTP 200, issue updated, timestamp updated"
+
+      - scenario: "Issue owner changes module classification"
+        preconditions: "Issue open, owner editing"
+        input_action: "PUT /api/issues/<id> with module=different_module"
+        expected_result: "HTTP 200, module changed"
+
+    alternate_paths:
+      - scenario: "Issue owner adds images while editing"
+        preconditions: "Issue exists, owner editing"
+        input_action: "PUT /api/issues/<id> with new images"
+        expected_result: "HTTP 200, images added"
+
+    exception_paths:
+      - scenario: "Non-owner attempts to edit issue"
+        preconditions: "Different user tries to edit"
+        input_action: "PUT /api/issues/<id>"
+        expected_result: "HTTP 403, forbidden"
+
+      - scenario: "Owner attempts to edit closed issue"
+        preconditions: "Issue.closed=True"
+        input_action: "PUT /api/issues/<id>"
+        expected_result: "HTTP 403, read-only"
+
+  - id: "DB-UC-014"
+    title: "Support Issue"
+    description: "Add user's support to an existing issue (ManyToMany relationship)"
+    actors: "Authenticated users"
+    preconditions: "User is authenticated, issue exists, user != issue owner"
+    postconditions: "User added to issue.support set, count incremented"
+
+    happy_paths:
+      - scenario: "User adds support to existing issue"
+        preconditions: "Issue exists, user hasn't supported yet"
+        input_action: "POST /api/issues/<id>/support or PATCH with support=true"
+        expected_result: "HTTP 200, user added to supporters, count incremented"
+
+      - scenario: "Multiple users support same issue"
+        preconditions: "Issue exists"
+        input_action: "Three different users POST support"
+        expected_result: "HTTP 200 each, support_count=3"
+
+    alternate_paths:
+      - scenario: "User supports issue via toggle endpoint"
+        preconditions: "Toggle implemented"
+        input_action: "POST /api/issues/<id>/toggle_support"
+        expected_result: "HTTP 200, toggles support state"
+
+    exception_paths:
+      - scenario: "Issue owner attempts to support own issue"
+        preconditions: "Owner of the issue"
+        input_action: "POST /api/issues/<id>/support"
+        expected_result: "HTTP 400, cannot support own issue"
+
+      - scenario: "User attempts duplicate support"
+        preconditions: "User already in support list"
+        input_action: "POST /api/issues/<id>/support"
+        expected_result: "HTTP 400 or idempotent 200 (existing support)"
+
+  - id: "DB-UC-015"
+    title: "Withdraw Issue Support"
+    description: "Remove user's support from an issue they previously supported"
+    actors: "Authenticated users"
+    preconditions: "User is authenticated, has previously supported the issue"
+    postconditions: "User removed from issue.support set, count decremented"
+
+    happy_paths:
+      - scenario: "User withdraws support from issue"
+        preconditions: "User in support list"
+        input_action: "DELETE /api/issues/<id>/support or POST with support=false"
+        expected_result: "HTTP 200, user removed, count decremented"
+
+      - scenario: "Support count updates correctly"
+        preconditions: "Issue has multiple supporters"
+        input_action: "One supporter withdraws"
+        expected_result: "HTTP 200, count decremented by 1"
+
+    alternate_paths:
+      - scenario: "Support toggle removes support"
+        preconditions: "User currently supporting"
+        input_action: "POST /api/issues/<id>/toggle_support"
+        expected_result: "HTTP 200, support withdrawn"
+
+    exception_paths:
+      - scenario: "User attempts to withdraw if never supported"
+        preconditions: "User not in support list"
+        input_action: "DELETE /api/issues/<id>/support"
+        expected_result: "HTTP 400 or 404"
+
+  - id: "DB-UC-016"
+    title: "Search Users"
+    description: "Find other users by name with minimum 3-character search"
+    actors: "Authenticated users"
+    preconditions: "User is authenticated, other users exist"
+    postconditions: "Search results displayed with user profiles"
+
+    happy_paths:
+      - scenario: "User searches by first name (3+ chars)"
+        preconditions: "User logged in, query >= 3 chars"
+        input_action: "GET /api/search?q=john or POST /search with query"
+        expected_result: "HTTP 200, list of matching users"
+
+      - scenario: "User searches that matches multiple users"
+        preconditions: "Multiple matches exist"
+        input_action: "GET /api/search?q=ali"
+        expected_result: "HTTP 200, all matching users"
+
+    alternate_paths:
+      - scenario: "User searches by last name"
+        preconditions: "Last name search implemented"
+        input_action: "GET /api/search?q=smith"
+        expected_result: "HTTP 200, matching users"
+
+    exception_paths:
+      - scenario: "User searches with < 3 characters"
+        preconditions: "Minimum length enforced"
+        input_action: "GET /api/search?q=ab"
+        expected_result: "HTTP 400, minimum 3 chars required"
+
+      - scenario: "Search returns no matches"
+        preconditions: "Query has no matches"
+        input_action: "GET /api/search?q=nonexistentuser"
+        expected_result: "HTTP 200, empty list"
+
+  - id: "DB-UC-017"
+    title: "Display Role-Based Content"
+    description: "Render dashboard and modules based on user's assigned role and permissions"
+    actors: "Authenticated users with various roles"
+    preconditions: "User is authenticated, role/designation assigned"
+    postconditions: "Dashboard with role-specific modules and widgets"
+
+    happy_paths:
+      - scenario: "Student sees student-appropriate modules"
+        preconditions: "Student user authenticated"
+        input_action: "GET /dashboard"
+        expected_result: "Student modules visible, admin modules hidden"
+
+      - scenario: "Director sees all modules"
+        preconditions: "Director authenticated"
+        input_action: "GET /dashboard"
+        expected_result: "All modules accessible, admin widgets visible"
+
+      - scenario: "Faculty sees faculty+student modules"
+        preconditions: "Faculty authenticated"
+        input_action: "GET /dashboard"
+        expected_result: "Faculty-specific and base modules visible"
+
+    alternate_paths:
+      - scenario: "User with multiple designations sees union of permissions"
+        preconditions: "User has faculty + admin roles"
+        input_action: "GET /dashboard"
+        expected_result: "Combined module view"
+
+    exception_paths:
+      - scenario: "User with no explicit role sees default (student)"
+        preconditions: "No designation assigned"
+        input_action: "GET /dashboard"
+        expected_result: "Default/limited view"
+
+  - id: "DB-UC-018"
+    title: "Calculate User Age"
+    description: "Dynamically compute user age from date of birth on dashboard/profile"
+    actors: "Authenticated users"
+    preconditions: "User has date_of_birth set in ExtraInfo"
+    postconditions: "Age displayed on profile and dashboard"
+
+    happy_paths:
+      - scenario: "Profile displays calculated age from DOB"
+        preconditions: "User DOB set"
+        input_action: "GET /profile or /api/profile"
+        expected_result: "HTTP 200, age field shows computed value"
+
+      - scenario: "Age updates on birthday"
+        preconditions: "Today is user's birthday"
+        input_action: "GET /profile"
+        expected_result: "Age incremented by 1"
+
+    alternate_paths:
+      - scenario: "Dashboard widget shows user age"
+        preconditions: "Age widget implemented"
+        input_action: "GET /dashboard"
+        expected_result: "Age displayed in context"
+
+    exception_paths:
+      - scenario: "User DOB is January 1, 1970 (default)"
+        preconditions: "DOB not set, using default"
+        input_action: "GET /profile"
+        expected_result: "Age calculation still works (shows high age or 'Not Set')"
+
+  - id: "DB-UC-019"
+    title: "View Notifications"
+    description: "Fetch and display system notifications with mark-read, delete, and filter features"
+    actors: "Authenticated users"
+    preconditions: "User is authenticated, notifications exist"
+    postconditions: "Notification list rendered with actions"
+
+    happy_paths:
+      - scenario: "User views unread notifications"
+        preconditions: "User logged in, notifications exist"
+        input_action: "GET /api/notification or view notifications widget"
+        expected_result: "HTTP 200, unread notifications highlighted"
+
+      - scenario: "User marks notification as read"
+        preconditions: "Notification is unread"
+        input_action: "POST /api/notification/<id>/mark_read"
+        expected_result: "HTTP 200, notification marked read"
+
+      - scenario: "User views starred/bookmarked notifications"
+        preconditions: "Feature implemented"
+        input_action: "GET /api/notification?starred=true"
+        expected_result: "HTTP 200, starred notifications"
+
+    alternate_paths:
+      - scenario: "User filters by type (announcement vs system)"
+        preconditions: "Filter implemented"
+        input_action: "GET /api/notification?type=announcement"
+        expected_result: "HTTP 200, filtered notifications"
+
+    exception_paths:
+      - scenario: "User has no notifications"
+        preconditions: "Notification table empty"
+        input_action: "GET /api/notification"
+        expected_result: "HTTP 200, empty list"
+
+  - id: "DB-UC-020"
+    title: "Session Handling"
+    description: "Create session on login, maintain session, destroy on logout"
+    actors: "All users"
+    preconditions: "User session management enabled"
+    postconditions: "Session lifecycle properly managed"
+
+    happy_paths:
+      - scenario: "Session created on successful login"
+        preconditions: "User logs in"
+        input_action: "POST /api/auth/login with valid credentials"
+        expected_result: "Token issued, session/auth state recorded"
+
+      - scenario: "Session persists across requests"
+        preconditions: "User logged in"
+        input_action: "Multiple GET/POST requests with token"
+        expected_result: "All requests authenticated, no re-login needed"
+
+      - scenario: "Session destroyed on logout"
+        preconditions: "User logged in"
+        input_action: "POST /api/auth/logout"
+        expected_result: "Token deleted, session cleared, subsequent requests 401"
+
+    alternate_paths:
+      - scenario: "Session timeout after inactivity"
+        preconditions: "Inactivity timeout configured"
+        input_action: "Wait > timeout period, then request"
+        expected_result: "Session expired, 401 error, re-login required"
+
+    exception_paths:
+      - scenario: "User tries to use expired/invalid token"
+        preconditions: "Token invalid or expired"
+        input_action: "GET /api/protected with invalid token"
+        expected_result: "HTTP 401, unauthorized"

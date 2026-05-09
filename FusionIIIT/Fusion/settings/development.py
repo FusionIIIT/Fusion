@@ -11,6 +11,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'fusionlab',
         'HOST': os.environ.get("DB_HOST", default='localhost'),
+        'PORT': os.environ.get("DB_PORT", default='5433'),
         'USER': 'fusion_admin',
         'PASSWORD': 'hello123',
     }
@@ -27,7 +28,9 @@ REST_FRAMEWORK = {
     )
 }
 
-if DEBUG:
+ENABLE_DEBUG_TOOLBAR = os.environ.get("ENABLE_DEBUG_TOOLBAR", "0") == "1"
+
+if DEBUG and ENABLE_DEBUG_TOOLBAR:
     MIDDLEWARE += (
         'debug_toolbar.middleware.DebugToolbarMiddleware',
     )

@@ -1,4 +1,5 @@
 import json
+import logging
 
 from django.contrib.auth import logout
 from django.contrib import messages
@@ -26,6 +27,14 @@ from applications.placement_cell.models import (Achievement, Course, Education, 
                                                 Project, Publication, Skill, Reference, PlacementStatus)
 from applications.eis.models import *
 from applications.academic_procedures.models import Thesis
+from applications.globals.api.services import (
+  delete_entity_from_request,
+  update_placement_invitation_status,
+  update_profile_core_fields,
+)
+from rest_framework.exceptions import ValidationError
+
+logger = logging.getLogger(__name__)
 
 
 def contextstudentmanage(current,profile,request,user,editable):
@@ -34,9 +43,9 @@ def contextstudentmanage(current,profile,request,user,editable):
 
   if editable and request.method == 'POST':
       if 'studentapprovesubmit' in request.POST:
-          status = PlacementStatus.objects.filter(pk=request.POST['studentapprovesubmit']).update(invitation='ACCEPTED', timestamp=timezone.now())
+          update_placement_invitation_status(request.POST['studentapprovesubmit'], 'ACCEPTED')
       if 'studentdeclinesubmit' in request.POST:
-          status = PlacementStatus.objects.filter(Q(pk=request.POST['studentdeclinesubmit'])).update(invitation='REJECTED', timestamp=timezone.now())
+          update_placement_invitation_status(request.POST['studentdeclinesubmit'], 'REJECTED')
       if 'educationsubmit' in request.POST:
           form = AddEducation(request.POST)
           if form.is_valid():
@@ -51,16 +60,11 @@ def contextstudentmanage(current,profile,request,user,editable):
                                                        stream=stream, sdate=sdate, edate=edate)
               education_obj.save()
       if 'profilesubmit' in request.POST:
-          about_me = request.POST.get('about')
-          age = request.POST.get('age')
-          address = request.POST.get('address')
-          contact = request.POST.get('contact')
           extrainfo_obj = ExtraInfo.objects.get(user=user)
-          extrainfo_obj.about_me = about_me
-          extrainfo_obj.date_of_birth = age
-          extrainfo_obj.address = address
-          extrainfo_obj.phone_no = contact
-          extrainfo_obj.save()
+          try:
+            update_profile_core_fields(extrainfo_obj, request.POST)
+          except ValidationError as err:
+            logger.warning('Invalid profile payload from contextstudentmanage for user %s: %s', user.username, err)
           profile = get_object_or_404(ExtraInfo, Q(user=user))
       if 'picsubmit' in request.POST:
           form = AddProfile(request.POST, request.FILES)
@@ -75,16 +79,13 @@ def contextstudentmanage(current,profile,request,user,editable):
               skill_rating = form.cleaned_data['skill_rating']
               try:
                   skill_id = Skill.objects.get(skill=skill)
-                  skill_id = None
-              except Exception as e:
-                  print(e)
+                except Skill.DoesNotExist:
                   skill_id = Skill.objects.create(skill=skill)
                   skill_id.save()
 
-              if skill_id is not None:
                 has_obj = Has.objects.create(unique_id=student,
-                                           skill_id=skill_id,
-                                           skill_rating = skill_rating)
+                               skill_id=skill_id,
+                               skill_rating = skill_rating)
                 has_obj.save()
       if 'achievementsubmit' in request.POST:
           form = AddAchievement(request.POST)
@@ -216,50 +217,22 @@ def contextstudentmanage(current,profile,request,user,editable):
                   mobile_number=mobile_number)
               messages.success(request, "Successfully added your reference!")
 
-      if 'deleteskill' in request.POST:
-          hid = request.POST['deleteskill']
-          hs = Has.objects.get(Q(pk=hid))
-          hs.delete()
-      if 'deleteedu' in request.POST:
-          hid = request.POST['deleteedu']
-          hs = Education.objects.get(Q(pk=hid))
-          hs.delete()
-      if 'deletecourse' in request.POST:
-          hid = request.POST['deletecourse']
-          hs = Course.objects.get(Q(pk=hid))
-          hs.delete()
-      if 'deleteexp' in request.POST:
-          hid = request.POST['deleteexp']
-          hs = Experience.objects.get(Q(pk=hid))
-          hs.delete()
-      if 'deletepro' in request.POST:
-          hid = request.POST['deletepro']
-          hs = Project.objects.get(Q(pk=hid))
-          hs.delete()
-      if 'deletereference' in request.POST:
-          hid = request.POST['deletereference']
-          hs = Reference.objects.get(Q(pk=hid))
-          hs.delete()
-      if 'deleteach' in request.POST:
-          hid = request.POST['deleteach']
-          hs = Achievement.objects.get(Q(pk=hid))
-          hs.delete()
-      if 'deleteconference' in request.POST:
-          hid = request.POST['deleteconference']
-          hs = Conference.objects.get(Q(pk=hid))
-          hs.delete()
-      if 'deletextra' in request.POST:
-          hid = request.POST['deletextra']
-          hs = Extracurricular.objects.get(Q(pk=hid))
-          hs.delete()
-      if 'deletepub' in request.POST:
-          hid = request.POST['deletepub']
-          hs = Publication.objects.get(Q(pk=hid))
-          hs.delete()
-      if 'deletepat' in request.POST:
-          hid = request.POST['deletepat']
-          hs = Patent.objects.get(Q(pk=hid))
-          hs.delete()
+      delete_entity_from_request(
+          request.POST,
+          {
+            'deleteskill': Has,
+            'deleteedu': Education,
+            'deletecourse': Course,
+            'deleteexp': Experience,
+            'deletepro': Project,
+            'deletereference': Reference,
+            'deleteach': Achievement,
+            'deleteconference': Conference,
+            'deletextra': Extracurricular,
+            'deletepub': Publication,
+            'deletepat': Patent,
+          },
+        )
   form = AddEducation(initial={})
   form1 = AddProfile(initial={})
   form10 = AddSkill(initial={})
@@ -301,7 +274,7 @@ def contextfacultymanage(request,user,profile):
   detail = faculty_about.objects.get(user=user)
 
   #pagiantion for Journal
-  publications = emp_research_papers.objects.filter(pf_no=profile.id,rtype='Journal').order_by("-date_entry")
+  publications = emp_research_papers.objects.filter(pf_no=profile.id,rtype='Journal')
 
   paginator = Paginator(publications, 10)
   page = request.GET.get('page')
@@ -317,7 +290,7 @@ def contextfacultymanage(request,user,profile):
 
 
   #pagination for book
-  books = emp_published_books.objects.filter(pf_no=profile.id).order_by("-date_entry")
+  books = emp_published_books.objects.filter(pf_no=profile.id)
   paginator2 = Paginator(books, 10)
   page2 = request.GET.get('page2')
   mark2=0;
@@ -331,7 +304,7 @@ def contextfacultymanage(request,user,profile):
   sr2 = (books.number-1)*10
 
   #pagination for conference
-  conferences = emp_research_papers.objects.filter(pf_no=profile.id,rtype='Conference').order_by("-date_entry")
+  conferences = emp_research_papers.objects.filter(pf_no=profile.id,rtype='Conference')
   paginator3 = Paginator(conferences, 10)
   page3 = request.GET.get('page3')
   mark3=0;
@@ -346,7 +319,7 @@ def contextfacultymanage(request,user,profile):
 
 
   #pagination for research project
-  research_projects = emp_research_projects.objects.filter(pf_no=profile.id).order_by("-date_entry")
+  research_projects = emp_research_projects.objects.filter(pf_no=profile.id)
   paginator4 = Paginator(research_projects, 10)
   page4 = request.GET.get('page4')
   mark4=0;
@@ -360,7 +333,7 @@ def contextfacultymanage(request,user,profile):
   sr4 = (research_projects.number-1)*10
 
   #pagination for Consultancy Project
-  consultancy_projects = emp_consultancy_projects.objects.filter(pf_no=profile.id).order_by("-date_entry")
+  consultancy_projects = emp_consultancy_projects.objects.filter(pf_no=profile.id)
   paginator5 = Paginator(consultancy_projects, 20)
   page5 = request.GET.get('page5')
   mark5=0;
@@ -375,7 +348,7 @@ def contextfacultymanage(request,user,profile):
   sr5 = (consultancy_projects.number-1)*10
 
   #pagination for patents
-  patents = emp_patents.objects.filter(pf_no=profile.id).order_by("-date_entry")
+  patents = emp_patents.objects.filter(pf_no=profile.id)
   paginator6 = Paginator(patents, 10)
   page6 = request.GET.get('page6')
   mark6=0;
@@ -389,7 +362,7 @@ def contextfacultymanage(request,user,profile):
   sr6 = (patents.number-1)*10
 
   #pagination for technology transfer
-  techtransfer = emp_techtransfer.objects.filter(pf_no=profile.id).order_by("-date_entry")
+  techtransfer = emp_techtransfer.objects.filter(pf_no=profile.id)
   paginator7 = Paginator(techtransfer, 10)
   page7 = request.GET.get('page7')
   mark7=0;
@@ -465,7 +438,7 @@ def contextfacultymanage(request,user,profile):
   sr11 = (indian_visits.number-1)*10
 
   #paginator for event organized
-  events = emp_event_organized.objects.filter(pf_no=profile.id).order_by("-date_entry")
+  events = emp_event_organized.objects.filter(pf_no=profile.id)
   paginator12 = Paginator(events, 10)
   page12 = request.GET.get('page12')
   mark12=0;
@@ -479,7 +452,7 @@ def contextfacultymanage(request,user,profile):
   sr12 = (events.number-1)*10
 
   #paginator for conference
-  confs = emp_confrence_organised.objects.filter(pf_no=profile.id).order_by("-date_entry")
+  confs = emp_confrence_organised.objects.filter(pf_no=profile.id)
   paginator13 = Paginator(confs, 10)
   page13 = request.GET.get('page13')
   mark13=0;
@@ -493,7 +466,7 @@ def contextfacultymanage(request,user,profile):
   sr13 = (confs.number-1)*10
 
 
-  awards = emp_achievement.objects.filter(pf_no=profile.id).order_by("-date_entry")
+  awards = emp_achievement.objects.filter(pf_no=profile.id)
   paginator14 = Paginator(awards, 10)
   page14 = request.GET.get('page14')
   mark14=0;
@@ -508,7 +481,7 @@ def contextfacultymanage(request,user,profile):
 
 
 
-  talks = emp_expert_lectures.objects.filter(pf_no=profile.id).order_by("-date_entry")
+  talks = emp_expert_lectures.objects.filter(pf_no=profile.id)
   paginator15 = Paginator(talks, 10)
   page15 = request.GET.get('page15')
   mark15=0;
@@ -522,7 +495,7 @@ def contextfacultymanage(request,user,profile):
   sr15 = (talks.number-1)*10
 
 
-  talks = emp_expert_lectures.objects.filter(pf_no=profile.id).order_by("-date_entry")
+  talks = emp_expert_lectures.objects.filter(pf_no=profile.id)
   paginator15 = Paginator(talks, 10)
   page15 = request.GET.get('page15')
   mark15=0;
