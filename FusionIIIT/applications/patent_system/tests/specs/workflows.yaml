@@ -1,0 +1,221 @@
+workflows:
+
+  - id: "PMS-WF-101"
+    title: "Submit Patent Application"
+    description: "Structured process for applicants to create, validate, and formally submit new patent applications into the system for review and processing."
+    trigger: "User clicks 'New Application' or 'Submit Patent Application' button"
+    actors: ["Applicant", "System", "PCC_ADMIN"]
+    preconditions:
+      - "Applicant is logged in and has 'Applicant' role"
+      - "All necessary documents and details are ready"
+      - "Required agreements signed"
+    start_task: "PMS-UC-001 Submit Patent Application"
+    end_states: ["END-SUBMITTED", "END-VALIDATION_FAILED", "END-DRAFT_WITHDRAWN"]
+
+    e2e_tests:
+      - scenario: "Authorized applicant submits a complete application end-to-end"
+        steps:
+          - "Applicant navigates to application form"
+          - "System validates user authorization"
+          - "Applicant enters all required details"
+          - "Applicant uploads valid supporting documents"
+          - "System validates completeness and classifies documents"
+          - "Applicant confirms and submits"
+          - "System assigns Application ID and notifies PCC_ADMIN"
+        expected_final_state: "Application status=Submitted; confirmation email sent; PCC_ADMIN notified"
+        guard_rules: ["BR-PMS-001", "BR-PMS-002", "BR-PMS-010", "BR-PMS-013", "BR-PMS-018"]
+
+    negative_tests:
+      - scenario: "Unauthorized user attempts to access the application form"
+        steps:
+          - "User without 'Applicant' role navigates to application form"
+          - "System checks authorization"
+        expected_final_state: "END-VALIDATION_FAILED; access blocked with authorization error"
+        guard_rules: ["BR-PMS-002"]
+
+      - scenario: "Applicant withdraws the draft before submission"
+        steps:
+          - "Applicant fills partial details"
+          - "Applicant selects 'Withdraw Draft'"
+        expected_final_state: "END-DRAFT_WITHDRAWN; application deleted; no notifications sent"
+
+
+  - id: "PMS-WF-201"
+    title: "Application Revision and Resubmission"
+    description: "Structured and time-bound process for applicants to address Director feedback and resubmit applications for a new review cycle."
+    trigger: "Application status is changed to 'Needs Revision' or 'Rejected' and applicant is notified"
+    actors: ["Applicant", "System"]
+    preconditions:
+      - "Application has status of 'Needs Revision' or 'Rejected'"
+      - "Applicant has access to edit the application"
+    start_task: "PMS-UC-004 Revise and Resubmit Application"
+    end_states: ["END-RESUBMITTED", "END-EXPIRED", "END-WITHDRAWN"]
+
+    e2e_tests:
+      - scenario: "Applicant revises and resubmits within the 60-day window"
+        steps:
+          - "Applicant opens application and reviews Director feedback"
+          - "System confirms revision is within the 60-day window"
+          - "Applicant makes revisions and uploads updated documents"
+          - "Applicant submits the revised application"
+        expected_final_state: "END-RESUBMITTED; application enters new review cycle; version history maintained"
+        guard_rules: ["BR-PMS-016"]
+
+    negative_tests:
+      - scenario: "Applicant misses the 60-day resubmission deadline"
+        steps:
+          - "Applicant opens application after 60 days have elapsed"
+          - "System checks revision window"
+        expected_final_state: "END-EXPIRED; status changed to Expired; applicant notified"
+        guard_rules: ["BR-PMS-016"]
+
+      - scenario: "Applicant withdraws application during the revision phase"
+        steps:
+          - "Applicant opens application for revision"
+          - "Applicant selects 'Withdraw Application'"
+          - "System processes withdrawal via PMS-UC-014"
+        expected_final_state: "END-WITHDRAWN; application locked and archived"
+        guard_rules: ["BR-PMS-016"]
+
+
+  - id: "PMS-WF-301"
+    title: "Budget Approval and Financial Tracking"
+    description: "Ensures all patent-related expenditures are reviewed, approved by the proper authority, and tracked against the available budget."
+    trigger: "A cost estimate is attached to an application, or it reaches a stage requiring funding (e.g., official filing)"
+    actors: ["PCC_ADMIN", "Director"]
+    preconditions:
+      - "Application status is 'Approved'"
+      - "Cost estimates for fees are available"
+    start_task: "PMS-UC-008 Manage Budgets and Financial Approval"
+    end_states: ["END-BUDGET_APPROVED", "END-APPROVAL_DENIED", "END-ESCALATED_TO_DIRECTOR"]
+
+    e2e_tests:
+      - scenario: "Budget within PCC_ADMIN threshold is approved and financial tracking initiated"
+        steps:
+          - "Cost estimate is submitted with application"
+          - "PCC_ADMIN reviews budget request"
+          - "Amount is within PCC_ADMIN approval authority"
+          - "PCC_ADMIN approves the budget"
+          - "Financial tracking record created"
+        expected_final_state: "END-BUDGET_APPROVED; financial record updated; stakeholders notified"
+        guard_rules: ["BR-PMS-008", "BR-PMS-009"]
+
+    negative_tests:
+      - scenario: "Budget exceeds PCC_ADMIN authority; escalated to Director who denies it"
+        steps:
+          - "Cost estimate exceeds PCC_ADMIN approval threshold"
+          - "Request auto-escalated to Director"
+          - "Director reviews and denies the request"
+        expected_final_state: "END-APPROVAL_DENIED; application on financial hold; PCC_ADMIN notified"
+        guard_rules: ["BR-PMS-008", "BR-PMS-009"]
+
+
+  - id: "PMS-WF-401"
+    title: "Director Assignment and Routing"
+    description: "Routes newly submitted applications to appropriate Directors based on expertise and workload balancing."
+    trigger: "Application status changes to 'Submitted' or PCC_ADMIN selects from new applications queue"
+    actors: ["PCC_ADMIN", "System", "Director"]
+    preconditions:
+      - "Application exists with status=Submitted"
+      - "Directors have defined expertise areas and current workloads"
+    start_task: "PMS-UC-002 Assign Application to Director"
+    end_states: ["END-ASSIGNED", "END-ASSIGNMENT_FAILED"]
+
+    e2e_tests:
+      - scenario: "System auto-assigns application to best-matched Director and initiates review"
+        steps:
+          - "Application status changes to Submitted"
+          - "System retrieves application and available Director list"
+          - "Matching logic applies expertise and workload rules"
+          - "Application assigned to Director"
+          - "Director notified; review timeline started"
+        expected_final_state: "END-ASSIGNED; application status=Under Review; Director receives notification"
+        guard_rules: ["BR-PMS-003", "BR-PMS-004", "BR-PMS-011", "BR-PMS-012", "BR-PMS-015"]
+
+    negative_tests:
+      - scenario: "No Director is available; assignment fails and retry is scheduled"
+        steps:
+          - "Application is Submitted"
+          - "System finds no Director with available capacity"
+        expected_final_state: "END-ASSIGNMENT_FAILED; application remains Submitted; retry scheduled; PCC_ADMIN alerted"
+        guard_rules: ["BR-PMS-011"]
+
+
+  - id: "PMS-WF-501"
+    title: "Post-Grant Tracking and Maintenance"
+    description: "Tracks maintenance fee schedules, renewal deadlines, and licensing activity for granted patents."
+    trigger: "Patent reaches Granted status; maintenance schedule is activated"
+    actors: ["PCC_ADMIN", "System", "Director"]
+    preconditions:
+      - "Patent has been granted"
+      - "Maintenance fee schedule is configured"
+    start_task: "PMS-UC-013 Manage Maintenance Fees and Renewals"
+    end_states: ["END-FEE_PAID", "END-PATENT_LAPSED", "END-GRACE_PERIOD_ACTIVE"]
+
+    e2e_tests:
+      - scenario: "PCC_ADMIN pays maintenance fee on time; patent renewed and next deadline scheduled"
+        steps:
+          - "System triggers upcoming fee reminder"
+          - "PCC_ADMIN processes payment"
+          - "Payment confirmed and recorded"
+          - "Next renewal deadline scheduled"
+        expected_final_state: "END-FEE_PAID; patent status remains Granted; next deadline set"
+        guard_rules: ["BR-PMS-009", "BR-PMS-013"]
+
+    negative_tests:
+      - scenario: "Maintenance fee missed; patent enters lapse risk with grace period activated"
+        steps:
+          - "System detects fee deadline has passed"
+          - "Escalation notification sent to PCC_ADMIN and Director"
+          - "Grace period window opened"
+        expected_final_state: "END-GRACE_PERIOD_ACTIVE; patent flagged for lapse risk; 30-day grace window active"
+        guard_rules: ["BR-PMS-013"]
+
+
+  - id: "PMS-WF-601"
+    title: "External Filing and Office Communication"
+    description: "Manages the official filing of applications with the patent office and subsequent communication including Office Action responses."
+    trigger: "Application is Approved with budget cleared and legal assessment complete"
+    actors: ["Attorney", "PCC_ADMIN", "System"]
+    preconditions:
+      - "Application status is Approved"
+      - "Budget approval confirmed"
+      - "Legal assessment completed"
+    start_task: "PMS-UC-009 File with Patent Office / Log Official Filing"
+    end_states: ["END-FILED", "END-FILING_FAILED", "END-OFFICE_ACTION_RESOLVED"]
+
+    e2e_tests:
+      - scenario: "Attorney files application and receives confirmation; deadline tracking begins"
+        steps:
+          - "Attorney prepares filing documents"
+          - "Attorney submits to patent office"
+          - "Patent office issues confirmation with reference number"
+          - "Attorney logs filing in system with date and reference"
+          - "System activates deadline tracking for Office Actions"
+        expected_final_state: "END-FILED; application status=Filed; filing date recorded; deadlines active"
+        guard_rules: ["BR-PMS-009", "BR-PMS-013", "BR-PMS-018"]
+
+      - scenario: "Office Action received; attorney responds within deadline; action closed"
+        steps:
+          - "Office Action received and logged in system"
+          - "System notifies attorney and sets response deadline"
+          - "Attorney prepares and submits response with amendments"
+          - "Office Action marked as resolved"
+        expected_final_state: "END-OFFICE_ACTION_RESOLVED; response filed; application progresses"
+        guard_rules: ["BR-PMS-005", "BR-PMS-012"]
+
+    negative_tests:
+      - scenario: "Filing rejected by patent office due to document error"
+        steps:
+          - "Attorney submits documents to patent office"
+          - "Patent office rejects due to format/content error"
+          - "Attorney logs the rejection in system"
+        expected_final_state: "END-FILING_FAILED; error logged; attorney notified to correct and refile"
+        guard_rules: ["BR-PMS-013"]
+
+      - scenario: "Attorney fails to respond to Office Action before deadline"
+        steps:
+          - "Office Action deadline passes without response"
+          - "System triggers deadline-missed escalation"
+        expected_final_state: "Application flagged at-risk; escalation sent to PCC_ADMIN and Director"
+        guard_rules: ["BR-PMS-012", "BR-PMS-015"]

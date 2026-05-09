@@ -1,0 +1,119 @@
+Test_ID,Scenario,Outcome,Error Details,Status,Severity
+BR-PMS-003-I-01,Assertion failed,Fail,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 60, in testPartExecutor
+    yield
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 676, in run
+    self._callTestMethod(testMethod)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 202, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\Fu",Open,Medium
+BR-PMS-011-V-01,Assertion failed,Fail,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 60, in testPartExecutor
+    yield
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 676, in run
+    self._callTestMethod(testMethod)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 202, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\Fu",Open,Medium
+BR-PMS-016-I-01,Assertion failed,Fail,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 60, in testPartExecutor
+    yield
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 676, in run
+    self._callTestMethod(testMethod)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 202, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\Fu",Open,Medium
+BR-PMS-018-I-01,Assertion failed,Fail,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 60, in testPartExecutor
+    yield
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 676, in run
+    self._callTestMethod(testMethod)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 202, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\Fu",Open,Medium
+,,Fail,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 60, in testPartExecutor
+    yield
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 676, in run
+    self._callTestMethod(testMethod)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 633, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\test_mo",Open,Medium
+,,Error,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 60, in testPartExecutor
+    yield
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 676, in run
+    self._callTestMethod(testMethod)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 633, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\test_mo",Open,High
+PMS-UC-004-AP-01,Applicant resubmits with partial update,Fail,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 60, in testPartExecutor
+    yield
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 676, in run
+    self._callTestMethod(testMethod)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 202, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\Fu",Open,Medium
+PMS-UC-004-EX-01,Applicant resubmits after deadline,Fail,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 60, in testPartExecutor
+    yield
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 676, in run
+    self._callTestMethod(testMethod)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 202, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\Fu",Open,Medium
+PMS-UC-005-AP-01,Assertion failed,Fail,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 60, in testPartExecutor
+    yield
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 676, in run
+    self._callTestMethod(testMethod)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 202, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\Fu",Open,Medium
+PMS-UC-005-HP-01,Assertion failed,Fail,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 60, in testPartExecutor
+    yield
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 676, in run
+    self._callTestMethod(testMethod)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 202, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\Fu",Open,Medium
+PMS-UC-006-AP-01,Unhandled exception,Fail,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 202, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\test_use_cases.py"", line 384, in test_ap01_pcc_updates_existing_attorney_assignment
+    self.assertEqual(AttorneyAssignment.objects.get(application=app).attorney_name, ""B"")
+  File ""C:\Users\tan",Open,Medium
+PMS-UC-019-AP-01,Search with status filter,Fail,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 60, in testPartExecutor
+    yield
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 676, in run
+    self._callTestMethod(testMethod)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 202, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\Fu",Open,Medium
+PMS-UC-019-EX-01,Assertion failed,Fail,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 60, in testPartExecutor
+    yield
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 676, in run
+    self._callTestMethod(testMethod)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 202, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\Fu",Open,Medium
+PMS-UC-019-HP-01,Search applications by keyword,Fail,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 60, in testPartExecutor
+    yield
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 676, in run
+    self._callTestMethod(testMethod)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 202, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\Fu",Open,Medium
+PMS-WF-201-NEG-01,Assertion failed,Fail,"Traceback (most recent call last):
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 60, in testPartExecutor
+    yield
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\lib\unittest\case.py"", line 676, in run
+    self._callTestMethod(testMethod)
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\FusionIIIT\applications\patent_system\tests\base.py"", line 202, in _callTestMethod
+    method()
+  File ""C:\Users\tanay\OneDrive\Desktop\Fusion1\Fusioncode\Fusion\Fu",Open,Medium
