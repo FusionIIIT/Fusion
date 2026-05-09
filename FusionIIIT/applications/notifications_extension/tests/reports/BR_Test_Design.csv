@@ -1,0 +1,51 @@
+Test ID,BR ID,Test Category,Input / Action,Expected Result
+BR-NT-01-V-01,BR-NT-01,Valid,"Staff POSTs a notification with module=""Leave Module"" via /api/notifications/send/. NAM stores it in the single central table.
+","201 Created; exactly one call to notify.send (central store); no per-module side-channel.
+"
+BR-NT-01-I-01,BR-NT-01,Invalid,"Staff POSTs with module=""RogueModule"" (not in ModuleName.choices).
+","400 Bad Request; central store refuses unlisted modules, preventing any module from bypassing NAM.
+"
+BR-NT-02-V-01,BR-NT-02,Valid,"Structural check that NotificationBell component exists in the global header component tree.
+","NotificationBell.jsx file exists and is imported by the header component, so it renders on every page.
+"
+BR-NT-02-I-01,BR-NT-02,Invalid,"Any module attempts to render its own alternate bell — should be impossible because a single shared component is imported from components/NotificationBell.
+","Only one NotificationBell instance is present in the app (asserted by searching for duplicate declarations; only the shared one exists).
+"
+BR-NT-03-V-01,BR-NT-03,Valid,"Staff user (is_staff=True) POSTs /api/notifications/send/ with a valid token in Authorization header.
+",201 Created; notification delivered.
+BR-NT-03-I-01,BR-NT-03,Invalid,"Student user (is_staff=False) or unauthenticated caller POSTs /send/.
+","403 Forbidden (students) or 401 Unauthorized (no token); no notification created.
+"
+BR-NT-04-V-01,BR-NT-04,Valid,"Staff triggers the same (user, event_id) twice with > 60 seconds between calls.
+",Both calls return 201; two notifications stored.
+BR-NT-04-I-01,BR-NT-04,Invalid,"Staff triggers the same (user, event_id) twice within 60 seconds.
+","First call 201; second call is suppressed (DuplicateNotification mapped to 429/400).
+"
+BR-NT-05-V-01,BR-NT-05,Valid,"Recipient has muted ""Leave Module""; staff sends a critical-priority notification for that module.
+","notify.send is still called; notification is recorded; a critical email is dispatched via send_mail.
+"
+BR-NT-05-I-01,BR-NT-05,Invalid,"Recipient has muted ""Leave Module""; staff sends a medium-priority notification for that module.
+","_send() short-circuits; notify.send is NOT called; no notification stored.
+"
+BR-NT-06-V-01,BR-NT-06,Valid,"Create an announcement with a future expiry_date; call GET /api/notifications/announcements/.
+","Announcement appears in the list (selectors filter by expiry_date__gte=today).
+"
+BR-NT-06-I-01,BR-NT-06,Invalid,"Create an announcement with a past expiry_date; call GET /api/notifications/announcements/.
+","Expired announcement does NOT appear in the active list.
+"
+BR-NT-07-V-01,BR-NT-07,Valid,"Admin broadcasts with audience_type=group, audience_value=""HOD (CSE)"". _resolve_audience must query Fusion RBAC tables (globals_holdsdesignation) at delivery time.
+","_resolve_audience is called with ('group', 'HOD (CSE)'); only users currently holding that designation receive the broadcast.
+"
+BR-NT-07-I-01,BR-NT-07,Invalid,"Admin broadcasts with audience_type=group and a non-existent designation value.
+","Announcement is created but the resolved audience set is empty; zero notify.send invocations.
+"
+BR-NT-08-V-01,BR-NT-08,Valid,"Admin broadcasts an announcement and the Announcement row is inspected.
+","Row has sender (Author_ID) and created_at (Timestamp) populated automatically. Approval_ID is captured by the enforcing caller (admin user).
+"
+BR-NT-08-I-01,BR-NT-08,Invalid,"Unauthenticated or non-admin caller attempts to broadcast.
+","403/401; no Announcement row is created, so no audit trail row is generated for an unauthorized attempt.
+"
+BR-NT-09-V-01,BR-NT-09,Valid,"User DELETEs /api/notifications/{id}/delete/ for an existing notification.
+","An ArchivedNotification row is created; the source notifications_notification row is NOT deleted (retained for audit).
+"
+BR-NT-09-I-01,BR-NT-09,Invalid,User attempts to DELETE a notification ID that does not exist.,404 Not Found; no ArchivedNotification row is created.

@@ -1,0 +1,175 @@
+business_rules:
+  - id: BR-NT-01
+    title: UI Centralization
+    description: >
+      Individual Fusion modules are prohibited from creating their own
+      notification trays, pop-ups, or alerts. All communication must pass
+      through NAM.
+    valid_tests:
+      - input_action: >
+          Staff POSTs a notification with module="Leave Module" via
+          /api/notifications/send/. NAM stores it in the single central table.
+        expected_result: >
+          201 Created; exactly one call to notify.send (central store);
+          no per-module side-channel.
+    invalid_tests:
+      - input_action: >
+          Staff POSTs with module="RogueModule" (not in ModuleName.choices).
+        expected_result: >
+          400 Bad Request; central store refuses unlisted modules, preventing
+          any module from bypassing NAM.
+
+  - id: BR-NT-02
+    title: Navbar Consistency
+    description: >
+      The Notification Bell Icon and Tray component must remain fixed on the
+      global Fusion header across all module transitions.
+    valid_tests:
+      - input_action: >
+          Structural check that NotificationBell component exists in the
+          global header component tree.
+        expected_result: >
+          NotificationBell.jsx file exists and is imported by the header
+          component, so it renders on every page.
+    invalid_tests:
+      - input_action: >
+          Any module attempts to render its own alternate bell — should be
+          impossible because a single shared component is imported from
+          components/NotificationBell.
+        expected_result: >
+          Only one NotificationBell instance is present in the app (asserted
+          by searching for duplicate declarations; only the shared one
+          exists).
+
+  - id: BR-NT-03
+    title: API Authorization
+    description: >
+      Only registered Fusion modules with valid credentials can trigger the
+      postNotification API.
+    valid_tests:
+      - input_action: >
+          Staff user (is_staff=True) POSTs /api/notifications/send/ with a
+          valid token in Authorization header.
+        expected_result: 201 Created; notification delivered.
+    invalid_tests:
+      - input_action: >
+          Student user (is_staff=False) or unauthenticated caller POSTs
+          /send/.
+        expected_result: >
+          403 Forbidden (students) or 401 Unauthorized (no token); no
+          notification created.
+
+  - id: BR-NT-04
+    title: Idempotency (Deduplication)
+    description: >
+      NAM must suppress duplicate notification requests for the same
+      User_ID and Event_ID if they occur within a 60-second cool-down window.
+    valid_tests:
+      - input_action: >
+          Staff triggers the same (user, event_id) twice with > 60 seconds
+          between calls.
+        expected_result: Both calls return 201; two notifications stored.
+    invalid_tests:
+      - input_action: >
+          Staff triggers the same (user, event_id) twice within 60 seconds.
+        expected_result: >
+          First call 201; second call is suppressed (DuplicateNotification
+          mapped to 429/400).
+
+  - id: BR-NT-05
+    title: Priority Handling
+    description: >
+      Notifications marked as "Critical" must bypass any user-defined
+      "Do Not Disturb" or "Mute" settings and trigger an immediate email.
+    valid_tests:
+      - input_action: >
+          Recipient has muted "Leave Module"; staff sends a critical-priority
+          notification for that module.
+        expected_result: >
+          notify.send is still called; notification is recorded; a critical
+          email is dispatched via send_mail.
+    invalid_tests:
+      - input_action: >
+          Recipient has muted "Leave Module"; staff sends a medium-priority
+          notification for that module.
+        expected_result: >
+          _send() short-circuits; notify.send is NOT called; no notification
+          stored.
+
+  - id: BR-NT-06
+    title: Automatic Expiry
+    description: >
+      Manual announcements shall be automatically removed from active UI
+      visibility once the Expiry_Date timestamp is reached.
+    valid_tests:
+      - input_action: >
+          Create an announcement with a future expiry_date; call
+          GET /api/notifications/announcements/.
+        expected_result: >
+          Announcement appears in the list (selectors filter by
+          expiry_date__gte=today).
+    invalid_tests:
+      - input_action: >
+          Create an announcement with a past expiry_date; call
+          GET /api/notifications/announcements/.
+        expected_result: >
+          Expired announcement does NOT appear in the active list.
+
+  - id: BR-NT-07
+    title: RBAC Dependency
+    description: >
+      The NAM service must dynamically resolve announcement recipients using
+      the Fusion RBAC module at the time of delivery to ensure current role
+      accuracy.
+    valid_tests:
+      - input_action: >
+          Admin broadcasts with audience_type=group, audience_value="HOD (CSE)".
+          _resolve_audience must query Fusion RBAC tables
+          (globals_holdsdesignation) at delivery time.
+        expected_result: >
+          _resolve_audience is called with ('group', 'HOD (CSE)'); only
+          users currently holding that designation receive the broadcast.
+    invalid_tests:
+      - input_action: >
+          Admin broadcasts with audience_type=group and a non-existent
+          designation value.
+        expected_result: >
+          Announcement is created but the resolved audience set is empty;
+          zero notify.send invocations.
+
+  - id: BR-NT-08
+    title: Audit Trail Integrity
+    description: >
+      Every manual announcement must be logged with an Author_ID, Timestamp,
+      and Approval_ID for institutional audit compliance.
+    valid_tests:
+      - input_action: >
+          Admin broadcasts an announcement and the Announcement row is
+          inspected.
+        expected_result: >
+          Row has sender (Author_ID) and created_at (Timestamp) populated
+          automatically. Approval_ID is captured by the enforcing caller
+          (admin user).
+    invalid_tests:
+      - input_action: >
+          Unauthenticated or non-admin caller attempts to broadcast.
+        expected_result: >
+          403/401; no Announcement row is created, so no audit trail row
+          is generated for an unauthorized attempt.
+
+  - id: BR-NT-09
+    title: Data Persistence
+    description: >
+      Recipients may "Archive" or "Read" notifications, but they cannot
+      permanently delete system-generated records from the database for
+      180 days.
+    valid_tests:
+      - input_action: >
+          User DELETEs /api/notifications/{id}/delete/ for an existing
+          notification.
+        expected_result: >
+          An ArchivedNotification row is created; the source
+          notifications_notification row is NOT deleted (retained for audit).
+    invalid_tests:
+      - input_action: User attempts to DELETE a notification ID that does not exist.
+        expected_result: 404 Not Found; no ArchivedNotification row is created.

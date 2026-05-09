@@ -1,0 +1,17 @@
+Artifact ID,Artifact Type,Tests,Pass,Partial,Fail,Final Status,Remarks
+UC-NT-01,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-NT-02,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-NT-03,UC,3,3,0,0,Implemented Correctly,3/3 passed
+UC-NT-04,UC,3,3,0,0,Implemented Correctly,3/3 passed
+BR-NT-01,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-NT-02,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-NT-03,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-NT-04,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-NT-05,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-NT-06,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-NT-07,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-NT-08,BR,2,2,0,0,Enforced Correctly,2/2 passed
+BR-NT-09,BR,2,2,0,0,Enforced Correctly,2/2 passed
+WF-NT-01,WF,3,3,0,0,Complete,3/3 passed
+WF-NT-02,WF,3,3,0,0,Complete,3/3 passed
+WF-NT-03,WF,3,3,0,0,Complete,3/3 passed
