@@ -27,7 +27,8 @@ class AuthUserSerializer(serializers.ModelSerializer):
          fields = ('auth_token',)
 
     def get_auth_token(self, obj):
-        token, _ = Token.objects.get_or_create(user=obj)
+        Token.objects.filter(user=obj).delete()
+        token = Token.objects.create(user=obj)
         return token.key
 
 class NotificationSerializer(serializers.ModelSerializer):

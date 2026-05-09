@@ -39,11 +39,29 @@ class grade(models.Model):
     grade = models.CharField(max_length=5, default="B")
 
 class ResultAnnouncement(models.Model):
+    SEMESTER_TYPE_CHOICES = [
+        ("Odd Semester", "Odd Semester"),
+        ("Even Semester", "Even Semester"),
+        ("Summer Semester", "Summer Semester"),
+    ]
     batch = models.ForeignKey(Batch, on_delete=models.CASCADE)
     semester = models.PositiveIntegerField()
+    semester_type = models.CharField(
+        max_length=20,
+        choices=SEMESTER_TYPE_CHOICES,
+        null=True,
+        blank=True,
+    )
     announced = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
+    class Meta:
+        unique_together = [("batch", "semester", "semester_type")]
+
     def __str__(self):
         status = "Announced" if self.announced else "Not Announced"
-        return f"{self.batch.label} - Sem {self.semester} - {status}"
+        if self.semester_type == "Summer Semester":
+            sem_label = f"Summer {self.semester // 2}"
+        else:
+            sem_label = f"Sem {self.semester}"
+        return f"{self.batch.name} - {sem_label} - {status}"
