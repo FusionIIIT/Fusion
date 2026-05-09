@@ -391,8 +391,8 @@ class CourseProposalTrackingFile(ModelForm):
 
 class CourseInstructorForm(forms.ModelForm):
     # next_year = datetime.now().year +1
-    max_year = Batch.objects.aggregate(max_year=Max('year'))['max_year']
-    next_year = max_year + 1 if max_year else datetime.now().year + 1
+    max_year = None
+    next_year = datetime.now().year + 1
     course_id = forms.ModelChoiceField(
         queryset=Course.objects.all(),
         label="Select Course",
@@ -408,7 +408,7 @@ class CourseInstructorForm(forms.ModelForm):
     )
 
     year = forms.ChoiceField(
-        choices=[('', 'Choose a year')] + [(year, year) for year in Batch.objects.values_list('year', flat=True).distinct()]+[(next_year, next_year)],
+        choices=[('', 'Choose a year')],
         label="Select Year",
         widget=forms.Select(attrs={'class': 'ui fluid search selection dropdown'})
     )
@@ -421,12 +421,14 @@ class CourseInstructorForm(forms.ModelForm):
         model = CourseInstructor
         fields = ['course_id', 'instructor_id', 'year', 'semester_type']
 
-    # def __init__(self, *args, **kwargs):
-    #     super().__init__(*args, **kwargs)
-    #     # Query all unique years from the Batch table
-    #     unique_years = Batch.objects.values_list('year', flat=True).distinct()
-    #     # Set the choices for the 'year' field dynamically
-    #     self.fields['year'].choices = [(year, year) for year in unique_years] 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Query all unique years from the Batch table
+        unique_years = Batch.objects.values_list('year', flat=True).distinct()
+        max_year = Batch.objects.aggregate(max_year=Max('year'))['max_year']
+        next_year = max_year + 1 if max_year else datetime.now().year + 1
+        # Set the choices for the 'year' field dynamically
+        self.fields['year'].choices = [('', 'Choose a year')] + [(year, year) for year in unique_years] + [(next_year, next_year)] 
         
     # def sed(self):
     #     r_id = self.cleaned_data.get('receive_id')

@@ -1,5 +1,6 @@
 from audioop import reverse
 import json
+import logging
 
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
@@ -30,6 +31,18 @@ from Fusion.settings.common import LOGIN_URL
 from notifications.models import Notification
 from .models import *
 from applications.hostel_management.models import (HallCaretaker,HallWarden)
+from applications.globals.api.selectors import (
+    get_accessible_modules,
+    get_closed_issues,
+    get_feedback_average_rating,
+    get_open_issues,
+)
+from applications.globals.api.services import (
+    delete_entity_from_request,
+    update_placement_invitation_status,
+    update_profile_core_fields,
+)
+from rest_framework.exceptions import ValidationError
 
 
 from django.contrib.auth.views import PasswordResetView
@@ -37,6 +50,27 @@ from django.shortcuts import render
 from django.utils.timezone import now
 from datetime import timedelta
 from .models import PasswordResetTracker
+
+logger = logging.getLogger(__name__)
+
+MAX_ISSUE_IMAGE_SIZE_BYTES = 5 * 1024 * 1024
+ALLOWED_ISSUE_IMAGE_TYPES = {"image/jpeg", "image/png", "image/gif"}
+
+
+def _is_valid_issue_image(uploaded_file):
+    if uploaded_file.size > MAX_ISSUE_IMAGE_SIZE_BYTES:
+        return False, "Image exceeds 5 MB size limit"
+
+    if uploaded_file.content_type not in ALLOWED_ISSUE_IMAGE_TYPES:
+        return False, "Unsupported image type"
+
+    try:
+        Image.open(uploaded_file).verify()
+        uploaded_file.seek(0)
+    except (OSError, ValueError):
+        return False, "Corrupted image file"
+
+    return True, ""
 
 class RateLimitedPasswordResetView(PasswordResetView):
     template_name = 'registration/password_reset_form.html'  # Customize as needed
@@ -503,267 +537,23 @@ def about(request):
                }
     return render(request, "globals/about.html", context)
 
-def login(request):
-    context = {}
-    return render(request, "globals/login.html", context)
+def legacy_login(request):
+    return redirect('/accounts/login/')
 
-def about(request):
-
-    teams = {
-
-
-        'uiTeam': {
-            'teamId': "uiTeam",
-            'teamName': "UI/UX",
-        },
-
-        'AcademicsTeam': {
-            'teamId': "AcademicsTeam",
-            'teamName': "Academics Module",
-        },
-
-        'eisTeam': {
-            'teamId': "eisTeam",
-            'teamName': "EIS Module",
-        },
-
-        'leaveTeam': {
-            'teamId': "leaveTeam",
-            'teamName': "Leave Module",
-        },
-
-        'CourseManagementTeam': {
-            'teamId': "CourseManagementTeam",
-            'teamName': "Course Management Module",
-        },
-
-        'complaintTeam': {
-            'teamId': "complaintTeam",
-            'teamName': "Complaint Module",
-        },
-
-        'CentralMessTeam': {
-            'teamId': "CentralMessTeam",
-            'teamName': "Mess Module",
-        },
-
-        'PlacementTeam': {
-            'teamId': "PlacementTeam",
-            'teamName': "Placement Module",
-        },
-
-        'ScholarshipTeam': {
-            'teamId': "ScholarshipTeam",
-            'teamName': "Awards and Scholarship Module",
-        },
-    }
-
-    context = {'teams': teams,
-               'psgTeam': {
-                   'dev1': {'devName': 'Anuraag Singh',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Developer'
-                            },
-
-                   'dev2': {'devName': 'Kanishka Munshi',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'UI/UX Developer'
-                            },
-
-                   'dev3': {'devName': 'M. Arshad Siddiqui',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Database Designer'
-                            },
-
-                   'dev4': {'devName': 'Pranjul Shukla',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Developer'
-                            },
-
-                   'dev5': {'devName': 'Saket Patel',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Developer'
-                            },
-               },
-               'AcademicsTeam': {
-                   'dev1': {'devName': 'Anuraag Singh',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Steering Group'
-                            },
-
-                   'dev2': {'devName': 'Achint Mistri',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Developer'
-                            },
-
-                   'dev3': {'devName': 'Harshit Choubey',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Developer'
-                            },
-
-                   'dev4': {'devName': 'Narosena Longkumar',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Developer'
-                            },
-               },
-               'uiTeam': {
-                   'dev1': {'devName': 'Kanishka Munshi',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Head UI Developer'
-                            },
-
-                   'dev2': {'devName': 'Mayank Saurabh',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'UI Developer'
-                            },
-
-                   'dev3': {'devName': 'Ravuri Abhignya',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'UI Developer'
-                            },
-               },
-
-               'complaintTeam': {
-                   'dev1': {'devName': 'Saksham Agarwal',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Developer'
-                            },
-
-                   'dev2': {'devName': 'Rishti Gupta',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Developer'
-                            },
-
-                   'dev3': {'devName': 'Shubham Yadav',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Developer'
-                            },
-
-                   'dev4': {'devName': 'Amresh Kumar Verma',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Developer'
-                            },
-               },
-               'eisTeam': {
-
-                   'dev1': {'devName': 'M. Arshad Siddiqui',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Developer'
-                            },
-               },
-
-               'leaveTeam': {
-                   'dev1': {'devName': 'Pranjul Shukla',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Developer'
-                            },
-
-                   'dev2': {'devName': 'Saket Patel',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Developer'
-                            },
-               },
-
-               'CentralMessTeam': {
-                   'dev1': {'devName': 'Ankita Makker',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Developer'
-                            },
-
-                   'dev2': {'devName': 'Vernika Jain',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Developer'
-                            },
-               },
-
-               'PlacementTeam': {
-                   'dev1': {'devName': 'Arpit Jain',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Developer'
-                            },
-
-                   'dev2': {'devName': 'Gautam Yadav',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Developer'
-                            },
-               },
-
-               'ComplaintTeam': {
-                   'dev1': {'devName': 'Srigari Avilash Kumar',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Developer'
-                            },
-
-                   'dev2': {'devName': 'NakulArya',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Developer'
-                            },
-               },
-
-               'ScholarshipTeam': {
-                   'dev1': {'devName': 'Segu Balaji',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Developer'
-                            },
-
-                   'dev2': {'devName': 'M. Shrisha',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Developer'
-                            },
-
-                   'dev3': {'devName': 'Atla Shashidar Reddy',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Developer'
-                            },
-               },
-
-               'CourseManagementTeam': {
-                   'dev1': {'devName': 'Animesh Pandey',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Developer'
-                            },
-
-                   'dev2': {'devName': 'Paras Rastogi',
-                            'devImage': 'zlatan.jpg',
-                            'devTitle': 'Developer'
-                            },
-               },
-               }
-    return render(request, "globals/about.html", context)
+def about_legacy(request):
+    return about(request)
 
 @login_required(login_url=LOGIN_URL)
 def dashboard(request):
     # cse_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'CSE'))
     # ece_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'ECE'))
     # me_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'ME'))
-    # des_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'Design'))
-    # ns_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'Natural Science'))
-    # cse_students = ExtraInfo.objects.filter(user_type = 'student', department = DepartmentInfo.objects.get(name = 'CSE'))
-    # ece_students = ExtraInfo.objects.filter(user_type = 'student', department = DepartmentInfo.objects.get(name = 'ECE'))
-    # me_students = ExtraInfo.objects.filter(user_type = 'student', department = DepartmentInfo.objects.get(name = 'ME'))
-    # des_students = ExtraInfo.objects.filter(user_type = 'student', department = DepartmentInfo.objects.get(name = 'Design'))
-    # ns_students = ExtraInfo.objects.filter(user_type = 'student', department = DepartmentInfo.objects.get(name = 'Natural Science'))
-    # students_2017 = Student.objects.filter(batch = 2017)
-    # students_2016 = Student.objects.filter(batch = 2016)
-    # students_2015 = Student.objects.filter(batch = 2015)
-    # students_2019 = Student.objects.filter(batch = 2019)
-    # students_2018 = Student.objects.filter(batch = 2018)
-    # data = {'cse': cse_faculty,
-    #         'ece': ece_faculty,
-    #         'me': me_faculty,
-    #         'des': des_faculty,
-    #         'ns': ns_faculty,
-    #         'students_2019': students_2019,
-    #         'students_2018': students_2018,
-    #         'students_2017': students_2017,
-    #         'students_2016': students_2016,
-    #         'students_2015': students_2015}
     user=request.user
     notifs=request.user.notifications.all()
     name = request.user.first_name +"_"+ request.user.last_name
-    desig = list(HoldsDesignation.objects.select_related('user','working','designation').all().filter(working = request.user).values_list('designation'))
+    desig = list(HoldsDesignation.objects.with_user_department().filter(working=request.user).values_list('designation'))
     b = [i for sub in desig for i in sub]
-    design = HoldsDesignation.objects.select_related('user','designation').filter(working=request.user)
+    design = HoldsDesignation.objects.with_user_department().filter(working=request.user)
 
     designation=[]
     for i in design:
@@ -774,8 +564,8 @@ def dashboard(request):
         name_ = get_object_or_404(Designation, id = i)
         roll_.append(str(name_.name))
 
-    hall_caretakers = HallCaretaker.objects.all().select_related()
-    hall_wardens = HallWarden.objects.all().select_related()
+    hall_caretakers = HallCaretaker.objects.select_related('staff__id__user').all()
+    hall_wardens = HallWarden.objects.select_related('faculty__id__user').all()
 
     hall_caretaker_user = []
     for caretaker in hall_caretakers:
@@ -903,9 +693,9 @@ def   profile(request, username=None):
         print("student",student)
         if editable and request.method == 'POST':
             if 'studentapprovesubmit' in request.POST:
-                status = PlacementStatus.objects.select_related('notify_id','unique_id__id__user','unique_id__id__department').filter(pk=request.POST['studentapprovesubmit']).update(invitation='ACCEPTED', timestamp=timezone.now())
+                update_placement_invitation_status(request.POST['studentapprovesubmit'], 'ACCEPTED')
             if 'studentdeclinesubmit' in request.POST:
-                status = PlacementStatus.objects.select_related('notify_id','unique_id__id__user','unique_id__id__department').filter(Q(pk=request.POST['studentdeclinesubmit'])).update(invitation='REJECTED', timestamp=timezone.now())
+                update_placement_invitation_status(request.POST['studentdeclinesubmit'], 'REJECTED')
             if 'educationsubmit' in request.POST:
                 form = AddEducation(request.POST)
                 if form.is_valid():
@@ -920,16 +710,11 @@ def   profile(request, username=None):
                                                              stream=stream, sdate=sdate, edate=edate)
                     education_obj.save()
             if 'profilesubmit' in request.POST:
-                about_me = request.POST.get('about')
-                age = request.POST.get('age')
-                address = request.POST.get('address')
-                contact = request.POST.get('contact')
                 extrainfo_obj = ExtraInfo.objects.select_related('user','department').get(user=user)
-                extrainfo_obj.about_me = about_me
-                extrainfo_obj.date_of_birth = age
-                extrainfo_obj.address = address
-                extrainfo_obj.phone_no = contact
-                extrainfo_obj.save()
+                try:
+                    update_profile_core_fields(extrainfo_obj, request.POST)
+                except ValidationError as err:
+                    logger.warning('Invalid profile submit payload for user %s: %s', user.username, err)
                 profile = get_object_or_404(ExtraInfo, Q(user=user))
             if 'picsubmit' in request.POST:
                 form = AddProfile(request.POST, request.FILES)
@@ -943,7 +728,7 @@ def   profile(request, username=None):
                     skill_rating = form.cleaned_data['skill_rating']
                     try:
                         skill_id = Skill.objects.get(skill=skill)
-                    except Exception as e:
+                    except Skill.DoesNotExist:
                         skill_id = Skill.objects.create(skill=skill)
                         skill_id.save()
                     has_obj = Has.objects.create(unique_id=student,
@@ -1035,38 +820,19 @@ def   profile(request, username=None):
                                                                description=description,
                                                                sdate=sdate, edate=edate)
                     experience_obj.save()
-            if 'deleteskill' in request.POST:
-                hid = request.POST['deleteskill']
-                hs = Has.objects.select_related('skill_id','unique_id__id__user','unique_id__id__department').get(Q(pk=hid))
-                hs.delete()
-            if 'deleteedu' in request.POST:
-                hid = request.POST['deleteedu']
-                hs = Education.objects.select_related('unique_id__id__user','unique_id__id__department').get(Q(pk=hid))
-                hs.delete()
-            if 'deletecourse' in request.POST:
-                hid = request.POST['deletecourse']
-                hs = Course.objects.select_related('unique_id__id__user','unique_id__id__department').get(Q(pk=hid))
-                hs.delete()
-            if 'deleteexp' in request.POST:
-                hid = request.POST['deleteexp']
-                hs = Experience.objects.select_related('unique_id__id__user','unique_id__id__department').get(Q(pk=hid))
-                hs.delete()
-            if 'deletepro' in request.POST:
-                hid = request.POST['deletepro']
-                hs = Project.objects.select_related('unique_id__id__user','unique_id__id__department').get(Q(pk=hid))
-                hs.delete()
-            if 'deleteach' in request.POST:
-                hid = request.POST['deleteach']
-                hs = Achievement.objects.select_related('unique_id__id__user','unique_id__id__department').get(Q(pk=hid))
-                hs.delete()
-            if 'deletepub' in request.POST:
-                hid = request.POST['deletepub']
-                hs = Publication.objects.select_related('unique_id__id__user','unique_id__id__department').get(Q(pk=hid))
-                hs.delete()
-            if 'deletepat' in request.POST:
-                hid = request.POST['deletepat']
-                hs = Patent.objects.select_related('unique_id__id__user','unique_id__id__department').get(Q(pk=hid))
-                hs.delete()
+            delete_entity_from_request(
+                request.POST,
+                {
+                    'deleteskill': Has,
+                    'deleteedu': Education,
+                    'deletecourse': Course,
+                    'deleteexp': Experience,
+                    'deletepro': Project,
+                    'deleteach': Achievement,
+                    'deletepub': Publication,
+                    'deletepat': Patent,
+                },
+            )
 
         form = AddEducation(initial={})
         form1 = AddProfile(initial={})
@@ -1125,10 +891,12 @@ def feedback(request):
     for feed in feeds:
         rated.append(range(feed.rating))
     feeds = zip(feeds, rated)
+    rating = round(get_feedback_average_rating(), 1)
+
     if request.method == "POST":
         try:
             feedback = Feedback.objects.select_related('user').get(user=request.user)
-        except Exception as e:
+        except Feedback.DoesNotExist:
             feedback = None
         if feedback:
             form = WebFeedbackForm(request.POST or None, instance=feedback)
@@ -1144,11 +912,7 @@ def feedback(request):
         stars = []
         for i in range(0, int(feedback.rating)):
             stars.append(1)
-        rating = 0
-        for feed in Feedback.objects.all():
-            rating = rating + feed.rating
-        if Feedback.objects.all().count() > 0:
-            rating = round(rating/Feedback.objects.all().count(),1)
+        rating = round(get_feedback_average_rating(), 1)
         context = {
             'form': form,
             "feedback": feedback,
@@ -1158,15 +922,11 @@ def feedback(request):
             "feeds": feeds
         }
         return render(request, "globals/feedback.html", context)
-    rating = 0
-    for feed in Feedback.objects.all():
-        rating = rating + feed.rating
-    if Feedback.objects.all().count() > 0:
-        rating = round(rating/Feedback.objects.all().count(),1)
+    rating = round(get_feedback_average_rating(), 1)
     try:
         feedback = Feedback.objects.select_related('user').get(user=request.user)
         form = WebFeedbackForm(instance=feedback)
-    except Exception as e:
+    except Feedback.DoesNotExist:
         form = WebFeedbackForm()
         context = {"form": form, "rating": rating, "feeds": feeds}
         return render(request, "globals/feedback.html", context)
@@ -1193,25 +953,25 @@ def issue(request):
             issue.user = request.user
             issue.save()
             for image in request.FILES.getlist('images'):
-                try:
-                    Image.open(image)
-                    image = IssueImage.objects.create(image=image, user=request.user)
-                    issue.images.add(image)
-                except Exception as e:
-                    pass
+                valid, reason = _is_valid_issue_image(image)
+                if not valid:
+                    logger.warning('Skipped invalid issue image upload for user %s: %s', request.user.username, reason)
+                    continue
+                image = IssueImage.objects.create(image=image, user=request.user)
+                issue.images.add(image)
             issue.save()
-            openissue = Issue.objects.select_related('user').prefetch_related('images','support').filter(closed=False)
-            closedissue = Issue.objects.select_related('user').prefetch_related('images','support').filter(closed=True)
+            openissue = get_open_issues()
+            closedissue = get_closed_issues()
             form = IssueForm()
             context = {"form": form, "openissue": openissue, "closedissue": closedissue, }
             return render(request, "globals/issue.html", context)
-        openissue = Issue.objects.select_related('user').prefetch_related('images','support').filter(closed=False)
-        closedissue = Issue.objects.select_related('user').prefetch_related('images','support').filter(closed=True)
+        openissue = get_open_issues()
+        closedissue = get_closed_issues()
         form = IssueForm(request.POST)
         context = {"form": form, "openissue": openissue, "closedissue": closedissue, }
         return render(request, "globals/issue.html", context)
-    openissue = Issue.objects.select_related('user').prefetch_related('images','support').filter(closed=False)
-    closedissue = Issue.objects.select_related('user').prefetch_related('images','support').filter(closed=True)
+    openissue = get_open_issues()
+    closedissue = get_closed_issues()
     form = IssueForm()
     context = {"form": form, "openissue": openissue, "closedissue": closedissue, }
     return render(request, "globals/issue.html", context)
@@ -1221,6 +981,13 @@ def issue(request):
 def view_issue(request, id):
     if request.method == "POST":
         issue = get_object_or_404(Issue, id=id, user=request.user)
+        if issue.closed:
+            context = {
+                "form": None,
+                "issue": issue,
+                "error_message": "Closed issues are read-only and cannot be edited.",
+            }
+            return render(request, "globals/view_issue.html", context, status=403)
         form = IssueForm(request.POST or None, instance=issue)
         if form.is_valid():
             issue.save()
@@ -1229,12 +996,12 @@ def view_issue(request, id):
                 for img in issue.images.all():
                     img.delete()
             for image in request.FILES.getlist('images'):
-                try:
-                    Image.open(image)
-                    image = IssueImage.objects.create(image=image, user=request.user)
-                    issue.images.add(image)
-                except Exception as e:
-                    pass
+                valid, reason = _is_valid_issue_image(image)
+                if not valid:
+                    logger.warning('Skipped invalid issue image update for user %s: %s', request.user.username, reason)
+                    continue
+                image = IssueImage.objects.create(image=image, user=request.user)
+                issue.images.add(image)
             issue.save()
             form = IssueForm(instance=issue)
             context = {
@@ -1261,7 +1028,19 @@ def view_issue(request, id):
 
 @login_required(login_url=LOGIN_URL)
 def support_issue(request, id):
+    if request.method != "POST":
+        context = {"error": "Method not allowed"}
+        return HttpResponse(json.dumps(context), content_type="application/json", status=405)
+
     issue = get_object_or_404(Issue, id=id)
+    if request.user == issue.user:
+        context = {
+            "error": "Issue owner cannot support their own issue",
+            "supported": False,
+            "support_count": issue.support.all().count(),
+        }
+        return HttpResponse(json.dumps(context), content_type="application/json", status=400)
+
     supported = True
     if request.user in issue.support.all():
         issue.support.remove(request.user)
@@ -1273,7 +1052,7 @@ def support_issue(request, id):
         "supported": supported,
         "support_count": support_count,
     }
-    return HttpResponse(json.dumps(context), "application/json")
+    return HttpResponse(json.dumps(context), content_type="application/json")
 
 @login_required(login_url=LOGIN_URL)
 def search(request):
@@ -1307,15 +1086,10 @@ def update_global_variable(request):
     if request.method == 'POST':
         selected_option = request.POST.get('dropdown')
         request.session['currentDesignationSelected'] = selected_option
-        module_access = ModuleAccess.objects.filter(designation=selected_option).first()
-        if module_access:
-            access_rights = {}
-    
-            field_names = [field.name for field in ModuleAccess._meta.get_fields() if field.name not in ['id', 'designation']]
-    
-            for field_name in field_names:
-                access_rights[field_name] = getattr(module_access, field_name)
-    
+        access_rights = {}
+        if selected_option:
+            access_rights = get_accessible_modules([selected_option]).get(selected_option, {})
+
         request.session['moduleAccessRights'] = access_rights      
                 
         print(selected_option)

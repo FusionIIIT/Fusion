@@ -1,0 +1,21 @@
+Metric,Value
+Module Name,Dashboard Module (DB)
+Module ID,26
+Test Framework,Django TestCase + DRF APIClient
+Total Test Cases Designed,108
+UC Test Cases Required,60
+UC Test Cases Implemented,60
+BR Test Cases Required,28
+BR Test Cases Implemented,30
+WF Test Cases Required,18
+WF Test Cases Implemented,18
+,
+Test Execution Summary,
+Total Executed,108
+Passed,108
+Failed,0
+Errors,0
+Skipped,0
+Pass Rate (%),100.0
+Test Adequacy (%),101.9
+Execution Date,2026-04-19 22:58:43
