@@ -1,10 +1,16 @@
-from django.conf.urls import url
+from django.urls import re_path as url, include
 
+from django.urls import path, re_path as url
 from . import views
 
 app_name = 'mess'
 
 urlpatterns = [
+    path('api/vacationSurvey/', views.vacation_survey_api, name='vacation_survey_api'),
+    path('api/vacationSurveyResponse/', views.vacation_survey_response_api, name='vacation_survey_response_api'),
+
+
+    url(r'^api/', include('applications.central_mess.api_urls')),
 
     url(r'^$', views.mess, name='mess'),
     url(r'^menurequest/', views.menu_change_request, name='menu_change_request'),

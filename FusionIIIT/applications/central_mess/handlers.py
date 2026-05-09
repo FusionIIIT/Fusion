@@ -12,6 +12,11 @@ from django.views.generic import View
 from django.db.models import Q
 from django.contrib.auth.models import User
 from .forms import MinuteForm
+from .helpers import (
+    get_special_request_document,
+    normalize_special_request_type,
+    validate_special_food_request,
+)
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
@@ -79,10 +84,25 @@ def add_mess_feedback(request, student):
     mess_optn = Messinfo.objects.get(student_id=student)
     description = request.POST.get('description')
     feedback_type = request.POST.get('feedback_type')
+
+    mess_rating = request.POST.get('mess_rating', 5)
+    try:
+        mess_rating = int(mess_rating)
+        if not (1 <= mess_rating <= 5):
+            raise ValueError
+    except ValueError:
+        return {'status': 3, 'message': 'Rating must be between 1 and 5'}
+    
+    if len(description) < 10:
+        return {'status': 3, 'message': 'Feedback must be at least 10 characters long'}
+        
+    feedback_count = Feedback.objects.filter(student_id=student, fdate=date_today).count()
+    if feedback_count >= 1:
+        return {'status': 3, 'message': 'Maximum 1 feedback per day allowed'}
     feedback_object = Feedback(student_id=student, fdate=date_today,
                                mess=mess_optn.mess_option,
                                description=description,
-                               feedback_type=feedback_type)
+                               feedback_type=feedback_type, mess_rating=mess_rating)
 
     feedback_object.save()
     data = {
@@ -161,6 +181,10 @@ def add_menu_change_request(request, student):
         new_dish = request.POST.get("newdish")
         print(new_dish)
         reason = request.POST.get("reason")
+
+        nutrition_info = request.POST.get('nutrition_info', None)
+        if nutrition_info == 'high_kcal':
+            return {'status': 3, 'message': 'Nutritional value exceeds limits. Request denied.'}
         # menu_object = Menu_change_request(dish=dish, request=new_dish, reason=reason)
         menu_object = Menu_change_request(dish=dish, student_id=student, request=new_dish, reason=reason)
         menu_object.save()
@@ -337,6 +361,16 @@ def add_leave_request(request, student):
     rebates = Rebate.objects.filter(student_id=student)
     rebate_check = rebates.filter(Q(status='1') | Q(status='2'))
 
+    approved_days = 0
+    for r in rebates.filter(status='2'):
+        a = datetime.strptime(str(r.start_date), date_format)
+        c = datetime.strptime(str(r.end_date), date_format)
+        approved_days += (c - a).days + 1
+
+    escalate = False
+    if approved_days + number_of_days > 20:
+        escalate = True
+
     for r in rebate_check:
         a = datetime.strptime(str(r.start_date), date_format)
         c = datetime.strptime(str(r.end_date), date_format)
@@ -349,9 +383,20 @@ def add_leave_request(request, student):
             }
             return data
 
+    from django.utils import timezone
+    from .api_views import notify_wardens_of_escalation
+
     rebate_object = Rebate(student_id=student, leave_type=leave_type, start_date=start_date,
                            end_date=end_date, purpose=purpose)
-    rebate_object.save()
+    if escalate:
+        rebate_object.status = '3'
+        rebate_object.escalation_remark = 'Rebate limit exceeded. Maximum approved rebate days per semester is 20. Auto-escalated to Warden.'
+        rebate_object.escalated_at = timezone.now()
+        rebate_object.save()
+        notify_wardens_of_escalation(request.user, 'Rebate request', rebate_object, rebate_object.escalation_remark)
+    else:
+        rebate_object.save()
+        
     data = {
         'status': 1,
     }
@@ -451,39 +496,65 @@ def add_special_food_request(request, student):
     """
     fr = request.POST.get("start_date")
     to = request.POST.get("end_date")
-    food1 = request.POST.get("food1")
-    food2 = request.POST.get("food2")
-    purpose = request.POST.get('purpose')
-    # date_format = "%Y-%m-%d"
-    date_today = datetime.now().date()
-    date_today = str(date_today)
-    date_format = "%Y-%m-%d"
-    b = datetime.strptime(str(fr), date_format)
-    d = datetime.strptime(str(to), date_format)
-    #   TODO ADD DATE VALIDATION
-    if (date_today > to) or (to < fr):
-        data = {
+    food1 = request.POST.get("food1") or request.POST.get("item1")
+    food2 = request.POST.get("food2") or request.POST.get("item2")
+    purpose = request.POST.get('purpose') or request.POST.get('request')
+    if not fr or not to or not food1 or not food2 or not purpose:
+        return {
             'status': 3,
-            # case when the to date has passed
+            'message': 'Food, timing, and reason are required.',
         }
-        # messages.error(request, "Invalid dates")
-        return data
-    spfood_obj = Special_request(student_id=student, start_date=fr, end_date=to,
-                                 item1=food1, item2=food2, request=purpose)
-    requests_food = Special_request.objects.filter(student_id=student)
-    s_check = requests_food.filter(Q(status='1') | Q(status='2'))
 
-    for r in s_check:
-        a = datetime.strptime(str(r.start_date), date_format)
-        c = datetime.strptime(str(r.end_date), date_format)
-        if ((b <= a and (d >= a and d <= c)) or (b >= a and (d >= a and d <= c))
-                or (b <= a and (d >= c)) or ((b >= a and b <= c) and (d >= c))):
-            flag = 0
-            data = {
-                'status': 2,
-                'message': "Already applied for these dates",
-            }
-            return data
+    date_format = "%Y-%m-%d"
+    try:
+        start_date = datetime.strptime(str(fr), date_format).date()
+        end_date = datetime.strptime(str(to), date_format).date()
+    except ValueError:
+        return {
+            'status': 3,
+            'message': 'Dates must be provided in YYYY-MM-DD format.',
+        }
+    supporting_document = get_special_request_document(request)
+    raw_request_type = request.POST.get('request_type') or request.POST.get('reason_type')
+    request_type = normalize_special_request_type(raw_request_type)
+
+    count_this_sem = Special_request.objects.filter(student_id=student, start_date__year=datetime.now().year).count()
+    if count_this_sem >= 3:
+        return {'status': 3, 'message': 'Maximum 3 special requests per semester allowed.'}
+        
+    if not supporting_document:
+        return {'status': 3, 'message': 'A medical document is required for special requests.'}
+    if raw_request_type and not request_type:
+        return {
+            'status': 3,
+            'message': 'Select a valid request type.',
+        }
+    if not request_type:
+        request_type = 'medical' if supporting_document else 'event'
+    validation_error = validate_special_food_request(
+        student,
+        start_date,
+        end_date,
+        request_type,
+        supporting_document,
+    )
+    if validation_error:
+        return {
+            'status': 3,
+            'message': validation_error,
+        }
+
+    spfood_obj = Special_request(
+        student_id=student,
+        start_date=start_date,
+        end_date=end_date,
+        item1=food1,
+        item2=food2,
+        request=purpose,
+        request_type=request_type,
+        semester=student.curr_semester_no,
+        supporting_document=supporting_document,
+    )
     spfood_obj.save()
     data = {
         'status': 1,
@@ -626,5 +697,3 @@ def generate_bill():
             # bill_object.update()
         else:
             bill_object.save()
-
-

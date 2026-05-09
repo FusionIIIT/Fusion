@@ -1,4 +1,4 @@
-from django.conf.urls import url,include
+from django.urls import re_path as url,include
 
 from .views import compounder_view, healthcenter, student_view, schedule_entry,doctor_entry,compounder_entry
 
