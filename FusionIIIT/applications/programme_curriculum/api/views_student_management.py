@@ -17,8 +17,9 @@ from django.db import transaction, connection
 from django.db.models import Q, Count
 from django.conf import settings
 from django.utils import timezone
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -5131,3 +5132,82 @@ def ensure_default_curriculum_exists(discipline_obj, programme_name):
         # Log the error but don't raise it to avoid breaking the student reporting process
         pass
         return None
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def student_my_info(request):
+    """
+    Returns the authenticated student's programme type and linked curriculum IDs.
+    """
+    try:
+        acad_student = (
+            AcademicStudent.objects
+            .select_related('batch_id__curriculum__programme', 'id__department')
+            .get(id__user=request.user)
+        )
+    except AcademicStudent.DoesNotExist:
+        return Response(
+            {'error': 'No student record found for this user. Contact the academic office.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    programme_category = None
+    curriculum_ids = []
+
+    if acad_student.batch_id and acad_student.batch_id.curriculum_id:
+        curriculum_ids = [acad_student.batch_id.curriculum_id]
+        programme_category = acad_student.batch_id.curriculum.programme.category
+
+    if not programme_category:
+        programme_category = (
+            Programme.objects
+            .filter(name=acad_student.programme)
+            .values_list('category', flat=True)
+            .first()
+        )
+
+    if not programme_category:
+        return Response(
+            {
+                'error': (
+                    'Programme type could not be determined. '
+                    'Your batch or curriculum may not be properly linked. '
+                    'Contact the academic office.'
+                )
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if not acad_student.batch:
+        return Response(
+            {'error': 'Batch year is not set on your student record. Contact the academic office.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    branch = (
+        acad_student.id.department.name
+        if acad_student.id_id and acad_student.id.department
+        else None
+    )
+    if not branch:
+        return Response(
+            {'error': 'Department/branch is not assigned to your student record. Contact the academic office.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if not curriculum_ids:
+        return Response(
+            {'error': 'No curriculum is linked to your batch yet. Contact the academic office.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    return Response(
+        {
+            'programme_type': programme_category.lower(),
+            'year':           acad_student.batch,
+            'branch':         branch,
+            'curriculum_ids': curriculum_ids,
+        },
+        status=status.HTTP_200_OK,
+    )
