@@ -1,4 +1,6 @@
 from django.contrib.auth.models import Permission, User
+from django.db.models.signals import m2m_changed
+from django.dispatch import receiver
 from django.db import models
 from django.utils import timezone
 from django.utils.safestring import mark_safe
@@ -174,15 +176,15 @@ class AskaQuestion(models.Model):
 	"""
 	can_delete=models.BooleanField(default=False)
 	can_update=models.BooleanField(default=False)
-	user = models.ForeignKey(User, default=1,on_delete=models.CASCADE)
+	user = models.ForeignKey(User, on_delete=models.CASCADE)
 	subject = models.CharField(max_length=100, blank=False)
 	description = models.CharField(max_length=500, null=True, blank=True, default="")
 	select_tag = models.ManyToManyField(AllTags)
 	file = models.FileField(null=True, blank=True,upload_to='feeds/files')
 	uploaded_at = models.DateTimeField(auto_now_add=False, auto_now=False, default=timezone.now)
-	likes = models.ManyToManyField(User, default=1,related_name='likes', blank=True)
-	dislikes = models.ManyToManyField(User, default=1,related_name='dislikes', blank=True)
-	requests = models.ManyToManyField(User, default=1,related_name='requests', blank=True)
+	likes = models.ManyToManyField(User, related_name='likes', blank=True)
+	dislikes = models.ManyToManyField(User, related_name='dislikes', blank=True)
+	requests = models.ManyToManyField(User, related_name='requests', blank=True)
 	is_liked=models.BooleanField(default=False)
 	is_requested=models.BooleanField(default=False)
 	request = models.IntegerField(default=0)
@@ -215,14 +217,14 @@ class AnsweraQuestion(models.Model):
 	"""
 	Records answers on a question
 	"""
-	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
+	user = models.ForeignKey(User, on_delete=models.CASCADE)
 	content = models.TextField(max_length=1000, blank=False)
-	question = models.ForeignKey(AskaQuestion, default=1, on_delete=models.CASCADE)
+	question = models.ForeignKey(AskaQuestion, on_delete=models.CASCADE)
 	uploaded_at = models.DateTimeField(auto_now=False, auto_now_add=False, default=timezone.now)
-	answers = models.ManyToManyField(User, default=1, related_name='answers', blank=True)
+	answers = models.ManyToManyField(User, related_name='answers', blank=True)
 	total_answers = models.IntegerField(default=0)
-	likes = models.ManyToManyField(User, default=1,related_name='answer_likes', blank=True)
-	dislikes = models.ManyToManyField(User, default=1,related_name='answer_dislikes', blank=True)
+	likes = models.ManyToManyField(User, related_name='answer_likes', blank=True)
+	dislikes = models.ManyToManyField(User, related_name='answer_dislikes', blank=True)
 	is_liked=models.BooleanField(default=False)
 
 	def total_likes(self):
@@ -253,10 +255,10 @@ class Comments(models.Model):
 	"""
 	Records comments on posts
 	"""
-	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
-	question = models.ForeignKey(AskaQuestion, default=1 , on_delete = models.CASCADE)
+	user = models.ForeignKey(User, on_delete=models.CASCADE)
+	question = models.ForeignKey(AskaQuestion, on_delete = models.CASCADE)
 	comment_text = models.CharField(max_length=5000)
-	likes_comment = models.ManyToManyField(User, default=1,related_name='likes_comment', blank=True)
+	likes_comment = models.ManyToManyField(User, related_name='likes_comment', blank=True)
 	total_likes_comment = models.IntegerField(default=0)
 	commented_at = models.DateTimeField(auto_now_add=False, auto_now=False, default=timezone.now)
 	is_liked = models.BooleanField(default=False)
@@ -271,11 +273,11 @@ class Reply(models.Model):
 	"""
 	Records replies on a post
 	"""
-	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
-	comment = models.ForeignKey(Comments,default=1, on_delete=models.CASCADE)
+	user = models.ForeignKey(User, on_delete=models.CASCADE)
+	comment = models.ForeignKey(Comments, on_delete=models.CASCADE)
 	msg = models.CharField(max_length=1000)
 	content = models.CharField(max_length=5000, default="")
-	replies = models.ManyToManyField(User, default=1,related_name='replies', blank=True)
+	replies = models.ManyToManyField(User, related_name='replies', blank=True)
 	total_replies = models.IntegerField(default=0)
 	replied_at = models.DateTimeField(auto_now_add=False, auto_now=False, default=timezone.now)
 
@@ -289,19 +291,19 @@ class report(models.Model):
 	"""
 	records report on a quesiton
 	"""
-	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
-	question = models.ForeignKey(AskaQuestion, default=1, on_delete = models.CASCADE)
+	user = models.ForeignKey(User, on_delete=models.CASCADE)
+	question = models.ForeignKey(AskaQuestion, on_delete = models.CASCADE)
 	report_msg = models.CharField(max_length=1000,default="")
 
-	# class Meta:
-	# 	unique_together = ('user', 'question')
+	class Meta:
+		unique_together = ('user', 'question')
 
 class hidden(models.Model):
 	"""
 	records a hidden question
 	"""
-	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
-	question = models.ForeignKey(AskaQuestion, default=1, on_delete=models.CASCADE)
+	user = models.ForeignKey(User, on_delete=models.CASCADE)
+	question = models.ForeignKey(AskaQuestion, on_delete=models.CASCADE)
 	# hide = models.BooleanField(default=False)
 
 	class Meta:
@@ -315,9 +317,9 @@ class tags(models.Model):
 	records tags for a user
 
 	"""
-	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
-	my_tag = models.CharField(max_length=100, default=1, choices=Constants.TAG_LIST)
-	my_subtag = models.ForeignKey(AllTags, default=1, on_delete = models.CASCADE)
+	user = models.ForeignKey(User, on_delete=models.CASCADE)
+	my_tag = models.CharField(max_length=100, default='CSE', choices=Constants.TAG_LIST)
+	my_subtag = models.ForeignKey(AllTags, on_delete = models.CASCADE)
 
 	class Meta:
 		unique_together = ('user', 'my_subtag')
@@ -329,7 +331,7 @@ class Profile(models.Model):
 	"""
 	records profile details of a user
 	"""
-	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
+	user = models.ForeignKey(User, on_delete=models.CASCADE)
 	bio = models.CharField(max_length=250,blank=True)
 	profile_picture = models.ImageField(null=True, blank=True, upload_to='feeds/profile_pictures')
 	profile_view = models.IntegerField(default=0)
@@ -340,7 +342,7 @@ class Roles(models.Model):
 	"""
 	Records role a for a user
 	"""
-	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
+	user = models.ForeignKey(User, on_delete=models.CASCADE)
 	role = models.CharField(max_length=100, blank=False)
 	active = models.BooleanField(default=True)
 	def __str__(self):
@@ -350,11 +352,46 @@ class QuestionAccessControl(models.Model):
 	"""
 	records the different access permissions like the user can comment on a question or not, can vot or not for a user
 	"""
-	question = models.ForeignKey(AskaQuestion, related_name='question_list', default=1, on_delete=models.CASCADE)
+	question = models.ForeignKey(AskaQuestion, related_name='question_list', on_delete=models.CASCADE)
 	canVote = models.BooleanField()
 	canAnswer = models.BooleanField()
 	canComment = models.BooleanField()
-	posted_by = models.ForeignKey(Roles, default=1, on_delete=models.CASCADE)
+	posted_by = models.ForeignKey(Roles, on_delete=models.CASCADE)
 	created_at = models.DateTimeField(auto_now_add=False, auto_now=False, default=timezone.now)
 	def __str__(self):
 		return "question number " + str(self.question.id)
+
+
+def _sync_count(instance, field_name, count_field):
+	setattr(instance, count_field, getattr(instance, field_name).count())
+	instance.save(update_fields=[count_field])
+
+
+@receiver(m2m_changed, sender=AskaQuestion.likes.through)
+def sync_question_likes(sender, instance, action, **kwargs):
+	if action in ('post_add', 'post_remove', 'post_clear'):
+		_sync_count(instance, 'likes', 'total_likes')
+
+
+@receiver(m2m_changed, sender=AskaQuestion.dislikes.through)
+def sync_question_dislikes(sender, instance, action, **kwargs):
+	if action in ('post_add', 'post_remove', 'post_clear'):
+		_sync_count(instance, 'dislikes', 'total_dislikes')
+
+
+@receiver(m2m_changed, sender=AnsweraQuestion.answers.through)
+def sync_answer_count(sender, instance, action, **kwargs):
+	if action in ('post_add', 'post_remove', 'post_clear'):
+		_sync_count(instance, 'answers', 'total_answers')
+
+
+@receiver(m2m_changed, sender=Comments.likes_comment.through)
+def sync_comment_likes(sender, instance, action, **kwargs):
+	if action in ('post_add', 'post_remove', 'post_clear'):
+		_sync_count(instance, 'likes_comment', 'total_likes_comment')
+
+
+@receiver(m2m_changed, sender=Reply.replies.through)
+def sync_reply_count(sender, instance, action, **kwargs):
+	if action in ('post_add', 'post_remove', 'post_clear'):
+		_sync_count(instance, 'replies', 'total_replies')

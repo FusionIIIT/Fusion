@@ -1,6 +1,6 @@
-from audioop import reverse
 import json
 
+from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -16,7 +16,7 @@ from PIL import Image
 from applications.academic_information.models import Student
 from applications.globals.forms import IssueForm, WebFeedbackForm
 from applications.globals.models import (ExtraInfo, Feedback, HoldsDesignation,
-                                         Issue, IssueImage, DepartmentInfo,ModuleAccess)
+                                         Issue, IssueImage, DepartmentInfo)
 from applications.gymkhana.views import coordinator_club
 from applications.placement_cell.forms import (AddAchievement, AddCourse,
                                                AddEducation, AddExperience,
@@ -26,49 +26,10 @@ from applications.placement_cell.forms import (AddAchievement, AddCourse,
 from applications.placement_cell.models import (Achievement, Course, Education,
                                                 Experience, Has, Patent,
                                                 Project, Publication, Skill, PlacementStatus)
+from applications.globals.utils import ensure_extrainfo
 from Fusion.settings.common import LOGIN_URL
 from notifications.models import Notification
 from .models import *
-from applications.hostel_management.models import (HallCaretaker,HallWarden)
-
-
-from django.contrib.auth.views import PasswordResetView
-from django.shortcuts import render
-from django.utils.timezone import now
-from datetime import timedelta
-from .models import PasswordResetTracker
-
-class RateLimitedPasswordResetView(PasswordResetView):
-    template_name = 'registration/password_reset_form.html'  # Customize as needed
-
-    def post(self, request, *args, **kwargs):
-        email = request.POST.get('email')
-        if not email:
-            return self.form_invalid(self.get_form())  # Default behavior for invalid forms
-
-        # Check if the email exists in the tracker table
-        tracker, created = PasswordResetTracker.objects.get_or_create(email=email)
-
-        # Enforce rate limiting: Check if the reset was within the last 24 hours
-        if tracker.last_reset and now() - tracker.last_reset < timedelta(days=1):
-            # Pass error message to the template
-            return render(
-                request,
-                self.template_name,
-                {
-                    'form': self.get_form(),  # Include the form for re-rendering
-                    'error_message': "Password can only be reset once every 24 hours.",
-                },
-            )
-
-        # Update the tracker with the current timestamp
-        tracker.last_reset = now()
-        tracker.save()
-
-        # Proceed with the standard password reset process
-        return super().post(request, *args, **kwargs)
-
-
 
 def index(request):
     context = {}
@@ -759,6 +720,7 @@ def dashboard(request):
     #         'students_2016': students_2016,
     #         'students_2015': students_2015}
     user=request.user
+    ensure_extrainfo(user)
     notifs=request.user.notifications.all()
     name = request.user.first_name +"_"+ request.user.last_name
     desig = list(HoldsDesignation.objects.select_related('user','working','designation').all().filter(working = request.user).values_list('designation'))
@@ -773,49 +735,54 @@ def dashboard(request):
     for i in b :
         name_ = get_object_or_404(Designation, id = i)
         roll_.append(str(name_.name))
-
-    hall_caretakers = HallCaretaker.objects.all().select_related()
-    hall_wardens = HallWarden.objects.all().select_related()
-
-    hall_caretaker_user = []
-    for caretaker in hall_caretakers:
-        hall_caretaker_user.append(caretaker.staff.id.user)
-
-    hall_warden_user = []
-    for warden in hall_wardens:
-        hall_warden_user.append(warden.faculty.id.user)
-    print("modules are")
-    print(request.session.get('moduleAccessRights'))
     context={
         'notifications':notifs,
         'Curr_desig' : roll_,
         'club_details' : coordinator_club(request),
         'designation' : designation,
-        'hall_caretaker': hall_caretaker_user,
-        'hall_warden': hall_warden_user,
         
     }
     # a=HoldsDesignation.objects.select_related('user','working','designation').filter(designation = user)
-    print(context)
-    print(type(user.extrainfo.user_type))
     if(request.user.get_username() == 'director'):
         return render(request, "dashboard/director_dashboard2.html", {})
     elif( "dean_rspc" in designation):
         return render(request, "dashboard/dashboard.html", context)
-    elif user.extrainfo.user_type != "student":
-        print ("inside")
+    elif user.extrainfo.user_type != 'student':
         designat = HoldsDesignation.objects.select_related().filter(user=user)
         response = {'designat':designat}
         context.update(response)
         return render(request, "dashboard/dashboard.html", context)
     else:
-        print ("inside2")
-        
         return render(request, "dashboard/dashboard.html", context)
 
 
 @login_required(login_url=LOGIN_URL)
-def   profile(request, username=None):
+def select_role(request):
+    if request.method != "POST":
+        return redirect("/dashboard/")
+
+    user = request.user
+    ensure_extrainfo(user)
+    selected_role = (request.POST.get("selected_role") or "").strip()
+
+    allowed_roles = set(
+        HoldsDesignation.objects.select_related("designation")
+        .filter(working=user)
+        .values_list("designation__name", flat=True)
+    )
+    allowed_roles.add(user.extrainfo.user_type)
+
+    if selected_role in allowed_roles:
+        request.session["last_selected_role"] = selected_role
+        messages.success(request, f"Selected role: {selected_role}")
+    else:
+        messages.error(request, "You cannot select that role.")
+
+    return redirect(request.META.get("HTTP_REFERER", "/dashboard/"))
+
+
+@login_required(login_url=LOGIN_URL)
+def profile(request, username=None):
     """
     Generic endpoint for views.
     If it's a faculty, redirects to /eis/profile/*
@@ -827,80 +794,21 @@ def   profile(request, username=None):
         username: Username of the user. If None,
             displays the profile of currently logged-in user
     """
-
-
-
     user = get_object_or_404(User, Q(username=username)) if username else request.user
+    ensure_extrainfo(user)
+    if request.user.is_authenticated:
+        ensure_extrainfo(request.user)
+
+
     editable = request.user == user
-    print("editable",editable)
     profile = get_object_or_404(ExtraInfo, Q(user=user))
-    print("profile",profile)
     if(str(user.extrainfo.user_type)=='faculty'):
-        print("profile")
         return HttpResponseRedirect('/eis/profile/' + (username if username else ''))
     if(str(user.extrainfo.department)=='department: Academics'):
-        print("profile2")
         return HttpResponseRedirect('/aims')
-    
-    array = [
-     "student",
-    "CC convenor",
-    "Mechatronic convenor",
-    "mess_committee",
-    "mess_convener",
-    "alumini",
-    "Electrical_AE",
-    "Electrical_JE",
-    "Civil_AE",
-    "Civil_JE",
-    "co-ordinator",
-    "co co-ordinator",
-    "Convenor",
-    "Convener",
-    "cc1convener",
-    "CC2 convener",
-    "mess_convener_mess2",
-    "mess_committee_mess2"
-]
-
-    # queryset = HoldsDesignation.objects.select_related('user','working','designation').filter(Q(working=user))
-
-    # for obj in queryset:
-    #     designation_name = obj.designation.name
-    #     print("designation_name",designation_name)
-        
-    # design = False
-    # if designation_name in array:
-    #     design = True
-    #     print("design",design)
-    #     print("designation_name",designation_name)
-    # if design:
-    #     current = HoldsDesignation.objects.select_relapted('user','working','designation').filter(Q(working=user, designation__name=designation_name))
-    #     for obj in current:
-    #         obj.designation.name = obj.designation.name.replace(designation_name, 'student')
-    
-    designation_name = ""
-    design = False
-
-    current = HoldsDesignation.objects.select_related('user', 'working', 'designation').filter(Q(working=user))
-
-    for obj in current:
-        designation_name = obj.designation.name
-        if designation_name in array:
-            design = True
-            break
-
-    if design:
-        current = HoldsDesignation.objects.filter(working=user, designation__name=designation_name)
-        for obj in current:
-            obj.designation.name = obj.designation.name.replace(designation_name, 'student')
-    
-    print(user.extrainfo.user_type)
-    print("current",current)
+    current = HoldsDesignation.objects.select_related('user','working','designation').filter(Q(working=user, designation__name="student"))
     if current:
-        print("profile3")
         student = get_object_or_404(Student, Q(id=profile.id))
-        print("student",student)
         if editable and request.method == 'POST':
             if 'studentapprovesubmit' in request.POST:
                 status = PlacementStatus.objects.select_related('notify_id','unique_id__id__user','unique_id__id__department').filter(pk=request.POST['studentapprovesubmit']).update(invitation='ACCEPTED', timestamp=timezone.now())
@@ -1102,7 +1010,6 @@ def   profile(request, username=None):
             return render(request, "globals/student_profile4.html", context)
         if 'achievementsubmit' in request.POST or 'deleteach' in request.POST:
             return render(request, "globals/student_profile5.html", context)
-        # print("context",context)
         return render(request, "globals/student_profile.html", context)
     else:
         return redirect("/")
@@ -1300,26 +1207,4 @@ def search(request):
     if len(search_results) == 0:
         search_results = []
     context = {'sresults':search_results}
-    return render(request, "globals/search.html", context),
-
-@login_required(login_url=LOGIN_URL)
-def update_global_variable(request):
-    if request.method == 'POST':
-        selected_option = request.POST.get('dropdown')
-        request.session['currentDesignationSelected'] = selected_option
-        module_access = ModuleAccess.objects.filter(designation=selected_option).first()
-        if module_access:
-            access_rights = {}
-    
-            field_names = [field.name for field in ModuleAccess._meta.get_fields() if field.name not in ['id', 'designation']]
-    
-            for field_name in field_names:
-                access_rights[field_name] = getattr(module_access, field_name)
-    
-        request.session['moduleAccessRights'] = access_rights      
-                
-        print(selected_option)
-        print(request.session['currentDesignationSelected'])
-        return HttpResponseRedirect('/dashboard')
-    # Redirect to home if not a POST request or some issue occurs
-    return HttpResponseRedirect(reverse('home'))
+    return render(request, "globals/search.html", context)

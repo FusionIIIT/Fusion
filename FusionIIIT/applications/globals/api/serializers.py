@@ -15,7 +15,7 @@ from applications.placement_cell.api.serializers import (SkillSerializer, HasSer
 User = get_user_model()
 
 class UserLoginSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=30, required=True)
+    username = serializers.CharField(required=True)
     password = serializers.CharField(required=True, write_only=True)
 
 
@@ -44,6 +44,16 @@ class DepartmentInfoSerializer(serializers.ModelSerializer):
 
 class ExtraInfoSerializer(serializers.ModelSerializer):
     department = DepartmentInfoSerializer()
+
+    def validate_phone_no(self, value):
+        if value in [None, ""]:
+            return value
+
+        phone_no = str(value).strip()
+        if not phone_no.isdigit() or len(phone_no) != 10:
+            raise serializers.ValidationError("Phone number must contain exactly 10 digits.")
+        return int(phone_no)
+
     class Meta:
         model = ExtraInfo
         fields = ('department','id','title','sex','date_of_birth',

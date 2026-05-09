@@ -65,7 +65,7 @@
                           rows=5
                           type="text"
                           style="width: 100%;"
-                          value="{{ profile.about_me }}" hidden/>
+                          value="{{ profile.about_me }}" hidden required/>
             </div>
         </div>
 
@@ -94,7 +94,7 @@
                                             rows=5
                                             type="date"
                                             style="width:100;"
-                                            value="{{ profile.date_of_birth }}" hidden />
+                                            value="{{ profile.date_of_birth }}" hidden required/>
 
                               </div>
 
@@ -141,7 +141,7 @@
                                           rows=5
                                           type="text"
                                           style="width: 100%;"
-                                          value="{{ profile.address }}" hidden/>
+                                          value="{{ profile.address }}" hidden required/>
                               </div>
                             </td>
                         </tr>
@@ -173,7 +173,32 @@
                                 <div class="ui large fluid input">
                                     <a><i class="phone icon" id="contactIcon"></i>
                                     <span id="contactSpan">{{ profile.phone_no }}</span>
-                                    <input name=contact type="text" value="{{ profile.phone_no }}" id="contactInput" pattern="[1-9]{1}[0-9]{9}" oninvalid="alert('Contact must contain 10 digita');" hidden>
+                                    <input name=contact type="text" value="{{ profile.phone_no }}" id="contactInput" pattern="[1-9]{1}[0-9]{9}" oninvalid="alert('Contact must contain 10 digits');" hidden required>
+                                    <script>
+                                    // Inline validation for profile form
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        const saveButton = document.getElementById('saveButton');
+                                        if (saveButton) {
+                                            saveButton.form.onsubmit = function(e) {
+                                                let valid = true;
+                                                const requiredFields = ['aboutTextarea', 'ageInput', 'addrInput', 'contactInput'];
+                                                requiredFields.forEach(function(id) {
+                                                    const el = document.getElementById(id);
+                                                    if (el && el.hasAttribute('hidden') === false && !el.value) {
+                                                        el.style.border = '2px solid red';
+                                                        valid = false;
+                                                    } else if (el) {
+                                                        el.style.border = '';
+                                                    }
+                                                });
+                                                if (!valid) {
+                                                    alert('Please fill all mandatory fields.');
+                                                    e.preventDefault();
+                                                }
+                                            };
+                                        }
+                                    });
+                                    </script>
                                     </a>
                                 </div>
                             </td>

@@ -11,6 +11,11 @@
   <div class="ui grid">
   <div class="two wide column"></div>
     <div class="twelve wide column">
+          {% if profile_picture %}
+          <div style="float: right; margin-left: 12px;">
+            <img src="{{ profile_picture }}" style="width: 95px; height: 115px; object-fit: cover;">
+          </div>
+          {% endif %}
           <b style="font-size: 25px;">{{ user.first_name }} {{ user.last_name }}</b><br>
           <b>{% if roll == 1 %}
             {{ roll }}st

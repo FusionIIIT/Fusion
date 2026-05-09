@@ -8,6 +8,7 @@ urlpatterns = [
 
     url(r'^$', views.index, name='index'),
     url(r'^dashboard/$', views.dashboard, name='dashboard'),
+    url(r'^select-role/$', views.select_role, name='select_role'),
     url(r'^about/', views.about, name='about'),
     # generic profile endpoint, displays or redirects appropriately
     url(r'^profile/(?P<username>.+)/$', views.profile, name='profile'),
@@ -23,6 +24,5 @@ urlpatterns = [
     # Endpoint to reset all passwords in DEV environment
     url(r'^resetallpass/$', views.reset_all_pass, name='resetallpass'),
     # API urls
-    url(r'^api/', include('applications.globals.api.urls')),
-    url(r'^update_global_variable/$', views.update_global_variable, name='update_global_var'),
+    url(r'^api/', include('applications.globals.api.urls'))
 ]
