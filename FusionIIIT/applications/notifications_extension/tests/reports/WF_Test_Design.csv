@@ -1,0 +1,28 @@
+Test ID,WF ID,Test Category,Scenario,Expected Final State
+WF-NT-01-E2E-01,WF-NT-01,End-to-End,"Staff registers ""Leave Approved"" event -> Staff triggers event for student -> Student sees the notification in their list.
+","NotificationEventType exists, a Notification row exists for the student, and GET /api/notifications/ returns it.
+"
+WF-NT-01-NEG-01,WF-NT-01,Negative,"Staff registers event, then Student attempts to trigger it via the API (should be blocked).
+","Event type still exists; no Notification row created; trigger returned 403.
+"
+WF-NT-01-EXIT-01,WF-NT-01,Exit,"Staff registers event; staff triggers with unknown event_id (typo).
+","Original event still exists; trigger fails with 404; no new Notification row; workflow exits cleanly.
+"
+WF-NT-02-E2E-01,WF-NT-02,End-to-End,"Admin broadcasts announcement to audience=students -> all students receive fan-out notifications -> each student's list contains it.
+","Announcement row stored; one Notification row per student recipient; GET /api/notifications/ returns the announcement for each student.
+"
+WF-NT-02-NEG-01,WF-NT-02,Negative,"Student attempts to POST /announcements/broadcast/ (not admin).
+","403 Forbidden; no Announcement row created; no notifications sent.
+"
+WF-NT-02-EXIT-01,WF-NT-02,Exit,"Admin broadcasts with an empty audience (no one matches the designation).
+","Announcement row created; zero Notification rows; workflow exits without errors.
+"
+WF-NT-03-E2E-01,WF-NT-03,End-to-End,"User disables Leave Module -> Staff sends medium notification -> User list unchanged -> Staff sends critical notification -> User list gains the critical notification.
+","Preference saved with is_enabled=False; medium notification skipped; critical notification delivered; email dispatched.
+"
+WF-NT-03-NEG-01,WF-NT-03,Negative,"User disables module but staff sends with invalid priority string.
+","Serializer rejects with 400; no notification delivered regardless of preference.
+"
+WF-NT-03-EXIT-01,WF-NT-03,Exit,"User toggles module off then toggles it back on; staff sends medium-priority notification.
+","Preference is_enabled=True restored; notification delivered normally.
+"

@@ -1,0 +1,19 @@
+Test ID,UC ID,Test Category,Scenario,Preconditions,Input / Action,Expected Result
+UC-NT-01-HP-01,UC-NT-01,Happy Path,"Module registers event with Event Name and Default Priority; NAM validates and returns unique Event_ID.
+",External module is a registered Fusion component,POST /api/notifications/event-types/register/ with valid payload,201 Created; response contains event_id (UUID) and is_active=true
+UC-NT-01-AP-01,UC-NT-01,Alternate Path,"Module registers event with critical default priority (emergency alerts route to email template).
+",External module is authorized,POST register/ with default_priority=critical,201 Created; event stored with default_priority=critical
+UC-NT-01-EX-01,UC-NT-01,Exception,Attempt to register event for a module name not in ModuleName.choices,External module is authorized,"POST register/ with module=""NonExistentModule""",400 Bad Request; module field rejected
+UC-NT-02-HP-01,UC-NT-02,Happy Path,"Module triggers valid Event_ID for existing User_ID; notification is recorded and delivered to the navbar tray.
+",Event Type registered; recipient exists; no duplicate within 60s,POST /api/notifications/trigger/ with event_id + recipient_username,201 Created; notification stored and dispatched
+UC-NT-02-AP-01,UC-NT-02,Alternate Path,Trigger with a Deep_Link so the recipient can follow the alert to the source module.,Event Type registered,"POST trigger/ with deep_link=""/leave/status/""",201 Created; notify.send is called with url=deep_link
+UC-NT-02-EX-01,UC-NT-02,Exception,Trigger with an unregistered Event_ID,No such Event Type exists in the registry,POST trigger/ with random UUID,404 Not Found; no notification dispatched
+UC-NT-03-HP-01,UC-NT-03,Happy Path,"Admin drafts announcement with future expiry date and broadcasts to all users; all resolved recipients see it on their dashboard.
+",Authenticated admin; audience=all; valid expiry,POST /api/notifications/announcements/broadcast/,201 Created; Announcement stored; fan-out performed
+UC-NT-03-AP-01,UC-NT-03,Alternate Path,"Admin targets a specific designation group (e.g., ""HOD (CSE)"") using Fusion RBAC to resolve recipients.
+",Authenticated admin; audience_type=group,"POST broadcast/ with audience_value=""HOD (CSE)""",201 Created; only HOD (CSE) user receives the announcement
+UC-NT-03-EX-01,UC-NT-03,Exception,Admin supplies an invalid audience type in the payload,Authenticated admin,"POST broadcast/ with audience_type=""mars""",400 Bad Request; error enumerates valid audience types
+UC-NT-04-HP-01,UC-NT-04,Happy Path,"User clicks the bell icon; NAM returns the latest notifications (paginated) with the unread count.
+",Authenticated user,GET /api/notifications/?page=1&page_size=10,200 OK; notifications list + pagination metadata
+UC-NT-04-AP-01,UC-NT-04,Alternate Path,User clicks a single notification and marks it read,User has an unread notification,PATCH /api/notifications/{id}/mark-read/,200 OK; unread flag cleared in DB
+UC-NT-04-EX-01,UC-NT-04,Exception,Unauthenticated visitor tries to view notifications,No auth token,GET /api/notifications/ without Authorization header,401/403 denied; no data leaked

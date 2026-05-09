@@ -1,0 +1,18 @@
+Metric,Value
+Total Use Cases,4
+Total Business Rules,9
+Total Workflows,3
+Required UC Tests,12
+Designed UC Tests,12
+Required BR Tests,18
+Designed BR Tests,18
+Required WF Tests,6
+Designed WF Tests,9
+UC Adequacy %,100.0%
+BR Adequacy %,100.0%
+WF Adequacy %,150.0%
+Total Tests Executed,39
+Total Pass,39
+Total Partial,0
+Total Fail,0
+Strict Pass Rate %,100.0%

@@ -1,0 +1,79 @@
+workflows:
+  - id: WF-NT-01
+    name: Register Event Type Then Trigger Delivery
+    description: >
+      End-to-end flow: a module admin registers an event type, then another
+      staff user triggers a notification using that event_id, and the recipient
+      sees it in their notification list.
+    e2e_tests:
+      - scenario: >
+          Staff registers "Leave Approved" event -> Staff triggers event for
+          student -> Student sees the notification in their list.
+        expected_final_state: >
+          NotificationEventType exists, a Notification row exists for the
+          student, and GET /api/notifications/ returns it.
+    negative_tests:
+      - scenario: >
+          Staff registers event, then Student attempts to trigger it via the
+          API (should be blocked).
+        expected_final_state: >
+          Event type still exists; no Notification row created; trigger
+          returned 403.
+    exit_tests:
+      - scenario: >
+          Staff registers event; staff triggers with unknown event_id (typo).
+        expected_final_state: >
+          Original event still exists; trigger fails with 404; no new
+          Notification row; workflow exits cleanly.
+
+  - id: WF-NT-02
+    name: Admin Broadcast Announcement Fan-Out
+    description: >
+      End-to-end flow: admin composes an announcement for a target audience,
+      the service resolves the audience, fans out notifications, and all
+      recipients can retrieve them.
+    e2e_tests:
+      - scenario: >
+          Admin broadcasts announcement to audience=students -> all students
+          receive fan-out notifications -> each student's list contains it.
+        expected_final_state: >
+          Announcement row stored; one Notification row per student recipient;
+          GET /api/notifications/ returns the announcement for each student.
+    negative_tests:
+      - scenario: >
+          Student attempts to POST /announcements/broadcast/ (not admin).
+        expected_final_state: >
+          403 Forbidden; no Announcement row created; no notifications sent.
+    exit_tests:
+      - scenario: >
+          Admin broadcasts with an empty audience (no one matches the designation).
+        expected_final_state: >
+          Announcement row created; zero Notification rows; workflow exits
+          without errors.
+
+  - id: WF-NT-03
+    name: Preference Toggle and Notification Filter
+    description: >
+      End-to-end flow: a user toggles a module off in preferences; when any
+      staff sends a non-critical notification for that module, it is silently
+      skipped; a critical notification still goes through (BR-NT-05).
+    e2e_tests:
+      - scenario: >
+          User disables Leave Module -> Staff sends medium notification ->
+          User list unchanged -> Staff sends critical notification -> User list
+          gains the critical notification.
+        expected_final_state: >
+          Preference saved with is_enabled=False; medium notification skipped;
+          critical notification delivered; email dispatched.
+    negative_tests:
+      - scenario: >
+          User disables module but staff sends with invalid priority string.
+        expected_final_state: >
+          Serializer rejects with 400; no notification delivered regardless of
+          preference.
+    exit_tests:
+      - scenario: >
+          User toggles module off then toggles it back on; staff sends
+          medium-priority notification.
+        expected_final_state: >
+          Preference is_enabled=True restored; notification delivered normally.

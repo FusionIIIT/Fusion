@@ -1,0 +1,126 @@
+use_cases:
+  - id: UC-NT-01
+    name: Register Notification Event Type
+    actor: External Fusion Module (System Actor)
+    description: >
+      Other modules (MMS, Academics, etc.) must register their specific events
+      (e.g., "Bill_Generated") with NAM before they can send alerts.
+    preconditions: The external module is a registered component of the Fusion ERP.
+    main_flow: >
+      1) External module sends event registration data (Event Name, Default
+      Priority). 2) NAM validates the event type and assigns a unique Event_ID.
+      3) NAM maps the event to a standard notification template.
+    postconditions: The external module is now authorized to trigger this notification.
+    happy_paths:
+      - scenario: >
+          Module registers event with Event Name and Default Priority; NAM
+          validates and returns unique Event_ID.
+        preconditions: External module is a registered Fusion component
+        input_action: POST /api/notifications/event-types/register/ with valid payload
+        expected_result: 201 Created; response contains event_id (UUID) and is_active=true
+    alternate_paths:
+      - scenario: >
+          Module registers event with critical default priority (emergency
+          alerts route to email template).
+        preconditions: External module is authorized
+        input_action: POST register/ with default_priority=critical
+        expected_result: 201 Created; event stored with default_priority=critical
+    exception_paths:
+      - scenario: Attempt to register event for a module name not in ModuleName.choices
+        preconditions: External module is authorized
+        input_action: POST register/ with module="NonExistentModule"
+        expected_result: 400 Bad Request; module field rejected
+
+  - id: UC-NT-02
+    name: Publish System-Generated Notification (API Trigger)
+    actor: External Fusion Module (System Actor)
+    description: >
+      An external module triggers an automated alert to a specific user via
+      the NAM API.
+    preconditions: Event Type is registered; target User_ID exists in Fusion.
+    main_flow: >
+      1) External module calls NAM API with Event_ID, User_ID, Message_Content,
+      Deep_Link. 2) NAM resolves recipient preferences (e.g., email or
+      dashboard). 3) NAM records the notification in the central database.
+      4) NAM pushes the alert to the Global Navbar Tray in real-time.
+    postconditions: User receives a visual alert on the constant navbar bell icon.
+    happy_paths:
+      - scenario: >
+          Module triggers valid Event_ID for existing User_ID; notification is
+          recorded and delivered to the navbar tray.
+        preconditions: Event Type registered; recipient exists; no duplicate within 60s
+        input_action: POST /api/notifications/trigger/ with event_id + recipient_username
+        expected_result: 201 Created; notification stored and dispatched
+    alternate_paths:
+      - scenario: Trigger with a Deep_Link so the recipient can follow the alert to the source module.
+        preconditions: Event Type registered
+        input_action: POST trigger/ with deep_link="/leave/status/"
+        expected_result: 201 Created; notify.send is called with url=deep_link
+    exception_paths:
+      - scenario: Trigger with an unregistered Event_ID
+        preconditions: No such Event Type exists in the registry
+        input_action: POST trigger/ with random UUID
+        expected_result: 404 Not Found; no notification dispatched
+
+  - id: UC-NT-03
+    name: Create & Broadcast Manual Announcement
+    actor: Authorized Sender (Administrative Role)
+    description: >
+      An admin manually drafts and sends a broadcast to a specific group of
+      users.
+    preconditions: Admin is authenticated and authorized.
+    main_flow: >
+      1) Admin logs into the NAM portal and drafts a message. 2) Admin selects
+      a target audience (e.g., "All 4th Year B.Tech"). 3) Admin sets an
+      Expiry Date for the announcement. 4) NAM fetches the recipient list from
+      the Fusion RBAC module. 5) NAM publishes the announcement to all
+      resolved users' dashboards.
+    postconditions: All targeted users see the announcement on their dashboard until the expiry date.
+    happy_paths:
+      - scenario: >
+          Admin drafts announcement with future expiry date and broadcasts to
+          all users; all resolved recipients see it on their dashboard.
+        preconditions: Authenticated admin; audience=all; valid expiry
+        input_action: POST /api/notifications/announcements/broadcast/
+        expected_result: 201 Created; Announcement stored; fan-out performed
+    alternate_paths:
+      - scenario: >
+          Admin targets a specific designation group (e.g., "HOD (CSE)") using
+          Fusion RBAC to resolve recipients.
+        preconditions: Authenticated admin; audience_type=group
+        input_action: POST broadcast/ with audience_value="HOD (CSE)"
+        expected_result: 201 Created; only HOD (CSE) user receives the announcement
+    exception_paths:
+      - scenario: Admin supplies an invalid audience type in the payload
+        preconditions: Authenticated admin
+        input_action: POST broadcast/ with audience_type="mars"
+        expected_result: 400 Bad Request; error enumerates valid audience types
+
+  - id: UC-NT-04
+    name: Interact with Global Notification Tray
+    actor: Recipient (Student / Staff / Faculty)
+    description: >
+      The user views and manages notifications via the constant top navbar.
+    preconditions: User is authenticated in Fusion ERP.
+    main_flow: >
+      1) User clicks the Bell Icon on the global Fusion navbar. 2) NAM fetches
+      the latest unread notifications. 3) User marks an alert as "Read" or
+      clicks the message to follow the Deep Link to the source module.
+    postconditions: The unread count is updated across the user's session.
+    happy_paths:
+      - scenario: >
+          User clicks the bell icon; NAM returns the latest notifications
+          (paginated) with the unread count.
+        preconditions: Authenticated user
+        input_action: GET /api/notifications/?page=1&page_size=10
+        expected_result: 200 OK; notifications list + pagination metadata
+    alternate_paths:
+      - scenario: User clicks a single notification and marks it read
+        preconditions: User has an unread notification
+        input_action: PATCH /api/notifications/{id}/mark-read/
+        expected_result: 200 OK; unread flag cleared in DB
+    exception_paths:
+      - scenario: Unauthenticated visitor tries to view notifications
+        preconditions: No auth token
+        input_action: GET /api/notifications/ without Authorization header
+        expected_result: 401/403 denied; no data leaked

@@ -1,5 +1,10 @@
 from django.apps import AppConfig
 
 
-class NotificationsExtensionConfig(AppConfig):
-    name = 'applications.notifications_extension'
+class NotificationConfig(AppConfig):
+    name = "applications.notifications_extension"
+    label = "notifications_extension"
+    verbose_name = "Notification"
+
+    def ready(self):
+        pass

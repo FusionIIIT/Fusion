@@ -1,0 +1,40 @@
+Test ID,Source Type,Source ID,Expected Result,Actual Result,Status,Evidence,Tester
+UC-NT-01-AP-01,UC,UC-NT-01,201 Created; event stored with priority=critical,201 Created received; priority persisted correctly,Pass,default_priority=critical,Claude_Opus_4.6
+UC-NT-01-EX-01,UC,UC-NT-01,400 Bad Request with module error,"400 received; body={'error': {'module': [ErrorDetail(string='""NonExistentModule"" is not a valid choice.', code='invalid_choice')]}}",Pass,Validation at serializer level blocked bad module,Claude_Opus_4.6
+UC-NT-01-HP-01,UC,UC-NT-01,201 Created; event_id + is_active=true returned,201 Created received; event_type stored with UUID,Pass,event_id=e43bab82-9b76-4965-9a3a-3c1925b055c3,Claude_Opus_4.6
+UC-NT-02-AP-01,UC,UC-NT-02,201 Created; url kwarg in notify.send matches,201 received; url forwarded correctly,Pass,notify.send kwargs.url=/academic/timetable,Claude_Opus_4.6
+UC-NT-02-EX-01,UC,UC-NT-02,404 Not Found; no notification dispatched,"404 received; body={'error': ""No active event type found with event_id '00000000-0000-0000-0000-000000000000'.""}",Pass,Service raised NotificationNotFound,Claude_Opus_4.6
+UC-NT-02-HP-01,UC,UC-NT-02,201 Created; notify.send called once,201 received; service dispatched notification,Pass,notify.send invoked; recipient=nam_student,Claude_Opus_4.6
+UC-NT-03-AP-01,UC,UC-NT-03,201 Created; audience scoped to the designation,201 received; announcement stored,Pass,audience_type=group routed through _resolve_audience(),Claude_Opus_4.6
+UC-NT-03-EX-01,UC,UC-NT-03,400 Bad Request; error details,"400 received; body={'error': {'audience_type': [ErrorDetail(string='""mars"" is not a valid choice.', code='invalid_choice')]}}",Pass,Serializer rejected invalid AudienceType,Claude_Opus_4.6
+UC-NT-03-HP-01,UC,UC-NT-03,201 Created; announcement stored; fan-out performed,201 received; fan-out count=3,Pass,Announcement record + notify.send invocations,Claude_Opus_4.6
+UC-NT-04-AP-01,UC,UC-NT-04,200 OK; unread flag cleared in DB,200 OK; note.unread=False after refresh,Pass,notification_id=1,Claude_Opus_4.6
+UC-NT-04-EX-01,UC,UC-NT-04,401/403 denied,Got 403,Pass,DRF IsAuthenticated returned 401/403,Claude_Opus_4.6
+UC-NT-04-HP-01,UC,UC-NT-04,200 OK; notifications + pagination metadata,200 OK; pagination block returned,Pass,"pagination={'page': 1, 'page_size': 10, 'total': 0, 'total_pages': 0}",Claude_Opus_4.6
+BR-NT-01-I-01,BR,BR-NT-01,400 Bad Request,"400 received; body={'error': {'module': [ErrorDetail(string='""RogueModule"" is not a valid choice.', code='invalid_choice')]}}",Pass,Central store protected from unlisted modules,Claude_Opus_4.6
+BR-NT-01-V-01,BR,BR-NT-01,201; notify.send invoked once (central store),201 received; single notify.send call,Pass,No parallel module-owned store written,Claude_Opus_4.6
+BR-NT-02-I-01,BR,BR-NT-02,Exactly one NotificationBell.jsx file,Found 1 files => ['NotificationBell.jsx'],Pass,Single source of truth enforced by convention,Claude_Opus_4.6
+BR-NT-02-V-01,BR,BR-NT-02,Component file present and referenced in header,Found bell at NotificationBell.jsx; imported in ['header.jsx'],Pass,1 files reference NotificationBell,Claude_Opus_4.6
+BR-NT-03-I-01,BR,BR-NT-03,403 Forbidden,"403 received; body={'detail': ErrorDetail(string='You do not have permission to perform this action.', code='permission_denied')}",Pass,DRF IsAdminUser rejected non-staff,Claude_Opus_4.6
+BR-NT-03-V-01,BR,BR-NT-03,201 Created,201 received,Pass,DRF IsAdminUser permission passed,Claude_Opus_4.6
+BR-NT-04-I-01,BR,BR-NT-04,First 201; second 4xx with dedup message,"First=201, Second=429",Pass,DuplicateNotification raised by service,Claude_Opus_4.6
+BR-NT-04-V-01,BR,BR-NT-04,Both calls return 201,"First=201, Second=201",Pass,Cooldown window respected only when < 60s,Claude_Opus_4.6
+BR-NT-05-I-01,BR,BR-NT-05,notify.send is NOT called,notify.send assert_not_called passed,Pass,BR-NT-06 opt-out honored for non-critical,Claude_Opus_4.6
+BR-NT-05-V-01,BR,BR-NT-05,notify.send called despite opt-out,notify.send invoked exactly once,Pass,Service honored BR-NT-05 override,Claude_Opus_4.6
+BR-NT-06-I-01,BR,BR-NT-06,Active list does NOT contain the stale announcement,Returned titles: [],Pass,expiry_date__gte=today filter enforced,Claude_Opus_4.6
+BR-NT-06-V-01,BR,BR-NT-06,Active list contains the announcement,Returned titles: ['Active announcement'],Pass,selectors.get_active_announcements filter passes,Claude_Opus_4.6
+BR-NT-07-I-01,BR,BR-NT-07,201; zero notify.send calls,201 received; notify.send never invoked,Pass,Empty queryset => zero fan-out,Claude_Opus_4.6
+BR-NT-07-V-01,BR,BR-NT-07,"_resolve_audience called with ('group', value)",Called once with correct args,Pass,BR-NT-07 wiring confirmed,Claude_Opus_4.6
+BR-NT-08-I-01,BR,BR-NT-08,401/403; Announcement count unchanged,Got 403; row count still 0,Pass,No audit row created for unauthorized attempt,Claude_Opus_4.6
+BR-NT-08-V-01,BR,BR-NT-08,Announcement has sender + created_at populated,"sender_id=36, created_at=2026-04-20 10:50:49.532143+00:00",Pass,Database row audited with Author_ID and Timestamp,Claude_Opus_4.6
+BR-NT-09-I-01,BR,BR-NT-09,404 Not Found; no archive record created,404 received; archive count unchanged (0),Pass,NotificationNotFound mapped to 404,Claude_Opus_4.6
+BR-NT-09-V-01,BR,BR-NT-09,ArchivedNotification row created; DB row not deleted,Both assertions pass,Pass,Soft-delete semantics confirmed,Claude_Opus_4.6
+WF-NT-01-E2E-01,WF,WF-NT-01,Event stored; notify.send called; list returns 200,All three steps returned expected codes,Pass,event_id=83ac0ea9-1aef-4b06-8e14-fda55e3c2163,Claude_Opus_4.6
+WF-NT-01-EXIT-01,WF,WF-NT-01,404; workflow exits cleanly without side-effects,404 received,Pass,Workflow gracefully exits,Claude_Opus_4.6
+WF-NT-01-NEG-01,WF,WF-NT-01,403 Forbidden; event unchanged,403 received; event still exists,Pass,BR-NT-03 RBAC enforced mid-workflow,Claude_Opus_4.6
+WF-NT-02-E2E-01,WF,WF-NT-02,201; notify.send called for each recipient,201; fan-out count=1,Pass,WF-NT-02 E2E complete,Claude_Opus_4.6
+WF-NT-02-EXIT-01,WF,WF-NT-02,201; zero fan-out,201 received; no notify.send calls,Pass,Workflow exits without errors,Claude_Opus_4.6
+WF-NT-02-NEG-01,WF,WF-NT-02,403 Forbidden,403 received,Pass,RBAC blocks non-admins,Claude_Opus_4.6
+WF-NT-03-E2E-01,WF,WF-NT-03,medium skipped; critical delivered,First assert_not_called then assert_called both pass,Pass,BR-NT-05 + BR-NT-06 interaction verified,Claude_Opus_4.6
+WF-NT-03-EXIT-01,WF,WF-NT-03,notify.send called once after re-enable,assert_called_once passed,Pass,Preference lifecycle verified,Claude_Opus_4.6
+WF-NT-03-NEG-01,WF,WF-NT-03,400 Bad Request,"400 received; body={'error': {'priority': [ErrorDetail(string='""ultra_mega"" is not a valid choice.', code='invalid_choice')]}}",Pass,Serializer enum validation works,Claude_Opus_4.6
