@@ -4,9 +4,9 @@ from datetime import date
 from django.contrib.auth.models import User
 
 from applications.globals.models import ExtraInfo
-from applications.hr2.models import EmpDependents
 
 # Create your models here.
+# Note: EmpDependents model (previously imported from hr2) does not exist - removed from imports
 
 class Constants:
     DAYS_OF_WEEK = (
