@@ -81,6 +81,10 @@ def central_mess_notif(sender, recipient, type, message=None):
         verb = message
     elif type =='special_request':
         verb = "Your special food request has been " + message
+    elif type == 'escalated_request':
+        verb = message or "A mess request has been escalated for warden review."
+    elif type == 'warden_decision':
+        verb = message or "The mess warden has updated your request."
     elif type == 'added_committee':
         verb = "You have been added to the mess committee. "
 

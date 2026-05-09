@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.urls import re_path as url
 from rest_framework.urlpatterns import format_suffix_patterns
 from applications.gymkhana.api.views import Voting_Polls
 from applications.gymkhana.api.views import clubname,Club_Details,club_events,club_budgetinfo,Fest_Budget,club_report,Registraion_form

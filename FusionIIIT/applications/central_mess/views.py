@@ -1079,7 +1079,9 @@ def download_bill_mess(request):
     context = {
         'bill': bill_object,
     }
-    return render_to_pdf('messModule/billpdfexport.html', context)
+    
+    # Encrypt the bill PDF with the logged-in user's username (roll number/ID)
+    return render_to_pdf('messModule/billpdfexport.html', context, password=user.username)
 
 
 def get_nonveg_order(request):
@@ -1162,3 +1164,6 @@ def add_leave_manager(request):
         central_mess_notif(request.user, student.id.user, 'leave_request', message)
         add_obj.save()
     return HttpResponseRedirect('/mess')
+
+
+from .api_views import vacation_survey_api, vacation_survey_response_api
