@@ -1,0 +1,356 @@
+workflows:
+  - id: "DBS-WF-001"
+    title: "User Login Workflow"
+    description: "User enters credentials → authentication → token issued → dashboard loads"
+    actors: "Unauthenticated user"
+    preconditions: "User has valid credentials, not currently logged in"
+    postconditions: "User authenticated, session/token active, dashboard accessible"
+
+    e2e_tests:
+      - scenario: "Complete login flow: credential entry to dashboard"
+        steps:
+          - "User accesses /accounts/login"
+          - "User enters email (student001@iiitdmj.ac.in) and password"
+          - "Frontend POST to /api/auth/login"
+          - "Backend authenticates with allauth"
+          - "Token generated and returned"
+          - "Token stored in localStorage"
+          - "Frontend redirects to /dashboard"
+          - "Dashboard loads with role-appropriate content"
+        expected_final_state: "User authenticated, dashboard visible, user.role set in Redux"
+        final_check: "User can access /api/profile without 401"
+
+    negative_tests:
+      - scenario: "Login fails with invalid password"
+        steps:
+          - "User enters valid email, WRONG password"
+          - "Frontend POST to /api/auth/login"
+          - "Backend rejects authentication"
+        expected_final_state: "HTTP 401, token NOT issued, no redirect"
+        expected_behavior: "User remains on login page with error message"
+
+      - scenario: "Login fails with non-iiitdmj email"
+        steps:
+          - "User attempts to login with student001@gmail.com"
+          - "Domain validation fails at backend"
+        expected_final_state: "HTTP 400, invalid domain error"
+        expected_behavior: "User sees domain validation error"
+
+  - id: "DBS-WF-002"
+    title: "Submit, View, Update Feedback Workflow"
+    description: "User submits feedback → feedback stored → user/others view → user edits → updated"
+    actors: "Authenticated users"
+    preconditions: "Multiple users registered, at least one logged in"
+    postconditions: "Feedback lifecycle complete: create → read → update"
+
+    e2e_tests:
+      - scenario: "Complete feedback lifecycle"
+        steps:
+          - "User A (student) logs in"
+          - "User A navigates to feedback page"
+          - "User A submits feedback: rating=4, text=Good system"
+          - "Feedback record created in DB, OneToOne enforced"
+          - "User A views feedback page, sees average rating updated"
+          - "User B logs in, tries to submit feedback: rating=5"
+          - "Feedback created for User B (separate record)"
+          - "User A views feedback, sees User B's feedback BUT NOT own"
+          - "User A clicks edit on own feedback"
+          - "User A changes rating to 5"
+          - "Feedback updated (not duplicated)"
+          - "Both users see updated average rating"
+        expected_final_state: "Feedback table: A rating=5, B rating=5, average=5"
+        final_check: "A cannot see own feedback in feed, sees B's feedback"
+
+    negative_tests:
+      - scenario: "Duplicate feedback submit detected"
+        steps:
+          - "User already has feedback rating=3"
+          - "User tries to submit NEW feedback same session"
+          - "Frontend sends POST /api/feedback again"
+        expected_final_state: "HTTP 409 conflict or handled as update"
+        expected_behavior: "No second feedback created, existing record updated instead"
+
+      - scenario: "User submits feedback with invalid rating"
+        steps:
+          - "User submits feedback: rating=10"
+          - "Validation fails at backend"
+        expected_final_state: "HTTP 400, constraint error"
+        expected_behavior: "Feedback NOT created, error shown"
+
+  - id: "DBS-WF-003"
+    title: "Report and View Issue Workflow"
+    description: "User reports issue → issue stored → other users view → users support"
+    actors: "Issue reporter, issue viewers"
+    preconditions: "Multiple users, one module has issues"
+    postconditions: "Issue created, visible to others, support tracked"
+
+    e2e_tests:
+      - scenario: "Complete issue reporting and viewing"
+        steps:
+          - "User A logs in"
+          - "User A navigates to issue reporting"
+          - "User A fills form: title=Login fails, text=..., module=central_mess, type=bug_report"
+          - "User A uploads screenshot.png"
+          - "Image validated (size, format, corruption)"
+          - "Issue and image stored in DB"
+          - "User B logs in"
+          - "User B views issue list, sees User A's issue"
+          - "User B clicks issue to view details and image"
+          - "Issue details + image displayed"
+          - "User B clicks support button"
+          - "User B added to issue.support"
+          - "Support count = 1"
+          - "User C also supports, count = 2"
+          - "Issue list shows support count = 2"
+        expected_final_state: "Issue created, 2 supporters tracked, images accessible"
+        final_check: "Issue.images.count()=1, Issue.support.count()=2"
+
+    negative_tests:
+      - scenario: "Upload corrupted image with issue"
+        steps:
+          - "User submits issue with corrupted_image.jpg (invalid bytes)"
+          - "PIL validation fails"
+        expected_final_state: "Issue NOT created (image upload failed)"
+        expected_behavior: "HTTP 400, image validation error"
+
+      - scenario: "File size limit exceeded"
+        steps:
+          - "User uploads image > 5MB"
+        expected_final_state: "HTTP 400, size limit error"
+        expected_behavior: "Image rejected, issue create aborted"
+
+  - id: "DBS-WF-004"
+    title: "Edit and Close Issue Workflow"
+    description: "Issue owner edits issue → non-owner cannot edit → closed issue is read-only"
+    actors: "Issue owner, other users"
+    preconditions: "Open issue exists, owned by User A"
+    postconditions: "Issue updated, then closed and locked"
+
+    e2e_tests:
+      - scenario: "Issue owner edits, then issue is closed"
+        steps:
+          - "User A (issue owner) views own issue"
+          - "User A clicks edit, changes title to Updated Title"
+          - "PUT /api/issues/<id> succeeds"
+          - "Issue title updated, timestamp refreshed"
+          - "Admin/moderator marks issue closed: closed=True"
+          - "User A (owner) tries to edit again"
+          - "Edit button disabled in UI"
+          - "User A attempts PUT /api/issues/<id>"
+        expected_final_state: "HTTP 403, issue is read-only"
+        final_check: "Issue.closed=True, no edit allowed"
+
+    negative_tests:
+      - scenario: "Non-owner attempts to edit issue"
+        steps:
+          - "User B views issue by User A"
+          - "User B tries to modify title"
+          - "PUT /api/issues/<id> as User B"
+        expected_final_state: "HTTP 403, forbidden"
+        expected_behavior: "Issue NOT modified, User B lacking ownership"
+
+      - scenario: "Owner cannot edit after close"
+        steps:
+          - "Issue.closed set to True"
+          - "Owner attempts PUT /api/issues/<id>"
+        expected_final_state: "HTTP 403, read-only"
+        expected_behavior: "Closed issue immutable regardless of owner"
+
+  - id: "DBS-WF-005"
+    title: "Support Toggle and Withdrawal Workflow"
+    description: "User supports issue → count incremented → user withdraws → count decremented"
+    actors: "Issue supporters"
+    preconditions: "Issue exists, multiple users present"
+    postconditions: "Support state toggled, counts maintained"
+
+    e2e_tests:
+      - scenario: "Multi-user support toggle"
+        steps:
+          - "Issue created by User X, support count = 0"
+          - "User A: POST /api/issues/<id>/support"
+          - "User A added to support, count = 1"
+          - "User B: POST same endpoint"
+          - "User B added, count = 2"
+          - "User A: POST again (toggle OFF)"
+          - "User A removed, count = 1"
+          - "User C: POST support"
+          - "Count = 2"
+          - "User B: DELETE /api/issues/<id>/support"
+          - "User B removed, count = 1"
+        expected_final_state: "Issue.support = {A, C}, count = 1... wait, A is OFF. So {C}, count = 1"
+        final_check: "Support accurately reflects toggles"
+
+    negative_tests:
+      - scenario: "Issue owner cannot support own issue"
+        steps:
+          - "Issue created by User X"
+          - "User X: POST /api/issues/<id>/support"
+        expected_final_state: "HTTP 400, owner cannot support self"
+        expected_behavior: "User X NOT added to support"
+
+      - scenario: "Duplicate support (idempotency)"
+        steps:
+          - "User A already in support"
+          - "User A: POST /api/issues/<id>/support again"
+        expected_final_state: "HTTP 400 or idempotent 200 (no duplicate)"
+        expected_behavior: "Support count unchanged"
+
+  - id: "DBS-WF-006"
+    title: "User Search Workflow"
+    description: "User enters search query → validation → results fetched → displayed"
+    actors: "Authenticated users"
+    preconditions: "Multiple users exist in database"
+    postconditions: "Search results displayed or validation error shown"
+
+    e2e_tests:
+      - scenario: "Valid search with results"
+        steps:
+          - "User navigates to search"
+          - "User types 'john' (4 chars, >= 3 minimum)"
+          - "Frontend validates length, sends GET /api/search?q=john"
+          - "Backend queries User.objects.filter(username__icontains='john')"
+          - "Results returned: [User(john001), User(johnny02)]"
+          - "Frontend displays matching users with profiles"
+        expected_final_state: "HTTP 200, matching users displayed"
+        final_check: "Results include both john001 and johnny02"
+
+    negative_tests:
+      - scenario: "Search with minimum length violation"
+        steps:
+          - "User types 'ab' (2 chars, < 3)"
+          - "Frontend validation fails"
+        expected_final_state: "User sees 'Minimum 3 characters required'"
+        expected_behavior: "No backend call made"
+
+      - scenario: "Backend minimum check"
+        steps:
+          - "Assume frontend bypassed or curl directly"
+          - "GET /api/search?q=xy"
+          - "Backend validation checks length"
+        expected_final_state: "HTTP 400, minimum length error"
+        expected_behavior: "Search not processed"
+
+  - id: "DBS-WF-007"
+    title: "Authentication Bootstrap Workflow"
+    description: "Frontend loads → checks token validity → resolves role → loads dashboard with permissions"
+    actors: "Newly visiting user (token in localStorage)"
+    preconditions: "Valid token exists in localStorage, browser refreshed"
+    postconditions: "User role resolved, accessible modules determined, dashboard ready"
+
+    e2e_tests:
+      - scenario: "Token refresh and role resolution on page load"
+        steps:
+          - "Page loads, checks localStorage for token"
+          - "ValidateAuth component validates token payload"
+          - "Token decoded, user_type extracted"
+          - "Check Redux for user.role"
+          - "If missing, fetch /api/dashboard/context"
+          - "Backend returns user.user_type and accessible modules"
+          - "Redux dispatch setUser with role"
+          - "Redux dispatch setAccessibleModules"
+          - "Dashboard renders with role-appropriate layout"
+          - "Navigation shows permitted modules only"
+        expected_final_state: "User authenticated, role set, modules visible"
+        final_check: "/api/profile accessible (no 401)"
+
+    negative_tests:
+      - scenario: "Invalid or expired token on boot"
+        steps:
+          - "localStorage has expired token"
+          - "ValidateAuth attempts to use it"
+          - "Backend /api/dashboard/context returns 401"
+          - "Frontend catches error"
+        expected_final_state: "User redirected to login"
+        expected_behavior: "Token cleared, session restarted"
+
+      - scenario: "Token payload missing role field"
+        steps:
+          - "Token valid but payload incomplete"
+          - "ValidateAuth detects missing user.role"
+          - "Console logs error"
+        expected_final_state: "User sees error message or taken to login"
+        expected_behavior: "Graceful error handling, not crash"
+
+  - id: "DBS-WF-008"
+    title: "Profile View and Edit Workflow"
+    description: "User views profile → navigates to edit → updates fields → changes saved"
+    actors: "Authenticated users"
+    preconditions: "User logged in, viewing own profile"
+    postconditions: "Profile updated, changes persisted"
+
+    e2e_tests:
+      - scenario: "View and edit own profile"
+        steps:
+          - "User navigates to /profile"
+          - "GET /api/profile returns user data (name, DOB, phone, address, about)"
+          - "Age calculated from DOB, displayed"
+          - "User clicks edit button"
+          - "Form populated with current data"
+          - "User changes phone_no to 9876543210"
+          - "User changes address to New Address"
+          - "User clicks save"
+          - "PUT /api/profile_update with new values"
+          - "Backend validates phone format, address length"
+          - "Updates ExtraInfo record"
+          - "Returns updated profile"
+          - "Frontend shows success message"
+          - "Profile reflects new values"
+        expected_final_state: "ExtraInfo.phone_no=9876543210, address=New Address"
+        final_check: "Subsequent GET /api/profile returns updated values"
+
+    negative_tests:
+      - scenario: "Edit with invalid phone format"
+        steps:
+          - "User enters phone_no='ABC123' (invalid)"
+          - "Frontend validation (if any) passes or ignored"
+          - "PUT /api/profile_update sent"
+          - "Backend validation fails"
+        expected_final_state: "HTTP 400, validation error"
+        expected_behavior: "Profile NOT updated, error shown"
+
+      - scenario: "User attempts to edit other's profile"
+        steps:
+          - "User B tries to PUT /api/profile_update for User A"
+        expected_final_state: "HTTP 403, forbidden"
+        expected_behavior: "Profile NOT modified"
+
+  - id: "DBS-WF-009"
+    title: "Logout and Session Cleanup Workflow"
+    description: "User clicks logout → token deleted → local state cleared → session ended"
+    actors: "Authenticated users"
+    preconditions: "User logged in with active token"
+    postconditions: "Session fully cleared, redirect to login"
+
+    e2e_tests:
+      - scenario: "Complete logout lifecycle"
+        steps:
+          - "User authenticated, token in localStorage"
+          - "User clicks logout button in navigation"
+          - "Frontend: POST /api/auth/logout with token"
+          - "Backend: TokenAuth validates token"
+          - "Backend: Delete token from Token table"
+          - "Backend: Return 200 OK"
+          - "Frontend: Clear localStorage token"
+          - "Frontend: Clear Redux user state"
+          - "Frontend: Redirect to /accounts/login"
+          - "User on login page, no redirect loops"
+        expected_final_state: "Token deleted, localStorage cleared, user session ended"
+        final_check: "Attempt /api/profile returns 401"
+
+    negative_tests:
+      - scenario: "Logout with invalid/expired token"
+        steps:
+          - "User token already expired or invalid"
+          - "POST /api/auth/logout"
+          - "Backend token lookup fails"
+        expected_final_state: "HTTP 401 or 204 (depending on implementation)"
+        expected_behavior: "Frontend still clears state and redirects to login"
+
+      - scenario: "User refresh after logout"
+        steps:
+          - "User logged out, token deleted"
+          - "User navigates back (browser back button)"
+          - "Cached page might show"
+          - "Any API call attempts"
+        expected_final_state: "HTTP 401, user forced to login"
+        expected_behavior: "ValidateAuth detects no valid token, redirect to login"

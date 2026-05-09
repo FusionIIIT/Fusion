@@ -7,18 +7,16 @@ from django.utils import timezone
 
 class Constants:
     # Class for various choices on the enumerations
-    SEX_CHOICES = (
-        ('M', 'Male'),
-        ('F', 'Female'),
-        ('O', 'Other')
-    )
+    class SexChoices(models.TextChoices):
+        MALE = 'M', 'Male'
+        FEMALE = 'F', 'Female'
+        OTHER = 'O', 'Other'
 
-    USER_CHOICES = (
-        ('student', 'student'),
-        ('staff', 'staff'),
-        ('compounder', 'compounder'),
-        ('faculty', 'faculty')
-    )
+    class UserChoices(models.TextChoices):
+        STUDENT = 'student', 'student'
+        STAFF = 'staff', 'staff'
+        COMPOUNDER = 'compounder', 'compounder'
+        FACULTY = 'faculty', 'faculty'
 
     RATING_CHOICES = (
         (1, 1),
@@ -28,47 +26,51 @@ class Constants:
         (5, 5),
     )
 
-    MODULES = (
-        ("academic_information", "Academic"),
-        ("central_mess", "Central Mess"),
-        ("complaint_system", "Complaint System"),
-        ("eis", "Employee Imformation System"),
-        ("file_tracking", "File Tracking System"),
-        ("health_center", "Health Center"),
-        ("leave", "Leave"),
-        ("online_cms", "Online Course Management System"),
-        ("placement_cell", "Placement Cell"),
-        ("scholarships", "Scholarships"),
-        ("visitor_hostel", "Visitor Hostel"),
-        ("other", "Other"),
-    )
+    class IssueModuleChoices(models.TextChoices):
+        ACADEMIC_INFORMATION = 'academic_information', 'Academic'
+        CENTRAL_MESS = 'central_mess', 'Central Mess'
+        COMPLAINT_SYSTEM = 'complaint_system', 'Complaint System'
+        EIS = 'eis', 'Employee Imformation System'
+        FILE_TRACKING = 'file_tracking', 'File Tracking System'
+        HEALTH_CENTER = 'health_center', 'Health Center'
+        LEAVE = 'leave', 'Leave'
+        ONLINE_CMS = 'online_cms', 'Online Course Management System'
+        PLACEMENT_CELL = 'placement_cell', 'Placement Cell'
+        SCHOLARSHIPS = 'scholarships', 'Scholarships'
+        VISITOR_HOSTEL = 'visitor_hostel', 'Visitor Hostel'
+        OTHER = 'other', 'Other'
 
-    ISSUE_TYPES = (
-        ("feature_request", "Feature Request"),
-        ("bug_report", "Bug Report"),
-        ("security_issue", "Security Issue"),
-        ("ui_issue", "User Interface Issue"),
-        ("other", "Other than the ones listed"),
-    )
+    class IssueTypeChoices(models.TextChoices):
+        FEATURE_REQUEST = 'feature_request', 'Feature Request'
+        BUG_REPORT = 'bug_report', 'Bug Report'
+        SECURITY_ISSUE = 'security_issue', 'Security Issue'
+        UI_ISSUE = 'ui_issue', 'User Interface Issue'
+        OTHER = 'other', 'Other than the ones listed'
 
-    TITLE_CHOICES = (
-        ("Mr.", "Mr."),
-        ("Mrs.", "Mrs."),
-        ("Ms.", "Ms."),
-        ("Dr.", "Dr."),
-        ("Professor", "Prof."),
-        ("Shreemati", "Shreemati"),
-        ("Shree", "Shree")
-    )
+    class TitleChoices(models.TextChoices):
+        MR = 'Mr.', 'Mr.'
+        MRS = 'Mrs.', 'Mrs.'
+        MS = 'Ms.', 'Ms.'
+        DR = 'Dr.', 'Dr.'
+        PROFESSOR = 'Professor', 'Prof.'
+        SHREEMATI = 'Shreemati', 'Shreemati'
+        SHREE = 'Shree', 'Shree'
 
-    DESIGNATIONS = (
-        ('academic', 'Academic Designation'),
-        ('administrative', 'Administrative Designation'),
-    )
-    USER_STATUS = (
-        ("NEW", "NEW"),
-        ("PRESENT", "PRESENT"),
-    )
+    class DesignationChoices(models.TextChoices):
+        ACADEMIC = 'academic', 'Academic Designation'
+        ADMINISTRATIVE = 'administrative', 'Administrative Designation'
+
+    class UserStatusChoices(models.TextChoices):
+        NEW = 'NEW', 'NEW'
+        PRESENT = 'PRESENT', 'PRESENT'
+
+    SEX_CHOICES = SexChoices.choices
+    USER_CHOICES = UserChoices.choices
+    MODULES = IssueModuleChoices.choices
+    ISSUE_TYPES = IssueTypeChoices.choices
+    TITLE_CHOICES = TitleChoices.choices
+    DESIGNATIONS = DesignationChoices.choices
+    USER_STATUS = UserStatusChoices.choices
 
 
 class Designation(models.Model):
@@ -88,7 +90,10 @@ class Designation(models.Model):
         max_length=100, default='Computer Science and Engineering')
 
     type = models.CharField(
-        max_length=30, default='academic', choices=Constants.DESIGNATIONS)
+        max_length=30,
+        default=Constants.DesignationChoices.ACADEMIC,
+        choices=Constants.DesignationChoices.choices,
+    )
 
     def __str__(self):
         return self.name
@@ -137,15 +142,24 @@ class ExtraInfo(models.Model):
     id = models.CharField(max_length=20, primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     title = models.CharField(
-        max_length=20, choices=Constants.TITLE_CHOICES, default='Dr.')
+        max_length=20,
+        choices=Constants.TitleChoices.choices,
+        default=Constants.TitleChoices.DR,
+    )
     sex = models.CharField(
-        max_length=2, choices=Constants.SEX_CHOICES, default='M')
+        max_length=2,
+        choices=Constants.SexChoices.choices,
+        default=Constants.SexChoices.MALE,
+    )
     date_of_birth = models.DateField(default=datetime.date(1970, 1, 1))
     user_status = models.CharField(
-        max_length=50, choices=Constants.USER_STATUS, default='PRESENT')
+        max_length=50,
+        choices=Constants.UserStatusChoices.choices,
+        default=Constants.UserStatusChoices.PRESENT,
+    )
     address = models.TextField(max_length=1000, default="")
     phone_no = models.BigIntegerField(null=True, default=9999999999)
-    user_type = models.CharField(max_length=20, choices=Constants.USER_CHOICES)
+    user_type = models.CharField(max_length=20, choices=Constants.UserChoices.choices)
     department = models.ForeignKey(
         DepartmentInfo, on_delete=models.CASCADE, null=True, blank=True)
     profile_picture = models.ImageField(
@@ -182,6 +196,12 @@ class HoldsDesignation(models.Model):
     designation = models.ForeignKey(
         Designation, related_name='designees', on_delete=models.CASCADE)
     held_at = models.DateTimeField(auto_now=True)
+
+    class HoldsDesignationQuerySet(models.QuerySet):
+        def with_user_department(self):
+            return self.select_related('user', 'working', 'designation', 'working__extrainfo__department')
+
+    objects = HoldsDesignationQuerySet.as_manager()
 
     class Meta:
         unique_together = [['user', 'designation'], ['working', 'designation']]
@@ -300,8 +320,8 @@ class Issue(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="reported_issues")
     report_type = models.CharField(
-        max_length=63, choices=Constants.ISSUE_TYPES)
-    module = models.CharField(max_length=63, choices=Constants.MODULES)
+        max_length=63, choices=Constants.IssueTypeChoices.choices)
+    module = models.CharField(max_length=63, choices=Constants.IssueModuleChoices.choices)
     closed = models.BooleanField(default=False)
     text = models.TextField()
     title = models.CharField(max_length=255)
@@ -310,33 +330,56 @@ class Issue(models.Model):
     timestamp = models.DateTimeField(auto_now=True)
     added_on = models.DateTimeField(auto_now_add=True)
 
+    class IssueQuerySet(models.QuerySet):
+        def with_user_department(self):
+            return self.select_related('user', 'user__extrainfo__department').prefetch_related('images', 'support')
+
+        def get_open_issues(self):
+            return self.with_user_department().filter(closed=False)
+
+        def get_closed_issues(self):
+            return self.with_user_department().filter(closed=True)
+
+    objects = IssueQuerySet.as_manager()
+
 
 """ End of feedback and bug report models"""
 
 
 
 class ModuleAccess(models.Model):
+    class ModuleChoices(models.TextChoices):
+        PROGRAM_AND_CURRICULUM = 'program_and_curriculum', 'Program and Curriculum'
+        COURSE_REGISTRATION = 'course_registration', 'Course Registration'
+        COURSE_MANAGEMENT = 'course_management', 'Course Management'
+        OTHER_ACADEMICS = 'other_academics', 'Other Academics'
+        SPACS = 'spacs', 'SPACS'
+        DEPARTMENT = 'department', 'Department'
+        DATABASE = 'database', 'Database'
+        EXAMINATIONS = 'examinations', 'Examinations'
+        HR = 'hr', 'HR'
+        IWD = 'iwd', 'IWD'
+        COMPLAINT_MANAGEMENT = 'complaint_management', 'Complaint Management'
+        FTS = 'fts', 'File Tracking System'
+        PURCHASE_AND_STORE = 'purchase_and_store', 'Purchase and Store'
+        RSPC = 'rspc', 'RSPC'
+        HOSTEL_MANAGEMENT = 'hostel_management', 'Hostel Management'
+        MESS_MANAGEMENT = 'mess_management', 'Mess Management'
+        GYMKHANA = 'gymkhana', 'Gymkhana'
+        PLACEMENT_CELL = 'placement_cell', 'Placement Cell'
+        VISITOR_HOSTEL = 'visitor_hostel', 'Visitor Hostel'
+        PHC = 'phc', 'PHC'
+
     designation = models.CharField(max_length=155)
-    program_and_curriculum = models.BooleanField(default=False)
-    course_registration = models.BooleanField(default=False)
-    course_management = models.BooleanField(default=False)
-    other_academics = models.BooleanField(default=False)
-    spacs = models.BooleanField(default=False)
-    department = models.BooleanField(default=False)
-    database = models.BooleanField(default=False)
-    examinations = models.BooleanField(default=False)
-    hr = models.BooleanField(default=False)
-    iwd = models.BooleanField(default=False)
-    complaint_management = models.BooleanField(default=False)
-    fts = models.BooleanField(default=False)
-    purchase_and_store = models.BooleanField(default=False)
-    rspc = models.BooleanField(default=False)
-    hostel_management = models.BooleanField(default=False)
-    mess_management = models.BooleanField(default=False)
-    gymkhana = models.BooleanField(default=False)
-    placement_cell = models.BooleanField(default=False)
-    visitor_hostel = models.BooleanField(default=False)
-    phc = models.BooleanField(default=False)
+    modules = models.ManyToManyField('Module', blank=True, related_name='designation_accesses')
+
+    def get_module_access_map(self):
+        access_map = {key: False for key, _ in ModuleAccess.ModuleChoices.choices}
+        enabled = set(self.modules.values_list('key', flat=True))
+        for module_key in enabled:
+            if module_key in access_map:
+                access_map[module_key] = True
+        return access_map
 
     def __str__(self):
         return self.designation
@@ -348,3 +391,14 @@ class PasswordResetTracker(models.Model):
 
     def __str__(self):
         return self.email
+
+
+class Module(models.Model):
+    key = models.CharField(max_length=64, unique=True)
+    label = models.CharField(max_length=128)
+
+    class Meta:
+        ordering = ['label']
+
+    def __str__(self):
+        return self.label

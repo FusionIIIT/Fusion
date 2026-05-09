@@ -1,12 +1,7 @@
 from django.contrib.auth import get_user_model
-from applications.academic_information.models import Student
-from applications.eis.api.views import profile as eis_profile
-from applications.globals.models import (HoldsDesignation,Designation)
-from applications.gymkhana.api.views import coordinator_club
-from applications.placement_cell.models import (Achievement, Course, Education,
-                                                Experience, Has, Patent,
-                                                Project, Publication, Skill)
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
+from django.http import Http404
+from django.db.models import Q
 
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
@@ -14,93 +9,81 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes,authentication_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 from django.http import JsonResponse
 
 
 from . import serializers
-from applications.globals.models import (ExtraInfo, Feedback, HoldsDesignation,
-                                         Issue, IssueImage, DepartmentInfo, ModuleAccess)
+from applications.globals.models import ExtraInfo, Issue, IssueImage, Feedback
 from .utils import get_and_authenticate_user
 from notifications.models import Notification
+from applications.globals.api.selectors import get_feedback_average_rating
+from .services import (
+    build_auth_payload,
+    build_login_payload,
+    build_student_profile_payload,
+    delete_profile_component,
+    parse_notification_id,
+    update_profile_from_payload,
+)
+from PIL import Image
 
 User = get_user_model()
+
+MAX_ISSUE_IMAGE_SIZE_BYTES = 5 * 1024 * 1024
+ALLOWED_ISSUE_IMAGE_TYPES = {"image/jpeg", "image/png", "image/gif"}
+
+
+def _validate_issue_image(uploaded_file):
+    if uploaded_file.size > MAX_ISSUE_IMAGE_SIZE_BYTES:
+        return False, "Image exceeds 5 MB size limit"
+
+    if uploaded_file.content_type not in ALLOWED_ISSUE_IMAGE_TYPES:
+        return False, "Unsupported image type"
+
+    try:
+        Image.open(uploaded_file).verify()
+        uploaded_file.seek(0)
+    except (OSError, ValueError):
+        return False, "Corrupted image file"
+
+    return True, ""
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login(request):
-    serializer = serializers.UserLoginSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    user = get_and_authenticate_user(**serializer.validated_data)
-    data = serializers.AuthUserSerializer(user).data
-    
-    desig = list(HoldsDesignation.objects.select_related('user','working','designation').all().filter(working = user).values_list('designation'))
-    b = [i for sub in desig for i in sub]
-    design = HoldsDesignation.objects.select_related('user','designation').filter(working=user)
+    payload = request.data.copy()
+    if 'username' not in payload and 'email' in payload:
+        payload['username'] = payload['email']
 
-    designation=[]
-                
-    if str(user.extrainfo.user_type) == "student":
-        designation.append(str(user.extrainfo.user_type))
-        
-    for i in design:
-        if str(i.designation) != str(user.extrainfo.user_type):
-            designation.append(str(i.designation))
-    
-    resp = {
-        'success' : 'True',
-        'message' : 'User logged in successfully',
-        'token' : data['auth_token'],
-        'designations':designation
-    }
+    serializer = serializers.UserLoginSerializer(data=payload)
+    serializer.is_valid(raise_exception=True)
+    try:
+        user = get_and_authenticate_user(**serializer.validated_data)
+    except ValidationError:
+        return Response({'error': 'Invalid credentials.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    data = serializers.AuthUserSerializer(user).data
+    resp = build_login_payload(user, data['auth_token'])
     return Response(data=resp, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 def logout(request):
-    request.user.auth_token.delete()
+    auth_token = getattr(request.user, 'auth_token', None)
+    if auth_token is not None:
+        auth_token.delete()
     resp = {
         'message' : 'User logged out successfully'
     }
     return Response(data=resp, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 def auth_view(request):
-    user=request.user
-    name = request.user.first_name +"_"+ request.user.last_name
-    roll_no = request.user.username
-
-    extra_info = get_object_or_404(ExtraInfo, user=user)
-    last_selected_role = extra_info.last_selected_role
-    
-    designation_list = list(HoldsDesignation.objects.all().filter(working = request.user).values_list('designation'))
-    designation_id = [designation for designations in designation_list for designation in designations]
-    designation_info = []
-    for id in designation_id :
-        name_ = get_object_or_404(Designation, id = id)
-        designation_info.append(str(name_.name))
-
-    accessible_modules = {}
-    
-    for designation in designation_info:
-        module_access = ModuleAccess.objects.filter(designation__iexact=designation).first()
-        if module_access:
-            filtered_modules = {}
-
-            field_names = [field.name for field in ModuleAccess._meta.get_fields() if field.name not in ['id', 'designation']]
-
-            for field_name in field_names:
-                filtered_modules[field_name] = getattr(module_access, field_name)
-            
-            accessible_modules[designation] = filtered_modules
-            
-    resp={
-        'designation_info' : designation_info,
-        'name': name,
-        'roll_no': roll_no,
-        'accessible_modules': accessible_modules,
-        'last_selected_role': last_selected_role
-    }
-    
+    resp = build_auth_payload(request.user)
     return Response(data=resp,status=status.HTTP_200_OK)
 
 @api_view(['GET'])
@@ -131,259 +114,83 @@ def update_last_selected_role(request):
     return Response({'message': 'last_selected_role updated successfully'}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 def profile(request, username=None):
     user = get_object_or_404(User, username=username) if username else request.user
-    profile = serializers.ExtraInfoSerializer(user.extrainfo).data
-    
-    if profile['user_type'] == 'student':
-        student = user.extrainfo.student
-        std_sem = Student.objects.get(id=student.id).curr_semester_no
-        skills = list(
-        Has.objects.filter(unique_id_id=student)
-        .select_related("skill_id")
-        .values("skill_id__skill", "skill_rating")
-        )
-        formatted_skills = [
-            {"skill_name": skill["skill_id__skill"], "skill_rating": skill["skill_rating"]}
-            for skill in skills
-        ]
-        education = serializers.EducationSerializer(student.education_set.all(), many=True).data
-        course = serializers.CourseSerializer(student.course_set.all(), many=True).data
-        experience = serializers.ExperienceSerializer(student.experience_set.all(), many=True).data
-        project = serializers.ProjectSerializer(student.project_set.all(), many=True).data
-        achievement = serializers.AchievementSerializer(student.achievement_set.all(), many=True).data
-        publication = serializers.PublicationSerializer(student.publication_set.all(), many=True).data
-        patent = serializers.PatentSerializer(student.patent_set.all(), many=True).data
-        current = serializers.HoldsDesignationSerializer(user.current_designation.all(), many=True).data
-        resp = {
-            'profile' : profile,
-            'semester_no' : std_sem,
-            'skills' : formatted_skills,
-            'education' : education,
-            'course' : course,
-            'experience' : experience,
-            'project' : project,
-            'achievement' : achievement,
-            'publication' : publication,
-            'patent' : patent,
-            'current' : current
-        }
-        return Response(data=resp, status=status.HTTP_200_OK)
-    else:
+    resp = build_student_profile_payload(user)
+    if resp is None:
         return Response(data={'error': 'User is not a student'}, status=status.HTTP_400_BAD_REQUEST)  
+    return Response(data=resp, status=status.HTTP_200_OK)
 
 @api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 def profile_update(request):
-    user = request.user
-    profile = user.extrainfo
-    current = user.current_designation.filter(designation__name="student")
-    if current:
-        student = profile.student
-        if 'education' in request.data:
-            data = request.data
-            data['education']['unique_id'] = profile
-            serializer = serializers.EducationSerializer(data=data['education'])
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        elif 'profilesubmit' in request.data:
-            serializer = serializers.ExtraInfoSerializer(profile, data=request.data['profilesubmit'],partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        elif 'skillsubmit' in request.data:
-            try:
-                skill_data = request.data['skillsubmit']
-                skill_id = skill_data['skill_id']
-                skill_name = skill_id['skill_name']
-                skill_rating = skill_data['skill_rating']
-
-                if not skill_name or skill_rating is None:
-                    return Response({"error": "Missing skill_name or skill_rating"}, status=status.HTTP_400_BAD_REQUEST)
-
-                skill, created = Skill.objects.get_or_create(skill=skill_name)
-                has_obj, created = Has.objects.get_or_create(skill_id=skill, unique_id=student, defaults={"skill_rating": skill_rating})
-                if not created:
-                    has_obj.skill_rating = skill_rating
-                    has_obj.save()
-
-                return Response({"message": "Skill added successfully"}, status=status.HTTP_200_OK)
-
-            except Exception as e:
-                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        elif 'achievementsubmit' in request.data:
-            request.data['achievementsubmit']['unique_id'] = profile
-            serializer = serializers.AchievementSerializer(data=request.data['achievementsubmit'])
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        elif 'publicationsubmit' in request.data:
-            request.data['publicationsubmit']['unique_id'] = profile
-            serializer = serializers.PublicationSerializer(data=request.data['publicationsubmit'])
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        elif 'patentsubmit' in request.data:
-            request.data['patentsubmit']['unique_id'] = profile
-            serializer = serializers.PatentSerializer(data=request.data['patentsubmit'])
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        elif 'coursesubmit' in request.data:
-            request.data['coursesubmit']['unique_id'] = profile
-            serializer = serializers.CourseSerializer(data=request.data['coursesubmit'])
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        elif 'projectsubmit' in request.data:
-            request.data['projectsubmit']['unique_id'] = profile
-            serializer = serializers.ProjectSerializer(data=request.data['projectsubmit'])
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        elif 'experiencesubmit' in request.data:
-            request.data['experiencesubmit']['unique_id'] = profile
-            serializer = serializers.ExperienceSerializer(data=request.data['experiencesubmit'])
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    return Response({'error': 'Cannot update'}, status=status.HTTP_400_BAD_REQUEST)
+    payload, response_status = update_profile_from_payload(request.user, request.data)
+    return Response(payload, status=response_status)
 
 @api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 def profile_delete(request, id):
-    user = request.user
-    profile = user.extrainfo
-    student = profile.student
-    if 'deleteskill' in request.data:
-        try:
-            skill = Has.objects.get(id=id)
-        except:
-            return Response({'error': 'Skill does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-        skill.delete()
-        return Response({'message': 'Skill deleted successfully'}, status=status.HTTP_200_OK)
-    elif 'deleteedu' in request.data:
-        try:
-            education = Education.objects.get(id=id)
-        except:
-            return Response({'error': 'Education does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-        education.delete()
-        return Response({'message': 'Education deleted successfully'}, status=status.HTTP_200_OK)
-    elif 'deletecourse' in request.data:
-        try:
-            course = Course.objects.get(id=id)
-        except:
-            return Response({'error': 'Course does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-        course.delete()
-        return Response({'message': 'Course deleted successfully'}, status=status.HTTP_200_OK)
-    elif 'deleteexp' in request.data:
-        try:
-            experience = Experience.objects.get(id=id)
-        except:
-            return Response({'error': 'Experience does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-        experience.delete()
-        return Response({'message': 'Experience deleted successfully'}, status=status.HTTP_200_OK)
-    elif 'deletepro' in request.data:
-        try:
-            project = Project.objects.get(id=id)
-        except:
-            return Response({'error': 'Project does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-        project.delete()
-        return Response({'message': 'Project deleted successfully'}, status=status.HTTP_200_OK)
-    elif 'deleteach' in request.data:
-        try:
-            achievement = Achievement.objects.get(id=id)
-        except:
-            return Response({'error': 'Achievement does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-        achievement.delete()
-        return Response({'message': 'Achievement deleted successfully'}, status=status.HTTP_200_OK)
-    elif 'deletepub' in request.data:
-        try:
-            publication = Publication.objects.get(id=id)
-        except:
-            return Response({'error': 'Publication does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-        publication.delete()
-        return Response({'message': 'Publication deleted successfully'}, status=status.HTTP_200_OK)
-    elif 'deletepat' in request.data:
-        try:
-            patent = Patent.objects.get(id=id)
-        except:
-            return Response({'error': 'Patent does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-        patent.delete()
-        return Response({'message': 'Patent deleted successfully'}, status=status.HTTP_200_OK)
-    return Response({'error': 'Wrong attribute'}, status=status.HTTP_400_BAD_REQUEST)
+    payload, response_status = delete_profile_component(request.data, id)
+    return Response(payload, status=response_status)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def NotificationRead(request):
     try:
-        notifId=int(request.data['id'])
-        user=request.user
-        notification = get_object_or_404(Notification, recipient=request.user, id=notifId)
-        notification.mark_as_read()
-        response ={
-            'message':'notfication successfully marked as seen.'
-        }
-        return Response(response,status=status.HTTP_200_OK)
-    except:
-        response ={
-            'error':'Failed, notification is not marked as seen.'
-        }
-        return Response(response,status=status.HTTP_404_NOT_FOUND)
+        notif_id = parse_notification_id(request.data)
+    except (KeyError, TypeError, ValueError):
+        return Response({'error': 'Invalid or missing notification id.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    notification = get_object_or_404(Notification, recipient=request.user, id=notif_id)
+    notification.mark_as_read()
+    response = {
+        'message': 'notfication successfully marked as seen.'
+    }
+    return Response(response, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def NotificationUnread(request):
     try:
-        notifId = int(request.data['id'])
-        user = request.user
-        notification = get_object_or_404(Notification, recipient=user, id=notifId)
-        if not notification.unread:  
-            notification.unread = True
-            notification.save() 
-        response = {
-            'message': 'Notification successfully marked as unread.'
-        }
-        return Response(response, status=status.HTTP_200_OK)
-    except:
-        response = {
-            'error': 'Failed to mark the notification as unread.'
-        }
-        return Response(response, status=status.HTTP_404_NOT_FOUND)
+        notif_id = parse_notification_id(request.data)
+    except (KeyError, TypeError, ValueError):
+        return Response({'error': 'Invalid or missing notification id.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    notification = get_object_or_404(Notification, recipient=request.user, id=notif_id)
+    if not notification.unread:
+        notification.unread = True
+        notification.save(update_fields=['unread'])
+
+    response = {
+        'message': 'Notification successfully marked as unread.'
+    }
+    return Response(response, status=status.HTTP_200_OK)
     
 @api_view(['POST']) 
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def delete_notification(request):
     try:
-        notifId = int(request.data['id'])  
-        notification = get_object_or_404(Notification, recipient=request.user, id=notifId)
-        
-        notification.deleted = True
-        notification.save()
-        
-        response = {
-            'message': 'Notification marked as deleted.'
-        }
-        return Response(response, status=status.HTTP_200_OK)
-    except Exception as e:
-        response = {
-            'error': 'Failed to mark the notification as deleted.',
-            'details': str(e)
-        }
-        return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        notif_id = parse_notification_id(request.data)
+    except (KeyError, TypeError, ValueError):
+        return Response({'error': 'Invalid or missing notification id.'}, status=status.HTTP_400_BAD_REQUEST)
 
-from django.db import transaction
+    notification = get_object_or_404(Notification, recipient=request.user, id=notif_id)
+    notification.deleted = True
+    notification.save(update_fields=['deleted'])
+
+    response = {
+        'message': 'Notification marked as deleted.'
+    }
+    return Response(response, status=status.HTTP_200_OK)
+
+from django.db import transaction, IntegrityError
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
@@ -394,57 +201,185 @@ def admin_delete_course_proxy(request, course_id):
     """
     try:
         from applications.programme_curriculum.models import Course, CourseSlot, CourseInstructor
-        
-        try:
-            course = Course.objects.get(id=course_id)
-        except Course.DoesNotExist:
-            return JsonResponse({
-                'success': False,
-                'message': 'Course not found.'
-            }, status=404)
-
-        course_name = course.name
-        course_code = course.code
-        
-        try:
-            instructor_count = CourseInstructor.objects.filter(course_id=course).count()
-            if instructor_count > 0:
-                return JsonResponse({
-                    'success': False,
-                    'message': f'Cannot delete course. It has {instructor_count} active instructor assignment(s). Please remove instructor assignments first.'
-                }, status=400)
-            
-            slot_count = CourseSlot.objects.filter(courses=course).count()
-            if slot_count > 0:
-                return JsonResponse({
-                    'success': False,
-                    'message': f'Cannot delete course. It is assigned to {slot_count} course slot(s) in curriculum(s). Please remove from course slots first.'
-                }, status=400)
-                
-        except Exception as dependency_error:
-            return JsonResponse({
-                'success': False,
-                'message': f'Error checking course dependencies: {str(dependency_error)}'
-            }, status=500)
-
-        try:
-            with transaction.atomic():
-                course.delete()
-                
-            return JsonResponse({
-                'success': True,
-                'message': f'Course "{course_name}" has been successfully deleted.'
-            }, status=200)
-            
-        except Exception as delete_error:
-            return JsonResponse({
-                'success': False,
-                'message': f'Error deleting course: {str(delete_error)}'
-            }, status=500)
-        
-    except Exception as e:
+    except ImportError as import_error:
         return JsonResponse({
             'success': False,
-            'message': 'An unexpected error occurred while deleting the course.',
-            'error': str(e)
+            'message': 'Programme curriculum module is not available.',
+            'error': str(import_error)
         }, status=500)
+
+    try:
+        course = Course.objects.get(id=course_id)
+    except Course.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Course not found.'
+        }, status=404)
+
+    course_name = course.name
+
+    instructor_count = CourseInstructor.objects.filter(course_id=course).count()
+    if instructor_count > 0:
+        return JsonResponse({
+            'success': False,
+            'message': f'Cannot delete course. It has {instructor_count} active instructor assignment(s). Please remove instructor assignments first.'
+        }, status=400)
+
+    slot_count = CourseSlot.objects.filter(courses=course).count()
+    if slot_count > 0:
+        return JsonResponse({
+            'success': False,
+            'message': f'Cannot delete course. It is assigned to {slot_count} course slot(s) in curriculum(s). Please remove from course slots first.'
+        }, status=400)
+
+    try:
+        with transaction.atomic():
+            course.delete()
+    except IntegrityError as delete_error:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error deleting course: {str(delete_error)}'
+        }, status=500)
+
+    return JsonResponse({
+        'success': True,
+        'message': f'Course "{course_name}" has been successfully deleted.'
+    }, status=200)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def db_issues(request):
+    if request.method == 'GET':
+        issues = Issue.objects.with_user_department().order_by('-added_on')
+        payload = serializers.IssueListSerializer(issues, many=True, context={'request': request}).data
+        return Response({'issues': payload}, status=status.HTTP_200_OK)
+
+    serializer = serializers.IssueCreateUpdateSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+
+    issue = serializer.save(user=request.user)
+    image_errors = []
+    for image in request.FILES.getlist('images'):
+        valid, reason = _validate_issue_image(image)
+        if not valid:
+            image_errors.append(reason)
+            continue
+        issue_image = IssueImage.objects.create(image=image, user=request.user)
+        issue.images.add(issue_image)
+
+    response_payload = serializers.IssueListSerializer(issue, context={'request': request}).data
+    return Response({'issue': response_payload, 'image_errors': image_errors}, status=status.HTTP_201_CREATED)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def db_issue_update(request, issue_id):
+    issue = get_object_or_404(Issue, id=issue_id)
+
+    if issue.user_id != request.user.id:
+        return Response({'error': 'Only the issue owner can edit this issue.'}, status=status.HTTP_403_FORBIDDEN)
+
+    if issue.closed:
+        return Response({'error': 'Closed issues are read-only and cannot be edited.'}, status=status.HTTP_403_FORBIDDEN)
+
+    serializer = serializers.IssueCreateUpdateSerializer(issue, data=request.data, partial=True)
+    serializer.is_valid(raise_exception=True)
+    issue = serializer.save()
+
+    remove = request.data.get('remove_images')
+    if str(remove).lower() in ['true', '1', 'yes']:
+        for img in issue.images.all():
+            img.delete()
+
+    image_errors = []
+    for image in request.FILES.getlist('images'):
+        valid, reason = _validate_issue_image(image)
+        if not valid:
+            image_errors.append(reason)
+            continue
+        issue_image = IssueImage.objects.create(image=image, user=request.user)
+        issue.images.add(issue_image)
+
+    response_payload = serializers.IssueListSerializer(issue, context={'request': request}).data
+    return Response({'issue': response_payload, 'image_errors': image_errors}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def db_issue_support_toggle(request, issue_id):
+    issue = get_object_or_404(Issue, id=issue_id)
+
+    if issue.user_id == request.user.id:
+        return Response(
+            {
+                'error': 'Issue owner cannot support their own issue',
+                'supported': False,
+                'support_count': issue.support.count(),
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if issue.support.filter(id=request.user.id).exists():
+        issue.support.remove(request.user)
+        supported = False
+    else:
+        issue.support.add(request.user)
+        supported = True
+
+    return Response({'supported': supported, 'support_count': issue.support.count()}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def db_feedback(request):
+    if request.method == 'GET':
+        feeds = Feedback.objects.select_related('user').all().order_by('-timestamp')
+        my_feedback = feeds.filter(user=request.user).first()
+        others = feeds.order_by('-rating', '-timestamp')[:5]
+        return Response(
+            {
+                'my_feedback': serializers.FeedbackSerializer(my_feedback).data if my_feedback else None,
+                'top_feedbacks': serializers.FeedbackSerializer(others, many=True).data,
+                'average_rating': round(get_feedback_average_rating(), 1),
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    serializer = serializers.FeedbackCreateUpdateSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+
+    rating = serializer.validated_data.get('rating')
+    if not (1 <= int(rating) <= 5):
+        return Response({'error': 'Rating must be between 1 and 5'}, status=status.HTTP_400_BAD_REQUEST)
+
+    feedback_obj, _ = Feedback.objects.update_or_create(
+        user=request.user,
+        defaults={
+            'rating': rating,
+            'feedback': serializer.validated_data.get('feedback', ''),
+        },
+    )
+
+    return Response({'feedback': serializers.FeedbackSerializer(feedback_obj).data}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def db_user_search(request):
+    query = request.GET.get('q', '').strip()
+    if len(query) < 3:
+        return Response({'results': [], 'error': 'Search query must be at least 3 characters'}, status=status.HTTP_400_BAD_REQUEST)
+
+    words = [w.strip() for w in query.split() if w.strip()]
+    name_q = Q()
+    for token in words:
+        name_q &= (Q(first_name__icontains=token) | Q(last_name__icontains=token) | Q(username__icontains=token))
+
+    users = User.objects.filter(name_q).values('id', 'username', 'first_name', 'last_name')[:15]
+    return Response({'results': list(users)}, status=status.HTTP_200_OK)

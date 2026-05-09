@@ -1,0 +1,312 @@
+business_rules:
+  - id: "BR-DBS-001"
+    title: "Authentication Required"
+    description: "All protected endpoints require valid authentication token or session"
+    enforcement_point: "@login_required decorator, TokenAuthentication middleware"
+    applies_to: ["DB-UC-001", "DB-UC-002", "DB-UC-003", "DB-UC-004", "DB-UC-005", "DB-UC-007", 
+                 "DB-UC-008", "DB-UC-009", "DB-UC-010", "DB-UC-011", "DB-UC-012", "DB-UC-013",
+                 "DB-UC-014", "DB-UC-015", "DB-UC-016", "DB-UC-017", "DB-UC-018", "DB-UC-019"]
+
+    valid_tests:
+      - input_action: "Authenticated user accesses /api/profile"
+        expected_result: "HTTP 200, profile returned"
+
+      - input_action: "Authenticated user accesses /dashboard"
+        expected_result: "HTTP 200, dashboard rendered"
+
+      - input_action: "Authenticated user makes API call with valid token"
+        expected_result: "HTTP 200 (or appropriate status)"
+
+    invalid_tests:
+      - input_action: "Unauthenticated user accesses /api/profile"
+        expected_result: "HTTP 401, redirected to login"
+
+      - input_action: "User with expired token accesses protected endpoint"
+        expected_result: "HTTP 401, token expired"
+
+      - input_action: "User with invalid/malformed token accesses endpoint"
+        expected_result: "HTTP 401, invalid token"
+
+  - id: "BR-DBS-002"
+    title: "One Feedback Per User"
+    description: "Each user can have at most one feedback record (OneToOneField enforcement)"
+    enforcement_point: "Feedback.user OneToOneField + views.py feedback() logic"
+    applies_to: ["DB-UC-007", "DB-UC-008", "DB-UC-009"]
+
+    valid_tests:
+      - input_action: "User submits first feedback with rating=4"
+        expected_result: "Feedback created, user_feedback count=1"
+
+      - input_action: "Same user edits feedback (update, not create)"
+        expected_result: "Existing feedback record updated, no duplicate created"
+
+      - input_action: "Different user submits feedback"
+        expected_result: "New feedback created without affecting first user"
+
+    invalid_tests:
+      - input_action: "Attempt to create second feedback for same user via API"
+        expected_result: "HTTP 400 or 409 conflict (depending on endpoint)"
+
+      - input_action: "Database constraint check: try INSERT duplicate user_id"
+        expected_result: "DB constraint violation (IntegrityError)"
+
+  - id: "BR-DBS-003"
+    title: "Rating Range Constraint (1-5)"
+    description: "Feedback ratings must be between 1 and 5 inclusive"
+    enforcement_point: "Model RATING_CHOICES, views.py validation lines 880-882"
+    applies_to: ["DB-UC-007", "DB-UC-008"]
+
+    valid_tests:
+      - input_action: "Submit feedback with rating=1"
+        expected_result: "HTTP 200, feedback accepted"
+
+      - input_action: "Submit feedback with rating=5"
+        expected_result: "HTTP 200, feedback accepted"
+
+      - input_action: "Submit feedback with rating=3"
+        expected_result: "HTTP 200, feedback accepted"
+
+    invalid_tests:
+      - input_action: "Submit feedback with rating=0"
+        expected_result: "HTTP 400, validation error"
+
+      - input_action: "Submit feedback with rating=6"
+        expected_result: "HTTP 400, validation error"
+
+      - input_action: "Submit feedback with rating=-1"
+        expected_result: "HTTP 400, validation error"
+
+  - id: "BR-DBS-004"
+    title: "Only Owner Can Edit Issue"
+    description: "Only the user who reported an issue can modify it"
+    enforcement_point: "view_issue() checks issue.user == request.user"
+    applies_to: ["DB-UC-013"]
+
+    valid_tests:
+      - input_action: "Issue owner edits own issue title"
+        expected_result: "HTTP 200, issue updated"
+
+      - input_action: "Issue owner adds images to own issue"
+        expected_result: "HTTP 200, images added"
+
+      - input_action: "Issue owner removes images from own issue"
+        expected_result: "HTTP 200, images removed"
+
+    invalid_tests:
+      - input_action: "Non-owner attempts to edit issue"
+        expected_result: "HTTP 403, forbidden"
+
+      - input_action: "Different user tries to modify non-owned issue"
+        expected_result: "HTTP 403, ownership check fails"
+
+  - id: "BR-DBS-005"
+    title: "User Cannot Support Own Issue"
+    description: "Issue reporter cannot add themselves as supporters of their own issue"
+    enforcement_point: "support_issue() missing check (GAP IDENTIFIED) - ST-02 implementation"
+    applies_to: ["DB-UC-014"]
+
+    valid_tests:
+      - input_action: "User A supports issue created by User B"
+        expected_result: "HTTP 200, User A added to supporters"
+
+      - input_action: "Multiple different users support same issue"
+        expected_result: "HTTP 200, all added to supporters"
+
+    invalid_tests:
+      - input_action: "Issue creator attempts to support own issue"
+        expected_result: "HTTP 400, cannot support self"
+
+      - input_action: "After fix: check issue.support excludes owner"
+        expected_result: "Owner not in issue.support set"
+
+  - id: "BR-DBS-006"
+    title: "Multiple Users Can Support Same Issue"
+    description: "Multiple users can simultaneously support a single issue (ManyToMany)"
+    enforcement_point: "Issue.support ManyToManyField"
+    applies_to: ["DB-UC-014", "DB-UC-015"]
+
+    valid_tests:
+      - input_action: "User A supports issue"
+        expected_result: "User A in issue.support"
+
+      - input_action: "User B supports same issue"
+        expected_result: "Issue.support count=2, contains both A,B"
+
+      - input_action: "User C supports same issue"
+        expected_result: "Issue.support count=3"
+
+    invalid_tests:
+      - input_action: "Duplicate support attempt by same user (2nd time)"
+        expected_result: "No duplicate entry (M2M silently ignores or returns 400)"
+
+  - id: "BR-DBS-007"
+    title: "Images Must Be Valid"
+    description: "Uploaded issue images must pass format, size, and corruption checks"
+    enforcement_point: "views.py _is_valid_issue_image() + BR-DBS-004 ST-04 implementation"
+    applies_to: ["DB-UC-011"]
+
+    valid_tests:
+      - input_action: "Upload PNG image <= 5MB"
+        expected_result: "HTTP 200, image accepted"
+
+      - input_action: "Upload JPG image <= 5MB"
+        expected_result: "HTTP 200, image accepted"
+
+      - input_action: "Upload GIF image <= 5MB"
+        expected_result: "HTTP 200, image accepted"
+
+    invalid_tests:
+      - input_action: "Upload image > 5MB"
+        expected_result: "HTTP 400, size limit exceeded"
+
+      - input_action: "Upload PDF or text file"
+        expected_result: "HTTP 400, unsupported format"
+
+      - input_action: "Upload corrupted/truncated image"
+        expected_result: "HTTP 400, image validation failed"
+
+  - id: "BR-DBS-008"
+    title: "Issue Can Have Multiple Images"
+    description: "A single issue can be associated with multiple images (ManyToMany)"
+    enforcement_point: "Issue.images ManyToManyField"
+    applies_to: ["DB-UC-010", "DB-UC-011"]
+
+    valid_tests:
+      - input_action: "Create issue with 1 image"
+        expected_result: "Issue.images count=1"
+
+      - input_action: "Create issue with 5 images"
+        expected_result: "Issue.images count=5"
+
+      - input_action: "Add images to existing issue"
+        expected_result: "Issue.images.count() incremented"
+
+    invalid_tests:
+      - input_action: "Attempt to add image count > logical max (e.g., 100)"
+        expected_result: "Accepted (M2M no built-in limit) or HTTP 400 if enforced"
+
+  - id: "BR-DBS-009"
+    title: "Designation Uniqueness"
+    description: "Each user can hold each designation at most once"
+    enforcement_point: "HoldsDesignation unique_together constraint"
+    applies_to: ["DB-UC-006"]
+
+    valid_tests:
+      - input_action: "User assigned designation A"
+        expected_result: "HoldsDesignation record created"
+
+      - input_action: "Different user assigned same designation A"
+        expected_result: "New HoldsDesignation record created (different user)"
+
+    invalid_tests:
+      - input_action: "Attempt to assign same designation twice to same user"
+        expected_result: "DB constraint violation, IntegrityError"
+
+      - input_action: "Try to create duplicate HoldsDesignation record"
+        expected_result: "Insert fails due to unique_together"
+
+  - id: "BR-DBS-010"
+    title: "Role-Based Dashboard Rendering"
+    description: "Dashboard modules and widgets displayed based on user role and ModuleAccess"
+    enforcement_point: "dashboard() view role check + Redux Redux user.role state"
+    applies_to: ["DB-UC-003", "DB-UC-017"]
+
+    valid_tests:
+      - input_action: "Student views dashboard"
+        expected_result: "Student-permitted modules visible, admin hidden"
+
+      - input_action: "Director views dashboard"
+        expected_result: "All modules visible"
+
+      - input_action: "Faculty views dashboard"
+        expected_result: "Faculty modules visible, director modules hidden"
+
+    invalid_tests:
+      - input_action: "Student attempts to access director-only module"
+        expected_result: "HTTP 403 or module hidden"
+
+      - input_action: "Staff without permission tries to access admin panel"
+        expected_result: "HTTP 403, permission denied"
+
+  - id: "BR-DBS-011"
+    title: "Search Input Constraint (Min 3 characters)"
+    description: "User search requires minimum 3-character input to prevent DOS"
+    enforcement_point: "search() view validation + frontend validation"
+    applies_to: ["DB-UC-016"]
+
+    valid_tests:
+      - input_action: "Search with query='abc' (3 chars)"
+        expected_result: "HTTP 200, search processed"
+
+      - input_action: "Search with query='john' (4+ chars)"
+        expected_result: "HTTP 200, results returned"
+
+    invalid_tests:
+      - input_action: "Search with query='ab' (2 chars)"
+        expected_result: "HTTP 400, minimum length error"
+
+      - input_action: "Search with query='' (empty)"
+        expected_result: "HTTP 400, required error"
+
+      - input_action: "Search with query='a' (1 char)"
+        expected_result: "HTTP 400, minimum length error"
+
+  - id: "BR-DBS-012"
+    title: "Age is Derived Field"
+    description: "User age displayed is calculated from DOB, not stored directly"
+    enforcement_point: "ExtraInfo.age @property method (ST-06 implementation)"
+    applies_to: ["DB-UC-018"]
+
+    valid_tests:
+      - input_action: "Query ExtraInfo.age (property)"
+        expected_result: "Returns calculated age based on today - DOB"
+
+      - input_action: "Age updates correctly on birthday"
+        expected_result: "Age incremented when DOB date passes"
+
+      - input_action: "User with 1970-01-01 DOB shows correct age"
+        expected_result: "Age calculated as current_year - 1970"
+
+    invalid_tests:
+      - input_action: "Age field stored in database (should be calculated)"
+        expected_result: "No age column in ExtraInfo model"
+
+      - input_action: "Stale age value from cache"
+        expected_result: "Age always recalculated on access"
+
+  - id: "BR-DBS-013"
+    title: "Closed Issue Is Read-Only"
+    description: "Once an issue is closed (closed=True), it cannot be edited"
+    enforcement_point: "view_issue() check (ST-03 implementation)"
+    applies_to: ["DB-UC-013"]
+
+    valid_tests:
+      - input_action: "Open issue (closed=False) can be edited by owner"
+        expected_result: "HTTP 200, issue updated"
+
+    invalid_tests:
+      - input_action: "Closed issue (closed=True) edit attempt by owner"
+        expected_result: "HTTP 403, read-only"
+
+      - input_action: "Closed issue cannot remove/add images"
+        expected_result: "HTTP 403, issue locked"
+
+  - id: "BR-DBS-014"
+    title: "Support Toggle Rule"
+    description: "User support state toggled: if in support, remove; if not, add"
+    enforcement_point: "support_issue() lines 1013-1022 toggle logic"
+    applies_to: ["DB-UC-014", "DB-UC-015"]
+
+    valid_tests:
+      - input_action: "User clicks support (not yet supported)"
+        expected_result: "User added to issue.support, supported=true returned"
+
+      - input_action: "Same user clicks support again (already supported)"
+        expected_result: "User removed from issue.support, supported=false returned"
+
+      - input_action: "Multiple toggle cycles work correctly"
+        expected_result: "Support state correctly toggled each time"
+
+    invalid_tests:
+      - input_action: "Toggle fails to toggle (always adds or always removes)"
+        expected_result: "Logic must be bidirectional"

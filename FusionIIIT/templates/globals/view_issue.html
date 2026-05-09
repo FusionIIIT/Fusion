@@ -148,7 +148,7 @@ Fusion - Feedback
                         </center>
                     </div>
                     <div class="ui horizontal divider">
-                        <a class="support-issue {% if request.user in issue.support.all %}supported{% else %}unsupported{% endif %}" id="support-{{ issue.id }}" action="{% url 'globals:support_issue' issue.id %}" style="color: ; cursor: pointer;" data="{{ issue.id }}" title="Support Issue"><i class="huge flag icon"></i></a>
+                        <a class="support-issue {% if request.user in issue.support.all %}supported{% else %}unsupported{% endif %} {% if request.user == issue.user %}disabled{% endif %}" id="support-{{ issue.id }}" action="{% url 'globals:support_issue' issue.id %}" style="color: ; cursor: pointer;" data="{{ issue.id }}" title="{% if request.user == issue.user %}You cannot support your own issue{% else %}Support Issue{% endif %}"><i class="huge flag icon"></i></a>
                         <center id="support-count-{{ issue.id }}">{{ issue.support.all.count }}</center>
                     </div>
                 </div>
@@ -184,9 +184,17 @@ Fusion - Feedback
     $(".support-issue").click(function(r){
         var id = $(this).attr("data");
         var url = $(this).attr("action");
+
+        if ($(this).hasClass("disabled")) {
+            return;
+        }
+
         $.ajax({
-            type: "GET",
+            type: "POST",
             url: url,
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
             success: function(data){
                 if(data.supported == true)
                 {
@@ -201,7 +209,11 @@ Fusion - Feedback
                 $("#support-count-"+id).text(data.support_count);
             },
             error: function(data){
-                console.log(data);
+                if (data.responseJSON && data.responseJSON.error) {
+                    alert(data.responseJSON.error);
+                } else {
+                    console.log(data);
+                }
             },
         });
     });

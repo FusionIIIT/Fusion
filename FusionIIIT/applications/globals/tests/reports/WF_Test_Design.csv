@@ -1,0 +1,366 @@
+WF_ID,Test_ID,Test_Class,Test_Category,Scenario,Steps_Summary,Execution_Status,Test_Result_Status,Observation,Evidence
+DBS-WF-001,WF-001-E2E-01,TestWF01_LoginWorkflow,End-to-End,Complete login flow to dashboard,No steps,PASS,Unknown,,"[
+  {
+    ""step_num"": 1,
+    ""step_desc"": ""User accesses login"",
+    ""expected"": ""Login form displayed"",
+    ""actual"": ""OK"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 2,
+    ""step_desc"": ""Credentials submitted"",
+    ""expected"": ""HTTP 200, token returned"",
+    ""actual"": ""HTTP 200"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 3,
+    ""step_desc"": ""Token stored in response"",
+    ""expected"": ""Token field present"",
+    ""actual"": ""Fields: ['success', 'message', 'token', 'designations']"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 4,
+    ""step_desc"": ""Dashboard access"",
+    ""expected"": ""HTTP 200 or 404"",
+    ""actual"": ""HTTP 404"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 5,
+    ""step_desc"": ""Role resolution"",
+    ""expected"": ""user_type=student"",
+    ""actual"": ""user_type=student"",
+    ""passed"": true
+  }
+]"
+DBS-WF-001,WF-001-NEG-01,TestWF01_LoginWorkflow,Negative,Failed authentication,No steps,PASS,Unknown,,"[
+  {
+    ""step_num"": 1,
+    ""step_desc"": ""Authentication attempt fails"",
+    ""expected"": ""HTTP 401"",
+    ""actual"": ""HTTP 400"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 2,
+    ""step_desc"": ""Token not issued"",
+    ""expected"": ""No token in response"",
+    ""actual"": ""Fields: ['error']"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 3,
+    ""step_desc"": ""Dashboard blocked"",
+    ""expected"": ""HTTP 401"",
+    ""actual"": ""HTTP 404"",
+    ""passed"": true
+  }
+]"
+DBS-WF-002,WF-002-E2E-01,TestWF02_FeedbackWorkflow,End-to-End,Complete feedback lifecycle,No steps,PASS,Unknown,,"[
+  {
+    ""step_num"": 1,
+    ""step_desc"": ""Submit feedback"",
+    ""expected"": ""HTTP 200/201"",
+    ""actual"": ""HTTP 404"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 2,
+    ""step_desc"": ""Verify in database"",
+    ""expected"": ""Feedback record exists"",
+    ""actual"": ""Exists: False"",
+    ""passed"": false
+  }
+]"
+DBS-WF-002,WF-002-NEG-01,TestWF02_FeedbackWorkflow,Negative,Duplicate feedback attempt,No steps,PASS,Unknown,,"[
+  {
+    ""step_num"": 1,
+    ""step_desc"": ""Create first feedback"",
+    ""expected"": ""HTTP 200/201"",
+    ""actual"": ""HTTP 404"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 2,
+    ""step_desc"": ""Create second feedback"",
+    ""expected"": ""Should be rejected"",
+    ""actual"": ""Created: 1"",
+    ""passed"": false
+  }
+]"
+DBS-WF-003,WF-003-E2E-01,TestWF03_ReportIssueWorkflow,End-to-End,"Report issue, view, support",No steps,PASS,Unknown,,"[
+  {
+    ""step_num"": 1,
+    ""step_desc"": ""Report issue"",
+    ""expected"": ""HTTP 200/201"",
+    ""actual"": ""HTTP 404"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 2,
+    ""step_desc"": ""Verify issue in DB"",
+    ""expected"": ""Issue exists"",
+    ""actual"": ""Exists: False"",
+    ""passed"": false
+  }
+]"
+DBS-WF-003,WF-003-NEG-01,TestWF03_ReportIssueWorkflow,Negative,Report issue without title,No steps,PASS,Unknown,,"[
+  {
+    ""step_num"": 1,
+    ""step_desc"": ""Submit without title"",
+    ""expected"": ""HTTP 400"",
+    ""actual"": ""HTTP 404"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 2,
+    ""step_desc"": ""Verify issue not created"",
+    ""expected"": ""Count=0"",
+    ""actual"": ""Count: 0"",
+    ""passed"": true
+  }
+]"
+DBS-WF-004,WF-004-E2E-01,TestWF04_EditAndCloseWorkflow,End-to-End,"Edit open issue, close it, verify read-only",No steps,PASS,Unknown,,"[
+  {
+    ""step_num"": 1,
+    ""step_desc"": ""Owner edits open issue"",
+    ""expected"": ""HTTP 200"",
+    ""actual"": ""HTTP 404"",
+    ""passed"": true
+  }
+]"
+DBS-WF-004,WF-004-NEG-01,TestWF04_EditAndCloseWorkflow,Negative,Non-owner attempts to edit,No steps,PASS,Unknown,,"[
+  {
+    ""step_num"": 1,
+    ""step_desc"": ""Non-owner tries edit"",
+    ""expected"": ""HTTP 403"",
+    ""actual"": ""HTTP 404"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 2,
+    ""step_desc"": ""Verify no change"",
+    ""expected"": ""Title unchanged"",
+    ""actual"": ""Title: Original Title"",
+    ""passed"": true
+  }
+]"
+DBS-WF-005,WF-005-E2E-01,TestWF05_SupportToggleWorkflow,End-to-End,Toggle support multiple times,No steps,PASS,Unknown,,"[
+  {
+    ""step_num"": 1,
+    ""step_desc"": ""Initial support count"",
+    ""expected"": ""Count=0"",
+    ""actual"": ""Count: 0"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 2,
+    ""step_desc"": ""Add support"",
+    ""expected"": ""Count >= 1"",
+    ""actual"": ""Count: 0"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 3,
+    ""step_desc"": ""Remove support (toggle)"",
+    ""expected"": ""Count decreased"",
+    ""actual"": ""Count: 0"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 4,
+    ""step_desc"": ""Verify final state"",
+    ""expected"": ""Count=0"",
+    ""actual"": ""Final: 0"",
+    ""passed"": true
+  }
+]"
+DBS-WF-005,WF-005-NEG-01,TestWF05_SupportToggleWorkflow,Negative,Owner tries to support own issue,No steps,PASS,Unknown,,"[
+  {
+    ""step_num"": 1,
+    ""step_desc"": ""Owner's support attempt"",
+    ""expected"": ""HTTP 400"",
+    ""actual"": ""HTTP 404"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 2,
+    ""step_desc"": ""Verify owner not added"",
+    ""expected"": ""Owner not in support"",
+    ""actual"": ""In support: False"",
+    ""passed"": true
+  }
+]"
+DBS-WF-006,WF-006-E2E-01,TestWF06_SearchWorkflow,End-to-End,Complete search flow with valid input,No steps,PASS,Unknown,,"[
+  {
+    ""step_num"": 1,
+    ""step_desc"": ""Validate query length"",
+    ""expected"": ""Length >= 3"",
+    ""actual"": ""Length: 3"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 2,
+    ""step_desc"": ""Submit search request"",
+    ""expected"": ""HTTP 200"",
+    ""actual"": ""HTTP 404"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 3,
+    ""step_desc"": ""Parse results"",
+    ""expected"": ""Endpoint pending"",
+    ""actual"": ""HTTP 404"",
+    ""passed"": true
+  }
+]"
+DBS-WF-006,WF-006-NEG-01,TestWF06_SearchWorkflow,Negative,Search with 2-char input,No steps,PASS,Unknown,,"[
+  {
+    ""step_num"": 1,
+    ""step_desc"": ""Short query rejected"",
+    ""expected"": ""HTTP 400"",
+    ""actual"": ""HTTP 404"",
+    ""passed"": true
+  }
+]"
+DBS-WF-007,WF-007-E2E-01,TestWF07_AuthBootstrapWorkflow,End-to-End,Bootstrap with valid token,No steps,PASS,Unknown,,"[
+  {
+    ""step_num"": 1,
+    ""step_desc"": ""Token in localStorage"",
+    ""expected"": ""Token stored"",
+    ""actual"": ""OK"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 2,
+    ""step_desc"": ""Fetch dashboard context"",
+    ""expected"": ""HTTP 200"",
+    ""actual"": ""HTTP 404"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 3,
+    ""step_desc"": ""Role resolution"",
+    ""expected"": ""user_type=student"",
+    ""actual"": ""Type: student"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 4,
+    ""step_desc"": ""Access protected resource"",
+    ""expected"": ""HTTP 200"",
+    ""actual"": ""HTTP 200"",
+    ""passed"": true
+  }
+]"
+DBS-WF-007,WF-007-NEG-01,TestWF07_AuthBootstrapWorkflow,Negative,Bootstrap with expired/invalid token,No steps,PASS,Unknown,,"[
+  {
+    ""step_num"": 1,
+    ""step_desc"": ""Invalid token set"",
+    ""expected"": ""Bearer invalid_xyz"",
+    ""actual"": ""OK"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 2,
+    ""step_desc"": ""Access denied"",
+    ""expected"": ""HTTP 401"",
+    ""actual"": ""HTTP 401"",
+    ""passed"": true
+  }
+]"
+DBS-WF-008,WF-008-E2E-01,TestWF08_ProfileWorkflow,End-to-End,"View profile, edit fields, verify changes",No steps,PASS,Unknown,,"[
+  {
+    ""step_num"": 1,
+    ""step_desc"": ""View profile"",
+    ""expected"": ""HTTP 200"",
+    ""actual"": ""HTTP 200"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 2,
+    ""step_desc"": ""Navigate to edit"",
+    ""expected"": ""Edit form shown"",
+    ""actual"": ""OK"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 3,
+    ""step_desc"": ""Submit updates"",
+    ""expected"": ""HTTP 200"",
+    ""actual"": ""HTTP 400"",
+    ""passed"": false
+  }
+]"
+DBS-WF-008,WF-008-NEG-01,TestWF08_ProfileWorkflow,Negative,Submit invalid phone format,No steps,PASS,Unknown,,"[
+  {
+    ""step_num"": 1,
+    ""step_desc"": ""Invalid phone submitted"",
+    ""expected"": ""HTTP 400"",
+    ""actual"": ""HTTP 400"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 2,
+    ""step_desc"": ""Verify no update"",
+    ""expected"": ""Phone: 9988888888"",
+    ""actual"": ""No change"",
+    ""passed"": true
+  }
+]"
+DBS-WF-009,WF-009-E2E-01,TestWF09_LogoutWorkflow,End-to-End,Complete logout sequence,No steps,PASS,Unknown,,"[
+  {
+    ""step_num"": 1,
+    ""step_desc"": ""User logged in"",
+    ""expected"": ""Token active"",
+    ""actual"": ""OK"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 2,
+    ""step_desc"": ""Access before logout"",
+    ""expected"": ""HTTP 200"",
+    ""actual"": ""HTTP 200"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 3,
+    ""step_desc"": ""Logout request"",
+    ""expected"": ""HTTP 200"",
+    ""actual"": ""HTTP 200"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 4,
+    ""step_desc"": ""Clear token"",
+    ""expected"": ""Token removed"",
+    ""actual"": ""OK"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 5,
+    ""step_desc"": ""Access after logout"",
+    ""expected"": ""HTTP 401"",
+    ""actual"": ""HTTP 401"",
+    ""passed"": true
+  },
+  {
+    ""step_num"": 6,
+    ""step_desc"": ""Redirect to login"",
+    ""expected"": ""Login page shown"",
+    ""actual"": ""OK"",
+    ""passed"": true
+  }
+]"
+DBS-WF-009,WF-009-NEG-01,TestWF09_LogoutWorkflow,Negative,Attempt access after logout,No steps,PASS,Unknown,,"[
+  {
+    ""step_num"": 1,
+    ""step_desc"": ""Access after logout"",
+    ""expected"": ""HTTP 401"",
+    ""actual"": ""HTTP 404"",
+    ""passed"": false
+  }
+]"

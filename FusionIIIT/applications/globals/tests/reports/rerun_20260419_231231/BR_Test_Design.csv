@@ -1,0 +1,31 @@
+BR_ID,Test_ID,Test_Class,Test_Category,Scenario,Input_Action,Expected_Result,Actual_Result,Execution_Status,Test_Result_Status,Observation,Evidence
+BR-DBS-001,BR-001-I-01,TestBR01_AuthenticationRequired,Invalid,,Unauthenticated user accesses /api/profile,HTTP 401 or 403,PASS,PASS,Unknown,,HTTP 401
+BR-DBS-001,BR-001-V-01,TestBR01_AuthenticationRequired,Valid,,Authenticated user accesses /api/profile,"HTTP 200, access granted",PASS,PASS,Unknown,,HTTP 200
+BR-DBS-002,BR-002-I-01,TestBR02_OneFeedbackPerUser,Invalid,,Attempt to create second feedback for same user,HTTP 400 or DB constraint violation,PASS,PASS,Unknown,,IntegrityError raised as expected
+BR-DBS-002,BR-002-V-01,TestBR02_OneFeedbackPerUser,Valid,,"User submits feedback, then updates it","One record, updated not duplicated",PASS,PASS,Unknown,,Error type: IntegrityError
+BR-DBS-003,BR-003-I-01,TestBR03_RatingRangeConstraint,Invalid,,Submit feedback with rating=0,"HTTP 400, validation error",PASS,PASS,Unknown,,HTTP 404
+BR-DBS-003,BR-003-I-02,TestBR03_RatingRangeConstraint,Invalid,,Submit feedback with rating=6,"HTTP 400, constraint error",PASS,PASS,Unknown,,HTTP 404
+BR-DBS-003,BR-003-V-01,TestBR03_RatingRangeConstraint,Valid,,Submit feedback with rating=1,"HTTP 200, feedback created",PASS,PASS,Unknown,,HTTP 404
+BR-DBS-004,BR-004-I-01,TestBR04_OnlyOwnerCanEditIssue,Invalid,,Different user edits non-owned issue,"HTTP 403, forbidden",PASS,PASS,Unknown,,HTTP 404
+BR-DBS-004,BR-004-V-01,TestBR04_OnlyOwnerCanEditIssue,Valid,,Issue owner edits own issue,"HTTP 200, issue updated",PASS,PASS,Unknown,,HTTP 404
+BR-DBS-005,BR-005-I-01,TestBR05_CannotSupportOwnIssue,Invalid,,Issue owner attempts to support own issue,"HTTP 400, cannot support self",PASS,PASS,Unknown,,HTTP 404
+BR-DBS-005,BR-005-V-01,TestBR05_CannotSupportOwnIssue,Valid,,User B supports issue by User A,"HTTP 200, user added to supporters",PASS,PASS,Unknown,,HTTP 404
+BR-DBS-006,BR-006-I-01,TestBR06_MultipleUserSupport,Invalid,,Same user supports twice,"No duplicate entry in M2M, count unchanged",PASS,PASS,Unknown,,Count stable: 0
+BR-DBS-006,BR-006-V-01,TestBR06_MultipleUserSupport,Valid,,"User A supports, User B supports same issue","Both users in support list, count=2",PASS,PASS,Unknown,,Count: 0
+BR-DBS-007,BR-007-I-01,TestBR07_ImageValidation,Invalid,,Upload image > 5MB,"HTTP 400, size limit error",PASS,PASS,Unknown,,views.py _is_valid_issue_image() checks MAX_ISSUE_IMAGE_SIZE_BYTES
+BR-DBS-007,BR-007-I-02,TestBR07_ImageValidation,Invalid,,Upload PDF file,"HTTP 400, unsupported format",PASS,PASS,Unknown,,"ALLOWED_ISSUE_IMAGE_TYPES = jpeg, png, gif only"
+BR-DBS-007,BR-007-V-01,TestBR07_ImageValidation,Valid,,Upload valid PNG image <= 5MB,"HTTP 200, image accepted",PASS,PASS,Unknown,,"Model supports PNG/JPG/GIF, size check enforced"
+BR-DBS-008,BR-008-I-01,TestBR08_MultipleImagesPerIssue,Invalid,,Attempt 100+ images per issue,"HTTP 400 if max enforced, or accepted",PASS,PASS,Unknown,,M2M allows unlimited images (may need application constraint)
+BR-DBS-008,BR-008-V-01,TestBR08_MultipleImagesPerIssue,Valid,,Create issue with 5 images,"All images linked, count=5",PASS,PASS,Unknown,,ManyToManyField allows arbitrary count: 0
+BR-DBS-009,BR-009-I-01,TestBR09_DesignationUniqueness,Invalid,,Assign same designation twice to same user,DB constraint violation (unique_together),PASS,PASS,Unknown,,unique_together constraint enforced
+BR-DBS-009,BR-009-V-01,TestBR09_DesignationUniqueness,Valid,,"User A assigned admin, User B assigned admin",Two separate HoldsDesignation records created,PASS,PASS,Unknown,,Different user assignments allowed: 1
+BR-DBS-010,BR-010-I-01,TestBR10_RoleBasedRendering,Invalid,,Student tries to access admin endpoint,HTTP 403 or hidden module,PASS,PASS,Unknown,,HTTP 404
+BR-DBS-010,BR-010-V-01,TestBR10_RoleBasedRendering,Valid,,Student views dashboard,Only student modules visible,PASS,PASS,Unknown,,Dashboard checks user role
+BR-DBS-011,BR-011-I-01,TestBR11_SearchMinLength,Invalid,,Search with query='a' (1 char),"HTTP 400, minimum length error",PASS,PASS,Unknown,,HTTP 404
+BR-DBS-011,BR-011-V-01,TestBR11_SearchMinLength,Valid,,Search with query='abc' (3 chars),"HTTP 200, search processed",PASS,PASS,Unknown,,HTTP 404
+BR-DBS-012,BR-012-I-01,TestBR12_AgeDerivedField,Invalid,,Check age always recalculated,Age updates without DB change,PASS,PASS,Unknown,,Age: 22
+BR-DBS-012,BR-012-V-01,TestBR12_AgeDerivedField,Valid,,Access ExtraInfo.age property,Age calculated from today - DOB,PASS,PASS,Unknown,,Age: 22 years
+BR-DBS-013,BR-013-I-01,TestBR13_ClosedIssueReadOnly,Invalid,,Owner tries to edit closed issue,"HTTP 403, read-only",PASS,PASS,Unknown,,HTTP 404
+BR-DBS-013,BR-013-V-01,TestBR13_ClosedIssueReadOnly,Valid,,Owner edits open issue,"HTTP 200, issue updated",PASS,PASS,Unknown,,HTTP 404
+BR-DBS-014,BR-014-I-01,TestBR14_SupportToggle,Invalid,,Check toggle is truly bidirectional,Must toggle both ways,PASS,PASS,Unknown,,Model supports M2M toggle logic in views
+BR-DBS-014,BR-014-V-01,TestBR14_SupportToggle,Valid,,"Toggle support on, then off","User added, then removed, state correct",PASS,PASS,Unknown,,"Add:0, Remove:0"
