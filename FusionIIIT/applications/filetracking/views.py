@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import File, Tracking
+from .models import LegacyFile as File, LegacyTracking as Tracking
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from django.template.defaulttags import csrf_token
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
@@ -11,6 +11,13 @@ from django.contrib.auth.models import User
 from timeit import default_timer as time
 from notification.views import office_module_notif,file_tracking_notif
 from .utils import *
+
+
+def _legacy_ui_guard_response():
+    return HttpResponse(
+        'Legacy filetracking UI routing is deprecated. Use /filetracking/api/new/* workflow endpoints.',
+        status=410,
+    )
 
 
 @login_required(login_url = "/accounts/login/")
@@ -35,102 +42,8 @@ def filetracking(request):
                 holdsdesignations - The HoldsDesignation object.
                 context - Holds data needed to make necessary changes in the template.
     """
-    if request.method =="POST":
-        try:
-            if 'save' in request.POST:
-                uploader = request.user.extrainfo
-                subject = request.POST.get('title')
-                description = request.POST.get('desc')
-                design = request.POST.get('design')
-                designation = Designation.objects.get(id = HoldsDesignation.objects.select_related('user','working','designation').get(id = design).designation_id)
-                upload_file = request.FILES.get('myfile')
-                if(upload_file.size / 1000 > 10240):
-                    messages.error(request,"File should not be greater than 10MB")
-                    return redirect("/filetracking")               
-
-                File.objects.create(
-                    uploader=uploader,
-                    description=description,
-                    subject=subject,
-                    designation=designation,
-                    upload_file=upload_file
-                )
-
-                messages.success(request,'File Draft Saved Successfully')
-
-            if 'send' in request.POST:
-                uploader = request.user.extrainfo
-                subject = request.POST.get('title')
-                description = request.POST.get('desc')
-                design = request.POST.get('design')
-                designation = Designation.objects.get(id = HoldsDesignation.objects.select_related('user','working','designation').get(id = design).designation_id)
-
-                upload_file = request.FILES.get('myfile')
-                if(upload_file.size / 1000 > 10240):
-                    messages.error(request,"File should not be greater than 10MB")
-                    return redirect("/filetracking")
-
-                file = File.objects.create(
-                    uploader=uploader,
-                    description=description,
-                    subject=subject,
-                    designation=designation,
-                    upload_file=upload_file
-                )
-
-
-                current_id = request.user.extrainfo
-                remarks = request.POST.get('remarks')
-
-                sender = request.POST.get('design')
-                current_design = HoldsDesignation.objects.select_related('user','working','designation').get(id=sender)
-
-                receiver = request.POST.get('receiver')
-                try:
-                    receiver_id = User.objects.get(username=receiver)
-                except Exception as e:
-                    messages.error(request, 'Enter a valid Username')
-                    return redirect('/filetracking/')
-                receive = request.POST.get('recieve')
-                try:
-                    receive_design = Designation.objects.get(name=receive)
-                except Exception as e:
-                    messages.error(request, 'Enter a valid Designation')
-                    return redirect('/filetracking/')
-
-                upload_file = request.FILES.get('myfile')
-
-                Tracking.objects.create(
-                    file_id=file,
-                    current_id=current_id,
-                    current_design=current_design,
-                    receive_design=receive_design,
-                    receiver_id=receiver_id,
-                    remarks=remarks,
-                    upload_file=upload_file,
-                )
-                #office_module_notif(request.user, receiver_id)
-                file_tracking_notif(request.user,receiver_id,subject)
-                messages.success(request,'File sent successfully')
-
-        except IntegrityError:
-            message = "FileID Already Taken.!!"
-            return HttpResponse(message)
-
-
-
-    file = File.objects.select_related('uploader__user','uploader__department','designation').all()
-    extrainfo = ExtraInfo.objects.select_related('user','department').all()
-    holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
-    designations = get_designation(request.user)
-
-    context = {
-        'file': file,
-        'extrainfo': extrainfo,
-        'holdsdesignations': holdsdesignations,
-        'designations': designations,
-    }
-    return render(request, 'filetracking/composefile.html', context)
+    legacy_guard = _legacy_ui_guard_response()
+    return legacy_guard
 
 
 @login_required(login_url = "/accounts/login")
@@ -352,83 +265,14 @@ def forward(request, id):
                     context - Holds data needed to make necessary changes in the template.
     """
     
-    file = get_object_or_404(File, id=id)
-    track = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department',
-    'current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(file_id=file)
-    
-    if request.method == "POST":
-            if 'finish' in request.POST:
-                file.complete_flag = True
-                file.save()
-
-            if 'send' in request.POST:
-                current_id = request.user.extrainfo
-                remarks = request.POST.get('remarks')
-                track.update(is_read=True)
-
-                sender = request.POST.get('sender')
-                current_design = HoldsDesignation.objects.select_related('user','working','designation').get(id=sender)
-
-                receiver = request.POST.get('receiver')
-                try:
-                    receiver_id = User.objects.get(username=receiver)
-                except Exception as e:
-                    messages.error(request, 'Enter a valid destination')
-                    designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
-
-                    context = {
-                       
-                        'designations': designations,
-                        'file': file,
-                        'track': track,
-                    }
-                    return render(request, 'filetracking/forward.html', context)
-                receive = request.POST.get('recieve')
-                try:
-                    receive_design = Designation.objects.get(name=receive)
-                except Exception as e:
-                    messages.error(request, 'Enter a valid Designation')
-                    designations = get_designation(request.user)
-
-                    context = {
-                       
-                        'designations': designations,
-                        'file': file,
-                        'track': track,
-                    }
-                    return render(request, 'filetracking/forward.html', context)
-
-                
-                upload_file = request.FILES.get('myfile')
-                
-                Tracking.objects.create(
-                    file_id=file,
-                    current_id=current_id,
-                    current_design=current_design,
-                    receive_design=receive_design,
-                    receiver_id=receiver_id,
-                    remarks=remarks,
-                    upload_file=upload_file,
-                )
-            messages.success(request, 'File sent successfully')
-    
-    
-    designations = get_designation(request.user)
-
-    context = {
-        
-        'designations':designations,
-        'file': file,
-        'track': track,
-    }
-
-    return render(request, 'filetracking/forward.html', context)
+    legacy_guard = _legacy_ui_guard_response()
+    return legacy_guard
 
 
 @login_required(login_url = "/accounts/login")
 def archive_design(request):
 
-    designation = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
+    designation = HoldsDesignation.objects.select_related('user','working','designation').filter(working=request.user)
 
     context = {
         'designation': designation,
@@ -483,7 +327,7 @@ def archive_finish(request, id):
 @login_required(login_url = "/accounts/login")
 def finish_design(request):
 
-    designation = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
+    designation = HoldsDesignation.objects.select_related('user','working','designation').filter(working=request.user)
 
     context = {
         'designation': designation,
@@ -620,18 +464,7 @@ def forward_inward(request,id):
     
     """
 
-    file = get_object_or_404(File, id=id)
-    file.is_read = True
-    track = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department',
-    'current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(file_id=file)
-    designations = get_designation(request.user)
-
-    context = {
-       
-        'designations':designations,
-        'file': file,
-        'track': track,
-    }
-    return render(request, 'filetracking/forward.html', context)
+    legacy_guard = _legacy_ui_guard_response()
+    return legacy_guard
 
 
