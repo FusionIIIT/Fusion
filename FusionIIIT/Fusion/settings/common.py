@@ -280,9 +280,16 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = ('semantic-ui')
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
 YOUTUBE_DATA_API_KEY = 'api_key'
 
-
-
-CORS_ORIGIN_ALLOW_ALL = True
+# CORS Settings for frontend-backend communication with credentials
+# When using credentials (withCredentials: true), we must specify exact origins
+CORS_ORIGIN_ALLOW_ALL = False
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",      # Vite dev server
+    "http://localhost:3000",      # Alternative React dev server
+    "http://127.0.0.1:5173",      # Localhost alternative
+    "http://localhost:8000",      # Django dev server (same origin)
+]
+CORS_ALLOW_CREDENTIALS = True  # Allow credentials in CORS requests
 ALLOW_PASS_RESET = True
 
 # session settings

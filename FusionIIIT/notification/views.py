@@ -124,13 +124,13 @@ def visitors_hostel_notif(sender, recipient, type):
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
-def healthcare_center_notif(sender, recipient, type, message):
+def healthcare_center_notif(sender, recipient, type, message=''):
     url='healthcenter:healthcenter'
     module='Healthcare Center'
     sender = sender
     recipient = recipient
     verb = ''
-    flag=''
+    flag = ''
     if type == 'appoint':
         verb = "Your Appointment has been booked"
     elif type == 'amb_request':
@@ -147,13 +147,20 @@ def healthcare_center_notif(sender, recipient, type, message):
         verb = "You have a new ambulance request"
     elif type == 'new_announce':
         verb = message
-        flag='announcement'
+        flag = 'announcement'
     elif type == 'rel_forward':
         verb = "You have a new medical relief forward request"
     elif type == 'rel_approve':
         verb = "You have a new medical relief approval request"
     elif type == 'rel_approved':
-        verb = 'Your medical relief request has been approved' 
+        verb = 'Your medical relief request has been approved'
+    # ── PHC-BR-11: Requisition Status Notifications ──────────────────────────
+    # Fired when an authority approves or rejects an inventory requisition.
+    # 'message' should contain the medicine name + requisition ID for context.
+    elif type == 'req_approved':
+        verb = f"Your inventory requisition has been approved. {message}"
+    elif type == 'req_rejected':
+        verb = f"Your inventory requisition has been rejected. {message}"
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb, flag=flag)
 
 def file_tracking_notif(sender, recipient, title):

@@ -17,7 +17,8 @@ class Constants:
         ('student', 'student'),
         ('staff', 'staff'),
         ('compounder', 'compounder'),
-        ('faculty', 'faculty')
+        ('faculty', 'faculty'),
+        ('AUDITOR', 'auditor'),
     )
 
     RATING_CHOICES = (
