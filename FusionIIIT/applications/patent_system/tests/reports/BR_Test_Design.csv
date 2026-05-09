@@ -1,0 +1,82 @@
+BR_ID,Title,Category,Input/Action,Expected Result
+BR-PMS-001,Patent Application Must Contain All Required Fields,Valid,"Submit application with all fields filled: title, abstract, description, claims, inventor_details, and at least 1 document",validation_passed = TRUE; application proceeds to submission
+BR-PMS-001,Patent Application Must Contain All Required Fields,Valid,Submit application with exactly the minimum required document count (1 document),validation_passed = TRUE; application accepted
+BR-PMS-001,Patent Application Must Contain All Required Fields,Invalid,Submit application with missing patent_claims field,validation_passed = FALSE; system highlights missing field; submission blocked
+BR-PMS-001,Patent Application Must Contain All Required Fields,Invalid,Submit application with no supporting documents uploaded,validation_passed = FALSE; documents.count = 0; error returned
+BR-PMS-001,Patent Application Must Contain All Required Fields,Invalid,Submit application with abstract exceeding 500 characters,validation_passed = FALSE; character limit error returned
+BR-PMS-002,User Must Have Appropriate Role for Patent Operations,Valid,Faculty member with 'Applicant' role and Active status attempts to submit an application,allow_access = TRUE; operation permitted; access attempt logged
+BR-PMS-002,User Must Have Appropriate Role for Patent Operations,Valid,PCC_ADMIN with Active status attempts to assign a Director,allow_access = TRUE; assignment operation permitted
+BR-PMS-002,User Must Have Appropriate Role for Patent Operations,Invalid,User without any role assignment attempts to access patent submission form,allow_access = FALSE; authorization error returned; attempt logged
+BR-PMS-002,User Must Have Appropriate Role for Patent Operations,Invalid,Student (non-Faculty/Staff) attempts to submit application,allow_access = FALSE; registration_status check fails; blocked
+BR-PMS-002,User Must Have Appropriate Role for Patent Operations,Invalid,Inactive registered user attempts to log in and access patent functions,allow_access = FALSE; registration_status = Inactive; access denied
+BR-PMS-003,Conflict of Interest Must Be Declared and Prevented,Valid,Director with no inventor relationship reviews assigned application,COI check passes; review allowed to proceed
+BR-PMS-003,Conflict of Interest Must Be Declared and Prevented,Valid,Attorney assigned to application with no declared conflict,COI check passes; assignment confirmed
+BR-PMS-003,Conflict of Interest Must Be Declared and Prevented,Invalid,Director who is listed as an inventor on the application attempts to review it,Assignment blocked; application reassigned; PCC_ADMIN alerted
+BR-PMS-003,Conflict of Interest Must Be Declared and Prevented,Invalid,Attorney with a declared conflict of interest is assigned to an application,Assignment blocked; PCC_ADMIN alerted to select alternate attorney
+BR-PMS-004,Application Must Follow Sequential Review Process,Valid,Director submits decision='Approve' within 15 business days of assignment,Attorney assignment enabled; sequential workflow proceeds
+BR-PMS-004,Application Must Follow Sequential Review Process,Valid,Director submits decision='Needs Revision' with justification,Decision recorded; applicant notified; revision workflow triggered
+BR-PMS-004,Application Must Follow Sequential Review Process,Invalid,Attorney assignment attempted before Director has issued any decision,Assignment blocked; application_status is not 'Approved'
+BR-PMS-004,Application Must Follow Sequential Review Process,Invalid,"Director attempts to submit an invalid decision value (e.g., 'Hold')",Decision rejected; only Approve/Reject/Needs Revision are valid
+BR-PMS-005,Director Must Provide Justification for Decisions,Valid,Director rejects application with justification_text of 75 characters,Decision accepted; feedback saved; applicant notified
+BR-PMS-005,Director Must Provide Justification for Decisions,Valid,Director requests revision with detailed feedback exceeding 50 chars,Revision request accepted; applicant receives detailed feedback
+BR-PMS-005,Director Must Provide Justification for Decisions,Invalid,Director rejects application without providing any justification,Decision blocked; justification field is required error returned
+BR-PMS-005,Director Must Provide Justification for Decisions,Invalid,Director rejects application with justification_text of only 20 characters,Decision blocked; minimum 50 characters required for justification
+BR-PMS-006,Document Access Must Be Controlled Based on Status,Valid,Applicant edits document when application_status = 'Awaiting Revision',Edit allowed; version incremented; version record created
+BR-PMS-006,Document Access Must Be Controlled Based on Status,Valid,PCC_ADMIN accesses confidential document with appropriate role permission,Access granted; access event logged
+BR-PMS-006,Document Access Must Be Controlled Based on Status,Invalid,Applicant attempts to edit document when application_status = 'Submitted',Edit blocked; document is locked post-submission
+BR-PMS-006,Document Access Must Be Controlled Based on Status,Invalid,User without permission for a confidential portfolio_section attempts access,Access denied; authorization error returned
+BR-PMS-007,Attorney Assignment Must Follow Institutional Policy,Valid,PCC_ADMIN assigns attorney from approved panel whose specialization matches application domain,Assignment successful; attorney notified
+BR-PMS-007,Attorney Assignment Must Follow Institutional Policy,Valid,PCC_ADMIN assigns attorney matching applicant's preferred choice from approved panel,Applicant preference honored; assignment confirmed
+BR-PMS-007,Attorney Assignment Must Follow Institutional Policy,Invalid,Director (non-PCC_ADMIN) attempts to directly assign an attorney,Assignment blocked; only PCC_ADMIN has assignment authority
+BR-PMS-007,Attorney Assignment Must Follow Institutional Policy,Invalid,PCC_ADMIN attempts to assign attorney not on the approved panel,Assignment blocked; attorney not in approved_panel
+BR-PMS-008,Budget Must Be Approved for Patent Applications,Valid,Budget request submitted for Approved application with total_cost within threshold and sufficient budget,Budget approved; financial tracking initiated
+BR-PMS-008,Budget Must Be Approved for Patent Applications,Valid,Transaction amount is within PCC_ADMIN authorization limit,Transaction approved without escalation
+BR-PMS-008,Budget Must Be Approved for Patent Applications,Invalid,Budget request submitted for application with status = 'Under Review',Budget approval blocked; application must be Approved first
+BR-PMS-008,Budget Must Be Approved for Patent Applications,Invalid,Total cost exceeds threshold_limit; budget not escalated,Auto-escalation to Director triggered; PCC_ADMIN cannot approve unilaterally
+BR-PMS-008,Budget Must Be Approved for Patent Applications,Invalid,Budget requested when budget_availability < total_cost,Approval blocked; insufficient budget error returned
+BR-PMS-009,Post-Grant Tracking Must Be Properly Activated,Valid,Patent status changes to 'Granted'; system activates post-grant tracking,PostGrantRecord created; maintenance schedule calculated; renewal reminders set
+BR-PMS-009,Post-Grant Tracking Must Be Properly Activated,Valid,Next fee date calculated as grant_date + defined maintenance_schedule interval,Correct next_fee_date stored; deadline tracker active
+BR-PMS-009,Post-Grant Tracking Must Be Properly Activated,Invalid,Post-grant tracking activation attempted for application with status = 'Approved' (not yet Granted),Activation blocked; patent_status must be 'Granted'
+BR-PMS-009,Post-Grant Tracking Must Be Properly Activated,Invalid,Payment processed without an explicit renewal decision on record,Payment blocked; explicit renewal decision required first
+BR-PMS-010,Document Upload Must Meet Security Requirements,Valid,Upload a 10MB PDF file that passes malware scan,upload_allowed = TRUE; document classified; encrypted and stored
+BR-PMS-010,Document Upload Must Meet Security Requirements,Valid,Upload a 52MB (exactly at limit) clean PDF,upload_allowed = TRUE; file accepted at boundary
+BR-PMS-010,Document Upload Must Meet Security Requirements,Invalid,Upload a .docx file instead of PDF,upload_denied; file_format mismatch error returned
+BR-PMS-010,Document Upload Must Meet Security Requirements,Invalid,"Upload a PDF larger than 50MB (e.g., 60MB)",upload_denied; file size exceeds 50MB limit
+BR-PMS-010,Document Upload Must Meet Security Requirements,Invalid,Upload a PDF that fails malware scan,upload_denied; malware detected error returned; security team alerted
+BR-PMS-011,System Must Send Automated Notifications,Valid,Application status changes from 'Submitted' to 'Under Review',Notification dispatched to applicant and Director; event logged in audit trail
+BR-PMS-011,System Must Send Automated Notifications,Valid,Deadline is 5 days away,Alert generated and sent to responsible party (days_remaining = 5 triggers alert)
+BR-PMS-011,System Must Send Automated Notifications,Invalid,Status change event fires but stakeholder email is invalid,Delivery failure logged; PCC_ADMIN alerted to correct contact details
+BR-PMS-011,System Must Send Automated Notifications,Invalid,Task assigned time exceeds SLA threshold with no escalation triggered,Escalation fires per escalation_chain; next authority notified
+BR-PMS-012,Applications Must Be Assigned Based on Expertise and Hierarchy,Valid,Application submitted; Director A has matching domain and workload below threshold,Application routed to Director A; assignment confirmed; Director notified
+BR-PMS-012,Applications Must Be Assigned Based on Expertise and Hierarchy,Valid,Two eligible Directors available; Director B has lower workload,Application assigned to Director B (lowest workload wins)
+BR-PMS-012,Applications Must Be Assigned Based on Expertise and Hierarchy,Invalid,All Directors with matching domain expertise are above workload threshold,Assignment fails; PCC_ADMIN alerted; manual assignment required
+BR-PMS-012,Applications Must Be Assigned Based on Expertise and Hierarchy,Invalid,Application submitted but no Director has expertise matching application_category,No auto-assignment made; PCC_ADMIN alerted to handle manually
+BR-PMS-013,Inventor Agreement Must Be Obtained,Valid,All inventors have signed agreement (physically or via valid e-signature),Submission proceeds; signature_audit stored
+BR-PMS-013,Inventor Agreement Must Be Obtained,Valid,Co-inventor signs via e-signature in a jurisdiction where it is legally permitted,e_signature_valid = TRUE; agreement accepted; audit logged
+BR-PMS-013,Inventor Agreement Must Be Obtained,Invalid,Application submitted with one co-inventor agreement unsigned,Submission blocked; unsigned agreement error; reminder sent to co-inventor
+BR-PMS-013,Inventor Agreement Must Be Obtained,Invalid,E-signature submitted but fails validation checks,Submission blocked; invalid e-signature error; re-signing required
+BR-PMS-014,Patentability Assessment Must Follow Legal Framework,Valid,"Attorney submits full assessment with all scores above threshold, valid recommendation, and non-null report",Filing allowed; assessment stored; application progresses
+BR-PMS-014,Patentability Assessment Must Follow Legal Framework,Valid,Attorney recommends 'Do Not File' with complete scores and report,Assessment accepted; application flagged accordingly; Director notified
+BR-PMS-014,Patentability Assessment Must Follow Legal Framework,Invalid,Filing attempted before attorney has recorded any patentability opinion,Filing blocked; opinion_recorded = FALSE
+BR-PMS-014,Patentability Assessment Must Follow Legal Framework,Invalid,Assessment submitted with novelty_score below threshold,Filing blocked; novelty score does not meet legal standard
+BR-PMS-014,Patentability Assessment Must Follow Legal Framework,Invalid,Recommendation value submitted as 'Maybe' (not in valid set),Assessment rejected; only 'File Patent' or 'Do Not File' are accepted
+BR-PMS-015,Application Priority Must Be Based on Submission Date,Valid,Two standard applications submitted 10 and 5 days ago respectively; no special circumstances,Older application (10 days) receives higher priority_score; processed first
+BR-PMS-015,Application Priority Must Be Based on Submission Date,Valid,Application with high strategic_value and urgent urgency_level flagged under special_circumstances,Composite priority_score calculated using weighted formula; application prioritized accordingly
+BR-PMS-015,Application Priority Must Be Based on Submission Date,Invalid,Newly submitted application (today) placed ahead of application submitted 30 days ago without special circumstances,Priority calculation corrected; older application has higher priority_score
+BR-PMS-016,Application Revision Must Follow Time Limits,Valid,Applicant resubmits on day 45 after rejection with all feedback addressed,allow_resubmission = TRUE; new review cycle triggered
+BR-PMS-016,Application Revision Must Follow Time Limits,Valid,Applicant withdraws application while status = 'Needs Revision' (not in non_withdrawable_statuses),Withdrawal allowed with acknowledgment; application locked
+BR-PMS-016,Application Revision Must Follow Time Limits,Invalid,Applicant attempts to resubmit on day 65 after rejection,Resubmission blocked; application_status changed to EXPIRED
+BR-PMS-016,Application Revision Must Follow Time Limits,Invalid,Applicant resubmits within 60 days but feedback_addressed = FALSE,Resubmission blocked; feedback must be addressed before resubmission
+BR-PMS-016,Application Revision Must Follow Time Limits,Invalid,Applicant attempts to withdraw application with status = 'Filed' (in non_withdrawable_statuses),Withdrawal blocked; status is non-withdrawable; PCC_ADMIN authorization required
+BR-PMS-017,External Filing Must Follow Patent Office Requirements,Valid,Application formatted per Indian Patent Office requirements; all required fields complete,submission_ready = TRUE; application dispatched to patent office
+BR-PMS-017,External Filing Must Follow Patent Office Requirements,Valid,Application filed with a foreign office; justification_text is provided,International filing accepted; justification recorded
+BR-PMS-017,External Filing Must Follow Patent Office Requirements,Invalid,Application submitted with missing required fields per patent office schema,format_correction_required; error list returned to attorney
+BR-PMS-017,External Filing Must Follow Patent Office Requirements,Invalid,Application filed with non-Indian patent office without justification_text,Filing blocked; justification_text is mandatory for international filings
+BR-PMS-018,System Must Maintain Complete Audit Trail,Valid,Applicant submits application; action_type = 'SUBMIT',"Audit record created with user_id, timestamp, previous_state=Draft, new_state=Submitted"
+BR-PMS-018,System Must Maintain Complete Audit Trail,Valid,Director issues Rejection decision (critical operation),Immutable audit record created; cannot be modified or deleted
+BR-PMS-018,System Must Maintain Complete Audit Trail,Invalid,Status change occurs without triggering audit log creation,Compliance violation detected; missing audit record flagged for investigation
+BR-PMS-018,System Must Maintain Complete Audit Trail,Invalid,Attempt to modify an existing immutable audit record,Modification blocked; immutable record cannot be altered
+BR-PMS-019,Legal Advice Must Be Properly Documented,Valid,Attorney provides legal opinion on patentability; advice_content is non-null,Documentation record created; confidentiality_level marked; attorney_id attributed; privilege_status = TRUE
+BR-PMS-019,Legal Advice Must Be Properly Documented,Valid,Attorney documents legal research with proper attribution and confidentiality,Record stored with all required fields; accessible only to authorized roles
+BR-PMS-019,Legal Advice Must Be Properly Documented,Invalid,Legal advice stored without attorney_id attribution,Record rejected; attorney attribution is mandatory
+BR-PMS-019,Legal Advice Must Be Properly Documented,Invalid,Legal advice document saved with privilege_status = FALSE,System override sets privilege_status = TRUE; attorney-client privilege enforced

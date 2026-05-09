@@ -1,0 +1,17 @@
+WF_ID,Title,Category,Scenario,Expected Final State
+PMS-WF-101,Submit Patent Application,End-to-End,Authorized applicant submits a complete application end-to-end,Application status=Submitted; confirmation email sent; PCC_ADMIN notified
+PMS-WF-101,Submit Patent Application,Negative,Unauthorized user attempts to access the application form,END-VALIDATION_FAILED; access blocked with authorization error
+PMS-WF-101,Submit Patent Application,Negative,Applicant withdraws the draft before submission,END-DRAFT_WITHDRAWN; application deleted; no notifications sent
+PMS-WF-201,Application Revision and Resubmission,End-to-End,Applicant revises and resubmits within the 60-day window,END-RESUBMITTED; application enters new review cycle; version history maintained
+PMS-WF-201,Application Revision and Resubmission,Negative,Applicant misses the 60-day resubmission deadline,END-EXPIRED; status changed to Expired; applicant notified
+PMS-WF-201,Application Revision and Resubmission,Negative,Applicant withdraws application during the revision phase,END-WITHDRAWN; application locked and archived
+PMS-WF-301,Budget Approval and Financial Tracking,End-to-End,Budget within PCC_ADMIN threshold is approved and financial tracking initiated,END-BUDGET_APPROVED; financial record updated; stakeholders notified
+PMS-WF-301,Budget Approval and Financial Tracking,Negative,Budget exceeds PCC_ADMIN authority; escalated to Director who denies it,END-APPROVAL_DENIED; application on financial hold; PCC_ADMIN notified
+PMS-WF-401,Director Assignment and Routing,End-to-End,System auto-assigns application to best-matched Director and initiates review,END-ASSIGNED; application status=Under Review; Director receives notification
+PMS-WF-401,Director Assignment and Routing,Negative,No Director is available; assignment fails and retry is scheduled,END-ASSIGNMENT_FAILED; application remains Submitted; retry scheduled; PCC_ADMIN alerted
+PMS-WF-501,Post-Grant Tracking and Maintenance,End-to-End,PCC_ADMIN pays maintenance fee on time; patent renewed and next deadline scheduled,END-FEE_PAID; patent status remains Granted; next deadline set
+PMS-WF-501,Post-Grant Tracking and Maintenance,Negative,Maintenance fee missed; patent enters lapse risk with grace period activated,END-GRACE_PERIOD_ACTIVE; patent flagged for lapse risk; 30-day grace window active
+PMS-WF-601,External Filing and Office Communication,End-to-End,Attorney files application and receives confirmation; deadline tracking begins,END-FILED; application status=Filed; filing date recorded; deadlines active
+PMS-WF-601,External Filing and Office Communication,End-to-End,Office Action received; attorney responds within deadline; action closed,END-OFFICE_ACTION_RESOLVED; response filed; application progresses
+PMS-WF-601,External Filing and Office Communication,Negative,Filing rejected by patent office due to document error,END-FILING_FAILED; error logged; attorney notified to correct and refile
+PMS-WF-601,External Filing and Office Communication,Negative,Attorney fails to respond to Office Action before deadline,Application flagged at-risk; escalation sent to PCC_ADMIN and Director

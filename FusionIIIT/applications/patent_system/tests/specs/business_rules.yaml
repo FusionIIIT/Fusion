@@ -1,0 +1,779 @@
+business_rules:
+
+  - id: "BR-PMS-001"
+    title: "Patent Application Must Contain All Required Fields"
+    type: "Constraint"
+    description: "Patent Application MUST include title, abstract, detailed description, claims, inventor information, and supporting documents when submitted for review."
+    inputs:
+      - "application_title: String (max 250 chars)"
+      - "application_abstract: String (max 500 chars)"
+      - "detailed_description: Text"
+      - "patent_claims: Text"
+      - "inventor_details: JSON object"
+      - "supporting_documents: List"
+      - "required_fields_list: Configuration"
+      - "required_documents_list: Configuration"
+    logic: >
+      IF (title IS NOT NULL AND abstract IS NOT NULL AND description IS NOT NULL
+      AND claims IS NOT NULL AND inventors IS NOT NULL AND documents.count >= 1
+      AND all required_documents_list items are present)
+      THEN validation_passed = TRUE
+      ELSE validation_passed = FALSE
+
+    valid_tests:
+      - input_action: "Submit application with all fields filled: title, abstract, description, claims, inventor_details, and at least 1 document"
+        expected_result: "validation_passed = TRUE; application proceeds to submission"
+
+      - input_action: "Submit application with exactly the minimum required document count (1 document)"
+        expected_result: "validation_passed = TRUE; application accepted"
+
+    invalid_tests:
+      - input_action: "Submit application with missing patent_claims field"
+        expected_result: "validation_passed = FALSE; system highlights missing field; submission blocked"
+
+      - input_action: "Submit application with no supporting documents uploaded"
+        expected_result: "validation_passed = FALSE; documents.count = 0; error returned"
+
+      - input_action: "Submit application with abstract exceeding 500 characters"
+        expected_result: "validation_passed = FALSE; character limit error returned"
+
+    effects: "Ensures all patent applications contain minimum required information for review and prevents submission of incomplete applications"
+    referenced_by:
+      use_cases: ["PMS-UC-001", "PMS-UC-003", "PMS-UC-008"]
+      workflows: ["PMS-WF-101", "PMS-WF-401"]
+
+
+  - id: "BR-PMS-002"
+    title: "User Must Have Appropriate Role for Patent Operations"
+    type: "Authorization"
+    description: "User MUST have valid role assignment (Applicant, Director, PCC_ADMIN, or Attorney) and be a registered Faculty or Staff member when accessing patent management functions."
+    inputs:
+      - "user_role: String from user session"
+      - "required_role: String from system configuration"
+      - "operation_type: String identifying the requested operation"
+      - "registration_status: String"
+      - "permission_matrix: Configuration"
+    logic: >
+      IF user_role IN [required_roles_for_operation]
+      AND applicant_role IN ['Faculty', 'Staff']
+      AND registration_status = 'Active'
+      THEN allow_access = TRUE
+      ELSE allow_access = FALSE.
+      Log all access attempts.
+
+    valid_tests:
+      - input_action: "Faculty member with 'Applicant' role and Active status attempts to submit an application"
+        expected_result: "allow_access = TRUE; operation permitted; access attempt logged"
+
+      - input_action: "PCC_ADMIN with Active status attempts to assign a Director"
+        expected_result: "allow_access = TRUE; assignment operation permitted"
+
+    invalid_tests:
+      - input_action: "User without any role assignment attempts to access patent submission form"
+        expected_result: "allow_access = FALSE; authorization error returned; attempt logged"
+
+      - input_action: "Student (non-Faculty/Staff) attempts to submit application"
+        expected_result: "allow_access = FALSE; registration_status check fails; blocked"
+
+      - input_action: "Inactive registered user attempts to log in and access patent functions"
+        expected_result: "allow_access = FALSE; registration_status = Inactive; access denied"
+
+    effects: "Enforces role-based access control; only authorized personnel can access patent functions with complete audit trail"
+    referenced_by:
+      use_cases: ["PMS-UC-001", "PMS-UC-002", "PMS-UC-004", "PMS-UC-008"]
+      workflows: ["PMS-WF-101", "PMS-WF-401"]
+
+
+  - id: "BR-PMS-003"
+    title: "Conflict of Interest Must Be Declared and Prevented"
+    type: "Authorization"
+    description: "Director or PCC_ADMIN MUST NOT review, approve, or manage any application where they are listed as an inventor and MUST declare any conflicts of interest."
+    inputs:
+      - "reviewer_id: user id"
+      - "inventors: list (application data)"
+      - "conflict_type: String"
+      - "declaration_status: Boolean"
+      - "inventor_relationships: Database"
+      - "attorney_relationships: Database"
+    logic: >
+      IF reviewer_id IN inventors OR conflict_declared = TRUE
+      THEN block_assignment AND reassign_application
+      ELSE allow_review.
+      Before attorney assignment, run COI check:
+      IF conflict_detected THEN block_assignment AND alert PCC_ADMIN.
+
+    valid_tests:
+      - input_action: "Director with no inventor relationship reviews assigned application"
+        expected_result: "COI check passes; review allowed to proceed"
+
+      - input_action: "Attorney assigned to application with no declared conflict"
+        expected_result: "COI check passes; assignment confirmed"
+
+    invalid_tests:
+      - input_action: "Director who is listed as an inventor on the application attempts to review it"
+        expected_result: "Assignment blocked; application reassigned; PCC_ADMIN alerted"
+
+      - input_action: "Attorney with a declared conflict of interest is assigned to an application"
+        expected_result: "Assignment blocked; PCC_ADMIN alerted to select alternate attorney"
+
+    effects: "Prevents conflict of interest, ensures unbiased review process, maintains ethical standards and objective patent assessment"
+    referenced_by:
+      use_cases: ["PMS-UC-002", "PMS-UC-003", "PMS-UC-006", "PMS-UC-007", "PMS-UC-009", "PMS-UC-019"]
+      workflows: ["PMS-WF-401"]
+
+
+  - id: "BR-PMS-004"
+    title: "Application Must Follow Sequential Review Process"
+    type: "Constraint"
+    description: "Application MUST be approved by a Director before it can be assigned to an Attorney for patentability assessment and Director must select one of three final decisions: 'Approve', 'Reject', or 'Needs Revision'."
+    inputs:
+      - "application_status: String"
+      - "review_completion_date: DateTime"
+      - "assignment_date: DateTime"
+      - "director_decision: String"
+      - "valid_decisions: Configuration"
+    logic: >
+      IF application_status == "Approved"
+      AND (review_completion_date - assignment_date) <= 15 business_days
+      AND director_decision IN {'Approve', 'Reject', 'Needs Revision'}
+      THEN allow_attorney_assignment
+      ELSE block
+
+    valid_tests:
+      - input_action: "Director submits decision='Approve' within 15 business days of assignment"
+        expected_result: "Attorney assignment enabled; sequential workflow proceeds"
+
+      - input_action: "Director submits decision='Needs Revision' with justification"
+        expected_result: "Decision recorded; applicant notified; revision workflow triggered"
+
+    invalid_tests:
+      - input_action: "Attorney assignment attempted before Director has issued any decision"
+        expected_result: "Assignment blocked; application_status is not 'Approved'"
+
+      - input_action: "Director attempts to submit an invalid decision value (e.g., 'Hold')"
+        expected_result: "Decision rejected; only Approve/Reject/Needs Revision are valid"
+
+    effects: "Ensures proper review sequencing, maintains application processing timelines, and structures workflow with clear decision points"
+    referenced_by:
+      use_cases: ["PMS-UC-002", "PMS-UC-003", "PMS-UC-006", "PMS-UC-007"]
+      workflows: ["PMS-WF-401"]
+
+
+  - id: "BR-PMS-005"
+    title: "Director Must Provide Justification for Decisions"
+    type: "Constraint"
+    description: "Director MUST provide detailed justification when approving, rejecting, or requesting revisions to patent applications."
+    inputs:
+      - "action: String"
+      - "feedback: String"
+      - "justification_text: Text"
+      - "justification_length: Integer"
+    logic: >
+      IF action == "Reject" OR decision_type requires Justification
+      THEN feedback IS NOT NULL AND justification_length >= 50
+      ELSE allow
+
+    valid_tests:
+      - input_action: "Director rejects application with justification_text of 75 characters"
+        expected_result: "Decision accepted; feedback saved; applicant notified"
+
+      - input_action: "Director requests revision with detailed feedback exceeding 50 chars"
+        expected_result: "Revision request accepted; applicant receives detailed feedback"
+
+    invalid_tests:
+      - input_action: "Director rejects application without providing any justification"
+        expected_result: "Decision blocked; justification field is required error returned"
+
+      - input_action: "Director rejects application with justification_text of only 20 characters"
+        expected_result: "Decision blocked; minimum 50 characters required for justification"
+
+    effects: "Guarantees justification for decisions and ensures transparency in review process"
+    referenced_by:
+      use_cases: ["PMS-UC-003", "PMS-UC-007", "PMS-UC-018"]
+      workflows: []
+
+
+  - id: "BR-PMS-006"
+    title: "Document Access Must Be Controlled Based on Status"
+    type: "Authorization"
+    description: "Applicants MUST NOT edit or manage documents unless application status is 'Awaiting Revision' and access must be role-based for confidential information with version control maintained."
+    inputs:
+      - "application_status: String"
+      - "user_role: Enum"
+      - "portfolio_section: Enum"
+      - "document_sensitivity: Enum"
+      - "document_id: String"
+      - "version_number: String"
+      - "auto_save_enabled: Boolean"
+    logic: >
+      IF application_status == "Awaiting Revision"
+      THEN allow_edit FOR applicant
+      AND IF user_role has permission for portfolio_section
+      THEN allow_access ELSE block.
+      IF document_modified
+      THEN increment_version_number AND create_version_record.
+
+    valid_tests:
+      - input_action: "Applicant edits document when application_status = 'Awaiting Revision'"
+        expected_result: "Edit allowed; version incremented; version record created"
+
+      - input_action: "PCC_ADMIN accesses confidential document with appropriate role permission"
+        expected_result: "Access granted; access event logged"
+
+    invalid_tests:
+      - input_action: "Applicant attempts to edit document when application_status = 'Submitted'"
+        expected_result: "Edit blocked; document is locked post-submission"
+
+      - input_action: "User without permission for a confidential portfolio_section attempts access"
+        expected_result: "Access denied; authorization error returned"
+
+    effects: "Prevents document changes after submission except during revision phase, maintains confidentiality, and preserves document integrity with change history"
+    referenced_by:
+      use_cases: ["PMS-UC-001", "PMS-UC-003", "PMS-UC-004", "PMS-UC-005", "PMS-UC-009", "PMS-UC-016"]
+      workflows: ["PMS-WF-201"]
+
+
+  - id: "BR-PMS-007"
+    title: "Attorney Assignment Must Follow Institutional Policy"
+    type: "Authorization"
+    description: "Only PCC_ADMIN can assign attorneys and attorneys must be selected from the approved panel with relevant expertise unless Director grants exception."
+    inputs:
+      - "user_role: String"
+      - "attorney_panel: List"
+      - "specialization: String"
+      - "applicant_preference: String"
+      - "assignment_authority: Boolean"
+      - "application_category: Enum"
+      - "attorney_expertise_list: List"
+    logic: >
+      IF user_role = "PCC_ADMIN"
+      AND attorney IN approved_panel
+      AND specialization.matches(application_domain)
+      THEN IF applicant_preference IN approved_panel
+           THEN assign(applicant_preference)
+           ELSE assign(best_match).
+      Filter attorney_approved_list WHERE
+      attorney_expertise_list CONTAINS application_category.
+
+    valid_tests:
+      - input_action: "PCC_ADMIN assigns attorney from approved panel whose specialization matches application domain"
+        expected_result: "Assignment successful; attorney notified"
+
+      - input_action: "PCC_ADMIN assigns attorney matching applicant's preferred choice from approved panel"
+        expected_result: "Applicant preference honored; assignment confirmed"
+
+    invalid_tests:
+      - input_action: "Director (non-PCC_ADMIN) attempts to directly assign an attorney"
+        expected_result: "Assignment blocked; only PCC_ADMIN has assignment authority"
+
+      - input_action: "PCC_ADMIN attempts to assign attorney not on the approved panel"
+        expected_result: "Assignment blocked; attorney not in approved_panel"
+
+    effects: "Maintains control over attorney assignments, ensures qualified legal representation, and improves patentability assessment quality"
+    referenced_by:
+      use_cases: ["PMS-UC-006", "PMS-UC-007", "PMS-UC-019"]
+      workflows: []
+
+
+  - id: "BR-PMS-008"
+    title: "Budget Must Be Approved for Patent Applications"
+    type: "Authorization"
+    description: "Budget MUST NOT be approved for applications whose status is not 'Approved' and filing costs above threshold must be escalated to Director with proper authorization limits."
+    inputs:
+      - "application_status: String"
+      - "filing_cost: Currency"
+      - "attorney_fees: Currency"
+      - "threshold_limit: Currency"
+      - "budget_availability: Currency"
+      - "transaction_amount: Currency"
+      - "user_authority_level: Enum"
+      - "authorization_limit: Currency"
+    logic: >
+      total_cost = filing_cost + attorney_fees + administrative_cost;
+      IF application_status == "Approved"
+      AND total_cost <= threshold_limit
+      AND budget_availability >= total_cost
+      THEN allow_budget_approval
+      ELSE require_director_approval.
+      IF transaction_amount <= authorization_limit
+      THEN approve_transaction
+      ELSE require_higher_authority.
+
+    valid_tests:
+      - input_action: "Budget request submitted for Approved application with total_cost within threshold and sufficient budget"
+        expected_result: "Budget approved; financial tracking initiated"
+
+      - input_action: "Transaction amount is within PCC_ADMIN authorization limit"
+        expected_result: "Transaction approved without escalation"
+
+    invalid_tests:
+      - input_action: "Budget request submitted for application with status = 'Under Review'"
+        expected_result: "Budget approval blocked; application must be Approved first"
+
+      - input_action: "Total cost exceeds threshold_limit; budget not escalated"
+        expected_result: "Auto-escalation to Director triggered; PCC_ADMIN cannot approve unilaterally"
+
+      - input_action: "Budget requested when budget_availability < total_cost"
+        expected_result: "Approval blocked; insufficient budget error returned"
+
+    effects: "Ensures budgets approved only for validated applications, controls patent-related expenditure, and prevents budget overruns"
+    referenced_by:
+      use_cases: ["PMS-UC-006", "PMS-UC-008", "PMS-UC-009", "PMS-UC-012", "PMS-UC-018"]
+      workflows: ["PMS-WF-301"]
+
+
+  - id: "BR-PMS-009"
+    title: "Post-Grant Tracking Must Be Properly Activated"
+    type: "Constraint + Trigger"
+    description: "Post-grant tracking MUST ONLY be activated for patents whose status is 'Granted' and system must calculate maintenance fee schedules with explicit renewal decisions required."
+    inputs:
+      - "patent_status: String"
+      - "grant_date: Date"
+      - "maintenance_schedule: Configuration"
+      - "fee_amount: Currency"
+      - "renewal_dates: Array"
+      - "maintenance_fee_schedule: Configuration"
+    logic: >
+      IF patent_status == "Granted"
+      THEN allow_activation
+      AND CALCULATE next_fee_date = grant_date + maintenance_schedule.interval
+      ELSE block.
+      ON application_status CHANGE to 'Patent Granted'
+      THEN create PostGrantRecord with renewal deadline reminders.
+      Payment disabled until explicit renewal decision recorded.
+
+    valid_tests:
+      - input_action: "Patent status changes to 'Granted'; system activates post-grant tracking"
+        expected_result: "PostGrantRecord created; maintenance schedule calculated; renewal reminders set"
+
+      - input_action: "Next fee date calculated as grant_date + defined maintenance_schedule interval"
+        expected_result: "Correct next_fee_date stored; deadline tracker active"
+
+    invalid_tests:
+      - input_action: "Post-grant tracking activation attempted for application with status = 'Approved' (not yet Granted)"
+        expected_result: "Activation blocked; patent_status must be 'Granted'"
+
+      - input_action: "Payment processed without an explicit renewal decision on record"
+        expected_result: "Payment blocked; explicit renewal decision required first"
+
+    effects: "Restricts post-grant tracking to granted patents, maintains patent validity through timely fee payments, and prevents accidental patent loss"
+    referenced_by:
+      use_cases: ["PMS-UC-010", "PMS-UC-012", "PMS-UC-013", "PMS-UC-014"]
+      workflows: ["PMS-WF-501"]
+
+
+  - id: "BR-PMS-010"
+    title: "Document Upload Must Meet Security Requirements"
+    type: "Constraint"
+    description: "Uploaded documents MUST be in PDF format, under 50MB, malware-free, and classified by security level with comprehensive encryption at rest and in transit."
+    inputs:
+      - "file_format: String"
+      - "file_size: Integer (bytes)"
+      - "malware_scan_result: Boolean"
+      - "document_type: Enum"
+      - "content_sensitivity: Enum"
+      - "data_encryption_status: Boolean"
+      - "encryption_standard: Configuration"
+      - "key_management: Service"
+    logic: >
+      IF file_format = "PDF"
+      AND file_size <= 52428800
+      AND malware_scan_result = CLEAN
+      THEN upload_allowed = TRUE
+      AND classify_document(content_sensitivity)
+      ELSE upload_denied.
+      Apply encryption using AES256;
+      IF encryption fails THEN abort_operation AND alert_security_team.
+
+    valid_tests:
+      - input_action: "Upload a 10MB PDF file that passes malware scan"
+        expected_result: "upload_allowed = TRUE; document classified; encrypted and stored"
+
+      - input_action: "Upload a 52MB (exactly at limit) clean PDF"
+        expected_result: "upload_allowed = TRUE; file accepted at boundary"
+
+    invalid_tests:
+      - input_action: "Upload a .docx file instead of PDF"
+        expected_result: "upload_denied; file_format mismatch error returned"
+
+      - input_action: "Upload a PDF larger than 50MB (e.g., 60MB)"
+        expected_result: "upload_denied; file size exceeds 50MB limit"
+
+      - input_action: "Upload a PDF that fails malware scan"
+        expected_result: "upload_denied; malware detected error returned; security team alerted"
+
+    effects: "Ensures document security, system compatibility, protects intellectual property through appropriate access controls and comprehensive encryption"
+    referenced_by:
+      use_cases: ["PMS-UC-001", "PMS-UC-012", "PMS-UC-013"]
+      workflows: ["PMS-WF-101"]
+
+
+  - id: "BR-PMS-011"
+    title: "System Must Send Automated Notifications"
+    type: "Trigger"
+    description: "System MUST send automated notifications to relevant stakeholders when patent application status changes and generate alerts for approaching deadlines with SLA escalation."
+    inputs:
+      - "application_id: String"
+      - "old_status: String"
+      - "new_status: String"
+      - "stakeholder_list: Array"
+      - "deadline_date: Date"
+      - "days_remaining: Integer"
+      - "task_type: String"
+      - "task_assigned_time: DateTime"
+      - "escalation_chain: Configuration"
+    logic: >
+      IF old_status != new_status
+      THEN send_notification(stakeholder_list, notification_type)
+      AND IF days_remaining IN [30, 15, 5]
+          THEN generate_alert(alert_recipients, deadline_date).
+      IF (current_time - task_assigned_time) >= policy_thresholds(task_type).escalation
+      THEN escalate to next authority per escalation_chain.
+
+    valid_tests:
+      - input_action: "Application status changes from 'Submitted' to 'Under Review'"
+        expected_result: "Notification dispatched to applicant and Director; event logged in audit trail"
+
+      - input_action: "Deadline is 5 days away"
+        expected_result: "Alert generated and sent to responsible party (days_remaining = 5 triggers alert)"
+
+    invalid_tests:
+      - input_action: "Status change event fires but stakeholder email is invalid"
+        expected_result: "Delivery failure logged; PCC_ADMIN alerted to correct contact details"
+
+      - input_action: "Task assigned time exceeds SLA threshold with no escalation triggered"
+        expected_result: "Escalation fires per escalation_chain; next authority notified"
+
+    effects: "Ensures all stakeholders are informed of changes, prevents missed deadlines, ensures timely action, and improves timeliness of patent process"
+    referenced_by:
+      use_cases: ["PMS-UC-001", "PMS-UC-002", "PMS-UC-003", "PMS-UC-004", "PMS-UC-007", "PMS-UC-008", "PMS-UC-016"]
+      workflows: ["PMS-WF-301", "PMS-WF-401", "PMS-WF-501", "PMS-WF-601"]
+
+
+  - id: "BR-PMS-012"
+    title: "Applications Must Be Assigned Based on Expertise and Hierarchy"
+    type: "Calculation + Authorization"
+    description: "System MUST assign patent applications to directors when expertise domain matches application category and consider workload balance with proper hierarchical routing."
+    inputs:
+      - "application_category: Enum"
+      - "director_expertise: List"
+      - "director_workload: Integer"
+      - "availability_status: Boolean"
+      - "personnel_expertise: List"
+      - "applicant_department: String"
+      - "hierarchy_graph: Configuration"
+      - "routing_rules: Configuration"
+    logic: >
+      Decision Table: Domain Match + Workload + Availability → Assignment;
+      IF domain_match AND workload < threshold AND availability = TRUE
+      THEN assign to lowest_workload_director.
+      ON application_status CHANGE to 'Submitted'
+      THEN route to PCC_ADMIN.
+      Filter WHERE director_department = applicant_department
+      OR expertise matches application_field_of_invention.
+
+    valid_tests:
+      - input_action: "Application submitted; Director A has matching domain and workload below threshold"
+        expected_result: "Application routed to Director A; assignment confirmed; Director notified"
+
+      - input_action: "Two eligible Directors available; Director B has lower workload"
+        expected_result: "Application assigned to Director B (lowest workload wins)"
+
+    invalid_tests:
+      - input_action: "All Directors with matching domain expertise are above workload threshold"
+        expected_result: "Assignment fails; PCC_ADMIN alerted; manual assignment required"
+
+      - input_action: "Application submitted but no Director has expertise matching application_category"
+        expected_result: "No auto-assignment made; PCC_ADMIN alerted to handle manually"
+
+    effects: "Ensures proper expertise-based assignment, workload distribution, centralizes intake process, and maintains proper approval hierarchy"
+    referenced_by:
+      use_cases: ["PMS-UC-002", "PMS-UC-011", "PMS-UC-014", "PMS-UC-019"]
+      workflows: ["PMS-WF-401"]
+
+
+  - id: "BR-PMS-013"
+    title: "Inventor Agreement Must Be Obtained"
+    type: "Constraint"
+    description: "All inventors must sign an inventor agreement before filing and electronic signatures are permitted where legally allowed with proper validation."
+    inputs:
+      - "inventor_agreements_signed: Boolean"
+      - "signature_audit: Object"
+      - "validity_checks: Boolean"
+      - "legal_permission: Boolean"
+      - "signature_data: Object"
+    logic: >
+      IF inventor_agreements_signed = TRUE
+      AND (physical_signature OR e_signature_valid)
+      THEN proceed_with_filing
+      ELSE block_submission.
+      Validate e-signatures and store signature_audit with validity_checks.
+
+    valid_tests:
+      - input_action: "All inventors have signed agreement (physically or via valid e-signature)"
+        expected_result: "Submission proceeds; signature_audit stored"
+
+      - input_action: "Co-inventor signs via e-signature in a jurisdiction where it is legally permitted"
+        expected_result: "e_signature_valid = TRUE; agreement accepted; audit logged"
+
+    invalid_tests:
+      - input_action: "Application submitted with one co-inventor agreement unsigned"
+        expected_result: "Submission blocked; unsigned agreement error; reminder sent to co-inventor"
+
+      - input_action: "E-signature submitted but fails validation checks"
+        expected_result: "Submission blocked; invalid e-signature error; re-signing required"
+
+    effects: "Ensures ownership and consent before filing with proper signature validation and comprehensive documentation"
+    referenced_by:
+      use_cases: ["PMS-UC-001", "PMS-UC-016", "PMS-UC-017"]
+      workflows: ["PMS-WF-101"]
+
+
+  - id: "BR-PMS-014"
+    title: "Patentability Assessment Must Follow Legal Framework"
+    type: "Constraint"
+    description: "Assigned attorney must produce a patentability opinion following established legal framework before filing and must provide clear recommendation with detailed justification."
+    inputs:
+      - "opinion_recorded: Boolean"
+      - "novelty_score: Float"
+      - "non_obviousness_score: Float"
+      - "utility_score: Float"
+      - "search_completeness: Percentage"
+      - "assessment_recommendation: String"
+      - "attorney_report: Text"
+    logic: >
+      IF opinion_recorded = TRUE
+      AND novelty_score >= threshold
+      AND non_obviousness_score >= legal_standard
+      AND utility_score >= threshold
+      AND search_completeness >= minimum
+      AND assessment_recommendation IN {'File Patent', 'Do Not File'}
+      AND attorney_report IS NOT NULL
+      THEN allow_filing
+      ELSE block
+
+    valid_tests:
+      - input_action: "Attorney submits full assessment with all scores above threshold, valid recommendation, and non-null report"
+        expected_result: "Filing allowed; assessment stored; application progresses"
+
+      - input_action: "Attorney recommends 'Do Not File' with complete scores and report"
+        expected_result: "Assessment accepted; application flagged accordingly; Director notified"
+
+    invalid_tests:
+      - input_action: "Filing attempted before attorney has recorded any patentability opinion"
+        expected_result: "Filing blocked; opinion_recorded = FALSE"
+
+      - input_action: "Assessment submitted with novelty_score below threshold"
+        expected_result: "Filing blocked; novelty score does not meet legal standard"
+
+      - input_action: "Recommendation value submitted as 'Maybe' (not in valid set)"
+        expected_result: "Assessment rejected; only 'File Patent' or 'Do Not File' are accepted"
+
+    effects: "Ensures thorough legal analysis, comprehensive prior art evaluation before filing, clear legal opinion, and creates audit trail of legal assessment"
+    referenced_by:
+      use_cases: ["PMS-UC-007", "PMS-UC-020"]
+      workflows: []
+
+
+  - id: "BR-PMS-015"
+    title: "Application Priority Must Be Based on Submission Date"
+    type: "Calculation"
+    description: "System MUST assign processing priority based on application submission date and strategic factors when multiple applications await review."
+    inputs:
+      - "submission_date: Date"
+      - "deadline_date: Date"
+      - "strategic_value: Enum"
+      - "urgency_level: Enum"
+      - "priority_score: Integer"
+    logic: >
+      IF special_circumstances = FALSE
+      THEN priority_score = MAX_PRIORITY - days_since_submission
+      ELSE priority_score = (Deadline Weight × Days Until Deadline)
+                          + (Strategic Value × Weight)
+                          + (Urgency × Weight)
+
+    valid_tests:
+      - input_action: "Two standard applications submitted 10 and 5 days ago respectively; no special circumstances"
+        expected_result: "Older application (10 days) receives higher priority_score; processed first"
+
+      - input_action: "Application with high strategic_value and urgent urgency_level flagged under special_circumstances"
+        expected_result: "Composite priority_score calculated using weighted formula; application prioritized accordingly"
+
+    invalid_tests:
+      - input_action: "Newly submitted application (today) placed ahead of application submitted 30 days ago without special circumstances"
+        expected_result: "Priority calculation corrected; older application has higher priority_score"
+
+    effects: "Ensures fair processing order, prevents indefinite delays, and ensures critical applications receive appropriate attention"
+    referenced_by:
+      use_cases: ["PMS-UC-002", "PMS-UC-003", "PMS-UC-018"]
+      workflows: ["PMS-WF-401"]
+
+
+  - id: "BR-PMS-016"
+    title: "Application Revision Must Follow Time Limits"
+    type: "Constraint"
+    description: "Applicant MUST resubmit revised application within 60 days when rejection notice is issued and feedback must be addressed with controlled withdrawal process."
+    inputs:
+      - "rejection_date: Date"
+      - "resubmission_date: Date"
+      - "revision_period: Integer"
+      - "feedback_addressed: Boolean"
+      - "status_change_valid: Boolean"
+      - "withdraw_reason: String"
+      - "non_withdrawable_statuses: Configuration"
+    logic: >
+      IF (resubmission_date - rejection_date) <= 60 days
+      AND feedback_addressed = TRUE
+      AND valid_state_transition
+      THEN allow_resubmission = TRUE
+      ELSE application_status = 'EXPIRED'.
+      IF application_status NOT IN non_withdrawable_statuses
+      THEN allow_withdrawal with required acknowledgment.
+
+    valid_tests:
+      - input_action: "Applicant resubmits on day 45 after rejection with all feedback addressed"
+        expected_result: "allow_resubmission = TRUE; new review cycle triggered"
+
+      - input_action: "Applicant withdraws application while status = 'Needs Revision' (not in non_withdrawable_statuses)"
+        expected_result: "Withdrawal allowed with acknowledgment; application locked"
+
+    invalid_tests:
+      - input_action: "Applicant attempts to resubmit on day 65 after rejection"
+        expected_result: "Resubmission blocked; application_status changed to EXPIRED"
+
+      - input_action: "Applicant resubmits within 60 days but feedback_addressed = FALSE"
+        expected_result: "Resubmission blocked; feedback must be addressed before resubmission"
+
+      - input_action: "Applicant attempts to withdraw application with status = 'Filed' (in non_withdrawable_statuses)"
+        expected_result: "Withdrawal blocked; status is non-withdrawable; PCC_ADMIN authorization required"
+
+    effects: "Provides fair opportunity for improvement while maintaining process efficiency, workflow integrity, and allows controlled withdrawal process"
+    referenced_by:
+      use_cases: ["PMS-UC-004", "PMS-UC-008", "PMS-UC-014", "PMS-UC-018"]
+      workflows: ["PMS-WF-201"]
+
+
+  - id: "BR-PMS-017"
+    title: "External Filing Must Follow Patent Office Requirements"
+    type: "Constraint"
+    description: "Patent application MUST comply with national patent office format when submitted externally and communications must follow established protocols with proper justification for international filings."
+    inputs:
+      - "application_format: Object"
+      - "patent_office: String"
+      - "format_compliance: Boolean"
+      - "protocol_requirements: List"
+      - "communication_type: Enum"
+      - "filing_office: String"
+      - "justification_text: Text"
+      - "external_id: String"
+      - "jurisdiction: String"
+    logic: >
+      IF application_format.validates_against(patent_office.requirements)
+      AND required_fields.complete = TRUE
+      AND protocol_compliance = TRUE
+      THEN submission_ready = TRUE
+      ELSE format_correction_required.
+      IF filing_office != 'Indian Patent Office'
+      THEN justification_text becomes mandatory field.
+
+    valid_tests:
+      - input_action: "Application formatted per Indian Patent Office requirements; all required fields complete"
+        expected_result: "submission_ready = TRUE; application dispatched to patent office"
+
+      - input_action: "Application filed with a foreign office; justification_text is provided"
+        expected_result: "International filing accepted; justification recorded"
+
+    invalid_tests:
+      - input_action: "Application submitted with missing required fields per patent office schema"
+        expected_result: "format_correction_required; error list returned to attorney"
+
+      - input_action: "Application filed with non-Indian patent office without justification_text"
+        expected_result: "Filing blocked; justification_text is mandatory for international filings"
+
+    effects: "Ensures successful external filing, reduces rejection risk, ensures proper patent office interactions, and maintains mapping with external offices"
+    referenced_by:
+      use_cases: ["PMS-UC-007", "PMS-UC-009", "PMS-UC-010", "PMS-UC-013"]
+      workflows: ["PMS-WF-601"]
+
+
+  - id: "BR-PMS-018"
+    title: "System Must Maintain Complete Audit Trail"
+    type: "Constraint"
+    description: "System MUST log all patent application actions and status changes with complete audit trail for compliance and record all critical operations with immutable records."
+    inputs:
+      - "user_id: String"
+      - "action_type: Enum"
+      - "timestamp: DateTime"
+      - "application_id: String"
+      - "previous_state: String"
+      - "new_state: String"
+      - "change_details: Text"
+      - "user_action: String"
+      - "document_access: Object"
+    logic: >
+      FOR EACH application_action
+      THEN log_entry = create_audit_record(user_id, action_type, timestamp,
+                        application_id, previous_state, new_state)
+      AND IF action_type IN critical_operations
+          THEN create_immutable_record.
+      Log all critical operations to immutable audit store.
+
+    valid_tests:
+      - input_action: "Applicant submits application; action_type = 'SUBMIT'"
+        expected_result: "Audit record created with user_id, timestamp, previous_state=Draft, new_state=Submitted"
+
+      - input_action: "Director issues Rejection decision (critical operation)"
+        expected_result: "Immutable audit record created; cannot be modified or deleted"
+
+    invalid_tests:
+      - input_action: "Status change occurs without triggering audit log creation"
+        expected_result: "Compliance violation detected; missing audit record flagged for investigation"
+
+      - input_action: "Attempt to modify an existing immutable audit record"
+        expected_result: "Modification blocked; immutable record cannot be altered"
+
+    effects: "Provides complete transaction history for compliance, troubleshooting, audit purposes, and enables forensic analysis if needed"
+    referenced_by:
+      use_cases: ["PMS-UC-001", "PMS-UC-002", "PMS-UC-003", "PMS-UC-004", "PMS-UC-005", "PMS-UC-006",
+                  "PMS-UC-007", "PMS-UC-008", "PMS-UC-009", "PMS-UC-010", "PMS-UC-011", "PMS-UC-012",
+                  "PMS-UC-013", "PMS-UC-014", "PMS-UC-015", "PMS-UC-016", "PMS-UC-017", "PMS-UC-018",
+                  "PMS-UC-019", "PMS-UC-020"]
+      workflows: ["PMS-WF-201", "PMS-WF-301", "PMS-WF-401", "PMS-WF-501", "PMS-WF-601"]
+
+
+  - id: "BR-PMS-019"
+    title: "Legal Advice Must Be Properly Documented"
+    type: "Constraint"
+    description: "Attorney legal advice MUST be documented with proper attribution, confidentiality markings, and attorney-client privilege protection with research tool availability."
+    inputs:
+      - "advice_content: Text"
+      - "attorney_id: String"
+      - "confidentiality_level: Enum"
+      - "privilege_status: Boolean"
+      - "research_query: String"
+      - "tool_availability: Boolean"
+    logic: >
+      IF legal_advice_provided
+      THEN create_documentation_record
+      AND mark_confidentiality_level
+      AND log_attorney_attribution
+      AND set_privilege_status = TRUE
+
+    valid_tests:
+      - input_action: "Attorney provides legal opinion on patentability; advice_content is non-null"
+        expected_result: "Documentation record created; confidentiality_level marked; attorney_id attributed; privilege_status = TRUE"
+
+      - input_action: "Attorney documents legal research with proper attribution and confidentiality"
+        expected_result: "Record stored with all required fields; accessible only to authorized roles"
+
+    invalid_tests:
+      - input_action: "Legal advice stored without attorney_id attribution"
+        expected_result: "Record rejected; attorney attribution is mandatory"
+
+      - input_action: "Legal advice document saved with privilege_status = FALSE"
+        expected_result: "System override sets privilege_status = TRUE; attorney-client privilege enforced"
+
+    effects: "Ensures legal advice is properly recorded, protected, and supports comprehensive legal analysis"
+    referenced_by:
+      use_cases: ["PMS-UC-007"]
+      workflows: []
