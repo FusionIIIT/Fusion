@@ -13,28 +13,27 @@ class Migration(migrations.Migration):
 
     operations = [
         # Add database indexes for optimized query performance
+        # Safe migration that checks if table exists before creating indexes
         migrations.RunSQL(
             sql=[
-                # Main composite index for course registration queries
+                # Check if course_registration table exists and create indexes only if it does
                 """
-                CREATE INDEX IF NOT EXISTS idx_course_reg_main_query 
-                ON course_registration(session, semester_type, course_id_id, registration_type, student_id_id);
-                """,
-                
-                # Individual indexes for course registration
-                """
-                CREATE INDEX IF NOT EXISTS idx_course_reg_session_semester_course 
-                ON course_registration(session, semester_type, course_id_id);
-                """,
-                
-                """
-                CREATE INDEX IF NOT EXISTS idx_course_reg_student 
-                ON course_registration(student_id_id);
-                """,
-                
-                """
-                CREATE INDEX IF NOT EXISTS idx_course_reg_type 
-                ON course_registration(registration_type);
+                DO $$
+                BEGIN
+                    IF EXISTS (
+                        SELECT 1 FROM information_schema.tables 
+                        WHERE table_name = 'course_registration'
+                    ) THEN
+                        EXECUTE 'CREATE INDEX IF NOT EXISTS idx_course_reg_main_query 
+                            ON course_registration(session, semester_type, course_id_id, registration_type, student_id_id)';
+                        EXECUTE 'CREATE INDEX IF NOT EXISTS idx_course_reg_session_semester_course 
+                            ON course_registration(session, semester_type, course_id_id)';
+                        EXECUTE 'CREATE INDEX IF NOT EXISTS idx_course_reg_student 
+                            ON course_registration(student_id_id)';
+                        EXECUTE 'CREATE INDEX IF NOT EXISTS idx_course_reg_type 
+                            ON course_registration(registration_type)';
+                    END IF;
+                END $$;
                 """
             ],
             
