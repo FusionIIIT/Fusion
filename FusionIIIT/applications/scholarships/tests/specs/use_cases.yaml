@@ -1,0 +1,283 @@
+###############################################################################
+# SPACS (Scholarships & Awards) Module — Use Case Test Designs
+# Spec Source: UseCase.md
+# Guide Reference: BackendTestingGuide.md §5.1
+#
+# Total UCs: 13  |  Min Tests Per UC: 3 (1 HP + 1 AP + 1 EX)
+# Required UC Tests: 3 × 13 = 39
+###############################################################################
+
+use_cases:
+
+  - id: "SPACS-UC-001"
+    title: "Apply For Scholarship/Awards"
+    description: "Student applies for a scholarship or award via the SPACS module."
+    actors: "Student"
+    preconditions: "Student authenticated; application window open"
+    happy_paths:
+      - scenario: "Student submits a complete MCM scholarship application with valid details"
+        preconditions: "Student logged in; MCM award window open; student meets eligibility"
+        input_action: "POST /student/submit/mcm/ with award_id, income_certificate, all MCM fields"
+        expected_result: "Application created; HTTP 201; acknowledgment returned"
+    alternate_paths:
+      - scenario: "Student submits extended scholarship application instead of legacy MCM"
+        preconditions: "Student logged in; ExtendedScholarshipType is active"
+        input_action: "POST /applications/ with scholarship_type, academic_year, semester, documents"
+        expected_result: "Application created status=PENDING; HTTP 201"
+    exception_paths:
+      - scenario: "Student submits application with CPI below minimum"
+        preconditions: "Student logged in; CPI below scholarship minimum_cgpa"
+        input_action: "POST /applications/ with scholarship_type having high minimum_cgpa"
+        expected_result: "Rejected HTTP 400; eligibility error with reasons"
+
+  - id: "SPACS-UC-002"
+    title: "Verify Application"
+    description: "SPACS Assistant reviews MCM application for completeness."
+    actors: "SPACS Assistant"
+    preconditions: "Authenticated assistant; application status=pending"
+    happy_paths:
+      - scenario: "Assistant verifies a pending MCM application"
+        preconditions: "Assistant logged in; MCM application status=pending"
+        input_action: "PATCH /mcm-applications/<pk>/ with status=verified"
+        expected_result: "Status updated to verified; HTTP 200"
+    alternate_paths:
+      - scenario: "Assistant reverts application for corrections"
+        preconditions: "Assistant logged in; MCM application status=pending"
+        input_action: "PATCH /mcm-applications/<pk>/ with status=reverted, revert_reason='Missing docs'"
+        expected_result: "Status=reverted; revert_reason recorded"
+    exception_paths:
+      - scenario: "Student attempts to verify an application"
+        preconditions: "Student user logged in"
+        input_action: "PATCH /mcm-applications/<pk>/ with status=verified"
+        expected_result: "Rejected; student cannot set verified status"
+
+  - id: "SPACS-UC-003"
+    title: "Modify Pending Application"
+    description: "Student edits a reverted application before re-submission."
+    actors: "Student"
+    preconditions: "Authenticated student; application status=reverted"
+    happy_paths:
+      - scenario: "Student modifies reverted MCM application"
+        preconditions: "Student logged in; owns MCM application with status=reverted"
+        input_action: "PATCH /mcm-applications/<pk>/ with updated annual_income"
+        expected_result: "Updated; status reset to pending; HTTP 200"
+    alternate_paths:
+      - scenario: "Student modifies reverted single-parent application"
+        preconditions: "Student logged in; single-parent application status=reverted"
+        input_action: "PATCH /single-parent-applications/<pk>/ with updated postal_address"
+        expected_result: "Updated; status reset to pending; HTTP 200"
+    exception_paths:
+      - scenario: "Student attempts to modify a pending (non-reverted) application"
+        preconditions: "Student logged in; application status=pending"
+        input_action: "PATCH /mcm-applications/<pk>/ with updated fields"
+        expected_result: "Rejected; can only edit reverted applications"
+
+  - id: "SPACS-UC-004"
+    title: "Request Withdrawal"
+    description: "Student attempts to withdraw a pending application."
+    actors: "Student"
+    preconditions: "Authenticated student; application status=pending"
+    happy_paths:
+      - scenario: "Student views pending applications for withdrawal"
+        preconditions: "Student logged in; owns pending application"
+        input_action: "GET /student/applications/"
+        expected_result: "List of applications returned including pending; HTTP 200"
+    alternate_paths:
+      - scenario: "Student checks MCM application status before withdrawal"
+        preconditions: "Student logged in; has MCM applications"
+        input_action: "GET /mcm-applications/ as student"
+        expected_result: "Student's own MCM applications returned with status"
+    exception_paths:
+      - scenario: "Student attempts to update finalized application"
+        preconditions: "Student logged in; application status=approved"
+        input_action: "PATCH /mcm-applications/<pk>/ on finalized application"
+        expected_result: "Rejected; application is finalized and cannot be updated"
+
+  - id: "SPACS-UC-005"
+    title: "Acknowledge Withdrawal"
+    description: "SPACS Assistant acknowledges/handles a withdrawal or revert."
+    actors: "SPACS Assistant"
+    preconditions: "Authenticated SPACS Assistant"
+    happy_paths:
+      - scenario: "Assistant reverts MCM application (acknowledgement flow)"
+        preconditions: "Assistant logged in; pending MCM application exists"
+        input_action: "PATCH /mcm-applications/<pk>/ with status=reverted, revert_reason='Student request'"
+        expected_result: "Reverted; revert_reason recorded"
+    alternate_paths:
+      - scenario: "Assistant reverts single-parent application"
+        preconditions: "Assistant logged in; single-parent application status=pending"
+        input_action: "PATCH /single-parent-applications/<pk>/ with status=reverted, revert_reason='Verify'"
+        expected_result: "Reverted with reason recorded"
+    exception_paths:
+      - scenario: "Student attempts to revert application"
+        preconditions: "Student logged in"
+        input_action: "PATCH /mcm-applications/<pk>/ with status=reverted"
+        expected_result: "Denied; student cannot revert applications"
+
+  - id: "SPACS-UC-006"
+    title: "Sanctioning Decision"
+    description: "Convener approves or rejects verified applications."
+    actors: "SPACS Convener"
+    preconditions: "Authenticated convener; application status=verified"
+    happy_paths:
+      - scenario: "Convener approves a verified MCM application"
+        preconditions: "Convener logged in; MCM application status=verified"
+        input_action: "PATCH /mcm-applications/<pk>/ with status=approved"
+        expected_result: "Status=approved; HTTP 200"
+    alternate_paths:
+      - scenario: "Convener rejects a verified application"
+        preconditions: "Convener logged in; verified application exists"
+        input_action: "PATCH /mcm-applications/<pk>/ with status=rejected"
+        expected_result: "Status=rejected; HTTP 200"
+    exception_paths:
+      - scenario: "Assistant attempts to approve an application"
+        preconditions: "Assistant logged in; verified application"
+        input_action: "PATCH /mcm-applications/<pk>/ with status=approved"
+        expected_result: "Denied; assistant cannot approve/reject"
+
+  - id: "SPACS-UC-007"
+    title: "Download/Print Application"
+    description: "Student or staff retrieves application data for export."
+    actors: "Student"
+    preconditions: "Authenticated user; application exists"
+    happy_paths:
+      - scenario: "Student retrieves own MCM application details"
+        preconditions: "Student logged in; owns MCM application"
+        input_action: "GET /mcm-applications/<pk>/"
+        expected_result: "Full application data returned; HTTP 200"
+    alternate_paths:
+      - scenario: "Convener retrieves student application for review"
+        preconditions: "Convener logged in"
+        input_action: "GET /mcm-applications/<pk>/ as convener"
+        expected_result: "Full application data returned; HTTP 200"
+    exception_paths:
+      - scenario: "Student tries to access another student's application"
+        preconditions: "Student B logged in; application belongs to Student A"
+        input_action: "GET /mcm-applications/<pk>/ (other student's pk)"
+        expected_result: "Empty result or 404; student cannot see others' data"
+
+  - id: "SPACS-UC-008"
+    title: "Check Application Status"
+    description: "Student views current application status."
+    actors: "Student"
+    preconditions: "Authenticated user; application exists"
+    happy_paths:
+      - scenario: "Student checks status of MCM application"
+        preconditions: "Student logged in; has MCM application"
+        input_action: "GET /mcm-applications/"
+        expected_result: "Own applications returned with status field; HTTP 200"
+    alternate_paths:
+      - scenario: "Student views legacy applications"
+        preconditions: "Student logged in; has legacy applications"
+        input_action: "GET /student/applications/"
+        expected_result: "Applications with status returned; HTTP 200"
+    exception_paths:
+      - scenario: "Unauthenticated user checks status"
+        preconditions: "No user logged in"
+        input_action: "GET /mcm-applications/ without authentication"
+        expected_result: "HTTP 401 or 403; authentication required"
+
+  - id: "SPACS-UC-009"
+    title: "Forward Application"
+    description: "Assistant verifies/forwards application to Convener."
+    actors: "SPACS Assistant"
+    preconditions: "Authenticated assistant; application pending"
+    happy_paths:
+      - scenario: "Assistant forwards pending MCM application"
+        preconditions: "Assistant logged in; MCM application status=pending"
+        input_action: "PATCH /mcm-applications/<pk>/ with status=verified"
+        expected_result: "Status=verified (forwarded); HTTP 200"
+    alternate_paths:
+      - scenario: "Assistant forwards single-parent application"
+        preconditions: "Assistant logged in; single-parent status=pending"
+        input_action: "PATCH /single-parent-applications/<pk>/ with status=verified"
+        expected_result: "Status=verified; HTTP 200"
+    exception_paths:
+      - scenario: "Assistant tries to forward non-pending application"
+        preconditions: "Assistant logged in; application already verified"
+        input_action: "PATCH /mcm-applications/<pk>/ with status=verified on verified app"
+        expected_result: "Error; assistant can only act on pending applications"
+
+  - id: "SPACS-UC-010"
+    title: "Add New Scholarships"
+    description: "Admin creates a new ExtendedScholarshipType."
+    actors: "SPACS Convener"
+    preconditions: "Authenticated admin user"
+    happy_paths:
+      - scenario: "Admin creates new scholarship type with full details"
+        preconditions: "Admin logged in"
+        input_action: "POST /types/ with name, category, description, eligibility_criteria, amount"
+        expected_result: "Created; HTTP 201; data returned with new ID"
+    alternate_paths:
+      - scenario: "Admin creates scholarship with minimal fields"
+        preconditions: "Admin logged in"
+        input_action: "POST /types/ with only required fields"
+        expected_result: "Created; HTTP 201"
+    exception_paths:
+      - scenario: "Student attempts to create scholarship type"
+        preconditions: "Student logged in"
+        input_action: "POST /types/ with scholarship data"
+        expected_result: "HTTP 403; admin access required"
+
+  - id: "SPACS-UC-011"
+    title: "Modify Award Criteria"
+    description: "Admin edits criteria for existing scholarship type."
+    actors: "SPACS Convener"
+    preconditions: "Authenticated admin; scholarship type exists"
+    happy_paths:
+      - scenario: "Admin updates minimum_cgpa for scholarship"
+        preconditions: "Admin logged in; scholarship type exists"
+        input_action: "Direct model update of minimum_cgpa field via service layer"
+        expected_result: "Criteria updated; reflected in subsequent eligibility checks"
+    alternate_paths:
+      - scenario: "Admin deactivates a scholarship type"
+        preconditions: "Admin logged in; active scholarship exists"
+        input_action: "Set scholarship_type.is_active=False"
+        expected_result: "Deactivated; new applications rejected"
+    exception_paths:
+      - scenario: "Application against deactivated scholarship"
+        preconditions: "Scholarship type is_active=False"
+        input_action: "POST /applications/ with inactive scholarship_type"
+        expected_result: "Rejected; scholarship is no longer active"
+
+  - id: "SPACS-UC-012"
+    title: "Manage Scholarship Catalogue"
+    description: "Admin/Convener views catalogue of scholarship types."
+    actors: "SPACS Convener"
+    preconditions: "Authenticated user"
+    happy_paths:
+      - scenario: "User retrieves full scholarship catalogue"
+        preconditions: "User logged in; scholarship types exist"
+        input_action: "GET /types/"
+        expected_result: "Full list returned; HTTP 200"
+    alternate_paths:
+      - scenario: "Filter active-only scholarship types"
+        preconditions: "User logged in; active and inactive types exist"
+        input_action: "GET /types/?active_only=true"
+        expected_result: "Only active types returned"
+    exception_paths:
+      - scenario: "Unauthenticated user views catalogue"
+        preconditions: "No user logged in"
+        input_action: "GET /types/ without authentication"
+        expected_result: "HTTP 401 or 403"
+
+  - id: "SPACS-UC-013"
+    title: "Verify and Grant Scholarship"
+    description: "Admin disburses approved scholarships."
+    actors: "SPACS Convener"
+    preconditions: "Authenticated admin; approved application exists"
+    happy_paths:
+      - scenario: "Admin disburses approved scholarship application"
+        preconditions: "Admin logged in; ScholarshipApplication status=APPROVED"
+        input_action: "POST /awards/ with application_id, amount, transaction_reference"
+        expected_result: "Status=DISBURSED; HTTP 201; disbursement details returned"
+    alternate_paths:
+      - scenario: "Admin approves extended scholarship application"
+        preconditions: "Admin logged in; application status=PENDING"
+        input_action: "POST /applications/<id>/approve/ with status=APPROVED, amount_approved"
+        expected_result: "Approved; HTTP 200"
+    exception_paths:
+      - scenario: "Non-admin attempts to disburse scholarship"
+        preconditions: "Student user logged in"
+        input_action: "POST /awards/ with application_id"
+        expected_result: "HTTP 403; admin access required"

@@ -1,0 +1,82 @@
+﻿Total usernames generated to check: 87
+Username     | Full Name                 | Email                               | Programme    | Department                         
+-----------------------------------------------------------------------------------------------------------------------------------
+23BCS001     | AADARSH NAYAK             | 23BCS001@iiitdmj.ac.in              | B.Tech       | Computer Science and Engineering   
+23BCS002     | Vishal Malhotra           | 23BCS002@students.iiitdmj.ac.in     | B.Tech       | Computer Science and Engineering   
+23BCS003     | AAYUSH SINGHAL            | 23BCS003@iiitdmj.ac.in              | B.Tech       | Computer Science and Engineering   
+23BCS004     | AAYUSHI RAJESH THAKRE     | 23BCS004@iiitdmj.ac.in              | B.Tech       | Computer Science and Engineering   
+23BCS005     | AAYUSHMAN ANAND           | 23BCS005@iiitdmj.ac.in              | B.Tech       | Computer Science and Engineering   
+23BCS006     | ABHINAV HARSH             | 23BCS006@iiitdmj.ac.in              | B.Tech       | Computer Science and Engineering   
+23BCS007     | ABHINAV JAISWAL           | 23BCS007@iiitdmj.ac.in              | B.Tech       | Computer Science and Engineering   
+23BCS008     | ABHISHEK MAURYA           | 23BCS008@iiitdmj.ac.in              | B.Tech       | Computer Science and Engineering   
+23BCS009     | ADITI TIWARI              | 23BCS009@iiitdmj.ac.in              | B.Tech       | Computer Science and Engineering   
+23BCS010     | ADITYA                    | 23BCS010@iiitdmj.ac.in              | B.Tech       | Computer Science and Engineering   
+23BEC001     | AAYUSH TEWARY             | 23BEC001@iiitdmj.ac.in              | B.Tech       | Electronics and Communication Engineering
+23BEC002     | ABHAY GAUTAM              | 23BEC002@iiitdmj.ac.in              | B.Tech       | Electronics and Communication Engineering
+23BEC003     | ABHAY RAJ SINGH           | 23BEC003@iiitdmj.ac.in              | B.Tech       | Electronics and Communication Engineering
+23BEC004     | ABHIJIT SINGH VATSA       | 23BEC004@iiitdmj.ac.in              | B.Tech       | Electronics and Communication Engineering
+23BEC005     | ABHISHEK SINGH            | 23BEC005@iiitdmj.ac.in              | B.Tech       | Electronics and Communication Engineering
+23BEC006     | ADITYA MEENA              | 23BEC006@iiitdmj.ac.in              | B.Tech       | Electronics and Communication Engineering
+23BEC007     | ADITYA MISHRA             | 23BEC007@iiitdmj.ac.in              | B.Tech       | Electronics and Communication Engineering
+23BEC008     | ADITYA VERMA              | 23BEC008@iiitdmj.ac.in              | B.Tech       | Electronics and Communication Engineering
+23BEC009     | AGRAVAT KRISH PANKAJKUMAR | 23BEC009@iiitdmj.ac.in              | B.Tech       | Electronics and Communication Engineering
+23BEC010     | AJEET YADAV               | 23BEC010@iiitdmj.ac.in              | B.Tech       | Electronics and Communication Engineering
+23BSM001     | AAYUSH SRIVASTAVA         | 23BSM001@iiitdmj.ac.in              | B.Tech       | Smart Manufacturing                
+23BSM002     | ABHINASH RATNAKAR         | 23BSM002@iiitdmj.ac.in              | B.Tech       | Smart Manufacturing                
+23BSM003     | ADITYA KHARWAR            | 23BSM003@iiitdmj.ac.in              | B.Tech       | Smart Manufacturing                
+23BSM004     | ADWAITH CHANDRAN          | 23BSM004@iiitdmj.ac.in              | B.Tech       | Smart Manufacturing                
+23BSM005     | Riya Agarwal              | 23BSM005@students.iiitdmj.ac.in     | B.Tech       | Smart Manufacturing                
+23BSM006     | AKASH KESAV SHANMUGARAJ   | 23BSM006@iiitdmj.ac.in              | B.Tech       | Smart Manufacturing                
+23BSM007     | AMAN KUMAR                | 23BSM007@iiitdmj.ac.in              | B.Tech       | Smart Manufacturing                
+23BSM008     | AMIT KUMAR                | 23BSM008@iiitdmj.ac.in              | B.Tech       | Smart Manufacturing                
+23BSM009     | ANJALI KAMAL              | 23BSM009@iiitdmj.ac.in              | B.Tech       | Smart Manufacturing                
+23BSM010     | ANJALI PRIYA              | 23BSM010@iiitdmj.ac.in              | B.Tech       | Smart Manufacturing                
+23BME001     | AADARSH KUMAR             | 23BME001@iiitdmj.ac.in              | B.Tech       | Mechanical Engineering             
+23BME002     | ABHIGYAN YADAV            | 23BME002@iiitdmj.ac.in              | B.Tech       | Mechanical Engineering             
+23BME003     | ADICHERLA VAISHIENA       | 23BME003@iiitdmj.ac.in              | B.Tech       | Mechanical Engineering             
+23BME004     | ADITI JHA                 | 23BME004@iiitdmj.ac.in              | B.Tech       | Mechanical Engineering             
+23BME005     | ADITYA SINGH              | 23BME005@iiitdmj.ac.in              | B.Tech       | Mechanical Engineering             
+23BME006     | Aditya Bansal             | 23BME006@students.iiitdmj.ac.in     | B.Tech       | Mechanical Engineering             
+23BME007     | AISHWARYA JAISWAL         | 23BME007@iiitdmj.ac.in              | B.Tech       | Mechanical Engineering             
+23BME008     | AJAY RAJ GURJAR           | 23BME008@iiitdmj.ac.in              | B.Tech       | Mechanical Engineering             
+23BME009     | AJITA GUPTA               | 23BME009@iiitdmj.ac.in              | B.Tech       | Mechanical Engineering             
+23BME010     | AKSHAY PANWAR             | 23BME010@iiitdmj.ac.in              | B.Tech       | Mechanical Engineering             
+23BDS001     | AABHASH BIJALWAN          | 23BDS001@iiitdmj.ac.in              | B.Des        | Design                             
+23BDS002     | AANYA JAIN                | 23BDS002@iiitdmj.ac.in              | B.Des        | Design                             
+23BDS003     | AAYUSH SURESH GAWALI      | 23BDS003@iiitdmj.ac.in              | B.Des        | Design                             
+23BDS004     | ADITI SAMEER KAMAT        | 23BDS004@iiitdmj.ac.in              | B.Des        | Design                             
+23BDS005     | ADITYA SARAN              | 23BDS005@iiitdmj.ac.in              | B.Des        | Design                             
+23BDS006     | AHAMMED FARHAN P A        | 23BDS006@iiitdmj.ac.in              | B.Des        | Design                             
+23BDS007     | Manish Sen                | 23BDS007@students.iiitdmj.ac.in     | B.Des        | Design                             
+23BDS008     | AISHA LIYANA SABAH        | 23BDS008@iiitdmj.ac.in              | B.Des        | Design                             
+23BDS009     | AISHWARYA IPSITA PATEL    | 23BDS009@iiitdmj.ac.in              | B.Des        | Design                             
+23BDS010     | AKASH DEEP SAIKIA         | 23BDS010@iiitdmj.ac.in              | B.Des        | Design                             
+25MCSA01     | MOHIL DUBEY               | 25mcsa01@iiitdmj.ac.in              | N/A          | N/A                                
+25MCSA02     | AABHAS MALPANI            | 25mcsa02@iiitdmj.ac.in              | N/A          | N/A                                
+25MCSA03     | TEJA RISHITHA GANGAVARAM  | 25mcsa03@iiitdmj.ac.in              | N/A          | N/A                                
+25MCSA04     | KUMARI ANU                | 25mcsa04@iiitdmj.ac.in              | N/A          | N/A                                
+25MCSA05     | SOUGATA ROY               | 25mcsa05@iiitdmj.ac.in              | N/A          | N/A                                
+25MCSA06     | KRISHNA MOHANTY           | 25mcsa06@iiitdmj.ac.in              | N/A          | N/A                                
+25MCSA07     | HARSHIT SINGH             | 25mcsa07@iiitdmj.ac.in              | N/A          | N/A                                
+25MCSA08     | PRASHANT GOSWAMI          | 25mcsa08@iiitdmj.ac.in              | N/A          | N/A                                
+25MCSA09     | SOUVIK SARKAR             | 25mcsa09@iiitdmj.ac.in              | N/A          | N/A                                
+25MCSA10     | RUBIN JAIN                | 25mcsa10@iiitdmj.ac.in              | N/A          | N/A                                
+25MCSS01     | ROHIT SHARMA              | 25mcss01@iiitdmj.ac.in              | N/A          | N/A                                
+25MCSS02     | RICHA VERMA               | 25mcss02@iiitdmj.ac.in              | N/A          | N/A                                
+25MCSS03     | AMIT KUMAR SINGH          | 25mcss03@iiitdmj.ac.in              | N/A          | N/A                                
+25MCSS04     | AVNI TRIVEDI              | 25mcss04@iiitdmj.ac.in              | N/A          | N/A                                
+25MCSS05     | HARSHIT JAIN              | 25mcss05@iiitdmj.ac.in              | N/A          | N/A                                
+25MCSS06     | ATUL KUMAR GUPTA          | 25mcss06@iiitdmj.ac.in              | N/A          | N/A                                
+25MCSS07     | ADARSH DUBEY              | 25mcss07@iiitdmj.ac.in              | N/A          | N/A                                
+25MCSS08     | SAI PAVANI BOORNA         | 25mcss08@iiitdmj.ac.in              | N/A          | N/A                                
+25MCSS09     | SAI KANDREGULA            | 25mcss09@iiitdmj.ac.in              | N/A          | N/A                                
+25MCSS10     | ABHISHEK ASHOK TERANI     | 25mcss10@iiitdmj.ac.in              | N/A          | N/A                                
+25MDS01      | SRIJAL                    | 25mds01@iiitdmj.ac.in               | N/A          | N/A                                
+25MDS02      | VALLAM GAUTAMI            | 25mds02@iiitdmj.ac.in               | N/A          | N/A                                
+25MDS03      | ANKIT SIKDER              | 25mds03@iiitdmj.ac.in               | N/A          | N/A                                
+25MDS04      | ANUSHKA VIKAS OBEROI      | 25mds04@iiitdmj.ac.in               | N/A          | N/A                                
+25MDS05      | DEVESH WARKADE            | 25mds05@iiitdmj.ac.in               | N/A          | N/A                                
+25MDS06      | ASHUTOSH KUMAR            | 25mds06@iiitdmj.ac.in               | N/A          | N/A                                
+25MDS07      | VISHWA PM                 | 25mds07@iiitdmj.ac.in               | N/A          | N/A                                
+
+Total students found: 77

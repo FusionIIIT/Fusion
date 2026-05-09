@@ -1,0 +1,56 @@
+###############################################################################
+# SPACS (Scholarships & Awards) Module — Workflow Test Designs
+# Spec Source: Workflows.md
+# Guide Reference: BackendTestingGuide.md §5.3
+#
+# Total WFs: 2  |  Min Tests Per WF: 2 (1 E2E + 1 Negative)
+# Required WF Tests: 2 × 2 = 4
+###############################################################################
+
+workflows:
+
+  - id: "SPACS-WF-101"
+    title: "Apply → Verify → Approve/Reject → Grant"
+    description: >
+      End-to-end scholarship processing: Student submits MCM application →
+      Assistant verifies → Convener approves/rejects →
+      If approved, merit list can be generated.
+
+    e2e_tests:
+      - scenario: >
+          Student submits MCM application → Assistant verifies →
+          Convener approves → Merit list generated with approved student
+        expected_final_state: >
+          MCM application status=approved; all intermediate statuses
+          correctly transitioned (pending → verified → approved)
+
+    negative_tests:
+      - scenario: >
+          Student submits MCM application → Assistant verifies →
+          Convener rejects → Student notified of rejection
+        expected_final_state: >
+          MCM application status=rejected; no merit list entry;
+          status transitioned (pending → verified → rejected)
+
+  - id: "SPACS-WF-201"
+    title: "Amend / Withdraw Pending"
+    description: >
+      Student modifies or has application reverted:
+      Path A: Assistant reverts → Student edits → Resubmits (status back to pending).
+      Path B: Student tries to update finalized application → Blocked.
+
+    e2e_tests:
+      - scenario: >
+          Assistant reverts MCM application → Student edits reverted
+          application → Status returns to pending → Assistant re-verifies
+        expected_final_state: >
+          Application status=verified after full amend cycle;
+          transitions: pending → reverted → pending → verified
+
+    negative_tests:
+      - scenario: >
+          Student attempts to modify an application that is already approved
+          (finalized) → System blocks the update
+        expected_final_state: >
+          Application status unchanged (remains approved);
+          update rejected with finalization error
