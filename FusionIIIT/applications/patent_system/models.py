@@ -68,6 +68,7 @@ class Application(models.Model):
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default = "Draft")
     attorney = models.ForeignKey(Attorney, on_delete=models.CASCADE, related_name="applications", blank=True, null=True)
     assigned_pcc_admin = models.ForeignKey(User, on_delete=models.SET_NULL, related_name="patent_assigned_applications", blank=True, null=True)
+    assigned_director = models.ForeignKey(User, on_delete=models.SET_NULL, related_name="patent_director_applications", blank=True, null=True)
     submitted_date = models.DateField(blank=True, null=True)
     reviewed_by_pcc_date = models.DateField(blank=True, null=True)
     forwarded_to_director_date = models.DateField(blank=True, null=True)
