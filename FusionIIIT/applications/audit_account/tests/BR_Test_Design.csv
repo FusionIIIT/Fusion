@@ -1,0 +1,25 @@
+Test Case ID,Business Rule ID,Business Rule Description,Test Case Type,Test Case Description,Pre-conditions,Test Steps,Expected Result,Priority,Test Data
+AUDIT-BR-001-V-01,AUDIT-BR-001,Budget Availability Check,Valid,Submit request where amount <= department remaining budget,"User logged in, budget available",1. Create draft request 2. Submit request,Request accepted; budget validation passes,High,"amount=10000, budget_available=50000"
+AUDIT-BR-001-I-01,AUDIT-BR-001,Budget Availability Check,Invalid,Submit request where amount > department remaining budget,"User logged in, insufficient budget",1. Create draft request 2. Submit request,Rejected with budget exceeded error,High,"amount=60000, budget_available=50000"
+AUDIT-BR-002-V-01,AUDIT-BR-002,Business Rule 2,Valid,Valid test for BR-002,Pre-conditions met,1. Perform valid action,Success,High,valid data
+AUDIT-BR-002-I-01,AUDIT-BR-002,Business Rule 2,Invalid,Invalid test for BR-002,Pre-conditions not met,1. Perform invalid action,Rejected,High,invalid data
+AUDIT-BR-003-V-01,AUDIT-BR-003,Business Rule 3,Valid,Valid test for BR-003,Pre-conditions met,1. Perform valid action,Success,High,valid data
+AUDIT-BR-003-I-01,AUDIT-BR-003,Business Rule 3,Invalid,Invalid test for BR-003,Pre-conditions not met,1. Perform invalid action,Rejected,High,invalid data
+AUDIT-BR-004-V-01,AUDIT-BR-004,Business Rule 4,Valid,Valid test for BR-004,Pre-conditions met,1. Perform valid action,Success,High,valid data
+AUDIT-BR-004-I-01,AUDIT-BR-004,Business Rule 4,Invalid,Invalid test for BR-004,Pre-conditions not met,1. Perform invalid action,Rejected,High,invalid data
+AUDIT-BR-005-V-01,AUDIT-BR-005,Business Rule 5,Valid,Valid test for BR-005,Pre-conditions met,1. Perform valid action,Success,High,valid data
+AUDIT-BR-005-I-01,AUDIT-BR-005,Business Rule 5,Invalid,Invalid test for BR-005,Pre-conditions not met,1. Perform invalid action,Rejected,High,invalid data
+AUDIT-BR-006-V-01,AUDIT-BR-006,Business Rule 6,Valid,Valid test for BR-006,Pre-conditions met,1. Perform valid action,Success,High,valid data
+AUDIT-BR-006-I-01,AUDIT-BR-006,Business Rule 6,Invalid,Invalid test for BR-006,Pre-conditions not met,1. Perform invalid action,Rejected,High,invalid data
+AUDIT-BR-007-V-01,AUDIT-BR-007,Business Rule 7,Valid,Valid test for BR-007,Pre-conditions met,1. Perform valid action,Success,High,valid data
+AUDIT-BR-007-I-01,AUDIT-BR-007,Business Rule 7,Invalid,Invalid test for BR-007,Pre-conditions not met,1. Perform invalid action,Rejected,High,invalid data
+AUDIT-BR-008-V-01,AUDIT-BR-008,Business Rule 8,Valid,Valid test for BR-008,Pre-conditions met,1. Perform valid action,Success,High,valid data
+AUDIT-BR-008-I-01,AUDIT-BR-008,Business Rule 8,Invalid,Invalid test for BR-008,Pre-conditions not met,1. Perform invalid action,Rejected,High,invalid data
+AUDIT-BR-009-V-01,AUDIT-BR-009,Business Rule 9,Valid,Valid test for BR-009,Pre-conditions met,1. Perform valid action,Success,High,valid data
+AUDIT-BR-009-I-01,AUDIT-BR-009,Business Rule 9,Invalid,Invalid test for BR-009,Pre-conditions not met,1. Perform invalid action,Rejected,High,invalid data
+AUDIT-BR-010-V-01,AUDIT-BR-010,Business Rule 10,Valid,Valid test for BR-010,Pre-conditions met,1. Perform valid action,Success,High,valid data
+AUDIT-BR-010-I-01,AUDIT-BR-010,Business Rule 10,Invalid,Invalid test for BR-010,Pre-conditions not met,1. Perform invalid action,Rejected,High,invalid data
+AUDIT-BR-011-V-01,AUDIT-BR-011,Business Rule 11,Valid,Valid test for BR-011,Pre-conditions met,1. Perform valid action,Success,High,valid data
+AUDIT-BR-011-I-01,AUDIT-BR-011,Business Rule 11,Invalid,Invalid test for BR-011,Pre-conditions not met,1. Perform invalid action,Rejected,High,invalid data
+AUDIT-BR-012-V-01,AUDIT-BR-012,Business Rule 12,Valid,Valid test for BR-012,Pre-conditions met,1. Perform valid action,Success,High,valid data
+AUDIT-BR-012-I-01,AUDIT-BR-012,Business Rule 12,Invalid,Invalid test for BR-012,Pre-conditions not met,1. Perform invalid action,Rejected,High,invalid data

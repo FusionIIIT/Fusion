@@ -1,0 +1,220 @@
+###############################################################################
+# AUDIT ACCOUNT Module — Use Case Test Designs
+# Spec Source: Code analysis and API endpoints
+# Guide Reference: BackendTestingGuide.md §5.1
+#
+# Total UCs: 10  |  Min Tests Per UC: 3 (1 HP + 1 AP + 1 EX)
+# Required UC Tests: 3 × 10 = 30
+###############################################################################
+
+use_cases:
+
+  - id: "AUDIT-UC-001"
+    title: "Create Draft Expense Request"
+    description: "User creates a draft expense or voucher request with basic details and attachments."
+    actors: "Any authenticated user"
+    preconditions: "User is authenticated"
+    happy_paths:
+      - scenario: "User creates a complete draft expense request with attachments"
+        preconditions: "User logged in; valid department and budget head provided"
+        input_action: "POST /api/requests/draft/ with type=EXPENSE, amount, department, budget_head, description, attachments"
+        expected_result: "Request created with status=DRAFT; HTTP 201; attachments saved"
+    alternate_paths:
+      - scenario: "User creates a voucher request instead of expense"
+        preconditions: "User logged in"
+        input_action: "POST /api/requests/draft/ with type=VOUCHER, amount, department, budget_head"
+        expected_result: "Request created with type=VOUCHER; HTTP 201"
+    exception_paths:
+      - scenario: "User attempts to create draft without required fields"
+        preconditions: "User logged in"
+        input_action: "POST /api/requests/draft/ with missing department field"
+        expected_result: "Rejected HTTP 400; validation error for missing fields"
+
+  - id: "AUDIT-UC-002"
+    title: "Submit Expense Request"
+    description: "User submits a draft request for approval workflow."
+    actors: "Request owner"
+    preconditions: "User owns draft request; all required fields filled; documents attached"
+    happy_paths:
+      - scenario: "User submits complete draft request within budget"
+        preconditions: "User logged in; owns draft request; budget available"
+        input_action: "POST /api/requests/submit/ with request id"
+        expected_result: "Status changed to SUBMITTED; assigned to finance; HTTP 200"
+    alternate_paths:
+      - scenario: "User submits request with additional documents"
+        preconditions: "User logged in; request has base documents"
+        input_action: "POST /api/requests/submit/ with additional attachments"
+        expected_result: "Request submitted; all attachments saved"
+    exception_paths:
+      - scenario: "User submits request exceeding department budget"
+        preconditions: "User logged in; request amount > remaining budget"
+        input_action: "POST /api/requests/submit/ with request id"
+        expected_result: "Rejected HTTP 400; budget exceeded error"
+
+  - id: "AUDIT-UC-003"
+    title: "Finance Validate Request"
+    description: "Finance team validates submitted requests."
+    actors: "Finance staff"
+    preconditions: "User has finance role; request status=SUBMITTED"
+    happy_paths:
+      - scenario: "Finance validates a legitimate expense request"
+        preconditions: "Finance user logged in; request status=SUBMITTED"
+        input_action: "POST /api/requests/status/ with action=validate, remarks='Approved'"
+        expected_result: "Status changed to FINANCE_VALIDATED; assigned to next approver; HTTP 200"
+    alternate_paths:
+      - scenario: "Finance escalates high-value request"
+        preconditions: "Finance user logged in; request amount > threshold"
+        input_action: "POST /api/requests/status/ with action=escalate, remarks='High value'"
+        expected_result: "Status changed to ESCALATED; assigned to higher authority"
+    exception_paths:
+      - scenario: "Non-finance user attempts validation"
+        preconditions: "Regular user logged in"
+        input_action: "POST /api/requests/status/ with action=validate"
+        expected_result: "Rejected HTTP 403; insufficient permissions"
+
+  - id: "AUDIT-UC-004"
+    title: "Approve Request"
+    description: "HOD/Dean/Director approves validated requests."
+    actors: "HOD/Dean/Director"
+    preconditions: "User has appropriate role; request assigned to their level"
+    happy_paths:
+      - scenario: "HOD approves low-value request"
+        preconditions: "HOD logged in; request amount <= HOD threshold"
+        input_action: "POST /api/requests/status/ with action=approve"
+        expected_result: "Status changed to HOD_APPROVED; request approved; HTTP 200"
+    alternate_paths:
+      - scenario: "Director approves high-value request"
+        preconditions: "Director logged in; request escalated to director level"
+        input_action: "POST /api/requests/status/ with action=approve"
+        expected_result: "Status changed to DIRECTOR_APPROVED; final approval"
+    exception_paths:
+      - scenario: "User approves request not assigned to them"
+        preconditions: "HOD logged in; request assigned to dean"
+        input_action: "POST /api/requests/status/ with action=approve"
+        expected_result: "Rejected HTTP 403; not authorized for this request"
+
+  - id: "AUDIT-UC-005"
+    title: "Create Travel Allowance Request"
+    description: "Employee creates a travel allowance request."
+    actors: "Any authenticated user"
+    preconditions: "User is authenticated"
+    happy_paths:
+      - scenario: "Employee creates TA request with complete details"
+        preconditions: "User logged in; valid travel dates and details"
+        input_action: "POST /api/ta/create/ with travel details, amount, attachments"
+        expected_result: "TA request created with status=SUBMITTED; HTTP 201"
+    alternate_paths:
+      - scenario: "Employee creates high-value TA request"
+        preconditions: "User logged in; amount > high value threshold"
+        input_action: "POST /api/ta/create/ with high amount"
+        expected_result: "TA created; marked as high_value=True"
+    exception_paths:
+      - scenario: "Employee creates TA with past travel dates"
+        preconditions: "User logged in"
+        input_action: "POST /api/ta/create/ with start_date in past"
+        expected_result: "Rejected HTTP 400; invalid date range"
+
+  - id: "AUDIT-UC-006"
+    title: "Process Travel Allowance"
+    description: "Finance and authorities process TA requests."
+    actors: "Finance/HOD/Dean/Director"
+    preconditions: "TA request exists; user has appropriate role"
+    happy_paths:
+      - scenario: "Finance verifies and approves low-value TA"
+        preconditions: "Finance user logged in; TA amount <= threshold"
+        input_action: "POST /api/ta/status/ with action=approve"
+        expected_result: "TA status changed to APPROVED; HTTP 200"
+    alternate_paths:
+      - scenario: "Authority approves high-value TA"
+        preconditions: "HOD logged in; high-value TA assigned to HOD"
+        input_action: "POST /api/ta/status/ with action=approve"
+        expected_result: "TA approved by authority"
+    exception_paths:
+      - scenario: "User rejects TA with remarks"
+        preconditions: "Finance user logged in; TA has issues"
+        input_action: "POST /api/ta/status/ with action=reject, remarks='Invalid purpose'"
+        expected_result: "TA status changed to REJECTED; rejection remarks saved"
+
+  - id: "AUDIT-UC-007"
+    title: "Create Audit Observation"
+    description: "Auditor creates an observation for a request or TA."
+    actors: "Auditor"
+    preconditions: "User has auditor role"
+    happy_paths:
+      - scenario: "Auditor creates observation for expense request"
+        preconditions: "Auditor logged in; request exists"
+        input_action: "POST /api/observations/create/ with request_id, title, details, deadline"
+        expected_result: "Observation created with status=OPEN; HTTP 201"
+    alternate_paths:
+      - scenario: "Auditor creates observation for TA request"
+        preconditions: "Auditor logged in; TA exists"
+        input_action: "POST /api/observations/create/ with ta_id, title, details"
+        expected_result: "Observation linked to TA; status=OPEN"
+    exception_paths:
+      - scenario: "Non-auditor attempts to create observation"
+        preconditions: "Regular user logged in"
+        input_action: "POST /api/observations/create/"
+        expected_result: "Rejected HTTP 403; insufficient permissions"
+
+  - id: "AUDIT-UC-008"
+    title: "Respond to Audit Observation"
+    description: "Request owner or finance responds to audit observation."
+    actors: "Request owner/Finance"
+    preconditions: "User can access the observation"
+    happy_paths:
+      - scenario: "Finance responds to observation with documents"
+        preconditions: "Finance user logged in; observation open"
+        input_action: "POST /api/observations/status/ with response_text, attachments"
+        expected_result: "Observation status changed to RESPONDED; response saved"
+    alternate_paths:
+      - scenario: "Request owner provides additional clarification"
+        preconditions: "Request owner logged in; observation open"
+        input_action: "POST /api/observations/status/ with additional response"
+        expected_result: "Response appended to observation"
+    exception_paths:
+      - scenario: "User attempts to respond to closed observation"
+        preconditions: "User logged in; observation status=CLOSED"
+        input_action: "POST /api/observations/status/ with response"
+        expected_result: "Rejected; observation already closed"
+
+  - id: "AUDIT-UC-009"
+    title: "Manage Department Budget"
+    description: "Administrators manage department budget allocations."
+    actors: "Administrator"
+    preconditions: "User has admin role"
+    happy_paths:
+      - scenario: "Admin creates new department budget"
+        preconditions: "Admin logged in"
+        input_action: "POST /api/budgets/create/ with department, budget_head, amount"
+        expected_result: "Budget created; HTTP 201"
+    alternate_paths:
+      - scenario: "Admin updates existing budget allocation"
+        preconditions: "Admin logged in; budget exists"
+        input_action: "POST /api/budgets/update/ with increased amount"
+        expected_result: "Budget updated; remaining amount adjusted"
+    exception_paths:
+      - scenario: "Non-admin attempts budget management"
+        preconditions: "Regular user logged in"
+        input_action: "POST /api/budgets/create/"
+        expected_result: "Rejected HTTP 403; admin access required"
+
+  - id: "AUDIT-UC-010"
+    title: "View and Export Reports"
+    description: "Users view requests/TA/observations and export reports."
+    actors: "Authenticated users with appropriate roles"
+    preconditions: "User authenticated; has view permissions"
+    happy_paths:
+      - scenario: "Auditor views all requests and exports report"
+        preconditions: "Auditor logged in"
+        input_action: "GET /api/requests/ with view=all; then GET /api/reports/export/"
+        expected_result: "Requests listed; report exported as file"
+    alternate_paths:
+      - scenario: "Finance views pending requests"
+        preconditions: "Finance user logged in"
+        input_action: "GET /api/requests/ with view=finance"
+        expected_result: "Pending requests for finance review returned"
+    exception_paths:
+      - scenario: "User attempts to view restricted requests"
+        preconditions: "Student logged in"
+        input_action: "GET /api/requests/ with view=all"
+        expected_result: "Only user's own requests returned; restricted views blocked"

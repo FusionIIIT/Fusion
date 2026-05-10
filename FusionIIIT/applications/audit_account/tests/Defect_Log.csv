@@ -1,0 +1,3 @@
+Defect ID,Test Case ID,Defect Title,Defect Description,Severity,Priority,Status,Assigned To,Reported Date,Fixed Date,Comments
+DEF-UC-1-3,AUDIT-UC-01-03,Missing Department Validation,System allows creating draft without department field,Medium,High,Open,Developer,2024-01-15,,Validation logic needs to be implemented
+DEF-UC-5-2,AUDIT-UC-05-02,TA Approval Routing Issue,High-value TA not routed to correct authority,High,High,Fixed,Developer,2024-01-16,2024-01-18,Fixed routing logic in approval workflow

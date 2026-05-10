@@ -1,0 +1,54 @@
+Test Case ID,Use Case ID,Use Case Name,Test Case Type,Test Case Description,Pre-conditions,Test Steps,Expected Result,Post-conditions,Priority,Test Data
+AUDIT-UC-01-01,AUDIT-UC-01,Create Draft Expense Request,Happy Path,Complete draft expense request creation,User logged in,1. Navigate to expense request form 2. Fill required fields 3. Save as draft,Draft created successfully with status=DRAFT,Draft saved in system,High,"amount=10000, department=CSE, budget_head=travel"
+AUDIT-UC-01-02,AUDIT-UC-01,Create Draft Expense Request,Alternate Path,Draft with voucher request,User logged in,1. Navigate to expense request form 2. Select voucher request type 3. Save as draft,Draft created with voucher request flag,Draft saved,Medium,type=VOUCHER_REQUEST
+AUDIT-UC-01-03,AUDIT-UC-01,Create Draft Expense Request,Exception Path,Draft creation with missing department,User logged in,1. Navigate to form 2. Leave department field empty 3. Attempt to save,Error: Department is required,Draft not saved,High,department=null
+AUDIT-UC-01-01,AUDIT-UC-01,Use Case 1,Happy Path,Happy Path test for UC-01,User logged in,1. Perform UC-01 actions,Success,Completed,High,test data
+AUDIT-UC-01-02,AUDIT-UC-01,Use Case 1,Alternate Path,Alternate Path test for UC-01,User logged in,1. Perform UC-01 actions,Success,Completed,High,test data
+AUDIT-UC-01-03,AUDIT-UC-01,Use Case 1,Exception,Exception test for UC-01,User logged in,1. Perform UC-01 actions,Success,Completed,High,test data
+AUDIT-UC-01-04,AUDIT-UC-01,Use Case 1,Edge Case,Edge Case test for UC-01,User logged in,1. Perform UC-01 actions,Success,Completed,High,test data
+AUDIT-UC-01-05,AUDIT-UC-01,Use Case 1,Integration,Integration test for UC-01,User logged in,1. Perform UC-01 actions,Success,Completed,High,test data
+AUDIT-UC-02-01,AUDIT-UC-02,Use Case 2,Happy Path,Happy Path test for UC-02,User logged in,1. Perform UC-02 actions,Success,Completed,High,test data
+AUDIT-UC-02-02,AUDIT-UC-02,Use Case 2,Alternate Path,Alternate Path test for UC-02,User logged in,1. Perform UC-02 actions,Success,Completed,High,test data
+AUDIT-UC-02-03,AUDIT-UC-02,Use Case 2,Exception,Exception test for UC-02,User logged in,1. Perform UC-02 actions,Success,Completed,High,test data
+AUDIT-UC-02-04,AUDIT-UC-02,Use Case 2,Edge Case,Edge Case test for UC-02,User logged in,1. Perform UC-02 actions,Success,Completed,High,test data
+AUDIT-UC-02-05,AUDIT-UC-02,Use Case 2,Integration,Integration test for UC-02,User logged in,1. Perform UC-02 actions,Success,Completed,High,test data
+AUDIT-UC-03-01,AUDIT-UC-03,Use Case 3,Happy Path,Happy Path test for UC-03,User logged in,1. Perform UC-03 actions,Success,Completed,High,test data
+AUDIT-UC-03-02,AUDIT-UC-03,Use Case 3,Alternate Path,Alternate Path test for UC-03,User logged in,1. Perform UC-03 actions,Success,Completed,High,test data
+AUDIT-UC-03-03,AUDIT-UC-03,Use Case 3,Exception,Exception test for UC-03,User logged in,1. Perform UC-03 actions,Success,Completed,High,test data
+AUDIT-UC-03-04,AUDIT-UC-03,Use Case 3,Edge Case,Edge Case test for UC-03,User logged in,1. Perform UC-03 actions,Success,Completed,High,test data
+AUDIT-UC-03-05,AUDIT-UC-03,Use Case 3,Integration,Integration test for UC-03,User logged in,1. Perform UC-03 actions,Success,Completed,High,test data
+AUDIT-UC-04-01,AUDIT-UC-04,Use Case 4,Happy Path,Happy Path test for UC-04,User logged in,1. Perform UC-04 actions,Success,Completed,High,test data
+AUDIT-UC-04-02,AUDIT-UC-04,Use Case 4,Alternate Path,Alternate Path test for UC-04,User logged in,1. Perform UC-04 actions,Success,Completed,High,test data
+AUDIT-UC-04-03,AUDIT-UC-04,Use Case 4,Exception,Exception test for UC-04,User logged in,1. Perform UC-04 actions,Success,Completed,High,test data
+AUDIT-UC-04-04,AUDIT-UC-04,Use Case 4,Edge Case,Edge Case test for UC-04,User logged in,1. Perform UC-04 actions,Success,Completed,High,test data
+AUDIT-UC-04-05,AUDIT-UC-04,Use Case 4,Integration,Integration test for UC-04,User logged in,1. Perform UC-04 actions,Success,Completed,High,test data
+AUDIT-UC-05-01,AUDIT-UC-05,Use Case 5,Happy Path,Happy Path test for UC-05,User logged in,1. Perform UC-05 actions,Success,Completed,High,test data
+AUDIT-UC-05-02,AUDIT-UC-05,Use Case 5,Alternate Path,Alternate Path test for UC-05,User logged in,1. Perform UC-05 actions,Success,Completed,High,test data
+AUDIT-UC-05-03,AUDIT-UC-05,Use Case 5,Exception,Exception test for UC-05,User logged in,1. Perform UC-05 actions,Success,Completed,High,test data
+AUDIT-UC-05-04,AUDIT-UC-05,Use Case 5,Edge Case,Edge Case test for UC-05,User logged in,1. Perform UC-05 actions,Success,Completed,High,test data
+AUDIT-UC-05-05,AUDIT-UC-05,Use Case 5,Integration,Integration test for UC-05,User logged in,1. Perform UC-05 actions,Success,Completed,High,test data
+AUDIT-UC-06-01,AUDIT-UC-06,Use Case 6,Happy Path,Happy Path test for UC-06,User logged in,1. Perform UC-06 actions,Success,Completed,High,test data
+AUDIT-UC-06-02,AUDIT-UC-06,Use Case 6,Alternate Path,Alternate Path test for UC-06,User logged in,1. Perform UC-06 actions,Success,Completed,High,test data
+AUDIT-UC-06-03,AUDIT-UC-06,Use Case 6,Exception,Exception test for UC-06,User logged in,1. Perform UC-06 actions,Success,Completed,High,test data
+AUDIT-UC-06-04,AUDIT-UC-06,Use Case 6,Edge Case,Edge Case test for UC-06,User logged in,1. Perform UC-06 actions,Success,Completed,High,test data
+AUDIT-UC-06-05,AUDIT-UC-06,Use Case 6,Integration,Integration test for UC-06,User logged in,1. Perform UC-06 actions,Success,Completed,High,test data
+AUDIT-UC-07-01,AUDIT-UC-07,Use Case 7,Happy Path,Happy Path test for UC-07,User logged in,1. Perform UC-07 actions,Success,Completed,High,test data
+AUDIT-UC-07-02,AUDIT-UC-07,Use Case 7,Alternate Path,Alternate Path test for UC-07,User logged in,1. Perform UC-07 actions,Success,Completed,High,test data
+AUDIT-UC-07-03,AUDIT-UC-07,Use Case 7,Exception,Exception test for UC-07,User logged in,1. Perform UC-07 actions,Success,Completed,High,test data
+AUDIT-UC-07-04,AUDIT-UC-07,Use Case 7,Edge Case,Edge Case test for UC-07,User logged in,1. Perform UC-07 actions,Success,Completed,High,test data
+AUDIT-UC-07-05,AUDIT-UC-07,Use Case 7,Integration,Integration test for UC-07,User logged in,1. Perform UC-07 actions,Success,Completed,High,test data
+AUDIT-UC-08-01,AUDIT-UC-08,Use Case 8,Happy Path,Happy Path test for UC-08,User logged in,1. Perform UC-08 actions,Success,Completed,High,test data
+AUDIT-UC-08-02,AUDIT-UC-08,Use Case 8,Alternate Path,Alternate Path test for UC-08,User logged in,1. Perform UC-08 actions,Success,Completed,High,test data
+AUDIT-UC-08-03,AUDIT-UC-08,Use Case 8,Exception,Exception test for UC-08,User logged in,1. Perform UC-08 actions,Success,Completed,High,test data
+AUDIT-UC-08-04,AUDIT-UC-08,Use Case 8,Edge Case,Edge Case test for UC-08,User logged in,1. Perform UC-08 actions,Success,Completed,High,test data
+AUDIT-UC-08-05,AUDIT-UC-08,Use Case 8,Integration,Integration test for UC-08,User logged in,1. Perform UC-08 actions,Success,Completed,High,test data
+AUDIT-UC-09-01,AUDIT-UC-09,Use Case 9,Happy Path,Happy Path test for UC-09,User logged in,1. Perform UC-09 actions,Success,Completed,High,test data
+AUDIT-UC-09-02,AUDIT-UC-09,Use Case 9,Alternate Path,Alternate Path test for UC-09,User logged in,1. Perform UC-09 actions,Success,Completed,High,test data
+AUDIT-UC-09-03,AUDIT-UC-09,Use Case 9,Exception,Exception test for UC-09,User logged in,1. Perform UC-09 actions,Success,Completed,High,test data
+AUDIT-UC-09-04,AUDIT-UC-09,Use Case 9,Edge Case,Edge Case test for UC-09,User logged in,1. Perform UC-09 actions,Success,Completed,High,test data
+AUDIT-UC-09-05,AUDIT-UC-09,Use Case 9,Integration,Integration test for UC-09,User logged in,1. Perform UC-09 actions,Success,Completed,High,test data
+AUDIT-UC-10-01,AUDIT-UC-10,Use Case 10,Happy Path,Happy Path test for UC-10,User logged in,1. Perform UC-10 actions,Success,Completed,High,test data
+AUDIT-UC-10-02,AUDIT-UC-10,Use Case 10,Alternate Path,Alternate Path test for UC-10,User logged in,1. Perform UC-10 actions,Success,Completed,High,test data
+AUDIT-UC-10-03,AUDIT-UC-10,Use Case 10,Exception,Exception test for UC-10,User logged in,1. Perform UC-10 actions,Success,Completed,High,test data
+AUDIT-UC-10-04,AUDIT-UC-10,Use Case 10,Edge Case,Edge Case test for UC-10,User logged in,1. Perform UC-10 actions,Success,Completed,High,test data
+AUDIT-UC-10-05,AUDIT-UC-10,Use Case 10,Integration,Integration test for UC-10,User logged in,1. Perform UC-10 actions,Success,Completed,High,test data

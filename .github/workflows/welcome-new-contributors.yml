@@ -1,4 +1,4 @@
-name: 'Welcome new contributors'
+name: Welcome New Contributors
 
 on:
   issues:
@@ -6,13 +6,23 @@ on:
   pull_request_target:
     types: [opened]
 
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
 jobs:
   greet-the-contributor:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: garg3133/welcome-new-contributors@v1.1
-      with:
-        token: ${{ secrets.BOT_ACCESS_TOKEN }}
-        is-oauth-token: true
-        issue-message: 'Hi! Thanks for opening your first issue at Fusion. We really appreciate it. :raised_hands:'
-        pr-message: 'Congratulations for making your first Pull Request at Fusion!! :tada: Someone from our team will review it soon.'
+      - name: Welcome First-Time Contributors
+        uses: garg3133/welcome-new-contributors@v1.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          is-oauth-token: true
+          issue-message: |
+            Hi! Thanks for opening your first issue at Fusion. We really appreciate it. 🙌
+          pr-message: |
+            Congratulations for making your first Pull Request at Fusion!! 🎉
+            Someone from our team will review it soon.
