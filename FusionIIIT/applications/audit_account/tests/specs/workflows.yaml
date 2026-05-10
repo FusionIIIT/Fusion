@@ -1,0 +1,76 @@
+###############################################################################
+# AUDIT ACCOUNT Module — Workflow Test Designs
+# Spec Source: Code analysis and status transitions
+# Guide Reference: BackendTestingGuide.md §5.3
+#
+# Total WFs: 3  |  Min Tests Per WF: 2 (1 E2E + 1 Negative)
+# Required WF Tests: 2 × 3 = 6
+###############################################################################
+
+workflows:
+
+  - id: "AUDIT-WF-101"
+    title: "Expense Request Approval Workflow"
+    description: >
+      Draft → Submit → Finance Validate → HOD/Dean/Director Approve → Processed.
+      Amount-based routing: <=25k HOD, <=100k Dean, >100k Director.
+
+    e2e_tests:
+      - scenario: >
+          User creates draft → submits → finance validates → HOD approves →
+          status becomes HOD_APPROVED → finance processes → CLOSED
+        expected_final_state: >
+          Request status=PROCESSED; all intermediate statuses correct;
+          action logs recorded; notifications sent
+
+    negative_tests:
+      - scenario: >
+          User submits request → finance rejects → user notified →
+          request remains SUBMITTED or marked REJECTED
+        expected_final_state: >
+          Request status=REJECTED; no further processing;
+          rejection remarks recorded
+
+  - id: "AUDIT-WF-201"
+    title: "Travel Allowance Processing Workflow"
+    description: >
+      Create → Submit → Finance Verify → If high-value, Authority Approve → Closed.
+      High-value threshold: >50k requires HOD/Dean/Director approval.
+
+    e2e_tests:
+      - scenario: >
+          Employee creates TA → submits → finance verifies low-value →
+          status APPROVED → processed → CLOSED
+        expected_final_state: >
+          TA status=APPROVED; action logs complete;
+          finance verification and approval recorded
+
+    negative_tests:
+      - scenario: >
+          Employee creates high-value TA → submits → finance verifies →
+          authority rejects → status REJECTED
+        expected_final_state: >
+          TA status=REJECTED; high_value=True; rejection remarks saved;
+          authority review required and performed
+
+  - id: "AUDIT-WF-301"
+    title: "Audit Observation Resolution Workflow"
+    description: >
+      Create Observation → Request/TA owner responds → Auditor reviews → Close.
+      Includes deadline tracking and document attachments.
+
+    e2e_tests:
+      - scenario: >
+          Auditor creates observation → owner responds with documents →
+          auditor reviews → marks as CLOSED
+        expected_final_state: >
+          Observation status=CLOSED; response recorded;
+          closure remarks saved; all attachments preserved
+
+    negative_tests:
+      - scenario: >
+          Auditor creates observation → response deadline expires →
+          observation remains OPEN → escalated handling
+        expected_final_state: >
+          Observation status=OPEN; deadline passed;
+          no response provided; requires follow-up
