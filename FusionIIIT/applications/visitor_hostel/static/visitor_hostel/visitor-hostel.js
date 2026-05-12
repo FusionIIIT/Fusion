@@ -252,16 +252,16 @@ function request_booking (event) {
 
     $.ajax({
         type: 'POST',
-        url: '/visitorhostel/request-booking/',
+         url: '/visitorhostel/api/bookings/request/',
         data: {
                'intender' : intender,
                'category' : category,
                'csrfmiddlewaretoken': csrfmiddlewaretoken,
                'booking_from' : booking_from,
                'booking_to' : booking_to,
-               'number-of-people' : number_of_people,
-               'purpose-of-visit' : purpose_of_visit,
-               'number-of-rooms' : number_of_rooms,
+             'number_of_people' : number_of_people,
+             'purpose_of_visit' : purpose_of_visit,
+             'number_of_rooms' : number_of_rooms,
                'category' : category,
                'booking_from_time' : booking_from_time,
                'booking_to_time' : booking_to_time,
@@ -302,8 +302,8 @@ function bookameal_submit(event, htmlElement){
     // 'numberofpeople': $('input[name="numberofpeople-meal"]').val(),
     console.log(pk);
     var jsondata = {
-            'pk' : pk,
-            'booking' : booking_id,
+            'visitor_id' : pk,
+            'booking_id' : booking_id,
         'm_tea': $(`input[name="m_tea${booking_id}"]`).val(),
         'breakfast': $(`input[name="breakfast${booking_id}"]`).val(),
         'lunch': $(`input[name="lunch${booking_id}"]`).val(),
@@ -315,7 +315,7 @@ function bookameal_submit(event, htmlElement){
     console.log(jsondata)
     $.ajax({
         type: 'POST',
-        url: '/visitorhostel/record-meal/',
+        url: '/visitorhostel/api/meals/record/',
         data: jsondata,
         success: function(data) {
             alertModal('Great! Meals recorded successfully');
@@ -345,7 +345,7 @@ function submit_inventory_form(id){
     quantity = $('#input-'.concat(id))[0].value;
     $.ajax({
         type: 'POST',
-        url: '/visitorhostel/update-inventory/',
+        url: '/visitorhostel/api/inventory/update/',
         data: {
             'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
             'id' : id,
@@ -403,7 +403,7 @@ function add_inventory_item(event) {
     console.log(jsondata)
     $.ajax({
         type: 'POST',
-        url: '/visitorhostel/add-to-inventory/',
+        url: '/visitorhostel/api/inventory/add/',
         data: jsondata,
         success: function(data) {
             // $('.reset-this-form')[0].children[2].children[0].children[1].children[0].value = "";
@@ -433,7 +433,7 @@ $('.add-item-form-submit').click(function(event){
     console.log(jsondata)
     $.ajax({
         type: 'POST',
-        url: '/visitorhostel/add-to-inventory/',
+        url: '/visitorhostel/api/inventory/add/',
         data: jsondata,
         success: function(data) {
             $('.reset-this-form')[0].children[2].children[0].children[1].children[0].value = "";
@@ -463,7 +463,7 @@ function submit_room_status(id){
     room_status = $('#input-'.concat(id))[0].value;
     $.ajax({
         type: 'POST',
-        url: '/visitorhostel/edit-room-status/',
+        url: '/visitorhostel/api/rooms/status/',
         data: {
             'csrfmiddlewaretoken': '{{csrf_token}}',
             'room_number' : room_number,
@@ -497,9 +497,9 @@ function confirm_booking (id) {
 
     $.ajax({
         type: 'POST',
-        url: '/visitorhostel/confirm-booking/',
+        url: '/visitorhostel/api/bookings/confirm/',
         data: {
-            'booking-id' : id,
+            'booking_id' : id,
             'csrfmiddlewaretoken': csrfmiddlewaretoken,
             'category' : category,
             'rooms' : rooms,
@@ -528,9 +528,9 @@ function reject_booking (id) {
 
     $.ajax({
         type: 'POST',
-        url: '/visitorhostel/reject-booking/',
+        url: '/visitorhostel/api/bookings/reject/',
         data: {
-            'booking-id' : $('input[name=booking-id-'+id+']').val(),
+            'booking_id' : $('input[name=booking-id-'+id+']').val(),
             'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
             'remark' : remarks,
         },
@@ -567,17 +567,15 @@ function update_booking (id) {
 
     $.ajax({
         type: 'POST',
-        url: '/visitorhostel/update-booking/',
+        url: '/visitorhostel/api/bookings/update/',
         data: {
-            'booking-id' : $('input[name=booking-id-'+id+']').val(),
-            'intender' : intender,
-            'category' : category,
+            'booking_id' : $('input[name=booking-id-'+id+']').val(),
                'csrfmiddlewaretoken': csrfmiddlewaretoken,
                'booking_from' : booking_from,
                'booking_to' : booking_to,
-               'number-of-people' : number_of_people,
-               'purpose-of-visit' : purpose_of_visit,
-               'number-of-rooms' : number_of_rooms,
+               'number_of_people' : number_of_people,
+               'purpose_of_visit' : purpose_of_visit,
+               'number_of_rooms' : number_of_rooms,
         },
         success: function(data) {
             alertModal("This booking has been updated.");
@@ -599,9 +597,9 @@ function cancel_booking (id) {
 
     $.ajax({
         type: 'POST',
-        url: '/visitorhostel/cancel-booking/',
+        url: '/visitorhostel/api/bookings/cancel/',
         data: {
-            'booking-id' : $('input[name=booking-id-'+id+']').val(),
+            'booking_id' : $('input[name=booking-id-'+id+']').val(),
             'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
             'charges' : $('input[name=charges-'+id+']').val(),
         },
@@ -675,11 +673,10 @@ function forward_booking (id) {
 
     $.ajax({
         type: 'POST',
-        url: '/visitorhostel/forward-booking/',
+        url: '/visitorhostel/api/bookings/forward/',
         data: {
-            'id' : id,
+            'booking_id' : id,
             'csrfmiddlewaretoken': csrfmiddlewaretoken,
-            'previous_category' : previous_category,
             'modified_category' : modified_category,
             'rooms': rooms,
             'remark': remark,
@@ -710,9 +707,9 @@ function cancel_active_booking (id, booking_from) {
 
     $.ajax({
         type: 'POST',
-        url: '/visitorhostel/cancel-booking-request/',
+        url: '/visitorhostel/api/bookings/cancel-request/',
         data: {
-            'booking-id' : id,
+            'booking_id' : id,
             'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
         },
         success: function(data) {
@@ -806,9 +803,9 @@ function submit_visitor_details (id) {
 
         $.ajax({
             type: 'POST',
-            url: '/visitorhostel/check-in/',
+            url: '/visitorhostel/api/bookings/checkin/',
             data: {
-                'booking-id' : id,
+                'booking_id' : id,
                 'csrfmiddlewaretoken' : csrfmiddlewaretoken,
                 'name' : name,
                 'phone' : phone,
@@ -835,11 +832,11 @@ function submit_visitor_details (id) {
 function check_out(id, mess_bill, room_bill) {
     $.ajax({
         type: 'POST',
-        url: '/visitorhostel/check-out/',
+        url: '/visitorhostel/api/bookings/checkout/',
         data: {
             'csrfmiddlewaretoken' : $('input[name="csrf"]').val(),
-            'id' : id,
-            'mess_bill' : mess_bill,
+            'booking_id' : id,
+            'meal_bill' : mess_bill,
             'room_bill' : room_bill,
         },
         success: function(data) {
