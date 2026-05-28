@@ -64,11 +64,13 @@ class Constants:
     DESIGNATIONS = (
         ('academic', 'Academic Designation'),
         ('administrative', 'Administrative Designation'),
+
+
     )
-    USER_STATUS = (
+    USER_STATUS = {
         ("NEW", "NEW"),
         ("PRESENT", "PRESENT"),
-    )
+    }
 
 
 class Designation(models.Model):
@@ -152,7 +154,6 @@ class ExtraInfo(models.Model):
         null=True, blank=True, upload_to='globals/profile_pictures')
     about_me = models.TextField(default='NA', max_length=1000, blank=True)
     date_modified = models.DateTimeField('date_updated', blank=True, null=True)
-    last_selected_role = models.CharField(max_length=20, null=True, blank=True)
 
     @property
     def age(self):
@@ -225,8 +226,7 @@ class Faculty(models.Model):
         
 
     def __str__(self):
-        # return str(self.id)
-        return f"{self.id} - {self.id.user.first_name} {self.id.user.last_name}"
+        return str(self.id)
 
 
 """ Feedback and bug report models start"""
@@ -314,7 +314,6 @@ class Issue(models.Model):
 """ End of feedback and bug report models"""
 
 
-
 class ModuleAccess(models.Model):
     designation = models.CharField(max_length=155)
     program_and_curriculum = models.BooleanField(default=False)
@@ -340,11 +339,3 @@ class ModuleAccess(models.Model):
 
     def __str__(self):
         return self.designation
-       
-
-class PasswordResetTracker(models.Model):
-    email = models.EmailField(unique=True)
-    last_reset = models.DateTimeField(null=True, blank=True)
-
-    def __str__(self):
-        return self.email

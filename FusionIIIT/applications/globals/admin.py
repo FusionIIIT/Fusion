@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import (DepartmentInfo, Designation, ExtraInfo, Faculty, Feedback,
-                     HoldsDesignation, Issue, IssueImage, Staff,ModuleAccess)
+                     HoldsDesignation, Issue, IssueImage, ModuleAccess, Staff)
 
 # Register your models here.
 

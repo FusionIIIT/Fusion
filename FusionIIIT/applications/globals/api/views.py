@@ -1,11 +1,13 @@
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from applications.academic_information.models import Student
 from applications.eis.api.views import profile as eis_profile
 from applications.globals.models import (HoldsDesignation,Designation)
 from applications.gymkhana.api.views import coordinator_club
 from applications.placement_cell.models import (Achievement, Course, Education,
                                                 Experience, Has, Patent,
-                                                Project, Publication, Skill)
+                                                Project, Publication, Skill,
+                                                PlacementProfileAuditLog)
 from django.shortcuts import get_object_or_404, redirect
 
 from rest_framework.permissions import IsAuthenticated
@@ -14,14 +16,13 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes,authentication_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from django.http import JsonResponse
 
 
 from . import serializers
-from applications.globals.models import (ExtraInfo, Feedback, HoldsDesignation,
-                                         Issue, IssueImage, DepartmentInfo, ModuleAccess)
+
 from .utils import get_and_authenticate_user
 from notifications.models import Notification
+from notifications.signals import notify
 
 User = get_user_model()
 
@@ -32,25 +33,10 @@ def login(request):
     serializer.is_valid(raise_exception=True)
     user = get_and_authenticate_user(**serializer.validated_data)
     data = serializers.AuthUserSerializer(user).data
-    
-    desig = list(HoldsDesignation.objects.select_related('user','working','designation').all().filter(working = user).values_list('designation'))
-    b = [i for sub in desig for i in sub]
-    design = HoldsDesignation.objects.select_related('user','designation').filter(working=user)
-
-    designation=[]
-                
-    if str(user.extrainfo.user_type) == "student":
-        designation.append(str(user.extrainfo.user_type))
-        
-    for i in design:
-        if str(i.designation) != str(user.extrainfo.user_type):
-            designation.append(str(i.designation))
-    
     resp = {
         'success' : 'True',
         'message' : 'User logged in successfully',
-        'token' : data['auth_token'],
-        'designations':designation
+        'token' : data['auth_token']
     }
     return Response(data=resp, status=status.HTTP_200_OK)
 
@@ -63,15 +49,13 @@ def logout(request):
     return Response(data=resp, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
-def auth_view(request):
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def dashboard(request):
     user=request.user
-    name = request.user.first_name +"_"+ request.user.last_name
-    roll_no = request.user.username
 
-    extra_info = get_object_or_404(ExtraInfo, user=user)
-    last_selected_role = extra_info.last_selected_role
-    
+    name = request.user.first_name +"_"+ request.user.last_name
+
     designation_list = list(HoldsDesignation.objects.all().filter(working = request.user).values_list('designation'))
     designation_id = [designation for designations in designation_list for designation in designations]
     designation_info = []
@@ -79,74 +63,73 @@ def auth_view(request):
         name_ = get_object_or_404(Designation, id = id)
         designation_info.append(str(name_.name))
 
-    accessible_modules = {}
-    
-    for designation in designation_info:
-        module_access = ModuleAccess.objects.filter(designation__iexact=designation).first()
-        if module_access:
-            filtered_modules = {}
+    notifications=serializers.NotificationSerializer(request.user.notifications.all(),many=True).data
+    club_details= coordinator_club(request)
 
-            field_names = [field.name for field in ModuleAccess._meta.get_fields() if field.name not in ['id', 'designation']]
-
-            for field_name in field_names:
-                filtered_modules[field_name] = getattr(module_access, field_name)
-            
-            accessible_modules[designation] = filtered_modules
-            
     resp={
-        'designation_info' : designation_info,
-        'name': name,
-        'roll_no': roll_no,
-        'accessible_modules': accessible_modules,
-        'last_selected_role': last_selected_role
+        'notifications':notifications,
+        'desgination_info' :  designation_info,
+        'designation_info' :  designation_info,
+        'last_selected_role' : cache.get('last_selected_role_{}'.format(user.id)),
+        'club_details' : club_details
     }
-    
+
     return Response(data=resp,status=status.HTTP_200_OK)
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def update_role(request):
+    selected_role = (request.data.get('last_selected_role') or '').strip()
+    designation_ids = HoldsDesignation.objects.filter(
+        working=request.user,
+    ).values_list('designation_id', flat=True)
+    allowed_roles = set(
+        Designation.objects.filter(id__in=designation_ids).values_list('name', flat=True),
+    )
+
+    if selected_role not in allowed_roles:
+        return Response(
+            {'last_selected_role': ['Selected role is not assigned to this user.']},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    cache.set('last_selected_role_{}'.format(request.user.id), selected_role, None)
+    return Response(
+        {'last_selected_role': selected_role},
+        status=status.HTTP_200_OK,
+    )
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-def notification(request):
-    notifications=serializers.NotificationSerializer(request.user.notifications.all(),many=True).data
-
-    resp={
-        'notifications':notifications, 
-    }
-
-    return Response(data=resp,status=status.HTTP_200_OK)
-
-@api_view(['PATCH'])
-@permission_classes([IsAuthenticated])
-def update_last_selected_role(request):
-    new_role = request.data.get('last_selected_role')
-
-    if new_role is None:
-        return Response({'error': 'last_selected_role is required'}, status=status.HTTP_400_BAD_REQUEST)
-
-    extra_info = get_object_or_404(ExtraInfo, user=request.user)
-
-    extra_info.last_selected_role = new_role
-    extra_info.save()
-
-    return Response({'message': 'last_selected_role updated successfully'}, status=status.HTTP_200_OK)
-
-@api_view(['GET'])
 def profile(request, username=None):
     user = get_object_or_404(User, username=username) if username else request.user
+    if not hasattr(user, 'extrainfo'):
+        return Response(
+            {
+                'user': serializers.UserSerializer(user).data,
+                'profile': None,
+                'current': serializers.HoldsDesignationSerializer(
+                    user.current_designation.all(),
+                    many=True,
+                ).data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    user_detail = serializers.UserSerializer(user).data
     profile = serializers.ExtraInfoSerializer(user.extrainfo).data
-    
+    base_response = {
+        'user': user_detail,
+        'profile': profile,
+        'current': serializers.HoldsDesignationSerializer(user.current_designation.all(), many=True).data,
+    }
+
     if profile['user_type'] == 'student':
         student = user.extrainfo.student
-        std_sem = Student.objects.get(id=student.id).curr_semester_no
-        skills = list(
-        Has.objects.filter(unique_id_id=student)
-        .select_related("skill_id")
-        .values("skill_id__skill", "skill_rating")
-        )
-        formatted_skills = [
-            {"skill_name": skill["skill_id__skill"], "skill_rating": skill["skill_rating"]}
-            for skill in skills
-        ]
+        skills = serializers.HasSerializer(student.has_set.all(),many=True).data
         education = serializers.EducationSerializer(student.education_set.all(), many=True).data
         course = serializers.CourseSerializer(student.course_set.all(), many=True).data
         experience = serializers.ExperienceSerializer(student.experience_set.all(), many=True).data
@@ -156,9 +139,8 @@ def profile(request, username=None):
         patent = serializers.PatentSerializer(student.patent_set.all(), many=True).data
         current = serializers.HoldsDesignationSerializer(user.current_designation.all(), many=True).data
         resp = {
-            'profile' : profile,
-            'semester_no' : std_sem,
-            'skills' : formatted_skills,
+            **base_response,
+            'skills' : skills,
             'education' : education,
             'course' : course,
             'experience' : experience,
@@ -169,93 +151,154 @@ def profile(request, username=None):
             'current' : current
         }
         return Response(data=resp, status=status.HTTP_200_OK)
-    else:
-        return Response(data={'error': 'User is not a student'}, status=status.HTTP_400_BAD_REQUEST)  
+    elif profile['user_type'] == 'faculty':
+        return Response(data=base_response, status=status.HTTP_200_OK)
+
+    return Response(data=base_response, status=status.HTTP_200_OK)
 
 @api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 def profile_update(request):
     user = request.user
     profile = user.extrainfo
     current = user.current_designation.filter(designation__name="student")
     if current:
         student = profile.student
-        if 'education' in request.data:
-            data = request.data
-            data['education']['unique_id'] = profile
-            serializer = serializers.EducationSerializer(data=data['education'])
+        def _update_or_create(serializer_class, payload, *, instance_model=None, profile_field="unique_id"):
+            payload = dict(payload)
+            owner = student if profile_field == "unique_id" else profile
+            payload[profile_field] = owner
+            instance = None
+            instance_id = payload.pop("id", None)
+            if instance_model is not None and instance_id not in [None, ""]:
+                filter_kwargs = {"id": instance_id}
+                filter_kwargs[profile_field] = owner
+                instance = instance_model.objects.filter(**filter_kwargs).first()
+                if instance is None:
+                    return None, Response({"error": "Record does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+            serializer = (
+                serializer_class(instance, data=payload, partial=True)
+                if instance
+                else serializer_class(data=payload)
+            )
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return serializer, Response(serializer.data, status=status.HTTP_200_OK)
+            return serializer, Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        if 'education' in request.data:
+            serializer, response = _update_or_create(
+                serializers.EducationSerializer,
+                request.data['education'],
+                instance_model=Education,
+            )
+            return response
         elif 'profilesubmit' in request.data:
+            payload = request.data['profilesubmit']
+            required_errors = {}
+            for field in ['about_me', 'date_of_birth', 'address', 'phone_no']:
+                if field in payload and payload.get(field) in [None, '', []]:
+                    required_errors[field] = ['This field is required.']
+            if required_errors:
+                return Response(required_errors, status=status.HTTP_400_BAD_REQUEST)
             serializer = serializers.ExtraInfoSerializer(profile, data=request.data['profilesubmit'],partial=True)
             if serializer.is_valid():
                 serializer.save()
+                PlacementProfileAuditLog.objects.create(
+                    student=student,
+                    actor=request.user,
+                    action='profile_updated',
+                    details={key: value for key, value in payload.items() if key in ['about_me', 'date_of_birth', 'address', 'phone_no']},
+                )
+                notify.send(
+                    sender=request.user,
+                    recipient=request.user,
+                    verb='Your profile has been updated.',
+                    url='/profile',
+                    module='Placement Cell',
+                )
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         elif 'skillsubmit' in request.data:
-            try:
-                skill_data = request.data['skillsubmit']
-                skill_id = skill_data['skill_id']
-                skill_name = skill_id['skill_name']
-                skill_rating = skill_data['skill_rating']
-
-                if not skill_name or skill_rating is None:
-                    return Response({"error": "Missing skill_name or skill_rating"}, status=status.HTTP_400_BAD_REQUEST)
-
-                skill, created = Skill.objects.get_or_create(skill=skill_name)
-                has_obj, created = Has.objects.get_or_create(skill_id=skill, unique_id=student, defaults={"skill_rating": skill_rating})
-                if not created:
-                    has_obj.skill_rating = skill_rating
-                    has_obj.save()
-
-                return Response({"message": "Skill added successfully"}, status=status.HTTP_200_OK)
-
-            except Exception as e:
-                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+            payload = dict(request.data['skillsubmit'])
+            skill_instance = None
+            if payload.get('id') not in [None, '']:
+                skill_instance = Has.objects.filter(id=payload.get('id'), unique_id=student).first()
+                if skill_instance is None:
+                    return Response({'error': 'Skill does not exist'}, status=status.HTTP_400_BAD_REQUEST)
+                payload.pop('id', None)
+            serializer = (
+                serializers.HasSerializer(skill_instance, data=payload, partial=True)
+                if skill_instance
+                else serializers.HasSerializer(data=payload)
+            )
+            if serializer.is_valid():
+                serializer.save(unique_id=student)
+                PlacementProfileAuditLog.objects.create(
+                    student=student,
+                    actor=request.user,
+                    action='skill_updated' if skill_instance else 'skill_added',
+                    details={'skill': request.data['skillsubmit'].get('skill_id', {})},
+                )
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         elif 'achievementsubmit' in request.data:
-            request.data['achievementsubmit']['unique_id'] = profile
-            serializer = serializers.AchievementSerializer(data=request.data['achievementsubmit'])
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            serializer, response = _update_or_create(
+                serializers.AchievementSerializer,
+                request.data['achievementsubmit'],
+                instance_model=Achievement,
+            )
+            return response
         elif 'publicationsubmit' in request.data:
-            request.data['publicationsubmit']['unique_id'] = profile
-            serializer = serializers.PublicationSerializer(data=request.data['publicationsubmit'])
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            serializer, response = _update_or_create(
+                serializers.PublicationSerializer,
+                request.data['publicationsubmit'],
+                instance_model=Publication,
+            )
+            return response
         elif 'patentsubmit' in request.data:
-            request.data['patentsubmit']['unique_id'] = profile
-            serializer = serializers.PatentSerializer(data=request.data['patentsubmit'])
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            serializer, response = _update_or_create(
+                serializers.PatentSerializer,
+                request.data['patentsubmit'],
+                instance_model=Patent,
+            )
+            return response
         elif 'coursesubmit' in request.data:
-            request.data['coursesubmit']['unique_id'] = profile
-            serializer = serializers.CourseSerializer(data=request.data['coursesubmit'])
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            serializer, response = _update_or_create(
+                serializers.CourseSerializer,
+                request.data['coursesubmit'],
+                instance_model=Course,
+            )
+            return response
         elif 'projectsubmit' in request.data:
-            request.data['projectsubmit']['unique_id'] = profile
-            serializer = serializers.ProjectSerializer(data=request.data['projectsubmit'])
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            serializer, response = _update_or_create(
+                serializers.ProjectSerializer,
+                request.data['projectsubmit'],
+                instance_model=Project,
+            )
+            if response.status_code == status.HTTP_200_OK:
+                PlacementProfileAuditLog.objects.create(
+                    student=student,
+                    actor=request.user,
+                    action='project_updated' if request.data['projectsubmit'].get('id') else 'project_added',
+                    details={'project_name': request.data['projectsubmit'].get('project_name')},
+                )
+            return response
         elif 'experiencesubmit' in request.data:
-            request.data['experiencesubmit']['unique_id'] = profile
-            serializer = serializers.ExperienceSerializer(data=request.data['experiencesubmit'])
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            serializer, response = _update_or_create(
+                serializers.ExperienceSerializer,
+                request.data['experiencesubmit'],
+                instance_model=Experience,
+            )
+            if response.status_code == status.HTTP_200_OK:
+                PlacementProfileAuditLog.objects.create(
+                    student=student,
+                    actor=request.user,
+                    action='experience_updated' if request.data['experiencesubmit'].get('id') else 'experience_added',
+                    details={'title': request.data['experiencesubmit'].get('title')},
+                )
+            return response
     return Response({'error': 'Cannot update'}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['DELETE'])
@@ -340,111 +383,51 @@ def NotificationRead(request):
         }
         return Response(response,status=status.HTTP_404_NOT_FOUND)
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def NotificationList(request):
+    notifications = request.user.notifications.all().order_by('-timestamp')
+    serializer = serializers.NotificationSerializer(notifications, many=True)
+    return Response({'notifications': serializer.data}, status=status.HTTP_200_OK)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def NotificationUnread(request):
     try:
         notifId = int(request.data['id'])
-        user = request.user
-        notification = get_object_or_404(Notification, recipient=user, id=notifId)
-        if not notification.unread:  
-            notification.unread = True
-            notification.save() 
+        notification = get_object_or_404(Notification, recipient=request.user, id=notifId)
+        notification.mark_as_unread()
         response = {
-            'message': 'Notification successfully marked as unread.'
+            'message': 'notification successfully marked as unseen.'
         }
         return Response(response, status=status.HTTP_200_OK)
     except:
         response = {
-            'error': 'Failed to mark the notification as unread.'
+            'error': 'Failed, notification is not marked as unseen.'
         }
         return Response(response, status=status.HTTP_404_NOT_FOUND)
-    
-@api_view(['POST']) 
+
+
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-def delete_notification(request):
+def NotificationDelete(request):
     try:
-        notifId = int(request.data['id'])  
+        notifId = int(request.data['id'])
         notification = get_object_or_404(Notification, recipient=request.user, id=notifId)
-        
         notification.deleted = True
-        notification.save()
-        
+        notification.unread = False
+        notification.save(update_fields=['deleted', 'unread'])
         response = {
-            'message': 'Notification marked as deleted.'
+            'message': 'notification deleted successfully.'
         }
         return Response(response, status=status.HTTP_200_OK)
-    except Exception as e:
+    except:
         response = {
-            'error': 'Failed to mark the notification as deleted.',
-            'details': str(e)
+            'error': 'Failed to delete notification.'
         }
-        return Response(response, status=status.HTTP_400_BAD_REQUEST)
-
-from django.db import transaction
-
-@api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
-@authentication_classes([TokenAuthentication])
-def admin_delete_course_proxy(request, course_id):
-    """
-    Proxy function to call the actual course delete function from programme_curriculum API
-    """
-    try:
-        from applications.programme_curriculum.models import Course, CourseSlot, CourseInstructor
-        
-        try:
-            course = Course.objects.get(id=course_id)
-        except Course.DoesNotExist:
-            return JsonResponse({
-                'success': False,
-                'message': 'Course not found.'
-            }, status=404)
-
-        course_name = course.name
-        course_code = course.code
-        
-        try:
-            instructor_count = CourseInstructor.objects.filter(course_id=course).count()
-            if instructor_count > 0:
-                return JsonResponse({
-                    'success': False,
-                    'message': f'Cannot delete course. It has {instructor_count} active instructor assignment(s). Please remove instructor assignments first.'
-                }, status=400)
-            
-            slot_count = CourseSlot.objects.filter(courses=course).count()
-            if slot_count > 0:
-                return JsonResponse({
-                    'success': False,
-                    'message': f'Cannot delete course. It is assigned to {slot_count} course slot(s) in curriculum(s). Please remove from course slots first.'
-                }, status=400)
-                
-        except Exception as dependency_error:
-            return JsonResponse({
-                'success': False,
-                'message': f'Error checking course dependencies: {str(dependency_error)}'
-            }, status=500)
-
-        try:
-            with transaction.atomic():
-                course.delete()
-                
-            return JsonResponse({
-                'success': True,
-                'message': f'Course "{course_name}" has been successfully deleted.'
-            }, status=200)
-            
-        except Exception as delete_error:
-            return JsonResponse({
-                'success': False,
-                'message': f'Error deleting course: {str(delete_error)}'
-            }, status=500)
-        
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'message': 'An unexpected error occurred while deleting the course.',
-            'error': str(e)
-        }, status=500)
+        return Response(response, status=status.HTTP_404_NOT_FOUND)

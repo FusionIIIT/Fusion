@@ -1,5 +1,5 @@
 from django.db import models
-from datetime import date
+
 
 # Create your models here.
 
@@ -9,7 +9,7 @@ class Projects(models.Model):
 
 
 class PageOneDetails(models.Model):
-    page_id = models.OneToOneField(Projects, on_delete=models.CASCADE, null=True)
+    id = models.ForeignKey(Projects, on_delete=models.CASCADE, primary_key=True)
     aESFile = models.FileField(null=True)
     dASA = models.DateField(null=True)
     nitNiqNo = models.IntegerField(null=True)
@@ -31,7 +31,7 @@ class AESDetails(models.Model):
 
 
 class PageTwoDetails(models.Model):
-    page_id = models.OneToOneField(Projects, on_delete=models.CASCADE, null=True)
+    id = models.ForeignKey(Projects, on_delete=models.CASCADE, primary_key=True)
     corrigendum = models.FileField(null=True)
     addendum = models.FileField(null=True)
     preBidMeetingDetails = models.FileField(null=True)
@@ -143,7 +143,7 @@ class Milestones(models.Model):
 
 
 class PageThreeDetails(models.Model):
-    page_id = models.OneToOneField(Projects, on_delete=models.CASCADE, null=True)
+    id = models.ForeignKey(Projects, on_delete=models.CASCADE, primary_key=True)
     extensionOfTime = models.FileField()
     actualCostOfBuilding = models.IntegerField()
 
@@ -160,38 +160,3 @@ class NoOfTechnicalBidTimes(models.Model):
     key = models.OneToOneField(Projects, on_delete=models.CASCADE)
     number = models.IntegerField()
 
-class Requests(models.Model):
-    name = models.CharField(max_length=200)
-    description = models.CharField(max_length=200)
-    area = models.CharField(max_length=200)
-    requestCreatedBy = models.CharField(max_length=200)
-    engineerProcessed = models.IntegerField(default=0)
-    directorApproval = models.IntegerField(default=0)
-    deanProcessed = models.IntegerField(default=0)
-    status = models.CharField(max_length=200)
-    issuedWorkOrder = models.IntegerField(default=0)
-    workCompleted = models.IntegerField(default=0)
-    billGenerated = models.IntegerField(default=0)
-    billProcessed = models.IntegerField(default=0)
-    billSettled = models.IntegerField(default=0)
-
-class WorkOrder(models.Model):
-    # request_id = models.IntegerField()
-    request_id = models.ForeignKey(Requests, on_delete=models.CASCADE)
-    name = models.CharField(max_length=200)
-    date = models.DateField(default=date.today)
-    agency = models.CharField(max_length=200)
-    amount = models.IntegerField(default=0)
-    deposit = models.IntegerField(default=0)
-    alloted_time = models.CharField(max_length=200)
-    start_date = models.DateField()
-    completion_date = models.DateField()
-    
-class Bills(models.Model):
-    # requestId = models.IntegerField()
-    request_id = models.ForeignKey(Requests, on_delete=models.CASCADE)
-    file = models.FileField()
-
-class Budget(models.Model):
-    name = models.CharField(max_length=200)
-    budgetIssued = models.IntegerField(default=0)
