@@ -578,3 +578,26 @@ def iwd_notif(sender,recipient,type):
     if type == "Request_rejected": 
         verb = "Request rejected by " + sender.username + "." 
     notify.send(sender=sender,recipient=recipient,url=url,module=module,verb=verb)
+
+
+def audit_account_notif(sender, recipient, type, message=None):
+    url = ''
+    module = 'Internal Audit'
+    verb = message or ''
+    if type == 'request_submitted' and not verb:
+        verb = 'A new request is waiting for finance validation.'
+    elif type == 'request_approved' and not verb:
+        verb = 'Your request was approved.'
+    elif type == 'request_rejected' and not verb:
+        verb = 'Your request was rejected.'
+    elif type == 'request_escalated' and not verb:
+        verb = 'A request was escalated.'
+    elif type == 'ta_submitted' and not verb:
+        verb = 'A new TA claim is waiting for finance verification.'
+    elif type == 'observation_created' and not verb:
+        verb = 'A new audit observation was raised.'
+    elif type == 'observation_responded' and not verb:
+        verb = 'An audit observation received a response.'
+    elif type == 'observation_closed' and not verb:
+        verb = 'An audit observation was closed.'
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)

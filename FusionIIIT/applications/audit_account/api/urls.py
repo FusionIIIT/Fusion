@@ -1,0 +1,43 @@
+from django.urls import path
+
+from .views import (
+    create_draft,
+    create_department_budget,
+    create_observation,
+    create_ta,
+    director_auditor_dashboard,
+    export_report,
+    flag_anomaly,
+    health_check,
+    list_department_budgets,
+    list_observations,
+    list_requests,
+    list_ta,
+    reports,
+    submit_request_view,
+    update_department_budget,
+    update_observation,
+    update_request_status_view,
+    update_ta,
+)
+
+urlpatterns = [
+    path("health/", health_check),
+    path("requests/draft/", create_draft),
+    path("requests/submit/", submit_request_view),
+    path("requests/status/", update_request_status_view),
+    path("requests/", list_requests),
+    path("ta/create/", create_ta),
+    path("ta/status/", update_ta),
+    path("ta/", list_ta),
+    path("observations/create/", create_observation),
+    path("observations/status/", update_observation),
+    path("observations/", list_observations),
+    path("budgets/", list_department_budgets),
+    path("budgets/create/", create_department_budget),
+    path("budgets/update/", update_department_budget),
+    path("dashboard/director-auditor/", director_auditor_dashboard),
+    path("anomaly/flag/", flag_anomaly),
+    path("reports/", reports),
+    path("reports/export/", export_report),
+]

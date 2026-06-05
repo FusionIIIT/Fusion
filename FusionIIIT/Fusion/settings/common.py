@@ -81,6 +81,11 @@ SOCIALACCOUNT_ADAPTER = 'applications.globals.adapters.MySocialAccountAdapter'
 # CELERY STUFF
 # CELERY_BROKER_URL = 'redis://localhost:6379'
 # CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
@@ -89,8 +94,18 @@ CELERY_BEAT_SCHEDULE = {
     'leave-migration-task': {
         'task': 'applications.leave.tasks.execute_leave_migrations',
         'schedule': crontab(minute='1', hour='0')
+    },
+    'audit-account-escalation-task': {
+        'task': 'applications.audit_account.tasks.run_audit_account_escalations',
+        'schedule': crontab(minute='*/30')
     }
 }
+
+AUDIT_ACCOUNT_REQUEST_THRESHOLD_HOD = '25000'
+AUDIT_ACCOUNT_REQUEST_THRESHOLD_DEAN = '100000'
+AUDIT_ACCOUNT_TA_HIGH_VALUE_THRESHOLD = '50000'
+AUDIT_ACCOUNT_REQUEST_ESCALATION_HOURS = 24
+AUDIT_ACCOUNT_TA_ESCALATION_HOURS = 24
 
 # Application definition
 
@@ -140,6 +155,7 @@ INSTALLED_APPS = [
     'applications.income_expenditure',
     'applications.hr2',
     'applications.department',
+    'applications.audit_account',
     'applications.iwdModuleV2',
     'allauth',
     'allauth.account',

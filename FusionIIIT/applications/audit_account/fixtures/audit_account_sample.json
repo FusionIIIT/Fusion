@@ -1,0 +1,160 @@
+[
+  {
+    "model": "audit_account.request",
+    "pk": 1,
+    "fields": {
+      "type": "EXPENSE",
+      "amount": "1250.00",
+      "department": "Finance",
+      "description": "Stationery purchase for internal audit",
+      "status": "SUBMITTED",
+      "created_by": 1,
+      "created_at": "2025-04-01T10:00:00Z"
+    }
+  },
+  {
+    "model": "audit_account.request",
+    "pk": 2,
+    "fields": {
+      "type": "VOUCHER",
+      "amount": "5400.00",
+      "department": "Operations",
+      "description": "Voucher request for vendor payment",
+      "status": "DRAFT",
+      "created_by": 1,
+      "created_at": "2025-04-02T14:30:00Z"
+    }
+  },
+  {
+    "model": "audit_account.departmentbudget",
+    "pk": 1,
+    "fields": {
+      "department": "CSE",
+      "budget_head": "Travel",
+      "allocated_amount": "50000.00",
+      "remaining_amount": "50000.00",
+      "is_active": true,
+      "updated_at": "2025-04-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "audit_account.departmentbudget",
+    "pk": 2,
+    "fields": {
+      "department": "CSE",
+      "budget_head": "Equipment",
+      "allocated_amount": "100000.00",
+      "remaining_amount": "100000.00",
+      "is_active": true,
+      "updated_at": "2025-04-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "audit_account.departmentbudget",
+    "pk": 3,
+    "fields": {
+      "department": "HE",
+      "budget_head": "Travel",
+      "allocated_amount": "30000.00",
+      "remaining_amount": "30000.00",
+      "is_active": true,
+      "updated_at": "2025-04-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "audit_account.departmentbudget",
+    "pk": 4,
+    "fields": {
+      "department": "MECH",
+      "budget_head": "Travel",
+      "allocated_amount": "40000.00",
+      "remaining_amount": "40000.00",
+      "is_active": true,
+      "updated_at": "2025-04-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "audit_account.departmentbudget",
+    "pk": 5,
+    "fields": {
+      "department": "SM",
+      "budget_head": "Travel",
+      "allocated_amount": "35000.00",
+      "remaining_amount": "35000.00",
+      "is_active": true,
+      "updated_at": "2025-04-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "audit_account.departmentbudget",
+    "pk": 6,
+    "fields": {
+      "department": "ECE",
+      "budget_head": "Travel",
+      "allocated_amount": "45000.00",
+      "remaining_amount": "45000.00",
+      "is_active": true,
+      "updated_at": "2025-04-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "audit_account.departmentbudget",
+    "pk": 7,
+    "fields": {
+      "department": "PG",
+      "budget_head": "Travel",
+      "allocated_amount": "25000.00",
+      "remaining_amount": "25000.00",
+      "is_active": true,
+      "updated_at": "2025-04-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "audit_account.departmentbudget",
+    "pk": 8,
+    "fields": {
+      "department": "ACAD",
+      "budget_head": "Travel",
+      "allocated_amount": "20000.00",
+      "remaining_amount": "20000.00",
+      "is_active": true,
+      "updated_at": "2025-04-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "audit_account.departmentbudget",
+    "pk": 9,
+    "fields": {
+      "department": "ADMIN",
+      "budget_head": "Travel",
+      "allocated_amount": "30000.00",
+      "remaining_amount": "30000.00",
+      "is_active": true,
+      "updated_at": "2025-04-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "audit_account.departmentbudget",
+    "pk": 10,
+    "fields": {
+      "department": "DEV",
+      "budget_head": "Travel",
+      "allocated_amount": "15000.00",
+      "remaining_amount": "15000.00",
+      "is_active": true,
+      "updated_at": "2025-04-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "audit_account.departmentbudget",
+    "pk": 11,
+    "fields": {
+      "department": "CULTURAL",
+      "budget_head": "Travel",
+      "allocated_amount": "10000.00",
+      "remaining_amount": "10000.00",
+      "is_active": true,
+      "updated_at": "2025-04-01T00:00:00Z"
+    }
+  }
+]
