@@ -47,13 +47,19 @@ def login(request):
     design = HoldsDesignation.objects.select_related('user','designation').filter(working=user)
 
     designation=[]
-                
-    if str(user.extrainfo.user_type) == "student":
-        designation.append(str(user.extrainfo.user_type))
+    
+    # Create ExtraInfo if it doesn't exist
+    if user:
+        try:
+            extra_info = user.extrainfo
+        except ExtraInfo.DoesNotExist:
+            extra_info = ExtraInfo.objects.create(user=user, user_type='student')
         
-    for i in design:
-        if str(i.designation) != str(user.extrainfo.user_type):
-            designation.append(str(i.designation))
+        designation.append(str(extra_info.user_type))
+        
+        for i in design:
+            if str(i.designation) != str(extra_info.user_type):
+                designation.append(str(i.designation))
     
     resp = {
         'success' : True,
@@ -84,10 +90,20 @@ def auth_view(request):
     extra_info = get_object_or_404(ExtraInfo, user=user)
     last_selected_role = extra_info.last_selected_role
     
-    designation_list = list(HoldsDesignation.objects.filter(working=request.user).values_list('designation_id', flat=True))
-    designation_info = list(
-        Designation.objects.filter(id__in=designation_list).values_list('name', flat=True)
-    )
+    designation_list = list(HoldsDesignation.objects.all().filter(working = request.user).values_list('designation'))
+    designation_id = [designation for designations in designation_list for designation in designations]
+    designation_info = []
+
+    # Include primary user_type first (student/faculty/staff), then all held designations.
+    # This keeps role handling consistent with login API and avoids falling back to Guest-User.
+    if extra_info.user_type:
+        designation_info.append(str(extra_info.user_type))
+
+    for id in designation_id :
+        name_ = get_object_or_404(Designation, id = id)
+        designation_name = str(name_.name)
+        if designation_name not in designation_info:
+            designation_info.append(designation_name)
 
     accessible_modules = {}
     
