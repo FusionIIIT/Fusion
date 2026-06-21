@@ -1,0 +1,720 @@
+business_rules:
+  - id: BR01
+    source_id: BR-JM-SCHEDULE-DATE
+    name: Placement Date Must Not Be In The Past
+    endpoint: /placement/api/placement/
+    method: POST
+    description: Placement schedules must be created only for current or future dates.
+    scenarios:
+      valid:
+        _test_id: BR01_V_01
+        _br_id: BR01
+        _scenario: Valid
+        _expected_result: Future-dated placement schedule is created successfully.
+      invalid:
+        _test_id: BR01_I_01
+        _br_id: BR01
+        _scenario: Invalid
+        _expected_result: Past-dated placement schedule is rejected.
+
+  - id: BR02
+    source_id: BR-SP-001
+    name: Placement Profile Requires Mandatory Fields
+    endpoint: /placement/api/profile/
+    method: PUT
+    description: Student profile must include valid mandatory contact and identity details.
+    scenarios:
+      valid:
+        _test_id: BR02_V_01
+        _br_id: BR02
+        _scenario: Valid
+        _expected_result: Valid profile payload is accepted.
+      invalid:
+        _test_id: BR02_I_01
+        _br_id: BR02
+        _scenario: Invalid
+        _expected_result: Invalid or blank mandatory fields are rejected.
+
+  - id: BR03
+    source_id: BR-JM-006
+    name: Duplicate Applications Are Not Allowed
+    endpoint: /placement/api/apply-for-placement/
+    method: POST
+    description: A student cannot submit more than one active application for the same job.
+    scenarios:
+      valid:
+        _test_id: BR03_V_01
+        _br_id: BR03
+        _scenario: Valid
+        _expected_result: First application submission succeeds.
+      invalid:
+        _test_id: BR03_I_01
+        _br_id: BR03
+        _scenario: Invalid
+        _expected_result: Second application submission for the same job is rejected.
+
+  - id: BR04
+    source_id: BR-SP-004
+    name: Profile Update Frequency
+    endpoint: /placement/api/profile/
+    method: PUT
+    description: Profile updates follow governance rules for restricted or controlled update windows.
+    scenarios:
+      valid:
+        _test_id: BR04_V_01
+        _br_id: BR04
+        _scenario: Valid
+        _expected_result: Profile update within allowed conditions is accepted.
+      invalid:
+        _test_id: BR04_I_01
+        _br_id: BR04
+        _scenario: Invalid
+        _expected_result: Restricted profile modification attempt is rejected.
+
+  - id: BR05
+    source_id: BR-SP-005
+    name: Skills and Certifications
+    endpoint: /placement/api/profile/
+    method: GET, PUT
+    description: Skills and certification data must be represented in a verifiable and usable manner.
+    scenarios:
+      valid:
+        _test_id: BR05_V_01
+        _br_id: BR05
+        _scenario: Valid
+        _expected_result: Verified skill and certification details are retained correctly.
+      invalid:
+        _test_id: BR05_I_01
+        _br_id: BR05
+        _scenario: Invalid
+        _expected_result: Missing or invalid proof leaves the record rejected or flagged.
+
+  - id: BR06
+    source_id: BR-JM-001
+    name: Job Posting Approval
+    endpoint: /placement/api/placement/
+    method: POST, PUT
+    description: Job postings must be reviewed and accepted according to placement management rules.
+    scenarios:
+      valid:
+        _test_id: BR06_V_01
+        _br_id: BR06
+        _scenario: Valid
+        _expected_result: Approved posting is created and can proceed in the workflow.
+      invalid:
+        _test_id: BR06_I_01
+        _br_id: BR06
+        _scenario: Invalid
+        _expected_result: Posting that fails approval constraints is rejected or not published.
+
+  - id: BR07
+    source_id: BR-JM-002
+    name: Eligibility Criteria Enforcement
+    endpoint: /placement/api/apply-for-placement/
+    method: POST
+    description: Students may apply only when they satisfy the job eligibility criteria.
+    scenarios:
+      valid:
+        _test_id: BR07_V_01
+        _br_id: BR07
+        _scenario: Valid
+        _expected_result: Eligible student can submit an application successfully.
+      invalid:
+        _test_id: BR07_I_01
+        _br_id: BR07
+        _scenario: Invalid
+        _expected_result: Ineligible student receives a rejection with reasons.
+
+  - id: BR08
+    source_id: BR-JM-003
+    name: Application Deadline Management
+    endpoint: /placement/api/apply-for-placement/
+    method: POST
+    description: Job applications are allowed only while the relevant deadline window is open.
+    scenarios:
+      valid:
+        _test_id: BR08_V_01
+        _br_id: BR08
+        _scenario: Valid
+        _expected_result: Application submitted before the deadline is accepted.
+      invalid:
+        _test_id: BR08_I_01
+        _br_id: BR08
+        _scenario: Invalid
+        _expected_result: Application submitted after the deadline is rejected.
+
+  - id: BR09
+    source_id: BR-JM-004
+    name: Duplicate Application Prevention
+    endpoint: /placement/api/apply-for-placement/
+    method: POST
+    description: The system must prevent duplicate applications for the same schedule by the same student.
+    scenarios:
+      valid:
+        _test_id: BR09_V_01
+        _br_id: BR09
+        _scenario: Valid
+        _expected_result: First-time application succeeds.
+      invalid:
+        _test_id: BR09_I_01
+        _br_id: BR09
+        _scenario: Invalid
+        _expected_result: Repeated application for the same job is rejected.
+
+  - id: BR10
+    source_id: BR-JM-005
+    name: Application Information Integrity
+    endpoint: /placement/api/application-detail/{application_id}/
+    method: GET, PUT
+    description: Application records must remain accurate, traceable, and internally consistent.
+    scenarios:
+      valid:
+        _test_id: BR10_V_01
+        _br_id: BR10
+        _scenario: Valid
+        _expected_result: Valid application status update preserves a consistent application record.
+      invalid:
+        _test_id: BR10_I_01
+        _br_id: BR10
+        _scenario: Invalid
+        _expected_result: Invalid application mutation is rejected to preserve integrity.
+
+  - id: BR11
+    source_id: BR-JM-006
+    name: Company-Student Application Limits
+    endpoint: /placement/api/apply-for-placement/
+    method: POST
+    description: The system enforces configured limits on active student applications.
+    scenarios:
+      valid:
+        _test_id: BR11_V_01
+        _br_id: BR11
+        _scenario: Valid
+        _expected_result: Application is accepted while the active application count is within limit.
+      invalid:
+        _test_id: BR11_I_01
+        _br_id: BR11
+        _scenario: Invalid
+        _expected_result: Application is rejected when the active application limit is exceeded.
+
+  - id: BR12
+    source_id: BR-JM-007
+    name: Job Posting Content Standards
+    endpoint: /placement/api/placement/
+    method: POST, PUT
+    description: Job postings must contain valid descriptive and structural information.
+    scenarios:
+      valid:
+        _test_id: BR12_V_01
+        _br_id: BR12
+        _scenario: Valid
+        _expected_result: Posting with required content and structure is accepted.
+      invalid:
+        _test_id: BR12_I_01
+        _br_id: BR12
+        _scenario: Invalid
+        _expected_result: Posting with malformed or incomplete content is rejected.
+
+  - id: BR13
+    source_id: BR-IP-001
+    name: Interview Scheduling Constraints
+    endpoint: /placement/api/application-detail/{application_id}/interview/
+    method: POST
+    description: Interview scheduling must satisfy timing and conflict constraints.
+    scenarios:
+      valid:
+        _test_id: BR13_V_01
+        _br_id: BR13
+        _scenario: Valid
+        _expected_result: Valid interview slot is scheduled successfully.
+      invalid:
+        _test_id: BR13_I_01
+        _br_id: BR13
+        _scenario: Invalid
+        _expected_result: Conflicting or malformed interview schedule is rejected.
+
+  - id: BR14
+    source_id: BR-IP-002
+    name: Shortlisting Criteria
+    endpoint: /placement/api/application-detail/{application_id}/
+    method: PUT
+    description: Shortlisting decisions must follow the defined review and selection logic.
+    scenarios:
+      valid:
+        _test_id: BR14_V_01
+        _br_id: BR14
+        _scenario: Valid
+        _expected_result: Application status update consistent with shortlisting rules is accepted.
+      invalid:
+        _test_id: BR14_I_01
+        _br_id: BR14
+        _scenario: Invalid
+        _expected_result: Improper shortlisting action is rejected or blocked.
+
+  - id: BR15
+    source_id: BR-IP-003
+    name: Interview Process Documentation
+    endpoint: /placement/api/my-applications/
+    method: GET
+    description: The interview process must remain visible and traceable to students and administrators.
+    scenarios:
+      valid:
+        _test_id: BR15_V_01
+        _br_id: BR15
+        _scenario: Valid
+        _expected_result: Interview rounds and status history are exposed consistently in the application timeline.
+      invalid:
+        _test_id: BR15_I_01
+        _br_id: BR15
+        _scenario: Invalid
+        _expected_result: Missing or inconsistent interview documentation is treated as a workflow failure.
+
+  - id: BR16
+    source_id: BR-IP-004
+    name: Multiple Offer Management
+    endpoint: /placement/api/offer/{offer_id}/respond/
+    method: POST
+    description: The offer process enforces institute constraints around multiple concurrent offers.
+    scenarios:
+      valid:
+        _test_id: BR16_V_01
+        _br_id: BR16
+        _scenario: Valid
+        _expected_result: Student accepts a valid pending offer when no blocking accepted offer exists.
+      invalid:
+        _test_id: BR16_I_01
+        _br_id: BR16
+        _scenario: Invalid
+        _expected_result: Student is blocked from accepting another offer when policy forbids it.
+
+  - id: BR17
+    source_id: BR-IP-005
+    name: Interview Feedback and Appeals
+    endpoint: /placement/api/placement-appeals/
+    method: GET, POST, PUT
+    description: Students and TPO can record and process interview-related appeals and follow-up decisions.
+    scenarios:
+      valid:
+        _test_id: BR17_V_01
+        _br_id: BR17
+        _scenario: Valid
+        _expected_result: Valid appeal submission or decision is accepted and tracked.
+      invalid:
+        _test_id: BR17_I_01
+        _br_id: BR17
+        _scenario: Invalid
+        _expected_result: Unauthorized or malformed appeal action is rejected.
+
+  - id: BR18
+    source_id: BR-NT-001
+    name: Notification Delivery Requirements
+    endpoint: /placement/api/send-notification/
+    method: POST
+    description: Notifications must be delivered using approved targeting and channel rules.
+    scenarios:
+      valid:
+        _test_id: BR18_V_01
+        _br_id: BR18
+        _scenario: Valid
+        _expected_result: Notification request with valid target selection is processed successfully.
+      invalid:
+        _test_id: BR18_I_01
+        _br_id: BR18
+        _scenario: Invalid
+        _expected_result: Notification request with invalid recipient data is rejected.
+
+  - id: BR19
+    source_id: BR-NT-002
+    name: Notification Content Standards
+    endpoint: /placement/api/send-notification/
+    method: POST
+    description: Notification payloads must follow message-content quality and formatting requirements.
+    scenarios:
+      valid:
+        _test_id: BR19_V_01
+        _br_id: BR19
+        _scenario: Valid
+        _expected_result: Well-formed notification content is accepted for delivery.
+      invalid:
+        _test_id: BR19_I_01
+        _br_id: BR19
+        _scenario: Invalid
+        _expected_result: Empty or malformed notification content is rejected.
+
+  - id: BR20
+    source_id: BR-NT-003
+    name: Communication Hierarchy
+    endpoint: /placement/api/send-notification/
+    method: POST
+    description: Communication actions must respect placement governance and authorized sender roles.
+    scenarios:
+      valid:
+        _test_id: BR20_V_01
+        _br_id: BR20
+        _scenario: Valid
+        _expected_result: Authorized user sends an allowed notification successfully.
+      invalid:
+        _test_id: BR20_I_01
+        _br_id: BR20
+        _scenario: Invalid
+        _expected_result: Unauthorized notification action is denied.
+
+  - id: BR21
+    source_id: BR-NT-004
+    name: Emergency Communication Protocol
+    endpoint: /placement/api/send-notification/
+    method: POST
+    description: Critical notification flows must support urgent communication behavior.
+    scenarios:
+      valid:
+        _test_id: BR21_V_01
+        _br_id: BR21
+        _scenario: Valid
+        _expected_result: Emergency notification request is accepted with valid targeting information.
+      invalid:
+        _test_id: BR21_I_01
+        _br_id: BR21
+        _scenario: Invalid
+        _expected_result: Emergency notification request missing required information is rejected.
+
+  - id: BR22
+    source_id: BR-NT-005
+    name: Privacy and Confidentiality
+    endpoint: /placement/api/send-notification/
+    method: POST
+    description: Notifications and placement data handling must respect privacy boundaries and confidentiality.
+    scenarios:
+      valid:
+        _test_id: BR22_V_01
+        _br_id: BR22
+        _scenario: Valid
+        _expected_result: Authorized user accesses only permitted notification data and actions.
+      invalid:
+        _test_id: BR22_I_01
+        _br_id: BR22
+        _scenario: Invalid
+        _expected_result: Disallowed access or disclosure attempt is rejected.
+
+  - id: BR23
+    source_id: BR-AC-001
+    name: Role-Based Access Control
+    endpoint: /placement/api/reports/
+    method: GET
+    description: Endpoints must enforce permissions based on the current user role.
+    scenarios:
+      valid:
+        _test_id: BR23_V_01
+        _br_id: BR23
+        _scenario: Valid
+        _expected_result: Authorized role accesses the protected resource successfully.
+      invalid:
+        _test_id: BR23_I_01
+        _br_id: BR23
+        _scenario: Invalid
+        _expected_result: Unauthorized role is denied access to the protected resource.
+
+  - id: BR24
+    source_id: BR-AC-002
+    name: Authentication and Session Management
+    endpoint: /placement/api/profile/
+    method: GET
+    description: Placement APIs must require valid authenticated user context.
+    scenarios:
+      valid:
+        _test_id: BR24_V_01
+        _br_id: BR24
+        _scenario: Valid
+        _expected_result: Authenticated request succeeds.
+      invalid:
+        _test_id: BR24_I_01
+        _br_id: BR24
+        _scenario: Invalid
+        _expected_result: Unauthenticated request is rejected.
+
+  - id: BR25
+    source_id: BR-AC-003
+    name: Data Access Restrictions
+    endpoint: /placement/api/statistics/
+    method: GET
+    description: Data access must be restricted to permitted scopes and users.
+    scenarios:
+      valid:
+        _test_id: BR25_V_01
+        _br_id: BR25
+        _scenario: Valid
+        _expected_result: Permitted user accesses allowed data successfully.
+      invalid:
+        _test_id: BR25_I_01
+        _br_id: BR25
+        _scenario: Invalid
+        _expected_result: Disallowed data-access attempt is blocked.
+
+  - id: BR26
+    source_id: BR-AC-004
+    name: System Administration Rules
+    endpoint: /placement/api/report-schedules/
+    method: GET, POST, PUT
+    description: Administrative placement operations must follow privileged access rules.
+    scenarios:
+      valid:
+        _test_id: BR26_V_01
+        _br_id: BR26
+        _scenario: Valid
+        _expected_result: Administrator-level operation succeeds for an authorized user.
+      invalid:
+        _test_id: BR26_I_01
+        _br_id: BR26
+        _scenario: Invalid
+        _expected_result: Non-admin user is denied administrative operation access.
+
+  - id: BR27
+    source_id: BR-AC-005
+    name: External Integration Security
+    endpoint: /placement/api/registration/
+    method: POST
+    description: External-facing integrations such as company registration must follow secure handling rules.
+    scenarios:
+      valid:
+        _test_id: BR27_V_01
+        _br_id: BR27
+        _scenario: Valid
+        _expected_result: Secure registration request is accepted.
+      invalid:
+        _test_id: BR27_I_01
+        _br_id: BR27
+        _scenario: Invalid
+        _expected_result: Insecure or malformed external request is rejected.
+
+  - id: BR28
+    source_id: BR-DM-001
+    name: Data Quality and Validation
+    endpoint: /placement/api/profile/
+    method: PUT
+    description: Placement data must satisfy validation rules before it is persisted.
+    scenarios:
+      valid:
+        _test_id: BR28_V_01
+        _br_id: BR28
+        _scenario: Valid
+        _expected_result: Valid data payload is stored successfully.
+      invalid:
+        _test_id: BR28_I_01
+        _br_id: BR28
+        _scenario: Invalid
+        _expected_result: Invalid data payload is rejected with errors.
+
+  - id: BR29
+    source_id: BR-DM-002
+    name: Data Retention and Archival
+    endpoint: /placement/api/reports/
+    method: GET
+    description: Placement data should remain available according to retention and archival policy.
+    scenarios:
+      valid:
+        _test_id: BR29_V_01
+        _br_id: BR29
+        _scenario: Valid
+        _expected_result: Retained report data remains available within policy scope.
+      invalid:
+        _test_id: BR29_I_01
+        _br_id: BR29
+        _scenario: Invalid
+        _expected_result: Access to data outside retention policy is unavailable or rejected.
+
+  - id: BR30
+    source_id: BR-DM-003
+    name: Reporting and Analytics
+    endpoint: /placement/api/reports/
+    method: GET
+    description: Reporting APIs must generate consistent analytics structures for placement data.
+    scenarios:
+      valid:
+        _test_id: BR30_V_01
+        _br_id: BR30
+        _scenario: Valid
+        _expected_result: Requested report payload is generated successfully.
+      invalid:
+        _test_id: BR30_I_01
+        _br_id: BR30
+        _scenario: Invalid
+        _expected_result: Invalid report request is rejected or returns no generated report.
+
+  - id: BR31
+    source_id: BR-DM-004
+    name: Data Privacy and Compliance
+    endpoint: /placement/api/alumni/profile/
+    method: GET, PUT
+    description: Personal placement-related data must be handled according to privacy and compliance rules.
+    scenarios:
+      valid:
+        _test_id: BR31_V_01
+        _br_id: BR31
+        _scenario: Valid
+        _expected_result: Authorized user accesses or updates personal data within allowed scope.
+      invalid:
+        _test_id: BR31_I_01
+        _br_id: BR31
+        _scenario: Invalid
+        _expected_result: Non-compliant data access or update attempt is rejected.
+
+  - id: BR32
+    source_id: BR-DM-005
+    name: Statistical Analysis and Insights
+    endpoint: /placement/api/statistics/
+    method: GET
+    description: Statistical endpoints must produce meaningful and filterable placement insights.
+    scenarios:
+      valid:
+        _test_id: BR32_V_01
+        _br_id: BR32
+        _scenario: Valid
+        _expected_result: Statistics endpoint returns structured insight data for valid filters.
+      invalid:
+        _test_id: BR32_I_01
+        _br_id: BR32
+        _scenario: Invalid
+        _expected_result: Invalid filter combination or unavailable dataset is handled safely.
+
+  - id: BR33
+    source_id: BR-SI-001
+    name: Academic System Integration
+    endpoint: /placement/api/profile/
+    method: GET
+    description: Placement data should remain consistent with linked academic information.
+    scenarios:
+      valid:
+        _test_id: BR33_V_01
+        _br_id: BR33
+        _scenario: Valid
+        _expected_result: Academic-linked placement data remains synchronized and usable.
+      invalid:
+        _test_id: BR33_I_01
+        _br_id: BR33
+        _scenario: Invalid
+        _expected_result: Academic inconsistency is detected or blocks dependent placement action.
+
+  - id: BR34
+    source_id: BR-SI-002
+    name: Communication System Integration
+    endpoint: /placement/api/send-notification/
+    method: POST
+    description: Placement notifications integrate with supported communication channels.
+    scenarios:
+      valid:
+        _test_id: BR34_V_01
+        _br_id: BR34
+        _scenario: Valid
+        _expected_result: Notification request is accepted for configured channels.
+      invalid:
+        _test_id: BR34_I_01
+        _br_id: BR34
+        _scenario: Invalid
+        _expected_result: Channel or recipient mismatch causes rejection or failure response.
+
+  - id: BR35
+    source_id: BR-SI-003
+    name: External Platform Integration
+    endpoint: /placement/api/registration/
+    method: GET, POST
+    description: Placement data exchange with external platforms must remain consistent and controlled.
+    scenarios:
+      valid:
+        _test_id: BR35_V_01
+        _br_id: BR35
+        _scenario: Valid
+        _expected_result: External platform–related data is accepted in the supported integration flow.
+      invalid:
+        _test_id: BR35_I_01
+        _br_id: BR35
+        _scenario: Invalid
+        _expected_result: Unsupported integration request is rejected.
+
+  - id: BR36
+    source_id: BR-SI-004
+    name: Workflow Automation Rules
+    endpoint: /placement/api/application-detail/{application_id}/
+    method: PUT
+    description: Placement workflows may trigger automated state updates and notifications under allowed rules.
+    scenarios:
+      valid:
+        _test_id: BR36_V_01
+        _br_id: BR36
+        _scenario: Valid
+        _expected_result: Valid state transition triggers the expected automated follow-up behavior.
+      invalid:
+        _test_id: BR36_I_01
+        _br_id: BR36
+        _scenario: Invalid
+        _expected_result: Disallowed automated transition is rejected.
+
+  - id: BR37
+    source_id: BR-SI-005
+    name: System Performance Rules
+    endpoint: /placement/api/placement/
+    method: GET
+    description: The system must respond reliably under normal placement usage conditions.
+    scenarios:
+      valid:
+        _test_id: BR37_V_01
+        _br_id: BR37
+        _scenario: Valid
+        _expected_result: Supported request completes successfully within expected operational conditions.
+      invalid:
+        _test_id: BR37_I_01
+        _br_id: BR37
+        _scenario: Invalid
+        _expected_result: Degraded or unavailable behavior is surfaced as a controlled failure.
+
+  - id: BR38
+    source_id: BR-EX-001
+    name: TPO Override Authority
+    endpoint: /placement/api/placement-appeals/
+    method: GET, POST, PUT
+    description: TPO override actions must be documented and limited to authorized review flows.
+    scenarios:
+      valid:
+        _test_id: BR38_V_01
+        _br_id: BR38
+        _scenario: Valid
+        _expected_result: Authorized override decision is recorded successfully.
+      invalid:
+        _test_id: BR38_I_01
+        _br_id: BR38
+        _scenario: Invalid
+        _expected_result: Unauthorized or unsupported override request is rejected.
+
+  - id: BR39
+    source_id: BR-EX-002
+    name: Emergency Procedures
+    endpoint: /placement/api/send-notification/
+    method: POST
+    description: Emergency handling must support alternative communication or recovery actions.
+    scenarios:
+      valid:
+        _test_id: BR39_V_01
+        _br_id: BR39
+        _scenario: Valid
+        _expected_result: Emergency procedure request is accepted for a supported scenario.
+      invalid:
+        _test_id: BR39_I_01
+        _br_id: BR39
+        _scenario: Invalid
+        _expected_result: Unsupported emergency procedure invocation is rejected.
+
+  - id: BR40
+    source_id: BR-EX-003
+    name: Policy Violation Handling
+    endpoint: /placement/api/placement-appeals/
+    method: GET, POST, PUT
+    description: Policy violations and related review actions must follow a documented control path.
+    scenarios:
+      valid:
+        _test_id: BR40_V_01
+        _br_id: BR40
+        _scenario: Valid
+        _expected_result: Valid policy-violation review action is recorded successfully.
+      invalid:
+        _test_id: BR40_I_01
+        _br_id: BR40
+        _scenario: Invalid
+        _expected_result: Invalid policy-violation handling action is rejected.
