@@ -692,7 +692,7 @@ class UploadGradesAPI(APIView):
             with transaction.atomic():
                 for index, row in enumerate(reader, start=1):
                     roll_no = row.get("roll_no")
-                    grade = row.get("grade")
+                    grade = (row.get("grade") or "").strip()
                     remarks = row.get("remarks", "")
                     semester = row.get("semester", None)
 
@@ -1023,6 +1023,7 @@ class ModerateStudentGradesAPI(APIView):
             for student_id, semester_id, course_id, grade, remark in zip(
                 student_ids, semester_ids, course_ids, grades, remarks
             ):
+                grade = (grade or "").strip()
                 try:
                     grade_of_student = Student_grades.objects.get(
                         course_id=course_id, roll_no=student_id, semester=semester_id
@@ -1128,7 +1129,7 @@ class GenerateTranscript(APIView):
                 "course_code": course.code,
                 "credit": course.credit,
                 "grade": reg.grade,
-                "points": Decimal(str(grade_conversion.get(reg.grade, 0) * 10)).quantize(Decimal('0.1'), rounding=ROUND_HALF_UP),
+                "points": Decimal(str(grade_conversion.get((reg.grade or "").strip(), 0) * 10)).quantize(Decimal('0.1'), rounding=ROUND_HALF_UP),
             }
 
         # Add complete student information like CheckResultView
@@ -1532,7 +1533,7 @@ class GenerateResultAPI(APIView):
                             if len(attempts) >= 1:
                                 scored = sorted(
                                     attempts,
-                                    key=lambda x: grade_conversion.get(x[1], -1),
+                                    key=lambda x: grade_conversion.get((x[1] or "").strip(), -1),
                                     reverse=True
                                 )
                                 first_code, first_grade = scored[0]
@@ -2870,7 +2871,7 @@ class ValidateDeanSubmitView(APIView):
 
             for row in reader:
                 roll_no = row["roll_no"]
-                grade = row["grade"]
+                grade = (row["grade"] or "").strip()
                 remarks = row["remarks"]
 
                 try:
@@ -2885,7 +2886,7 @@ class ValidateDeanSubmitView(APIView):
                         batch=batch
                     )
 
-                    if student_grade.grade != grade:
+                    if (student_grade.grade or "").strip() != grade:
                         mismatches.append({
                             "roll_no": roll_no,
                             "csv_grade": grade,
@@ -3029,7 +3030,7 @@ class CheckResultView(APIView):
                     "coursename": grade.course_id.name,
                     "credits": grade.course_id.credit,
                     "grade":grade.grade,
-                    "points": Decimal(str(grade_conversion.get(grade.grade, 0) * 10)).quantize(Decimal('0.1'), rounding=ROUND_HALF_UP),
+                    "points": Decimal(str(grade_conversion.get((grade.grade or "").strip(), 0) * 10)).quantize(Decimal('0.1'), rounding=ROUND_HALF_UP),
                 }
                 for grade in grades_info
             ],
@@ -3724,7 +3725,7 @@ class GenerateStudentResultPDFAPI(APIView):
                         "coursename": grade.course_id.name,
                         "credits": grade.course_id.credit,
                         "grade": grade.grade,
-                        "points": Decimal(str(grade_conversion.get(grade.grade, 0) * 10)).quantize(Decimal('0.1'), rounding=ROUND_HALF_UP),
+                        "points": Decimal(str(grade_conversion.get((grade.grade or "").strip(), 0) * 10)).quantize(Decimal('0.1'), rounding=ROUND_HALF_UP),
                     }
                     for grade in grades_info
                 ]
@@ -4045,7 +4046,7 @@ class GenerateGradeSheetData(APIView):
                 "course_code": course.code,
                 "credit": course.credit,
                 "grade": reg.grade,
-                "points": Decimal(str(grade_conversion.get(reg.grade, 0) * 10)).quantize(
+                "points": Decimal(str(grade_conversion.get((reg.grade or "").strip(), 0) * 10)).quantize(
                     Decimal('0.1'), rounding=ROUND_HALF_UP),
                 "special_symbol": course_reg_map.get(course.id, ''),
             }
