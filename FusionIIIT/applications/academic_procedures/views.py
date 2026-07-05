@@ -900,7 +900,8 @@ def approve_branch_change(request):
                     continue
         
         from applications.programme_curriculum.models import Discipline, Batch
-        
+        from applications.academic_information.models import compute_section
+
         changed_branch = []
         changed_students = []
         
@@ -929,6 +930,11 @@ def approve_branch_change(request):
                         ).first()
                         if new_batch:
                             student.batch_id = new_batch
+                            # Discipline changed -> section follows automatically.
+                            # Roll number is the immutable PK, so parity is
+                            # unchanged; only the discipline mapping flips
+                            # (e.g. ECE 'C' -> CSE 'A'/'B').
+                            student.section = compute_section(new_discipline.name, student.id_id, student.programme)
                             changed_students.append(student)
                 except Exception as e:
                     pass
@@ -942,7 +948,7 @@ def approve_branch_change(request):
             if changed_branch:
                 ExtraInfo.objects.bulk_update(changed_branch, ['department'])
             if changed_students:
-                Student.objects.bulk_update(changed_students, ['batch_id'])
+                Student.objects.bulk_update(changed_students, ['batch_id', 'section'])
             messages.info(request, 'Apply for branch change successfull')
         except Exception as e:
             messages.info(request, 'Unable to proceed, we will get back to you very soon')

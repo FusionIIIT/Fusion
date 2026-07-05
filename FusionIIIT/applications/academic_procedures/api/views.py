@@ -1122,6 +1122,7 @@ def verify_registration(request):
         # final_register_list = FinalRegistration.objects.all().filter(student_id = student, verified = False)
         
         with transaction.atomic():
+            from applications.academic_information.models import resolve_offering
             ver_reg = []
             for obj in final_register_list:
                 _work_year = datetime.datetime.now().year
@@ -1131,6 +1132,9 @@ def verify_registration(request):
                     _session = f"{_work_year}-{str(_work_year + 1)[-2:]}"
                 else:
                     _session = f"{_work_year - 1}-{str(_work_year)[-2:]}"
+                # Bind this registration to the offering (course+section+faculty)
+                # the student belongs to, so grades are attributable per instructor.
+                offering = resolve_offering(student, obj.course_id, _work_year, _sem_type)
                 p = course_registration(
                     course_id=obj.course_id,
                     student_id=student,
@@ -1140,12 +1144,13 @@ def verify_registration(request):
                     registration_type=obj.registration_type,
                     session=_session,
                     semester_type=_sem_type,
+                    course_instructor=offering,
                     )
                 # ver_reg.append(p)
                 p.save()
                 if (obj.old_course_registration):
                     course_replacement.objects.create(new_course_registration=p, old_course_registration=obj.old_course_registration)
-                o = FinalRegistration.objects.filter(id= obj.id).update(verified = True)
+                o = FinalRegistration.objects.filter(id= obj.id).update(verified = True, course_instructor = offering)
             # course_registration.objects.bulk_create(ver_reg)
             academics_module_notif(request.user, student.id.user, 'registration_approved')
             

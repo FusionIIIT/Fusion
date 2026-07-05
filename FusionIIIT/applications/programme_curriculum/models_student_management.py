@@ -631,8 +631,8 @@ def create_student_profiles_automatically(students_list):
                 )
             
             if student.user and student.roll_number:
-                from applications.academic_information.models import Student as AcademicStudent
-                
+                from applications.academic_information.models import Student as AcademicStudent, compute_section
+
                 try:
                     extra_info = ExtraInfo.objects.get(id=student.roll_number)
                     
@@ -647,7 +647,8 @@ def create_student_profiles_automatically(students_list):
                             'mother_name': student.mother_name or '',
                             'hall_no': 0,
                             'room_no': '',
-                            'specialization': ''
+                            'specialization': '',
+                            'section': compute_section(getattr(student, 'branch', None), student.roll_number, student.get_programme_name()),
                         }
                     )
                         
