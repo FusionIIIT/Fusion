@@ -3984,6 +3984,7 @@ def get_batch_students(request, batch_id):
                 'state': getattr(student, 'state', ''),
 
                 'branch': student.branch,
+                'section': getattr(student, 'section', '') or '',
                 'specialization': getattr(student, 'specialization', ''),
                 'ai_rank': getattr(student, 'ai_rank', None),
                 'category_rank': getattr(student, 'category_rank', None),
