@@ -147,6 +147,7 @@ urlpatterns = [
     path('admin_list_students/', views_student_management.list_students, name='admin_list_students'),
     
     # Individual student CRUD
+    path('student_my_info/', views_student_management.student_my_info, name='student_my_info'),
     path('student/<int:student_id>/', views_student_management.get_student, name='get_student'),
     path('student/<int:student_id>/update/', views_student_management.update_student, name='update_student'),
     path('student/<int:student_id>/delete/', views_student_management.delete_student, name='delete_student'),

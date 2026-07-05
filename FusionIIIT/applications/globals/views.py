@@ -70,6 +70,7 @@ class RateLimitedPasswordResetView(PasswordResetView):
 
 
 
+@login_required(login_url='/accounts/login')
 def index(request):
     context = {}
     if(str(request.user)!="AnonymousUser"):
@@ -78,6 +79,7 @@ def index(request):
         return render(request, "globals/index1.html", context)
 
 # Reset all passwords to 'user@123' in DEV environment
+@login_required(login_url='/accounts/login')
 def reset_all_pass(request):
     if settings.ALLOW_PASS_RESET:
         UserMod = get_user_model()
@@ -503,10 +505,12 @@ def about(request):
                }
     return render(request, "globals/about.html", context)
 
+@login_required(login_url='/accounts/login')
 def login(request):
     context = {}
     return render(request, "globals/login.html", context)
 
+@login_required(login_url='/accounts/login')
 def about(request):
 
     teams = {

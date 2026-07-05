@@ -82,7 +82,7 @@ def get_email_template_context(student, password, additional_context=None):
         'programme': student.get_programme_name(),
         'branch': student.get_display_branch(),
         'year': student.year,
-        'fusion_url': getattr(settings, 'FUSION_URL', 'http://fusion.iiitdmj.ac.in'),
+        'fusion_url': getattr(settings, 'FUSION_URL', 'https://fusion.iiitdmj.ac.in'),
         'current_date': datetime.now().strftime('%B %d, %Y'),
         'email_host_user': settings.EMAIL_HOST_USER,
         'institute_name': 'PDPM IIITDM Jabalpur'

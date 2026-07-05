@@ -13,6 +13,7 @@ from django.db import transaction
 from django.contrib import messages
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
+from applications.globals.access import require_designation
 from django.contrib.auth.models import User
 from django.db.models import Max,Value,IntegerField,CharField,F,Sum
 from django.http import HttpResponse, HttpResponseRedirect
@@ -119,7 +120,7 @@ def academic_procedures(request):
 #
 #
 #
-@login_required(login_url='/accounts/login')
+@require_designation("Professor", "Associate Professor", "Assistant Professor")
 def academic_procedures_faculty(request):
 
     current_user = get_object_or_404(User, username=request.user.username)
@@ -273,7 +274,7 @@ def account(request):
                         })
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("student")
 def academic_procedures_student(request):
 
     current_user = get_object_or_404(User, username=request.user.username)
@@ -659,6 +660,7 @@ def academic_procedures_student(request):
         return HttpResponse('user not found')
 
 
+@require_designation("student", "Professor", "Associate Professor", "Assistant Professor", "acadadmin", "Dean Academic")
 def dues_pdf(request):
     template = get_template('academic_procedures/dues_pdf.html')
     current_user = get_object_or_404(User, username=request.user.username)
@@ -686,6 +688,7 @@ def dues_pdf(request):
         return HttpResponse("PDF could not be generated")
 
 
+@require_designation("Professor", "Associate Professor", "Assistant Professor")
 def facultyData(request):
 	current_value = request.POST['current_value']
 	try:
@@ -838,6 +841,7 @@ def apply_branch_change(request):
     return context
 
 
+@require_designation("student")
 def branch_change_request(request):
     '''
         This function is used to apply the branch change request.
@@ -869,7 +873,7 @@ def branch_change_request(request):
 
 
 
-@login_required(login_url='/acounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def approve_branch_change(request):
     '''
         This function is used to approve the branch change requests from acad admin's frame.
@@ -1019,7 +1023,7 @@ def dropcourseadmin(request):
     response_data = {}
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def gen_course_list(request):
     if(request.POST):
         try:
@@ -1166,6 +1170,7 @@ def verify_course(request):
 
 
 # view to add Course for a student
+@login_required(login_url='/accounts/login')
 def acad_add_course(request):
     if(request.method == "POST"):
         if user_check(request):
@@ -1200,6 +1205,7 @@ def acad_add_course(request):
 
 
 
+@require_designation("acadadmin", "Dean Academic")
 def acad_branch_change(request):
     '''
         This function is used to approve the branch changes requested by the students.
@@ -1520,7 +1526,7 @@ def get_acad_year(user_sem, year):
             acad_year = str(year-1) + "-" + str(year)
         return acad_year
 
-@login_required(login_url='/accounts/login')
+@require_designation("student")
 @transaction.atomic
 def pre_registration(request):
     if request.method == 'POST':
@@ -1588,7 +1594,7 @@ def pre_registration(request):
     else:
         return HttpResponseRedirect('/academic-procedures/main')
 
-@login_required(login_url='/accounts/login')
+@require_designation("student")
 @transaction.atomic
 def auto_pre_registration(request):
     if request.method == 'POST':
@@ -1665,6 +1671,7 @@ def get_student_registrtion_check(obj, sem):
     return StudentRegistrationChecks.objects.all().filter(student_id = obj, semester_id = sem).first()
 
 
+@login_required(login_url='/accounts/login')
 def final_registration(request):
     if request.method == 'POST':
         if request.POST.get('type_reg') == "register" :
@@ -1711,6 +1718,7 @@ def final_registration(request):
         return HttpResponseRedirect('/academic-procedures/main')
 
 
+@login_required(login_url='/accounts/login')
 def allot_courses(request):
     if user_check(request):
         return HttpResponseRedirect('/academic-procedures/main')
@@ -1795,7 +1803,7 @@ def allot_courses(request):
         # return HttpResponse("Fail")
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def allot_courses_after_add_and_drop(request):
     if user_check(request):
         return HttpResponseRedirect('/academic-procedures/main')
@@ -1902,6 +1910,7 @@ def get_cpi(id):
     obj =  Student.objects.select_related('id','id__user','id__department').get(id = id)
     return obj.cpi
 
+@require_designation("student")
 def register(request):
     if request.method == 'POST':
         try:
@@ -1943,6 +1952,7 @@ def register(request):
         return HttpResponseRedirect('/academic-procedures/main')
 
 
+@require_designation("student")
 def add_courses(request):
     """
     This function is used to add courses for currernt semester
@@ -1996,6 +2006,7 @@ def add_courses(request):
         return HttpResponseRedirect('/academic-procedures/main')
 
 
+@login_required(login_url='/accounts/login')
 def drop_course(request):
     if request.method == 'POST':
         try:
@@ -2022,6 +2033,7 @@ def drop_course(request):
     else:
         return HttpResponseRedirect('/academic-procedures/main')
 
+@require_designation("student")
 def replace_courses(request):
     """
     This function is used to replace elective courses which have been registered
@@ -2071,6 +2083,7 @@ def replace_courses(request):
 
 
 
+@require_designation("Professor", "Associate Professor", "Assistant Professor")
 def add_thesis(request):
     if request.method == 'POST':
         try:
@@ -2326,7 +2339,7 @@ def get_thesis_flag(student):
 
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def acad_person(request):
 
     current_user = get_object_or_404(User, username=request.user.username)
@@ -2502,6 +2515,7 @@ def get_batch_all():
         result_year = [demo_date.year-1,demo_date.year-2,  demo_date.year-3,  demo_date.year-4]
     return result_year
 
+@require_designation("acadadmin", "Dean Academic")
 def announce_results(request):
     i = int(request.POST.get('id'))
     year = get_batch_all()
@@ -2794,12 +2808,14 @@ def course_list(request):
  
         return HttpResponse(json.dumps({'html': html}),content_type="application/json")
 
+@require_designation("acadadmin", "Dean Academic")
 def process_verification_request(request):
     if request.is_ajax():
         return verify_registration(request)
     return JsonResponse({'status': 'Failed'}, status=400)
 
 
+@require_designation("acadadmin", "Dean Academic")
 def auto_process_verification_request(request):
     if request.is_ajax():
         return auto_verify_registration(request)
@@ -2940,6 +2956,7 @@ def get_registration_courses(courses):
     return x
 
 
+@require_designation("acadadmin", "Dean Academic")
 def teaching_credit_register(request) :
     if request.method == 'POST':
         try:
@@ -2977,6 +2994,7 @@ def teaching_credit_register(request) :
 
 
 
+@require_designation("Professor", "Associate Professor", "Assistant Professor")
 def course_marks_data(request):
     try:
         course_id = request.POST.get('course_id')
@@ -3047,6 +3065,7 @@ def course_marks_data(request):
 
 
 
+@require_designation("Professor", "Associate Professor", "Assistant Professor")
 def submit_marks(request):
     try:
         print(request.POST)
@@ -3138,6 +3157,7 @@ def submit_marks(request):
 
 
 
+@require_designation("acadadmin", "Dean Academic")
 def verify_course_marks_data(request):
     try:
         curriculum_id = request.POST.get('curriculum_id')
@@ -3175,6 +3195,7 @@ verified_marks_students_curr = None
 ##########GLOBAL VARIABLE###############
 ########################################
 
+@require_designation("acadadmin", "Dean Academic")
 def verify_marks(request):
     try:
         global verified_marks_students
@@ -3225,6 +3246,7 @@ def render_to_pdf(template_src, context_dict):
         return HttpResponse(result.getvalue(), content_type='application/pdf')
     return None
 
+@require_designation("Professor", "Associate Professor", "Assistant Professor", "acadadmin", "Dean Academic")
 def generate_grade_pdf(request):
     instructor = Curriculum_Instructor.objects.all().select_related('curriculum_id','instructor_id','curriculum_id__course_id','instructor_id__department','instructor_id__user').filter(curriculum_id = verified_marks_students_curr).first()
     context = {'verified_marks_students' : verified_marks_students,
@@ -3238,6 +3260,7 @@ def generate_grade_pdf(request):
     return HttpResponse("PDF could not be generated")
 
 
+@require_designation("Professor", "Associate Professor", "Assistant Professor", "acadadmin", "Dean Academic")
 def generate_result_pdf(request):
     batch = request.POST.get('batch')
     branch = request.POST.get('branch')
@@ -3312,6 +3335,7 @@ def generate_result_pdf(request):
     return HttpResponse("PDF could not be generated")
 
 
+@require_designation("Professor", "Associate Professor", "Assistant Professor", "acadadmin", "Dean Academic")
 def generate_grade_sheet_pdf(request):
     batch = request.POST.get('batch')
     branch = request.POST.get('branch')
@@ -3496,6 +3520,7 @@ def get_spi(course_list,grade_list):
 
 
 
+@require_designation("Professor", "Associate Professor", "Assistant Professor")
 def manual_grade_submission(request):
     if request.method == 'POST' and request.FILES:
 
@@ -3627,6 +3652,7 @@ def manual_grade_submission(request):
 
 
 
+@require_designation("acadadmin", "Dean Academic")
 def test(request):
     br_up = []
     st_list = Student.objects.select_related('id','id__user','id__department').all()
@@ -3644,6 +3670,7 @@ def test(request):
         
     return render(request,'../templates/academic_procedures/test.html',{})
 
+@require_designation("acadadmin", "Dean Academic")
 def test_ret(request):
     try:
         data = render_to_string('academic_procedures/test_render.html',
@@ -3654,6 +3681,7 @@ def test_ret(request):
         return HttpResponseRedirect('/academic-procedures/main')
 
 
+@require_designation("student", "Professor", "Associate Professor", "Assistant Professor", "acadadmin", "Dean Academic")
 def Bonafide_form(request):
     template = get_template('academic_procedures/bonafide_pdf.html')
     current_user = get_object_or_404(User, username=request.user.username)
@@ -3699,7 +3727,7 @@ def Bonafide_form(request):
 
 #     return render(request, 'bonafide.html', {'form': form})
 
-@login_required
+@require_designation("student", "Professor", "Associate Professor", "Assistant Professor", "acadadmin", "Dean Academic")
 def ACF(request):
         stu = Student.objects.get(id=request.user.username)
         month = request.POST.get('month')
@@ -3750,6 +3778,7 @@ def ACF(request):
         return HttpResponse(content)
 
 
+@require_designation("acadadmin", "Dean Academic")
 def update_assistantship(request):
     if request.method == 'POST':
         r = request.POST.get('remark')
@@ -3773,6 +3802,7 @@ def update_assistantship(request):
     return HttpResponseRedirect('/academic-procedures/main/')
 
 
+@require_designation("acadadmin", "Dean Academic")
 def update_hod_assistantship(request):
     if request.method == 'POST':
         d = request.POST.get('dict')
@@ -3787,6 +3817,7 @@ def update_hod_assistantship(request):
 
 
 
+@require_designation("acadadmin", "Dean Academic")
 def update_acad_assis(request):
     if request.method == 'POST':
         d = request.POST.get('dict')
@@ -3802,6 +3833,7 @@ def update_acad_assis(request):
         return HttpResponse('success')
 
 
+@require_designation("acadadmin", "Dean Academic")
 def update_account_assistantship(request):
     if request.method == 'POST':
         di = request.POST.get('dict')
@@ -3817,6 +3849,7 @@ def update_account_assistantship(request):
                 
             return HttpResponse('success')
 
+@require_designation("acadadmin", "Dean Academic")
 def assis_stat(request):
     if request.method == 'POST':
         flag= request.POST.get('flag')
@@ -3838,7 +3871,7 @@ def assis_stat(request):
     return HttpResponse('success')
 
 
-@login_required
+@require_designation("student", "Professor", "Associate Professor", "Assistant Professor", "acadadmin", "Dean Academic")
 def MTSGF(request):
     if request.method == 'POST':
         stu= Student.objects.get(id=request.user.username)
@@ -3870,7 +3903,7 @@ def MTSGF(request):
         return HttpResponse(content)
 
 
-@login_required
+@require_designation("student", "Professor", "Associate Professor", "Assistant Professor", "acadadmin", "Dean Academic")
 def PHDPE(request):
     if request.method == 'POST':
         stu= Student.objects.get(id=request.user.username)
@@ -3901,6 +3934,7 @@ def PHDPE(request):
         return HttpResponse(content)
 
 
+@require_designation("acadadmin", "Dean Academic")
 def update_mtechsg(request):
     if request.method == 'POST':
         i = request.POST.get('obj_id')
@@ -3922,6 +3956,7 @@ def update_mtechsg(request):
 
         
 
+@require_designation("acadadmin", "Dean Academic")
 def update_phdform(request):
     if request.method == 'POST':
         i = request.POST.get('obj_id')
@@ -3952,6 +3987,7 @@ def update_phdform(request):
     return HttpResponse(content)
 
 
+@require_designation("acadadmin", "Dean Academic")
 def update_dues(request):
     if request.method == "POST":
         i = request.POST.get('obj_id')
@@ -4005,6 +4041,7 @@ def update_dues(request):
         return HttpResponse(content)
 
 
+@require_designation("acadadmin", "Dean Academic")
 def mdue(request):
     if request.method == 'POST':
         rollno = request.POST.get('rollno')
@@ -4058,6 +4095,7 @@ def get_detailed_sem_courses(sem_id):
     return course_slots_data
 
 
+@login_required(login_url='/accounts/login')
 def get_next_sem_courses(request):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -4080,6 +4118,7 @@ def get_next_sem_courses(request):
     return JsonResponse({'error': 'Invalid request'})
 
 
+@require_designation("acadadmin", "Dean Academic")
 def add_course_to_slot(request):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -4100,6 +4139,7 @@ def add_course_to_slot(request):
     return JsonResponse({'error': 'Invalid request method.'}, status=405)
 
 
+@require_designation("acadadmin", "Dean Academic")
 def remove_course_from_slot(request):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -4119,6 +4159,7 @@ def remove_course_from_slot(request):
     return JsonResponse({'error': 'Invalid request method.'}, status=405)       
 
 
+@require_designation("student")
 def add_one_course(request):
     if request.method == 'POST':
         try:
@@ -4164,6 +4205,7 @@ def add_one_course(request):
     else:
         return JsonResponse({'message': 'Invalid request method'}, status=405)
     
+@require_designation("student")
 def replace_one_course(request):
     if request.method == 'POST' :       
         try:
@@ -4200,6 +4242,7 @@ def get_sem_swayam(sem_id, batch):
         
     return courses
 
+@require_designation("acadadmin", "Dean Academic")
 def replaceSwayam(request):
     if(request.POST):
         # print(f"++++++++++++++++++++++++++++++++++++++++++++++++{request.POST}")
@@ -4299,6 +4342,7 @@ def get_currently_registered_elective(student_id, semester_id):
 
 
 
+@require_designation("acadadmin", "Dean Academic")
 def swayam_replace(request):
     if request.method == 'POST':
         csrf_token = request.POST.get('csrfmiddlewaretoken', None)
@@ -4380,6 +4424,7 @@ def swayam_replace(request):
     else:
         return HttpResponseRedirect('/academic-procedures/main')
     
+@require_designation("student")
 def register_backlog_course(request):
     if request.method == 'POST':
         try:

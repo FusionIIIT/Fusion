@@ -1028,6 +1028,7 @@ def faculty_assigned_courses(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@role_required(['student'])
 def get_next_sem_courses(request):
     try:
         next_sem = request.data.get('next_sem')
@@ -1123,13 +1124,22 @@ def verify_registration(request):
         with transaction.atomic():
             ver_reg = []
             for obj in final_register_list:
+                _work_year = datetime.datetime.now().year
+                _sem_no    = obj.semester_id.semester_no
+                _sem_type  = "Odd Semester" if _sem_no % 2 == 1 else "Even Semester"
+                if _sem_type == "Odd Semester":
+                    _session = f"{_work_year}-{str(_work_year + 1)[-2:]}"
+                else:
+                    _session = f"{_work_year - 1}-{str(_work_year)[-2:]}"
                 p = course_registration(
                     course_id=obj.course_id,
                     student_id=student,
                     semester_id=obj.semester_id,
-                    course_slot_id = obj.course_slot_id,
-                    working_year = datetime.datetime.now().year,
-                    registration_type=obj.registration_type
+                    course_slot_id=obj.course_slot_id,
+                    working_year=_work_year,
+                    registration_type=obj.registration_type,
+                    session=_session,
+                    semester_type=_sem_type,
                     )
                 # ver_reg.append(p)
                 p.save()
@@ -1748,7 +1758,7 @@ def final_registration_page(request):
         student = Student.objects.get(id=user_details)
         curr_id = student.batch_id.curriculum
         next_sem_id = Semester.objects.get(curriculum=curr_id, semester_no=student.curr_semester_no+1)
-        current_date = date_time.date()
+        current_date = datetime.date.today()
         final_registration_date_flag = get_final_registration_eligibility(current_date)
         student_registration_check = get_student_registrtion_check(student, next_sem_id)
         final_registration_flag = False
@@ -3808,8 +3818,24 @@ HOD_SPECIALIZATION_MAPPING = {
 }
 
 def check_role(request, required_role):
-    role = request.query_params.get('role') if request.method=='GET' else request.data.get('role')
-    return role == required_role
+    # Authorize from the user's real designation, never a client-supplied role
+    from django.db.models import Q
+    user = request.user
+    if not getattr(user, "is_authenticated", False):
+        return False
+    held = HoldsDesignation.objects.filter(Q(working=user) | Q(user=user))
+    if required_role == 'hod':
+        return held.filter(designation__name__istartswith='HOD').exists()
+    if required_role == 'faculty':
+        return (
+            Faculty.objects.filter(id__user=user).exists()
+            or held.filter(
+                designation__name__in=[
+                    'Professor', 'Associate Professor', 'Assistant Professor',
+                ]
+            ).exists()
+        )
+    return held.filter(designation__name=required_role).exists()
 
 def get_allowed_specs(user):
     """
