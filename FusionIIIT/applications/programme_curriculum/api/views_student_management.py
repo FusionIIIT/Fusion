@@ -1367,6 +1367,13 @@ def add_single_student(request):
             elif data.get('admission_semester'):
                 phd_semester_val = str(data['admission_semester']).strip().capitalize()
 
+            if phd_semester_val not in ['Odd', 'Even']:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'PhD semester (Odd or Even) is required for manual student entry',
+                    'validation_error': 'missing_phd_semester'
+                }, status=400)
+
             with transaction.atomic():
                 student = PhdStudentBatchUpload.objects.create(
                     discipline=student_data.get('branch') or data.get('discipline', ''),
@@ -4765,24 +4772,36 @@ def validate_batch_prerequisites(request):
     try:
         data = json.loads(request.body)
         academic_year = data.get('academic_year')  # e.g., 2025
+        requested_disciplines = data.get('disciplines') or []
         
         if not academic_year:
             return JsonResponse({
                 'success': False,
                 'message': 'Academic year is required'
             }, status=400)
+
+        if isinstance(requested_disciplines, str):
+            requested_disciplines = [requested_disciplines]
+
+        requested_disciplines = [
+            str(discipline).strip()
+            for discipline in requested_disciplines
+            if str(discipline).strip()
+        ]
         
         from applications.programme_curriculum.models import Batch, Discipline
 
-        required_disciplines = ['Computer Science and Engineering', 'Electronics and Communication Engineering', 
-                               'Mechanical Engineering', 'Smart Manufacturing', 'Design']
+        default_required_disciplines = ['Computer Science and Engineering', 'Electronics and Communication Engineering', 
+                                        'Mechanical Engineering', 'Smart Manufacturing', 'Design']
+
+        required_disciplines = requested_disciplines or default_required_disciplines
         
         missing_batches = []
         existing_batches = []
         
         for discipline_name in required_disciplines:
             try:
-                discipline = Discipline.objects.filter(name=discipline_name).first()
+                discipline = Discipline.objects.filter(name__iexact=discipline_name).first()
                 if discipline:
                     batch = Batch.objects.filter(
                         year=academic_year,
@@ -4805,6 +4824,12 @@ def validate_batch_prerequisites(request):
                             'acronym': discipline.acronym,
                             'action_required': f'Create {discipline.acronym} batch for year {academic_year}'
                         })
+                else:
+                    missing_batches.append({
+                        'discipline': discipline_name,
+                        'acronym': discipline_name,
+                        'action_required': f'Create {discipline_name} batch for year {academic_year}'
+                    })
             except Exception as e:
                 pass
 
