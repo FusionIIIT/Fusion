@@ -185,6 +185,7 @@ class StudentBatchUpload(models.Model):
     # Academic information
     branch = models.CharField(max_length=200, help_text="Discipline/Branch")
     specialization = models.CharField(max_length=200, blank=True, null=True, help_text="Specialization")
+    section = models.CharField(max_length=2, blank=True, null=True, help_text="B.Tech section (A-F), auto-derived at save from discipline + roll-number parity")
     date_of_birth = models.DateField(blank=True, null=True)
     ai_rank = models.IntegerField(blank=True, null=True, help_text="JEE AI Rank", db_column='jee_rank')
     category_rank = models.IntegerField(blank=True, null=True, help_text="Category Rank")
@@ -349,7 +350,14 @@ class StudentBatchUpload(models.Model):
         # Clean branch name
         if self.branch:
             self.branch = self.clean_branch_name(self.branch)
-        
+
+        # Decide the B.Tech section (A-F) at admission time, from discipline +
+        # roll-number parity, so it's recorded on the upcoming-batch feed itself.
+        # Recomputed on every save (e.g. when a roll number is later assigned).
+        # Lazy import avoids a circular import with academic_information.
+        from applications.academic_information.models import compute_section
+        self.section = compute_section(self.branch, self.roll_number, self.get_programme_name())
+
         super().save(*args, **kwargs)
     
     def create_user_account(self, password=None):
