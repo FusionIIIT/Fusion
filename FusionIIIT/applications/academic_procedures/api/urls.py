@@ -186,6 +186,14 @@ urlpatterns = [
     # Supervisor
     url(r'^supervisor/thesis-grades/$',          views.supervisor_thesis_grades,       name='supervisor-thesis-grades'),
     url(r'^supervisor/thesis-grade/submit/$',    views.supervisor_submit_thesis_grade, name='supervisor-thesis-grade-submit'),
+    url(r'^supervisor/thesis-grades-template/$', views.supervisor_download_thesis_grades_template, name='supervisor-thesis-grades-template'),
+    url(r'^supervisor/thesis-grades/ungraded-blocks/$', views.supervisor_get_ungraded_blocks, name='supervisor-ungraded-blocks'),
+    url(r'^supervisor/thesis-grades/upload/$',   views.supervisor_upload_thesis_grades, name='supervisor-thesis-grades-upload'),
+    url(r'^supervisor/thesis-grades/bulk-submit/$', views.supervisor_bulk_submit_thesis_grades, name='supervisor-thesis-grades-bulk-submit'),
+    # All blocks comprehensive upload
+    url(r'^supervisor/thesis-grades-all-template/$', views.supervisor_download_all_thesis_grades_template, name='supervisor-thesis-grades-all-template'),
+    url(r'^supervisor/thesis-grades-all/upload/$', views.supervisor_upload_all_thesis_grades, name='supervisor-thesis-grades-all-upload'),
+    url(r'^supervisor/thesis-grades-all/bulk-submit/$', views.supervisor_bulk_submit_all_thesis_grades, name='supervisor-thesis-grades-all-bulk-submit'),
     # Acad Admin
     url(r'^acadadmin/thesis-grades/$',           views.admin_thesis_grades_list,       name='admin-thesis-grades-list'),
     url(r'^acadadmin/thesis-grades/verify/$',    views.admin_verify_thesis_grades,     name='admin-thesis-grades-verify'),
@@ -200,6 +208,11 @@ urlpatterns = [
     url(r'^thesis/supervisor-dashboard/$', views.supervisor_dashboard, name='supervisor_dashboard'),
     url(r'^thesis/submission-detail/(?P<submission_id>\d+)/$', views.supervisor_submission_detail, name='supervisor_submission_detail'),
     url(r'^thesis/supervisor-assign/$', views.supervisor_assign, name='supervisor_assign'),
+
+    # Dean (panel approval + invitation dispatch)
+    url(r'^thesis/dean-dashboard/$', views.dean_panel_dashboard, name='dean_panel_dashboard'),
+    url(r'^thesis/dean-panel-approve/$', views.dean_panel_approve, name='dean_panel_approve'),
+    url(r'^thesis/dean-send-invitations/$', views.dean_send_invitations, name='dean_send_invitations'),
 
     # Director
     url(r'^thesis/director-dashboard/$', views.director_dashboard, name='director_dashboard'),

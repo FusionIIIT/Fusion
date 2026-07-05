@@ -1301,13 +1301,15 @@ class ThesisSubmission(models.Model):
     """PhD Thesis submission with file uploads."""
     STATUS_CHOICES = [
         ('submitted', 'Submitted'),
-        ('supervisor_review', 'Supervisor Review'),
-        ('director_review', 'Director Review'),
+        ('dean_panel_review', 'Pending Dean Panel Approval'),
+        ('director_review', 'Pending Director Prioritization'),
+        ('dean_invite_pending', 'Pending Dean Invitation'),
         ('in_review', 'In External Review'),
+        ('completed', 'Review Completed'),
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
     ]
-    
+
     thesis         = models.OneToOneField(ThesisTopic, on_delete=models.CASCADE, related_name='submission')
     file_token     = models.UUIDField(default=uuid.uuid4, unique=True, editable=False, db_index=True)
     synopsis       = models.FileField(upload_to=upload_synopsis)
@@ -1316,6 +1318,10 @@ class ThesisSubmission(models.Model):
     supervisor     = models.ForeignKey('auth.User', null=True, blank=True,
                                        on_delete=models.SET_NULL, related_name='supervised_subs')
     supervisor_approved_at = models.DateTimeField(null=True, blank=True)
+    dean           = models.ForeignKey('auth.User', null=True, blank=True,
+                                       on_delete=models.SET_NULL, related_name='deaned_subs')
+    dean_approved_at = models.DateTimeField(null=True, blank=True)
+    dean_invited_at  = models.DateTimeField(null=True, blank=True)
     director       = models.ForeignKey('auth.User', null=True, blank=True,
                                        on_delete=models.SET_NULL, related_name='directed_subs')
     director_approved_at = models.DateTimeField(null=True, blank=True)
@@ -1334,6 +1340,10 @@ class ThesisSubmission(models.Model):
 
 class ReviewInvitation(models.Model):
     """External reviewer invitation for thesis."""
+    EXAMINER_TYPE_CHOICES = [
+        ('indian', 'Indian'),
+        ('foreign', 'Foreign'),
+    ]
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('accepted', 'Accepted'),
@@ -1342,6 +1352,7 @@ class ReviewInvitation(models.Model):
         ('expired', 'Expired'),
     ]
     submission      = models.ForeignKey(ThesisSubmission, on_delete=models.CASCADE, related_name='invitations')
+    examiner_type   = models.CharField(max_length=10, choices=EXAMINER_TYPE_CHOICES, default='indian', db_index=True)
     prof_name       = models.CharField(max_length=255, db_index=True)
     prof_position   = models.CharField(max_length=255)
     prof_address    = models.TextField()
@@ -1358,8 +1369,8 @@ class ReviewInvitation(models.Model):
     updated_at      = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = [('submission', 'priority')]
-        ordering = ['submission', 'priority']
+        unique_together = [('submission', 'examiner_type', 'priority')]
+        ordering = ['submission', 'examiner_type', 'priority']
         indexes = [
             models.Index(fields=['submission', 'status']),
             models.Index(fields=['status', 'last_sent']),
