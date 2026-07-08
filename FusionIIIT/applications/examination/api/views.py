@@ -149,61 +149,50 @@ def calculate_cpi_for_student(student, selected_semester, semester_type):
                 )
                 .order_by('semester', 'semester_type_order')
         )
-        registrations = (
-            course_registration.objects
-                .select_related('course_id', 'semester_id')
-                .filter(
-                    student_id=student,
-                    semester_id__semester_no__lte=selected_semester,
-                )
-                .annotate(
-                    semester_type_order=Case(
-                        When(semester_type="Odd Semester",    then=0),
-                        When(semester_type="Even Semester",   then=1),
-                        When(semester_type="Summer Semester", then=2),
-                        default=3,
-                        output_field=IntegerField(),
-                    )
-                )
-                .order_by('semester_id__semester_no', 'semester_type_order')
-        )
     else :
         grades = Student_grades.objects.filter(
             roll_no=student.id_id, semester__lte=selected_semester,
         ).exclude(semester_type='Summer Semester', semester=selected_semester).select_related('course_id')
-
-        registrations = course_registration.objects.select_related('course_id', 'semester_id').filter(
-            student_id=student,
-            semester_id__semester_no__lte=selected_semester
-        ).exclude(semester_type = 'Summer Semester', semester_id__semester_no = selected_semester)
-    reg_mapping = {}
-    for reg in registrations:
-        key = (reg.course_id.code.strip(), reg.semester_id.semester_no, reg.semester_type)
-        reg_mapping[key] = reg.id
     replacements = course_replacement.objects.filter(
         Q(old_course_registration__student_id=student) |
         Q(new_course_registration__student_id=student)
-    ).select_related('old_course_registration', 'new_course_registration')
-    reg_replacement_map = {}
+    ).select_related('old_course_registration__course_id',
+                     'new_course_registration__course_id')
+    code_replacement_map = {}   # replacement/swayam course code -> replaced elective code
     for rep in replacements:
-        old_reg_id = rep.old_course_registration.id
-        new_reg_id = rep.new_course_registration.id
-        if new_reg_id != old_reg_id:
-            reg_replacement_map[new_reg_id] = old_reg_id
-    grade_groups = defaultdict(list)
+        old_code = (rep.old_course_registration.course_id.code or '').strip()
+        new_code = (rep.new_course_registration.course_id.code or '').strip()
+        if new_code and old_code and new_code != old_code:
+            code_replacement_map[new_code] = old_code
+
+    # Best-graded attempt per distinct course code. This collapses backlog/
+    # improvement retakes and duplicate grade rows of the SAME course to a single
+    # credit, but keeps genuinely different courses separate.
+    best_by_code = {}
     for g in grades:
-        key = (g.course_id.code.strip(), g.semester, g.semester_type)
-        reg_id = reg_mapping.get(key)
-        if reg_id is None:
+        code = (g.course_id.code or '').strip()
+        if not code:
             continue
-        original_reg_id = trace_registration(reg_id, reg_replacement_map)
-        grade_groups[original_reg_id].append(g)
+        prev = best_by_code.get(code)
+        if prev is None or (grade_conversion.get((g.grade or '').strip(), -1)
+                            > grade_conversion.get((prev.grade or '').strip(), -1)):
+            best_by_code[code] = g
+
+    superseded_codes = set()
+    for graded_code in best_by_code:
+        old = code_replacement_map.get(graded_code)
+        while old and old not in superseded_codes:
+            superseded_codes.add(old)
+            old = code_replacement_map.get(old)
+
     total_points = Decimal('0')
     total_credits = Decimal('0')
-    for orig_reg, g_list in grade_groups.items():
-        best_record = max(g_list, key=lambda r: grade_conversion.get(r.grade.strip(), -1))
-        grade_factor = grade_conversion.get(best_record.grade.strip(), -1)
-        credit = Decimal(str(getattr(best_record.course_id, 'credit', 3)))
+    for code, best_record in best_by_code.items():
+        if code in superseded_codes:
+            continue
+        grade_factor = grade_conversion.get((best_record.grade or '').strip(), -1)
+        course_credit = best_record.course_id.credit
+        credit = Decimal(str(course_credit)) if course_credit is not None else Decimal('0')
         if grade_factor >=  0:
             if grade_factor != 0:
                 grade_factor =  Decimal(str(grade_factor))
@@ -4110,37 +4099,18 @@ class GenerateGradeSheetData(APIView):
                 .order_by('semester', 'semester_type')
             )
 
-            NON_CREDIT_GRADES = {'F', 'I', 'X', 'AU', 'CD'}
-            credits_per_sem = {}
-            try:
-                sem_credit_qs = (
-                    Student_grades.objects
-                    .filter(roll_no=student_id)
-                    .exclude(grade__isnull=True)
-                    .exclude(grade__in=NON_CREDIT_GRADES)
-                    .values('semester', 'semester_type')
-                    .annotate(sem_credits=Sum('course_id__credit'))
-                )
-                for row in sem_credit_qs:
-                    if row['semester'] is not None:
-                        credits_per_sem[(row['semester'], row['semester_type'])] = row['sem_credits'] or 0
-            except Exception:
-                pass
-
-            running_credits = 0
             for sem in distinct_semesters:
                 s_no = sem['semester']
                 s_type = sem['semester_type']
                 is_summer = bool(s_type and 'summer' in str(s_type).lower())
-                running_credits += credits_per_sem.get((s_no, s_type), 0)
                 try:
                     s_spi, _, _ = calculate_spi_for_student(student, s_no, s_type)
-                    s_cpi, _, _ = calculate_cpi_for_student(student, s_no, s_type)
+                    s_cpi, s_cum_credits, _ = calculate_cpi_for_student(student, s_no, s_type)
                     semester_history.append({
                         "semester": s_no,
                         "spi": float(s_spi) if s_spi else 0,
                         "cpi": float(s_cpi) if s_cpi else 0,
-                        "cumulative_credits": running_credits,
+                        "cumulative_credits": float(s_cum_credits),
                         "is_summer": is_summer,
                     })
                 except Exception:
@@ -4432,13 +4402,12 @@ class GradeValidationView(APIView):
             sorted_keys = sorted(semesters_map.keys(), key=_sem_sort_key)
 
             # Track first appearance of each course to classify remark
-            FAILING_GRADES = {"F", "I", "X", "AU", "CD"}
-            NON_CREDIT_GRADES = {"F", "I", "X", "AU", "CD"}
+            FAILING_GRADES = {"F", "I", "X", "AU", "CD"}  # for Backlog/Improvement remark only
             course_first_grade: dict = {}   # course_id -> first grade string
 
             semesters_data = []
             summer_counter = 0  # increment each time we encounter a summer semester
-            running_total_credits = Decimal('0')
+            cumulative_credits = Decimal('0')  # deduped running total (tu), count-once
 
             for key in sorted_keys:
                 s_no, s_type = key
@@ -4464,9 +4433,11 @@ class GradeValidationView(APIView):
                         remark = "Regular"
                         course_first_grade[cid] = grade  # record only first appearance
 
-                    # Count credits only for non-failing grades
+                    # Credit is earned for any grade that carries points, incl. F
+                    # (which earns credit with grade point 2) and S. Only X/I/AU/CD
+                    # (absent from grade_conversion -> factor -1) earn no credit.
                     credit = Decimal(str(course.credit)) if course.credit is not None else Decimal('0')
-                    if grade and grade.strip() not in NON_CREDIT_GRADES:
+                    if grade_conversion.get(grade.strip(), -1) >= 0:
                         sem_credits_earned += credit
 
                     courses.append({
@@ -4478,12 +4449,10 @@ class GradeValidationView(APIView):
                     })
 
                 if courses:  # skip empty semesters (no graded courses)
-                    running_total_credits += sem_credits_earned
-
-                    # Compute SPI / CPI via existing helpers
                     try:
                         s_spi, _, _ = calculate_spi_for_student(student, s_no, s_type)
-                        s_cpi, _, _ = calculate_cpi_for_student(student, s_no, s_type)
+                        s_cpi, s_cum_credits, _ = calculate_cpi_for_student(student, s_no, s_type)
+                        cumulative_credits = Decimal(str(s_cum_credits))
                     except Exception:
                         s_spi, s_cpi = 0, 0
 
@@ -4494,7 +4463,7 @@ class GradeValidationView(APIView):
                         "label": label,
                         "courses": courses,
                         "semester_credits": float(sem_credits_earned),
-                        "total_credits": float(running_total_credits),
+                        "total_credits": float(cumulative_credits),
                         "spi": float(s_spi) if s_spi else 0.0,
                         "cpi": float(s_cpi) if s_cpi else 0.0,
                     })
@@ -4550,7 +4519,7 @@ class GradeValidationView(APIView):
                             "label": label,
                             "courses": reg_courses,
                             "semester_credits": float(reg_credits_total),
-                            "total_credits": float(running_total_credits),  # cumulative unchanged
+                            "total_credits": float(cumulative_credits),
                             "spi": None,
                             "cpi": None,
                         })
@@ -4626,8 +4595,7 @@ class GradeValidationView(APIView):
                 "M.Des": "Master of Design",
                 "PhD": "Doctor of Philosophy",
             }
-            NON_CREDIT_GRADES2 = {"F", "I", "X", "AU", "CD"}
-            FAILING_GRADES2 = {"F", "I", "X", "AU", "CD"}
+            FAILING_GRADES2 = {"F", "I", "X", "AU", "CD"}  # for Backlog/Improvement remark only
 
             def _get_student_data(stu):
                 """Return (student_info dict, semesters list) for one student."""
@@ -4681,8 +4649,9 @@ class GradeValidationView(APIView):
                         else:
                             rem2 = "Regular"
                             course_first2[cid2] = grade2
+                        # F earns credit (grade point 2); only X/I/AU/CD do not.
                         credit2 = Decimal(str(c2.credit)) if c2.credit is not None else Decimal('0')
-                        if grade2 and grade2.strip() not in NON_CREDIT_GRADES2:
+                        if grade_conversion.get(grade2.strip(), -1) >= 0:
                             sem_creds2 += credit2
                         courses2.append({
                             "code": c2.code or "",
@@ -4693,10 +4662,13 @@ class GradeValidationView(APIView):
                         })
 
                     if courses2:
-                        running_creds2 += sem_creds2
                         try:
                             sp2, _, _ = calculate_spi_for_student(stu, s_no2, s_type2)
-                            cp2, _, _ = calculate_cpi_for_student(stu, s_no2, s_type2)
+                            # 2nd return is the deduped total credits (tu) up to
+                            # this semester; use it so the cumulative is count-once
+                            # and reconciles with the transcript total.
+                            cp2, cum2, _ = calculate_cpi_for_student(stu, s_no2, s_type2)
+                            running_creds2 = Decimal(str(cum2))
                         except Exception:
                             sp2, cp2 = 0, 0
                         sems2.append({
