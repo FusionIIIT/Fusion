@@ -1951,6 +1951,8 @@ def academic_procedures_faculty_api(request):
                 "version": course.course_id.version,
                 "semester_type": course.semester_type,
                 "academic_year": course.academic_year,
+                # This offering's section (A-F), or "" for old/single-offering courses.
+                "section": course.section_label or "",
             })
 
         return Response({"assigned_courses": response_data})

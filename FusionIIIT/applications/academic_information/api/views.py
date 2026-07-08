@@ -1314,7 +1314,14 @@ def available_courses(request):
     
     course_ids = regs.values_list('course_id', flat=True).distinct()
     courses = Courses.objects.filter(id__in=course_ids)
-    
+
+    # Per-course sections = distinct Student.section of its enrolled students (empty => UI hides filter).
+    from collections import defaultdict
+    section_map = defaultdict(set)
+    for cid, sec in regs.values_list('course_id', 'student_id__section'):
+        if sec:
+            section_map[cid].add(sec)
+
     data = []
     # Calculate correct year based on semester type
     year_parts = year.split('-')
@@ -1328,12 +1335,13 @@ def available_courses(request):
         course_instructor = CourseInstructor.objects.filter(course_id=c, year=year_int, semester_type=sem).first()
         if course_instructor:
             instructor_name = f"{course_instructor.instructor_id.id.user.first_name} {course_instructor.instructor_id.id.user.last_name}".strip()
-        
+
         data.append({
             "id": c.id,
             "code": c.code,
             "name": c.name,
-            "instructor": instructor_name
+            "instructor": instructor_name,
+            "sections": sorted(section_map.get(c.id, set())),
         })
     return Response(data)
 
@@ -1504,3 +1512,83 @@ def export_all_courses_zip(request):
     return response
 
     return Response(data)
+
+
+# Section assignment (Academics > Section Assignment): acadadmin sets Student.section manually.
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
+def section_batches(request):
+    """Running batches, for the Batch and Discipline dropdowns."""
+    batches = (Batch.objects.filter(running_batch=True)
+               .select_related('discipline')
+               .order_by('-year', 'name'))
+    result = []
+    for b in batches:
+        disc = b.discipline
+        result.append({
+            'id': b.id,
+            'year': b.year,
+            'name': b.name,
+            'discipline_name': disc.name if disc else '',
+            'discipline_acronym': disc.acronym if disc else '',
+            'label': f"{b.name} {disc.acronym if disc else ''} {b.year}".strip(),
+        })
+    return Response(result)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
+def section_students(request):
+    """Students of one batch (?batch_id=) with their assigned section, by roll no."""
+    batch_id = request.query_params.get('batch_id')
+    if not batch_id:
+        return Response({'detail': 'batch_id required.'},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    students = (Student.objects
+                .filter(batch_id__id=batch_id)
+                .select_related('id', 'id__user')
+                .order_by('id_id'))
+
+    result = []
+    for idx, st in enumerate(students, start=1):
+        user = getattr(st.id, 'user', None)
+        full_name = ''
+        if user:
+            full_name = (f"{user.first_name} {user.last_name}").strip() or user.username
+        result.append({
+            'sno': idx,
+            'roll_no': st.id_id,
+            'name': full_name,
+            'section': st.section or '',
+        })
+    return Response(result)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
+def assign_section(request):
+    """Bulk-set section for {"roll_numbers": [...], "section": "A"}; empty section clears it."""
+    roll_numbers = request.data.get('roll_numbers') or []
+    section = (request.data.get('section') or '').strip().upper()
+
+    if not roll_numbers:
+        return Response({'detail': 'roll_numbers required.'},
+                        status=status.HTTP_400_BAD_REQUEST)
+    if section and (len(section) > 2 or not section.isalpha()):
+        return Response({'detail': 'section must be one or two letters.'},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    updated = (Student.objects
+               .filter(id_id__in=roll_numbers)
+               .update(section=section or None))
+    return Response({'detail': f'Section updated for {updated} student(s).',
+                     'updated': updated,
+                     'section': section or None})

@@ -351,13 +351,7 @@ class StudentBatchUpload(models.Model):
         if self.branch:
             self.branch = self.clean_branch_name(self.branch)
 
-        # Decide the B.Tech section (A-F) at admission time, from discipline +
-        # roll-number parity, so it's recorded on the upcoming-batch feed itself.
-        # Recomputed on every save (e.g. when a roll number is later assigned).
-        # Lazy import avoids a circular import with academic_information.
-        from applications.academic_information.models import compute_section
-        self.section = compute_section(self.branch, self.roll_number, self.get_programme_name())
-
+        # Section is assigned manually in Academics > Section Assignment, not auto-derived here.
         super().save(*args, **kwargs)
     
     def create_user_account(self, password=None):
@@ -639,11 +633,12 @@ def create_student_profiles_automatically(students_list):
                 )
             
             if student.user and student.roll_number:
-                from applications.academic_information.models import Student as AcademicStudent, compute_section
+                from applications.academic_information.models import Student as AcademicStudent
 
                 try:
                     extra_info = ExtraInfo.objects.get(id=student.roll_number)
-                    
+
+                    # Section left blank at onboarding; assigned later in Section Assignment.
                     academic_student, created = AcademicStudent.objects.get_or_create(
                         id=extra_info,
                         defaults={
@@ -656,7 +651,6 @@ def create_student_profiles_automatically(students_list):
                             'hall_no': 0,
                             'room_no': '',
                             'specialization': '',
-                            'section': compute_section(getattr(student, 'branch', None), student.roll_number, student.get_programme_name()),
                         }
                     )
                         

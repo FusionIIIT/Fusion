@@ -900,7 +900,6 @@ def approve_branch_change(request):
                     continue
         
         from applications.programme_curriculum.models import Discipline, Batch
-        from applications.academic_information.models import compute_section
 
         changed_branch = []
         changed_students = []
@@ -930,11 +929,8 @@ def approve_branch_change(request):
                         ).first()
                         if new_batch:
                             student.batch_id = new_batch
-                            # Discipline changed -> section follows automatically.
-                            # Roll number is the immutable PK, so parity is
-                            # unchanged; only the discipline mapping flips
-                            # (e.g. ECE 'C' -> CSE 'A'/'B').
-                            student.section = compute_section(new_discipline.name, student.id_id, student.programme)
+                            # Discipline changed -> clear stale section for re-assignment.
+                            student.section = None
                             changed_students.append(student)
                 except Exception as e:
                     pass

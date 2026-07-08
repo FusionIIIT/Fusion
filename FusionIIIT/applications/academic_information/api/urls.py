@@ -35,6 +35,11 @@ urlpatterns = [
     url(r'^calendar/export/$', views.export_calendar, name='export_calendar'),
     url(r'^calendar/import/$', views.import_calendar, name='import_calendar'),
 
+    # Section assignment (Academics > Section Assignment)
+    url(r'^section/batches/$',  views.section_batches,  name='section_batches'),
+    url(r'^section/students/$', views.section_students, name='section_students'),
+    url(r'^section/assign/$',   views.assign_section,   name='assign_section'),
+
 
     # url(r'^holiday',views.holiday_api,name='holiday-get-api'),
 
