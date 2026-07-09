@@ -394,6 +394,24 @@ def download_template(request):
         if not user_holds_any_role(request.user, allowed_roles):
             return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
 
+        # Faculty may only pull rosters for courses they teach; acadadmin/Dean: any.
+        if not user_holds_any_role(request.user, ["acadadmin", "Dean Academic"]):
+            try:
+                owns_year, _ = parse_academic_year(session_year, semester_type)
+            except Exception:
+                owns_year = None
+            owns = CourseInstructor.objects.filter(
+                course_id_id=course,
+                instructor_id_id=request.user.username,
+                year=owns_year,
+                semester_type=semester_type,
+            ).exists()
+            if not owns:
+                return Response(
+                    {"error": "Access denied: you are not assigned to teach this course this term."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
         User = get_user_model()
 
         # Filter course_registration records using course, session (academic year), and semester_type.
@@ -2933,6 +2951,24 @@ class PreviewGradesAPI(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # Faculty may only preview grades for courses they teach; acadadmin/Dean: any.
+        if not user_holds_any_role(request.user, ["acadadmin", "Dean Academic"]):
+            try:
+                owns_year, _ = parse_academic_year(academic_year, semester_type)
+            except Exception:
+                owns_year = None
+            owns = CourseInstructor.objects.filter(
+                course_id_id=course_id,
+                instructor_id_id=request.user.username,
+                year=owns_year,
+                semester_type=semester_type,
+            ).exists()
+            if not owns:
+                return Response(
+                    {"error": "Access denied: you are not assigned to teach this course this term."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
         # Extract the starting working year from academic_year.
         try:
             working_year = int(academic_year.split("-")[0])
@@ -3485,15 +3521,18 @@ class GradeStatusAPI(APIView):
             for course in courses:
                 offs = offerings_by_course.get(course.id, [])
                 if offs:
-                    # One row per section/offering, each with its own faculty + status.
+                    # Fall back to course-level status only when no offering has
+                    # bound grades (legacy rows without an offering FK).
+                    course_has_bound = any(
+                        off.id in submitted_offerings or off.id in verified_offerings
+                        for off in offs
+                    )
                     for off in offs:
                         professor_name = users_map.get(off.instructor_id_id, off.instructor_id_id)
-                        if off.id in submitted_offerings or off.id in verified_offerings:
+                        if course_has_bound:
                             is_sub = off.id in submitted_offerings
                             is_ver = off.id in verified_offerings
                         else:
-                            # No grades bound to this offering yet (e.g. legacy rows
-                            # with no offering) — fall back to course-level status.
                             is_sub = course.id in submitted_courses
                             is_ver = course.id in verified_courses
                         grade_status_list.append({
