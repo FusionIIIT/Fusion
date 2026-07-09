@@ -1848,21 +1848,14 @@ class UploadGradesProfAPI(APIView):
             # 10) ATOMIC PROCESSING
             errors = []
             with transaction.atomic():
-                # ─── Reset reSubmit flags for this course/year/semester/programme ───
+                # Reset reSubmit only for this submission's roster (already scoped
+                # to the section + programme above), never course-wide.
                 reset_query = Student_grades.objects.filter(
                     course_id_id=course_id,
                     academic_year=academic_year,
-                    semester_type=semester_type
+                    semester_type=semester_type,
+                    roll_no__in=[reg.student_id_id for reg in regs],
                 )
-                
-                if programme_type:
-                    if programme_type.upper() == 'UG':
-                        ug_rolls = [reg.student_id_id for reg in regs]
-                        reset_query = reset_query.filter(roll_no__in=ug_rolls)
-                    elif programme_type.upper() == 'PG':
-                        pg_rolls = [reg.student_id_id for reg in regs]
-                        reset_query = reset_query.filter(roll_no__in=pg_rolls)
-                
                 reset_query.update(reSubmit=False)
 
                 # ─── Process each CSV row ───

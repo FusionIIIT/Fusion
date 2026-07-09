@@ -5346,13 +5346,22 @@ def student_submit(request):
                     year=academic_year,
                     semester_type=reg.semester_type,
                 ).first()
+            # Trust the server for question/section; only accept an option that
+            # actually belongs to the question.
+            question = FeedbackQuestion.objects.filter(id=r.get("question_id")).first()
+            if not question:
+                continue
+            option = None
+            if r.get("option_id"):
+                option = FeedbackOption.objects.filter(
+                    id=r["option_id"], question=question).first()
             FeedbackResponse.objects.create(
-                question_id   = r["question_id"],
-                option_id     = r.get("option_id"),
+                question      = question,
+                option        = option,
                 text_answer   = r.get("text_answer",""),
                 course_id     = r["course_id"],
                 course_instructor = offering,
-                section       = r["section"],
+                section       = question.section,
                 session       = reg.session,
                 semester_type = reg.semester_type,
             )
