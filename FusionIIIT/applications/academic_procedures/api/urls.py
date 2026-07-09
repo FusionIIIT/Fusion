@@ -183,13 +183,8 @@ urlpatterns = [
     url(r'^acadadmin/thesis-enrollments/reject/$', views.admin_reject_enrollments, name='admin-reject-enrollments'),
 
     # PhD Thesis Evaluation (block-based S/X grades)
-    # Supervisor
+    # Supervisor — all blocks for a student are graded and submitted together
     url(r'^supervisor/thesis-grades/$',          views.supervisor_thesis_grades,       name='supervisor-thesis-grades'),
-    url(r'^supervisor/thesis-grade/submit/$',    views.supervisor_submit_thesis_grade, name='supervisor-thesis-grade-submit'),
-    url(r'^supervisor/thesis-grades-template/$', views.supervisor_download_thesis_grades_template, name='supervisor-thesis-grades-template'),
-    url(r'^supervisor/thesis-grades/ungraded-blocks/$', views.supervisor_get_ungraded_blocks, name='supervisor-ungraded-blocks'),
-    url(r'^supervisor/thesis-grades/upload/$',   views.supervisor_upload_thesis_grades, name='supervisor-thesis-grades-upload'),
-    url(r'^supervisor/thesis-grades/bulk-submit/$', views.supervisor_bulk_submit_thesis_grades, name='supervisor-thesis-grades-bulk-submit'),
     # All blocks comprehensive upload
     url(r'^supervisor/thesis-grades-all-template/$', views.supervisor_download_all_thesis_grades_template, name='supervisor-thesis-grades-all-template'),
     url(r'^supervisor/thesis-grades-all/upload/$', views.supervisor_upload_all_thesis_grades, name='supervisor-thesis-grades-all-upload'),

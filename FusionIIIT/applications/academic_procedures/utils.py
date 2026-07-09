@@ -1,7 +1,6 @@
 from datetime import timedelta
 
 from django.core.mail import EmailMultiAlternatives
-from django.urls import reverse
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -18,9 +17,9 @@ def send_invitation_email(inv):
     """
     try:
         thesis_title = inv.submission.thesis.research_theme
-        base_url = getattr(settings, 'SITE_URL', 'http://localhost:8000')
-        accept_url = base_url + reverse('invitation_action', args=[inv.token, 'accept'])
-        reject_url = base_url + reverse('invitation_action', args=[inv.token, 'reject'])
+        frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
+        accept_url = f"{frontend_url}/thesis-invitation/{inv.token}/accept"
+        reject_url = f"{frontend_url}/thesis-invitation/{inv.token}/reject"
         expires_at = inv.expires_at.strftime('%Y-%m-%d') if inv.expires_at else 'N/A'
 
 
@@ -56,8 +55,8 @@ def send_review_form_email(inv):
     """
     try:
         thesis_title = inv.submission.thesis.research_theme
-        base_url = getattr(settings, 'SITE_URL', 'http://localhost:8000')
-        review_url = base_url + reverse('review_detail', args=[inv.token])
+        frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')
+        review_url = f"{frontend_url}/thesis-evaluation/{inv.token}"
 
         context = {
             'prof_name': inv.prof_name,

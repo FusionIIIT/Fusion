@@ -85,10 +85,20 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Asia/Calcutta'
+
+# Base URL of the React frontend, used to build links (e.g. emailed thesis
+# examiner invitation/review links) that must point at frontend pages rather
+# than raw backend API endpoints.
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
+
 CELERY_BEAT_SCHEDULE = {
     'leave-migration-task': {
         'task': 'applications.leave.tasks.execute_leave_migrations',
         'schedule': crontab(minute='1', hour='0')
+    },
+    'phd-thesis-review-invitations-task': {
+        'task': 'applications.academic_procedures.tasks.process_review_invitations',
+        'schedule': crontab(minute='0', hour='2')
     }
 }
 

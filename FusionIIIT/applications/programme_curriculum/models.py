@@ -2,6 +2,7 @@ from django.db import models
 from django import forms
 import datetime
 import json
+from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import timezone
 from django.db.models.fields import IntegerField, PositiveIntegerField
 from django.db.models import CheckConstraint, Q, F
@@ -72,8 +73,8 @@ class CourseAuditLog(models.Model):
         ('UPDATE', 'Update'),
         ('DELETE', 'Delete')
     ], default='UPDATE')
-    old_values = models.JSONField(null=True, blank=True)  # Store old field values
-    new_values = models.JSONField(null=True, blank=True)  # Store new field values
+    old_values = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)  # Store old field values
+    new_values = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)  # Store new field values
     changed_fields = models.JSONField(default=list)  # List of field names that changed
     version_bump_type = models.CharField(max_length=10, choices=VERSION_BUMP_CHOICES, default='NONE')
     old_version = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)

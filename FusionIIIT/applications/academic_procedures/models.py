@@ -1357,6 +1357,7 @@ class ReviewInvitation(models.Model):
     prof_position   = models.CharField(max_length=255)
     prof_address    = models.TextField()
     prof_phone      = models.CharField(max_length=20)
+    prof_fax        = models.CharField(max_length=20, blank=True, default='')
     prof_email      = models.EmailField(db_index=True)
     prof_time_ranking = models.PositiveSmallIntegerField(null=True, blank=True)
     priority        = models.PositiveSmallIntegerField(default=0, db_index=True)
@@ -1383,6 +1384,71 @@ class ReviewInvitation(models.Model):
     def is_finalized(self):
         """Check if the invitation is in a final state."""
         return self.status in ['completed', 'expired', 'rejected']
+
+
+class ThesisReview(models.Model):
+    """An examiner's formal evaluation, mirroring the institute's official
+    'Examination Report of PhD Student' form."""
+    CORRECTION_CHOICES = [
+        ('none', 'None'),
+        ('minor', 'Minor'),
+        ('major', 'Major'),
+    ]
+    RECOMMENDATION_CHOICES = [
+        ('accept', 'Acceptable in present form for award of the PhD degree'),
+        ('accept_with_corrections', 'Acceptable; suggested corrections/modifications to be incorporated'),
+        ('needs_improvement', "Needs technical improvement to the examiner's satisfaction"),
+        ('reject', 'Rejected -- thesis does not contain novel work'),
+    ]
+
+    invitation = models.OneToOneField(ReviewInvitation, on_delete=models.CASCADE, related_name='review')
+
+    # A. General features of thesis
+    originality_presentation = models.TextField(blank=True, default='')
+    quality_comparable       = models.BooleanField(null=True, blank=True)
+    new_ideas_original        = models.BooleanField(null=True, blank=True)
+
+    # B. Comments
+    correction_severity = models.CharField(max_length=10, choices=CORRECTION_CHOICES, blank=True, default='')
+    technical_content   = models.TextField(blank=True, default='')
+    highlights           = models.TextField(blank=True, default='')
+
+    # C, D
+    suggestions        = models.TextField(blank=True, default='')
+    defense_questions  = models.TextField(blank=True, default='')
+
+    # E. Specific recommendation
+    recommendation = models.CharField(max_length=30, choices=RECOMMENDATION_CHOICES)
+
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Review by {self.invitation.prof_name} ({self.recommendation})"
+
+
+class ExaminerBankDetails(models.Model):
+    """Honorarium payment details for an external examiner.
+
+    Kept as its own model, deliberately isolated from ThesisReview /
+    ReviewInvitation serialization -- never include this in dashboard or
+    listing API responses.
+    """
+    invitation = models.OneToOneField(ReviewInvitation, on_delete=models.CASCADE, related_name='bank_details')
+
+    beneficiary_name = models.CharField(max_length=255, blank=True, default='')
+    bank_name        = models.CharField(max_length=255, blank=True, default='')
+    bank_address     = models.TextField(blank=True, default='')
+    account_no       = models.CharField(max_length=50, blank=True, default='')
+    # Indian examiners provide IFSC + PAN; foreign examiners provide IBAN + SWIFT.
+    ifsc_code   = models.CharField(max_length=20, blank=True, default='')
+    pan_no      = models.CharField(max_length=20, blank=True, default='')
+    iban_no     = models.CharField(max_length=40, blank=True, default='')
+    swift_code  = models.CharField(max_length=20, blank=True, default='')
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Bank details for {self.invitation.prof_name}"
 
     def __str__(self):
         return f"{self.prof_name} - {self.submission.thesis.research_theme} ({self.status})"

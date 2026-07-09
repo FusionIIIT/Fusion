@@ -1387,57 +1387,58 @@ def add_course_form(request):
             
             if form.is_valid():
                 try:
-                    new_course = form.save(commit=False)
-                    new_course.save()
-                    
-                    # Handle many-to-many relationships if any
-                    if 'disciplines' in data:
-                        new_course.disciplines.set(data['disciplines'])
-                    
-                    if 'pre_requisit_courses' in data and data['pre_requisit_courses']:
-                        new_course.pre_requisit_courses.set(data['pre_requisit_courses'])
-                    
-                    # Create initial audit log for course creation (only for authenticated users)
-                    if request.user.is_authenticated and not request.user.is_anonymous:
-                        initial_data = {
-                            'name': new_course.name,
-                            'code': new_course.code,
-                            'credit': new_course.credit,
-                            'version': new_course.version,
-                            'lecture_hours': new_course.lecture_hours,
-                            'tutorial_hours': new_course.tutorial_hours,
-                            'pratical_hours': new_course.pratical_hours,
-                            'discussion_hours': new_course.discussion_hours,
-                            'project_hours': new_course.project_hours,
-                            'pre_requisits': new_course.pre_requisits,
-                            'syllabus': new_course.syllabus,
-                            'ref_books': new_course.ref_books,
-                            'percent_quiz_1': new_course.percent_quiz_1,
-                            'percent_midsem': new_course.percent_midsem,
-                            'percent_quiz_2': new_course.percent_quiz_2,
-                            'percent_endsem': new_course.percent_endsem,
-                            'percent_project': new_course.percent_project,
-                            'percent_lab_evaluation': new_course.percent_lab_evaluation,
-                            'percent_course_attendance': new_course.percent_course_attendance,
-                            'max_seats': new_course.max_seats,
-                            'working_course': new_course.working_course,
-                        }
-                        
-                        create_course_audit_log(
-                            course=new_course,
-                            user=request.user,
-                            action='CREATE',
-                            old_data=None,
-                            new_data=initial_data,
-                            version_bump_type='MAJOR',  # New course creation is always major
-                            old_version=None,
-                            new_version=new_course.version,
-                            admin_override=False,
-                            reason="New course created"
-                        )
-                    
+                    with transaction.atomic():
+                        new_course = form.save(commit=False)
+                        new_course.save()
+
+                        # Handle many-to-many relationships if any
+                        if 'disciplines' in data:
+                            new_course.disciplines.set(data['disciplines'])
+
+                        if 'pre_requisit_courses' in data and data['pre_requisit_courses']:
+                            new_course.pre_requisit_courses.set(data['pre_requisit_courses'])
+
+                        # Create initial audit log for course creation (only for authenticated users)
+                        if request.user.is_authenticated and not request.user.is_anonymous:
+                            initial_data = {
+                                'name': new_course.name,
+                                'code': new_course.code,
+                                'credit': new_course.credit,
+                                'version': new_course.version,
+                                'lecture_hours': new_course.lecture_hours,
+                                'tutorial_hours': new_course.tutorial_hours,
+                                'pratical_hours': new_course.pratical_hours,
+                                'discussion_hours': new_course.discussion_hours,
+                                'project_hours': new_course.project_hours,
+                                'pre_requisits': new_course.pre_requisits,
+                                'syllabus': new_course.syllabus,
+                                'ref_books': new_course.ref_books,
+                                'percent_quiz_1': new_course.percent_quiz_1,
+                                'percent_midsem': new_course.percent_midsem,
+                                'percent_quiz_2': new_course.percent_quiz_2,
+                                'percent_endsem': new_course.percent_endsem,
+                                'percent_project': new_course.percent_project,
+                                'percent_lab_evaluation': new_course.percent_lab_evaluation,
+                                'percent_course_attendance': new_course.percent_course_attendance,
+                                'max_seats': new_course.max_seats,
+                                'working_course': new_course.working_course,
+                            }
+
+                            create_course_audit_log(
+                                course=new_course,
+                                user=request.user,
+                                action='CREATE',
+                                old_data=None,
+                                new_data=initial_data,
+                                version_bump_type='MAJOR',  # New course creation is always major
+                                old_version=None,
+                                new_version=new_course.version,
+                                admin_override=False,
+                                reason="New course created"
+                            )
+
                     return JsonResponse({'success': True, 'message': 'Course added successfully', 'course_id': new_course.id}, status=201)
-                    
+
                 except Exception as save_error:
                     return JsonResponse({'success': False, 'message': f'Error saving course: {str(save_error)}'}, status=500)
             else:

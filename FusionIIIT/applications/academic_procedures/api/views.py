@@ -7,6 +7,7 @@ from collections import defaultdict, deque, OrderedDict
 from functools import wraps
 from datetime import date
 from django.utils import timezone
+from django.conf import settings
 logger = logging.getLogger(__name__)
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, redirect
@@ -6830,7 +6831,7 @@ def rpc_finalize(request, pk):
     return JsonResponse({"message": "Seminar approved."})
 
 
-from applications.academic_procedures.models import ThesisSubmission, ReviewInvitation
+from applications.academic_procedures.models import ThesisSubmission, ReviewInvitation, ThesisReview, ExaminerBankDetails
 from applications.academic_procedures.utils import (
     send_invitation_email,
     send_review_form_email,
@@ -6878,6 +6879,7 @@ def _serialize_invitations(sub):
             'position': inv.prof_position,
             'address': inv.prof_address,
             'phone': inv.prof_phone,
+            'fax': inv.prof_fax,
             'email': inv.prof_email,
             'priority': inv.priority,
             'status': inv.status,
@@ -6980,6 +6982,7 @@ def supervisor_assign(request):
                 prof_position=prof.get('position', ''),
                 prof_address=prof.get('address', ''),
                 prof_phone=prof.get('phone', ''),
+                prof_fax=prof.get('fax', ''),
                 prof_email=prof.get('email', ''),
                 priority=idx,
             )
@@ -6992,6 +6995,7 @@ def supervisor_assign(request):
                 prof_position=prof.get('position', ''),
                 prof_address=prof.get('address', ''),
                 prof_phone=prof.get('phone', ''),
+                prof_fax=prof.get('fax', ''),
                 prof_email=prof.get('email', ''),
                 prof_time_ranking=prof.get('time_ranking', 1),
                 priority=idx,
@@ -7006,29 +7010,52 @@ def supervisor_assign(request):
     return Response({'detail': 'Examiners assigned successfully, forwarded to Dean for approval.'}, status=status.HTTP_200_OK)
 
 
-# 4) Dean panel dashboard: initial approval of the supervisor-proposed panel
+# 4) Dean panel dashboard: a single "action required" queue covering both
+#    panel approval and invitation-sending, plus a read-only history.
+ACTION_STATUSES = {
+    'dean_panel_review':  ('approve_panel', 'Approve Panel'),
+    'dean_invite_pending': ('send_invitations', 'Send Invitations'),
+}
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @role_required(['Dean Academic'])
 def dean_panel_dashboard(request):
-    pending = ThesisSubmission.objects.filter(status='dean_panel_review')
-    processed = ThesisSubmission.objects.exclude(status__in=['submitted', 'dean_panel_review'])
-
-    def serialize(sub):
+    def serialize(sub, action=None, action_label=None, waiting_since=None):
         indian, foreign = _serialize_invitations(sub)
         return {
             'id': sub.id,
             'title': sub.thesis.research_theme,
             'status': sub.status,
+            'action': action,
+            'action_label': action_label,
+            'waiting_since': waiting_since,
             'supervisor_approved_at': sub.supervisor_approved_at,
             'dean_approved_at': sub.dean_approved_at,
             'indian_examiners': indian,
             'foreign_examiners': foreign,
         }
 
+    action_required = []
+    for sub in ThesisSubmission.objects.filter(status__in=ACTION_STATUSES.keys()):
+        action, action_label = ACTION_STATUSES[sub.status]
+        waiting_since = (
+            sub.director_approved_at if sub.status == 'dean_invite_pending'
+            else sub.supervisor_approved_at
+        )
+        action_required.append(serialize(sub, action, action_label, waiting_since))
+    # Oldest-waiting first, so overdue items surface at the top.
+    action_required.sort(key=lambda s: s['waiting_since'] or timezone.now())
+
+    history = [
+        serialize(s) for s in
+        ThesisSubmission.objects.exclude(status__in=['submitted', *ACTION_STATUSES.keys()])
+    ]
+
     return Response({
-        'pending':   [serialize(s) for s in pending],
-        'processed': [serialize(s) for s in processed],
+        'action_required': action_required,
+        'history': history,
     })
 
 
@@ -7064,17 +7091,15 @@ def dean_panel_approve(request):
 @permission_classes([IsAuthenticated])
 @role_required(['Director'])
 def director_dashboard(request):
-    pending = ThesisSubmission.objects.filter(status='director_review')
-    in_review = ThesisSubmission.objects.exclude(
-        status__in=['submitted', 'dean_panel_review', 'director_review']
-    )
-
-    def serialize(sub):
+    def serialize(sub, action=None, action_label=None, waiting_since=None):
         invs = ReviewInvitation.objects.filter(submission=sub).order_by('examiner_type', 'priority')
         return {
             'id': sub.id,
             'title': sub.thesis.research_theme,
             'status': sub.status,
+            'action': action,
+            'action_label': action_label,
+            'waiting_since': waiting_since,
             'supervisor_approved_at': sub.supervisor_approved_at,
             'director_approved_at': sub.director_approved_at,
             'invitations': [
@@ -7085,9 +7110,21 @@ def director_dashboard(request):
             ],
         }
 
+    action_required = [
+        serialize(sub, 'prioritize', 'Set Priorities', sub.dean_approved_at)
+        for sub in ThesisSubmission.objects.filter(status='director_review')
+    ]
+    # Oldest-waiting first, so overdue items surface at the top.
+    action_required.sort(key=lambda s: s['waiting_since'] or timezone.now())
+
+    history = [
+        serialize(s) for s in
+        ThesisSubmission.objects.exclude(status__in=['submitted', 'dean_panel_review', 'director_review'])
+    ]
+
     return Response({
-        'pending':   [serialize(s) for s in pending],
-        'in_review': [serialize(s) for s in in_review],
+        'action_required': action_required,
+        'history': history,
     })
 
 
@@ -7125,10 +7162,20 @@ def director_approve(request):
         seen.add(key)
 
     with transaction.atomic():
+        invites = list(ReviewInvitation.objects.filter(submission=sub))
+        # Bump every row to a unique, out-of-range placeholder first. Ranks
+        # are frequently swapped (e.g. A:1<->B:2), and writing the new values
+        # one row at a time can collide with another row's not-yet-updated
+        # priority under the (submission, examiner_type, priority) unique
+        # constraint. Clearing to disjoint placeholders first avoids that.
+        for idx, inv in enumerate(invites, start=1):
+            inv.priority = 10000 + idx
+            inv.save(update_fields=['priority'])
+
         for item in priorities:
             inv = get_object_or_404(ReviewInvitation, submission=sub, token=item['token'])
             inv.priority = item['priority']
-            inv.save()
+            inv.save(update_fields=['priority'])
 
         sub.director = request.user
         sub.director_approved_at = timezone.now()
@@ -7187,6 +7234,12 @@ def invitation_action(request, token, action):
     if action == 'accept':
         inv.status = 'accepted'
         inv.save()
+        try:
+            send_review_form_email(inv)
+            inv.review_form_sent = timezone.now()
+            inv.save(update_fields=['review_form_sent'])
+        except Exception:
+            logger.exception(f"Failed to send review-form email for token {inv.token}")
         return Response({'detail': 'Accepted'}, 200)
     if action == 'reject':
         inv.status = 'rejected'
@@ -7202,22 +7255,83 @@ def invitation_action(request, token, action):
 def review_detail(request, token):
     inv = get_object_or_404(ReviewInvitation, token=token)
     if inv.is_expired() or inv.is_finalized():
-        return Response({'error': 'Invalid/expired'}, 403)
+        return Response({'error': 'Invalid/expired'}, status=403)
+    if inv.status != 'accepted':
+        return Response({'error': 'This invitation has not been accepted yet.'}, status=403)
+
     sub = inv.submission
+    topic = sub.thesis
+
     if request.method == 'GET':
-        base = settings.SITE_URL + settings.MEDIA_URL
+        base = getattr(settings, 'SITE_URL', 'http://localhost:8000') + settings.MEDIA_URL
         return Response({
-            'title': sub.title,
+            'student_name': topic.student.id.user.get_full_name(),
+            'student_roll': topic.student.id.id,
+            'student_discipline': topic.student.specialization,
+            'thesis_title': topic.research_theme,
             'synopsis_url': base + sub.synopsis.name,
             'report_url': base + sub.thesis_report.name,
-        }, 200)
-    # POST: record review (score/comments omitted), finalize
-    inv.status = 'completed'
-    inv.save()
-    ReviewInvitation.objects.filter(submission=sub).exclude(pk=inv.pk).update(status='expired')
-    send_thank_you_email(inv)
-    sub.status = 'completed'
-    sub.save()
+            'examiner_type': inv.examiner_type,
+            'examiner': {
+                'name': inv.prof_name,
+                'email': inv.prof_email,
+                'position': inv.prof_position,
+                'address': inv.prof_address,
+                'phone': inv.prof_phone,
+                'fax': inv.prof_fax,
+            },
+        }, status=200)
+
+    # POST: record the formal evaluation and finalize this examiner's invitation.
+    # Note: this only closes out THIS examiner's invitation -- the other
+    # category's examiner (Indian/Foreign) is untouched and continues its own
+    # lifecycle independently. What happens once both examiners have reviewed
+    # (aggregating outcomes, a final decision, etc.) is not yet implemented.
+    data = request.data
+    if not data.get('recommendation'):
+        return Response({'error': 'A specific recommendation is required.'}, status=400)
+
+    with transaction.atomic():
+        ThesisReview.objects.update_or_create(
+            invitation=inv,
+            defaults={
+                'originality_presentation': data.get('originality_presentation', ''),
+                'quality_comparable': data.get('quality_comparable'),
+                'new_ideas_original': data.get('new_ideas_original'),
+                'correction_severity': data.get('correction_severity', ''),
+                'technical_content': data.get('technical_content', ''),
+                'highlights': data.get('highlights', ''),
+                'suggestions': data.get('suggestions', ''),
+                'defense_questions': data.get('defense_questions', ''),
+                'recommendation': data['recommendation'],
+            },
+        )
+
+        bank = data.get('bank_details') or {}
+        if any(bank.values()):
+            ExaminerBankDetails.objects.update_or_create(
+                invitation=inv,
+                defaults={
+                    'beneficiary_name': bank.get('beneficiary_name', ''),
+                    'bank_name': bank.get('bank_name', ''),
+                    'bank_address': bank.get('bank_address', ''),
+                    'account_no': bank.get('account_no', ''),
+                    'ifsc_code': bank.get('ifsc_code', ''),
+                    'pan_no': bank.get('pan_no', ''),
+                    'iban_no': bank.get('iban_no', ''),
+                    'swift_code': bank.get('swift_code', ''),
+                },
+            )
+
+        inv.status = 'completed'
+        inv.save(update_fields=['status'])
+
+    try:
+        send_thank_you_email(inv)
+    except Exception:
+        logger.exception(f"Failed to send thank-you email for token {inv.token}")
+
+    return Response({'detail': 'Review submitted successfully.'}, status=200)
 
 
 # ===========================================================================
@@ -7572,56 +7686,6 @@ def supervisor_thesis_grades(request):
     return JsonResponse({'evaluations': [_eval_to_dict(ev) for ev in qs]}, status=200)
 
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def supervisor_submit_thesis_grade(request):
-    """
-    POST /supervisor/thesis-grade/submit/
-    Body: { "evaluation_id": <id>, "grade": "S"|"X", "remarks": "..." }
-    Supervisor submits or updates a grade for one evaluation block.
-    Re-submitting before admin-verify is allowed (updates the grade).
-    """
-    user = request.user
-    try:
-        faculty = Faculty.objects.get(id__user=user)
-    except Faculty.DoesNotExist:
-        return JsonResponse({'error': 'Faculty record not found'}, status=404)
-
-    eval_id = request.data.get('evaluation_id')
-    grade   = request.data.get('grade', '').upper()
-    remarks = request.data.get('remarks', '')
-
-    if not eval_id:
-        return JsonResponse({'error': 'evaluation_id is required'}, status=400)
-    if grade not in ('S', 'X'):
-        return JsonResponse({'error': 'grade must be S or X'}, status=400)
-
-    try:
-        ev = ThesisEvaluation.objects.select_related(
-            'registration__thesis_topic'
-        ).get(id=eval_id)
-    except ThesisEvaluation.DoesNotExist:
-        return JsonResponse({'error': 'Evaluation block not found'}, status=404)
-
-    # Security: supervisor must be the thesis supervisor
-    topic = ev.registration.thesis_topic
-    if topic is None or topic.supervisor != faculty:
-        return JsonResponse({'error': 'Not authorised for this evaluation'}, status=403)
-
-    # Cannot change after admin has verified
-    if ev.verified:
-        return JsonResponse({'error': 'Grade already verified by admin — cannot change'}, status=400)
-
-    now = _dt.datetime.now(_dt.timezone.utc)
-    ev.grade        = grade
-    ev.remarks      = remarks
-    ev.submitted_by = faculty
-    ev.submitted_at = now
-    ev.save(update_fields=['grade', 'remarks', 'submitted_by', 'submitted_at'])
-
-    return JsonResponse(_eval_to_dict(ev), status=200)
-
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @role_required(['acadadmin'])
@@ -7705,353 +7769,6 @@ def admin_announce_thesis_grades(request):
         ev.save(update_fields=['announced', 'announced_at'])
         count += 1
     return JsonResponse({'announced_count': count}, status=200)
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def supervisor_download_thesis_grades_template(request):
-    """
-    GET /supervisor/thesis-grades-template/?block_number={1|2|3...}
-    Downloads an Excel template for all students in a given block number.
-    Template columns: Student Name, Roll Number, Grade, Remarks
-    Only includes ungraded evaluations for this supervisor.
-    """
-    user = request.user
-    block_number = request.GET.get('block_number')
-
-    if not block_number:
-        return JsonResponse({'error': 'block_number query parameter is required'}, status=400)
-
-    try:
-        block_number = int(block_number)
-    except ValueError:
-        return JsonResponse({'error': 'block_number must be an integer'}, status=400)
-
-    # Verify supervisor
-    try:
-        faculty = Faculty.objects.get(id__user=user)
-    except Faculty.DoesNotExist:
-        return JsonResponse({'error': 'Faculty record not found'}, status=404)
-
-    # Get all ungraded evaluations for this block number under this supervisor
-    evals = ThesisEvaluation.objects.select_related(
-        'registration__student__id__user', 'registration__student'
-    ).filter(
-        registration__thesis_topic__supervisor=faculty,
-        block_number=block_number,
-        registration__status='verified',
-        grade__isnull=True  # Only ungraded
-    ).order_by('registration__student__id__user__last_name')
-
-    if not evals.exists():
-        # Check if block exists at all for this supervisor
-        block_exists = ThesisEvaluation.objects.filter(
-            registration__thesis_topic__supervisor=faculty,
-            block_number=block_number,
-            registration__status='verified'
-        ).exists()
-
-        if not block_exists:
-            return JsonResponse({'error': f'Block {block_number} not found for your students'}, status=404)
-        else:
-            return JsonResponse({'error': f'All students in Block {block_number} are already graded'}, status=400)
-
-    # Generate Excel template
-    try:
-        import openpyxl
-        output = BytesIO()
-        workbook = openpyxl.Workbook()
-        worksheet = workbook.active
-        worksheet.title = f'Block {block_number}'
-
-        # Headers
-        headers = ['Student Name', 'Roll Number', 'Grade', 'Remarks']
-        for col, header in enumerate(headers, 1):
-            worksheet.cell(row=1, column=col, value=header)
-
-        # Add student data
-        for row, evaluation in enumerate(evals, 2):
-            try:
-                student = evaluation.registration.student
-                # Use the same pattern as _eval_to_dict which we know works
-                student_name = student.id.user.get_full_name()
-                roll_no = student.id.id  # Correct: roll number is stored as ExtraInfo.id
-
-                worksheet.cell(row=row, column=1, value=student_name)
-                worksheet.cell(row=row, column=2, value=roll_no)
-            except Exception as e:
-                logger.error(f"Error for evaluation {evaluation.id}: {str(e)}", exc_info=True)
-                worksheet.cell(row=row, column=1, value="[Error]")
-                worksheet.cell(row=row, column=2, value="[Error]")
-            # Leave grade and remarks empty for supervisor to fill
-
-        workbook.save(output)
-        output.seek(0)
-
-        response = HttpResponse(
-            output.getvalue(),
-            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
-        response['Content-Disposition'] = f'attachment; filename="Thesis_Grades_Block_{block_number}_{_dt.datetime.now().strftime("%Y%m%d")}.xlsx"'
-        return response
-
-    except Exception as e:
-        return JsonResponse({'error': f'Failed to generate template: {str(e)}'}, status=500)
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def supervisor_get_ungraded_blocks(request):
-    """
-    GET /supervisor/thesis-grades/ungraded-blocks/
-    Returns list of block numbers that have ungraded evaluations for this supervisor.
-    Used to populate dropdown in upload UI.
-    """
-    user = request.user
-
-    try:
-        faculty = Faculty.objects.get(id__user=user)
-    except Faculty.DoesNotExist:
-        return JsonResponse({'error': 'Faculty record not found'}, status=404)
-
-    # Get all ungraded block numbers
-    block_numbers = ThesisEvaluation.objects.filter(
-        registration__thesis_topic__supervisor=faculty,
-        registration__status='verified',
-        grade__isnull=True
-    ).values_list('block_number', flat=True).distinct().order_by('block_number')
-
-    return JsonResponse({
-        'blocks': list(block_numbers)
-    }, status=200)
-
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-@parser_classes([MultiPartParser, FormParser])
-def supervisor_upload_thesis_grades(request):
-    """
-    POST /supervisor/thesis-grades/upload/
-    Request: multipart file upload (xlsx/xls) with block_number in FormData
-    Parses and validates the Excel file. Returns valid and invalid rows.
-    Only accepts ungraded blocks.
-    """
-    user = request.user
-    block_number = request.data.get('block_number')
-    uploaded_file = request.FILES.get('file')
-
-    if not block_number:
-        return JsonResponse({'error': 'block_number is required'}, status=400)
-    if not uploaded_file:
-        return JsonResponse({'error': 'file is required'}, status=400)
-
-    try:
-        block_number = int(block_number)
-    except ValueError:
-        return JsonResponse({'error': 'block_number must be an integer'}, status=400)
-
-    # Verify supervisor
-    try:
-        faculty = Faculty.objects.get(id__user=user)
-    except Faculty.DoesNotExist:
-        return JsonResponse({'error': 'Faculty record not found'}, status=404)
-
-    # Parse the Excel file
-    try:
-        df = pd.read_excel(uploaded_file, engine='openpyxl')
-    except Exception as e:
-        try:
-            df = pd.read_excel(uploaded_file, engine='xlrd')
-        except Exception as e2:
-            return JsonResponse({'error': f'Failed to read Excel file: {str(e)}'}, status=400)
-
-    # Normalize column names
-    df.columns = [col.strip().lower() for col in df.columns]
-
-    # Find column indices with flexible matching
-    roll_col = None
-    grade_col = None
-    remarks_col = None
-
-    for col in df.columns:
-        if 'roll' in col and not roll_col:
-            roll_col = col
-        elif 'grade' in col and not grade_col:
-            grade_col = col
-        elif 'remark' in col and not remarks_col:
-            remarks_col = col
-
-    if not roll_col or not grade_col:
-        return JsonResponse({'error': 'Excel must contain "Roll Number" and "Grade" columns'}, status=400)
-
-    # Batch fetch all ungraded evaluations for this block number - avoid N+1 queries
-    all_evals = ThesisEvaluation.objects.select_related(
-        'registration__student__id'
-    ).filter(
-        registration__thesis_topic__supervisor=faculty,
-        block_number=block_number,
-        registration__status='verified',
-        grade__isnull=True  # Only ungraded evaluations
-    )
-
-    # Create lookup dict for O(1) access: {roll_no: (eval_id, verified)}
-    eval_lookup = {
-        eval.registration.student.id.id: (eval.id, eval.verified)
-        for eval in all_evals
-    }
-
-    valid_rows = []
-    invalid_rows = []
-
-    # Validate each row
-    for idx, row in df.iterrows():
-        row_errors = []
-        roll_no = str(row[roll_col]).strip() if pd.notna(row[roll_col]) else None
-        grade = str(row[grade_col]).strip().upper() if pd.notna(row[grade_col]) else None
-        remarks = str(row[remarks_col]).strip() if remarks_col and pd.notna(row[remarks_col]) else ''
-
-        # Validate roll number
-        if not roll_no:
-            row_errors.append('Roll number is required')
-
-        # Validate grade
-        if not grade:
-            row_errors.append('Grade is required')
-        elif grade not in ('S', 'X'):
-            row_errors.append('Grade must be S or X')
-
-        if row_errors:
-            invalid_rows.append({
-                'row_num': idx + 2,
-                'roll_no': roll_no or 'N/A',
-                'errors': row_errors
-            })
-            continue
-
-        # Lookup evaluation using dict (O(1) - no database query)
-        if roll_no not in eval_lookup:
-            invalid_rows.append({
-                'row_num': idx + 2,
-                'roll_no': roll_no,
-                'errors': [f'No matching student found for Block {block_number}']
-            })
-            continue
-
-        eval_id, is_verified = eval_lookup[roll_no]
-
-        # Check if already verified (shouldn't happen due to WHERE clause, but just in case)
-        if is_verified:
-            invalid_rows.append({
-                'row_num': idx + 2,
-                'roll_no': roll_no,
-                'errors': ['Evaluation already verified by admin']
-            })
-            continue
-
-        # Add to valid rows
-        valid_rows.append({
-            'evaluation_id': eval_id,
-            'roll_no': roll_no,
-            'grade': grade,
-            'remarks': remarks
-        })
-
-    return JsonResponse({
-        'valid_rows': valid_rows,
-        'invalid_rows': invalid_rows
-    }, status=200)
-
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def supervisor_bulk_submit_thesis_grades(request):
-    """
-    POST /supervisor/thesis-grades/bulk-submit/
-    Body: { "submissions": [{"evaluation_id": 123, "grade": "S", "remarks": "..."}, ...] }
-    Submits multiple grades in one request (after validation).
-    Uses bulk_update to minimize database round-trips.
-    """
-    user = request.user
-    submissions = request.data.get('submissions', [])
-
-    if not submissions:
-        return JsonResponse({'error': 'submissions list is required'}, status=400)
-
-    # Get faculty
-    try:
-        faculty = Faculty.objects.get(id__user=user)
-    except Faculty.DoesNotExist:
-        return JsonResponse({'error': 'Faculty record not found'}, status=404)
-
-    now = _dt.datetime.now(_dt.timezone.utc)
-
-    # Batch fetch all evaluations - avoid N+1 queries
-    eval_ids = [sub.get('evaluation_id') for sub in submissions if sub.get('evaluation_id')]
-    evaluations_dict = ThesisEvaluation.objects.select_related(
-        'registration__thesis_topic'
-    ).filter(id__in=eval_ids).in_bulk(field_name='id')
-
-    success_count = 0
-    errors = []
-    evaluations_to_update = []
-
-    # Process each submission
-    for idx, submission in enumerate(submissions):
-        eval_id = submission.get('evaluation_id')
-        grade = submission.get('grade', '').upper()
-        remarks = submission.get('remarks', '')
-
-        try:
-            # Validate basic requirements
-            if not eval_id:
-                errors.append({'index': idx, 'error': 'evaluation_id is required'})
-                continue
-            if grade not in ('S', 'X'):
-                errors.append({'index': idx, 'evaluation_id': eval_id, 'error': 'grade must be S or X'})
-                continue
-
-            # Get evaluation from dict (O(1) - no query)
-            if eval_id not in evaluations_dict:
-                errors.append({'index': idx, 'evaluation_id': eval_id, 'error': 'Evaluation not found'})
-                continue
-
-            ev = evaluations_dict[eval_id]
-
-            # Verify supervisor access
-            topic = ev.registration.thesis_topic
-            if topic is None or topic.supervisor != faculty:
-                errors.append({'index': idx, 'evaluation_id': eval_id, 'error': 'Not authorized for this evaluation'})
-                continue
-
-            # Check not already verified
-            if ev.verified:
-                errors.append({'index': idx, 'evaluation_id': eval_id, 'error': 'Already verified by admin'})
-                continue
-
-            # Prepare for batch update
-            ev.grade = grade
-            ev.remarks = remarks
-            ev.submitted_by = faculty
-            ev.submitted_at = now
-            evaluations_to_update.append(ev)
-            success_count += 1
-
-        except Exception as e:
-            errors.append({'index': idx, 'evaluation_id': eval_id, 'error': str(e)})
-
-    # Batch update all at once instead of individual saves
-    if evaluations_to_update:
-        ThesisEvaluation.objects.bulk_update(
-            evaluations_to_update,
-            fields=['grade', 'remarks', 'submitted_by', 'submitted_at'],
-            batch_size=500
-        )
-
-    return JsonResponse({
-        'success_count': success_count,
-        'error_count': len(errors),
-        'errors': errors if errors else None
-    }, status=200)
 
 
 @api_view(['GET'])
