@@ -5271,16 +5271,20 @@ def student_questions(request):
         semester_id__semester_no=semester_no,
     ).select_related("course_id")
 
+    from applications.academic_information.models import resolve_offering
+
     courses = []
     for reg in registrations:
         course = reg.course_id
         academic_year, _ = parse_academic_year(reg.session, reg.semester_type)
-        instructor_entry = CourseInstructor.objects.filter(
-            course_id=course,
-            semester_type=reg.semester_type,
-            year = academic_year
-            
-        ).first()
+        # Target the instructor of the student's own section; fall back to any
+        # offering for single-offering / legacy (no-section) courses.
+        instructor_entry = resolve_offering(student, course, academic_year, reg.semester_type) or \
+            CourseInstructor.objects.filter(
+                course_id=course,
+                semester_type=reg.semester_type,
+                year=academic_year,
+            ).first()
 
         instructor_id = instructor_entry.id if instructor_entry else None
         instructor_name = (
