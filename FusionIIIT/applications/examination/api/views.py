@@ -423,7 +423,12 @@ def download_template(request):
             course_info_query = course_info_query.filter(
                 student_id__in=student_ids_with_programme
             )
-        
+
+        # Optional section scope (course "allotted in sections"); electives ignore it.
+        section = (request.data.get('section') or '').strip() or None
+        if section:
+            course_info_query = course_info_query.filter(student_id__section=section)
+
         course_info = course_info_query.order_by("student_id_id")
 
         if not course_info.exists():
@@ -1505,8 +1510,9 @@ class SubmitGradesProfAPI(APIView):
         academic_year = request.data.get("academic_year")
         semester_type = request.data.get("semester_type")
         programme_type = request.data.get("programme_type")
-        
-        if not user_holds_any_role(request.user, ["Associate Professor", "Professor", "Assistant Professor"]):
+
+        is_acadadmin = user_holds_any_role(request.user, ["acadadmin"])
+        if not is_acadadmin and not user_holds_any_role(request.user, ["Associate Professor", "Professor", "Assistant Professor"]):
             return Response(
                 {"success": False, "error": "Access denied."},
                 status=status.HTTP_403_FORBIDDEN,
@@ -1517,17 +1523,33 @@ class SubmitGradesProfAPI(APIView):
                 {"success": False, "error": "Academic year and semester type are required."},
                 status=400,
             )
-        
+
         instructor_id = request.user.username
 
         working_year, _ = parse_academic_year(academic_year=academic_year, semester_type=semester_type)
 
+        # acadadmin sees every offering this term; faculty only their own.
+        offerings_qs = CourseInstructor.objects.filter(year=working_year, semester_type=semester_type)
+        if not is_acadadmin:
+            offerings_qs = offerings_qs.filter(instructor_id_id=instructor_id)
+
         unique_course_ids = (
-            CourseInstructor.objects.filter(instructor_id_id=instructor_id, year = working_year, semester_type=semester_type)
+            offerings_qs
             .values("course_id_id")
             .distinct()
             .annotate(course_id_int=Cast("course_id_id", IntegerField()))
         )
+
+        # Map course -> its section labels (only "allotted in sections" courses
+        # have any; electives/interdisciplinary have none).
+        from collections import defaultdict
+        section_map = defaultdict(set)
+        for o in offerings_qs:
+            if o.section_label:
+                try:
+                    section_map[int(o.course_id_id)].add(o.section_label)
+                except (TypeError, ValueError):
+                    pass
 
         # Retrieve course details with programme type filtering
         courses_query = Courses.objects.filter(
@@ -1577,6 +1599,7 @@ class SubmitGradesProfAPI(APIView):
             course['student_count'] = course_registrations.count()
             course['has_students'] = course['student_count'] > 0
             course['programme_type'] = programme_type
+            course['sections'] = sorted(section_map.get(course['id'], set()))
             courses_data.append(course)
 
         return Response(
@@ -1603,7 +1626,8 @@ class UploadGradesProfAPI(APIView):
         try:
             # 1) ROLE CHECK
             role = request.data.get("Role")
-            if not user_holds_any_role(request.user, ["Associate Professor", "Professor", "Assistant Professor"]):
+            is_acadadmin = user_holds_any_role(request.user, ["acadadmin"])
+            if not is_acadadmin and not user_holds_any_role(request.user, ["Associate Professor", "Professor", "Assistant Professor"]):
                 return Response({"error": "Access denied."},
                                 status=status.HTTP_403_FORBIDDEN)
 
@@ -1660,20 +1684,35 @@ class UploadGradesProfAPI(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # INSTRUCTOR OWNERSHIP: resolve the offering(s) this faculty owns for
-            # this course + term. Grading is scoped to these — a faculty may only
-            # grade the students in the section(s) they are assigned to teach.
-            my_offerings = list(CourseInstructor.objects.filter(
+            # OFFERINGS: acadadmin may grade any offering of this course; faculty
+            # only the offering(s) they are assigned to teach. An optional
+            # `section` narrows this to a single section (electives have none).
+            section = (request.data.get("section") or "").strip() or None
+
+            all_offerings = list(CourseInstructor.objects.filter(
                 course_id_id=course_id,
-                instructor_id_id=request.user.username,
                 year=working_year,
                 semester_type=semester_type,
             ))
-            if not my_offerings:
-                return Response(
-                    {"error": "Access denied: you are not assigned to teach this course this term."},
-                    status=status.HTTP_403_FORBIDDEN
-                )
+            if is_acadadmin:
+                my_offerings = all_offerings
+            else:
+                my_offerings = [o for o in all_offerings
+                                if str(o.instructor_id_id) == str(request.user.username)]
+                if not my_offerings:
+                    return Response(
+                        {"error": "Access denied: you are not assigned to teach this course this term."},
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+
+            if section:
+                my_offerings = [o for o in my_offerings if o.section_label == section]
+                if not my_offerings:
+                    return Response(
+                        {"error": f"No section '{section}' offering you can grade for this course."},
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+
             my_offering_ids = {o.id for o in my_offerings}
             my_sections = {o.section_label for o in my_offerings}
             # A no-section (elective) offering owns all registrants; named-section
@@ -1682,7 +1721,7 @@ class UploadGradesProfAPI(APIView):
                 regs = regs.filter(student_id__section__in=my_sections)
                 if not regs.exists():
                     return Response(
-                        {"error": "No students are registered in your section for this course."},
+                        {"error": "No students are registered in the selected section for this course."},
                         status=status.HTTP_400_BAD_REQUEST
                     )
 
@@ -1835,14 +1874,23 @@ class UploadGradesProfAPI(APIView):
                         )
                         continue
 
-                    # SECTION OWNERSHIP: the student must belong to a section this
-                    # faculty teaches, otherwise this user cannot grade them.
+                    # Bind each grade to the student's own section offering.
                     stud_offering = resolve_offering(stud, course, working_year, semester_type)
-                    if stud_offering is None or stud_offering.id not in my_offering_ids:
-                        errors.append(
-                            f"Row {idx}: Student {roll_no} is not in a section you are assigned to teach."
-                        )
-                        continue
+                    if is_acadadmin:
+                        # acadadmin may grade any student; if a section was chosen,
+                        # accept only students of that section.
+                        if section and (stud.section or None) != section:
+                            errors.append(
+                                f"Row {idx}: Student {roll_no} is not in section {section}."
+                            )
+                            continue
+                    else:
+                        # Faculty may only grade students in a section they teach.
+                        if stud_offering is None or stud_offering.id not in my_offering_ids:
+                            errors.append(
+                                f"Row {idx}: Student {roll_no} is not in a section you are assigned to teach."
+                            )
+                            continue
 
                     # Check if student belongs to the specified programme type
                     if programme_type:
@@ -2917,7 +2965,12 @@ class PreviewGradesAPI(APIView):
             ).values_list('id', flat=True)
             
             registrations = registrations.filter(student_id__in=student_ids_with_programme)
-        
+
+        # Optional section scope (course "allotted in sections"); electives ignore it.
+        section = (request.data.get("section") or "").strip() or None
+        if section:
+            registrations = registrations.filter(student_id__section=section)
+
         # Build a set of registered roll numbers for fast lookup.
         registered_rollnos = set()
         for reg in registrations.select_related("student_id"):
