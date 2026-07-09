@@ -86,6 +86,37 @@ urlpatterns = [
     path('admin_update_course_instructor/<instructor_id>/', views.update_course_instructor_form, name='update_course_instructor_form'),
     path('admin_delete_course_instructor/<int:instructor_id>/', views.admin_delete_course_instructor, name='admin_delete_course_instructor'),
     
+    # Thesis APIs
+    path('admin_theses/', views.admin_view_all_theses, name='admin_view_all_theses'),
+    path('admin_thesis/<thesis_id>/', views.admin_view_a_thesis, name='admin_view_a_thesis'),
+    path('admin_add_thesis/', views.add_thesis, name='add_thesis'),
+    path('admin_delete_thesis/<int:thesis_id>/', views.admin_delete_thesis, name='admin_delete_thesis'),
+    path('admin_update_thesis/<int:thesis_id>/', views.update_thesis, name='update_thesis'),
+    
+    # Progress Seminar APIs
+    path('admin_progress_seminars/', views.admin_view_all_progress_seminars, name='admin_view_all_progress_seminars'),
+    path('admin_add_progress_seminar/', views.add_progress_seminar, name='add_progress_seminar'),
+    path('admin_delete_progress_seminar/<int:progress_seminar_id>/', views.admin_delete_progress_seminar, name='admin_delete_progress_seminar'),
+    path('admin_update_progress_seminar/<int:progress_seminar_id>/', views.update_progress_seminar, name='update_progress_seminar'),
+    
+    # Thesis Slot APIs
+    path('admin_add_thesis_slot/', views.add_thesis_slot, name='add_thesis_slot'),
+    
+    # Progress Seminar Slot APIs
+    path('admin_add_progress_seminar_slot/', views.add_progress_seminar_slot, name='add_progress_seminar_slot'),
+    
+    # Thesis Slot Detail / Delete APIs
+    path('admin_thesis_slot/<int:thesis_slot_id>/', views.admin_view_a_thesis_slot, name='admin_view_a_thesis_slot'),
+    path('admin_delete_thesis_slot/<int:thesis_slot_id>/', views.delete_thesis_slot, name='delete_thesis_slot'),
+    
+    # Progress Seminar Slot Detail / Delete APIs
+    path('admin_progress_seminar_slot/<int:ps_slot_id>/', views.admin_view_a_progress_seminar_slot, name='admin_view_a_progress_seminar_slot'),
+    path('admin_delete_progress_seminar_slot/<int:ps_slot_id>/', views.delete_progress_seminar_slot, name='delete_progress_seminar_slot'),
+    
+    # Edit Thesis Slot / Progress Seminar Slot
+    path('admin_edit_thesis_slot/<int:thesis_slot_id>/', views.edit_thesis_slot_form, name='edit_thesis_slot_form'),
+    path('admin_edit_progress_seminar_slot/<int:ps_slot_id>/', views.edit_progress_seminar_slot_form, name='edit_progress_seminar_slot_form'),
+    
     # Delete APIs
     path('admin_delete_course/<int:course_id>/', views.admin_delete_course, name='admin_delete_course'),
     path('admin_delete_programme/<int:programme_id>/', views.admin_delete_programme, name='admin_delete_programme'),

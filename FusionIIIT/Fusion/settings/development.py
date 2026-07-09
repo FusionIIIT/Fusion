@@ -6,6 +6,11 @@ SECRET_KEY = '=&w9due426k@l^ju1=s1)fj1rnpf0ok8xvjwx+62_nc-f12-8('
 
 ALLOWED_HOSTS = ['*']
 
+# Local dev has no real SMTP credentials (EMAIL_HOST_PASSWORD is only set in
+# production.py from the environment), so outgoing mail is printed to the
+# runserver console instead of actually being sent.
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 DATABASES = {
      'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',

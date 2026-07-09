@@ -1,0 +1,22 @@
+THESIS REVIEW INVITATION
+========================
+
+Dear {{ prof_name }},
+
+You are invited to review the PhD thesis titled:
+
+"{{ thesis_title }}"
+
+Please respond to this invitation by clicking one of the links below:
+
+✓ Accept Review: {{ accept_url }}
+✗ Decline Review: {{ reject_url }}
+
+IMPORTANT INFORMATION:
+- This invitation expires on {{ expires_at }}
+- These links are unique to you - please do not share them
+- If you did not expect this invitation, please ignore this email
+
+Thank you for your consideration,
+Thesis Committee
+PDPM IIITDM Jabalpur

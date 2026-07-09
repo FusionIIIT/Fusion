@@ -843,7 +843,6 @@ def update_calendar(request):
 
 
 #Generate Attendance Sheet
-@login_required(login_url='/accounts/login')
 def sem_for_generate_sheet():
     """
     This function generates semester grade sheet
@@ -1426,7 +1425,6 @@ def add_new_profile (request):
     return render(request, "ais/ais.html", context)
 
 
-@login_required(login_url='/accounts/login')
 def get_faculty_list():
     """
     to get faculty list from database

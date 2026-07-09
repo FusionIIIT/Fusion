@@ -8,11 +8,11 @@ import datetime
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from ..models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot,NewProposalFile,Proposal_Tracking,CourseInstructor,CourseAuditLog
-from ..forms import ProgrammeForm, DisciplineForm, CurriculumForm, SemesterForm, CourseForm, BatchForm, CourseSlotForm, ReplicateCurriculumForm,NewCourseProposalFile,CourseProposalTrackingFile, CourseInstructor, CourseInstructorForm
+from ..models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot,NewProposalFile,Proposal_Tracking,CourseInstructor,CourseAuditLog, Thesis, ProgressSeminar, ThesisSlot, ProgressSeminarSlot
+from ..forms import ProgrammeForm, DisciplineForm, CurriculumForm, SemesterForm, CourseForm, BatchForm, CourseSlotForm, ReplicateCurriculumForm,NewCourseProposalFile,CourseProposalTrackingFile, CourseInstructor, CourseInstructorForm, ThesisForm, ProgressSeminarForm, ThesisSlotForm, ProgressSeminarSlotForm
 from ..filters import CourseFilter, BatchFilter, CurriculumFilter
 
-from .serializers import CourseSerializer,CurriculumSerializer,BatchSerializer
+from .serializers import CourseSerializer,CurriculumSerializer,BatchSerializer, ThesisSerializer, ProgressSeminarSerializer
 from .views_student_management import get_batch_curriculum_display, get_available_curriculums_for_batch
 from django.core.serializers import serialize
 from django.db import IntegrityError, transaction
@@ -33,6 +33,7 @@ import re
 from notification.views import prog_and_curr_notif
 # from applications.academic_information.models import Student
 from applications.globals.models import (DepartmentInfo, Designation,ExtraInfo, Faculty, HoldsDesignation)
+from applications.globals.access import IsAcadAdminOrDean, require_designation, user_holds_role, _user_from_request
 # ------------module-functions---------------#
 
 @login_required(login_url='/accounts/login')
@@ -467,6 +468,7 @@ def view_all_batches(request):
 
 # @api_view(['GET'])
 # @login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic", "student", "Professor", "Associate Professor", "Assistant Professor")
 def admin_view_all_programmes(request):
     """
     API to return all programmes (UG, PG, PhD) for an admin user.
@@ -493,6 +495,7 @@ def admin_view_all_programmes(request):
     return JsonResponse(response_data, status=200, safe=False)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def admin_view_curriculums_of_a_programme(request, programme_id):
     program = get_object_or_404(Programme, id=programme_id)
     curriculums = program.curriculums.all()
@@ -514,6 +517,7 @@ def admin_view_curriculums_of_a_programme(request, programme_id):
     return JsonResponse(data)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def Admin_view_all_working_curriculums(request):
     """API view to return all working curriculums offered by the institute as JSON"""
 
@@ -569,6 +573,7 @@ def Admin_view_all_working_curriculums(request):
     # Return the data as JSON response
     return JsonResponse({'curriculums': curriculum_data}, safe=False)
 
+@require_designation("acadadmin", "Dean Academic", "student", "Professor", "Associate Professor", "Assistant Professor")
 def admin_view_semesters_of_a_curriculum(request, curriculum_id):
     """API endpoint to get all semesters of a specific curriculum for React frontend."""
         
@@ -593,7 +598,30 @@ def admin_view_semesters_of_a_curriculum(request, curriculum_id):
                 'id': slot.id,
                 'type': slot.type,
                 'name': slot.name,
+                'slot_type': 'course',
                 'courses': courses
+            })
+        
+        # Thesis slots
+        for ts in ThesisSlot.objects.filter(semester=semester).order_by('id'):
+            theses = list(ts.theses.values('id', 'name', 'code', 'credit'))
+            slots.append({
+                'id': ts.id,
+                'type': 'Thesis',
+                'name': ts.name,
+                'slot_type': 'thesis',
+                'courses': theses  # reuse 'courses' key for table rendering compatibility
+            })
+        
+        # Progress seminar slots
+        for pss in ProgressSeminarSlot.objects.filter(semester=semester).order_by('id'):
+            progress_seminars = list(pss.progress_seminars.values('id', 'name', 'code', 'credit'))
+            slots.append({
+                'id': pss.id,
+                'type': 'Progress Seminar',
+                'name': pss.name,
+                'slot_type': 'progress_seminar',
+                'courses': progress_seminars  # reuse 'courses' key for table rendering compatibility
             })
         
         # Calculate total credits for the semester based on maximum credit of each course slot
@@ -640,6 +668,7 @@ def admin_view_semesters_of_a_curriculum(request, curriculum_id):
 
     return JsonResponse(curriculum_data)
 
+@require_designation("acadadmin", "Dean Academic", "student", "Professor", "Associate Professor", "Assistant Professor")
 def admin_view_a_semester_of_a_curriculum(request, semester_id):
     # user_details = ExtraInfo.objects.get(user=request.user)
     # des = HoldsDesignation.objects.filter(user=request.user).first()
@@ -690,6 +719,7 @@ def admin_view_a_semester_of_a_curriculum(request, semester_id):
 
     return JsonResponse(semester_data, safe=False)
 
+@require_designation("acadadmin", "Dean Academic", "student", "Professor", "Associate Professor", "Assistant Professor")
 def admin_view_a_courseslot(request, courseslot_id):
     """API to view a course slot"""
 
@@ -758,6 +788,7 @@ def admin_view_a_courseslot(request, courseslot_id):
     })
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def admin_view_all_courses(request):
     """Returns all courses with required fields as JSON data."""
 
@@ -791,6 +822,7 @@ def admin_view_all_courses(request):
     return JsonResponse({'courses': courses_data})
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def admin_view_a_course(request, course_id):
     """View to handle the details of a Course as an API"""
 
@@ -835,6 +867,7 @@ def admin_view_a_course(request, course_id):
 #     disciplines = Discipline.objects.all()
 #     return render(request, 'programme_curriculum/acad_admin/admin_view_all_disciplines.html', {'disciplines': disciplines})
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def admin_view_all_discplines(request):
     """API to view all disciplines with related programmes"""
 
@@ -872,6 +905,7 @@ def admin_view_all_discplines(request):
 
 
 @api_view(['GET'])
+@permission_classes([IsAcadAdminOrDean])
 def admin_view_all_batches(request):
     """ views the details of a Course """
 
@@ -987,7 +1021,7 @@ def admin_view_all_batches(request):
 
 @csrf_exempt  
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAcadAdminOrDean])
 def add_discipline_form(request):
     if request.method == 'POST':
         try:
@@ -1007,6 +1041,7 @@ def add_discipline_form(request):
 
 @csrf_exempt
 @permission_classes([IsAuthenticated])
+@require_designation("acadadmin", "Dean Academic")
 def edit_discipline_form(request, discipline_id):
 
     # user_details = ExtraInfo.objects.get(user = request.user)
@@ -1085,6 +1120,7 @@ def edit_discipline_form(request, discipline_id):
 # @permission_classes([IsAuthenticated])
 # @api_view(['POST'])
 @csrf_exempt
+@require_designation("acadadmin", "Dean Academic")
 def add_programme_form(request):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -1114,6 +1150,7 @@ def add_programme_form(request):
 
 @csrf_exempt
 @permission_classes([IsAuthenticated])
+@require_designation("acadadmin", "Dean Academic")
 def edit_programme_form(request, programme_id):
 
     # user_details = ExtraInfo.objects.get(user = request.user)
@@ -1166,7 +1203,7 @@ def edit_programme_form(request, programme_id):
     }, status=405)
 
 
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAcadAdminOrDean])
 @api_view(['POST'])
 def add_curriculum_form(request):
     """
@@ -1236,7 +1273,7 @@ def add_curriculum_form(request):
     return JsonResponse({'error': 'Invalid request method.'}, status=405)
 
 
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAcadAdminOrDean])
 @api_view(['GET', 'PUT'])
 def edit_curriculum_form(request, curriculum_id):
     """
@@ -1330,6 +1367,7 @@ def edit_curriculum_form(request, curriculum_id):
             return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     return JsonResponse({'error': 'Invalid request method.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 @csrf_exempt
+@require_designation("acadadmin", "Dean Academic")
 def add_course_form(request):
 
     # user_details = ExtraInfo.objects.get(user = request.user)
@@ -1349,57 +1387,58 @@ def add_course_form(request):
             
             if form.is_valid():
                 try:
-                    new_course = form.save(commit=False)
-                    new_course.save()
-                    
-                    # Handle many-to-many relationships if any
-                    if 'disciplines' in data:
-                        new_course.disciplines.set(data['disciplines'])
-                    
-                    if 'pre_requisit_courses' in data and data['pre_requisit_courses']:
-                        new_course.pre_requisit_courses.set(data['pre_requisit_courses'])
-                    
-                    # Create initial audit log for course creation (only for authenticated users)
-                    if request.user.is_authenticated and not request.user.is_anonymous:
-                        initial_data = {
-                            'name': new_course.name,
-                            'code': new_course.code,
-                            'credit': new_course.credit,
-                            'version': new_course.version,
-                            'lecture_hours': new_course.lecture_hours,
-                            'tutorial_hours': new_course.tutorial_hours,
-                            'pratical_hours': new_course.pratical_hours,
-                            'discussion_hours': new_course.discussion_hours,
-                            'project_hours': new_course.project_hours,
-                            'pre_requisits': new_course.pre_requisits,
-                            'syllabus': new_course.syllabus,
-                            'ref_books': new_course.ref_books,
-                            'percent_quiz_1': new_course.percent_quiz_1,
-                            'percent_midsem': new_course.percent_midsem,
-                            'percent_quiz_2': new_course.percent_quiz_2,
-                            'percent_endsem': new_course.percent_endsem,
-                            'percent_project': new_course.percent_project,
-                            'percent_lab_evaluation': new_course.percent_lab_evaluation,
-                            'percent_course_attendance': new_course.percent_course_attendance,
-                            'max_seats': new_course.max_seats,
-                            'working_course': new_course.working_course,
-                        }
-                        
-                        create_course_audit_log(
-                            course=new_course,
-                            user=request.user,
-                            action='CREATE',
-                            old_data=None,
-                            new_data=initial_data,
-                            version_bump_type='MAJOR',  # New course creation is always major
-                            old_version=None,
-                            new_version=new_course.version,
-                            admin_override=False,
-                            reason="New course created"
-                        )
-                    
+                    with transaction.atomic():
+                        new_course = form.save(commit=False)
+                        new_course.save()
+
+                        # Handle many-to-many relationships if any
+                        if 'disciplines' in data:
+                            new_course.disciplines.set(data['disciplines'])
+
+                        if 'pre_requisit_courses' in data and data['pre_requisit_courses']:
+                            new_course.pre_requisit_courses.set(data['pre_requisit_courses'])
+
+                        # Create initial audit log for course creation (only for authenticated users)
+                        if request.user.is_authenticated and not request.user.is_anonymous:
+                            initial_data = {
+                                'name': new_course.name,
+                                'code': new_course.code,
+                                'credit': new_course.credit,
+                                'version': new_course.version,
+                                'lecture_hours': new_course.lecture_hours,
+                                'tutorial_hours': new_course.tutorial_hours,
+                                'pratical_hours': new_course.pratical_hours,
+                                'discussion_hours': new_course.discussion_hours,
+                                'project_hours': new_course.project_hours,
+                                'pre_requisits': new_course.pre_requisits,
+                                'syllabus': new_course.syllabus,
+                                'ref_books': new_course.ref_books,
+                                'percent_quiz_1': new_course.percent_quiz_1,
+                                'percent_midsem': new_course.percent_midsem,
+                                'percent_quiz_2': new_course.percent_quiz_2,
+                                'percent_endsem': new_course.percent_endsem,
+                                'percent_project': new_course.percent_project,
+                                'percent_lab_evaluation': new_course.percent_lab_evaluation,
+                                'percent_course_attendance': new_course.percent_course_attendance,
+                                'max_seats': new_course.max_seats,
+                                'working_course': new_course.working_course,
+                            }
+
+                            create_course_audit_log(
+                                course=new_course,
+                                user=request.user,
+                                action='CREATE',
+                                old_data=None,
+                                new_data=initial_data,
+                                version_bump_type='MAJOR',  # New course creation is always major
+                                old_version=None,
+                                new_version=new_course.version,
+                                admin_override=False,
+                                reason="New course created"
+                            )
+
                     return JsonResponse({'success': True, 'message': 'Course added successfully', 'course_id': new_course.id}, status=201)
-                    
+
                 except Exception as save_error:
                     return JsonResponse({'success': False, 'message': f'Error saving course: {str(save_error)}'}, status=500)
             else:
@@ -1422,7 +1461,7 @@ def add_course_form(request):
 
 @csrf_exempt
 @api_view(['GET', 'PUT'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAcadAdminOrDean])
 def update_course_form(request, course_id):
     """
     Handle getting and updating Course through an API endpoint.
@@ -1614,7 +1653,7 @@ def update_course_form(request, course_id):
 
 @csrf_exempt
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAcadAdminOrDean])
 def course_audit_logs(request, course_id):
     """
     Get audit logs for a specific course
@@ -1662,7 +1701,7 @@ def course_audit_logs(request, course_id):
         )
 
 
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAcadAdminOrDean])
 @api_view(['POST'])
 def add_courseslot_form(request):
     try:
@@ -1708,6 +1747,7 @@ def add_courseslot_form(request):
 
 @csrf_exempt  # Use this decorator if you're not using CSRF tokens in your API calls
 @permission_classes([IsAuthenticated])
+@require_designation("acadadmin", "Dean Academic")
 def edit_courseslot_form(request, courseslot_id):
     
     courseslot = get_object_or_404(CourseSlot, Q(id=courseslot_id))
@@ -1749,7 +1789,7 @@ def edit_courseslot_form(request, courseslot_id):
 
 @csrf_exempt
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAcadAdminOrDean])
 def delete_courseslot(request, courseslot_id):
     try:
         # Check if the user has the required session key
@@ -1786,7 +1826,7 @@ def delete_courseslot(request, courseslot_id):
         return JsonResponse({'error': 'Internal server error'}, status=500)
 
 
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAcadAdminOrDean])
 @api_view(['POST'])
 @csrf_exempt  # Use this decorator if CSRF is not handled elsewhere
 def add_batch_form(request):
@@ -1818,6 +1858,7 @@ def add_batch_form(request):
 
 @csrf_exempt  # Use this decorator if you're not using CSRF tokens in your API calls
 @permission_classes([IsAuthenticated])
+@require_designation("acadadmin", "Dean Academic")
 def edit_batch_form(request, batch_id):
 
     # user_details = ExtraInfo.objects.get(user = request.user)
@@ -1947,6 +1988,7 @@ def edit_batch_form(request, batch_id):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
+@require_designation("acadadmin", "Dean Academic")
 def instigate_semester(request, semester_id):
     """
     This function is used to add the semester information.
@@ -1990,6 +2032,7 @@ def instigate_semester(request, semester_id):
 
 @csrf_exempt  # Use this decorator if you're not using CSRF tokens in your API calls
 @permission_classes([IsAuthenticated])
+@require_designation("acadadmin", "Dean Academic")
 def replicate_curriculum(request, curriculum_id):
     """
     This function is used to replicate the previous curriculum into a new curriculum.
@@ -2473,6 +2516,7 @@ def outward_files(request):
             'message': str(e)
         }, status=500)
     
+@require_designation("Professor", "Associate Professor", "Assistant Professor")
 @csrf_exempt
 def update_course_proposal_file(request, course_id):
     # Fetch user designation (will break if request.user is Anonymous)
@@ -2685,8 +2729,13 @@ def update_course_proposal_file(request, course_id):
 #     return render(request,'programme_curriculum/faculty/forward.html',{'form':form,'receive_date':file.receive_date,'proposal':file2,'submitbutton': submitbutton,'id':Proposal_D})
 
 @csrf_exempt
-@permission_classes([IsAuthenticated])
 def forward_course_forms(request, ProposalId):
+    # This is a plain Django view, so DRF auth/permissions do not apply. Resolve
+    # the user from the token ourselves and refuse to trust the client-supplied
+    # username/designation: a caller may only act as a designation they hold.
+    auth_user = _user_from_request(request)
+    if auth_user is None:
+        return JsonResponse({'status': 'error', 'message': 'Authentication required.'}, status=401)
     try:
         # Parse JSON data from request body
         data = json.loads(request.body)
@@ -2697,7 +2746,15 @@ def forward_course_forms(request, ProposalId):
                 'status': 'error',
                 'message': 'Username and designation are required'
             }, status=400)
-        
+
+        # Authorize against the user's REAL held designation, not the client-sent
+        # param, so a non-privileged user cannot forward as Dean/HOD.
+        if not user_holds_role(auth_user, designation):
+            return JsonResponse({
+                'status': 'error',
+                'message': 'You do not hold the designation you are forwarding as.'
+            }, status=403)
+
         # Get the tracking record
         file = get_object_or_404(Proposal_Tracking, id=ProposalId)
         file_id = int(file.file_id)
@@ -3268,6 +3325,7 @@ def file_unarchive(request,FileId):
 
 @csrf_exempt
 @permission_classes([IsAuthenticated])
+@require_designation("acadadmin", "Dean Academic")
 def course_slot_type_choices(request):
     """
     API endpoint to return the list of course slot type choices from the CourseSlot model.
@@ -3277,6 +3335,7 @@ def course_slot_type_choices(request):
 
 @csrf_exempt
 @permission_classes([IsAuthenticated])
+@require_designation("acadadmin", "Dean Academic")
 def semester_details(request):
     curriculum_id = request.GET.get('curriculum_id')
 
@@ -3309,7 +3368,7 @@ def semester_details(request):
 
 @api_view(['GET'])
 @csrf_exempt
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAcadAdminOrDean])
 def get_programme(request, programme_id):
     program = get_object_or_404(Programme, id=programme_id)
     # curriculums = program.curriculums.all()
@@ -3332,12 +3391,14 @@ def get_programme(request, programme_id):
 
 @csrf_exempt
 @permission_classes([IsAuthenticated])
+@require_designation("acadadmin", "Dean Academic")
 def get_batch_names(request):
     choices = [{'value': key, 'label': label} for key, label in Batch._meta.get_field('name').choices]
     return JsonResponse({'choices': choices})
 
 @csrf_exempt
 @permission_classes([IsAuthenticated])
+@require_designation("acadadmin", "Dean Academic")
 def get_all_disciplines(request):
     # Fetch all disciplines from the database
     disciplines = Discipline.objects.all()
@@ -3357,6 +3418,7 @@ def get_all_disciplines(request):
     return JsonResponse(disciplines_data, safe=False)
 @csrf_exempt
 @permission_classes([IsAuthenticated])
+@require_designation("acadadmin", "Dean Academic")
 def get_unused_curriculam(request):
     used_curriculum_ids = Batch.objects.exclude(curriculum__isnull=True).values_list('curriculum_id', flat=True)
     unused_curricula = Curriculum.objects.exclude(id__in=used_curriculum_ids)
@@ -3376,6 +3438,7 @@ def get_unused_curriculam(request):
     return JsonResponse(unused_curricula_data, safe=False)
 @csrf_exempt
 @permission_classes([IsAuthenticated])
+@require_designation("acadadmin", "Dean Academic")
 def admin_view_all_course_instructor(request):
     # Fetch all records from the CourseInstructor table
     course_instructors = CourseInstructor.objects.select_related(
@@ -3406,6 +3469,7 @@ def admin_view_all_course_instructor(request):
     return JsonResponse({'course_instructors': course_instructors_data})
 @csrf_exempt
 @permission_classes([IsAuthenticated])
+@require_designation("acadadmin", "Dean Academic")
 def admin_view_all_faculties(request):
     # Fetch all faculties with their user details
     faculties = Faculty.objects.select_related('id__user').annotate(
@@ -3445,6 +3509,7 @@ def parse_academic_year(academic_year, semester_type):
 
 @csrf_exempt
 @permission_classes([IsAuthenticated])
+@require_designation("acadadmin", "Dean Academic")
 def add_course_instructor(request):
     if request.method != "POST":
         return JsonResponse({"error": "Invalid request method"}, status=405)
@@ -3544,6 +3609,7 @@ def add_course_instructor(request):
 
 @csrf_exempt
 @permission_classes([IsAuthenticated])
+@require_designation("acadadmin", "Dean Academic")
 def update_course_instructor_form(request, instructor_id):
     # Retrieve the CourseInstructor object or return 404 if not found
     course_instructor = get_object_or_404(CourseInstructor, id=instructor_id)
@@ -3661,7 +3727,7 @@ def get_superior_data(request):
 @csrf_exempt
 @api_view(['DELETE'])
 @authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAcadAdminOrDean])
 def admin_delete_course_instructor(request, instructor_id):
     """
     Delete a course instructor assignment
@@ -3733,7 +3799,7 @@ def admin_delete_course_instructor(request, instructor_id):
 @csrf_exempt
 @api_view(['DELETE'])
 @authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAcadAdminOrDean])
 def admin_delete_course(request, course_id):
     """
     Delete a course
@@ -3809,7 +3875,7 @@ def admin_delete_course(request, course_id):
 @csrf_exempt
 @api_view(['DELETE'])
 @authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAcadAdminOrDean])
 def admin_delete_programme(request, programme_id):
     """
     Delete a programme
@@ -3878,7 +3944,7 @@ def admin_delete_programme(request, programme_id):
 @csrf_exempt
 @api_view(['DELETE'])
 @authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAcadAdminOrDean])
 def admin_delete_curriculum(request, curriculum_id):
     """
     Delete a curriculum
@@ -3954,7 +4020,7 @@ def admin_delete_curriculum(request, curriculum_id):
 @csrf_exempt
 @api_view(['DELETE'])
 @authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAcadAdminOrDean])
 def admin_delete_discipline(request, discipline_id):
     """
     Delete a discipline
@@ -4025,6 +4091,7 @@ def admin_delete_discipline(request, discipline_id):
         }, status=500)
 
 
+@require_designation("acadadmin", "Dean Academic")
 @csrf_exempt
 @require_http_methods(["DELETE", "POST"])
 def delete_batch(request, batch_id):
@@ -4048,11 +4115,11 @@ def delete_batch(request, batch_id):
         
         # 🔒 STUDENT VALIDATION: Check if batch has any students
         try:
-            # Step 1: Check StudentBatchUpload table - FIRST filter by year, THEN by discipline
-            uploaded_students_this_year = StudentBatchUpload.objects.filter(
-                year=batch.year  # FIRST: Only students from this academic year (e.g., 2025)
-            ).filter(
-                branch__icontains=batch.discipline.name  # THEN: Only this discipline within that year
+            # Step 1: Check StudentBatchUpload table - Filter by year, discipline AND programme_type
+            uploaded_students_this_batch = StudentBatchUpload.objects.filter(
+                year=batch.year,  # Academic year (e.g., 2025)
+                branch__icontains=batch.discipline.name,  # Discipline (e.g., CSE, ECE)
+                programme_type__iexact=batch.name  # Programme type (B.Tech, M.Tech, PhD, etc.)
             ).count()
             
             # Step 2: Check academic_information.Student table 
@@ -4065,14 +4132,16 @@ def delete_batch(request, batch_id):
             except ImportError:
                 academic_students_this_batch = 0
             
-            # Total = students in this year's uploads + students assigned to this specific batch
-            total_students = uploaded_students_this_year + academic_students_this_batch
+            # Total = students in this specific batch (year + discipline + programme_type) + students assigned to this batch ID
+            total_students = uploaded_students_this_batch + academic_students_this_batch
             
             if total_students > 0:
                 return JsonResponse({
                     'success': False,
-                    'message': f'Cannot delete batch "{batch.name} {batch.discipline.acronym} {batch.year}". It contains {total_students} students. Please transfer or remove students first.',
+                    'message': f'Cannot delete batch "{batch.name} {batch.discipline.acronym} {batch.year}". It contains {total_students} students ({uploaded_students_this_batch} uploaded, {academic_students_this_batch} assigned). Please transfer or remove students first.',
                     'student_count': total_students,
+                    'uploaded_students': uploaded_students_this_batch,
+                    'assigned_students': academic_students_this_batch,
                     'validation_error': 'batch_has_students',
                     'batch_info': {
                         'id': batch.id,
@@ -4116,6 +4185,7 @@ def delete_batch(request, batch_id):
         }, status=500)
 
 
+@require_designation("acadadmin", "Dean Academic")
 @csrf_exempt
 @require_http_methods(["DELETE", "POST"])
 def delete_batch_invalid(request, batch_id):
@@ -4319,3 +4389,515 @@ def create_course_audit_log(course, user, action, old_data=None, new_data=None,
     )
     
     return audit_log
+
+
+# ============== THESIS API VIEWS ==============
+
+@api_view(['GET'])
+def admin_view_all_theses(request):
+    """Returns all theses with required fields as JSON data."""
+    
+    theses = Thesis.objects.all()
+
+    # Prepare data for JSON response
+    theses_data = [
+        {
+            "id": thesis.id,
+            "code": thesis.code,
+            "name": thesis.name,
+            "discipline": thesis.discipline.name,
+            "discipline_acronym": thesis.discipline.acronym,
+            "programme_type": thesis.programme_type,
+            "programme_type_display": thesis.get_programme_type_display(),
+            "credits": thesis.credit,
+            "working_thesis": thesis.working_thesis
+        }
+        for thesis in theses
+    ]
+
+    return JsonResponse({'theses': theses_data})
+
+
+@api_view(['GET'])
+def admin_view_a_thesis(request, thesis_id):
+    """View to handle the details of a Thesis as an API"""
+    
+    # Fetch the thesis based on the thesis_id
+    thesis = get_object_or_404(Thesis, Q(id=thesis_id))
+    thesis_serializer = ThesisSerializer(thesis)
+    
+    return Response(thesis_serializer.data)
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def add_thesis(request):
+    """Add a new thesis"""
+    
+    try:
+        data = request.data
+        
+        # Validate required fields
+        required_fields = ['code', 'name', 'credit', 'discipline', 'programme_type']
+        for field in required_fields:
+            if field not in data:
+                return JsonResponse({'error': f'{field} is required'}, status=400)
+        
+        # Get discipline
+        discipline = get_object_or_404(Discipline, id=data['discipline'])
+        
+        # Create thesis
+        thesis = Thesis.objects.create(
+            code=data['code'],
+            name=data['name'],
+            credit=data['credit'],
+            discipline=discipline,
+            programme_type=data['programme_type'],
+            working_thesis=data.get('working_thesis', True)
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Thesis added successfully',
+            'thesis_id': thesis.id
+        }, status=201)
+        
+    except IntegrityError:
+        return JsonResponse({
+            'error': 'A thesis with this code already exists for this discipline'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+
+
+@api_view(['DELETE'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def admin_delete_thesis(request, thesis_id):
+    """Delete a thesis"""
+    
+    try:
+        thesis = get_object_or_404(Thesis, id=thesis_id)
+        thesis_code = thesis.code
+        thesis_name = thesis.name
+        
+        thesis.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Thesis {thesis_code} - {thesis_name} deleted successfully'
+        }, status=200)
+        
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+
+
+# ------------ Progress Seminar Views ---------------#
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def admin_view_all_progress_seminars(request):
+    """Returns all progress seminars with required fields as JSON data."""
+    
+    progress_seminars = ProgressSeminar.objects.all()
+
+    progress_seminars_data = [
+        {
+            "id": ps.id,
+            "code": ps.code,
+            "name": ps.name,
+            "discipline": ps.discipline.name,
+            "discipline_acronym": ps.discipline.acronym,
+            "programme_type": ps.programme_type,
+            "programme_type_display": ps.get_programme_type_display(),
+            "credits": ps.credit,
+            "working_progress_seminar": ps.working_progress_seminar
+        }
+        for ps in progress_seminars
+    ]
+
+    return JsonResponse({'progress_seminars': progress_seminars_data})
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def add_progress_seminar(request):
+    """Add a new progress seminar"""
+    
+    try:
+        data = request.data
+        
+        required_fields = ['code', 'name', 'credit', 'discipline', 'programme_type']
+        for field in required_fields:
+            if field not in data:
+                return JsonResponse({'error': f'{field} is required'}, status=400)
+        
+        discipline = get_object_or_404(Discipline, id=data['discipline'])
+        
+        progress_seminar = ProgressSeminar.objects.create(
+            code=data['code'],
+            name=data['name'],
+            credit=data['credit'],
+            discipline=discipline,
+            programme_type=data['programme_type'],
+            working_progress_seminar=data.get('working_progress_seminar', True)
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Progress Seminar added successfully',
+            'progress_seminar_id': progress_seminar.id
+        }, status=201)
+        
+    except IntegrityError:
+        return JsonResponse({
+            'error': 'A progress seminar with this code already exists for this discipline'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+
+
+@api_view(['DELETE'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def admin_delete_progress_seminar(request, progress_seminar_id):
+    """Delete a progress seminar"""
+    
+    try:
+        ps = get_object_or_404(ProgressSeminar, id=progress_seminar_id)
+        ps_code = ps.code
+        ps_name = ps.name
+        
+        ps.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Progress Seminar {ps_code} - {ps_name} deleted successfully'
+        }, status=200)
+        
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+
+
+@csrf_exempt
+@api_view(['GET', 'PUT'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def update_thesis(request, thesis_id):
+    """Get thesis details for editing (GET) or update an existing thesis (PUT)."""
+    thesis = get_object_or_404(Thesis, id=thesis_id)
+
+    if request.method == 'GET':
+        data = {
+            'id': thesis.id,
+            'code': thesis.code,
+            'name': thesis.name,
+            'credit': thesis.credit,
+            'discipline': thesis.discipline.id,
+            'discipline_name': thesis.discipline.name,
+            'discipline_acronym': thesis.discipline.acronym,
+            'programme_type': thesis.programme_type,
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
+    elif request.method == 'PUT':
+        try:
+            data = json.loads(request.body)
+            discipline = get_object_or_404(Discipline, id=data.get('discipline'))
+
+            thesis.code = data.get('code', thesis.code)
+            thesis.name = data.get('name', thesis.name)
+            thesis.credit = data.get('credit', thesis.credit)
+            thesis.discipline = discipline
+            thesis.programme_type = data.get('programme_type', thesis.programme_type)
+            thesis.save()
+
+            return JsonResponse({
+                'success': True,
+                'message': f'Thesis {thesis.code} - {thesis.name} updated successfully',
+                'thesis_id': thesis.id,
+            }, status=200)
+
+        except IntegrityError:
+            return JsonResponse({
+                'error': 'A thesis with this code already exists for this discipline'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'error': str(e)
+            }, status=500)
+
+
+@csrf_exempt
+@api_view(['GET', 'PUT'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def update_progress_seminar(request, progress_seminar_id):
+    """Get progress seminar details for editing (GET) or update an existing progress seminar (PUT)."""
+    ps = get_object_or_404(ProgressSeminar, id=progress_seminar_id)
+
+    if request.method == 'GET':
+        data = {
+            'id': ps.id,
+            'code': ps.code,
+            'name': ps.name,
+            'credit': ps.credit,
+            'discipline': ps.discipline.id,
+            'discipline_name': ps.discipline.name,
+            'discipline_acronym': ps.discipline.acronym,
+            'programme_type': ps.programme_type,
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
+    elif request.method == 'PUT':
+        try:
+            data = json.loads(request.body)
+            discipline = get_object_or_404(Discipline, id=data.get('discipline'))
+
+            ps.code = data.get('code', ps.code)
+            ps.name = data.get('name', ps.name)
+            ps.credit = data.get('credit', ps.credit)
+            ps.discipline = discipline
+            ps.programme_type = data.get('programme_type', ps.programme_type)
+            ps.save()
+
+            return JsonResponse({
+                'success': True,
+                'message': f'Progress Seminar {ps.code} - {ps.name} updated successfully',
+                'progress_seminar_id': ps.id,
+            }, status=200)
+
+        except IntegrityError:
+            return JsonResponse({
+                'error': 'A progress seminar with this code already exists for this discipline'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'error': str(e)
+            }, status=500)
+
+
+@csrf_exempt
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def add_thesis_slot(request):
+    """Add a new thesis slot to a semester."""
+    try:
+        data = json.loads(request.body)
+
+        thesis_slot = ThesisSlot.objects.create(
+            semester_id=data['semester'],
+            name=data['name'],
+            thesis_slot_info=data.get('thesis_slot_info', ''),
+            duration=data.get('duration', 1),
+            min_registration_limit=data.get('min_registration_limit', 0),
+            max_registration_limit=data.get('max_registration_limit', 1000)
+        )
+
+        if 'theses' in data and data['theses']:
+            thesis_slot.theses.set(data['theses'])
+
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Thesis slot created successfully',
+            'id': thesis_slot.id
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
+
+
+@csrf_exempt
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def add_progress_seminar_slot(request):
+    """Add a new progress seminar slot to a semester."""
+    try:
+        data = json.loads(request.body)
+
+        ps_slot = ProgressSeminarSlot.objects.create(
+            semester_id=data['semester'],
+            name=data['name'],
+            progress_seminar_slot_info=data.get('progress_seminar_slot_info', ''),
+            duration=data.get('duration', 1),
+            min_registration_limit=data.get('min_registration_limit', 0),
+            max_registration_limit=data.get('max_registration_limit', 1000)
+        )
+
+        if 'progress_seminars' in data and data['progress_seminars']:
+            ps_slot.progress_seminars.set(data['progress_seminars'])
+
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Progress seminar slot created successfully',
+            'id': ps_slot.id
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
+
+
+def admin_view_a_thesis_slot(request, thesis_slot_id):
+    """API to view a thesis slot"""
+    thesis_slot = get_object_or_404(ThesisSlot, id=thesis_slot_id)
+
+    return JsonResponse({
+        'thesis_slot': {
+            'id': thesis_slot.id,
+            'name': thesis_slot.name,
+            'thesis_slot_info': thesis_slot.thesis_slot_info,
+            'duration': thesis_slot.duration,
+            'min_registration_limit': thesis_slot.min_registration_limit,
+            'max_registration_limit': thesis_slot.max_registration_limit,
+            'theses': [
+                {
+                    'id': t.id,
+                    'code': t.code,
+                    'name': t.name,
+                    'credit': t.credit,
+                } for t in thesis_slot.theses.all()
+            ],
+            'curriculum': {
+                'id': thesis_slot.semester.curriculum.id,
+                'name': thesis_slot.semester.curriculum.name,
+                'version': thesis_slot.semester.curriculum.version,
+                'semester_no': thesis_slot.semester.semester_no,
+            }
+        },
+    })
+
+
+def admin_view_a_progress_seminar_slot(request, ps_slot_id):
+    """API to view a progress seminar slot"""
+    ps_slot = get_object_or_404(ProgressSeminarSlot, id=ps_slot_id)
+
+    return JsonResponse({
+        'progress_seminar_slot': {
+            'id': ps_slot.id,
+            'name': ps_slot.name,
+            'progress_seminar_slot_info': ps_slot.progress_seminar_slot_info,
+            'duration': ps_slot.duration,
+            'min_registration_limit': ps_slot.min_registration_limit,
+            'max_registration_limit': ps_slot.max_registration_limit,
+            'progress_seminars': [
+                {
+                    'id': ps.id,
+                    'code': ps.code,
+                    'name': ps.name,
+                    'credit': ps.credit,
+                } for ps in ps_slot.progress_seminars.all()
+            ],
+            'curriculum': {
+                'id': ps_slot.semester.curriculum.id,
+                'name': ps_slot.semester.curriculum.name,
+                'version': ps_slot.semester.curriculum.version,
+                'semester_no': ps_slot.semester.semester_no,
+            }
+        },
+    })
+
+
+def delete_thesis_slot(request, thesis_slot_id):
+    """Delete a thesis slot"""
+    thesis_slot = get_object_or_404(ThesisSlot, id=thesis_slot_id)
+    thesis_slot.delete()
+    return JsonResponse({'status': 'success', 'message': 'Thesis slot deleted successfully'})
+
+
+def delete_progress_seminar_slot(request, ps_slot_id):
+    """Delete a progress seminar slot"""
+    ps_slot = get_object_or_404(ProgressSeminarSlot, id=ps_slot_id)
+    ps_slot.delete()
+    return JsonResponse({'status': 'success', 'message': 'Progress seminar slot deleted successfully'})
+
+
+def edit_thesis_slot_form(request, thesis_slot_id):
+    """GET returns existing thesis slot data; PUT updates it."""
+    thesis_slot = get_object_or_404(ThesisSlot, id=thesis_slot_id)
+    curriculum_id = thesis_slot.semester.curriculum.id
+
+    if request.method == 'GET':
+        data = {
+            'id': thesis_slot.id,
+            'semester': thesis_slot.semester.id,
+            'name': thesis_slot.name,
+            'thesis_slot_info': thesis_slot.thesis_slot_info,
+            'theses': [t.id for t in thesis_slot.theses.all()],
+            'duration': thesis_slot.duration,
+            'min_registration_limit': thesis_slot.min_registration_limit,
+            'max_registration_limit': thesis_slot.max_registration_limit,
+            'curriculum_id': curriculum_id,
+        }
+        return JsonResponse({'status': 'success', 'thesis_slot': data})
+
+    elif request.method == 'PUT':
+        try:
+            data = json.loads(request.body)
+            form = ThesisSlotForm(data, instance=thesis_slot)
+            if form.is_valid():
+                form.save()
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Thesis slot updated successfully',
+                })
+            else:
+                return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+
+
+def edit_progress_seminar_slot_form(request, ps_slot_id):
+    """GET returns existing progress seminar slot data; PUT updates it."""
+    ps_slot = get_object_or_404(ProgressSeminarSlot, id=ps_slot_id)
+    curriculum_id = ps_slot.semester.curriculum.id
+
+    if request.method == 'GET':
+        data = {
+            'id': ps_slot.id,
+            'semester': ps_slot.semester.id,
+            'name': ps_slot.name,
+            'progress_seminar_slot_info': ps_slot.progress_seminar_slot_info,
+            'progress_seminars': [ps.id for ps in ps_slot.progress_seminars.all()],
+            'duration': ps_slot.duration,
+            'min_registration_limit': ps_slot.min_registration_limit,
+            'max_registration_limit': ps_slot.max_registration_limit,
+            'curriculum_id': curriculum_id,
+        }
+        return JsonResponse({'status': 'success', 'progress_seminar_slot': data})
+
+    elif request.method == 'PUT':
+        try:
+            data = json.loads(request.body)
+            form = ProgressSeminarSlotForm(data, instance=ps_slot)
+            if form.is_valid():
+                form.save()
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Progress seminar slot updated successfully',
+                })
+            else:
+                return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)

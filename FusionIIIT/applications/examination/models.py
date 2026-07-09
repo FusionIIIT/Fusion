@@ -53,6 +53,10 @@ class ResultAnnouncement(models.Model):
         blank=True,
     )
     announced = models.BooleanField(default=False)
+    # True once the result is published via per-student selection. When True,
+    # only students listed in PublishedResultStudent see their result; when
+    # False the announcement is published for the whole batch (legacy).
+    per_student_selection = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -65,3 +69,27 @@ class ResultAnnouncement(models.Model):
         else:
             sem_label = f"Sem {self.semester}"
         return f"{self.batch.name} - {sem_label} - {status}"
+
+
+class PublishedResultStudent(models.Model):
+    """Per-student selection for a result announcement.
+
+    When the academic admin publishes a result they can pick exactly which
+    students of the batch are included. A row here means "this student's result
+    for this announcement is published". If an announcement has no rows at all,
+    it is treated as published for the whole batch (legacy behaviour).
+    """
+
+    announcement = models.ForeignKey(
+        ResultAnnouncement,
+        on_delete=models.CASCADE,
+        related_name="published_students",
+    )
+    roll_no = models.CharField(max_length=20)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [("announcement", "roll_no")]
+
+    def __str__(self):
+        return f"{self.announcement_id} - {self.roll_no}"

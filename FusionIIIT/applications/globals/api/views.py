@@ -150,7 +150,22 @@ def profile(request, username=None):
     
     if profile['user_type'] == 'student':
         student = user.extrainfo.student
-        std_sem = student.curr_semester_no
+        std_sem = Student.objects.select_related('batch_id__curriculum__programme').get(id=student.id).curr_semester_no
+        
+        # Get programme_type from batch -> curriculum -> programme -> category 
+        programme_type = None
+        try:
+            student_obj = Student.objects.select_related(
+                'batch_id__curriculum__programme'
+            ).get(id=student.id)
+            
+            if (student_obj.batch_id and 
+                student_obj.batch_id.curriculum and 
+                student_obj.batch_id.curriculum.programme):
+                programme_type = student_obj.batch_id.curriculum.programme.category
+        except (Student.DoesNotExist, AttributeError):
+            programme_type = None
+        
         skills = list(
         Has.objects.filter(unique_id_id=student)
         .select_related("skill_id")
@@ -171,6 +186,7 @@ def profile(request, username=None):
         resp = {
             'profile' : profile,
             'semester_no' : std_sem,
+            'programme_type' : programme_type,
             'skills' : formatted_skills,
             'education' : education,
             'course' : course,

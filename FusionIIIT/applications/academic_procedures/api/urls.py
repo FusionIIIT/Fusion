@@ -132,4 +132,91 @@ urlpatterns = [
 
     # pg TA
     url(r'^ta/stipends/$',             views.ta_stipends),
+    
+    # ========================================================================
+    # PhD-SPECIFIC URLS (Added for PhD student management)
+    # ========================================================================
+
+    # PhD Thesis Registration endpoints
+
+    # Student endpoints
+    url(r'^stu/thesis/$', views.student_thesis_api, name='student-thesis'),
+    url(r'^stu/thesis/download/$', views.student_download_pdf_api, name='student-thesis-download'),
+
+    # Faculty list for dropdowns
+    url(r'^faculty/$', views.faculty_list_api, name='faculty-list'),
+
+    # Supervisor endpoints
+    url(r'^supervisor/dashboard/$', views.supervisor_thesis_topic_dashboard, name='supervisor-dashboard'),
+    url(r'^supervisor/thesis/(?P<pk>\d+)/review/$', views.supervisor_review_api, name='supervisor-thesis-review'),
+
+    # HOD endpoints
+    url(r'^hod/dashboard/$', views.hod_dashboard, name='hod-dashboard'),
+    url(r'^hod/thesis/(?P<pk>\d+)/review/$', views.hod_review_api, name='hod-thesis-review'),
+
+    # Dean endpoints
+    url(r'^dean/dashboard/$', views.dean_dashboard, name='dean-dashboard'),
+    url(r'^dean/thesis/(?P<pk>\d+)/review/$', views.dean_review_api, name='dean-thesis-review'),
+    url(r'^dean/thesis/(?P<pk>\d+)/generate/$', views.dean_generate_pdf_api, name='dean-thesis-generate'),
+
+    # PhD Seminar endpoints
+
+    # Student
+    url(r'^seminar-reports/$', views.list_reports),
+    url(r'^seminar-reports/create/(?P<thesis_pk>\d+)/$', views.create_report),
+    url(r'^seminar-reports/(?P<pk>\d+)/$', views.detail_report),
+
+    # RPC
+    url(r'^seminar-reports/list/$', views.rpc_seminar_list),
+    url(r'^seminar-reports/(?P<pk>\d+)/rpc-detail/$', views.rpc_detail),
+    url(r'^seminar-reports/(?P<pk>\d+)/rpc-consent/$', views.rpc_consent),
+    url(r'^seminar-reports/(?P<pk>\d+)/rpc-finalize/$', views.rpc_finalize),
+
+    # ========================================================================
+    # Thesis Slot Semester-Level Registration (Enrollment)
+    # ========================================================================
+    # Student
+    url(r'^stu/thesis-enrollment/$', views.student_thesis_enrollment_api, name='student-thesis-enrollment'),
+    # Acad Admin
+    url(r'^acadadmin/thesis-enrollments/$', views.admin_thesis_enrollment_list, name='admin-thesis-enrollment-list'),
+    url(r'^acadadmin/thesis-enrollments/verify/$', views.admin_verify_enrollments, name='admin-verify-enrollments'),
+    url(r'^acadadmin/thesis-enrollments/reject/$', views.admin_reject_enrollments, name='admin-reject-enrollments'),
+
+    # PhD Thesis Evaluation (block-based S/X grades)
+    # Supervisor — all blocks for a student are graded and submitted together
+    url(r'^supervisor/thesis-grades/$',          views.supervisor_thesis_grades,       name='supervisor-thesis-grades'),
+    # All blocks comprehensive upload
+    url(r'^supervisor/thesis-grades-all-template/$', views.supervisor_download_all_thesis_grades_template, name='supervisor-thesis-grades-all-template'),
+    url(r'^supervisor/thesis-grades-all/upload/$', views.supervisor_upload_all_thesis_grades, name='supervisor-thesis-grades-all-upload'),
+    url(r'^supervisor/thesis-grades-all/bulk-submit/$', views.supervisor_bulk_submit_all_thesis_grades, name='supervisor-thesis-grades-all-bulk-submit'),
+    # Acad Admin
+    url(r'^acadadmin/thesis-grades/$',           views.admin_thesis_grades_list,       name='admin-thesis-grades-list'),
+    url(r'^acadadmin/thesis-grades/verify/$',    views.admin_verify_thesis_grades,     name='admin-thesis-grades-verify'),
+    url(r'^acadadmin/thesis-grades/announce/$',  views.admin_announce_thesis_grades,   name='admin-thesis-grades-announce'),
+
+    # PhD Thesis Submission
+
+    # Student
+    url(r'^thesis/submit/$', views.thesis_submit, name='thesis_submit'),
+
+    # Supervisor
+    url(r'^thesis/supervisor-dashboard/$', views.supervisor_dashboard, name='supervisor_dashboard'),
+    url(r'^thesis/submission-detail/(?P<submission_id>\d+)/$', views.supervisor_submission_detail, name='supervisor_submission_detail'),
+    url(r'^thesis/supervisor-assign/$', views.supervisor_assign, name='supervisor_assign'),
+
+    # Dean (panel approval + invitation dispatch)
+    url(r'^thesis/dean-dashboard/$', views.dean_panel_dashboard, name='dean_panel_dashboard'),
+    url(r'^thesis/dean-panel-approve/$', views.dean_panel_approve, name='dean_panel_approve'),
+    url(r'^thesis/dean-send-invitations/$', views.dean_send_invitations, name='dean_send_invitations'),
+
+    # Director
+    url(r'^thesis/director-dashboard/$', views.director_dashboard, name='director_dashboard'),
+    url(r'^thesis/director-approve/$', views.director_approve, name='director_approve'),
+
+    # Professor Invitation (External reviewers)
+    url(r'^invitation/(?P<token>[0-9a-f-]+)/(?P<action>accept|reject)/$',
+        views.invitation_action, name='invitation_action'),
+
+    # Review Form (External reviewers)
+    url(r'^review/(?P<token>[0-9a-f-]+)/$', views.review_detail, name='review_detail'),
 ]

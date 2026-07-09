@@ -698,7 +698,9 @@ def generate_xlsheet_api(request):
                 if programme_type.upper() == 'UG':
                     sql += " AND s.programme IN ('B.Tech', 'B.Des')"
                 elif programme_type.upper() == 'PG':
-                    sql += " AND s.programme IN ('M.Tech', 'M.Des', 'PhD')"
+                    sql += " AND s.programme IN ('M.Tech', 'M.Des')"
+                elif programme_type.upper() == 'PHD':
+                    sql += " AND s.programme = 'PhD'"
                 else:
                     sql += " AND s.programme = %s"
                     params.append(programme_type)

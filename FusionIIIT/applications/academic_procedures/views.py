@@ -13,6 +13,7 @@ from django.db import transaction
 from django.contrib import messages
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
+from applications.globals.access import require_designation
 from django.contrib.auth.models import User
 from django.db.models import Max,Value,IntegerField,CharField,F,Sum
 from django.http import HttpResponse, HttpResponseRedirect
@@ -119,7 +120,7 @@ def academic_procedures(request):
 #
 #
 #
-@login_required(login_url='/accounts/login')
+@require_designation("Professor", "Associate Professor", "Assistant Professor")
 def academic_procedures_faculty(request):
 
     current_user = get_object_or_404(User, username=request.user.username)
@@ -273,7 +274,7 @@ def account(request):
                         })
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("student")
 def academic_procedures_student(request):
 
     current_user = get_object_or_404(User, username=request.user.username)
@@ -659,7 +660,7 @@ def academic_procedures_student(request):
         return HttpResponse('user not found')
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("student", "Professor", "Associate Professor", "Assistant Professor", "acadadmin", "Dean Academic")
 def dues_pdf(request):
     template = get_template('academic_procedures/dues_pdf.html')
     current_user = get_object_or_404(User, username=request.user.username)
@@ -687,7 +688,7 @@ def dues_pdf(request):
         return HttpResponse("PDF could not be generated")
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("Professor", "Associate Professor", "Assistant Professor")
 def facultyData(request):
 	current_value = request.POST['current_value']
 	try:
@@ -715,7 +716,6 @@ def facultyData(request):
 
 
 
-@login_required(login_url='/accounts/login')
 def get_course_to_show_pg(initial_courses, final_register):
     '''
         This function fetches the PG courses from the database and store them into list x.
@@ -739,7 +739,6 @@ def get_course_to_show_pg(initial_courses, final_register):
 
 
 
-@login_required(login_url='/accounts/login')
 def get_pg_course(usersem, specialization):
     '''
         This function fetches the PG Spcialization courses from the database and store them into list result.
@@ -771,7 +770,6 @@ def get_pg_course(usersem, specialization):
 
 
 
-@login_required(login_url='/accounts/login')
 def get_add_course(branch, final):
     '''
         This function shows the courses that were added after pre-registration.
@@ -843,7 +841,7 @@ def apply_branch_change(request):
     return context
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("student")
 def branch_change_request(request):
     '''
         This function is used to apply the branch change request.
@@ -875,7 +873,7 @@ def branch_change_request(request):
 
 
 
-@login_required(login_url='/acounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def approve_branch_change(request):
     '''
         This function is used to approve the branch change requests from acad admin's frame.
@@ -956,7 +954,6 @@ def approve_branch_change(request):
         return HttpResponseRedirect('/academic-procedures/main')
 
 # Function returning Branch , Banch data which was required many times
-@login_required(login_url='/accounts/login')
 def get_batch_query_detail(month, year):
     '''
         This function is used to get the batch's detail simply return branch which is required often.
@@ -1026,7 +1023,7 @@ def dropcourseadmin(request):
     response_data = {}
     return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def gen_course_list(request):
     if(request.POST):
         try:
@@ -1208,7 +1205,7 @@ def acad_add_course(request):
 
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def acad_branch_change(request):
     '''
         This function is used to approve the branch changes requested by the students.
@@ -1422,11 +1419,9 @@ def phd_details(request):
 #
 #
 #
-@login_required(login_url='/accounts/login')
 def get_student_register(id):
     return Register.objects.all().select_related('curr_id','student_id','curr_id__course_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id = id)
 
-@login_required(login_url='/accounts/login')
 def get_pre_registration_eligibility(current_date, user_sem, year):
     '''
         This function is used to extract the elgibility of pre-registration for a given semester
@@ -1461,7 +1456,6 @@ def get_pre_registration_eligibility(current_date, user_sem, year):
     except Exception as e:
         return False, None
 
-@login_required(login_url='/accounts/login')
 def get_final_registration_eligibility(current_date):
     try:
         frd = Calendar.objects.all().filter(description="Physical Reporting at the Institute").first()
@@ -1474,7 +1468,6 @@ def get_final_registration_eligibility(current_date):
     except Exception as e:
         return False
 
-@login_required(login_url='/accounts/login')
 def get_add_or_drop_course_date_eligibility(current_date):
     try:
         add_drop_course_date = Calendar.objects.all().filter(description="Last Date for Adding/Dropping of course").first()
@@ -1487,7 +1480,6 @@ def get_add_or_drop_course_date_eligibility(current_date):
     except Exception as e:
         return False
 
-@login_required(login_url='/accounts/login')
 def get_course_verification_date_eligibilty(current_date):
     try:
         course_verification_date = Calendar.objects.all().filter(description="course verification date").first()
@@ -1500,7 +1492,6 @@ def get_course_verification_date_eligibilty(current_date):
     except Exception as e:
         return False
     
-@login_required(login_url='/accounts/login')
 def get_swayam_registration_eligibility(current_date, user_sem, year):
     try:
         swayam_registration_date = Calendar.objects.all().filter(description=f"Swayam Registration {user_sem} {year}").first()
@@ -1513,7 +1504,6 @@ def get_swayam_registration_eligibility(current_date, user_sem, year):
     except Exception as e:
         return False
     
-@login_required(login_url='/accounts/login')
 def get_drop_course_date_eligibility(current_date, user_sem, year):
     try:
         drop_course_date = Calendar.objects.all().filter(description=f"Drop course {user_sem} {year}").first()
@@ -1526,11 +1516,9 @@ def get_drop_course_date_eligibility(current_date, user_sem, year):
     except Exception as e:
         return False
 
-@login_required(login_url='/accounts/login')
 def get_user_branch(user_details):
     return user_details.department.name
 
-@login_required(login_url='/accounts/login')
 def get_acad_year(user_sem, year):
         if user_sem%2 == 1:
             acad_year = str(year) + "-" + str(year+1)
@@ -1538,7 +1526,7 @@ def get_acad_year(user_sem, year):
             acad_year = str(year-1) + "-" + str(year)
         return acad_year
 
-@login_required(login_url='/accounts/login')
+@require_designation("student")
 @transaction.atomic
 def pre_registration(request):
     if request.method == 'POST':
@@ -1606,7 +1594,7 @@ def pre_registration(request):
     else:
         return HttpResponseRedirect('/academic-procedures/main')
 
-@login_required(login_url='/accounts/login')
+@require_designation("student")
 @transaction.atomic
 def auto_pre_registration(request):
     if request.method == 'POST':
@@ -1679,7 +1667,6 @@ def auto_pre_registration(request):
     else:
         return HttpResponseRedirect('/academic-procedures/main')
     
-@login_required(login_url='/accounts/login')
 def get_student_registrtion_check(obj, sem):
     return StudentRegistrationChecks.objects.all().filter(student_id = obj, semester_id = sem).first()
 
@@ -1816,7 +1803,7 @@ def allot_courses(request):
         # return HttpResponse("Fail")
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def allot_courses_after_add_and_drop(request):
     if user_check(request):
         return HttpResponseRedirect('/academic-procedures/main')
@@ -1919,12 +1906,11 @@ def user_check(request):
     else:
         return False
 
-@login_required(login_url='/accounts/login')
 def get_cpi(id):
     obj =  Student.objects.select_related('id','id__user','id__department').get(id = id)
     return obj.cpi
 
-@login_required(login_url='/accounts/login')
+@require_designation("student")
 def register(request):
     if request.method == 'POST':
         try:
@@ -1966,7 +1952,7 @@ def register(request):
         return HttpResponseRedirect('/academic-procedures/main')
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("student")
 def add_courses(request):
     """
     This function is used to add courses for currernt semester
@@ -2047,7 +2033,7 @@ def drop_course(request):
     else:
         return HttpResponseRedirect('/academic-procedures/main')
 
-@login_required(login_url='/accounts/login')
+@require_designation("student")
 def replace_courses(request):
     """
     This function is used to replace elective courses which have been registered
@@ -2097,7 +2083,7 @@ def replace_courses(request):
 
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("Professor", "Associate Professor", "Assistant Professor")
 def add_thesis(request):
     if request.method == 'POST':
         try:
@@ -2187,7 +2173,6 @@ def add_thesis(request):
     return HttpResponseRedirect('/academic-procedures/main/')
 
 
-@login_required(login_url='/accounts/login')
 def get_final_registration_choices(branch_courses,batch):
     course_option = []
     unavailable_courses = []
@@ -2202,7 +2187,6 @@ def get_final_registration_choices(branch_courses,batch):
         course_option.append((courseslot, lis))
     return course_option, unavailable_courses
 
-@login_required(login_url='/accounts/login')
 def get_add_course_options(branch_courses, current_register, batch):
 
     course_option = []
@@ -2223,7 +2207,6 @@ def get_add_course_options(branch_courses, current_register, batch):
             course_option.append((courseslot, lis))
     return course_option
 
-@login_required(login_url='/accounts/login')
 def get_drop_course_options(current_register):
     courses = []
     for item in current_register:
@@ -2231,7 +2214,6 @@ def get_drop_course_options(current_register):
             courses.append(item[1])
     return courses
 
-@login_required(login_url='/accounts/login')
 def get_replace_course_options( current_register, batch):
     replace_options = []
 
@@ -2253,7 +2235,6 @@ def get_replace_course_options( current_register, batch):
 
 
 
-@login_required(login_url='/accounts/login')
 def get_user_semester(roll_no, ug_flag, masters_flag, phd_flag):
     roll = str(roll_no)
     now = demo_date
@@ -2280,7 +2261,6 @@ def get_user_semester(roll_no, ug_flag, masters_flag, phd_flag):
 
 
 
-@login_required(login_url='/accounts/login')
 def get_branch_courses(roll_no, user_sem, branch):
     roll = str(roll_no)
     try:
@@ -2300,7 +2280,6 @@ def get_branch_courses(roll_no, user_sem, branch):
     return course_list
 
 
-@login_required(login_url='/accounts/login')
 def get_sem_courses(sem_id, batch):
     courses = []
     course_slots = CourseSlot.objects.all().filter(semester_id = sem_id)
@@ -2309,7 +2288,6 @@ def get_sem_courses(sem_id, batch):
     return courses
 
 
-@login_required(login_url='/accounts/login')
 def get_currently_registered_courses(id, user_sem):
     obj = Register.objects.all().select_related('curr_id','student_id','curr_id__course_id','student_id__id','student_id__id__user','student_id__id__department').filter(student_id=id, semester=user_sem)
     ans = []
@@ -2318,7 +2296,6 @@ def get_currently_registered_courses(id, user_sem):
         ans.append(course)
     return ans
 
-@login_required(login_url='/accounts/login')
 def get_currently_registered_course(id, sem_id, courseregobj=False):
     if (type(sem_id) == int):
         obj = course_registration.objects.all().filter(student_id = id, semester_id__semester_no=sem_id)
@@ -2333,7 +2310,6 @@ def get_currently_registered_course(id, sem_id, courseregobj=False):
     return courses
 
 
-@login_required(login_url='/accounts/login')
 def get_current_credits(obj):
     credits = 0
     for i in obj:
@@ -2342,7 +2318,6 @@ def get_current_credits(obj):
 
 
 
-@login_required(login_url='/accounts/login')
 def get_faculty_list():
     f1 = HoldsDesignation.objects.select_related().filter(designation=Designation.objects.get(name = "Assistant Professor"))
     f2 = HoldsDesignation.objects.select_related().filter(designation=Designation.objects.get(name = "Professor"))
@@ -2355,7 +2330,6 @@ def get_faculty_list():
     return faculty_list
 
 
-@login_required(login_url='/accounts/login')
 def get_thesis_flag(student):
     obj = ThesisTopicProcess.objects.all().select_related().filter(student_id = student)
     if(obj):
@@ -2365,7 +2339,7 @@ def get_thesis_flag(student):
 
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def acad_person(request):
 
     current_user = get_object_or_404(User, username=request.user.username)
@@ -2453,7 +2427,6 @@ def acad_person(request):
         return HttpResponse('user not found')
 
 
-@login_required(login_url='/accounts/login')
 def acad_proced_global_context():
     year = demo_date.year
     month = demo_date.month
@@ -2533,7 +2506,6 @@ def acad_proced_global_context():
 
 
 
-@login_required(login_url='/accounts/login')
 def get_batch_all():
     result_year = []
     if demo_date.month >=7:
@@ -2543,7 +2515,7 @@ def get_batch_all():
         result_year = [demo_date.year-1,demo_date.year-2,  demo_date.year-3,  demo_date.year-4]
     return result_year
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def announce_results(request):
     i = int(request.POST.get('id'))
     year = get_batch_all()
@@ -2570,7 +2542,6 @@ def announce_results(request):
 
 
 
-@login_required(login_url='/accounts/login')
 def get_batch_grade_verification_data(list):
 
     semester_marks = []
@@ -2705,7 +2676,6 @@ def get_batch_grade_verification_data(list):
     return batch_grade_data_set
 
 
-@login_required(login_url='/accounts/login')
 def get_batch_branch_data(result_year):
 
     batches = []
@@ -2838,14 +2808,14 @@ def course_list(request):
  
         return HttpResponse(json.dumps({'html': html}),content_type="application/json")
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def process_verification_request(request):
     if request.is_ajax():
         return verify_registration(request)
     return JsonResponse({'status': 'Failed'}, status=400)
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def auto_process_verification_request(request):
     if request.is_ajax():
         return auto_verify_registration(request)
@@ -2964,7 +2934,6 @@ def auto_verify_registration(request):
             academics_module_notif(academicadmin, student_id.id.user, 'Registration Declined - '+reject_reason)
             return JsonResponse({'status': 'success', 'message': 'Successfully Rejected'})
 
-@login_required(login_url='/accounts/login')
 def get_registration_courses(courses):
     x = [[]]
     
@@ -2987,7 +2956,7 @@ def get_registration_courses(courses):
     return x
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def teaching_credit_register(request) :
     if request.method == 'POST':
         try:
@@ -3025,7 +2994,7 @@ def teaching_credit_register(request) :
 
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("Professor", "Associate Professor", "Assistant Professor")
 def course_marks_data(request):
     try:
         course_id = request.POST.get('course_id')
@@ -3096,7 +3065,7 @@ def course_marks_data(request):
 
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("Professor", "Associate Professor", "Assistant Professor")
 def submit_marks(request):
     try:
         print(request.POST)
@@ -3188,7 +3157,7 @@ def submit_marks(request):
 
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def verify_course_marks_data(request):
     try:
         curriculum_id = request.POST.get('curriculum_id')
@@ -3226,7 +3195,7 @@ verified_marks_students_curr = None
 ##########GLOBAL VARIABLE###############
 ########################################
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def verify_marks(request):
     try:
         global verified_marks_students
@@ -3268,7 +3237,6 @@ def verify_marks(request):
 
 
 
-@login_required(login_url='/accounts/login')
 def render_to_pdf(template_src, context_dict):
     template = get_template(template_src)
     html  = template.render(context_dict)
@@ -3278,7 +3246,7 @@ def render_to_pdf(template_src, context_dict):
         return HttpResponse(result.getvalue(), content_type='application/pdf')
     return None
 
-@login_required(login_url='/accounts/login')
+@require_designation("Professor", "Associate Professor", "Assistant Professor", "acadadmin", "Dean Academic")
 def generate_grade_pdf(request):
     instructor = Curriculum_Instructor.objects.all().select_related('curriculum_id','instructor_id','curriculum_id__course_id','instructor_id__department','instructor_id__user').filter(curriculum_id = verified_marks_students_curr).first()
     context = {'verified_marks_students' : verified_marks_students,
@@ -3292,7 +3260,7 @@ def generate_grade_pdf(request):
     return HttpResponse("PDF could not be generated")
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("Professor", "Associate Professor", "Assistant Professor", "acadadmin", "Dean Academic")
 def generate_result_pdf(request):
     batch = request.POST.get('batch')
     branch = request.POST.get('branch')
@@ -3367,7 +3335,7 @@ def generate_result_pdf(request):
     return HttpResponse("PDF could not be generated")
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("Professor", "Associate Professor", "Assistant Professor", "acadadmin", "Dean Academic")
 def generate_grade_sheet_pdf(request):
     batch = request.POST.get('batch')
     branch = request.POST.get('branch')
@@ -3475,7 +3443,6 @@ def generate_course_registration_receipt(request):
     except Exception as e:
         return JsonResponse({'error': 'Unable to retrieve data', 'details': str(e)})
 
-@login_required(login_url='/accounts/login')
 def get_spi(course_list,grade_list):
     spi = 0.0
     credits = 0
@@ -3553,7 +3520,7 @@ def get_spi(course_list,grade_list):
 
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("Professor", "Associate Professor", "Assistant Professor")
 def manual_grade_submission(request):
     if request.method == 'POST' and request.FILES:
 
@@ -3685,7 +3652,7 @@ def manual_grade_submission(request):
 
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def test(request):
     br_up = []
     st_list = Student.objects.select_related('id','id__user','id__department').all()
@@ -3703,7 +3670,7 @@ def test(request):
         
     return render(request,'../templates/academic_procedures/test.html',{})
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def test_ret(request):
     try:
         data = render_to_string('academic_procedures/test_render.html',
@@ -3714,7 +3681,7 @@ def test_ret(request):
         return HttpResponseRedirect('/academic-procedures/main')
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("student", "Professor", "Associate Professor", "Assistant Professor", "acadadmin", "Dean Academic")
 def Bonafide_form(request):
     template = get_template('academic_procedures/bonafide_pdf.html')
     current_user = get_object_or_404(User, username=request.user.username)
@@ -3760,7 +3727,7 @@ def Bonafide_form(request):
 
 #     return render(request, 'bonafide.html', {'form': form})
 
-@login_required
+@require_designation("student", "Professor", "Associate Professor", "Assistant Professor", "acadadmin", "Dean Academic")
 def ACF(request):
         stu = Student.objects.get(id=request.user.username)
         month = request.POST.get('month')
@@ -3811,7 +3778,7 @@ def ACF(request):
         return HttpResponse(content)
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def update_assistantship(request):
     if request.method == 'POST':
         r = request.POST.get('remark')
@@ -3835,7 +3802,7 @@ def update_assistantship(request):
     return HttpResponseRedirect('/academic-procedures/main/')
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def update_hod_assistantship(request):
     if request.method == 'POST':
         d = request.POST.get('dict')
@@ -3850,7 +3817,7 @@ def update_hod_assistantship(request):
 
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def update_acad_assis(request):
     if request.method == 'POST':
         d = request.POST.get('dict')
@@ -3866,7 +3833,7 @@ def update_acad_assis(request):
         return HttpResponse('success')
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def update_account_assistantship(request):
     if request.method == 'POST':
         di = request.POST.get('dict')
@@ -3882,7 +3849,7 @@ def update_account_assistantship(request):
                 
             return HttpResponse('success')
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def assis_stat(request):
     if request.method == 'POST':
         flag= request.POST.get('flag')
@@ -3904,7 +3871,7 @@ def assis_stat(request):
     return HttpResponse('success')
 
 
-@login_required
+@require_designation("student", "Professor", "Associate Professor", "Assistant Professor", "acadadmin", "Dean Academic")
 def MTSGF(request):
     if request.method == 'POST':
         stu= Student.objects.get(id=request.user.username)
@@ -3936,7 +3903,7 @@ def MTSGF(request):
         return HttpResponse(content)
 
 
-@login_required
+@require_designation("student", "Professor", "Associate Professor", "Assistant Professor", "acadadmin", "Dean Academic")
 def PHDPE(request):
     if request.method == 'POST':
         stu= Student.objects.get(id=request.user.username)
@@ -3967,7 +3934,7 @@ def PHDPE(request):
         return HttpResponse(content)
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def update_mtechsg(request):
     if request.method == 'POST':
         i = request.POST.get('obj_id')
@@ -3989,7 +3956,7 @@ def update_mtechsg(request):
 
         
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def update_phdform(request):
     if request.method == 'POST':
         i = request.POST.get('obj_id')
@@ -4020,7 +3987,7 @@ def update_phdform(request):
     return HttpResponse(content)
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def update_dues(request):
     if request.method == "POST":
         i = request.POST.get('obj_id')
@@ -4074,7 +4041,7 @@ def update_dues(request):
         return HttpResponse(content)
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def mdue(request):
     if request.method == 'POST':
         rollno = request.POST.get('rollno')
@@ -4110,7 +4077,6 @@ def mdue(request):
 
 
 
-@login_required(login_url='/accounts/login')
 def get_detailed_sem_courses(sem_id):
     course_slots = CourseSlot.objects.filter(semester_id=sem_id)
     # Serialize queryset of course slots into JSON
@@ -4152,7 +4118,7 @@ def get_next_sem_courses(request):
     return JsonResponse({'error': 'Invalid request'})
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def add_course_to_slot(request):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -4173,7 +4139,7 @@ def add_course_to_slot(request):
     return JsonResponse({'error': 'Invalid request method.'}, status=405)
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def remove_course_from_slot(request):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -4193,7 +4159,7 @@ def remove_course_from_slot(request):
     return JsonResponse({'error': 'Invalid request method.'}, status=405)       
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("student")
 def add_one_course(request):
     if request.method == 'POST':
         try:
@@ -4239,7 +4205,7 @@ def add_one_course(request):
     else:
         return JsonResponse({'message': 'Invalid request method'}, status=405)
     
-@login_required(login_url='/accounts/login')
+@require_designation("student")
 def replace_one_course(request):
     if request.method == 'POST' :       
         try:
@@ -4267,7 +4233,6 @@ def replace_one_course(request):
     else :
         return JsonResponse({'message': 'Invalid request method'}, status=405)
     
-@login_required(login_url='/accounts/login')
 def get_sem_swayam(sem_id, batch):
     courses = []
     course_slots = CourseSlot.objects.all().filter(type='Swayam')
@@ -4277,7 +4242,7 @@ def get_sem_swayam(sem_id, batch):
         
     return courses
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def replaceSwayam(request):
     if(request.POST):
         # print(f"++++++++++++++++++++++++++++++++++++++++++++++++{request.POST}")
@@ -4367,7 +4332,6 @@ def replaceSwayam(request):
         obj = json.dumps(maindict)
         return HttpResponse(obj, content_type='application/json')
     
-@login_required(login_url='/accounts/login')
 def get_currently_registered_elective(student_id, semester_id):
     registrations = course_registration.objects.filter(student_id=student_id, semester_id=semester_id)
     courses = []
@@ -4378,7 +4342,7 @@ def get_currently_registered_elective(student_id, semester_id):
 
 
 
-@login_required(login_url='/accounts/login')
+@require_designation("acadadmin", "Dean Academic")
 def swayam_replace(request):
     if request.method == 'POST':
         csrf_token = request.POST.get('csrfmiddlewaretoken', None)
@@ -4460,7 +4424,7 @@ def swayam_replace(request):
     else:
         return HttpResponseRedirect('/academic-procedures/main')
     
-@login_required(login_url='/accounts/login')
+@require_designation("student")
 def register_backlog_course(request):
     if request.method == 'POST':
         try:
@@ -4497,7 +4461,6 @@ def register_backlog_course(request):
             return JsonResponse({'message': 'Adding Backlog Failed '  +str(e)}, status=500)
 
    
-@login_required(login_url='/accounts/login')
 def get_current_semester_swayam_course_slots(curr_sem_id):
     courseslot_list = CourseSlot.objects.filter(semester = curr_sem_id, name__startswith='SW')
     return courseslot_list

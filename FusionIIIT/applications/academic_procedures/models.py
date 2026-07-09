@@ -4,7 +4,7 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth import get_user_model
 from applications.academic_information.models import Course, Student, Curriculum
-from applications.programme_curriculum.models import Course as Courses, Semester, CourseSlot, Batch
+from applications.programme_curriculum.models import Course as Courses, Semester, CourseSlot, Batch, ThesisSlot, ProgressSeminarSlot
 from applications.globals.models import DepartmentInfo, ExtraInfo, Faculty
 from django.utils import timezone
 
@@ -1097,3 +1097,539 @@ class FeedbackFilled(models.Model):
 
     class Meta:
         unique_together = ("student", "semester_no")
+        
+
+# ============================================================================
+# PhD-SPECIFIC MODELS (Added for PhD student management)
+# ============================================================================
+
+class ThesisTopic(models.Model):
+    """Central thesis record with student submission fields and approval status."""
+    STATUS_CHOICES = [
+        ('supervisor_pending', 'Pending with Supervisor'),
+        ('hod_pending', 'Approved by Supervisor, Pending with HOD'),
+        ('hod_rejected', 'Rejected by HOD, Returned to Supervisor'),
+        ('dean_pending', 'Approved by HOD, Pending with Dean'),
+        ('dean_rejected', 'Rejected by Dean, Returned to HOD'),
+        ('dean_approved', 'Approved by Dean'),
+    ]
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    supervisor = models.ForeignKey(Faculty, related_name='theses_supervised', on_delete=models.CASCADE)
+    co_supervisor = models.ForeignKey(Faculty, related_name='theses_cosupervised', on_delete=models.CASCADE, null=True, blank=True)
+    supervisor_consented    = models.BooleanField(default=False)
+    co_supervisor_consented = models.BooleanField(default=False)
+
+    category = models.CharField(max_length=20, choices=[
+        ('Regular', 'Regular'),
+        ('Sponsored', 'Sponsored'),
+        ('External', 'External')
+    ])
+    broad_area = models.CharField(max_length=200)
+    research_theme = models.TextField()
+
+    external_name = models.CharField(max_length=100, blank=True)
+    external_email = models.EmailField(blank=True)
+    external_discipline = models.CharField(max_length=100, blank=True)
+    external_institution = models.CharField(max_length=200, blank=True)
+
+    pg_single = models.PositiveIntegerField(default=0)
+    pg_shared = models.PositiveIntegerField(default=0)
+    phd_single = models.PositiveIntegerField(default=0)
+    phd_shared = models.PositiveIntegerField(default=0)
+
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='supervisor_pending')
+    hod_remarks = models.TextField(blank=True)
+    dean_remarks = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        name = self.student.id.user.get_full_name()
+        theme = self.research_theme[:30]
+        return f"{name} — {theme}"
+
+
+class CommitteeMember(models.Model):
+    """RPC committee member for each thesis."""
+    thesis = models.ForeignKey(ThesisTopic, related_name='committee', on_delete=models.CASCADE)
+    member = models.ForeignKey(Faculty, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('thesis', 'member')
+
+    def __str__(self):
+        return f"{self.member} on {self.thesis}"
+
+
+class SeminarEntry(models.Model):
+    """PhD Seminar reports with versioning and RPC approval."""
+    thesis     = models.ForeignKey(ThesisTopic, on_delete=models.CASCADE, related_name='seminars')
+    version    = models.PositiveSmallIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    STATUS_CHOICES = [
+        ('draft',       'Draft'),
+        ('rpc_pending', 'Pending RPC Consent'),
+        ('rpc_approved','Approved'),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+
+    # Logistics
+    seminar_date  = models.DateField(null=True, blank=True)
+    seminar_time  = models.TimeField(null=True, blank=True)
+    seminar_venue = models.CharField(max_length=200, blank=True)
+
+    # Summaries
+    summary_prev = models.TextField(blank=True)
+    summary_curr = models.TextField(blank=True)
+    future_plan  = models.TextField(blank=True)
+    upload_doc   = models.FileField(upload_to='seminar_docs/', null=True, blank=True)
+
+    # RPC Evaluation fields
+    quality         = models.CharField(
+        max_length=20,
+        choices=[('Excellent','Excellent'),
+                 ('Good','Good'),
+                 ('Sat','Satisfactory'),
+                 ('Unsat','Unsatisfactory')],
+        blank=True
+    )
+    quantity        = models.CharField(
+        max_length=20,
+        choices=[('Enough','Enough'),
+                 ('Just','Just Sufficient'),
+                 ('Insuff','Insufficient')],
+        blank=True
+    )
+    overall_grade   = models.CharField(
+        max_length=2,
+        choices=[('S','S'), ('X','X')],
+        blank=True
+    )
+    expected_period = models.CharField(
+        max_length=2,
+        choices=[('1','1 year'),
+                 ('2','2 years'),
+                 ('3','3 years'),
+                 ('4','4 years')],
+        blank=True
+    )
+    rec_assist      = models.CharField(
+        max_length=3,
+        choices=[('Yes','Yes'),
+                 ('No','No'),
+                 ('NA','Not Applicable')],
+        blank=True
+    )
+    rec_enhance     = models.CharField(
+        max_length=3,
+        choices=[('Yes','Yes'),
+                 ('No','No'),
+                 ('NA','Not Applicable')],
+        blank=True
+    )
+    rec_repeat      = models.CharField(
+        max_length=3,
+        choices=[('Yes','Yes'),
+                 ('NA','Not Applicable')],
+        blank=True
+    )
+    rec_open        = models.CharField(
+        max_length=3,
+        choices=[('Yes','Yes'),
+                 ('No','No')],
+        blank=True
+    )
+
+    def __str__(self):
+        return f"Seminar {self.version} for {self.thesis}"
+
+
+class PublicationCount(models.Model):
+    """Publication tracking for PhD seminar reports."""
+    seminar    = models.ForeignKey(SeminarEntry, related_name='pub_counts', on_delete=models.CASCADE)
+    category   = models.CharField(max_length=50, choices=[
+        ('Journal','Journal'),
+        ('Conference','Conference'),
+        ('Submitted','Submitted'),
+    ])
+    submitted  = models.PositiveIntegerField(default=0)
+    accepted   = models.PositiveIntegerField(default=0)
+    published  = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        unique_together = ('seminar','category')
+
+
+class SeminarConsent(models.Model):
+    """RPC member consent for seminar."""
+    seminar   = models.ForeignKey(SeminarEntry, related_name='consents', on_delete=models.CASCADE)
+    member    = models.ForeignKey(Faculty, on_delete=models.CASCADE)
+    consented = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('seminar','member')
+
+
+class SeminarComment(models.Model):
+    """RPC member comments on seminar."""
+    seminar   = models.ForeignKey(SeminarEntry, related_name='comments', on_delete=models.CASCADE)
+    member    = models.ForeignKey(Faculty, on_delete=models.CASCADE)
+    text      = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('seminar','member')
+        ordering = ['-timestamp']
+
+
+import uuid
+
+def upload_synopsis(instance, filename):
+    """Upload path for thesis synopsis."""
+    ext = filename.split('.')[-1]
+    return f"synopsis/{instance.file_token}.{ext}"
+
+def upload_report(instance, filename):
+    """Upload path for thesis report."""
+    ext = filename.split('.')[-1]
+    return f"reports/{instance.file_token}.{ext}"
+
+
+class ThesisSubmission(models.Model):
+    """PhD Thesis submission with file uploads."""
+    STATUS_CHOICES = [
+        ('submitted', 'Submitted'),
+        ('dean_panel_review', 'Pending Dean Panel Approval'),
+        ('director_review', 'Pending Director Prioritization'),
+        ('dean_invite_pending', 'Pending Dean Invitation'),
+        ('in_review', 'In External Review'),
+        ('completed', 'Review Completed'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+
+    thesis         = models.OneToOneField(ThesisTopic, on_delete=models.CASCADE, related_name='submission')
+    file_token     = models.UUIDField(default=uuid.uuid4, unique=True, editable=False, db_index=True)
+    synopsis       = models.FileField(upload_to=upload_synopsis)
+    thesis_report  = models.FileField(upload_to=upload_report)
+    submitted_at   = models.DateTimeField(auto_now_add=True, db_index=True)
+    supervisor     = models.ForeignKey('auth.User', null=True, blank=True,
+                                       on_delete=models.SET_NULL, related_name='supervised_subs')
+    supervisor_approved_at = models.DateTimeField(null=True, blank=True)
+    dean           = models.ForeignKey('auth.User', null=True, blank=True,
+                                       on_delete=models.SET_NULL, related_name='deaned_subs')
+    dean_approved_at = models.DateTimeField(null=True, blank=True)
+    dean_invited_at  = models.DateTimeField(null=True, blank=True)
+    director       = models.ForeignKey('auth.User', null=True, blank=True,
+                                       on_delete=models.SET_NULL, related_name='directed_subs')
+    director_approved_at = models.DateTimeField(null=True, blank=True)
+    status         = models.CharField(max_length=30, choices=STATUS_CHOICES, default='submitted', db_index=True)
+    updated_at     = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-submitted_at']
+        indexes = [
+            models.Index(fields=['status', 'submitted_at']),
+        ]
+
+    def __str__(self):
+        return f"Submission for {self.thesis.research_theme}"
+
+
+class ReviewInvitation(models.Model):
+    """External reviewer invitation for thesis."""
+    EXAMINER_TYPE_CHOICES = [
+        ('indian', 'Indian'),
+        ('foreign', 'Foreign'),
+    ]
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+        ('completed', 'Completed'),
+        ('expired', 'Expired'),
+    ]
+    submission      = models.ForeignKey(ThesisSubmission, on_delete=models.CASCADE, related_name='invitations')
+    examiner_type   = models.CharField(max_length=10, choices=EXAMINER_TYPE_CHOICES, default='indian', db_index=True)
+    prof_name       = models.CharField(max_length=255, db_index=True)
+    prof_position   = models.CharField(max_length=255)
+    prof_address    = models.TextField()
+    prof_phone      = models.CharField(max_length=20)
+    prof_fax        = models.CharField(max_length=20, blank=True, default='')
+    prof_email      = models.EmailField(db_index=True)
+    prof_time_ranking = models.PositiveSmallIntegerField(null=True, blank=True)
+    priority        = models.PositiveSmallIntegerField(default=0, db_index=True)
+    token           = models.UUIDField(default=uuid.uuid4, unique=True, editable=False, db_index=True)
+    status          = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', db_index=True)
+    last_sent       = models.DateTimeField(null=True, blank=True)
+    review_form_sent= models.DateTimeField(null=True, blank=True)
+    expires_at      = models.DateTimeField(null=True, blank=True, db_index=True)
+    created_at      = models.DateTimeField(auto_now_add=True)
+    updated_at      = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = [('submission', 'examiner_type', 'priority')]
+        ordering = ['submission', 'examiner_type', 'priority']
+        indexes = [
+            models.Index(fields=['submission', 'status']),
+            models.Index(fields=['status', 'last_sent']),
+        ]
+
+    def is_expired(self):
+        """Check if the invitation has expired."""
+        return self.expires_at and timezone.now() >= self.expires_at
+
+    def is_finalized(self):
+        """Check if the invitation is in a final state."""
+        return self.status in ['completed', 'expired', 'rejected']
+
+
+class ThesisReview(models.Model):
+    """An examiner's formal evaluation, mirroring the institute's official
+    'Examination Report of PhD Student' form."""
+    CORRECTION_CHOICES = [
+        ('none', 'None'),
+        ('minor', 'Minor'),
+        ('major', 'Major'),
+    ]
+    RECOMMENDATION_CHOICES = [
+        ('accept', 'Acceptable in present form for award of the PhD degree'),
+        ('accept_with_corrections', 'Acceptable; suggested corrections/modifications to be incorporated'),
+        ('needs_improvement', "Needs technical improvement to the examiner's satisfaction"),
+        ('reject', 'Rejected -- thesis does not contain novel work'),
+    ]
+
+    invitation = models.OneToOneField(ReviewInvitation, on_delete=models.CASCADE, related_name='review')
+
+    # A. General features of thesis
+    originality_presentation = models.TextField(blank=True, default='')
+    quality_comparable       = models.BooleanField(null=True, blank=True)
+    new_ideas_original        = models.BooleanField(null=True, blank=True)
+
+    # B. Comments
+    correction_severity = models.CharField(max_length=10, choices=CORRECTION_CHOICES, blank=True, default='')
+    technical_content   = models.TextField(blank=True, default='')
+    highlights           = models.TextField(blank=True, default='')
+
+    # C, D
+    suggestions        = models.TextField(blank=True, default='')
+    defense_questions  = models.TextField(blank=True, default='')
+
+    # E. Specific recommendation
+    recommendation = models.CharField(max_length=30, choices=RECOMMENDATION_CHOICES)
+
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Review by {self.invitation.prof_name} ({self.recommendation})"
+
+
+class ExaminerBankDetails(models.Model):
+    """Honorarium payment details for an external examiner.
+
+    Kept as its own model, deliberately isolated from ThesisReview /
+    ReviewInvitation serialization -- never include this in dashboard or
+    listing API responses.
+    """
+    invitation = models.OneToOneField(ReviewInvitation, on_delete=models.CASCADE, related_name='bank_details')
+
+    beneficiary_name = models.CharField(max_length=255, blank=True, default='')
+    bank_name        = models.CharField(max_length=255, blank=True, default='')
+    bank_address     = models.TextField(blank=True, default='')
+    account_no       = models.CharField(max_length=50, blank=True, default='')
+    # Indian examiners provide IFSC + PAN; foreign examiners provide IBAN + SWIFT.
+    ifsc_code   = models.CharField(max_length=20, blank=True, default='')
+    pan_no      = models.CharField(max_length=20, blank=True, default='')
+    iban_no     = models.CharField(max_length=40, blank=True, default='')
+    swift_code  = models.CharField(max_length=20, blank=True, default='')
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Bank details for {self.invitation.prof_name}"
+
+    def __str__(self):
+        return f"{self.prof_name} - {self.submission.thesis.research_theme} ({self.status})"
+
+
+# ===========================================================================
+# Thesis Slot & Progress Seminar Semester-Level Registration
+# ===========================================================================
+
+class ThesisRegistration(models.Model):
+    """Records a PhD student's semester-level thesis slot enrollment.
+
+    Analogous to course_registration / FinalRegistration for courses.
+    One record per student per semester; admin verifies after submission.
+    """
+    STATUS_CHOICES = [
+        ('pending',  'Pending Verification'),
+        ('verified', 'Verified'),
+        ('rejected', 'Rejected'),
+    ]
+
+    THESIS_CREDIT_CHOICES = [(3, '3 Credits'), (6, '6 Credits'), (9, '9 Credits'), (12, '12 Credits')]
+
+    student          = models.ForeignKey(Student, on_delete=models.CASCADE,
+                                         related_name='thesis_registrations')
+    thesis_slot      = models.ForeignKey(ThesisSlot, on_delete=models.CASCADE,
+                                         related_name='registrations')
+    thesis_topic     = models.ForeignKey('ThesisTopic', on_delete=models.SET_NULL,
+                                         null=True, blank=True,
+                                         related_name='thesis_registrations')
+    semester         = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    credits          = models.PositiveSmallIntegerField(
+                           choices=THESIS_CREDIT_CHOICES,
+                           default=6,
+                           help_text='Credits the student is registering for this semester (3/6/9/12)',
+                       )
+    working_year     = models.IntegerField(null=True, blank=True)
+    academic_session = models.CharField(max_length=9, null=True, blank=True)  # e.g. "2025-26"
+    status           = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    registered_on    = models.DateTimeField(auto_now_add=True)
+    verified_on      = models.DateTimeField(null=True, blank=True)
+    remarks          = models.CharField(max_length=500, blank=True)
+
+    class Meta:
+        unique_together = ('student', 'semester')
+        db_table = 'ThesisRegistration'
+
+    def __str__(self):
+        return f"{self.student} — {self.thesis_slot.name} ({self.semester})"
+
+
+class ProgressSeminarRegistration(models.Model):
+    """Records a PhD student's semester-level progress seminar enrollment.
+
+    Analogous to ThesisRegistration; one record per student per semester.
+    """
+    STATUS_CHOICES = [
+        ('pending',  'Pending Verification'),
+        ('verified', 'Verified'),
+        ('rejected', 'Rejected'),
+    ]
+
+    student               = models.ForeignKey(Student, on_delete=models.CASCADE,
+                                              related_name='progress_seminar_registrations')
+    progress_seminar_slot = models.ForeignKey(ProgressSeminarSlot, on_delete=models.CASCADE,
+                                              related_name='registrations')
+    semester              = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    working_year          = models.IntegerField(null=True, blank=True)
+    status                = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    registered_on         = models.DateTimeField(auto_now_add=True)
+    remarks               = models.CharField(max_length=500, blank=True)
+
+    class Meta:
+        unique_together = ('student', 'semester')
+        db_table = 'ProgressSeminarRegistration'
+
+    def __str__(self):
+        return f"{self.student} — {self.progress_seminar_slot.name} ({self.semester})"
+
+
+# ===========================================================================
+# Thesis & Progress Seminar Grade Evaluation
+# ===========================================================================
+
+class ThesisEvaluation(models.Model):
+    """Grade record for one evaluation block within a ThesisRegistration.
+
+    A student who registers for N credits gets N÷3 blocks (1 block per 3 credits).
+    e.g. 12 credits → 4 blocks, each graded S or X independently.
+    Blocks are auto-created when the admin verifies the ThesisRegistration.
+    """
+    GRADE_CHOICES = [('S', 'Satisfactory'), ('X', 'Unsatisfactory')]
+
+    registration  = models.ForeignKey(
+        ThesisRegistration,
+        on_delete=models.CASCADE,
+        related_name='evaluations',
+    )
+    block_number  = models.PositiveSmallIntegerField(
+        help_text='Sequential block index starting at 1 (max = registration.credits ÷ 3)',
+    )
+
+    # Grade — null until supervisor submits
+    grade         = models.CharField(
+        max_length=1, choices=GRADE_CHOICES, null=True, blank=True,
+    )
+    submitted_by  = models.ForeignKey(
+        Faculty, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='thesis_grades_submitted',
+    )
+    submitted_at  = models.DateTimeField(null=True, blank=True)
+    remarks       = models.TextField(blank=True)
+
+    # Admin lifecycle
+    verified      = models.BooleanField(default=False)
+    verified_by   = models.ForeignKey(
+        'auth.User', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='thesis_grades_verified',
+    )
+    verified_at   = models.DateTimeField(null=True, blank=True)
+
+    announced     = models.BooleanField(default=False)
+    announced_at  = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('registration', 'block_number')
+        ordering = ['registration', 'block_number']
+        db_table = 'ThesisEvaluation'
+
+    def __str__(self):
+        g = self.grade or '—'
+        return (
+            f"Block {self.block_number}/{self.registration.credits // 3} "
+            f"| {self.registration.student} | Sem {self.registration.semester.semester_no} "
+            f"| Grade: {g}"
+        )
+
+    @property
+    def total_blocks(self):
+        return self.registration.credits // 3
+
+
+class ProgressSeminarEvaluation(models.Model):
+    """Grade record for a ProgressSeminarRegistration.
+
+    Progress seminars are fixed at 3 credits → always exactly 1 evaluation block.
+    """
+    GRADE_CHOICES = [('S', 'Satisfactory'), ('X', 'Unsatisfactory')]
+
+    registration  = models.OneToOneField(
+        ProgressSeminarRegistration,
+        on_delete=models.CASCADE,
+        related_name='evaluation',
+    )
+
+    grade         = models.CharField(
+        max_length=1, choices=GRADE_CHOICES, null=True, blank=True,
+    )
+    submitted_by  = models.ForeignKey(
+        Faculty, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='seminar_grades_submitted',
+    )
+    submitted_at  = models.DateTimeField(null=True, blank=True)
+    remarks       = models.TextField(blank=True)
+
+    verified      = models.BooleanField(default=False)
+    verified_by   = models.ForeignKey(
+        'auth.User', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='seminar_grades_verified',
+    )
+    verified_at   = models.DateTimeField(null=True, blank=True)
+
+    announced     = models.BooleanField(default=False)
+    announced_at  = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'ProgressSeminarEvaluation'
+
+    def __str__(self):
+        g = self.grade or '—'
+        return (
+            f"{self.registration.student} | Sem {self.registration.semester.semester_no} "
+            f"| Grade: {g}"
+        )

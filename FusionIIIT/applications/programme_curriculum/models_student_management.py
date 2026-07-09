@@ -215,6 +215,15 @@ class StudentBatchUpload(models.Model):
     programme_type = models.CharField(max_length=10, choices=PROGRAMME_TYPE_CHOICES)
     allocation_status = models.CharField(max_length=50, default='ALLOCATED', help_text="Allocation Status")
     reported_status = models.CharField(max_length=20, choices=REPORTED_STATUS_CHOICES, default='NOT_REPORTED')
+        
+    # PhD-specific fields
+    admission_semester = models.CharField(
+        max_length=10, 
+        blank=True, 
+        null=True,
+        choices=[('Odd', 'Odd Semester'), ('Even', 'Even Semester')],
+        help_text="For PhD students: Semester in which admission occurred (becomes their Semester 1)"
+    )
     
     # Source tracking - Track where the student data came from
     source = models.CharField(
@@ -543,6 +552,362 @@ class StudentStatusLog(models.Model):
         return f"{self.student.name} - {self.old_reported_status} → {self.new_reported_status} at {self.created_at}"
 
 
+class PhdStudentBatchUpload(models.Model):
+    """
+    Model to store PhD student data uploaded via Excel or manual entry.
+    Maps directly to the PhD Student Data Template Excel sheet columns.
+    PhD-specific fields: application_no, admission_type, gate_qualified, gate_stream, gate_rank.
+    """
+
+    GENDER_CHOICES = [
+        ('Male', 'Male'),
+        ('Female', 'Female'),
+        ('Other', 'Other'),
+    ]
+
+    CATEGORY_CHOICES = [
+        ('GEN', 'General'),
+        ('OBC', 'Other Backward Class'),
+        ('SC', 'Scheduled Caste'),
+        ('ST', 'Scheduled Tribe'),
+        ('EWS', 'Economically Weaker Section'),
+    ]
+
+    PWD_CHOICES = [
+        ('YES', 'Yes'),
+        ('NO', 'No'),
+    ]
+
+    PWD_CATEGORY_CHOICES = [
+        ('Locomotor Disability', 'Locomotor Disability'),
+        ('Visual Impairment', 'Visual Impairment'),
+        ('Hearing Impairment', 'Hearing Impairment'),
+        ('Speech and Language Disability', 'Speech and Language Disability'),
+        ('Intellectual Disability', 'Intellectual Disability'),
+        ('Autism Spectrum Disorder', 'Autism Spectrum Disorder'),
+        ('Multiple Disabilities', 'Multiple Disabilities'),
+        ('Any other (remarks)', 'Any other (remarks)'),
+    ]
+
+    BLOOD_GROUP_CHOICES = [
+        ('A+', 'A+'), ('A-', 'A-'),
+        ('B+', 'B+'), ('B-', 'B-'),
+        ('AB+', 'AB+'), ('AB-', 'AB-'),
+        ('O+', 'O+'), ('O-', 'O-'),
+        ('Other', 'Other'),
+    ]
+
+    ADMISSION_MODE_CHOICES = [
+        ('Institute Level', 'Institute Level'),
+        ('QIP', 'QIP'),
+        ('GATE', 'GATE'),
+        ('Sponsored', 'Sponsored'),
+        ('Foreign National', 'Foreign National'),
+        ('Any other (remarks)', 'Any other (remarks)'),
+    ]
+
+    ADMISSION_TYPE_CHOICES = [
+        ('FULL TIME with Institute Assistantship', 'FULL TIME with Institute Assistantship'),
+        ('FULL TIME with Govt. / Semi Govt. Fellowship Award', 'FULL TIME with Govt. / Semi Govt. Fellowship Award'),
+        ('FULL TIME Self Financed', 'FULL TIME Self Financed'),
+        ('PART TIME (External)', 'PART TIME (External)'),
+        ('QIP', 'QIP'),
+        ('Any other (remarks)', 'Any other (remarks)'),
+    ]
+
+    INCOME_GROUP_CHOICES = [
+        ('Below 1 Lakh', 'Below 1 Lakh'),
+        ('Between 1 to 4 Lakh', 'Between 1 to 4 Lakh'),
+        ('Between 4 to 6 Lakh', 'Between 4 to 6 Lakh'),
+        ('Above 6 Lakh', 'Above 6 Lakh'),
+    ]
+
+    REPORTED_STATUS_CHOICES = [
+        ('NOT_REPORTED', 'Not Reported'),
+        ('REPORTED', 'Reported'),
+        ('WITHDRAWAL', 'Withdrawal'),
+    ]
+
+    ADMISSION_SEMESTER_CHOICES = [
+        ('Odd', 'Odd Semester'),
+        ('Even', 'Even Semester'),
+    ]
+
+    GATE_QUALIFIED_CHOICES = [
+        ('YES', 'Yes'),
+        ('NO', 'No'),
+    ]
+
+    # ---- Core identification (col 2, 3) ----
+    application_no = models.CharField(
+        max_length=50, unique=True, blank=True, null=True,
+        help_text="PhD Application Number (col: Application No.)"
+    )
+    roll_number = models.CharField(
+        max_length=20, unique=True, blank=True, null=True,
+        help_text="Institute Roll Number (col: Institute Roll Number)"
+    )
+    institute_email = models.EmailField(
+        blank=True, null=True,
+        help_text="Institute Email ID (col: Institute Email ID)"
+    )
+
+    # ---- Personal information (col 4, 6, 7, 8, 9, 10, 11, 12) ----
+    name = models.CharField(max_length=200, help_text="Full Name (col: Name)")
+    discipline = models.CharField(max_length=200, help_text="Discipline / Branch (col: Discipline)")
+    admission_type = models.CharField(
+        max_length=100, choices=ADMISSION_TYPE_CHOICES, blank=True, null=True,
+        help_text="Admission Type (col: Admission Type)"
+    )
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
+    category = models.CharField(max_length=10, choices=CATEGORY_CHOICES)
+    minority = models.TextField(
+        blank=True, null=True,
+        help_text="Minority Status (col: Minority)"
+    )
+    pwd = models.CharField(max_length=3, choices=PWD_CHOICES, default='NO')
+    pwd_category = models.CharField(
+        max_length=100, choices=PWD_CATEGORY_CHOICES, blank=True, null=True
+    )
+    pwd_category_remarks = models.TextField(blank=True, null=True)
+
+    # ---- Contact and address (col 13-16, 36, 37) ----
+    phone_number = models.CharField(max_length=15, blank=True, null=True, help_text="MobileNo")
+    personal_email = models.EmailField(blank=True, null=True, help_text="Alternate Email ID")
+    parent_email = models.EmailField(blank=True, null=True, help_text="Parent Email")
+    address = models.TextField(blank=True, null=True, help_text="Full Address (with pincode)")
+    state = models.CharField(max_length=100, blank=True, null=True)
+
+    # ---- Family information (col 17-22) ----
+    father_name = models.CharField(max_length=200, blank=True, null=True)
+    father_occupation = models.CharField(max_length=200, blank=True, null=True)
+    father_mobile = models.CharField(max_length=15, blank=True, null=True)
+    mother_name = models.CharField(max_length=200, blank=True, null=True)
+    mother_occupation = models.CharField(max_length=200, blank=True, null=True)
+    mother_mobile = models.CharField(max_length=15, blank=True, null=True)
+
+    # ---- Personal details (col 23-27) ----
+    date_of_birth = models.DateField(blank=True, null=True)
+    blood_group = models.CharField(max_length=10, choices=BLOOD_GROUP_CHOICES, blank=True, null=True)
+    blood_group_remarks = models.TextField(blank=True, null=True)
+    country = models.CharField(max_length=100, blank=True, null=True, default='India')
+    nationality = models.CharField(max_length=100, blank=True, null=True, default='Indian')
+
+    # ---- Admission details (col 28-31, 35) ----
+    admission_mode = models.CharField(
+        max_length=50, choices=ADMISSION_MODE_CHOICES, blank=True, null=True
+    )
+    admission_mode_remarks = models.TextField(blank=True, null=True)
+    income_group = models.CharField(
+        max_length=30, choices=INCOME_GROUP_CHOICES, blank=True, null=True
+    )
+    income = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    allotted_category = models.CharField(max_length=50, blank=True, null=True, help_text="allottedcat")
+    allotted_gender = models.CharField(max_length=50, blank=True, null=True, help_text="Allotted Gender")
+
+    # ---- PhD / GATE specific fields (col 32-34) ----
+    gate_qualified = models.CharField(
+        max_length=3, choices=GATE_QUALIFIED_CHOICES, blank=True, null=True,
+        help_text="GATE Qualified (col: GATE Qualaified)"
+    )
+    gate_stream = models.CharField(
+        max_length=100, blank=True, null=True,
+        help_text="GATE Stream (col: GATE Stream)"
+    )
+    gate_rank = models.IntegerField(
+        blank=True, null=True,
+        help_text="GATE Rank (col: GATE Rank)"
+    )
+    category_rank = models.IntegerField(
+        blank=True, null=True,
+        help_text="Category Rank in admission (GATE category rank or equivalent)"
+    )
+    aadhar_number = models.CharField(
+        max_length=12, blank=True, null=True,
+        help_text="Aadhaar Number (12 digits)"
+    )
+
+    # ---- System / batch tracking fields ----
+    admission_semester = models.CharField(
+        max_length=10, blank=True, null=True,
+        choices=ADMISSION_SEMESTER_CHOICES,
+        help_text="Semester of PhD admission: Odd or Even"
+    )
+    year = models.IntegerField(
+        help_text="Admission batch year (e.g., 2025)",
+        db_column='batch_year',
+        default=get_current_academic_year
+    )
+    academic_year = models.CharField(
+        max_length=20, blank=True,
+        help_text="Academic Year String (e.g., 2025-26)"
+    )
+    reported_status = models.CharField(
+        max_length=20, choices=REPORTED_STATUS_CHOICES, default='NOT_REPORTED'
+    )
+    allocation_status = models.CharField(
+        max_length=50, default='ALLOCATED',
+        help_text="Allocation Status (e.g., ALLOCATED, PENDING)"
+    )
+    source = models.CharField(
+        max_length=50, default='admin_upload',
+        help_text="Source of data: excel_upload, manual_entry, etc."
+    )
+
+    # ---- Authentication link ----
+    user = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='phd_student_profile', db_column='user_account_id'
+    )
+
+    # ---- Email / password notification fields ----
+    email_password = models.CharField(
+        max_length=50, blank=True, null=True,
+        help_text="Temporary plain-text password storage for email notification (cleared after sending)"
+    )
+    password_email_sent = models.BooleanField(
+        default=False,
+        help_text="Whether the password email has been sent to the student"
+    )
+    password_generated_at = models.DateTimeField(
+        blank=True, null=True,
+        help_text="Timestamp when the password was generated"
+    )
+
+    # ---- Metadata ----
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    uploaded_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='uploaded_phd_students', db_column='created_by_id'
+    )
+
+    class Meta:
+        verbose_name = 'PhD Student Batch Upload'
+        verbose_name_plural = 'PhD Student Batch Uploads'
+        ordering = ['roll_number', 'name']
+        indexes = [
+            models.Index(fields=['year']),
+            models.Index(fields=['discipline']),
+            models.Index(fields=['reported_status']),
+            models.Index(fields=['admission_semester']),
+            models.Index(fields=['application_no']),
+            models.Index(fields=['roll_number']),
+        ]
+
+    def __str__(self):
+        return f"{self.name} ({self.roll_number or self.application_no})"
+
+    # ------------------------------------------------------------------
+    # Compatibility properties
+    # These allow code written for StudentBatchUpload to work transparently
+    # with PhdStudentBatchUpload without changes throughout the codebase.
+    # ------------------------------------------------------------------
+    @property
+    def branch(self):
+        """PhD stores discipline; expose as 'branch' for backward compat."""
+        return self.discipline
+
+    @property
+    def specialization(self):
+        """PhD students have no specialization."""
+        return ''
+
+    @property
+    def programme_type(self):
+        """PhD model always represents PhD students."""
+        return 'phd'
+
+    @property
+    def jee_app_no(self):
+        """PhD students use application_no; expose as jee_app_no for backward compat."""
+        return self.application_no
+
+    @staticmethod
+    def generate_secure_password(length=12):
+        """Generate cryptographically secure password"""
+        import secrets
+        import string as _string
+        lowercase = _string.ascii_lowercase
+        uppercase = _string.ascii_uppercase
+        digits = _string.digits
+        special = "!@#$%"
+        password = [
+            secrets.choice(lowercase),
+            secrets.choice(uppercase),
+            secrets.choice(digits),
+            secrets.choice(special),
+        ]
+        all_chars = lowercase + uppercase + digits + special
+        for _ in range(length - 4):
+            password.append(secrets.choice(all_chars))
+        secrets.SystemRandom().shuffle(password)
+        return ''.join(password)
+
+    def create_user_account(self, password=None):
+        """Create Django User account for this PhD student."""
+        from django.contrib.auth.models import User as DjangoUser
+        from django.db import IntegrityError
+        from django.utils import timezone
+
+        if self.user:
+            return self.user, None
+
+        if not password:
+            password = self.generate_secure_password()
+
+        username = self.roll_number or self.application_no
+        email = (self.institute_email or self.personal_email or '').lower()
+
+        try:
+            existing_user = DjangoUser.objects.filter(username=username).first()
+            if existing_user:
+                self.user = existing_user
+                self.save()
+                return existing_user, None
+
+            user = DjangoUser.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                first_name=self.name.split()[0] if self.name else '',
+                last_name=' '.join(self.name.split()[1:]) if self.name and len(self.name.split()) > 1 else '',
+                is_active=True,
+            )
+            self.user = user
+            self.email_password = password
+            self.password_generated_at = timezone.now()
+            self.password_email_sent = False
+            self.save()
+            return user, password
+
+        except IntegrityError as e:
+            if 'username' in str(e):
+                existing_user = DjangoUser.objects.filter(username=username).first()
+                if existing_user:
+                    self.user = existing_user
+                    self.save()
+                    return existing_user, None
+            raise e
+
+    def save(self, *args, **kwargs):
+        """Auto-set academic_year string and normalise emails."""
+        if not self.academic_year:
+            year = self.year or get_current_academic_year()
+            next_year = (year + 1) % 100
+            self.academic_year = f"{year}-{next_year:02d}"
+
+        if self.roll_number and not self.institute_email:
+            self.institute_email = f"{self.roll_number.lower()}@iiitdmj.ac.in"
+
+        for field in ('institute_email', 'personal_email', 'parent_email'):
+            val = getattr(self, field)
+            if val:
+                setattr(self, field, val.lower())
+
+        super().save(*args, **kwargs)
+
+
 class UploadHistory(models.Model):
     """
     Model to track upload history and statistics
@@ -642,7 +1007,9 @@ def create_student_profiles_automatically(students_list):
                             'programme': student.get_programme_name(),
                             'batch': student.year,
                             'cpi': 0.0,
-                            'category': student.category or 'General',
+                            # Remap batch-model category values to AcademicStudent choices (GEN/SC/ST/OBC only)
+                            'category': {'GEN-EWS': 'GEN', 'OBC-NCL': 'OBC', 'EWS': 'GEN'}.get(
+                                student.category or 'GEN', student.category or 'GEN'),
                             'father_name': student.father_name or '',
                             'mother_name': student.mother_name or '',
                             'hall_no': 0,
@@ -687,5 +1054,28 @@ def auto_create_student_profile(sender, instance, created, **kwargs):
         except Exception as e:
             try:
                 post_save.connect(auto_create_student_profile, sender=StudentBatchUpload)
+            except:
+                pass
+
+
+@receiver(post_save, sender=PhdStudentBatchUpload)
+def auto_create_phd_student_profile(sender, instance, created, **kwargs):
+    """Automatically create PhD student profile when status changes to REPORTED.
+    
+    This is a safety-net signal — the primary path is update_student_status() in
+    views_student_management.py which handles REPORTED → ExtraInfo/AcademicStudent/
+    HoldsDesignation propagation directly. This signal fires for any direct model
+    .save() calls (e.g. from admin panel or management commands).
+    """
+    if instance.reported_status == 'REPORTED' and not instance.user:
+        try:
+            post_save.disconnect(auto_create_phd_student_profile, sender=PhdStudentBatchUpload)
+            try:
+                instance.create_user_account()
+            finally:
+                post_save.connect(auto_create_phd_student_profile, sender=PhdStudentBatchUpload)
+        except Exception as e:
+            try:
+                post_save.connect(auto_create_phd_student_profile, sender=PhdStudentBatchUpload)
             except:
                 pass

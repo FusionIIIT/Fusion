@@ -2,10 +2,12 @@ import datetime
 import random
 import logging
 import traceback
+import re
 from collections import defaultdict, deque, OrderedDict
 from functools import wraps
 from datetime import date
 from django.utils import timezone
+from django.conf import settings
 logger = logging.getLogger(__name__)
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, redirect
@@ -1028,6 +1030,7 @@ def faculty_assigned_courses(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@role_required(['student'])
 def get_next_sem_courses(request):
     try:
         next_sem = request.data.get('next_sem')
@@ -1267,9 +1270,35 @@ def verify_course(request):
 
     # lists for selects (no serializers)
     course_list = list(Courses.objects.values("id", "code", "name", "credit"))
-    semester_list = list(
-        Semester.objects.filter(curriculum=curr).values("id", "semester_no")
-    )
+    
+    # For PhD students, show only current semester + next semester (no summer terms)
+    batch_name = student.batch_id.name if student.batch_id else ""
+    is_phd = batch_name.upper().startswith('PHD')
+    
+    if is_phd:
+        current_sem = student.curr_semester_no
+        all_semesters = Semester.objects.filter(
+            curriculum=curr
+        ).exclude(
+            semester_no__in=[4, 6, 8, 10, 12]
+        ).order_by('semester_no')
+
+        phd_semester_list = []
+        for sem in all_semesters:
+            if sem.semester_no == current_sem or sem.semester_no == current_sem + 1:
+                phd_semester_list.append({
+                    "id": sem.id, 
+                    "semester_no": sem.semester_no
+                })
+        
+        semester_list = phd_semester_list if phd_semester_list else list(
+            Semester.objects.filter(curriculum=curr).values("id", "semester_no")
+        )
+    else:
+        semester_list = list(
+            Semester.objects.filter(curriculum=curr).values("id", "semester_no")
+        )
+    
     courseslot_list = list(
         CourseSlot.objects.filter(semester__in=[s["id"] for s in semester_list]).values("id", "name")
     )
@@ -2056,6 +2085,7 @@ def allot_courses(request):
             sheet = book.sheet_by_index(0)
 
             checks, pre_regs, final_regs, course_regs = [], [], [], []
+            row_errors = []
             seen = set()
 
             for i in range(1, sheet.nrows):
@@ -2102,14 +2132,39 @@ def allot_courses(request):
                         semester_type = sem_type
                     ))
                 except Exception as e:
-                    pass  # Handle error silently or log it
+                    row_errors.append({
+                        "row": i + 1,
+                        "roll_no": str(sheet.cell_value(i, 0)).strip() if sheet.ncols > 0 else "",
+                        "slot": str(sheet.cell_value(i, 1)).strip() if sheet.ncols > 1 else "",
+                        "course_code": str(sheet.cell_value(i, 2)).strip() if sheet.ncols > 2 else "",
+                        "error": str(e)
+                    })
+
+            inserted = len(course_regs)
+            if inserted == 0:
+                return Response(
+                    {
+                        'error': 'No valid rows were found in the uploaded file.',
+                        'failed_rows': row_errors[:25],
+                        'failed_rows_count': len(row_errors)
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
             StudentRegistrationChecks.objects.bulk_create(checks, ignore_conflicts=True)
             InitialRegistration.objects.bulk_create(pre_regs, ignore_conflicts=True)
             FinalRegistration.objects.bulk_create(final_regs, ignore_conflicts=True)
             course_registration.objects.bulk_create(course_regs, ignore_conflicts=True)
 
-        return Response({'message': 'Successfully uploaded!'})
+        if row_errors:
+            return Response({
+                'message': 'Upload completed with partial success.',
+                'inserted_rows': inserted,
+                'failed_rows_count': len(row_errors),
+                'failed_rows': row_errors[:25]
+            }, status=status.HTTP_207_MULTI_STATUS)
+
+        return Response({'message': 'Successfully uploaded!', 'inserted_rows': inserted})
     except Batch.DoesNotExist:
         return Response({'error': 'Invalid batch id.'}, status=status.HTTP_400_BAD_REQUEST)
     except Semester.DoesNotExist:
@@ -2136,8 +2191,22 @@ def student_next_sem_courses(request):
         return Response({"error": "User is not a student"}, status=status.HTTP_403_FORBIDDEN)  # 403 Forbidden - DRF style
 
     obj = Student.objects.select_related('id', 'id__user', 'id__department').get(id=user_details.id)
+    
+    # Check if PhD student - they don't have semester-based courses like UG/PG
+    is_phd_student = obj.programme and obj.programme.upper() == 'PHD'
+    if is_phd_student:
+        return Response({
+            "courses_list": [],
+            "message": "PhD students don't follow semester-based course structure"
+        }, status=status.HTTP_200_OK)
+    
     batch = obj.batch_id
+    if not batch:
+        return Response({"error": "Student batch not found"}, status=status.HTTP_404_NOT_FOUND)
+    
     curr_id = batch.curriculum
+    if not curr_id:
+        return Response({"error": "Curriculum not found for student batch"}, status=status.HTTP_404_NOT_FOUND)
 
     try:
         semester_no = obj.curr_semester_no
@@ -2163,6 +2232,16 @@ def course_registration_view(request):
         current_user = request.user
         user_details = current_user.extrainfo
         student = Student.objects.get(id=user_details)
+
+        # Check if PhD student - they don't have course registrations like UG/PG
+        is_phd_student = student.programme and student.programme.upper() == 'PHD'
+        if is_phd_student:
+            return Response({
+                "reg_data": [],
+                "sem_no": 1,
+                "semester_type": "Odd Semester",
+                "message": "PhD students don't follow traditional course registration"
+            }, status=status.HTTP_200_OK)
 
         semester_no = request.query_params.get('semester', student.curr_semester_no)
         semester_type = request.query_params.get('semester_type', 'Even Semester' if student.curr_semester_no%2==0 else 'Odd Semester')
@@ -3767,8 +3846,24 @@ HOD_SPECIALIZATION_MAPPING = {
 }
 
 def check_role(request, required_role):
-    role = request.query_params.get('role') if request.method=='GET' else request.data.get('role')
-    return role == required_role
+    # Authorize from the user's real designation, never a client-supplied role
+    from django.db.models import Q
+    user = request.user
+    if not getattr(user, "is_authenticated", False):
+        return False
+    held = HoldsDesignation.objects.filter(Q(working=user) | Q(user=user))
+    if required_role == 'hod':
+        return held.filter(designation__name__istartswith='HOD').exists()
+    if required_role == 'faculty':
+        return (
+            Faculty.objects.filter(id__user=user).exists()
+            or held.filter(
+                designation__name__in=[
+                    'Professor', 'Associate Professor', 'Assistant Professor',
+                ]
+            ).exists()
+        )
+    return held.filter(designation__name=required_role).exists()
 
 def get_allowed_specs(user):
     """
@@ -3941,7 +4036,11 @@ def hod_approve(request, sid):
 def faculty_assignments(request):
     # if not check_role(request,'faculty'):
     #     return Response({'error':'role=faculty required'}, status=status.HTTP_403_FORBIDDEN)
-    qs = Assignment.objects.filter(faculty__id__username='skjain')
+    try:
+        faculty = Faculty.objects.get(id=request.user.extrainfo)
+        qs = Assignment.objects.filter(faculty=faculty)
+    except Faculty.DoesNotExist:
+        return Response({'error': 'Faculty profile not found'}, status=status.HTTP_404_NOT_FOUND)
     data = [{
         'id': a.id,
         'ta_username': a.ta.id.user.username,
@@ -3957,9 +4056,13 @@ from django.db.models import Q
 def faculty_pending(request):
     if not check_role(request,'faculty'):
         return Response({'error':'role=faculty required'}, status=status.HTTP_403_FORBIDDEN)
-    now = datetime.now()
+    try:
+        faculty = Faculty.objects.get(id=request.user.extrainfo)
+    except Faculty.DoesNotExist:
+        return Response({'error': 'Faculty profile not found'}, status=status.HTTP_404_NOT_FOUND)
+    now = datetime.datetime.now()
     qs = StipendRequest.objects.filter(
-        assignment__faculty=request.user.faculty,
+        assignment__faculty=faculty,
         status=StipendRequest.PENDING
     ).filter(
         Q(year__lt=now.year) |
@@ -3974,8 +4077,12 @@ def faculty_pending(request):
 def faculty_approved(request):
     if not check_role(request,'faculty'):
         return Response({'error':'role=faculty required'}, status=status.HTTP_403_FORBIDDEN)
+    try:
+        faculty = Faculty.objects.get(id=request.user.extrainfo)
+    except Faculty.DoesNotExist:
+        return Response({'error': 'Faculty profile not found'}, status=status.HTTP_404_NOT_FOUND)
     qs = StipendRequest.objects.filter(
-        assignment__faculty=request.user.faculty,
+        assignment__faculty=faculty,
         status=StipendRequest.FAC_APPROVED
     )
     data = [{'id': s.id, 'ta': s.assignment.ta.id.user.username,
@@ -4024,7 +4131,7 @@ def registered_slots(request):
         session, semester_type = generate_current_session(datetime.datetime.now().year, student.curr_semester_no) 
         eligibility_resp = get_replace_registration_eligibility(timezone.now().date(), student.curr_semester_no, datetime.datetime.now().year)
         if isinstance(eligibility_resp, JsonResponse):
-            return eligibility_resp
+            return JsonResponse([], safe=False)
         
         # Exclude slots with pending drop requests
         pending_drop_slots = CourseDropRequest.objects.filter(
@@ -5655,11 +5762,24 @@ def apply_promotion(request):
                 continue
             old_sem = student.curr_semester_no
             new_sem = old_sem + 1
+            
+            # For PhD students, dynamically create next semester
+            is_phd = hasattr(student, 'programme') and student.programme == 'PHD'
+            
             try:
-                semester_obj = Semester.objects.get(curriculum=student.batch_id.curriculum,semester_no=new_sem)
+                semester_obj = Semester.objects.get(curriculum=student.batch_id.curriculum, semester_no=new_sem)
             except Semester.DoesNotExist:
-                errors.append({"index": idx, "detail": f"Semester {new_sem} not defined."})
-                continue
+                if is_phd:
+                    # Create the semester for PhD students
+                    semester_obj = Semester.objects.create(
+                        curriculum=student.batch_id.curriculum,
+                        semester_no=new_sem,
+                        semester_name=f"Semester {new_sem}"
+                    )
+                    # Note: Admin needs to manually add thesis course to this semester via CourseSlot
+                else:
+                    errors.append({"index": idx, "detail": f"Semester {new_sem} not defined for student {sid}."})
+                    continue
             student.curr_semester_no = new_sem
             student.save()
             frs = FinalRegistration.objects.filter(student_id=student, verified=False, semester_id = semester_obj)
@@ -5793,3 +5913,2168 @@ def apply_promotion(request):
 #                 created.append(uname)
 #     status_code = status.HTTP_207_MULTI_STATUS if errors else status.HTTP_201_CREATED
 #     return JsonResponse({"created": created, "errors": errors}, status=status_code)
+
+
+# ============================================================================
+# PhD-SPECIFIC VIEW FUNCTIONS (Added for PhD student management)
+# ============================================================================
+# These functions handle PhD-specific workflows like thesis registration,
+# seminar reports, RPC committees, and external review invitations.
+# They are separate from UG/PG functions to maintain production stability.
+# ============================================================================
+
+def thesis_to_dict(t):
+    """Serialize a ThesisTopic instance for JSON responses."""
+    return {
+        "id": t.id,
+        "student_roll": t.student.id.id,
+        "student_name": t.student.id.user.get_full_name(),
+        "student_discipline": t.student.specialization,
+        "category": t.category,
+        "broad_area": t.broad_area,
+        "research_theme": t.research_theme,
+        "supervisor": {"id": t.supervisor.id.id, "name": str(t.supervisor), "discipline": (t.supervisor.id.department.name if t.supervisor.id.department else "")},
+        "co_supervisor": (
+            {"id": t.co_supervisor.id.id, "name": str(t.co_supervisor), "discipline": (t.co_supervisor.id.department.name if t.co_supervisor.id.department else "")}
+            if t.co_supervisor else None
+        ),
+        "supervisor_consented": t.supervisor_consented,
+        "co_supervisor_consented": t.co_supervisor_consented,
+        "external": {
+            "ext_name": t.external_name,
+            "ext_email": t.external_email,
+            "ext_discipline": t.external_discipline,
+            "ext_institution": t.external_institution,
+        },
+        "load": {
+            "pg_single": t.pg_single,
+            "pg_shared": t.pg_shared,
+            "phd_single": t.phd_single,
+            "phd_shared": t.phd_shared,
+        },
+        "committee": [
+            {
+                "id": cm.member.id.id,
+                "name": str(cm.member),
+                "discipline": (cm.member.id.department.name if cm.member.id.department else ""),
+            }
+            for cm in CommitteeMember.objects.filter(thesis = t).all()
+        ],
+        "status": t.status,
+        "hod_remarks": t.hod_remarks,
+        "dean_remarks" : t.dean_remarks
+    }
+
+
+# 1. Student APIs
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def student_thesis_api(request):
+    """
+    GET  /stu/thesis/             → fetch ({} if none)
+    POST /stu/thesis/             → create/update when status == supervisor_pending or new
+    """
+    user = request.user
+    try:
+        user_details = user.extrainfo
+        student = Student.objects.get(id=user_details)
+    except Student.DoesNotExist:
+        return JsonResponse({"error": "Student record not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": f"User setup error: {type(e).__name__}: {e}"}, status=400)
+
+    try:
+        thesis = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
+
+        if request.method == 'GET':
+            return JsonResponse(thesis_to_dict(thesis) if thesis else {}, status=200)
+    except Exception as e:
+        return JsonResponse({"error": f"Internal error: {type(e).__name__}: {e}"}, status=500)
+
+    # POST: only if no thesis yet or status is supervisor_pending
+    if thesis and thesis.status != 'supervisor_pending':
+        return JsonResponse(
+            {"error": "Cannot edit once under review past supervisor."},
+            status=403
+        )
+
+    data = request.data
+    if not thesis:
+        thesis = ThesisTopic(student=student)
+
+    thesis.category            = data['category']
+    thesis.broad_area          = data['broad_area']
+    thesis.research_theme      = data['research_theme']
+    thesis.supervisor_id       = data['supervisor_id']
+    thesis.co_supervisor_id    = data.get('co_supervisor_id')
+    thesis.external_name       = data.get('external_name', '')
+    thesis.external_email      = data.get('external_email', '')
+    thesis.external_discipline = data.get('external_discipline', '')
+    thesis.external_institution= data.get('external_institution', '')
+    thesis.status              = 'supervisor_pending'
+    thesis.save()
+
+    return JsonResponse(thesis_to_dict(thesis), status=201)
+
+
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import mm
+from reportlab.platypus import (
+    SimpleDocTemplate, Paragraph, Spacer,
+    Table, TableStyle, Image
+)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def student_download_pdf_api(request):
+    thesis = get_object_or_404(ThesisTopic, student__id=request.user.extrainfo)
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        leftMargin=15 * mm,
+        rightMargin=15 * mm,
+        topMargin=20 * mm,
+        bottomMargin=15 * mm
+    )
+
+    styles = getSampleStyleSheet()
+    normal = styles['Normal']
+    bold = ParagraphStyle('Bold', parent=normal, fontName='Helvetica-Bold')
+    elements = []
+
+    # Header
+    logo = Image('./media/logo2.jpg', width=25 * mm, height=25 * mm)
+    college_name = Paragraph(
+        '<b>Indian Institute of Information Technology, Design and Manufacturing, Jabalpur</b><br/>',
+        ParagraphStyle('Header', parent=styles['Title'], alignment=1)
+    )
+    header_tbl = Table([[logo, college_name]], colWidths=[30 * mm, 150 * mm])
+    header_tbl.setStyle(TableStyle([
+        ('VALIGN',      (0, 0), (-1, -1), 'MIDDLE'),
+        ('ALIGN',       (1, 0), (1, 0), 'CENTER'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+    ]))
+    elements.extend([header_tbl, Spacer(1, 12)])
+    elements.extend([Paragraph('<u>Thesis Topic Submission Form</u>', styles['Heading2']), Spacer(1, 20)])
+
+    # Form fields data
+    data = [
+        [Paragraph('<b>Roll Number:</b>', bold), thesis.student.id.id],
+        [Paragraph('<b>Student Name:</b>', bold), thesis.student.id.user.get_full_name()],
+        [Paragraph('<b>Discipline:</b>', bold), thesis.student.specialization],
+        [Paragraph('<b>Category:</b>', bold), thesis.category],
+        [Paragraph('<b>Broad Area:</b>', bold), thesis.broad_area],
+        [Paragraph('<b>Research Theme:</b>', bold),
+         Paragraph(thesis.research_theme.replace('\n', '<br/>'), normal)],
+        [Paragraph('<b>Supervisor:</b>', bold), thesis.supervisor.id.user.get_full_name()],
+    ]
+    if thesis.co_supervisor:
+        data.append([Paragraph('<b>Co-Supervisor:</b>', bold), thesis.co_supervisor.id.user.get_full_name()])
+    if thesis.external_name:
+        data.extend([
+            [Paragraph('<b>External Supervisor:</b>', bold), thesis.external_name],
+            [Paragraph('<b>Email:</b>', bold), thesis.external_email],
+            [Paragraph('<b>Discipline:</b>', bold), thesis.external_discipline],
+            [Paragraph('<b>Institution:</b>', bold), thesis.external_institution],
+        ])
+
+    # Create the form table with increased row heights
+    form_tbl = Table(
+        data,
+        colWidths=[55 * mm, 125 * mm],
+        rowHeights=[13 * mm] * len(data)  # each row is 15 mm tall
+    )
+    form_tbl.setStyle(TableStyle([
+        ('GRID',          (0, 0), (-1, -1), 0.4, colors.grey),
+        ('VALIGN',        (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING',   (0, 0), (-1, -1), 8),
+        ('RIGHTPADDING',  (0, 0), (-1, -1), 8),
+        ('TOPPADDING',    (0, 0), (-1, -1), 10),  # extra breathing room
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+        ('BACKGROUND',    (0, 0), (0, -1), colors.whitesmoke),
+    ]))
+    elements.extend([form_tbl, Spacer(1, 40)])
+
+    # Signatures: two per row
+    sig_line = '__________    Date: _______'
+    row1 = [
+        Paragraph('<b>Supervisor Sig.:</b>', bold), sig_line,
+        Paragraph('<b>Co-Supervisor Sig.:</b>', bold) if thesis.co_supervisor else '',
+        sig_line if thesis.co_supervisor else ''
+    ]
+    sig_tbl = Table([row1], colWidths=[30 * mm, 60 * mm, 30 * mm, 60 * mm])
+    sig_tbl.setStyle(TableStyle([
+        ('VALIGN',        (0, 0), (-1, -1), 'BOTTOM'),
+        ('LEFTPADDING',   (0, 0), (-1, -1), 4),
+        ('RIGHTPADDING',  (0, 0), (-1, -1), 4),
+        ('TOPPADDING',    (0, 0), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+    ]))
+    elements.append(sig_tbl)
+
+    # Build and return PDF
+    doc.build(elements)
+    buffer.seek(0)
+    return HttpResponse(buffer, content_type='application/pdf')
+# 2. Faculty list for dropdowns
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def faculty_list_api(request):
+    """
+    GET /faculty/ → all faculty {id, name, discipline}
+    """
+    qs = Faculty.objects.select_related('id__user', 'id__department')
+    data = []
+    for f in qs:
+        user = f.id.user
+        dept = f.id.department
+        data.append({
+            'id': f.id.id,
+            'name': f"{user.first_name} {user.last_name}",
+            'discipline': dept.name if dept else '',
+        })
+    return JsonResponse(data, safe=False)
+
+
+# 3. Supervisor endpoints
+from django.db import models
+
+from django.db.models import Q
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from django.http import JsonResponse
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def supervisor_thesis_topic_dashboard(request):
+    """
+    GET /supervisor/dashboard/
+    → returns { pending, forwarded }
+      for any thesis where request.user is either supervisor OR co_supervisor.
+    """
+    ex = request.user
+
+    qs = ThesisTopic.objects.filter(
+        Q(supervisor__id=ex.username) | Q(co_supervisor__id=ex.username)
+    )
+    print(qs)
+
+    pending_statuses = ['supervisor_pending', 'hod_rejected']
+    pending_qs = qs.filter(status__in=pending_statuses)
+
+    forwarded_qs = qs.exclude(status__in=pending_statuses)
+
+    return JsonResponse({
+        'pending':   [thesis_to_dict(t) for t in pending_qs],
+        'forwarded': [thesis_to_dict(t) for t in forwarded_qs],
+    })
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def supervisor_review_api(request, pk):
+    thesis = get_object_or_404(ThesisTopic, pk=pk)
+    user_ex   = request.user.username
+    is_sup    = (thesis.supervisor_id == user_ex)
+    is_co     = (thesis.co_supervisor and thesis.co_supervisor_id == user_ex)
+
+    if request.method == 'GET':
+        payload = thesis_to_dict(thesis)
+        payload.update({"is_supervisor": is_sup, "is_co_supervisor": is_co})
+        return JsonResponse(payload, status=200)
+
+    if thesis.status != 'supervisor_pending' and thesis.status != 'hod_rejected':
+        return JsonResponse({"error": "Cannot review at this stage."}, status=403)
+
+    data = request.data
+
+    if 'research_theme' in data:
+        thesis.research_theme = data['research_theme']
+
+    if is_co and not is_sup:
+        if thesis.co_supervisor_consented:
+            return JsonResponse({"error": "Already consented."}, status=400)
+        if data.get('co_supervisor_consented'):
+            thesis.co_supervisor_consented = True
+            thesis.save()
+            return JsonResponse({"message": "Co-Supervisor consent recorded."}, status=200)
+        return JsonResponse({"error": "Invalid consent payload."}, status=400)
+
+    if is_sup:
+
+        if not (thesis.supervisor_consented and
+                (not thesis.co_supervisor or thesis.co_supervisor_consented)):
+
+            thesis.pg_single  = data.get('pg_single', thesis.pg_single)
+            thesis.pg_shared  = data.get('pg_shared', thesis.pg_shared)
+            thesis.phd_single = data.get('phd_single', thesis.phd_single)
+            thesis.phd_shared = data.get('phd_shared', thesis.phd_shared)
+
+            CommitteeMember.objects.filter(thesis=thesis).delete()
+            print(data.get('committee', []))
+            for member_id in data.get('committee', []):
+                CommitteeMember.objects.create(thesis=thesis, member_id=member_id)
+
+            CommitteeMember.objects.get_or_create(thesis=thesis, member_id=thesis.supervisor_id)
+            if thesis.co_supervisor_id:
+                CommitteeMember.objects.get_or_create(thesis=thesis, member_id=thesis.co_supervisor_id)
+
+        if not thesis.supervisor_consented and data.get('supervisor_consented'):
+            thesis.supervisor_consented = True
+
+        sup_ok = thesis.supervisor_consented
+        co_ok  = (not thesis.co_supervisor) or thesis.co_supervisor_consented
+
+        if sup_ok and co_ok:
+            total_rpc = CommitteeMember.objects.filter(thesis=thesis).count()
+            if total_rpc < 3:
+                return JsonResponse(
+                    {"error": "Need at least 3 RPC members (including supervisor/co-supervisor)."},
+                    status=400
+                )
+            thesis.status = 'hod_pending'
+            thesis.save()
+            return JsonResponse(
+                {"message": "Forwarded to HOD successfully.", "status": thesis.status},
+                status=200
+            )
+
+        thesis.save()
+        return JsonResponse(
+            {"message": "Supervisor changes saved; awaiting all consents and RPC ≥ 3."},
+            status=200
+        )
+
+    return JsonResponse({"error": "Not authorized."}, status=403)
+
+# 4. HOD endpoints
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def hod_dashboard(request):
+    """
+    GET /hod/dashboard/ → { pending, approved, rejected }
+    filtered by HOD designation held by the user.
+    
+    - pending statuses: ['dean_rejected', 'hod_pending']
+    - approved statuses: ['hod_approved', 'dean_approved']
+    - rejected statuses: ['hod_rejected']
+    """
+    user = request.user
+    data = {'pending': [], 'approved': [], 'rejected': []}
+
+    STATUS_PENDING  = ['dean_rejected', 'hod_pending']
+    STATUS_APPROVED = ['hod_approved', 'dean_approved']
+    STATUS_REJECTED = ['hod_rejected']
+    all_statuses = STATUS_PENDING + STATUS_APPROVED + STATUS_REJECTED
+
+    # Get HOD designations for this user
+    hod_designations = HoldsDesignation.objects.filter(
+        working=user,
+        designation__name__icontains='HOD'
+    ).values_list('designation__name', flat=True)
+    
+    # Extract disciplines from HOD designations (e.g., "HOD (CSE)" -> "CSE")
+    hod_disciplines = []
+    for des_name in hod_designations:
+        if '(' in des_name and ')' in des_name:
+            discipline = des_name[des_name.index('(')+1:des_name.index(')')].strip()
+            hod_disciplines.append(discipline)
+
+    qs = ThesisTopic.objects.filter(status__in=all_statuses).select_related('student', 'student__batch_id', 'student__batch_id__discipline')
+
+    for thesis in qs:
+        # Check if thesis student's discipline matches HOD's discipline
+        # Use discipline acronym (e.g., "CSE") to match with HOD designation (e.g., "HOD (CSE)")
+        student_discipline_acronym = None
+        if thesis.student.batch_id and thesis.student.batch_id.discipline:
+            student_discipline_acronym = thesis.student.batch_id.discipline.acronym
+        
+        if not student_discipline_acronym or student_discipline_acronym not in hod_disciplines:
+            continue
+
+        dto = thesis_to_dict(thesis)
+
+        if thesis.status in STATUS_PENDING:
+            data['pending'].append(dto)
+        elif thesis.status in STATUS_APPROVED:
+            data['approved'].append(dto)
+        else:  # thesis.status in STATUS_REJECTED
+            data['rejected'].append(dto)
+
+    return JsonResponse(data)
+
+
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
+def hod_review_api(request, pk):
+    thesis = get_object_or_404(ThesisTopic, pk=pk)
+    user = request.user
+    
+    # Check if user is HOD for the student's discipline
+    student_discipline_acronym = None
+    if thesis.student.batch_id and thesis.student.batch_id.discipline:
+        student_discipline_acronym = thesis.student.batch_id.discipline.acronym
+    
+    is_hod = False
+    if student_discipline_acronym:
+        # Check if user has HOD designation for this discipline
+        hod_des_name = f"HOD ({student_discipline_acronym})"
+        hod_designations = HoldsDesignation.objects.filter(
+            working=user,
+            designation__name=hod_des_name
+        ).exists()
+        is_hod = hod_designations
+
+    if request.method == 'GET':
+        data = thesis_to_dict(thesis)
+        return JsonResponse(data, status=200)
+
+    # POST
+    if not is_hod or thesis.status not in ['hod_pending','hod_rejected','dean_pending']:
+        return JsonResponse({"error":"Forbidden or invalid stage"}, status=403)
+
+    d = request.data
+    if d.get('approve'):
+        thesis.status      = 'hod_approved'
+        thesis.hod_remarks = ''
+    else:
+        thesis.status      = 'hod_rejected'
+        thesis.hod_remarks = d.get('remarks','')
+        thesis.supervisor_consented    = False
+        thesis.co_supervisor_consented = False
+        thesis.dean_remarks            = ''
+
+    thesis.save()
+    return JsonResponse({"status":thesis.status}, status=200)
+
+
+# 5. Dean endpoints
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def dean_dashboard(request):
+    """
+    GET /dean/dashboard/ → {pending, approved}
+    for theses with status in dean_pending/dean_approved.
+    """
+    data = {'pending': [], 'approved': [], 'rejected':[]}
+    qs = ThesisTopic.objects.filter(status__in=['dean_pending','dean_approved', 'hod_approved'])
+    for t in qs:
+        dto = thesis_to_dict(t)
+        bucket = 'pending' if t.status=='dean_pending' or t.status=='hod_approved' else \
+            'approved' if t.status=='dean_approved' else 'rejected'
+        data[bucket].append(dto)
+    return JsonResponse(data)
+
+
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
+def dean_review_api(request, pk):
+    thesis = get_object_or_404(ThesisTopic, pk=pk)
+    # Assume user is Dean
+    if request.method == 'GET':
+        data = thesis_to_dict(thesis)
+        return JsonResponse(data, status=200)
+
+    # POST
+    if thesis.status not in ['dean_pending','hod_approved']:
+        return JsonResponse({"error":"Forbidden or invalid stage"}, status=403)
+
+    d = request.data
+    if d.get('approve'):
+        thesis.status       = 'dean_approved'
+        thesis.dean_remarks = ''
+    else:
+        thesis.status       = 'hod_pending'
+        thesis.dean_remarks = d.get('remarks','')
+
+    thesis.save()
+    return JsonResponse({"status":thesis.status}, status=200)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def dean_generate_pdf_api(request, pk):
+    thesis = get_object_or_404(ThesisTopic, pk=pk)
+    if thesis.status != 'dean_approved':
+        return HttpResponse({"error": "Not fully approved"}, status=403)
+
+    buffer = BytesIO()
+    student_roll = thesis.student.id.id.replace(' ', '_')
+    filename = f"approved_thesis_{student_roll}.pdf"
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        leftMargin=15 * mm,
+        rightMargin=15 * mm,
+        topMargin=15 * mm,
+        bottomMargin=10 * mm,
+        title=filename,
+    )
+
+    styles = getSampleStyleSheet()
+    normal = styles['Normal']
+    normal.fontSize = 9
+    normal.leading = 11
+    bold = ParagraphStyle('Bold', parent=normal, fontName='Helvetica-Bold', fontSize=9)
+    title_center = ParagraphStyle('TitleCenter', parent=styles['Title'], alignment=1, fontSize=12)
+    heading2 = ParagraphStyle('H2', parent=styles['Heading2'], fontSize=11, spaceAfter=6)
+    heading3 = ParagraphStyle('H3', parent=styles['Heading3'], fontSize=10, spaceAfter=4)
+
+    elements = []
+
+    # Header
+    logo = Image('./media/logo2.jpg', width=22*mm, height=22*mm)
+    institute = Paragraph(
+        '<b>Indian Institute of Information Technology, Design and Manufacturing, Jabalpur</b>',
+        title_center
+    )
+    header = Table([[logo, institute]], colWidths=[28*mm, 152*mm])
+    header.setStyle(TableStyle([
+        ('VALIGN',      (0, 0), (-1, -1), 'MIDDLE'),
+        ('ALIGN',       (1, 0), (1, 0), 'CENTER'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING',(0, 0), (-1, -1), 0),
+    ]))
+    elements += [header, Spacer(1, 8)]
+    elements += [Paragraph('<u>Thesis Approval Summary</u>', heading2), Spacer(1, 6)]
+
+    # Form fields
+    form_data = [
+        ['Roll Number', thesis.student.id.id],
+        ['Student Name', thesis.student.id.user.get_full_name()],
+        ['Discipline', thesis.student.specialization],
+        ['Category', thesis.category],
+        ['Broad Area', thesis.broad_area],
+    ]
+    # research theme as separate row with wrapping
+    form_data.append(['Research Theme',
+                      Paragraph(thesis.research_theme.replace('\n', '<br/>'), normal)])
+    if thesis.co_supervisor:
+        form_data.append(['Co-Supervisor', thesis.co_supervisor.id.user.get_full_name()])
+    if thesis.external_name:
+        form_data += [
+            ['External Supervisor', thesis.external_name],
+            ['Email', thesis.external_email],
+            ['External Discipline', thesis.external_discipline],
+            ['Institution', thesis.external_institution],
+        ]
+
+    # All tables same total width: use available width = 160mm
+    total_width = 160 * mm
+    col1 = 50 * mm
+    col2 = total_width - col1
+
+    # Form table with reduced row height
+    form_tbl = Table(form_data, colWidths=[col1, col2], rowHeights=[8*mm]*len(form_data))
+    form_tbl.setStyle(TableStyle([
+        ('GRID',         (0, 0), (-1, -1), 0.4, colors.grey),
+        ('VALIGN',       (0, 0), (-1, -1), 'TOP'),
+        ('BACKGROUND',   (0, 0), (0, -1), colors.whitesmoke),
+        ('LEFTPADDING',  (0, 0), (-1, -1), 4),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 4),
+        ('TOPPADDING',   (0, 0), (-1, -1), 3),
+        ('BOTTOMPADDING',(0, 0), (-1, -1), 3),
+        ('FONTSIZE',     (0, 0), (-1, -1), 9),
+    ]))
+    elements += [form_tbl, Spacer(1, 8)]
+
+    # Supervision Load
+    load_data = [
+        ['Category', 'Single', 'Shared'],
+        ['PG', str(thesis.pg_single), str(thesis.pg_shared)],
+        ['PhD', str(thesis.phd_single), str(thesis.phd_shared)],
+    ]
+    load_tbl = Table(load_data, colWidths=[col1, (total_width-col1)/2, (total_width-col1)/2], rowHeights=[7*mm]*3)
+    load_tbl.setStyle(TableStyle([
+        ('GRID',       (0, 0), (-1, -1), 0.4, colors.grey),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN',      (1, 1), (-1, -1), 'CENTER'),
+        ('VALIGN',     (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING',(0,0),(-1,-1),3),('RIGHTPADDING',(0,0),(-1,-1),3),
+        ('TOPPADDING',(0,0),(-1,-1),2),('BOTTOMPADDING',(0,0),(-1,-1),2),
+        ('FONTSIZE',   (0, 0), (-1, -1), 9),
+    ]))
+    elements += [Paragraph('<b>Supervision Load</b>', heading3), load_tbl, Spacer(1, 8)]
+
+    # Committee
+    comm = [['Member', 'Discipline']]
+    for cm in thesis.committee.all():
+        comm.append([cm.member.id.user.get_full_name(), cm.member.id.department.name or ''])
+    comm_tbl = Table(comm, colWidths=[col1, col2], rowHeights=[7*mm]*len(comm))
+    comm_tbl.setStyle(TableStyle([
+        ('GRID',       (0, 0), (-1, -1), 0.4, colors.grey),
+        ('BACKGROUND',(0, 0), (-1, 0), colors.whitesmoke),
+        ('VALIGN',     (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING',(0,0),(-1,-1),3),('RIGHTPADDING',(0,0),(-1,-1),3),
+        ('TOPPADDING',(0,0),(-1,-1),2),('BOTTOMPADDING',(0,0),(-1,-1),2),
+        ('FONTSIZE',   (0, 0), (-1, -1), 9),
+    ]))
+    elements += [Paragraph('<b>RPC Committee Members</b>', heading3), comm_tbl, Spacer(1, 8)]
+
+    # Signatures: one per line (compact but readable)
+    sig_labels = [
+        ('Supervisor Signature:', 'Date:'),
+        ('Co-Supervisor Signature:', 'Date:') if thesis.co_supervisor else None,
+        ('HOD Signature:', 'Date:'),
+        ('Dean Signature:', 'Date:')
+    ]
+    # Ensure all signature rows have equal, large vertical spacing
+    # Use moderate spacing and group all signature rows to avoid page break
+    sig_row_space = 18  # mm, balanced for single page
+    sig_tables = []
+    for label_pair in sig_labels:
+        if label_pair:
+            label = label_pair[0]
+            sig_tbl = Table(
+                [[
+                    Paragraph(f'<b>{label}</b>', bold),
+                    '__________________________',
+                    Paragraph(f'<b>{label_pair[1]}</b>', bold),
+                    '_______________'
+                ]],
+                colWidths=[45*mm, 55*mm, 15*mm, 45*mm],
+                rowHeights=[12*mm]  # force equal height for all signature rows
+            )
+            sig_tbl.setStyle(TableStyle([
+                ('VALIGN', (0, 0), (-1, -1), 'BOTTOM'),
+                ('LEFTPADDING',(0,0),(-1,-1),2),
+                ('RIGHTPADDING',(0,0),(-1,-1),2),
+                # Remove any background for all rows
+            ]))
+            sig_tables += [sig_tbl, Spacer(1, sig_row_space)]
+    # Use KeepTogether to prevent page break in signature block
+    from reportlab.platypus import KeepTogether
+    elements.append(KeepTogether(sig_tables))
+
+    doc.build(elements)
+    buffer.seek(0)
+    
+    # Set proper filename without spaces
+    buffer.seek(0)
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = (
+        f"attachment; filename=\"{filename}\"; filename*=UTF-8''{filename}"
+    )
+    return response
+
+
+# Seminar Views
+# 1. STUDENT
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_reports(request):
+    thesis = get_object_or_404(ThesisTopic, student_id=request.user.username)
+    data = [{
+        "id":         s.id,
+        "version":    s.version,
+        "status":     s.status,
+        "created_at": s.created_at.isoformat(),
+    } for s in thesis.seminars.order_by('version')]
+
+    print(data)
+    print(thesis.status)
+    return JsonResponse(data, safe=False)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_report(request, thesis_pk):
+    thesis = get_object_or_404(ThesisTopic, pk=thesis_pk, student_id=request.user.username)
+    if thesis.status != 'dean_approved':
+        return JsonResponse({"error":"Thesis not Dean-approved."}, status=403)
+
+    # versioning
+    last = thesis.seminars.order_by('-version').first()
+    version = (last.version + 1) if last else 1
+
+    seminar = SeminarEntry.objects.create(
+        thesis=thesis,
+        version=version,
+        status='rpc_pending',
+        seminar_date  = request.data.get('date') or None,
+        seminar_time  = request.data.get('time') or None,
+        seminar_venue = request.data.get('venue',''),
+        summary_prev  = request.data.get('prev',''),
+        summary_curr  = request.data.get('curr',''),
+        future_plan   = request.data.get('future',''),
+        upload_doc    = request.FILES.get('doc', None),
+    )
+
+    # parse publications payload
+    pubs = request.data.get('publications', [])
+    if isinstance(pubs, str):
+        try:
+            pubs = json.loads(pubs)
+        except json.JSONDecodeError:
+            pubs = []
+
+    # rebuild PublicationCount rows
+    PublicationCount.objects.filter(seminar=seminar).delete()
+    for p in pubs:
+        # guard against bad entries
+        cat = p.get('category')
+        if not cat:
+            continue
+        PublicationCount.objects.create(
+            seminar   = seminar,
+            category  = cat,
+            submitted = int(p.get('submitted', 0) or 0),
+            accepted  = int(p.get('accepted',  0) or 0),
+            published = int(p.get('published', 0) or 0),
+        )
+
+    return JsonResponse({
+        "id": seminar.id,
+        "message": "Seminar submitted; awaiting RPC consent."
+    }, status=201)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def detail_report(request, pk):
+    s = get_object_or_404(SeminarEntry, pk=pk, thesis__student_id=request.user.username)
+    return JsonResponse({
+        "id":      s.id,
+        "version": s.version,
+        "status":  s.status,
+        "date":    str(s.seminar_date or ""),
+        "time":    str(s.seminar_time or ""),
+        "venue":   s.seminar_venue,
+        "prev":    s.summary_prev,
+        "curr":    s.summary_curr,
+        "future":  s.future_plan,
+        "doc_url": s.upload_doc.url if s.upload_doc else None,
+        "publications": [
+            {
+              "category":  pc.category,
+              "submitted": pc.submitted,
+              "accepted":  pc.accepted,
+              "published": pc.published,
+            }
+            for pc in s.pub_counts.all()
+        ],
+    })
+
+# 2. RPC
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def rpc_seminar_list(request):
+    faculty = get_object_or_404(Faculty, id__user=request.user)
+    all_entries = SeminarEntry.objects.filter(
+        thesis__committee__member=faculty
+    ).distinct()
+
+    def serialize(qs):
+        return [
+            {
+                "id":      s.id,
+                "version": s.version,
+                "student": s.thesis.student.id.user.get_full_name(),
+                "thesis":  str(s.thesis),
+                "status":  s.status,
+            }
+            for s in qs
+        ]
+
+    return Response({
+        "pending":  serialize(all_entries.filter(status='rpc_pending')),
+        "approved": serialize(all_entries.filter(status='rpc_approved')),
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def rpc_detail(request, pk):
+    faculty = get_object_or_404(Faculty, id__user=request.user)
+    seminar = get_object_or_404(SeminarEntry, pk=pk)
+    if not CommitteeMember.objects.filter(thesis=seminar.thesis, member=faculty).exists():
+        return JsonResponse({"error": "Not on committee."}, status=403)
+    
+    student_extra = seminar.thesis.student.id
+    student_name  = student_extra.user.first_name + student_extra.user.last_name
+    roll_number   = student_extra.user.username
+    discipline    = seminar.thesis.student.specialization
+    thesis_title  = str(seminar.thesis)
+
+    pubs = [
+        {
+            "category": p.category,
+            "submitted": p.submitted,
+            "accepted": p.accepted,
+            "published": p.published
+        }
+        for p in seminar.pub_counts.all()
+    ]
+
+    panel = {
+        f: getattr(seminar, f) for f in [
+            'quality', 'quantity', 'overall_grade', 'expected_period',
+            'rec_assist', 'rec_enhance', 'rec_repeat', 'rec_open'
+        ]
+    }
+
+    committee = []
+    for cm in CommitteeMember.objects.filter(thesis=seminar.thesis).select_related('member__id__user', 'member__id__department'):
+        fac = cm.member
+        extra = fac.id
+        consented = SeminarConsent.objects.filter(seminar=seminar, member=fac, consented=True).exists()
+        committee.append({
+            "id": extra.id,
+            "name": f"{extra.user.first_name} {extra.user.last_name}",
+            "discipline": extra.department.name if extra.department else "",
+            "consented": consented,
+        })
+
+    comments = [
+        {
+            "member": c.member.id.user.first_name + c.member.id.user.last_name,
+            "text": c.text,
+            "timestamp": c.timestamp.isoformat()
+        }
+        for c in seminar.comments.all()
+    ]
+
+    my_comment = SeminarComment.objects.filter(seminar=seminar, member=faculty).first()
+    is_consented = SeminarConsent.objects.filter(seminar=seminar, member=faculty, consented=True).exists()
+
+    payload = {
+        "studentName":  student_name,
+        "rollNumber":   roll_number,
+        "discipline":   discipline,
+        "thesisTitle":  thesis_title,
+        "id": seminar.id,
+        "version": seminar.version,
+        "date": seminar.seminar_date.isoformat() if seminar.seminar_date else "",
+        "time": seminar.seminar_time.isoformat() if seminar.seminar_time else "",
+        "venue": seminar.seminar_venue,
+        "prev": seminar.summary_prev,
+        "curr": seminar.summary_curr,
+        "future": seminar.future_plan,
+        "doc_url": seminar.upload_doc.url if seminar.upload_doc else None,
+        "publications": pubs,
+        **panel,
+        "committee": committee,
+        "committeeSize": len(committee),
+        "consentedCount": sum(1 for m in committee if m["consented"]),
+        "comments": comments,
+        "myComment": my_comment.text if my_comment else "",
+        "isConsented": is_consented,
+        "status": seminar.status,
+    }
+
+    return JsonResponse(payload)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def rpc_consent(request, pk):
+    faculty = get_object_or_404(Faculty, id__user=request.user)
+    seminar = get_object_or_404(SeminarEntry, pk=pk, status='rpc_pending')
+    if not CommitteeMember.objects.filter(thesis=seminar.thesis, member=faculty).exists():
+        return JsonResponse({"error": "Not on committee."}, status=403)
+
+    data = request.data
+    panel_fields = [
+        'quality', 'quantity', 'overall_grade', 'expected_period',
+        'rec_assist', 'rec_enhance', 'rec_repeat', 'rec_open'
+    ]
+
+    changed = any(
+        field in data and getattr(seminar, field) != data[field]
+        for field in panel_fields
+    )
+    if changed:
+        SeminarConsent.objects.filter(seminar=seminar).update(consented=False)
+
+    for field in panel_fields:
+        if field in data:
+            setattr(seminar, field, data[field])
+    seminar.save()
+
+    if 'comment' in data:
+        SeminarComment.objects.update_or_create(
+            seminar=seminar,
+            member=faculty,
+            defaults={'text': data['comment']}
+        )
+
+    consent_obj, _ = SeminarConsent.objects.get_or_create(seminar=seminar, member=faculty)
+    consent_obj.consented = True
+    consent_obj.save()
+
+    return JsonResponse({"message": "Consent & data recorded."})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def rpc_finalize(request, pk):
+    faculty = get_object_or_404(Faculty, id__user=request.user)
+    seminar = get_object_or_404(SeminarEntry, pk=pk, status='rpc_pending')
+    if not CommitteeMember.objects.filter(thesis=seminar.thesis, member=faculty).exists():
+        return JsonResponse({"error": "Not on committee."}, status=403)
+
+    total = CommitteeMember.objects.filter(thesis=seminar.thesis).count()
+    yes = SeminarConsent.objects.filter(seminar=seminar, consented=True).count()
+
+    if yes < total:
+        return JsonResponse({"error": "Not all consents recorded."}, status=400)
+
+    seminar.status = 'rpc_approved'
+    seminar.save()
+    return JsonResponse({"message": "Seminar approved."})
+
+
+from applications.academic_procedures.models import ThesisSubmission, ReviewInvitation, ThesisReview, ExaminerBankDetails
+from applications.academic_procedures.utils import (
+    send_invitation_email,
+    send_review_form_email,
+    send_thank_you_email,
+    advance_invitation,
+    INVITATION_TIMEOUT_DAYS,
+)
+
+# 1. Student submits thesis
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
+def thesis_submit(request):
+    user = request.user
+    try:
+        user_details = user.extrainfo
+        student = Student.objects.get(id=user_details)
+    except Student.DoesNotExist:
+        return Response({'error': 'Student record not found.'}, 404)
+    thesis = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
+    if thesis is None:
+        return Response({'error': 'No thesis found for given submission.'}, 400)
+    syn   = request.FILES.get('synopsis')
+    rpt   = request.FILES.get('thesis_report')
+    if not all([syn, rpt]):
+        return Response({'error': 'Missing fields'}, 400)
+    if syn.size > 5*1024*1024 or rpt.size > 25*1024*1024:
+        return Response({'error': 'File too large'}, 400)
+    sub = ThesisSubmission.objects.create(
+        thesis = thesis,
+        synopsis=syn,
+        thesis_report=rpt,
+        status='submitted'
+    )
+    return Response({'submission_id': sub.id}, status=201)
+
+def _serialize_invitations(sub):
+    """Return (indian_examiners, foreign_examiners) lists for a submission's panel."""
+    invites = ReviewInvitation.objects.filter(submission=sub).order_by('examiner_type', 'priority')
+    indian, foreign = [], []
+    for inv in invites:
+        data = {
+            'token': str(inv.token),
+            'name': inv.prof_name,
+            'position': inv.prof_position,
+            'address': inv.prof_address,
+            'phone': inv.prof_phone,
+            'fax': inv.prof_fax,
+            'email': inv.prof_email,
+            'priority': inv.priority,
+            'status': inv.status,
+        }
+        if inv.examiner_type == 'foreign':
+            data['time_ranking'] = inv.prof_time_ranking
+            foreign.append(data)
+        else:
+            indian.append(data)
+    return indian, foreign
+
+
+# 1) Supervisor dashboard: pending vs forwarded
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def supervisor_dashboard(request):
+    ex = request.user
+    topics = ThesisTopic.objects.filter(
+        Q(supervisor__id=ex.username) | Q(co_supervisor__id=ex.username)
+    )
+    pending = ThesisSubmission.objects.filter(status='submitted', thesis__in=topics)
+    forwarded = ThesisSubmission.objects.filter(thesis__in=topics).exclude(status='submitted')
+
+    def serialize(sub):
+        return {
+            'id': sub.id,
+            'title': sub.thesis.research_theme,
+            'submitted_at': sub.submitted_at,
+            'supervisor_approved_at': sub.supervisor_approved_at,
+            'status': sub.status
+        }
+
+    return Response({
+        'pending':   [serialize(s) for s in pending],
+        'forwarded': [serialize(s) for s in forwarded],
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def supervisor_submission_detail(request, submission_id):
+    """
+    Returns the already‐assigned examiners so the panel can render
+    in read-only mode when status != 'submitted'.
+    """
+    sub = get_object_or_404(ThesisSubmission, id=submission_id)
+    indian, foreign = _serialize_invitations(sub)
+    return Response({
+        'indian_examiners': indian,
+        'foreign_examiners': foreign,
+    })
+
+
+# 3) Supervisor assign examiners
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def supervisor_assign(request):
+    data = request.data
+    sub = get_object_or_404(ThesisSubmission, id=data.get('submission_id'))
+
+    # Only the thesis's own supervisor/co-supervisor may assign its panel.
+    topic = sub.thesis
+    allowed_users = {topic.supervisor.id.user_id}
+    if topic.co_supervisor:
+        allowed_users.add(topic.co_supervisor.id.user_id)
+    if request.user.id not in allowed_users:
+        return Response(
+            {'error': 'You are not the supervisor or co-supervisor for this thesis.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    # Prevent re-assignment
+    if sub.status != 'submitted':
+        return Response(
+            {'error': 'Examiners have already been assigned.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    indian = data.get('indian_examiners', [])
+    foreign = data.get('foreign_examiners', [])
+
+    if not indian or not foreign:
+        return Response(
+            {'error': 'At least one Indian and one foreign examiner are required.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Save submission + invitations atomically. ReviewInvitation has a
+    # unique constraint on (submission, examiner_type, priority); each
+    # category gets its own independent 1..N rank.
+    with transaction.atomic():
+        # Wipe old invites & create new ones
+        ReviewInvitation.objects.filter(submission=sub).delete()
+
+        for idx, prof in enumerate(indian, start=1):
+            ReviewInvitation.objects.create(
+                submission=sub,
+                examiner_type='indian',
+                prof_name=prof.get('name', ''),
+                prof_position=prof.get('position', ''),
+                prof_address=prof.get('address', ''),
+                prof_phone=prof.get('phone', ''),
+                prof_fax=prof.get('fax', ''),
+                prof_email=prof.get('email', ''),
+                priority=idx,
+            )
+
+        for idx, prof in enumerate(foreign, start=1):
+            ReviewInvitation.objects.create(
+                submission=sub,
+                examiner_type='foreign',
+                prof_name=prof.get('name', ''),
+                prof_position=prof.get('position', ''),
+                prof_address=prof.get('address', ''),
+                prof_phone=prof.get('phone', ''),
+                prof_fax=prof.get('fax', ''),
+                prof_email=prof.get('email', ''),
+                prof_time_ranking=prof.get('time_ranking', 1),
+                priority=idx,
+            )
+
+        # Update submission only after invitations are created successfully.
+        sub.supervisor = request.user
+        sub.supervisor_approved_at = timezone.now()
+        sub.status = 'dean_panel_review'
+        sub.save()
+
+    return Response({'detail': 'Examiners assigned successfully, forwarded to Dean for approval.'}, status=status.HTTP_200_OK)
+
+
+# 4) Dean panel dashboard: a single "action required" queue covering both
+#    panel approval and invitation-sending, plus a read-only history.
+ACTION_STATUSES = {
+    'dean_panel_review':  ('approve_panel', 'Approve Panel'),
+    'dean_invite_pending': ('send_invitations', 'Send Invitations'),
+}
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@role_required(['Dean Academic'])
+def dean_panel_dashboard(request):
+    def serialize(sub, action=None, action_label=None, waiting_since=None):
+        indian, foreign = _serialize_invitations(sub)
+        return {
+            'id': sub.id,
+            'title': sub.thesis.research_theme,
+            'status': sub.status,
+            'action': action,
+            'action_label': action_label,
+            'waiting_since': waiting_since,
+            'supervisor_approved_at': sub.supervisor_approved_at,
+            'dean_approved_at': sub.dean_approved_at,
+            'indian_examiners': indian,
+            'foreign_examiners': foreign,
+        }
+
+    action_required = []
+    for sub in ThesisSubmission.objects.filter(status__in=ACTION_STATUSES.keys()):
+        action, action_label = ACTION_STATUSES[sub.status]
+        waiting_since = (
+            sub.director_approved_at if sub.status == 'dean_invite_pending'
+            else sub.supervisor_approved_at
+        )
+        action_required.append(serialize(sub, action, action_label, waiting_since))
+    # Oldest-waiting first, so overdue items surface at the top.
+    action_required.sort(key=lambda s: s['waiting_since'] or timezone.now())
+
+    history = [
+        serialize(s) for s in
+        ThesisSubmission.objects.exclude(status__in=['submitted', *ACTION_STATUSES.keys()])
+    ]
+
+    return Response({
+        'action_required': action_required,
+        'history': history,
+    })
+
+
+# 5) Dean approves or rejects the proposed panel
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@role_required(['Dean Academic'])
+def dean_panel_approve(request):
+    data = request.data
+    sub = get_object_or_404(ThesisSubmission, id=data.get('submission_id'))
+    action = data.get('action')
+
+    if sub.status != 'dean_panel_review':
+        return Response({'error': 'This panel is not awaiting Dean approval.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if action == 'approve':
+        sub.dean = request.user
+        sub.dean_approved_at = timezone.now()
+        sub.status = 'director_review'
+        sub.save()
+        return Response({'detail': 'Panel approved, forwarded to Director for prioritization.'})
+
+    if action == 'reject':
+        sub.status = 'submitted'
+        sub.save()
+        return Response({'detail': 'Panel rejected, sent back to Supervisor.'})
+
+    return Response({'error': 'Unknown action.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# 6) Director dashboard: pending prioritization vs already prioritized
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@role_required(['Director'])
+def director_dashboard(request):
+    def serialize(sub, action=None, action_label=None, waiting_since=None):
+        invs = ReviewInvitation.objects.filter(submission=sub).order_by('examiner_type', 'priority')
+        return {
+            'id': sub.id,
+            'title': sub.thesis.research_theme,
+            'status': sub.status,
+            'action': action,
+            'action_label': action_label,
+            'waiting_since': waiting_since,
+            'supervisor_approved_at': sub.supervisor_approved_at,
+            'director_approved_at': sub.director_approved_at,
+            'invitations': [
+                {'token': str(inv.token), 'prof_name': inv.prof_name,
+                 'prof_email': inv.prof_email, 'examiner_type': inv.examiner_type,
+                 'priority': inv.priority}
+                for inv in invs
+            ],
+        }
+
+    action_required = [
+        serialize(sub, 'prioritize', 'Set Priorities', sub.dean_approved_at)
+        for sub in ThesisSubmission.objects.filter(status='director_review')
+    ]
+    # Oldest-waiting first, so overdue items surface at the top.
+    action_required.sort(key=lambda s: s['waiting_since'] or timezone.now())
+
+    history = [
+        serialize(s) for s in
+        ThesisSubmission.objects.exclude(status__in=['submitted', 'dean_panel_review', 'director_review'])
+    ]
+
+    return Response({
+        'action_required': action_required,
+        'history': history,
+    })
+
+
+# 7) Director sets the priority order within each examiner category, then
+#    hands the submission back to the Dean to send out invitations.
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@role_required(['Director'])
+def director_approve(request):
+    data = request.data
+    sub = get_object_or_404(ThesisSubmission, id=data.get('submission_id'))
+
+    if sub.status != 'director_review':
+        return Response(
+            {'error': 'This panel is not awaiting Director prioritization.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    priorities = data.get('priorities', [])
+    examiner_type_by_token = {
+        str(inv.token): inv.examiner_type
+        for inv in ReviewInvitation.objects.filter(submission=sub)
+    }
+
+    # Guard against duplicate ranks within the same examiner category before
+    # writing anything, since (submission, examiner_type, priority) is unique.
+    seen = set()
+    for item in priorities:
+        key = (examiner_type_by_token.get(item.get('token')), item.get('priority'))
+        if key in seen:
+            return Response(
+                {'error': 'Duplicate priority within an examiner category.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        seen.add(key)
+
+    with transaction.atomic():
+        invites = list(ReviewInvitation.objects.filter(submission=sub))
+        # Bump every row to a unique, out-of-range placeholder first. Ranks
+        # are frequently swapped (e.g. A:1<->B:2), and writing the new values
+        # one row at a time can collide with another row's not-yet-updated
+        # priority under the (submission, examiner_type, priority) unique
+        # constraint. Clearing to disjoint placeholders first avoids that.
+        for idx, inv in enumerate(invites, start=1):
+            inv.priority = 10000 + idx
+            inv.save(update_fields=['priority'])
+
+        for item in priorities:
+            inv = get_object_or_404(ReviewInvitation, submission=sub, token=item['token'])
+            inv.priority = item['priority']
+            inv.save(update_fields=['priority'])
+
+        sub.director = request.user
+        sub.director_approved_at = timezone.now()
+        sub.status = 'dean_invite_pending'
+        sub.save()
+
+    return Response({'detail': 'Priorities set, sent back to Dean to send invitations.'})
+
+
+# 7b) Dean sends the invitation to the Rank-1 Indian and Rank-1 Foreign examiners.
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@role_required(['Dean Academic'])
+def dean_send_invitations(request):
+    data = request.data
+    sub = get_object_or_404(ThesisSubmission, id=data.get('submission_id'))
+
+    if sub.status != 'dean_invite_pending':
+        return Response(
+            {'error': 'This submission is not ready for invitations.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    invited = []
+    for examiner_type in ('indian', 'foreign'):
+        inv = ReviewInvitation.objects.filter(
+            submission=sub, examiner_type=examiner_type, priority=1
+        ).first()
+        if inv is None:
+            continue
+        inv.last_sent = timezone.now()
+        inv.expires_at = timezone.now() + datetime.timedelta(days=INVITATION_TIMEOUT_DAYS)
+        inv.save(update_fields=['last_sent', 'expires_at'])
+        try:
+            send_invitation_email(inv)
+            invited.append(inv.prof_email)
+        except Exception:
+            logger.exception(f"Failed to send invitation to {inv.prof_email} for submission {sub.id}")
+
+    sub.dean = request.user
+    sub.dean_invited_at = timezone.now()
+    sub.status = 'in_review'
+    sub.save()
+
+    return Response({'detail': 'Invitations sent.', 'invited': invited})
+
+
+# 8. Invitation accept/reject (external examiners have no Fusion account —
+#    the secret UUID token in the emailed link is the auth mechanism here)
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def invitation_action(request, token, action):
+    inv = get_object_or_404(ReviewInvitation, token=token)
+    if inv.is_expired() or inv.is_finalized():
+        return Response({'error': 'Invalid/expired'}, 403)
+    if action == 'accept':
+        inv.status = 'accepted'
+        inv.save()
+        try:
+            send_review_form_email(inv)
+            inv.review_form_sent = timezone.now()
+            inv.save(update_fields=['review_form_sent'])
+        except Exception:
+            logger.exception(f"Failed to send review-form email for token {inv.token}")
+        return Response({'detail': 'Accepted'}, 200)
+    if action == 'reject':
+        inv.status = 'rejected'
+        inv.save()
+        # Fall through to the next-ranked examiner in the same category.
+        advance_invitation(inv.submission, inv.examiner_type)
+        return Response({'detail': 'Rejected'}, 200)
+    return Response({'error': 'Unknown action'}, 400)
+
+# 9. Review detail & submission (token-authenticated, same as invitation_action)
+@api_view(['GET', 'POST'])
+@permission_classes([AllowAny])
+def review_detail(request, token):
+    inv = get_object_or_404(ReviewInvitation, token=token)
+    if inv.is_expired() or inv.is_finalized():
+        return Response({'error': 'Invalid/expired'}, status=403)
+    if inv.status != 'accepted':
+        return Response({'error': 'This invitation has not been accepted yet.'}, status=403)
+
+    sub = inv.submission
+    topic = sub.thesis
+
+    if request.method == 'GET':
+        base = getattr(settings, 'SITE_URL', 'http://localhost:8000') + settings.MEDIA_URL
+        return Response({
+            'student_name': topic.student.id.user.get_full_name(),
+            'student_roll': topic.student.id.id,
+            'student_discipline': topic.student.specialization,
+            'thesis_title': topic.research_theme,
+            'synopsis_url': base + sub.synopsis.name,
+            'report_url': base + sub.thesis_report.name,
+            'examiner_type': inv.examiner_type,
+            'examiner': {
+                'name': inv.prof_name,
+                'email': inv.prof_email,
+                'position': inv.prof_position,
+                'address': inv.prof_address,
+                'phone': inv.prof_phone,
+                'fax': inv.prof_fax,
+            },
+        }, status=200)
+
+    # POST: record the formal evaluation and finalize this examiner's invitation.
+    # Note: this only closes out THIS examiner's invitation -- the other
+    # category's examiner (Indian/Foreign) is untouched and continues its own
+    # lifecycle independently. What happens once both examiners have reviewed
+    # (aggregating outcomes, a final decision, etc.) is not yet implemented.
+    data = request.data
+    if not data.get('recommendation'):
+        return Response({'error': 'A specific recommendation is required.'}, status=400)
+
+    with transaction.atomic():
+        ThesisReview.objects.update_or_create(
+            invitation=inv,
+            defaults={
+                'originality_presentation': data.get('originality_presentation', ''),
+                'quality_comparable': data.get('quality_comparable'),
+                'new_ideas_original': data.get('new_ideas_original'),
+                'correction_severity': data.get('correction_severity', ''),
+                'technical_content': data.get('technical_content', ''),
+                'highlights': data.get('highlights', ''),
+                'suggestions': data.get('suggestions', ''),
+                'defense_questions': data.get('defense_questions', ''),
+                'recommendation': data['recommendation'],
+            },
+        )
+
+        bank = data.get('bank_details') or {}
+        if any(bank.values()):
+            ExaminerBankDetails.objects.update_or_create(
+                invitation=inv,
+                defaults={
+                    'beneficiary_name': bank.get('beneficiary_name', ''),
+                    'bank_name': bank.get('bank_name', ''),
+                    'bank_address': bank.get('bank_address', ''),
+                    'account_no': bank.get('account_no', ''),
+                    'ifsc_code': bank.get('ifsc_code', ''),
+                    'pan_no': bank.get('pan_no', ''),
+                    'iban_no': bank.get('iban_no', ''),
+                    'swift_code': bank.get('swift_code', ''),
+                },
+            )
+
+        inv.status = 'completed'
+        inv.save(update_fields=['status'])
+
+    try:
+        send_thank_you_email(inv)
+    except Exception:
+        logger.exception(f"Failed to send thank-you email for token {inv.token}")
+
+    return Response({'detail': 'Review submitted successfully.'}, status=200)
+
+
+# ===========================================================================
+# Thesis Slot Semester-Level Registration
+# ===========================================================================
+from applications.academic_procedures.models import (
+    ThesisTopic, CommitteeMember, SeminarEntry,
+    SeminarConsent, SeminarComment, PublicationCount,
+    ThesisRegistration, ProgressSeminarRegistration,
+    ThesisEvaluation, ProgressSeminarEvaluation,
+)
+from applications.programme_curriculum.models import ThesisSlot, ProgressSeminarSlot
+import datetime as _dt
+
+
+def _thesis_reg_to_dict(reg):
+    """Serialize a ThesisRegistration instance to a plain dict."""
+    if reg is None:
+        return None
+    slot = reg.thesis_slot
+    theses_list = [
+        {'id': t.id, 'code': t.code, 'name': t.name, 'credit': t.credit}
+        for t in slot.theses.all()
+    ]
+    return {
+        'id': reg.id,
+        'status': reg.status,
+        'remarks': reg.remarks,
+        'credits': reg.credits,
+        'registered_on': reg.registered_on.isoformat(),
+        'verified_on': reg.verified_on.isoformat() if reg.verified_on else None,
+        'academic_session': reg.academic_session,
+        'thesis_slot': {
+            'id': slot.id,
+            'name': slot.name,
+            'info': slot.thesis_slot_info or '',
+            'duration': slot.duration,
+            'theses': theses_list,
+        },
+        'student': {
+            'id': reg.student.id.id,
+            'name': reg.student.id.user.get_full_name(),
+        },
+        'semester_no': reg.semester.semester_no,
+    }
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def student_thesis_enrollment_api(request):
+    """
+    GET  /stu/thesis-enrollment/
+         Returns the current semester's ThesisSlot, the student's
+         ThesisTopic approval status, and any existing registration.
+
+    POST /stu/thesis-enrollment/
+         Creates a new ThesisRegistration for the current semester.
+         Requires thesis_topic to be dean_approved.
+    """
+    user = request.user
+    try:
+        user_details = user.extrainfo
+        student = Student.objects.get(id=user_details)
+    except Student.DoesNotExist:
+        return JsonResponse({'error': 'Student record not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': f'User setup error: {type(e).__name__}: {e}'}, status=400)
+
+    try:
+        # Resolve current semester
+        if not student.batch_id or not student.batch_id.curriculum:
+            return JsonResponse({'error': 'Student batch or curriculum is not configured'}, status=400)
+        try:
+            semester = Semester.objects.get(
+                curriculum=student.batch_id.curriculum,
+                semester_no=student.curr_semester_no,
+            )
+        except Semester.DoesNotExist:
+            return JsonResponse({'error': 'Current semester not found in curriculum'}, status=400)
+
+        # Thesis topic info
+        topic = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
+        topic_data = thesis_to_dict(topic) if topic else None
+
+        # ThesisSlot for this semester
+        thesis_slots = ThesisSlot.objects.filter(semester=semester)
+        thesis_slot = thesis_slots.first()  # typically one per semester
+
+        # Existing registration
+        try:
+            reg = ThesisRegistration.objects.get(student=student, semester=semester)
+            reg_data = _thesis_reg_to_dict(reg)
+        except ThesisRegistration.DoesNotExist:
+            reg = None
+            reg_data = None
+
+        if request.method == 'GET':
+            slot_data = None
+            if thesis_slot:
+                slot_data = {
+                    'id': thesis_slot.id,
+                    'name': thesis_slot.name,
+                    'info': thesis_slot.thesis_slot_info or '',
+                    'duration': thesis_slot.duration,
+                    'theses': [
+                        {'id': t.id, 'code': t.code, 'name': t.name, 'credit': t.credit}
+                        for t in thesis_slot.theses.all()
+                    ],
+                }
+            # Include announced evaluation blocks so student can see grades
+            eval_blocks = []
+            if reg is not None:
+                for ev in reg.evaluations.filter(announced=True).order_by('block_number'):
+                    eval_blocks.append({
+                        'id':           ev.id,
+                        'block_number': ev.block_number,
+                        'total_blocks': reg.credits // 3,
+                        'grade':        ev.grade,
+                        'remarks':      ev.remarks,
+                        'announced_at': ev.announced_at.isoformat() if ev.announced_at else None,
+                    })
+            return JsonResponse({
+                'thesis_topic': topic_data,
+                'current_semester_no': student.curr_semester_no,
+                'thesis_slot': slot_data,
+                'registration': reg_data,
+                'evaluations': eval_blocks,
+            }, status=200)
+
+    except Exception as e:
+        return JsonResponse({'error': f'Internal error: {type(e).__name__}: {e}'}, status=500)
+
+    # POST: create registration
+    if reg is not None:
+        return JsonResponse(
+            {'error': 'Already registered for this semester', 'registration': reg_data},
+            status=400,
+        )
+
+    if topic is None or topic.status != 'dean_approved':
+        return JsonResponse(
+            {'error': 'Thesis topic must be dean-approved before registering for a thesis slot'},
+            status=403,
+        )
+
+    if thesis_slot is None:
+        return JsonResponse(
+            {'error': 'No thesis slot configured for your current semester'},
+            status=400,
+        )
+
+    # Validate chosen credits
+    ALLOWED_THESIS_CREDITS = [3, 6, 9, 12]
+    try:
+        chosen_credits = int(request.data.get('credits', 6))
+    except (TypeError, ValueError):
+        chosen_credits = 6
+    if chosen_credits not in ALLOWED_THESIS_CREDITS:
+        return JsonResponse(
+            {'error': f'Invalid credit value. Choose from {ALLOWED_THESIS_CREDITS}'},
+            status=400,
+        )
+
+    # Check max registration limit
+    current_count = ThesisRegistration.objects.filter(
+        thesis_slot=thesis_slot, status__in=['pending', 'verified']
+    ).count()
+    if current_count >= thesis_slot.max_registration_limit:
+        return JsonResponse(
+            {'error': 'Thesis slot has reached maximum capacity'},
+            status=400,
+        )
+
+    now = _dt.datetime.now()
+    # Build academic session string e.g. "2025-26"
+    year = now.year
+    month = now.month
+    if month >= 7:
+        session = f"{year}-{str(year + 1)[2:]}"
+    else:
+        session = f"{year - 1}-{str(year)[2:]}"
+
+    reg = ThesisRegistration.objects.create(
+        student=student,
+        thesis_slot=thesis_slot,
+        thesis_topic=topic,
+        semester=semester,
+        credits=chosen_credits,
+        working_year=year,
+        academic_session=session,
+        status='pending',
+    )
+    return JsonResponse(_thesis_reg_to_dict(reg), status=201)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def admin_thesis_enrollment_list(request):
+    """
+    GET /acadadmin/thesis-enrollments/?semester=<no>&status=<status>
+    Lists all ThesisRegistration entries.  Supports optional filters:
+      ?semester=<semester_no>   filter by semester number
+      ?status=pending|verified|rejected
+    """
+    qs = ThesisRegistration.objects.select_related(
+        'student__id__user', 'thesis_slot', 'thesis_topic', 'semester'
+    ).all().order_by('-registered_on')
+
+    sem_no = request.GET.get('semester')
+    if sem_no:
+        qs = qs.filter(semester__semester_no=sem_no)
+
+    status_filter = request.GET.get('status')
+    if status_filter:
+        qs = qs.filter(status=status_filter)
+
+    data = []
+    for reg in qs:
+        entry = _thesis_reg_to_dict(reg)
+        # Also include thesis topic approval status for admin view
+        entry['topic_status'] = reg.thesis_topic.status if reg.thesis_topic else None
+        data.append(entry)
+
+    return JsonResponse({'registrations': data}, status=200)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def admin_verify_enrollments(request):
+    """
+    POST /acadadmin/thesis-enrollments/verify/
+    Body: { "ids": [1, 2, 3] }
+    Marks the given ThesisRegistration records as 'verified'.
+    """
+    ids = request.data.get('ids', [])
+    if not ids:
+        return JsonResponse({'error': 'No registration IDs provided'}, status=400)
+
+    now = _dt.datetime.now(_dt.timezone.utc)
+    regs = ThesisRegistration.objects.filter(id__in=ids, status='pending')
+    count = 0
+    for reg in regs:
+        reg.status = 'verified'
+        reg.verified_on = now
+        reg.save(update_fields=['status', 'verified_on'])
+        # Auto-create evaluation blocks: one per 3 credits
+        total_blocks = reg.credits // 3
+        for blk in range(1, total_blocks + 1):
+            ThesisEvaluation.objects.get_or_create(
+                registration=reg,
+                block_number=blk,
+            )
+        count += 1
+    return JsonResponse({'verified_count': count}, status=200)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def admin_reject_enrollments(request):
+    """
+    POST /acadadmin/thesis-enrollments/reject/
+    Body: { "ids": [1, 2], "remarks": "Reason for rejection" }
+    Marks the given ThesisRegistration records as 'rejected'.
+    """
+    ids = request.data.get('ids', [])
+    remarks = request.data.get('remarks', '')
+    if not ids:
+        return JsonResponse({'error': 'No registration IDs provided'}, status=400)
+
+    updated = ThesisRegistration.objects.filter(id__in=ids, status='pending').update(
+        status='rejected',
+        remarks=remarks,
+    )
+    return JsonResponse({'rejected_count': updated}, status=200)
+
+
+# ===========================================================================
+# Thesis Grade Evaluation
+# ===========================================================================
+
+def _eval_to_dict(ev):
+    """Serialize a ThesisEvaluation block to a plain dict."""
+    reg = ev.registration
+    return {
+        'id':           ev.id,
+        'block_number': ev.block_number,
+        'total_blocks': reg.credits // 3,
+        'grade':        ev.grade,
+        'remarks':      ev.remarks,
+        'submitted_by': ev.submitted_by.id.user.get_full_name() if ev.submitted_by else None,
+        'submitted_at': ev.submitted_at.isoformat() if ev.submitted_at else None,
+        'verified':     ev.verified,
+        'verified_at':  ev.verified_at.isoformat() if ev.verified_at else None,
+        'announced':    ev.announced,
+        'announced_at': ev.announced_at.isoformat() if ev.announced_at else None,
+        'registration': {
+            'id':           reg.id,
+            'credits':      reg.credits,
+            'semester_no':  reg.semester.semester_no,
+            'academic_session': reg.academic_session,
+            'thesis_slot':  reg.thesis_slot.name,
+            'student': {
+                'id':   reg.student.id.id,
+                'name': reg.student.id.user.get_full_name(),
+            },
+        },
+    }
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def supervisor_thesis_grades(request):
+    """
+    GET /supervisor/thesis-grades/
+    Returns all ThesisEvaluation blocks for registrations where the
+    student's thesis_topic.supervisor is the requesting faculty.
+    Ordered by semester, then student name.
+    Optional: ?semester=<no>  ?graded=true|false
+    """
+    user = request.user
+    try:
+        faculty = Faculty.objects.get(id__user=user)
+    except Faculty.DoesNotExist:
+        return JsonResponse({'error': 'Faculty record not found'}, status=404)
+
+    # Thesis registrations where this faculty is the supervisor
+    qs = ThesisEvaluation.objects.select_related(
+        'registration__student__id__user',
+        'registration__semester',
+        'registration__thesis_slot',
+        'registration__thesis_topic',
+        'submitted_by__id__user',
+    ).filter(
+        registration__status='verified',
+        registration__thesis_topic__supervisor=faculty,
+    ).order_by('registration__semester__semester_no', 'registration__student__id__user__last_name')
+
+    # Filters
+    sem_no = request.GET.get('semester')
+    if sem_no:
+        qs = qs.filter(registration__semester__semester_no=sem_no)
+
+    graded_param = request.GET.get('graded')
+    if graded_param == 'false':
+        qs = qs.filter(grade__isnull=True)
+    elif graded_param == 'true':
+        qs = qs.exclude(grade__isnull=True)
+
+    return JsonResponse({'evaluations': [_eval_to_dict(ev) for ev in qs]}, status=200)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def admin_thesis_grades_list(request):
+    """
+    GET /acadadmin/thesis-grades/?semester=<no>&status=pending|verified|announced
+    Lists all ThesisEvaluation blocks with optional filters.
+    status filter: pending = grade submitted but not verified
+                   verified = verified but not announced
+                   announced = announced
+                   ungraded = no grade yet
+    """
+    qs = ThesisEvaluation.objects.select_related(
+        'registration__student__id__user',
+        'registration__semester',
+        'registration__thesis_slot',
+        'submitted_by__id__user',
+        'verified_by',
+    ).order_by('registration__semester__semester_no', 'registration__student__id__user__last_name', 'block_number')
+
+    sem_no = request.GET.get('semester')
+    if sem_no:
+        qs = qs.filter(registration__semester__semester_no=sem_no)
+
+    status_param = request.GET.get('status')
+    if status_param == 'ungraded':
+        qs = qs.filter(grade__isnull=True)
+    elif status_param == 'pending':
+        qs = qs.exclude(grade__isnull=True).filter(verified=False)
+    elif status_param == 'verified':
+        qs = qs.filter(verified=True, announced=False)
+    elif status_param == 'announced':
+        qs = qs.filter(announced=True)
+
+    return JsonResponse({'evaluations': [_eval_to_dict(ev) for ev in qs]}, status=200)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def admin_verify_thesis_grades(request):
+    """
+    POST /acadadmin/thesis-grades/verify/
+    Body: { "ids": [1, 2, 3] }
+    Verifies submitted grades (grade must already be set by supervisor).
+    """
+    ids = request.data.get('ids', [])
+    if not ids:
+        return JsonResponse({'error': 'No evaluation IDs provided'}, status=400)
+
+    now = _dt.datetime.now(_dt.timezone.utc)
+    count = 0
+    for ev in ThesisEvaluation.objects.filter(id__in=ids, verified=False).exclude(grade=None):
+        ev.verified    = True
+        ev.verified_by = request.user
+        ev.verified_at = now
+        ev.save(update_fields=['verified', 'verified_by', 'verified_at'])
+        count += 1
+    return JsonResponse({'verified_count': count}, status=200)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def admin_announce_thesis_grades(request):
+    """
+    POST /acadadmin/thesis-grades/announce/
+    Body: { "ids": [1, 2, 3] }
+    Announces grades — makes them visible to students.
+    Only verified grades can be announced.
+    """
+    ids = request.data.get('ids', [])
+    if not ids:
+        return JsonResponse({'error': 'No evaluation IDs provided'}, status=400)
+
+    now = _dt.datetime.now(_dt.timezone.utc)
+    count = 0
+    for ev in ThesisEvaluation.objects.filter(id__in=ids, verified=True, announced=False):
+        ev.announced    = True
+        ev.announced_at = now
+        ev.save(update_fields=['announced', 'announced_at'])
+        count += 1
+    return JsonResponse({'announced_count': count}, status=200)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def supervisor_download_all_thesis_grades_template(request):
+    """
+    GET /supervisor/thesis-grades-all-template/
+    Downloads Excel template with student name, roll number, and grade columns for ALL blocks.
+    Pre-fills with all students who have ungraded evaluations across any block.
+    """
+    user = request.user
+
+    try:
+        # Get faculty record
+        faculty = Faculty.objects.get(id__user=user)
+    except Faculty.DoesNotExist:
+        return JsonResponse({'error': 'Faculty record not found'}, status=404)
+
+    # Fetch all ungraded evaluations for this supervisor across all blocks
+    try:
+        evals = ThesisEvaluation.objects.select_related(
+            'registration__student__id'
+        ).filter(
+            registration__thesis_topic__supervisor=faculty,
+            registration__status='verified',
+            grade__isnull=True
+        ).order_by('registration__student__id__id', 'block_number')
+
+        if not evals.exists():
+            return JsonResponse({'error': 'No ungraded evaluations found'}, status=400)
+
+        # Group by student to get unique students and their blocks
+        from collections import defaultdict
+        student_blocks = defaultdict(lambda: {'name': '', 'blocks': {}})
+
+        for eval in evals:
+            student = eval.registration.student
+            roll_no = student.id.id
+
+            if roll_no not in student_blocks:
+                student_blocks[roll_no]['name'] = student.id.user.get_full_name()
+
+            student_blocks[roll_no]['blocks'][eval.block_number] = eval.id
+
+        # Determine all blocks present
+        all_blocks = set()
+        for student_data in student_blocks.values():
+            all_blocks.update(student_data['blocks'].keys())
+        all_blocks = sorted(list(all_blocks))
+
+        # Generate Excel template
+        import openpyxl
+        output = BytesIO()
+        workbook = openpyxl.Workbook()
+        worksheet = workbook.active
+        worksheet.title = 'All Blocks'
+
+        # Headers: Name, Roll Number, Block 1 Grade, Block 2 Grade, ..., Remarks
+        headers = ['Student Name', 'Roll Number']
+        headers.extend([f'Block {b} Grade' for b in all_blocks])
+        headers.append('Remarks')
+
+        for col, header in enumerate(headers, 1):
+            worksheet.cell(row=1, column=col, value=header)
+
+        # Add student data
+        for row, (roll_no, student_data) in enumerate(sorted(student_blocks.items()), 2):
+            try:
+                worksheet.cell(row=row, column=1, value=student_data['name'])
+                worksheet.cell(row=row, column=2, value=roll_no)
+                # Columns 3+ are grades for each block (leave empty for supervisor to fill)
+                # Last column is remarks (leave empty)
+            except Exception as e:
+                logger.error(f"Error writing row for {roll_no}: {str(e)}", exc_info=True)
+
+        workbook.save(output)
+        output.seek(0)
+
+        response = HttpResponse(
+            output.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename="Thesis_Grades_All_Blocks_{_dt.datetime.now().strftime("%Y%m%d")}.xlsx"'
+        return response
+
+    except Exception as e:
+        return JsonResponse({'error': f'Failed to generate template: {str(e)}'}, status=500)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
+def supervisor_upload_all_thesis_grades(request):
+    """
+    POST /supervisor/thesis-grades-all/upload/
+    Uploads and validates Excel file with grades for multiple blocks.
+    Expected columns: Name, Roll Number, Block 1 Grade, Block 2 Grade, ..., Remarks
+    Returns valid and invalid rows.
+    """
+    user = request.user
+    uploaded_file = request.FILES.get('file')
+
+    if not uploaded_file:
+        return JsonResponse({'error': 'file is required'}, status=400)
+
+    try:
+        faculty = Faculty.objects.get(id__user=user)
+    except Faculty.DoesNotExist:
+        return JsonResponse({'error': 'Faculty record not found'}, status=404)
+
+    # Parse Excel file
+    try:
+        df = pd.read_excel(uploaded_file, engine='openpyxl')
+    except Exception:
+        try:
+            df = pd.read_excel(uploaded_file, engine='xlrd')
+        except Exception as e:
+            return JsonResponse({'error': f'Failed to read Excel file: {str(e)}'}, status=400)
+
+    # Normalize column names
+    df.columns = [col.strip().lower() for col in df.columns]
+
+    # Find roll number and remarks columns
+    roll_col = None
+    remarks_col = None
+    grade_cols = {}  # {block_number: column_name}
+
+    for col in df.columns:
+        if 'roll' in col and not roll_col:
+            roll_col = col
+        elif 'remark' in col and not remarks_col:
+            remarks_col = col
+        elif 'block' in col and 'grade' in col:
+            # Extract block number from "block X grade" or similar
+            match = re.search(r'block\s+(\d+)', col)
+            if match:
+                block_num = int(match.group(1))
+                grade_cols[block_num] = col
+
+    if not roll_col:
+        return JsonResponse({'error': 'Excel must contain "Roll Number" column'}, status=400)
+    if not grade_cols:
+        return JsonResponse({'error': 'Excel must contain at least one "Block X Grade" column'}, status=400)
+
+    # Fetch all evaluations for this supervisor grouped by student and block
+    evals = ThesisEvaluation.objects.select_related(
+        'registration__student__id'
+    ).filter(
+        registration__thesis_topic__supervisor=faculty,
+        registration__status='verified',
+        grade__isnull=True
+    )
+
+    # Create lookup: {roll_no: {block_num: eval_id}}
+    eval_lookup = defaultdict(dict)
+    for eval in evals:
+        roll_no = eval.registration.student.id.id
+        eval_lookup[roll_no][eval.block_number] = eval.id
+
+    valid_rows = []
+    invalid_rows = []
+
+    # Validate each row
+    for idx, row in df.iterrows():
+        roll_no = str(row[roll_col]).strip() if pd.notna(row[roll_col]) else None
+        remarks = str(row[remarks_col]).strip() if remarks_col and pd.notna(row[remarks_col]) else ''
+        row_errors = []
+
+        if not roll_no:
+            row_errors.append('Roll number is required')
+            invalid_rows.append({
+                'row_num': idx + 2,
+                'roll_no': 'N/A',
+                'errors': row_errors
+            })
+            continue
+
+        if roll_no not in eval_lookup:
+            invalid_rows.append({
+                'row_num': idx + 2,
+                'roll_no': roll_no,
+                'errors': ['No student found with this roll number']
+            })
+            continue
+
+        # Validate grades for each block
+        row_submissions = []
+        for block_num, grade_col in grade_cols.items():
+            grade = str(row[grade_col]).strip().upper() if pd.notna(row[grade_col]) else ''
+
+            # Grade is optional if student doesn't have evaluation for that block
+            if not grade:
+                if block_num in eval_lookup[roll_no]:
+                    row_errors.append(f'Block {block_num} grade is required for this student')
+                continue
+
+            # If grade provided, validate it
+            if grade not in ('S', 'X'):
+                row_errors.append(f'Block {block_num} grade must be S or X, got {grade}')
+                continue
+
+            # Check if evaluation exists for this student and block
+            if block_num not in eval_lookup[roll_no]:
+                row_errors.append(f'No evaluation found for Block {block_num}')
+                continue
+
+            row_submissions.append({
+                'evaluation_id': eval_lookup[roll_no][block_num],
+                'block_number': block_num,
+                'grade': grade,
+                'remarks': remarks
+            })
+
+        if row_errors:
+            invalid_rows.append({
+                'row_num': idx + 2,
+                'roll_no': roll_no,
+                'errors': row_errors
+            })
+        elif row_submissions:
+            valid_rows.extend(row_submissions)
+
+    return JsonResponse({
+        'valid_rows': valid_rows,
+        'invalid_rows': invalid_rows
+    }, status=200)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def supervisor_bulk_submit_all_thesis_grades(request):
+    """
+    POST /supervisor/thesis-grades-all/bulk-submit/
+    Submits multiple grades across multiple blocks in one request.
+    Body: { "submissions": [{"evaluation_id": 123, "grade": "S", "remarks": "..."}, ...] }
+    """
+    user = request.user
+    submissions = request.data.get('submissions', [])
+
+    if not submissions:
+        return JsonResponse({'error': 'submissions list is required'}, status=400)
+
+    try:
+        faculty = Faculty.objects.get(id__user=user)
+    except Faculty.DoesNotExist:
+        return JsonResponse({'error': 'Faculty record not found'}, status=404)
+
+    now = _dt.datetime.now(_dt.timezone.utc)
+
+    # Batch fetch all evaluations
+    eval_ids = [sub.get('evaluation_id') for sub in submissions if sub.get('evaluation_id')]
+    evaluations_dict = ThesisEvaluation.objects.select_related(
+        'registration__thesis_topic'
+    ).filter(id__in=eval_ids).in_bulk(field_name='id')
+
+    success_count = 0
+    errors = []
+    evaluations_to_update = []
+
+    # Process each submission
+    for idx, submission in enumerate(submissions):
+        eval_id = submission.get('evaluation_id')
+        grade = submission.get('grade', '').upper()
+        remarks = submission.get('remarks', '')
+
+        try:
+            if not eval_id:
+                errors.append({'index': idx, 'error': 'evaluation_id is required'})
+                continue
+            if grade not in ('S', 'X'):
+                errors.append({'index': idx, 'evaluation_id': eval_id, 'error': 'grade must be S or X'})
+                continue
+
+            if eval_id not in evaluations_dict:
+                errors.append({'index': idx, 'evaluation_id': eval_id, 'error': 'Evaluation not found'})
+                continue
+
+            evaluation = evaluations_dict[eval_id]
+
+            # Verify ownership and permissions
+            if evaluation.registration.thesis_topic.supervisor != faculty:
+                errors.append({'index': idx, 'evaluation_id': eval_id, 'error': 'Not authorized for this evaluation'})
+                continue
+
+            # Update evaluation
+            evaluation.grade = grade
+            evaluation.remarks = remarks
+            evaluation.submitted_by = faculty
+            evaluation.submitted_at = now
+
+            evaluations_to_update.append(evaluation)
+            success_count += 1
+
+        except Exception as e:
+            errors.append({'index': idx, 'evaluation_id': eval_id, 'error': str(e)})
+
+    # Batch update all at once
+    if evaluations_to_update:
+        ThesisEvaluation.objects.bulk_update(
+            evaluations_to_update,
+            fields=['grade', 'remarks', 'submitted_by', 'submitted_at'],
+            batch_size=500
+        )
+
+    return JsonResponse({
+        'success_count': success_count,
+        'error_count': len(errors),
+        'errors': errors if errors else None
+    }, status=200)

@@ -5,7 +5,8 @@ from django.db import transaction
 from decimal import Decimal, ROUND_HALF_UP
 from applications.academic_procedures.models import(course_registration, course_replacement)
 from applications.programme_curriculum.models import Course as Courses ,  Batch, CourseInstructor
-from applications.examination.models import(hidden_grades , ResultAnnouncement, authentication)
+from applications.examination.models import(hidden_grades , ResultAnnouncement, authentication, PublishedResultStudent)
+from applications.globals.access import user_holds_role, user_holds_any_role
 from applications.academic_information.models import(Student)
 from applications.online_cms.models import(Student_grades)
 from rest_framework import status
@@ -286,11 +287,11 @@ def exam_view(request):
     if not role:
         return Response({"error": "Role parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-    if role in ["Associate Professor", "Professor", "Assistant Professor"]:
+    if user_holds_any_role(request.user, ["Associate Professor", "Professor", "Assistant Professor"]):
         return Response({"redirect_url": "/examination/submitGradesProf/"})
-    elif role == "acadadmin":
+    elif user_holds_role(request.user, "acadadmin"):
         return Response({"redirect_url": "/examination/updateGrades/"})
-    elif role == "Dean Academic":
+    elif user_holds_role(request.user, "Dean Academic"):
         return Response({"redirect_url": "/examination/verifyGradesDean/"})
     else:
         return Response({"redirect_url": "/dashboard/"})
@@ -390,7 +391,7 @@ def download_template(request):
             "acadadmin", "Associate Professor", "Professor",
             "Assistant Professor", "Dean Academic"
         ]
-        if role not in allowed_roles:
+        if not user_holds_any_role(request.user, allowed_roles):
             return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
 
         User = get_user_model()
@@ -514,7 +515,7 @@ def check_course_students(request):
             "acadadmin", "Associate Professor", "Professor",
             "Assistant Professor", "Dean Academic"
         ]
-        if role not in allowed_roles:
+        if not user_holds_any_role(request.user, allowed_roles):
             return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
 
         course_info_query = course_registration.objects.filter(
@@ -576,7 +577,7 @@ class SubmitGradesView(APIView):
         semester_type = request.data.get("semester_type")
 
         # Only allow access to 'acadadmin'
-        if designation != "acadadmin":
+        if not user_holds_role(request.user, "acadadmin"):
             return Response(
                 {"success": False, "error": "Access denied."},
                 status=status.HTTP_403_FORBIDDEN
@@ -614,7 +615,7 @@ class UploadGradesAPI(APIView):
     def post(self, request):
         # Validate the role (only allow "acadadmin" in this example).
         des = request.data.get("Role")
-        if des != "acadadmin":
+        if not user_holds_role(request.user, "acadadmin"):
             return Response(
                 {"success": False, "error": "Access denied."},
                 status=status.HTTP_403_FORBIDDEN,
@@ -691,7 +692,7 @@ class UploadGradesAPI(APIView):
             with transaction.atomic():
                 for index, row in enumerate(reader, start=1):
                     roll_no = row.get("roll_no")
-                    grade = row.get("grade")
+                    grade = (row.get("grade") or "").strip()
                     remarks = row.get("remarks", "")
                     semester = row.get("semester", None)
 
@@ -804,7 +805,7 @@ class UpdateGradesAPI(APIView):
         academic_year = request.data.get("academic_year")
         semester_type = request.data.get("semester_type")
 
-        if role != "acadadmin":
+        if not user_holds_role(request.user, "acadadmin"):
             return Response(
                 {"success": False, "error": "Access denied."},
                 status=403,
@@ -890,7 +891,7 @@ class UpdateEnterGradesAPI(APIView):
         des = request.data.get("Role")
 
         
-        if des != "acadadmin":
+        if not user_holds_role(request.user, "acadadmin"):
             return Response(
                 {"success": False, "error": "Access denied."},
                 status=status.HTTP_403_FORBIDDEN,
@@ -974,7 +975,7 @@ class ModerateStudentGradesAPI(APIView):
     def post(self, request):
         
         des = request.data.get("Role")
-        if des not in ["acadadmin", "Dean Academic"]:
+        if not user_holds_any_role(request.user, ["acadadmin", "Dean Academic"]):
             return Response(
                 {"success": False, "error": "Access denied."},
                 status=status.HTTP_403_FORBIDDEN,
@@ -1022,6 +1023,7 @@ class ModerateStudentGradesAPI(APIView):
             for student_id, semester_id, course_id, grade, remark in zip(
                 student_ids, semester_ids, course_ids, grades, remarks
             ):
+                grade = (grade or "").strip()
                 try:
                     grade_of_student = Student_grades.objects.get(
                         course_id=course_id, roll_no=student_id, semester=semester_id
@@ -1097,7 +1099,7 @@ class GenerateTranscript(APIView):
         semester_number = semester.get('no')
         semester_type = semester.get('type')
 
-        if des != "acadadmin":
+        if not user_holds_role(request.user, "acadadmin"):
             return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
 
         if not student_id or not semester:
@@ -1127,7 +1129,7 @@ class GenerateTranscript(APIView):
                 "course_code": course.code,
                 "credit": course.credit,
                 "grade": reg.grade,
-                "points": Decimal(str(grade_conversion.get(reg.grade, 0) * 10)).quantize(Decimal('0.1'), rounding=ROUND_HALF_UP),
+                "points": Decimal(str(grade_conversion.get((reg.grade or "").strip(), 0) * 10)).quantize(Decimal('0.1'), rounding=ROUND_HALF_UP),
             }
 
         # Add complete student information like CheckResultView
@@ -1205,7 +1207,7 @@ class GenerateTranscriptForm(APIView):
 
     def get(self, request):
         role = request.GET.get("role")
-        if not role or role != "acadadmin":
+        if not user_holds_role(request.user, "acadadmin"):
             return Response(
                 {"error": "Access denied. Invalid or missing role."},
                 status=status.HTTP_403_FORBIDDEN
@@ -1244,7 +1246,7 @@ class GenerateTranscriptForm(APIView):
 
     def post(self, request):
         role = request.data.get("Role")
-        if not role or role != "acadadmin":
+        if not user_holds_role(request.user, "acadadmin"):
             return Response(
                 {"error": "Access denied. Invalid or missing role."},
                 status=status.HTTP_403_FORBIDDEN
@@ -1294,7 +1296,7 @@ class GenerateResultAPI(APIView):
     def post(self, request):
         try:
             role = request.data.get("Role")
-            if role != "acadadmin":
+            if not user_holds_role(request.user, "acadadmin"):
                 return Response({"error": "Access denied."}, status=403)
 
             semester = request.data.get("semester")
@@ -1531,7 +1533,7 @@ class GenerateResultAPI(APIView):
                             if len(attempts) >= 1:
                                 scored = sorted(
                                     attempts,
-                                    key=lambda x: grade_conversion.get(x[1], -1),
+                                    key=lambda x: grade_conversion.get((x[1] or "").strip(), -1),
                                     reverse=True
                                 )
                                 first_code, first_grade = scored[0]
@@ -1622,7 +1624,7 @@ class SubmitAPI(APIView):
     def post(self, request):
         role = request.data.get("Role")
 
-        if role not in ["acadadmin", "Dean Academic"]:
+        if not user_holds_any_role(request.user, ["acadadmin", "Dean Academic"]):
             return Response(
                 {"error": "Access denied."},
                 status=status.HTTP_403_FORBIDDEN,
@@ -1724,7 +1726,7 @@ class SubmitGradesProfAPI(APIView):
         semester_type = request.data.get("semester_type")
         programme_type = request.data.get("programme_type")
         
-        if role not in ["Associate Professor", "Professor", "Assistant Professor"]:
+        if not user_holds_any_role(request.user, ["Associate Professor", "Professor", "Assistant Professor"]):
             return Response(
                 {"success": False, "error": "Access denied."},
                 status=status.HTTP_403_FORBIDDEN,
@@ -1821,7 +1823,7 @@ class UploadGradesProfAPI(APIView):
         try:
             # 1) ROLE CHECK
             role = request.data.get("Role")
-            if role not in ["Associate Professor", "Professor", "Assistant Professor"]:
+            if not user_holds_any_role(request.user, ["Associate Professor", "Professor", "Assistant Professor"]):
                 return Response({"error": "Access denied."},
                                 status=status.HTTP_403_FORBIDDEN)
 
@@ -2114,7 +2116,7 @@ class DownloadGradesAPI(APIView):
             semester_type = request.data.get("semester_type")
             programme_type = request.data.get("programme_type")
 
-            if role not in ["Associate Professor", "Professor", "Assistant Professor"]:
+            if not user_holds_any_role(request.user, ["Associate Professor", "Professor", "Assistant Professor"]):
                 return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
 
             if not academic_year or not semester_type:
@@ -2182,7 +2184,7 @@ class GeneratePDFAPI(APIView):
                 return self.generate_student_result_pdf(request)
             
             # Faculty role check for course grade sheets
-            if role not in ["Associate Professor", "Professor", "Assistant Professor", "acadadmin"]:
+            if not user_holds_any_role(request.user, ["Associate Professor", "Professor", "Assistant Professor", "acadadmin"]):
                 return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
 
             # Existing faculty course grade sheet logic
@@ -2219,7 +2221,7 @@ class GeneratePDFAPI(APIView):
             
             grades = grades.order_by("roll_no")
 
-            if role == "acadadmin":
+            if user_holds_role(request.user, "acadadmin"):
                 ci = CourseInstructor.objects.filter(
                     course_id_id=course_id,
                     year=working_year,
@@ -2236,7 +2238,7 @@ class GeneratePDFAPI(APIView):
                 return Response({"success": False, "error": "Course not found."}, status=404)
 
             # semester   = ci.first().semester_no
-            if role == "acadadmin":
+            if user_holds_role(request.user, "acadadmin"):
                 _User = get_user_model()
                 ci_obj = ci.first()
                 instr_user = _User.objects.filter(username=ci_obj.instructor_id_id).first()
@@ -2637,7 +2639,7 @@ class VerifyGradesDeanView(APIView):
         academic_year = request.data.get("academic_year")
         semester_type = request.data.get("semester_type")
 
-        if role != "Dean Academic":
+        if not user_holds_role(request.user, "Dean Academic"):
             return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
         if not academic_year or not semester_type:
             return Response({"error": "Both academic_year and semester_type are required."},
@@ -2709,7 +2711,7 @@ class UpdateEnterGradesDeanView(APIView):
         year = request.data.get("year")
         semester_type = request.data.get("semester_type")
 
-        if role != "Dean Academic":
+        if not user_holds_role(request.user, "Dean Academic"):
             return Response({"success": False, "error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
 
         qs = Student_grades.objects.filter(course_id=course_id, academic_year=year, semester_type = semester_type)
@@ -2767,7 +2769,7 @@ class ValidateDeanView(APIView):
     def post(self, request):
         role = request.data.get("Role")
 
-        if role != "Dean Academic":
+        if not user_holds_role(request.user, "Dean Academic"):
             return Response(
                 {"error": "Access denied."}, 
                 status=status.HTTP_403_FORBIDDEN
@@ -2810,7 +2812,7 @@ class ValidateDeanSubmitView(APIView):
     def post(self, request):
         role = request.data.get("Role")
 
-        if role != "Dean Academic":
+        if not user_holds_role(request.user, "Dean Academic"):
             return Response(
                 {"error": "Access denied."},
                 status=status.HTTP_403_FORBIDDEN
@@ -2869,7 +2871,7 @@ class ValidateDeanSubmitView(APIView):
 
             for row in reader:
                 roll_no = row["roll_no"]
-                grade = row["grade"]
+                grade = (row["grade"] or "").strip()
                 remarks = row["remarks"]
 
                 try:
@@ -2884,7 +2886,7 @@ class ValidateDeanSubmitView(APIView):
                         batch=batch
                     )
 
-                    if student_grade.grade != grade:
+                    if (student_grade.grade or "").strip() != grade:
                         mismatches.append({
                             "roll_no": roll_no,
                             "csv_grade": grade,
@@ -2981,7 +2983,7 @@ class CheckResultView(APIView):
             semester_type=semester_type,
         ).first()
 
-        if not ann or not ann.announced:
+        if not ann or not ann.announced or not _is_result_published_for(ann, roll_number):
             return JsonResponse(
                 {"success": False, "message": "Results not announced yet."},
                 status=200,
@@ -3028,7 +3030,7 @@ class CheckResultView(APIView):
                     "coursename": grade.course_id.name,
                     "credits": grade.course_id.credit,
                     "grade":grade.grade,
-                    "points": Decimal(str(grade_conversion.get(grade.grade, 0) * 10)).quantize(Decimal('0.1'), rounding=ROUND_HALF_UP),
+                    "points": Decimal(str(grade_conversion.get((grade.grade or "").strip(), 0) * 10)).quantize(Decimal('0.1'), rounding=ROUND_HALF_UP),
                 }
                 for grade in grades_info
             ],
@@ -3047,7 +3049,7 @@ class PreviewGradesAPI(APIView):
     def post(self, request):
         # Validate user role
         user_role = request.data.get("Role")
-        if user_role != "acadadmin" and user_role!='Assistant Professor' and user_role != 'Professor' and user_role!='Associate Professor':
+        if not user_holds_any_role(request.user, ["acadadmin", "Assistant Professor", "Professor", "Associate Professor"]):
             return Response(
                 {"error": "Access denied."},
                 status=status.HTTP_403_FORBIDDEN,
@@ -3171,11 +3173,16 @@ class ResultAnnouncementListAPI(APIView):
 
     def get(self, request):
         role = request.query_params.get("role")
-        if role != "acadadmin" and role != "Dean Academic":
+        if not user_holds_any_role(request.user, ["acadadmin", "Dean Academic"]):
             return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
         
-        # Get announcements sorted by creation date (most recent first)
-        announcements = ResultAnnouncement.objects.all().order_by("-created_at")
+        # Get announcements sorted by creation date (most recent first).
+        # select_related pulls batch + discipline in one query (avoids N+1).
+        announcements = (
+            ResultAnnouncement.objects
+            .select_related("batch__discipline")
+            .order_by("-created_at")
+        )
         ann_data = []
         for ann in announcements:
             # Compute the batch label.
@@ -3199,11 +3206,12 @@ class ResultAnnouncementListAPI(APIView):
                 "semester_type": sem_type,
                 "semester_label": sem_label,
                 "announced": ann.announced,
+                "per_student_selection": ann.per_student_selection,
                 "created_at": ann.created_at,
             })
         
         batch_objs = sorted(
-            Batch.objects.filter(running_batch=True),
+            Batch.objects.filter(running_batch=True).select_related("discipline"),
             key=lambda b: (b.name, -b.year, b.discipline.acronym),
         )
         batch_options = [
@@ -3226,7 +3234,7 @@ class UpdateAnnouncementAPI(APIView):
 
     def post(self, request):
         role = request.data.get("Role")
-        if role != "acadadmin" and role != "Dean Academic":
+        if not user_holds_any_role(request.user, ["acadadmin", "Dean Academic"]):
             return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
         announcement_id = request.data.get("id")
         announced = request.data.get("announced")
@@ -3255,7 +3263,7 @@ class CreateAnnouncementAPI(APIView):
     def post(self, request):
         try:
             role = request.data.get("Role")
-            if role != "acadadmin" and role != "Dean Academic":
+            if not user_holds_any_role(request.user, ["acadadmin", "Dean Academic"]):
                 return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
 
             batch_id = request.data.get("batch")
@@ -3302,6 +3310,141 @@ class CreateAnnouncementAPI(APIView):
         except Exception as e:
             traceback.print_exc()
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+def _is_result_published_for(ann, roll_number):
+    """Whether this announcement's result is published for ``roll_number``.
+
+    Legacy / whole-batch publish (``per_student_selection`` False) is published
+    for everyone. Per-student publish shows the result only to the students
+    explicitly selected (rows in ``PublishedResultStudent``).
+    """
+    if not getattr(ann, "per_student_selection", False):
+        return True
+    return ann.published_students.filter(roll_no=roll_number).exists()
+
+
+def _user_has_exam_admin_role(user, allowed=("acadadmin", "Dean Academic")):
+    """Authorize off the user's actual held designation (server-side).
+
+    The rest of this module trusts a client-supplied ``Role`` field, which is
+    spoofable; these result-publishing endpoints verify the real designation
+    instead so a non-admin cannot publish/hide results or read the roster.
+    """
+    from applications.globals.models import HoldsDesignation
+
+    return HoldsDesignation.objects.filter(
+        Q(working=user) | Q(user=user),
+        designation__name__in=allowed,
+    ).exists()
+
+
+class AnnouncementStudentsAPI(APIView):
+    """GET /api/announcement-students/?id=<announcement_id>&role=acadadmin
+
+    Returns the students of the announcement's batch with their current publish
+    selection. Before any per-student publish, every student defaults to
+    selected (checked).
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not _user_has_exam_admin_role(request.user):
+            return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            ann = ResultAnnouncement.objects.select_related("batch__discipline").get(
+                id=request.query_params.get("id")
+            )
+        except (ResultAnnouncement.DoesNotExist, ValueError):
+            return Response({"error": "Announcement not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        students = (
+            Student.objects.filter(batch_id=ann.batch)
+            .select_related("id__user")
+            .order_by("id__user__username")
+        )
+        published_set = set(ann.published_students.values_list("roll_no", flat=True))
+        # Reflect the saved per-student selection only while it is actively
+        # published; otherwise (fresh, or fully reverted) default to all checked.
+        has_selection = ann.announced and ann.per_student_selection
+        discipline = ann.batch.discipline.acronym if ann.batch.discipline else ""
+
+        rows = []
+        for idx, stu in enumerate(students, start=1):
+            user = stu.id.user
+            roll = user.username
+            full_name = "{} {}".format(user.first_name, user.last_name).strip() or roll
+            rows.append({
+                "s_no": idx,
+                "roll_no": roll,
+                "name": full_name,
+                "discipline": discipline,
+                # Default everyone to checked until a per-student publish happens.
+                "published": (roll in published_set) if has_selection else True,
+            })
+
+        batch = ann.batch
+        sem_label = (
+            "Summer {}".format(ann.semester // 2)
+            if ann.semester_type == "Summer Semester"
+            else "Semester {}".format(ann.semester)
+        )
+        return Response({
+            "id": ann.id,
+            "batch_label": "{} - {} {}".format(batch.name, discipline, batch.year),
+            "semester_label": sem_label,
+            "announced": ann.announced,
+            "students": rows,
+        }, status=status.HTTP_200_OK)
+
+
+class PublishResultSelectedAPI(APIView):
+    """POST /api/publish-result-selected/
+
+    Body: ``{ "id": <announcement_id>, "roll_numbers": [...], "Role": "acadadmin" }``
+
+    Publishes the announcement for exactly the selected students. Unselected
+    students of the batch will not see their result.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if not _user_has_exam_admin_role(request.user):
+            return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
+
+        roll_numbers = request.data.get("roll_numbers", [])
+        if not isinstance(roll_numbers, list):
+            return Response({"error": "roll_numbers must be a list."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            ann = ResultAnnouncement.objects.get(id=request.data.get("id"))
+        except (ResultAnnouncement.DoesNotExist, ValueError):
+            return Response({"error": "Announcement not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Keep only roll numbers that actually belong to the batch.
+        valid_rolls = set(
+            Student.objects.filter(batch_id=ann.batch)
+            .values_list("id__user__username", flat=True)
+        )
+        selected = [r for r in roll_numbers if r in valid_rolls]
+
+        with transaction.atomic():
+            ann.published_students.all().delete()
+            PublishedResultStudent.objects.bulk_create(
+                [PublishedResultStudent(announcement=ann, roll_no=r) for r in selected]
+            )
+            ann.per_student_selection = True
+            # Publishing zero students reverts the announcement (nobody sees it).
+            ann.announced = bool(selected)
+            ann.save(update_fields=["per_student_selection", "announced"])
+
+        return Response({
+            "success": True,
+            "announced": ann.announced,
+            "published_count": len(selected),
+            "total": len(valid_rolls),
+        }, status=status.HTTP_200_OK)
+
 
 from collections import OrderedDict
 
@@ -3370,7 +3513,7 @@ class GradeStatusAPI(APIView):
         semester_type = request.data.get("semester_type")
         
         # Role-based access control
-        if role not in ["acadadmin", "Dean Academic"]:
+        if not user_holds_any_role(request.user, ["acadadmin", "Dean Academic"]):
             return Response(
                 {"success": False, "error": "Access denied."},
                 status=status.HTTP_403_FORBIDDEN
@@ -3539,7 +3682,7 @@ class GenerateStudentResultPDFAPI(APIView):
                     semester_type=semester_type,
                 ).first()
 
-                if not ann or not ann.announced:
+                if not ann or not ann.announced or not _is_result_published_for(ann, roll_number):
                     return JsonResponse(
                         {"success": False, "message": "Results not announced yet."},
                         status=200,
@@ -3582,7 +3725,7 @@ class GenerateStudentResultPDFAPI(APIView):
                         "coursename": grade.course_id.name,
                         "credits": grade.course_id.credit,
                         "grade": grade.grade,
-                        "points": Decimal(str(grade_conversion.get(grade.grade, 0) * 10)).quantize(Decimal('0.1'), rounding=ROUND_HALF_UP),
+                        "points": Decimal(str(grade_conversion.get((grade.grade or "").strip(), 0) * 10)).quantize(Decimal('0.1'), rounding=ROUND_HALF_UP),
                     }
                     for grade in grades_info
                 ]
@@ -3828,7 +3971,7 @@ class GenerateGradeSheetData(APIView):
         student_id = request.data.get("student")
         raw_semester = request.data.get("semester")
 
-        if des != "acadadmin":
+        if not user_holds_role(request.user, "acadadmin"):
             return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
 
         if not student_id or not raw_semester:
@@ -3903,7 +4046,7 @@ class GenerateGradeSheetData(APIView):
                 "course_code": course.code,
                 "credit": course.credit,
                 "grade": reg.grade,
-                "points": Decimal(str(grade_conversion.get(reg.grade, 0) * 10)).quantize(
+                "points": Decimal(str(grade_conversion.get((reg.grade or "").strip(), 0) * 10)).quantize(
                     Decimal('0.1'), rounding=ROUND_HALF_UP),
                 "special_symbol": course_reg_map.get(course.id, ''),
             }
@@ -4034,7 +4177,7 @@ class GenerateGradeSheetForm(APIView):
 
     def get(self, request):
         role = request.GET.get("role")
-        if not role or role != "acadadmin":
+        if not user_holds_role(request.user, "acadadmin"):
             return Response(
                 {"error": "Access denied. Invalid or missing role."},
                 status=status.HTTP_403_FORBIDDEN)
@@ -4060,7 +4203,7 @@ class GenerateGradeSheetForm(APIView):
 
     def post(self, request):
         role = request.data.get("Role")
-        if not role or role != "acadadmin":
+        if not user_holds_role(request.user, "acadadmin"):
             return Response(
                 {"error": "Access denied. Invalid or missing role."},
                 status=status.HTTP_403_FORBIDDEN)
@@ -4098,7 +4241,7 @@ class GradeSummaryAPI(APIView):
         academic_year = request.data.get("academic_year") 
         semester_type = request.data.get("semester_type")
 
-        if role not in ["acadadmin", "Dean Academic"]:
+        if not user_holds_any_role(request.user, ["acadadmin", "Dean Academic"]):
             return Response(
                 {"success": False, "error": "Access denied."},
                 status=status.HTTP_403_FORBIDDEN
@@ -4184,7 +4327,7 @@ class GradeValidationView(APIView):
     def get(self, request):
         """Return batch list for the dropdown (same format as GenerateGradeSheetForm)."""
         role = request.GET.get("role")
-        if role != "acadadmin":
+        if not user_holds_role(request.user, "acadadmin"):
             return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
 
         batches_qs = Batch.objects.select_related("discipline").order_by("-year", "name")
@@ -4196,7 +4339,7 @@ class GradeValidationView(APIView):
 
     def post(self, request):
         role = request.data.get("Role")
-        if role != "acadadmin":
+        if not user_holds_role(request.user, "acadadmin"):
             return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
 
         action = request.data.get("action")
@@ -4290,7 +4433,7 @@ class GradeValidationView(APIView):
 
             # Track first appearance of each course to classify remark
             FAILING_GRADES = {"F", "I", "X", "AU", "CD"}
-            NON_CREDIT_GRADES = {"F", "I", "X", "AU", "CD", "S"}
+            NON_CREDIT_GRADES = {"F", "I", "X", "AU", "CD"}
             course_first_grade: dict = {}   # course_id -> first grade string
 
             semesters_data = []
@@ -4483,7 +4626,7 @@ class GradeValidationView(APIView):
                 "M.Des": "Master of Design",
                 "PhD": "Doctor of Philosophy",
             }
-            NON_CREDIT_GRADES2 = {"F", "I", "X", "AU", "CD", "S"}
+            NON_CREDIT_GRADES2 = {"F", "I", "X", "AU", "CD"}
             FAILING_GRADES2 = {"F", "I", "X", "AU", "CD"}
 
             def _get_student_data(stu):
@@ -4758,7 +4901,8 @@ class GradeValidationView(APIView):
                     story.append(st2)
 
                 # ── Credits Details table ────────────────────────────────
-                NON_EARN = {"F", "I", "X", "AU", "CD", "S", "—", ""}
+                # S earns credit (counted in total). X and failing grades do not.
+                NON_EARN = {"F", "I", "X", "AU", "CD", "—", ""}
                 graded_sems = [s for s in semesters if not s.get("is_registered_only")]
 
                 cd_rows = []
