@@ -3450,9 +3450,9 @@ def admin_view_all_course_instructor(request):
         faculty_first_name=F('instructor_id__id__user__first_name'),
         faculty_last_name=F('instructor_id__id__user__last_name')
     ).values(
-        'course_id', 'course_name', 'course_code', 'course_version', 
-        'instructor_id','semester_type', 'faculty_first_name', 'faculty_last_name', 
-        'year', 'id'
+        'course_id', 'course_name', 'course_code', 'course_version',
+        'instructor_id','semester_type', 'faculty_first_name', 'faculty_last_name',
+        'year', 'id', 'section_label'
     )
     for instructor in course_instructors:
         obj = CourseInstructor(
@@ -3531,7 +3531,19 @@ def add_course_instructor(request):
             data.pop("academic_year", None)
             form = CourseInstructorForm(data)
             if form.is_valid():
-                form.save()
+                instance = form.save(commit=False)
+                # Named sections (A-F) are kept unique by the DB constraint, but a
+                # NULL (elective) section is not (Postgres treats NULLs as distinct),
+                # so enforce a single elective offering per course/term here.
+                if instance.section_label is None and CourseInstructor.objects.filter(
+                    course_id=instance.course_id, year=instance.year,
+                    semester_type=instance.semester_type, section_label__isnull=True,
+                ).exists():
+                    return JsonResponse(
+                        {"error": "An elective (no-section) offering already exists for this course and term."},
+                        status=400,
+                    )
+                instance.save()
                 return JsonResponse(
                     {"success": "Instructor added successfully"}, status=201
                 )
@@ -3564,6 +3576,12 @@ def add_course_instructor(request):
                     instr_id = str(sheet.cell(i, 2).value).strip()
                     acad_year = str(sheet.cell(i, 3).value).strip()
                     sem_type = str(sheet.cell(i, 4).value).strip()
+                    # Section (6th column, index 5) is optional: blank = elective / single offering.
+                    sec = None
+                    if sheet.ncols > 5:
+                        sec = str(sheet.cell(i, 5).value).strip().upper() or None
+                    if sec is not None and sec not in ('A', 'B', 'C', 'D', 'E', 'F'):
+                        raise ValueError(f"Bad section '{sec}' (expected A-F or blank)")
 
                     # convert year
                     year = parse_academic_year(acad_year, sem_type)
@@ -3580,12 +3598,13 @@ def add_course_instructor(request):
                     if not fac:
                         raise ValueError(f"Instructor {instr_id} not found")
 
+                    # One owning faculty per (course, term, section).
                     if CourseInstructor.objects.filter(
-                        course_id=course, instructor_id=fac, year=year
+                        course_id=course, year=year, semester_type=sem_type, section_label=sec
                     ).exists():
-                        raise ValueError("Duplicate entry")
+                        raise ValueError("Duplicate entry for this course/term/section")
 
-                    rows.append((course, fac, year, sem_type))
+                    rows.append((course, fac, year, sem_type, sec))
                 except Exception as e:
                     errors.append({"row": i + 1, "error": str(e)})
 
@@ -3593,12 +3612,13 @@ def add_course_instructor(request):
                 return JsonResponse({"error": "Validation failed", "details": errors}, status=400)
 
             # bulk insert
-            for course, fac, year, sem_type in rows:
+            for course, fac, year, sem_type, sec in rows:
                 CourseInstructor.objects.create(
                     course_id=course,
                     instructor_id=fac,
                     year=year,
-                    semester_type=sem_type 
+                    semester_type=sem_type,
+                    section_label=sec,
                 )
 
         return JsonResponse({"success": f"{len(rows)} instructors added"}, status=201)

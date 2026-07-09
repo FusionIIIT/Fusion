@@ -8,8 +8,9 @@ urlpatterns = [
     url(r'^exam_view/', views.exam_view, name='exam_view'),
     url(r'^download_template/', views.download_template, name='download_template'),
     url(r'^check_course_students/', views.check_course_students, name='check_course_students'),
-    url(r'^submitGrades/', views.SubmitGradesView.as_view(), name='submitGrades'),
-    url(r'^upload_grades/', views.UploadGradesAPI.as_view(), name='upload_grades'),
+    # Removed: acadadmin proxy grade-submission endpoints (submitGrades / upload_grades).
+    # Grades are submitted only by the assigned faculty per section via
+    # upload_grades_prof (UploadGradesProfAPI); acadadmin's role is verify/moderate.
     url(r'^update_grades/', views.UpdateGradesAPI.as_view(), name='update_grades'),
     url(r'^update_enter_grades/', views.UpdateEnterGradesAPI.as_view(), name='update_enter_grades'),
     url(r'^moderate_student_grades/', views.ModerateStudentGradesAPI.as_view(), name='moderate_student_grades'),

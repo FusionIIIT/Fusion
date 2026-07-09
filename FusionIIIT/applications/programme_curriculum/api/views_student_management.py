@@ -4359,6 +4359,17 @@ def get_batch_students(request, batch_id):
                 discipline_filters |= Q(branch__icontains=typo_name)
             students = students.filter(discipline_filters).order_by('roll_number')
 
+        # Read-only mirror of the assigned Student.section, keyed by roll number.
+        roll_numbers = [s.roll_number for s in students if s.roll_number]
+        assigned_sections = {}
+        if roll_numbers:
+            from applications.academic_information.models import Student as AcademicStudent
+            assigned_sections = dict(
+                AcademicStudent.objects
+                .filter(id_id__in=roll_numbers)
+                .values_list('id_id', 'section')
+            )
+
         upload_students = []
         for student in students:
             upload_students.append({
@@ -4394,6 +4405,7 @@ def get_batch_students(request, batch_id):
                 'state': getattr(student, 'state', ''),
 
                 'branch': student.branch,
+                'section': assigned_sections.get(student.roll_number) or '',
                 'specialization': getattr(student, 'specialization', ''),
                 'ai_rank': getattr(student, 'ai_rank', None),
                 'category_rank': getattr(student, 'category_rank', None),
