@@ -1099,6 +1099,10 @@ class FeedbackResponse(models.Model):
     option        = models.ForeignKey(FeedbackOption, on_delete=models.CASCADE, null=True, blank=True)
     text_answer   = models.TextField(blank=True)
     course        = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    # Offering this feedback is about (null for no-section / legacy responses).
+    course_instructor = models.ForeignKey(
+        'programme_curriculum.CourseInstructor', null=True, blank=True,
+        on_delete=models.SET_NULL)
     section       = models.CharField(max_length=20, choices=FeedbackQuestion.SECTION_CHOICES)
     session       = models.CharField(max_length=9)
     semester_type = models.CharField(max_length=20, choices=SEMESTER_CHOICES)
