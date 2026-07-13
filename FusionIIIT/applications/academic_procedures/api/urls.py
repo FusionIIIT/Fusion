@@ -92,6 +92,7 @@ urlpatterns = [
     url(r'^acad/batch_change/apply/$', views.apply_batch_changes, name='batch-apply'),
     url(r'^acad/promote/students/$', views.list_students_in_batch_semester_promotion, name='promote-batch-students'),
     url(r'^acad/promote/apply/$', views.apply_promotion, name='promote-apply'),
+    url(r'^acad/demote/apply/$', views.apply_demotion, name='demote-apply'),
     url(r'^get_next_sem_courses' , views.get_next_sem_courses , name= 'get_next_sem_courses'),
 
 
