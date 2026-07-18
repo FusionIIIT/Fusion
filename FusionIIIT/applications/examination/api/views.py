@@ -1729,21 +1729,25 @@ class SubmitGradesProfAPI(APIView):
         
         working_year, _ = parse_academic_year(academic_year=academic_year, semester_type=semester_type)
 
-        instructor_filter = {"year": working_year, "semester_type": semester_type}
-        if not user_holds_role(request.user, "acadadmin"):
-            instructor_filter["instructor_id_id"] = request.user.username
-
-        unique_course_ids = (
-            CourseInstructor.objects.filter(**instructor_filter)
-            .values("course_id_id")
-            .distinct()
-            .annotate(course_id_int=Cast("course_id_id", IntegerField()))
-        )
-
-        # Retrieve course details with programme type filtering
-        courses_query = Courses.objects.filter(
-            id__in=unique_course_ids.values_list("course_id_int", flat=True)
-        )
+        if user_holds_role(request.user, "acadadmin"):
+            course_ids = (
+                course_registration.objects
+                .filter(session=academic_year, semester_type=semester_type)
+                .values_list("course_id", flat=True)
+                .distinct()
+            )
+            courses_query = Courses.objects.filter(id__in=course_ids)
+        else:
+            unique_course_ids = (
+                CourseInstructor.objects
+                .filter(instructor_id_id=request.user.username, year=working_year, semester_type=semester_type)
+                .values("course_id_id")
+                .distinct()
+                .annotate(course_id_int=Cast("course_id_id", IntegerField()))
+            )
+            courses_query = Courses.objects.filter(
+                id__in=unique_course_ids.values_list("course_id_int", flat=True)
+            )
         
         student_ids_with_programme = None
         if programme_type:
@@ -1961,8 +1965,8 @@ class UploadGradesProfAPI(APIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
 
-            # 8) INSTRUCTOR‐OWNERSHIP CHECK
-            if not CourseInstructor.objects.filter(
+            # 8) INSTRUCTOR‐OWNERSHIP CHECK (acadadmin may submit for any course)
+            if not user_holds_role(request.user, "acadadmin") and not CourseInstructor.objects.filter(
                 course_id_id=course_id,
                 instructor_id_id=request.user.username,
                 year=working_year
