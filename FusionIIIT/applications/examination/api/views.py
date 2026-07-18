@@ -1715,7 +1715,7 @@ class SubmitGradesProfAPI(APIView):
         semester_type = request.data.get("semester_type")
         programme_type = request.data.get("programme_type")
         
-        if not user_holds_any_role(request.user, ["Associate Professor", "Professor", "Assistant Professor"]):
+        if not user_holds_any_role(request.user, ["Associate Professor", "Professor", "Assistant Professor", "acadadmin"]):
             return Response(
                 {"success": False, "error": "Access denied."},
                 status=status.HTTP_403_FORBIDDEN,
@@ -1727,12 +1727,14 @@ class SubmitGradesProfAPI(APIView):
                 status=400,
             )
         
-        instructor_id = request.user.username
-
         working_year, _ = parse_academic_year(academic_year=academic_year, semester_type=semester_type)
 
+        instructor_filter = {"year": working_year, "semester_type": semester_type}
+        if not user_holds_role(request.user, "acadadmin"):
+            instructor_filter["instructor_id_id"] = request.user.username
+
         unique_course_ids = (
-            CourseInstructor.objects.filter(instructor_id_id=instructor_id, year = working_year, semester_type=semester_type)
+            CourseInstructor.objects.filter(**instructor_filter)
             .values("course_id_id")
             .distinct()
             .annotate(course_id_int=Cast("course_id_id", IntegerField()))
@@ -1812,7 +1814,7 @@ class UploadGradesProfAPI(APIView):
         try:
             # 1) ROLE CHECK
             role = request.data.get("Role")
-            if not user_holds_any_role(request.user, ["Associate Professor", "Professor", "Assistant Professor"]):
+            if not user_holds_any_role(request.user, ["Associate Professor", "Professor", "Assistant Professor", "acadadmin"]):
                 return Response({"error": "Access denied."},
                                 status=status.HTTP_403_FORBIDDEN)
 
