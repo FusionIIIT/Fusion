@@ -5814,6 +5814,35 @@ def apply_promotion(request):
     return Response({"detail": "Promotion applied."}, status=status.HTTP_200_OK)
 
 
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+@role_required(['acadadmin'])
+def apply_demotion(request):
+    """Move selected students one semester back (correction for over-promotion).
+
+    Only decrements curr_semester_no (floored at 1); it does not delete any
+    course registrations, so it is a safe inverse of an accidental promotion.
+    """
+    data = request.data  # list of student IDs
+    errors = []
+    with transaction.atomic():
+        for idx, sid in enumerate(data):
+            try:
+                student = Student.objects.get(id=sid)
+            except Student.DoesNotExist:
+                errors.append({"index": idx, "detail": f"Student {sid} not found."})
+                continue
+            old_sem = student.curr_semester_no
+            if old_sem is None or old_sem <= 1:
+                errors.append({"index": idx, "detail": f"Student {student.id_id} is already in semester 1; cannot demote."})
+                continue
+            student.curr_semester_no = old_sem - 1
+            student.save()
+    if errors:
+        return Response({"errors": errors}, status=status.HTTP_207_MULTI_STATUS)
+    return Response({"detail": "Demotion applied."}, status=status.HTTP_200_OK)
+
+
 # @api_view(["GET"])
 # @permission_classes([IsAuthenticated])
 # def download_user_template(request):

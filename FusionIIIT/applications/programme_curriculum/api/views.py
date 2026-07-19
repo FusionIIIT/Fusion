@@ -15,6 +15,7 @@ from ..filters import CourseFilter, BatchFilter, CurriculumFilter
 from .serializers import CourseSerializer,CurriculumSerializer,BatchSerializer, ThesisSerializer, ProgressSeminarSerializer
 from .views_student_management import get_batch_curriculum_display, get_available_curriculums_for_batch
 from django.core.serializers import serialize
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 from django.forms.models import model_to_dict
@@ -4365,7 +4366,16 @@ def create_course_audit_log(course, user, action, old_data=None, new_data=None,
                           version_bump_type='NONE', old_version=None, new_version=None,
                           admin_override=False, reason=""):
     """Create an audit log entry for course changes"""
-    
+
+    def _json_safe(value):
+        # The JSONField columns use the default encoder, which can't serialize
+        # Decimal/datetime (e.g. Course.version is a DecimalField). Coerce to
+        # JSON-native types so saving the audit log doesn't raise (which was
+        # surfacing as a 500 while the course row itself had already been saved).
+        if value is None:
+            return None
+        return json.loads(json.dumps(value, cls=DjangoJSONEncoder))
+
     changed_fields = []
     if old_data and new_data:
         # Find changed fields
@@ -4373,17 +4383,17 @@ def create_course_audit_log(course, user, action, old_data=None, new_data=None,
             new_value = new_data.get(field)
             if old_value != new_value:
                 changed_fields.append(field)
-    
+
     audit_log = CourseAuditLog.objects.create(
         course=course,
         user=user,
         action=action,
-        old_values=old_data,
-        new_values=new_data,
+        old_values=_json_safe(old_data),
+        new_values=_json_safe(new_data),
         changed_fields=changed_fields,
         version_bump_type=version_bump_type,
-        old_version=old_version,
-        new_version=new_version,
+        old_version=_json_safe(old_version),
+        new_version=_json_safe(new_version),
         admin_override=admin_override,
         reason=reason
     )
