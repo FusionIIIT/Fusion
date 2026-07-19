@@ -1729,7 +1729,8 @@ class SubmitGradesProfAPI(APIView):
         
         working_year, _ = parse_academic_year(academic_year=academic_year, semester_type=semester_type)
 
-        if user_holds_role(request.user, "acadadmin"):
+        acting_as_acadadmin = role == "acadadmin" and user_holds_role(request.user, "acadadmin")
+        if acting_as_acadadmin:
             course_ids = (
                 course_registration.objects
                 .filter(session=academic_year, semester_type=semester_type)
@@ -1966,7 +1967,8 @@ class UploadGradesProfAPI(APIView):
                     )
 
             # 8) INSTRUCTOR‐OWNERSHIP CHECK (acadadmin may submit for any course)
-            if not user_holds_role(request.user, "acadadmin") and not CourseInstructor.objects.filter(
+            acting_as_acadadmin = role == "acadadmin" and user_holds_role(request.user, "acadadmin")
+            if not acting_as_acadadmin and not CourseInstructor.objects.filter(
                 course_id_id=course_id,
                 instructor_id_id=request.user.username,
                 year=working_year
