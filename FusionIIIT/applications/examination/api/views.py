@@ -227,6 +227,19 @@ def parse_academic_year(academic_year, semester_type):
     session = academic_year  # Use the complete academic year string as session.
     return working_year, session
 
+def course_instructor_year(academic_year, semester_type):
+    """
+    Year used by CourseInstructor rows for a given academic year + semester type.
+    CourseInstructor stores Odd/Summer under the start year and Even under the end
+    year (see CourseInstructor.academic_year). This differs from parse_academic_year,
+    which keys Summer on the end year to match Student_grades — so use this helper
+    (not working_year) whenever filtering CourseInstructor by year.
+    """
+    if semester_type == "Summer Semester":
+        return int(academic_year.split("-")[0].strip())
+    working_year, _ = parse_academic_year(academic_year, semester_type)
+    return working_year
+
 def is_valid_grade(grade: str, course_code: str) -> bool:
     """
     Returns True if the grade is valid for the given course code.
@@ -1741,7 +1754,7 @@ class SubmitGradesProfAPI(APIView):
         else:
             unique_course_ids = (
                 CourseInstructor.objects
-                .filter(instructor_id_id=request.user.username, year=working_year, semester_type=semester_type)
+                .filter(instructor_id_id=request.user.username, year=course_instructor_year(academic_year, semester_type), semester_type=semester_type)
                 .values("course_id_id")
                 .distinct()
                 .annotate(course_id_int=Cast("course_id_id", IntegerField()))
@@ -1971,7 +1984,7 @@ class UploadGradesProfAPI(APIView):
             if not acting_as_acadadmin and not CourseInstructor.objects.filter(
                 course_id_id=course_id,
                 instructor_id_id=request.user.username,
-                year=working_year
+                year=course_instructor_year(academic_year, semester_type)
             ).exists():
                 return Response(
                     {"error": "Access denied: you are not assigned as instructor for this course."},
@@ -2127,7 +2140,7 @@ class DownloadGradesAPI(APIView):
 
             unique_course_ids = (
                 CourseInstructor.objects
-                    .filter(instructor_id_id=instructor_id, year=working_year, semester_type=semester_type)
+                    .filter(instructor_id_id=instructor_id, year=course_instructor_year(academic_year, semester_type), semester_type=semester_type)
                     .values("course_id_id")
                     .distinct()
                     .annotate(course_id_int=Cast("course_id_id", IntegerField()))
@@ -2221,13 +2234,13 @@ class GeneratePDFAPI(APIView):
             if user_holds_role(request.user, "acadadmin"):
                 ci = CourseInstructor.objects.filter(
                     course_id_id=course_id,
-                    year=working_year,
+                    year=course_instructor_year(academic_year, semester_type),
                     semester_type=semester_type,
                 )
             else:
                 ci = CourseInstructor.objects.filter(
                     course_id_id=course_id,
-                    year=working_year,
+                    year=course_instructor_year(academic_year, semester_type),
                     semester_type=semester_type,
                     instructor_id_id=request.user.username
                 )
@@ -3541,7 +3554,7 @@ class GradeStatusAPI(APIView):
             instructors_map = {}
             instructors = CourseInstructor.objects.filter(
                 course_id__in=course_ids,
-                year=working_year,
+                year=course_instructor_year(academic_year, semester_type),
                 semester_type=semester_type
             ).select_related()
             
