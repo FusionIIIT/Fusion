@@ -252,24 +252,46 @@ class Thesis(models.Model):
         return f"{self.code} - {self.name} ({self.discipline.acronym})"
 
 
-class ProgressSeminar(models.Model):
-    """Store progress seminar details for PhD and M.Tech programmes"""
-    
+class Seminar(models.Model):
+    """Store seminar details for PhD and M.Tech programmes"""
+
     code = models.CharField(max_length=10, null=False, blank=False, unique=True)
     name = models.CharField(max_length=100, null=False, blank=False)
     credit = models.PositiveIntegerField(default=0, null=False, blank=False)
     discipline = models.ForeignKey(Discipline, on_delete=models.CASCADE, null=False)
     programme_type = models.CharField(
-        max_length=3, 
+        max_length=3,
         choices=[('PG', 'Postgraduate'), ('PHD', 'Doctor of Philosophy')],
-        null=False, 
+        null=False,
         blank=False
     )
-    working_progress_seminar = models.BooleanField(default=True)
-    
+    working_seminar = models.BooleanField(default=True)
+
     class Meta:
         unique_together = ('code', 'discipline')
-    
+
+    def __str__(self):
+        return f"{self.code} - {self.name} ({self.discipline.acronym})"
+
+
+class TeachingCredit(models.Model):
+    """Store teaching credit details for PhD and M.Tech programmes"""
+
+    code = models.CharField(max_length=10, null=False, blank=False, unique=True)
+    name = models.CharField(max_length=100, null=False, blank=False)
+    credit = models.PositiveIntegerField(default=0, null=False, blank=False)
+    discipline = models.ForeignKey(Discipline, on_delete=models.CASCADE, null=False)
+    programme_type = models.CharField(
+        max_length=3,
+        choices=[('PG', 'Postgraduate'), ('PHD', 'Doctor of Philosophy')],
+        null=False,
+        blank=False
+    )
+    working_teaching_credit = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ('code', 'discipline')
+
     def __str__(self):
         return f"{self.code} - {self.name} ({self.discipline.acronym})"
 
@@ -344,14 +366,37 @@ class ThesisSlot(models.Model):
         return ((Semester.objects.get(id=self.semester.id)).curriculum).batches
 
 
-class ProgressSeminarSlot(models.Model):
-    """Store progress seminar slot details for a semester"""
-    
+class SeminarSlot(models.Model):
+    """Store seminar slot details for a semester"""
+
     semester = models.ForeignKey(
         Semester, null=False, on_delete=models.CASCADE)
     name = models.CharField(max_length=100, null=False, blank=False)
-    progress_seminar_slot_info = models.TextField(null=True, blank=True)
-    progress_seminars = models.ManyToManyField(ProgressSeminar, blank=True)
+    seminar_slot_info = models.TextField(null=True, blank=True)
+    seminars = models.ManyToManyField(Seminar, blank=True)
+    duration = models.PositiveIntegerField(default=1)
+    min_registration_limit = models.PositiveIntegerField(default=0)
+    max_registration_limit = models.PositiveIntegerField(default=1000)
+
+    def __str__(self):
+        return str(Semester.__str__(self.semester) + ", " + self.name)
+
+    class Meta:
+        unique_together = ('semester', 'name')
+
+    @property
+    def for_batches(self):
+        return ((Semester.objects.get(id=self.semester.id)).curriculum).batches
+
+
+class TeachingCreditSlot(models.Model):
+    """Store teaching credit slot details for a semester"""
+
+    semester = models.ForeignKey(
+        Semester, null=False, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100, null=False, blank=False)
+    teaching_credit_slot_info = models.TextField(null=True, blank=True)
+    teaching_credits = models.ManyToManyField(TeachingCredit, blank=True)
     duration = models.PositiveIntegerField(default=1)
     min_registration_limit = models.PositiveIntegerField(default=0)
     max_registration_limit = models.PositiveIntegerField(default=1000)

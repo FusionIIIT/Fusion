@@ -93,29 +93,43 @@ urlpatterns = [
     path('admin_delete_thesis/<int:thesis_id>/', views.admin_delete_thesis, name='admin_delete_thesis'),
     path('admin_update_thesis/<int:thesis_id>/', views.update_thesis, name='update_thesis'),
     
-    # Progress Seminar APIs
-    path('admin_progress_seminars/', views.admin_view_all_progress_seminars, name='admin_view_all_progress_seminars'),
-    path('admin_add_progress_seminar/', views.add_progress_seminar, name='add_progress_seminar'),
-    path('admin_delete_progress_seminar/<int:progress_seminar_id>/', views.admin_delete_progress_seminar, name='admin_delete_progress_seminar'),
-    path('admin_update_progress_seminar/<int:progress_seminar_id>/', views.update_progress_seminar, name='update_progress_seminar'),
-    
+    # Seminar APIs
+    path('admin_seminars/', views.admin_view_all_seminars, name='admin_view_all_seminars'),
+    path('admin_add_seminar/', views.add_seminar, name='add_seminar'),
+    path('admin_delete_seminar/<int:seminar_id>/', views.admin_delete_seminar, name='admin_delete_seminar'),
+    path('admin_update_seminar/<int:seminar_id>/', views.update_seminar, name='update_seminar'),
+
+    # Teaching Credit APIs
+    path('admin_teaching_credits/', views.admin_view_all_teaching_credits, name='admin_view_all_teaching_credits'),
+    path('admin_add_teaching_credit/', views.add_teaching_credit, name='add_teaching_credit'),
+    path('admin_delete_teaching_credit/<int:teaching_credit_id>/', views.admin_delete_teaching_credit, name='admin_delete_teaching_credit'),
+    path('admin_update_teaching_credit/<int:teaching_credit_id>/', views.update_teaching_credit, name='update_teaching_credit'),
+
     # Thesis Slot APIs
     path('admin_add_thesis_slot/', views.add_thesis_slot, name='add_thesis_slot'),
-    
-    # Progress Seminar Slot APIs
-    path('admin_add_progress_seminar_slot/', views.add_progress_seminar_slot, name='add_progress_seminar_slot'),
-    
+
+    # Seminar Slot APIs
+    path('admin_add_seminar_slot/', views.add_seminar_slot, name='add_seminar_slot'),
+
+    # Teaching Credit Slot APIs
+    path('admin_add_teaching_credit_slot/', views.add_teaching_credit_slot, name='add_teaching_credit_slot'),
+
     # Thesis Slot Detail / Delete APIs
     path('admin_thesis_slot/<int:thesis_slot_id>/', views.admin_view_a_thesis_slot, name='admin_view_a_thesis_slot'),
     path('admin_delete_thesis_slot/<int:thesis_slot_id>/', views.delete_thesis_slot, name='delete_thesis_slot'),
-    
-    # Progress Seminar Slot Detail / Delete APIs
-    path('admin_progress_seminar_slot/<int:ps_slot_id>/', views.admin_view_a_progress_seminar_slot, name='admin_view_a_progress_seminar_slot'),
-    path('admin_delete_progress_seminar_slot/<int:ps_slot_id>/', views.delete_progress_seminar_slot, name='delete_progress_seminar_slot'),
-    
-    # Edit Thesis Slot / Progress Seminar Slot
+
+    # Seminar Slot Detail / Delete APIs
+    path('admin_seminar_slot/<int:seminar_slot_id>/', views.admin_view_a_seminar_slot, name='admin_view_a_seminar_slot'),
+    path('admin_delete_seminar_slot/<int:seminar_slot_id>/', views.delete_seminar_slot, name='delete_seminar_slot'),
+
+    # Teaching Credit Slot Detail / Delete APIs
+    path('admin_teaching_credit_slot/<int:tc_slot_id>/', views.admin_view_a_teaching_credit_slot, name='admin_view_a_teaching_credit_slot'),
+    path('admin_delete_teaching_credit_slot/<int:tc_slot_id>/', views.delete_teaching_credit_slot, name='delete_teaching_credit_slot'),
+
+    # Edit Thesis Slot / Seminar Slot / Teaching Credit Slot
     path('admin_edit_thesis_slot/<int:thesis_slot_id>/', views.edit_thesis_slot_form, name='edit_thesis_slot_form'),
-    path('admin_edit_progress_seminar_slot/<int:ps_slot_id>/', views.edit_progress_seminar_slot_form, name='edit_progress_seminar_slot_form'),
+    path('admin_edit_seminar_slot/<int:seminar_slot_id>/', views.edit_seminar_slot_form, name='edit_seminar_slot_form'),
+    path('admin_edit_teaching_credit_slot/<int:tc_slot_id>/', views.edit_teaching_credit_slot_form, name='edit_teaching_credit_slot_form'),
     
     # Delete APIs
     path('admin_delete_course/<int:course_id>/', views.admin_delete_course, name='admin_delete_course'),

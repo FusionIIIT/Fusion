@@ -4,7 +4,7 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth import get_user_model
 from applications.academic_information.models import Course, Student, Curriculum
-from applications.programme_curriculum.models import Course as Courses, Semester, CourseSlot, Batch, ThesisSlot, ProgressSeminarSlot
+from applications.programme_curriculum.models import Course as Courses, Semester, CourseSlot, Batch, ThesisSlot, SeminarSlot as ProgressSeminarSlot, TeachingCreditSlot
 from applications.globals.models import DepartmentInfo, ExtraInfo, Faculty
 from django.utils import timezone
 
@@ -240,22 +240,6 @@ class FeePayment(models.Model):
     batch = models.IntegerField(default= 2016)
     mode = models.CharField(max_length = 20, choices=Constants.PaymentMode)
     transaction_id = models.CharField(max_length = 40)
-
-class TeachingCreditRegistration(models.Model):
-    
-
-    student_id = models.ForeignKey(Student, on_delete = models.CASCADE)
-    curr_1 = models.ForeignKey(Curriculum, on_delete = models.CASCADE, related_name='%(class)s_curr1')
-    curr_2 = models.ForeignKey(Curriculum, on_delete = models.CASCADE, related_name='%(class)s_curr2')
-    curr_3 = models.ForeignKey(Curriculum, on_delete = models.CASCADE, related_name='%(class)s_curr3')
-    curr_4 = models.ForeignKey(Curriculum, on_delete = models.CASCADE, related_name='%(class)s_curr4')
-    req_pending = models.BooleanField(default = True)
-    approved_course = models.ForeignKey(Curriculum, on_delete = models.CASCADE, related_name='%(class)s_approved_course', null = True)
-    course_completion = models.BooleanField(default=False)
-    supervisor_id = models.ForeignKey(Faculty, on_delete=models.CASCADE, related_name='%(class)s_supervisor_id',null = True)
-    class Meta:
-        db_table = 'TeachingCreditRegistration'
-
 
 class SemesterMarks(models.Model):
     '''
@@ -1161,10 +1145,12 @@ class CommitteeMember(models.Model):
         return f"{self.member} on {self.thesis}"
 
 
-class SeminarEntry(models.Model):
+class ProgressSeminarEntry(models.Model):
     """PhD Seminar reports with versioning and RPC approval."""
     thesis     = models.ForeignKey(ThesisTopic, on_delete=models.CASCADE, related_name='seminars')
     version    = models.PositiveSmallIntegerField()
+    semester   = models.ForeignKey(Semester, on_delete=models.SET_NULL, null=True, blank=True,
+                                   help_text="Student's semester when this report was created.")
     created_at = models.DateTimeField(auto_now_add=True)
 
     STATUS_CHOICES = [
@@ -1184,6 +1170,15 @@ class SeminarEntry(models.Model):
     summary_curr = models.TextField(blank=True)
     future_plan  = models.TextField(blank=True)
     upload_doc   = models.FileField(upload_to='seminar_docs/', null=True, blank=True)
+
+    # Publication counts — matches the official progress-seminar form's three
+    # publication questions directly, one field each (no category breakdown).
+    pub_published_or_accepted = models.PositiveIntegerField(
+        default=0, help_text="Papers published/accepted in journals or conference proceedings")
+    pub_presented_unpublished = models.PositiveIntegerField(
+        default=0, help_text="Papers presented in conferences/meetings/workshops (unpublished)")
+    pub_submitted_under_review = models.PositiveIntegerField(
+        default=0, help_text="Papers submitted (under review)")
 
     # RPC Evaluation fields
     quality         = models.CharField(
@@ -1245,25 +1240,9 @@ class SeminarEntry(models.Model):
         return f"Seminar {self.version} for {self.thesis}"
 
 
-class PublicationCount(models.Model):
-    """Publication tracking for PhD seminar reports."""
-    seminar    = models.ForeignKey(SeminarEntry, related_name='pub_counts', on_delete=models.CASCADE)
-    category   = models.CharField(max_length=50, choices=[
-        ('Journal','Journal'),
-        ('Conference','Conference'),
-        ('Submitted','Submitted'),
-    ])
-    submitted  = models.PositiveIntegerField(default=0)
-    accepted   = models.PositiveIntegerField(default=0)
-    published  = models.PositiveIntegerField(default=0)
-
-    class Meta:
-        unique_together = ('seminar','category')
-
-
-class SeminarConsent(models.Model):
+class ProgressSeminarConsent(models.Model):
     """RPC member consent for seminar."""
-    seminar   = models.ForeignKey(SeminarEntry, related_name='consents', on_delete=models.CASCADE)
+    seminar   = models.ForeignKey(ProgressSeminarEntry, related_name='consents', on_delete=models.CASCADE)
     member    = models.ForeignKey(Faculty, on_delete=models.CASCADE)
     consented = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now=True)
@@ -1272,9 +1251,9 @@ class SeminarConsent(models.Model):
         unique_together = ('seminar','member')
 
 
-class SeminarComment(models.Model):
+class ProgressSeminarComment(models.Model):
     """RPC member comments on seminar."""
-    seminar   = models.ForeignKey(SeminarEntry, related_name='comments', on_delete=models.CASCADE)
+    seminar   = models.ForeignKey(ProgressSeminarEntry, related_name='comments', on_delete=models.CASCADE)
     member    = models.ForeignKey(Faculty, on_delete=models.CASCADE)
     text      = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
@@ -1322,9 +1301,11 @@ class ThesisSubmission(models.Model):
                                        on_delete=models.SET_NULL, related_name='deaned_subs')
     dean_approved_at = models.DateTimeField(null=True, blank=True)
     dean_invited_at  = models.DateTimeField(null=True, blank=True)
+    dean_panel_remarks = models.TextField(blank=True)
     director       = models.ForeignKey('auth.User', null=True, blank=True,
                                        on_delete=models.SET_NULL, related_name='directed_subs')
     director_approved_at = models.DateTimeField(null=True, blank=True)
+    director_remarks = models.TextField(blank=True)
     status         = models.CharField(max_length=30, choices=STATUS_CHOICES, default='submitted', db_index=True)
     updated_at     = models.DateTimeField(auto_now=True)
 
@@ -1529,6 +1510,39 @@ class ProgressSeminarRegistration(models.Model):
         return f"{self.student} — {self.progress_seminar_slot.name} ({self.semester})"
 
 
+class TeachingCreditRegistration(models.Model):
+    """Records a PhD student's semester-level teaching credit enrollment.
+
+    Analogous to ThesisRegistration / ProgressSeminarRegistration; one record
+    per student per semester. This is only the enrollment gate -- the actual
+    course choice-and-allocation process (TeachingCreditAllocation) happens
+    separately, after this enrollment is verified.
+    """
+    STATUS_CHOICES = [
+        ('pending',  'Pending Verification'),
+        ('verified', 'Verified'),
+        ('rejected', 'Rejected'),
+    ]
+
+    student               = models.ForeignKey(Student, on_delete=models.CASCADE,
+                                              related_name='teaching_credit_registrations')
+    teaching_credit_slot  = models.ForeignKey(TeachingCreditSlot, on_delete=models.CASCADE,
+                                              related_name='registrations')
+    semester              = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    working_year          = models.IntegerField(null=True, blank=True)
+    academic_session      = models.CharField(max_length=9, null=True, blank=True)  # e.g. "2025-26"
+    status                = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    registered_on         = models.DateTimeField(auto_now_add=True)
+    remarks               = models.CharField(max_length=500, blank=True)
+
+    class Meta:
+        unique_together = ('student', 'semester')
+        db_table = 'TeachingCreditRegistration'
+
+    def __str__(self):
+        return f"{self.student} — {self.teaching_credit_slot.name} ({self.semester})"
+
+
 # ===========================================================================
 # Thesis & Progress Seminar Grade Evaluation
 # ===========================================================================
@@ -1633,3 +1647,470 @@ class ProgressSeminarEvaluation(models.Model):
             f"{self.registration.student} | Sem {self.registration.semester.semester_no} "
             f"| Grade: {g}"
         )
+
+
+DEFAULT_PROGRESS_SEMINAR_CREDIT = 0
+# 0, not some plausible-looking number: today ProgressSeminarEntry (the RPC-approval
+# grade record) has no required link to a ProgressSeminarRegistration (the credit
+# enrollment-gate record) at all -- create_report() creates a graded entry from just
+# a Dean-approved ThesisTopic, with no registration check. So this fallback fires on
+# a genuine data gap (missing/unlinked registration), not a rare fluke, and it should
+# under-count rather than guess -- guessing already produced a wrong "3" once.
+
+
+def resolve_progress_seminar_catalog_entry(student, semester):
+    """Resolve the programme_curriculum.Seminar catalog row (code/name/credit) that
+    applies to a student's progress seminar in a given semester, via their
+    ProgressSeminarRegistration -> SeminarSlot -> seminars M2M, preferring the
+    student's own discipline when a slot serves more than one. Returns None if no
+    registration/catalog match exists (e.g. semester is None, or the student never
+    had a ProgressSeminarRegistration for that semester).
+
+    This is the single source of truth for "how many credits is one progress
+    seminar worth" -- do not hardcode that number elsewhere; call this instead."""
+    if not semester:
+        return None
+    reg = ProgressSeminarRegistration.objects.filter(
+        student=student, semester=semester
+    ).select_related('progress_seminar_slot').prefetch_related(
+        'progress_seminar_slot__seminars'
+    ).first()
+    if not reg or not reg.progress_seminar_slot:
+        return None
+    discipline = getattr(getattr(student, 'batch_id', None), 'discipline', None)
+    manager = reg.progress_seminar_slot.seminars
+    entry = (manager.filter(discipline=discipline).first() if discipline else None) or manager.first()
+    return entry
+
+
+def resolve_progress_seminar_credit(student, semester):
+    """Credit value for one progress seminar, sourced from the catalog via
+    resolve_progress_seminar_catalog_entry(), falling back to
+    DEFAULT_PROGRESS_SEMINAR_CREDIT only when no catalog entry can be found."""
+    entry = resolve_progress_seminar_catalog_entry(student, semester)
+    return entry.credit if entry and entry.credit else DEFAULT_PROGRESS_SEMINAR_CREDIT
+
+
+# ===========================================================================
+# PhD Course (Coursework) Registration
+# ===========================================================================
+
+class PhDCourseRegistrationRequest(models.Model):
+    """A PhD student's self-submitted request to register for a curriculum
+    course in their current semester. Independent of CourseAddRequest
+    (which is the UG/PG backlog add-course flow) — PhD students don't go
+    through pre-registration/final-registration, so this is a standalone
+    request-and-verify workflow, verified separately by acadadmin.
+    """
+    STATUS_CHOICES = [
+        ("Pending",  "Pending"),
+        ("Approved", "Approved"),
+        ("Rejected", "Rejected"),
+    ]
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE,
+                                 related_name='phd_course_requests')
+    semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    academic_year = models.CharField(max_length=9)
+    semester_type = models.CharField(
+        max_length=20,
+        choices=[
+            ("Odd Semester",    "Odd Semester"),
+            ("Even Semester",   "Even Semester"),
+            ("Summer Semester", "Summer Semester"),
+        ],
+    )
+    course_slot = models.ForeignKey(CourseSlot, on_delete=models.CASCADE)
+    course = models.ForeignKey(Courses, on_delete=models.CASCADE,
+                                related_name='phd_course_requests')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Pending")
+    remarks = models.CharField(max_length=500, blank=True)
+    requested_at = models.DateTimeField(default=timezone.now)
+    processed_at = models.DateTimeField(null=True, blank=True)
+    processed_by = models.ForeignKey(ExtraInfo, null=True, blank=True,
+                                      on_delete=models.SET_NULL,
+                                      related_name='phd_course_requests_processed')
+
+    class Meta:
+        unique_together = ('student', 'semester', 'course_slot')
+        db_table = 'PhDCourseRegistrationRequest'
+
+    def __str__(self):
+        return f"{self.student} — {self.course.code} [{self.status}]"
+
+
+# ===========================================================================
+# Comprehensive Examination
+# ===========================================================================
+
+class ComprehensiveExam(models.Model):
+    """PhD Comprehensive Examination eligibility, committee & convener approval.
+
+    One record per student. The written/oral exam itself — subjects, dates,
+    result — is tracked per-attempt in ComprehensiveExamAttempt, since a
+    student may retake the whole cycle up to MAX_ATTEMPTS times.
+    """
+    ENTRY_QUALIFICATION_CHOICES = [
+        ('masters', 'ME/M.Tech/M.Des/M.Phil (16 credits required)'),
+        ('bachelors', 'B.Tech/B.E./M.Sc./MA (40 credits required)'),
+    ]
+    STATUS_CHOICES = [
+        ('academic_office_pending', 'Pending Academic Office Verification'),
+        ('academic_office_rejected', 'Rejected by Academic Office'),
+        ('convener_pending', 'Pending Convener Approval'),
+        ('convener_rejected', 'Rejected by Convener'),
+        ('in_progress', 'Committee Approved — In Progress'),
+        ('passed', 'Passed'),
+        ('failed_final', 'Failed — Attempts Exhausted'),
+    ]
+
+    MAX_ATTEMPTS = 2
+
+    student = models.OneToOneField(Student, on_delete=models.CASCADE, related_name='comprehensive_exam')
+    supervisor = models.ForeignKey(Faculty, related_name='comprehensive_exams_supervised', on_delete=models.CASCADE)
+    co_supervisor = models.ForeignKey(Faculty, related_name='comprehensive_exams_cosupervised', on_delete=models.CASCADE, null=True, blank=True)
+
+    possible_thesis_title = models.CharField(max_length=300, blank=True)
+
+    entry_qualification = models.CharField(max_length=10, choices=ENTRY_QUALIFICATION_CHOICES)
+    credits_completed = models.PositiveIntegerField(default=0)
+    current_cpi = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
+    research_methodology_completed = models.BooleanField(default=False)
+
+    # Academic Office verification
+    credits_verified = models.BooleanField(default=False)
+    cpi_verified = models.BooleanField(default=False)
+    research_methodology_verified = models.BooleanField(default=False)
+    academic_office_remarks = models.TextField(blank=True)
+    academic_office_verified_by = models.ForeignKey(
+        'auth.User', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='comprehensive_exams_office_verified',
+    )
+    academic_office_verified_at = models.DateTimeField(null=True, blank=True)
+
+    # Convener approval — Dean Academic stands in for the DPGC/PGCS convener for now.
+    convener_remarks = models.TextField(blank=True)
+    convener_by = models.ForeignKey(
+        'auth.User', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='comprehensive_exams_convened',
+    )
+    convener_at = models.DateTimeField(null=True, blank=True)
+
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='academic_office_pending')
+    current_attempt_number = models.PositiveSmallIntegerField(default=1)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def required_credits(self):
+        return 16 if self.entry_qualification == 'masters' else 40
+
+    def __str__(self):
+        return f"Comprehensive Exam — {self.student.id.user.get_full_name()}"
+
+
+class ComprehensiveExamCommitteeMember(models.Model):
+    """Examination committee for a comprehensive exam (≤5 members); persists across attempts."""
+    exam = models.ForeignKey(ComprehensiveExam, related_name='committee', on_delete=models.CASCADE)
+    member = models.ForeignKey(Faculty, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('exam', 'member')
+
+    def __str__(self):
+        return f"{self.member} on {self.exam}"
+
+
+class ComprehensiveExamAttempt(models.Model):
+    """One attempt (max ComprehensiveExam.MAX_ATTEMPTS) of the exam: subjects, dates, result.
+
+    HOD reviews the floated subjects acting as the discipline coordinator; the
+    supervisor confirms the student's opted subjects before the exam proceeds.
+    """
+    STATUS_CHOICES = [
+        ('subjects_floated', 'Subjects Floated, Pending HOD Approval'),
+        ('hod_rejected', 'Subjects Rejected by HOD'),
+        ('subjects_ready', 'Subjects Approved, Pending Student Selection'),
+        ('subjects_opted', 'Subjects Opted, Pending Supervisor Confirmation'),
+        ('confirmation_rejected', 'Supervisor Rejected Opted Subjects'),
+        ('result_pending', 'Confirmed — Awaiting Result'),
+        ('passed', 'Passed'),
+        ('failed', 'Failed'),
+    ]
+    RESULT_CHOICES = [('passed', 'Passed'), ('failed', 'Failed')]
+
+    exam = models.ForeignKey(ComprehensiveExam, related_name='attempts', on_delete=models.CASCADE)
+    attempt_number = models.PositiveSmallIntegerField()
+    status = models.CharField(max_length=25, choices=STATUS_CHOICES, default='subjects_floated')
+
+    written_exam_date = models.DateField(null=True, blank=True)
+    oral_exam_date = models.DateField(null=True, blank=True)
+
+    hod_remarks = models.TextField(blank=True)
+    hod_reviewed_by = models.ForeignKey(
+        'auth.User', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='comprehensive_attempts_hod_reviewed',
+    )
+    hod_reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    supervisor_confirmation_remarks = models.TextField(blank=True)
+
+    # Result — mirrors the official "Comprehensive Examination Report" form.
+    result = models.CharField(max_length=10, choices=RESULT_CHOICES, null=True, blank=True)
+    fundamentals_comment = models.TextField(blank=True)
+    problem_identification_comment = models.TextField(blank=True)
+    plan_of_work_comment = models.TextField(blank=True)
+    suggestions_comment = models.TextField(blank=True)
+    additional_literature_comment = models.TextField(blank=True)
+    milestone_plan_upload = models.FileField(upload_to='comprehensive_exam_milestones/', null=True, blank=True)
+
+    reported_by = models.ForeignKey(
+        'auth.User', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='comprehensive_attempts_reported',
+    )
+    reported_at = models.DateTimeField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('exam', 'attempt_number')
+        ordering = ['exam', 'attempt_number']
+
+    def __str__(self):
+        return f"Attempt {self.attempt_number} — {self.exam}"
+
+
+class FloatedSubject(models.Model):
+    """A subject floated for the written exam of a given attempt (≤6); student opts ≤2."""
+    attempt = models.ForeignKey(ComprehensiveExamAttempt, related_name='subjects', on_delete=models.CASCADE)
+    subject_name = models.CharField(max_length=200)
+    selected_by_student = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.subject_name} ({'opted' if self.selected_by_student else 'floated'})"
+
+
+# ===========================================================================
+# Open Seminar
+# ===========================================================================
+
+class OpenSeminar(models.Model):
+    """PhD Open Seminar — parent record, one per student.
+
+    Unlike ComprehensiveExam, retries have no attempt cap and each retry
+    constitutes a brand-new committee (see OpenSeminarAttempt), since
+    eligibility/credits can change between attempts.
+    """
+    STATUS_CHOICES = [
+        ('in_progress', 'In Progress'),
+        ('satisfactory', 'Satisfactory'),
+    ]
+
+    student = models.OneToOneField(Student, on_delete=models.CASCADE, related_name='open_seminar')
+    supervisor = models.ForeignKey(Faculty, related_name='open_seminars_supervised', on_delete=models.CASCADE)
+    co_supervisor = models.ForeignKey(Faculty, related_name='open_seminars_cosupervised', on_delete=models.CASCADE, null=True, blank=True)
+
+    possible_thesis_title = models.CharField(max_length=300, blank=True)
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='in_progress')
+    current_attempt_number = models.PositiveSmallIntegerField(default=1)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Open Seminar — {self.student.id.user.get_full_name()}"
+
+
+class OpenSeminarAttempt(models.Model):
+    """One attempt (unlimited) of the Open Seminar: fresh committee + Dean
+    Nominee each time, credit breakdown snapshot, committee verdict, and the
+    Dean Nominee's separate confidential report.
+    """
+    STATUS_CHOICES = [
+        ('convener_pending', 'Pending Convener Approval'),
+        ('convener_rejected', 'Rejected by Convener'),
+        ('result_pending', 'Committee Approved — Awaiting Result'),
+        ('satisfactory', 'Satisfactory'),
+        ('not_satisfactory', 'Not Satisfactory'),
+    ]
+    RESULT_CHOICES = [('satisfactory', 'Satisfactory'), ('not_satisfactory', 'Not Satisfactory')]
+
+    RATING_3WAY = [('Enough', 'Enough'), ('Just', 'Just Sufficient'), ('Insuff', 'Insufficient')]
+    QUALITY_CHOICES = [('Excellent', 'Excellent'), ('Good', 'Good'), ('Sat', 'Satisfactory'), ('Unsat', 'Unsatisfactory')]
+
+    open_seminar = models.ForeignKey(OpenSeminar, related_name='attempts', on_delete=models.CASCADE)
+    attempt_number = models.PositiveSmallIntegerField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='convener_pending')
+
+    proposed_date = models.DateField(null=True, blank=True)
+
+    # Credit breakdown -- course_work/progress_seminar/thesis_research are
+    # computed server-side from the student's own records; teaching_credits
+    # has no numeric source anywhere in Fusion and stays manual.
+    course_work_credits = models.PositiveIntegerField(default=0)
+    progress_seminar_credits = models.PositiveIntegerField(default=0)
+    thesis_research_credits = models.PositiveIntegerField(default=0)
+    teaching_credits = models.PositiveIntegerField(default=0)
+    semesters_completed = models.PositiveIntegerField(default=0)
+
+    # Eligibility snapshot -- rpc_recommended is read from the student's latest
+    # rpc_approved ProgressSeminarEntry.rec_open; first_draft_sent has no data source.
+    rpc_recommended_open_seminar = models.BooleanField(default=False)
+    first_draft_sent_to_dean = models.BooleanField(default=False)
+
+    # Convener (Dean Academic stands in for DPGC/PGCS for now) approval
+    convener_remarks = models.TextField(blank=True)
+    convener_by = models.ForeignKey(
+        'auth.User', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='open_seminar_attempts_convened',
+    )
+    convener_at = models.DateTimeField(null=True, blank=True)
+
+    # Dean Nominee -- ad-hoc faculty appointment, made by the Convener at
+    # approval time; submits their own confidential report independently.
+    dean_nominee = models.ForeignKey(
+        Faculty, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='open_seminar_nominations',
+    )
+
+    # Committee's joint verdict -- the authoritative pass/fail result.
+    result = models.CharField(max_length=20, choices=RESULT_CHOICES, null=True, blank=True)
+    committee_comments = models.TextField(blank=True)
+    reported_by = models.ForeignKey(
+        'auth.User', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='open_seminar_attempts_reported',
+    )
+    reported_at = models.DateTimeField(null=True, blank=True)
+
+    # Dean Nominee's own confidential report -- mirrors "Report of Dean
+    # Nominee" form. Kept out of any dict/serializer shown to
+    # student/supervisor/committee; only Convener/Dean Academic and the
+    # nominee themselves should ever see these fields.
+    dn_quality = models.CharField(max_length=20, choices=QUALITY_CHOICES, blank=True)
+    dn_quantity = models.CharField(max_length=10, choices=RATING_3WAY, blank=True)
+    dn_publications = models.CharField(max_length=10, choices=RATING_3WAY, blank=True)
+    dn_overall = models.CharField(max_length=20, choices=RESULT_CHOICES, blank=True)
+    dn_comments = models.TextField(blank=True)
+    dn_submitted_at = models.DateTimeField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('open_seminar', 'attempt_number')
+        ordering = ['open_seminar', 'attempt_number']
+
+    @property
+    def total_credits(self):
+        return (
+            self.course_work_credits + self.progress_seminar_credits
+            + self.thesis_research_credits + self.teaching_credits
+        )
+
+    def __str__(self):
+        return f"Open Seminar Attempt {self.attempt_number} — {self.open_seminar}"
+
+
+class OpenSeminarCommitteeMember(models.Model):
+    """Open Seminar committee member (≤5); fresh per attempt."""
+    attempt = models.ForeignKey(OpenSeminarAttempt, related_name='committee', on_delete=models.CASCADE)
+    member = models.ForeignKey(Faculty, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('attempt', 'member')
+
+    def __str__(self):
+        return f"{self.member} on {self.attempt}"
+
+
+# ===========================================================================
+# Teaching Credit
+# ===========================================================================
+# Workflow: [Precondition: ComprehensiveExam.status == 'passed'] -> Student
+# submits 4 course choices for a semester -> HOD allocates one of the 4 (or
+# sends it back with remarks, student edits and resubmits) -> [offline
+# teaching] -> any student registered for the allocated course that semester
+# submits one anonymous evaluation -> HOD reviews the aggregated (anonymized)
+# evaluations and marks the registration completed with a satisfactory/
+# not_satisfactory result (satisfactory awards the credit; not_satisfactory
+# is terminal -- no retry, a fresh attempt would just be a new semester's
+# registration).
+
+class TeachingCreditAllocation(models.Model):
+    """PhD student's teaching-credit registration for a semester."""
+    STATUS_CHOICES = [
+        ('pending', 'Pending HOD Decision'),
+        ('sent_back', 'Sent Back by HOD'),
+        ('allocated', 'Course Allocated'),
+        ('completed', 'Completed'),
+    ]
+    RESULT_CHOICES = [('satisfactory', 'Satisfactory'), ('not_satisfactory', 'Not Satisfactory')]
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='teaching_credit_allocations')
+    semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
+
+    choice_1 = models.ForeignKey(Courses, on_delete=models.CASCADE, related_name='teaching_credit_choice1')
+    choice_2 = models.ForeignKey(Courses, on_delete=models.CASCADE, related_name='teaching_credit_choice2', null=True, blank=True)
+    choice_3 = models.ForeignKey(Courses, on_delete=models.CASCADE, related_name='teaching_credit_choice3', null=True, blank=True)
+    choice_4 = models.ForeignKey(Courses, on_delete=models.CASCADE, related_name='teaching_credit_choice4', null=True, blank=True)
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    allocated_course = models.ForeignKey(
+        Courses, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='teaching_credit_allocations',
+    )
+    hod_remarks = models.TextField(blank=True)
+    decided_by = models.ForeignKey(
+        'auth.User', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='teaching_credit_decisions',
+    )
+    decided_at = models.DateTimeField(null=True, blank=True)
+
+    result = models.CharField(max_length=20, choices=RESULT_CHOICES, null=True, blank=True)
+    completed_by = models.ForeignKey(
+        'auth.User', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='teaching_credit_completions',
+    )
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('student', 'semester')
+
+    def __str__(self):
+        return f"Teaching Credit — {self.student.id.user.get_full_name()} ({self.semester})"
+
+
+class TeachingCreditEvaluationResponse(models.Model):
+    """One class-student's anonymous evaluation of the Research Scholar's teaching.
+
+    respondent is stored only to enforce one submission per student; it is
+    never exposed via the API -- only aggregated stats and anonymized
+    comments are shown to HOD/anyone else.
+    """
+    BAND_CHOICES = [
+        ('<80', '<80%'), ('80-90', '80%-90%'), ('90-95', '90%-95%'), ('95-100', '95%-100%'),
+    ]
+    QUALITY_CHOICES = [
+        ('Poor', 'Poor'), ('Average', 'Average'), ('Good', 'Good'), ('Excellent', 'Excellent'),
+    ]
+
+    registration = models.ForeignKey(TeachingCreditAllocation, related_name='evaluations', on_delete=models.CASCADE)
+    respondent = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='teaching_credit_evaluations_given')
+
+    punctuality_band = models.CharField(max_length=10, choices=BAND_CHOICES, blank=True)
+    schedule_adherence_band = models.CharField(max_length=10, choices=BAND_CHOICES, blank=True)
+    topics_sequence = models.CharField(max_length=10, choices=QUALITY_CHOICES, blank=True)
+    teaching_aids = models.CharField(max_length=10, choices=QUALITY_CHOICES, blank=True)
+    questions_answered = models.CharField(max_length=10, choices=QUALITY_CHOICES, blank=True)
+    overall_effectiveness = models.CharField(max_length=10, choices=QUALITY_CHOICES, blank=True)
+    strengths_weaknesses = models.TextField(blank=True)
+
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('registration', 'respondent')
+
+    def __str__(self):
+        return f"Evaluation for {self.registration} by respondent #{self.respondent_id}"
