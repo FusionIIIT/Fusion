@@ -8,11 +8,11 @@ import datetime
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from ..models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot,NewProposalFile,Proposal_Tracking,CourseInstructor,CourseAuditLog, Thesis, ProgressSeminar, ThesisSlot, ProgressSeminarSlot
-from ..forms import ProgrammeForm, DisciplineForm, CurriculumForm, SemesterForm, CourseForm, BatchForm, CourseSlotForm, ReplicateCurriculumForm,NewCourseProposalFile,CourseProposalTrackingFile, CourseInstructor, CourseInstructorForm, ThesisForm, ProgressSeminarForm, ThesisSlotForm, ProgressSeminarSlotForm
+from ..models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot,NewProposalFile,Proposal_Tracking,CourseInstructor,CourseAuditLog, Thesis, Seminar, ThesisSlot, SeminarSlot, TeachingCredit, TeachingCreditSlot
+from ..forms import ProgrammeForm, DisciplineForm, CurriculumForm, SemesterForm, CourseForm, BatchForm, CourseSlotForm, ReplicateCurriculumForm,NewCourseProposalFile,CourseProposalTrackingFile, CourseInstructor, CourseInstructorForm, ThesisForm, SeminarForm, ThesisSlotForm, SeminarSlotForm, TeachingCreditForm, TeachingCreditSlotForm
 from ..filters import CourseFilter, BatchFilter, CurriculumFilter
 
-from .serializers import CourseSerializer,CurriculumSerializer,BatchSerializer, ThesisSerializer, ProgressSeminarSerializer
+from .serializers import CourseSerializer,CurriculumSerializer,BatchSerializer, ThesisSerializer, SeminarSerializer, TeachingCreditSerializer
 from .views_student_management import get_batch_curriculum_display, get_available_curriculums_for_batch
 from django.core.serializers import serialize
 from django.core.serializers.json import DjangoJSONEncoder
@@ -614,17 +614,28 @@ def admin_view_semesters_of_a_curriculum(request, curriculum_id):
                 'courses': theses  # reuse 'courses' key for table rendering compatibility
             })
         
-        # Progress seminar slots
-        for pss in ProgressSeminarSlot.objects.filter(semester=semester).order_by('id'):
-            progress_seminars = list(pss.progress_seminars.values('id', 'name', 'code', 'credit'))
+        # Seminar slots
+        for ss in SeminarSlot.objects.filter(semester=semester).order_by('id'):
+            seminars = list(ss.seminars.values('id', 'name', 'code', 'credit'))
             slots.append({
-                'id': pss.id,
-                'type': 'Progress Seminar',
-                'name': pss.name,
-                'slot_type': 'progress_seminar',
-                'courses': progress_seminars  # reuse 'courses' key for table rendering compatibility
+                'id': ss.id,
+                'type': 'Seminar',
+                'name': ss.name,
+                'slot_type': 'seminar',
+                'courses': seminars  # reuse 'courses' key for table rendering compatibility
             })
-        
+
+        # Teaching credit slots
+        for tcs in TeachingCreditSlot.objects.filter(semester=semester).order_by('id'):
+            teaching_credits = list(tcs.teaching_credits.values('id', 'name', 'code', 'credit'))
+            slots.append({
+                'id': tcs.id,
+                'type': 'Teaching Credit',
+                'name': tcs.name,
+                'slot_type': 'teaching_credit',
+                'courses': teaching_credits  # reuse 'courses' key for table rendering compatibility
+            })
+
         # Calculate total credits for the semester based on maximum credit of each course slot
         credits_sum = sum(max(course['credit'] for course in slot['courses']) if slot['courses'] else 0 for slot in slots)
         
@@ -4526,68 +4537,68 @@ def admin_delete_thesis(request, thesis_id):
         }, status=500)
 
 
-# ------------ Progress Seminar Views ---------------#
+# ------------ Seminar Views ---------------#
 
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-def admin_view_all_progress_seminars(request):
-    """Returns all progress seminars with required fields as JSON data."""
-    
-    progress_seminars = ProgressSeminar.objects.all()
+def admin_view_all_seminars(request):
+    """Returns all seminars with required fields as JSON data."""
 
-    progress_seminars_data = [
+    seminars = Seminar.objects.all()
+
+    seminars_data = [
         {
-            "id": ps.id,
-            "code": ps.code,
-            "name": ps.name,
-            "discipline": ps.discipline.name,
-            "discipline_acronym": ps.discipline.acronym,
-            "programme_type": ps.programme_type,
-            "programme_type_display": ps.get_programme_type_display(),
-            "credits": ps.credit,
-            "working_progress_seminar": ps.working_progress_seminar
+            "id": s.id,
+            "code": s.code,
+            "name": s.name,
+            "discipline": s.discipline.name,
+            "discipline_acronym": s.discipline.acronym,
+            "programme_type": s.programme_type,
+            "programme_type_display": s.get_programme_type_display(),
+            "credits": s.credit,
+            "working_seminar": s.working_seminar
         }
-        for ps in progress_seminars
+        for s in seminars
     ]
 
-    return JsonResponse({'progress_seminars': progress_seminars_data})
+    return JsonResponse({'seminars': seminars_data})
 
 
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-def add_progress_seminar(request):
-    """Add a new progress seminar"""
-    
+def add_seminar(request):
+    """Add a new seminar"""
+
     try:
         data = request.data
-        
+
         required_fields = ['code', 'name', 'credit', 'discipline', 'programme_type']
         for field in required_fields:
             if field not in data:
                 return JsonResponse({'error': f'{field} is required'}, status=400)
-        
+
         discipline = get_object_or_404(Discipline, id=data['discipline'])
-        
-        progress_seminar = ProgressSeminar.objects.create(
+
+        seminar = Seminar.objects.create(
             code=data['code'],
             name=data['name'],
             credit=data['credit'],
             discipline=discipline,
             programme_type=data['programme_type'],
-            working_progress_seminar=data.get('working_progress_seminar', True)
+            working_seminar=data.get('working_seminar', True)
         )
-        
+
         return JsonResponse({
             'success': True,
-            'message': 'Progress Seminar added successfully',
-            'progress_seminar_id': progress_seminar.id
+            'message': 'Seminar added successfully',
+            'seminar_id': seminar.id
         }, status=201)
-        
+
     except IntegrityError:
         return JsonResponse({
-            'error': 'A progress seminar with this code already exists for this discipline'
+            'error': 'A seminar with this code already exists for this discipline'
         }, status=400)
     except Exception as e:
         return JsonResponse({
@@ -4598,21 +4609,21 @@ def add_progress_seminar(request):
 @api_view(['DELETE'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-def admin_delete_progress_seminar(request, progress_seminar_id):
-    """Delete a progress seminar"""
-    
+def admin_delete_seminar(request, seminar_id):
+    """Delete a seminar"""
+
     try:
-        ps = get_object_or_404(ProgressSeminar, id=progress_seminar_id)
-        ps_code = ps.code
-        ps_name = ps.name
-        
-        ps.delete()
-        
+        s = get_object_or_404(Seminar, id=seminar_id)
+        s_code = s.code
+        s_name = s.name
+
+        s.delete()
+
         return JsonResponse({
             'success': True,
-            'message': f'Progress Seminar {ps_code} - {ps_name} deleted successfully'
+            'message': f'Seminar {s_code} - {s_name} deleted successfully'
         }, status=200)
-        
+
     except Exception as e:
         return JsonResponse({
             'error': str(e)
@@ -4672,20 +4683,20 @@ def update_thesis(request, thesis_id):
 @api_view(['GET', 'PUT'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-def update_progress_seminar(request, progress_seminar_id):
-    """Get progress seminar details for editing (GET) or update an existing progress seminar (PUT)."""
-    ps = get_object_or_404(ProgressSeminar, id=progress_seminar_id)
+def update_seminar(request, seminar_id):
+    """Get seminar details for editing (GET) or update an existing seminar (PUT)."""
+    s = get_object_or_404(Seminar, id=seminar_id)
 
     if request.method == 'GET':
         data = {
-            'id': ps.id,
-            'code': ps.code,
-            'name': ps.name,
-            'credit': ps.credit,
-            'discipline': ps.discipline.id,
-            'discipline_name': ps.discipline.name,
-            'discipline_acronym': ps.discipline.acronym,
-            'programme_type': ps.programme_type,
+            'id': s.id,
+            'code': s.code,
+            'name': s.name,
+            'credit': s.credit,
+            'discipline': s.discipline.id,
+            'discipline_name': s.discipline.name,
+            'discipline_acronym': s.discipline.acronym,
+            'programme_type': s.programme_type,
         }
         return Response(data, status=status.HTTP_200_OK)
 
@@ -4694,22 +4705,22 @@ def update_progress_seminar(request, progress_seminar_id):
             data = json.loads(request.body)
             discipline = get_object_or_404(Discipline, id=data.get('discipline'))
 
-            ps.code = data.get('code', ps.code)
-            ps.name = data.get('name', ps.name)
-            ps.credit = data.get('credit', ps.credit)
-            ps.discipline = discipline
-            ps.programme_type = data.get('programme_type', ps.programme_type)
-            ps.save()
+            s.code = data.get('code', s.code)
+            s.name = data.get('name', s.name)
+            s.credit = data.get('credit', s.credit)
+            s.discipline = discipline
+            s.programme_type = data.get('programme_type', s.programme_type)
+            s.save()
 
             return JsonResponse({
                 'success': True,
-                'message': f'Progress Seminar {ps.code} - {ps.name} updated successfully',
-                'progress_seminar_id': ps.id,
+                'message': f'Seminar {s.code} - {s.name} updated successfully',
+                'seminar_id': s.id,
             }, status=200)
 
         except IntegrityError:
             return JsonResponse({
-                'error': 'A progress seminar with this code already exists for this discipline'
+                'error': 'A seminar with this code already exists for this discipline'
             }, status=400)
         except Exception as e:
             return JsonResponse({
@@ -4755,27 +4766,27 @@ def add_thesis_slot(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-def add_progress_seminar_slot(request):
-    """Add a new progress seminar slot to a semester."""
+def add_seminar_slot(request):
+    """Add a new seminar slot to a semester."""
     try:
         data = json.loads(request.body)
 
-        ps_slot = ProgressSeminarSlot.objects.create(
+        seminar_slot = SeminarSlot.objects.create(
             semester_id=data['semester'],
             name=data['name'],
-            progress_seminar_slot_info=data.get('progress_seminar_slot_info', ''),
+            seminar_slot_info=data.get('seminar_slot_info', ''),
             duration=data.get('duration', 1),
             min_registration_limit=data.get('min_registration_limit', 0),
             max_registration_limit=data.get('max_registration_limit', 1000)
         )
 
-        if 'progress_seminars' in data and data['progress_seminars']:
-            ps_slot.progress_seminars.set(data['progress_seminars'])
+        if 'seminars' in data and data['seminars']:
+            seminar_slot.seminars.set(data['seminars'])
 
         return JsonResponse({
             'status': 'success',
-            'message': 'Progress seminar slot created successfully',
-            'id': ps_slot.id
+            'message': 'Seminar slot created successfully',
+            'id': seminar_slot.id
         })
 
     except Exception as e:
@@ -4815,31 +4826,31 @@ def admin_view_a_thesis_slot(request, thesis_slot_id):
     })
 
 
-def admin_view_a_progress_seminar_slot(request, ps_slot_id):
-    """API to view a progress seminar slot"""
-    ps_slot = get_object_or_404(ProgressSeminarSlot, id=ps_slot_id)
+def admin_view_a_seminar_slot(request, seminar_slot_id):
+    """API to view a seminar slot"""
+    seminar_slot = get_object_or_404(SeminarSlot, id=seminar_slot_id)
 
     return JsonResponse({
-        'progress_seminar_slot': {
-            'id': ps_slot.id,
-            'name': ps_slot.name,
-            'progress_seminar_slot_info': ps_slot.progress_seminar_slot_info,
-            'duration': ps_slot.duration,
-            'min_registration_limit': ps_slot.min_registration_limit,
-            'max_registration_limit': ps_slot.max_registration_limit,
-            'progress_seminars': [
+        'seminar_slot': {
+            'id': seminar_slot.id,
+            'name': seminar_slot.name,
+            'seminar_slot_info': seminar_slot.seminar_slot_info,
+            'duration': seminar_slot.duration,
+            'min_registration_limit': seminar_slot.min_registration_limit,
+            'max_registration_limit': seminar_slot.max_registration_limit,
+            'seminars': [
                 {
-                    'id': ps.id,
-                    'code': ps.code,
-                    'name': ps.name,
-                    'credit': ps.credit,
-                } for ps in ps_slot.progress_seminars.all()
+                    'id': s.id,
+                    'code': s.code,
+                    'name': s.name,
+                    'credit': s.credit,
+                } for s in seminar_slot.seminars.all()
             ],
             'curriculum': {
-                'id': ps_slot.semester.curriculum.id,
-                'name': ps_slot.semester.curriculum.name,
-                'version': ps_slot.semester.curriculum.version,
-                'semester_no': ps_slot.semester.semester_no,
+                'id': seminar_slot.semester.curriculum.id,
+                'name': seminar_slot.semester.curriculum.name,
+                'version': seminar_slot.semester.curriculum.version,
+                'semester_no': seminar_slot.semester.semester_no,
             }
         },
     })
@@ -4852,11 +4863,11 @@ def delete_thesis_slot(request, thesis_slot_id):
     return JsonResponse({'status': 'success', 'message': 'Thesis slot deleted successfully'})
 
 
-def delete_progress_seminar_slot(request, ps_slot_id):
-    """Delete a progress seminar slot"""
-    ps_slot = get_object_or_404(ProgressSeminarSlot, id=ps_slot_id)
-    ps_slot.delete()
-    return JsonResponse({'status': 'success', 'message': 'Progress seminar slot deleted successfully'})
+def delete_seminar_slot(request, seminar_slot_id):
+    """Delete a seminar slot"""
+    seminar_slot = get_object_or_404(SeminarSlot, id=seminar_slot_id)
+    seminar_slot.delete()
+    return JsonResponse({'status': 'success', 'message': 'Seminar slot deleted successfully'})
 
 
 def edit_thesis_slot_form(request, thesis_slot_id):
@@ -4896,34 +4907,284 @@ def edit_thesis_slot_form(request, thesis_slot_id):
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
 
 
-def edit_progress_seminar_slot_form(request, ps_slot_id):
-    """GET returns existing progress seminar slot data; PUT updates it."""
-    ps_slot = get_object_or_404(ProgressSeminarSlot, id=ps_slot_id)
-    curriculum_id = ps_slot.semester.curriculum.id
+def edit_seminar_slot_form(request, seminar_slot_id):
+    """GET returns existing seminar slot data; PUT updates it."""
+    seminar_slot = get_object_or_404(SeminarSlot, id=seminar_slot_id)
+    curriculum_id = seminar_slot.semester.curriculum.id
 
     if request.method == 'GET':
         data = {
-            'id': ps_slot.id,
-            'semester': ps_slot.semester.id,
-            'name': ps_slot.name,
-            'progress_seminar_slot_info': ps_slot.progress_seminar_slot_info,
-            'progress_seminars': [ps.id for ps in ps_slot.progress_seminars.all()],
-            'duration': ps_slot.duration,
-            'min_registration_limit': ps_slot.min_registration_limit,
-            'max_registration_limit': ps_slot.max_registration_limit,
+            'id': seminar_slot.id,
+            'semester': seminar_slot.semester.id,
+            'name': seminar_slot.name,
+            'seminar_slot_info': seminar_slot.seminar_slot_info,
+            'seminars': [s.id for s in seminar_slot.seminars.all()],
+            'duration': seminar_slot.duration,
+            'min_registration_limit': seminar_slot.min_registration_limit,
+            'max_registration_limit': seminar_slot.max_registration_limit,
             'curriculum_id': curriculum_id,
         }
-        return JsonResponse({'status': 'success', 'progress_seminar_slot': data})
+        return JsonResponse({'status': 'success', 'seminar_slot': data})
 
     elif request.method == 'PUT':
         try:
             data = json.loads(request.body)
-            form = ProgressSeminarSlotForm(data, instance=ps_slot)
+            form = SeminarSlotForm(data, instance=seminar_slot)
             if form.is_valid():
                 form.save()
                 return JsonResponse({
                     'status': 'success',
-                    'message': 'Progress seminar slot updated successfully',
+                    'message': 'Seminar slot updated successfully',
+                })
+            else:
+                return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+
+
+# ------------ Teaching Credit Views ---------------#
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def admin_view_all_teaching_credits(request):
+    """Returns all teaching credits with required fields as JSON data."""
+
+    teaching_credits = TeachingCredit.objects.all()
+
+    teaching_credits_data = [
+        {
+            "id": tc.id,
+            "code": tc.code,
+            "name": tc.name,
+            "discipline": tc.discipline.name,
+            "discipline_acronym": tc.discipline.acronym,
+            "programme_type": tc.programme_type,
+            "programme_type_display": tc.get_programme_type_display(),
+            "credits": tc.credit,
+            "working_teaching_credit": tc.working_teaching_credit
+        }
+        for tc in teaching_credits
+    ]
+
+    return JsonResponse({'teaching_credits': teaching_credits_data})
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def add_teaching_credit(request):
+    """Add a new teaching credit"""
+
+    try:
+        data = request.data
+
+        required_fields = ['code', 'name', 'credit', 'discipline', 'programme_type']
+        for field in required_fields:
+            if field not in data:
+                return JsonResponse({'error': f'{field} is required'}, status=400)
+
+        discipline = get_object_or_404(Discipline, id=data['discipline'])
+
+        teaching_credit = TeachingCredit.objects.create(
+            code=data['code'],
+            name=data['name'],
+            credit=data['credit'],
+            discipline=discipline,
+            programme_type=data['programme_type'],
+            working_teaching_credit=data.get('working_teaching_credit', True)
+        )
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Teaching Credit added successfully',
+            'teaching_credit_id': teaching_credit.id
+        }, status=201)
+
+    except IntegrityError:
+        return JsonResponse({
+            'error': 'A teaching credit with this code already exists for this discipline'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+
+
+@api_view(['DELETE'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def admin_delete_teaching_credit(request, teaching_credit_id):
+    """Delete a teaching credit"""
+
+    try:
+        tc = get_object_or_404(TeachingCredit, id=teaching_credit_id)
+        tc_code = tc.code
+        tc_name = tc.name
+
+        tc.delete()
+
+        return JsonResponse({
+            'success': True,
+            'message': f'Teaching Credit {tc_code} - {tc_name} deleted successfully'
+        }, status=200)
+
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+
+
+@csrf_exempt
+@api_view(['GET', 'PUT'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def update_teaching_credit(request, teaching_credit_id):
+    """Get teaching credit details for editing (GET) or update an existing teaching credit (PUT)."""
+    tc = get_object_or_404(TeachingCredit, id=teaching_credit_id)
+
+    if request.method == 'GET':
+        data = {
+            'id': tc.id,
+            'code': tc.code,
+            'name': tc.name,
+            'credit': tc.credit,
+            'discipline': tc.discipline.id,
+            'discipline_name': tc.discipline.name,
+            'discipline_acronym': tc.discipline.acronym,
+            'programme_type': tc.programme_type,
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
+    elif request.method == 'PUT':
+        try:
+            data = json.loads(request.body)
+            discipline = get_object_or_404(Discipline, id=data.get('discipline'))
+
+            tc.code = data.get('code', tc.code)
+            tc.name = data.get('name', tc.name)
+            tc.credit = data.get('credit', tc.credit)
+            tc.discipline = discipline
+            tc.programme_type = data.get('programme_type', tc.programme_type)
+            tc.save()
+
+            return JsonResponse({
+                'success': True,
+                'message': f'Teaching Credit {tc.code} - {tc.name} updated successfully',
+                'teaching_credit_id': tc.id,
+            }, status=200)
+
+        except IntegrityError:
+            return JsonResponse({
+                'error': 'A teaching credit with this code already exists for this discipline'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'error': str(e)
+            }, status=500)
+
+
+@csrf_exempt
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def add_teaching_credit_slot(request):
+    """Add a new teaching credit slot to a semester."""
+    try:
+        data = json.loads(request.body)
+
+        tc_slot = TeachingCreditSlot.objects.create(
+            semester_id=data['semester'],
+            name=data['name'],
+            teaching_credit_slot_info=data.get('teaching_credit_slot_info', ''),
+            duration=data.get('duration', 1),
+            min_registration_limit=data.get('min_registration_limit', 0),
+            max_registration_limit=data.get('max_registration_limit', 1000)
+        )
+
+        if 'teaching_credits' in data and data['teaching_credits']:
+            tc_slot.teaching_credits.set(data['teaching_credits'])
+
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Teaching credit slot created successfully',
+            'id': tc_slot.id
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
+
+
+def admin_view_a_teaching_credit_slot(request, tc_slot_id):
+    """API to view a teaching credit slot"""
+    tc_slot = get_object_or_404(TeachingCreditSlot, id=tc_slot_id)
+
+    return JsonResponse({
+        'teaching_credit_slot': {
+            'id': tc_slot.id,
+            'name': tc_slot.name,
+            'teaching_credit_slot_info': tc_slot.teaching_credit_slot_info,
+            'duration': tc_slot.duration,
+            'min_registration_limit': tc_slot.min_registration_limit,
+            'max_registration_limit': tc_slot.max_registration_limit,
+            'teaching_credits': [
+                {
+                    'id': tc.id,
+                    'code': tc.code,
+                    'name': tc.name,
+                    'credit': tc.credit,
+                } for tc in tc_slot.teaching_credits.all()
+            ],
+            'curriculum': {
+                'id': tc_slot.semester.curriculum.id,
+                'name': tc_slot.semester.curriculum.name,
+                'version': tc_slot.semester.curriculum.version,
+                'semester_no': tc_slot.semester.semester_no,
+            }
+        },
+    })
+
+
+def delete_teaching_credit_slot(request, tc_slot_id):
+    """Delete a teaching credit slot"""
+    tc_slot = get_object_or_404(TeachingCreditSlot, id=tc_slot_id)
+    tc_slot.delete()
+    return JsonResponse({'status': 'success', 'message': 'Teaching credit slot deleted successfully'})
+
+
+def edit_teaching_credit_slot_form(request, tc_slot_id):
+    """GET returns existing teaching credit slot data; PUT updates it."""
+    tc_slot = get_object_or_404(TeachingCreditSlot, id=tc_slot_id)
+    curriculum_id = tc_slot.semester.curriculum.id
+
+    if request.method == 'GET':
+        data = {
+            'id': tc_slot.id,
+            'semester': tc_slot.semester.id,
+            'name': tc_slot.name,
+            'teaching_credit_slot_info': tc_slot.teaching_credit_slot_info,
+            'teaching_credits': [tc.id for tc in tc_slot.teaching_credits.all()],
+            'duration': tc_slot.duration,
+            'min_registration_limit': tc_slot.min_registration_limit,
+            'max_registration_limit': tc_slot.max_registration_limit,
+            'curriculum_id': curriculum_id,
+        }
+        return JsonResponse({'status': 'success', 'teaching_credit_slot': data})
+
+    elif request.method == 'PUT':
+        try:
+            data = json.loads(request.body)
+            form = TeachingCreditSlotForm(data, instance=tc_slot)
+            if form.is_valid():
+                form.save()
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Teaching credit slot updated successfully',
                 })
             else:
                 return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
