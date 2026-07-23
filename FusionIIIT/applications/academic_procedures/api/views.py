@@ -7530,7 +7530,7 @@ def review_detail(request, token):
     topic = sub.thesis
 
     if request.method == 'GET':
-        base = getattr(settings, 'SITE_URL', 'http://localhost:8000') + settings.MEDIA_URL
+        base = request.build_absolute_uri(settings.MEDIA_URL)
         return Response({
             'student_name': topic.student.id.user.get_full_name(),
             'student_roll': topic.student.id.id,
