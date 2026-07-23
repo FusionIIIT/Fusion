@@ -1,0 +1,130 @@
+{\rtf1\ansi\deff0
+{\fonttbl{\f0 Calibri;}{\f1 Cambria;}}
+\paperw12240\paperh15840\margl1440\margr1440\margt1440\margb1440
+\fs24
+\pard\qc\b\f1\fs32 Placement Cell Module\par
+\pard\qc\b\f1\fs28 Submission Report\par
+\pard\sa160\sb160\b0\f0\fs24
+Course Artifact: Testing and Quality Evaluation Report\par
+Module: Placement Cell\par
+Execution Date: April 22, 2026\par
+Project: Fusion\par
+Test Basis: Authored specifications in placement\_cell/tests/specs, automated tests in applications/placement\_cell/tests, and workbook evidence prepared for the module.\par
+
+\pard\sa200\sb120\b\f1\fs28 1. Introduction\par
+\pard\sa120\sb120\b0\f0\fs24
+This report presents the testing outcome for the Placement Cell module of the Fusion system. The purpose of the report is to summarize test adequacy, document the outcome of automated test execution, identify the most important failures and defects, and provide a final evaluation of the module from a deployment-readiness perspective.\par
+The report is based on the Placement Cell specification assets already prepared for the assignment:\par
+\pard\li360\sa80\sb80\f0\fs24 \'95 22 documented use cases\par
+\'95 40 documented business rules\par
+\'95 10 documented workflows\par
+\'95 166 workbook test design entries\par
+\pard\sa120\sb120\b0\f0\fs24
+An automated execution of the Placement Cell test suite was also performed to validate the implemented behavior against the documented expectations.\par
+
+\pard\sa200\sb120\b\f1\fs28 2. Test Adequacy Summary\par
+\pard\sa120\sb120\b0\f0\fs24
+The module shows good overall test adequacy in terms of specification coverage. The available tests cover the major functional areas expected in a Placement Cell platform.\par
+\pard\li360\sa80\sb80\f0\fs24 \'95 profile creation and profile update validation\par
+\'95 document upload validation\par
+\'95 job browsing and job application behavior\par
+\'95 duplicate-application prevention\par
+\'95 offer visibility and tracking\par
+\'95 interview scheduling workflows\par
+\'95 alumni registration and alumni engagement features\par
+\'95 statistics and reporting APIs\par
+\'95 rule-based and workflow-based traceability from YAML specifications\par
+\pard\sa120\sb120\b0\f0\fs24
+This level of coverage is a positive indicator because it demonstrates that the module has been tested not only through direct API checks, but also against structured use cases, business rules, and end-to-end workflows.\par
+However, adequacy in design does not fully translate into adequacy in execution. Several critical failures were found in business-sensitive features such as schedule creation, company-management flow, interview scheduling, placement finalization, and resume generation.\par
+\b Adequate in planned test coverage, but only partially adequate in executed behavior.\b0\par
+
+\pard\sa200\sb120\b\f1\fs28 3. Automated Test Execution Report\par
+\pard\sa120\sb120\b0\f0\fs24
+The Placement Cell automated suite was executed using the Django test command:\par
+\pard\li360\sa80\sb80\f0\fs24 manage.py test applications.placement\_cell.tests --verbosity 2\par
+\pard\sa120\sb120\b0\f0\fs24
+The test environment initialized successfully, migrations completed successfully, and the execution finished normally. The failures observed were application-level failures.\par
+\b Execution Summary\b0\par
+\pard\li360\sa80\sb80\f0\fs24 \'95 Total executed: 161\par
+\'95 Passed: 138\par
+\'95 Failed: 19\par
+\'95 Errors: 4\par
+\'95 Duration: about 9.3s\par
+\pard\sa120\sb120\b0\f0\fs24
+The pass count shows that a large part of the module is already functional. At the same time, the 19 failures and 4 errors are too significant to ignore because they affect core placement workflows and management actions.\par
+\b Completed with failures\b0\par
+
+\pard\sa200\sb120\b\f1\fs28 4. Key Failures Found\par
+\pard\sa120\sb120\b\f0\fs24 4.1 Authorization failures in TPO management flows\par
+\pard\sa120\sb120\b0\f0\fs24
+Multiple tests related to job posting, schedule creation, and company-management behavior failed because the API returned 403 Forbidden before functional validation could proceed. This affected business-rule tests and workflow tests that expected 200, 201, or 400 responses.\par
+\pard\sa120\sb120\b\f0\fs24 4.2 Student placement listing contract mismatch\par
+\pard\sa120\sb120\b0\f0\fs24
+The student-facing placement listing returned more schedule records than the test expected. This indicates a mismatch between implementation behavior and the intended API contract.\par
+\pard\sa120\sb120\b\f0\fs24 4.3 Application-limit workflow inconsistency\par
+\pard\sa120\sb120\b0\f0\fs24
+The active-application limit tests failed because the returned status codes did not match the expected outcomes. This suggests either incorrect validation order or a contract mismatch between implementation and tests.\par
+\pard\sa120\sb120\b\f0\fs24 4.4 Interview scheduling failure\par
+\pard\sa120\sb120\b0\f0\fs24
+The interview scheduling API returned 400 instead of successfully creating an interview entry, affecting a key recruitment transition.\par
+\pard\sa120\sb120\b\f0\fs24 4.5 Profile editing payload mismatch\par
+\pard\sa120\sb120\b0\f0\fs24
+The profile payload used for editing did not contain the expected skills structure in one of the tests. This may lead to frontend issues during profile editing.\par
+
+\pard\sa200\sb120\b\f1\fs28 5. Major Defects Identified\par
+\pard\sa120\sb120\b\f0\fs24 Defect 1: Placement finalization crashes during reporting update\par
+\pard\sa120\sb120\b0\f0\fs24
+Observed issue: NameError because StudentRecord is not defined.\par
+Impact: Finalized application status cannot be safely converted into placement reporting or statistics records.\par
+Severity: Critical\par
+\pard\sa120\sb120\b\f0\fs24 Defect 2: Resume generation fails for non-numeric identifiers\par
+\pard\sa120\sb120\b0\f0\fs24
+Observed issue: ValueError caused by numeric parsing assumptions.\par
+Impact: Resume generation fails for certain identifier formats.\par
+Severity: Critical\par
+\pard\sa120\sb120\b\f0\fs24 Defect 3: Notification contract mismatch\par
+\pard\sa120\sb120\b0\f0\fs24
+Observed issue: Notification verification fails because the expected metadata shape does not match the actual Notification model fields.\par
+Impact: Notification validation is unreliable.\par
+Severity: Major\par
+\pard\sa120\sb120\b\f0\fs24 Defect 4: Profile payload missing editable skills data\par
+\pard\sa120\sb120\b0\f0\fs24
+Observed issue: KeyError for skills.\par
+Impact: Frontend edit workflows may fail or render incomplete data.\par
+Severity: Major\par
+\pard\sa120\sb120\b\f0\fs24 Defect 5: TPO authorization or role-selection behavior is not aligned with expected management access\par
+\pard\sa120\sb120\b0\f0\fs24
+Observed issue: Multiple creation and workflow tests fail with 403 Forbidden.\par
+Impact: Job posting, company-management, and workflow progression are blocked.\par
+Severity: Critical\par
+
+\pard\sa200\sb120\b\f1\fs28 6. Changes Required Before Deployment\par
+\pard\sa120\sb120\b\f0\fs24 6.1 Fix authorization for management endpoints\par
+\pard\sa120\sb120\b0\f0\fs24
+The role and authorization checks for TPO and related placement-management users must be reviewed carefully. Deployment should proceed only after TPO users can create schedules, manage company records, and complete expected workflow actions successfully.\par
+\pard\sa120\sb120\b\f0\fs24 6.2 Correct placement finalization and statistics integration\par
+\pard\sa120\sb120\b0\f0\fs24
+The logic that creates or updates placement reporting records must be fixed so that selected applications can be finalized without runtime errors.\par
+\pard\sa120\sb120\b\f0\fs24 6.3 Refactor CV generation to remove brittle identifier logic\par
+\pard\sa120\sb120\b0\f0\fs24
+Resume generation should not depend on string slicing assumptions for profile identifiers. Roll-year or academic details should be taken from stable student data.\par
+\pard\sa120\sb120\b\f0\fs24 6.4 Align API contracts with test and frontend expectations\par
+\pard\sa120\sb120\b0\f0\fs24
+The response payloads for profile editing, placement listing, and notifications should be made consistent across backend implementation, automated tests, frontend usage, and documented specifications.\par
+\pard\sa120\sb120\b\f0\fs24 6.5 Revalidate workflow-critical features\par
+\pard\sa120\sb120\b0\f0\fs24
+The following flows should be re-tested after fixes: schedule creation, company registration, interview scheduling, application-limit enforcement, placement finalization, and resume generation.\par
+\pard\sa120\sb120\b\f0\fs24 6.6 Strengthen deployment gate checks\par
+\pard\sa120\sb120\b0\f0\fs24
+Before release, all critical and major defects should be resolved, the Placement Cell automated suite should pass for core workflows, and workbook evidence should be synchronized with automated evidence.\par
+
+\pard\sa200\sb120\b\f1\fs28 7. Final Module Evaluation\par
+\pard\sa120\sb120\b0\f0\fs24
+The Placement Cell module has strong structural coverage and a substantial amount of implemented functionality. Many important features are already working correctly. However, the current version of the module cannot be recommended for deployment because the failed and errored tests affect core operational features.\par
+\b Module status: Partially acceptable for submission, not acceptable for deployment in the current state.\b0\par
+\pard\sa120\sb120\b0\f0\fs24
+The module is suitable for academic submission because test documentation exists, automated execution evidence exists, major risks have been identified clearly, and the testing process is traceable to specifications.\par
+However, the module is not deployment-ready because critical defects still remain in TPO schedule and company-management authorization, placement finalization and reporting, interview scheduling, resume generation, and response contract consistency.\par
+The recommended next step is to fix the deployment-blocking defects, run the full automated Placement Cell suite again, update the workbook where required, and only then consider the module ready for release.\par
+}

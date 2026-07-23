@@ -319,6 +319,7 @@ class ModuleAccess(models.Model):
     designation = models.CharField(max_length=155)
     program_and_curriculum = models.BooleanField(default=False)
     course_registration = models.BooleanField(default=False)
+    thesis_research = models.BooleanField(default=False)
     course_management = models.BooleanField(default=False)
     other_academics = models.BooleanField(default=False)
     spacs = models.BooleanField(default=False)

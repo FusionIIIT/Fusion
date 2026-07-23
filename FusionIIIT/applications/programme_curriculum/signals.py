@@ -108,6 +108,9 @@ def create_academic_student(student_upload, extra_info):
         'EWS': 'GEN',
     }
     category = category_mapping.get(student_upload.category, 'GEN')
+    specialization = 'None'
+    if batch and batch.discipline:
+        specialization = batch.discipline.name
     
     academic_student = Student.objects.create(
         id=extra_info,
@@ -120,7 +123,7 @@ def create_academic_student(student_upload, extra_info):
         mother_name=student_upload.mother_name or '',
         hall_no=0,
         room_no='',
-        specialization='None',
+        specialization=specialization,
         curr_semester_no=1
     )
     
@@ -187,12 +190,23 @@ def get_batch_for_student(student_upload):
     try:
         discipline = Discipline.objects.filter(name=discipline_name).first()
         if discipline:
-            batch = Batch.objects.filter(
-                discipline=discipline,
-                year=student_upload.year
-            ).first()
-            if batch:
-                return batch
+            # For PhD students, look for PhD-specific batch
+            if student_upload.programme == 'PHD':
+                batch = Batch.objects.filter(
+                    discipline=discipline,
+                    year=student_upload.year,
+                    name__icontains='phd'
+                ).first()
+                if batch:
+                    return batch
+            else:
+                # For UG/PG, find regular batch
+                batch = Batch.objects.filter(
+                    discipline=discipline,
+                    year=student_upload.year
+                ).exclude(name__icontains='phd').first()
+                if batch:
+                    return batch
     except Exception as e:
         pass
     

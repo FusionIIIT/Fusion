@@ -8,11 +8,11 @@ import datetime
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from ..models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot,NewProposalFile,Proposal_Tracking,CourseInstructor,CourseAuditLog
-from ..forms import ProgrammeForm, DisciplineForm, CurriculumForm, SemesterForm, CourseForm, BatchForm, CourseSlotForm, ReplicateCurriculumForm,NewCourseProposalFile,CourseProposalTrackingFile, CourseInstructor, CourseInstructorForm
+from ..models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot,NewProposalFile,Proposal_Tracking,CourseInstructor,CourseAuditLog, Thesis, Seminar, ThesisSlot, SeminarSlot, TeachingCredit, TeachingCreditSlot
+from ..forms import ProgrammeForm, DisciplineForm, CurriculumForm, SemesterForm, CourseForm, BatchForm, CourseSlotForm, ReplicateCurriculumForm,NewCourseProposalFile,CourseProposalTrackingFile, CourseInstructor, CourseInstructorForm, ThesisForm, SeminarForm, ThesisSlotForm, SeminarSlotForm, TeachingCreditForm, TeachingCreditSlotForm
 from ..filters import CourseFilter, BatchFilter, CurriculumFilter
 
-from .serializers import CourseSerializer,CurriculumSerializer,BatchSerializer
+from .serializers import CourseSerializer,CurriculumSerializer,BatchSerializer, ThesisSerializer, SeminarSerializer, TeachingCreditSerializer
 from .views_student_management import get_batch_curriculum_display, get_available_curriculums_for_batch
 from django.core.serializers import serialize
 from django.core.serializers.json import DjangoJSONEncoder
@@ -599,9 +599,43 @@ def admin_view_semesters_of_a_curriculum(request, curriculum_id):
                 'id': slot.id,
                 'type': slot.type,
                 'name': slot.name,
+                'slot_type': 'course',
                 'courses': courses
             })
         
+        # Thesis slots
+        for ts in ThesisSlot.objects.filter(semester=semester).order_by('id'):
+            theses = list(ts.theses.values('id', 'name', 'code', 'credit'))
+            slots.append({
+                'id': ts.id,
+                'type': 'Thesis',
+                'name': ts.name,
+                'slot_type': 'thesis',
+                'courses': theses  # reuse 'courses' key for table rendering compatibility
+            })
+        
+        # Seminar slots
+        for ss in SeminarSlot.objects.filter(semester=semester).order_by('id'):
+            seminars = list(ss.seminars.values('id', 'name', 'code', 'credit'))
+            slots.append({
+                'id': ss.id,
+                'type': 'Seminar',
+                'name': ss.name,
+                'slot_type': 'seminar',
+                'courses': seminars  # reuse 'courses' key for table rendering compatibility
+            })
+
+        # Teaching credit slots
+        for tcs in TeachingCreditSlot.objects.filter(semester=semester).order_by('id'):
+            teaching_credits = list(tcs.teaching_credits.values('id', 'name', 'code', 'credit'))
+            slots.append({
+                'id': tcs.id,
+                'type': 'Teaching Credit',
+                'name': tcs.name,
+                'slot_type': 'teaching_credit',
+                'courses': teaching_credits  # reuse 'courses' key for table rendering compatibility
+            })
+
         # Calculate total credits for the semester based on maximum credit of each course slot
         credits_sum = sum(max(course['credit'] for course in slot['courses']) if slot['courses'] else 0 for slot in slots)
         
@@ -1365,57 +1399,58 @@ def add_course_form(request):
             
             if form.is_valid():
                 try:
-                    new_course = form.save(commit=False)
-                    new_course.save()
-                    
-                    # Handle many-to-many relationships if any
-                    if 'disciplines' in data:
-                        new_course.disciplines.set(data['disciplines'])
-                    
-                    if 'pre_requisit_courses' in data and data['pre_requisit_courses']:
-                        new_course.pre_requisit_courses.set(data['pre_requisit_courses'])
-                    
-                    # Create initial audit log for course creation (only for authenticated users)
-                    if request.user.is_authenticated and not request.user.is_anonymous:
-                        initial_data = {
-                            'name': new_course.name,
-                            'code': new_course.code,
-                            'credit': new_course.credit,
-                            'version': new_course.version,
-                            'lecture_hours': new_course.lecture_hours,
-                            'tutorial_hours': new_course.tutorial_hours,
-                            'pratical_hours': new_course.pratical_hours,
-                            'discussion_hours': new_course.discussion_hours,
-                            'project_hours': new_course.project_hours,
-                            'pre_requisits': new_course.pre_requisits,
-                            'syllabus': new_course.syllabus,
-                            'ref_books': new_course.ref_books,
-                            'percent_quiz_1': new_course.percent_quiz_1,
-                            'percent_midsem': new_course.percent_midsem,
-                            'percent_quiz_2': new_course.percent_quiz_2,
-                            'percent_endsem': new_course.percent_endsem,
-                            'percent_project': new_course.percent_project,
-                            'percent_lab_evaluation': new_course.percent_lab_evaluation,
-                            'percent_course_attendance': new_course.percent_course_attendance,
-                            'max_seats': new_course.max_seats,
-                            'working_course': new_course.working_course,
-                        }
-                        
-                        create_course_audit_log(
-                            course=new_course,
-                            user=request.user,
-                            action='CREATE',
-                            old_data=None,
-                            new_data=initial_data,
-                            version_bump_type='MAJOR',  # New course creation is always major
-                            old_version=None,
-                            new_version=new_course.version,
-                            admin_override=False,
-                            reason="New course created"
-                        )
-                    
+                    with transaction.atomic():
+                        new_course = form.save(commit=False)
+                        new_course.save()
+
+                        # Handle many-to-many relationships if any
+                        if 'disciplines' in data:
+                            new_course.disciplines.set(data['disciplines'])
+
+                        if 'pre_requisit_courses' in data and data['pre_requisit_courses']:
+                            new_course.pre_requisit_courses.set(data['pre_requisit_courses'])
+
+                        # Create initial audit log for course creation (only for authenticated users)
+                        if request.user.is_authenticated and not request.user.is_anonymous:
+                            initial_data = {
+                                'name': new_course.name,
+                                'code': new_course.code,
+                                'credit': new_course.credit,
+                                'version': new_course.version,
+                                'lecture_hours': new_course.lecture_hours,
+                                'tutorial_hours': new_course.tutorial_hours,
+                                'pratical_hours': new_course.pratical_hours,
+                                'discussion_hours': new_course.discussion_hours,
+                                'project_hours': new_course.project_hours,
+                                'pre_requisits': new_course.pre_requisits,
+                                'syllabus': new_course.syllabus,
+                                'ref_books': new_course.ref_books,
+                                'percent_quiz_1': new_course.percent_quiz_1,
+                                'percent_midsem': new_course.percent_midsem,
+                                'percent_quiz_2': new_course.percent_quiz_2,
+                                'percent_endsem': new_course.percent_endsem,
+                                'percent_project': new_course.percent_project,
+                                'percent_lab_evaluation': new_course.percent_lab_evaluation,
+                                'percent_course_attendance': new_course.percent_course_attendance,
+                                'max_seats': new_course.max_seats,
+                                'working_course': new_course.working_course,
+                            }
+
+                            create_course_audit_log(
+                                course=new_course,
+                                user=request.user,
+                                action='CREATE',
+                                old_data=None,
+                                new_data=initial_data,
+                                version_bump_type='MAJOR',  # New course creation is always major
+                                old_version=None,
+                                new_version=new_course.version,
+                                admin_override=False,
+                                reason="New course created"
+                            )
+
                     return JsonResponse({'success': True, 'message': 'Course added successfully', 'course_id': new_course.id}, status=201)
-                    
+
                 except Exception as save_error:
                     return JsonResponse({'success': False, 'message': f'Error saving course: {str(save_error)}'}, status=500)
             else:
@@ -4112,11 +4147,11 @@ def delete_batch(request, batch_id):
         
         # 🔒 STUDENT VALIDATION: Check if batch has any students
         try:
-            # Step 1: Check StudentBatchUpload table - FIRST filter by year, THEN by discipline
-            uploaded_students_this_year = StudentBatchUpload.objects.filter(
-                year=batch.year  # FIRST: Only students from this academic year (e.g., 2025)
-            ).filter(
-                branch__icontains=batch.discipline.name  # THEN: Only this discipline within that year
+            # Step 1: Check StudentBatchUpload table - Filter by year, discipline AND programme_type
+            uploaded_students_this_batch = StudentBatchUpload.objects.filter(
+                year=batch.year,  # Academic year (e.g., 2025)
+                branch__icontains=batch.discipline.name,  # Discipline (e.g., CSE, ECE)
+                programme_type__iexact=batch.name  # Programme type (B.Tech, M.Tech, PhD, etc.)
             ).count()
             
             # Step 2: Check academic_information.Student table 
@@ -4129,14 +4164,16 @@ def delete_batch(request, batch_id):
             except ImportError:
                 academic_students_this_batch = 0
             
-            # Total = students in this year's uploads + students assigned to this specific batch
-            total_students = uploaded_students_this_year + academic_students_this_batch
+            # Total = students in this specific batch (year + discipline + programme_type) + students assigned to this batch ID
+            total_students = uploaded_students_this_batch + academic_students_this_batch
             
             if total_students > 0:
                 return JsonResponse({
                     'success': False,
-                    'message': f'Cannot delete batch "{batch.name} {batch.discipline.acronym} {batch.year}". It contains {total_students} students. Please transfer or remove students first.',
+                    'message': f'Cannot delete batch "{batch.name} {batch.discipline.acronym} {batch.year}". It contains {total_students} students ({uploaded_students_this_batch} uploaded, {academic_students_this_batch} assigned). Please transfer or remove students first.',
                     'student_count': total_students,
+                    'uploaded_students': uploaded_students_this_batch,
+                    'assigned_students': academic_students_this_batch,
                     'validation_error': 'batch_has_students',
                     'batch_info': {
                         'id': batch.id,
@@ -4393,3 +4430,765 @@ def create_course_audit_log(course, user, action, old_data=None, new_data=None,
     )
 
     return audit_log
+
+
+# ============== THESIS API VIEWS ==============
+
+@api_view(['GET'])
+def admin_view_all_theses(request):
+    """Returns all theses with required fields as JSON data."""
+    
+    theses = Thesis.objects.all()
+
+    # Prepare data for JSON response
+    theses_data = [
+        {
+            "id": thesis.id,
+            "code": thesis.code,
+            "name": thesis.name,
+            "discipline": thesis.discipline.name,
+            "discipline_acronym": thesis.discipline.acronym,
+            "programme_type": thesis.programme_type,
+            "programme_type_display": thesis.get_programme_type_display(),
+            "credits": thesis.credit,
+            "working_thesis": thesis.working_thesis
+        }
+        for thesis in theses
+    ]
+
+    return JsonResponse({'theses': theses_data})
+
+
+@api_view(['GET'])
+def admin_view_a_thesis(request, thesis_id):
+    """View to handle the details of a Thesis as an API"""
+    
+    # Fetch the thesis based on the thesis_id
+    thesis = get_object_or_404(Thesis, Q(id=thesis_id))
+    thesis_serializer = ThesisSerializer(thesis)
+    
+    return Response(thesis_serializer.data)
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def add_thesis(request):
+    """Add a new thesis"""
+    
+    try:
+        data = request.data
+        
+        # Validate required fields
+        required_fields = ['code', 'name', 'credit', 'discipline', 'programme_type']
+        for field in required_fields:
+            if field not in data:
+                return JsonResponse({'error': f'{field} is required'}, status=400)
+        
+        # Get discipline
+        discipline = get_object_or_404(Discipline, id=data['discipline'])
+        
+        # Create thesis
+        thesis = Thesis.objects.create(
+            code=data['code'],
+            name=data['name'],
+            credit=data['credit'],
+            discipline=discipline,
+            programme_type=data['programme_type'],
+            working_thesis=data.get('working_thesis', True)
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Thesis added successfully',
+            'thesis_id': thesis.id
+        }, status=201)
+        
+    except IntegrityError:
+        return JsonResponse({
+            'error': 'A thesis with this code already exists for this discipline'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+
+
+@api_view(['DELETE'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def admin_delete_thesis(request, thesis_id):
+    """Delete a thesis"""
+    
+    try:
+        thesis = get_object_or_404(Thesis, id=thesis_id)
+        thesis_code = thesis.code
+        thesis_name = thesis.name
+        
+        thesis.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Thesis {thesis_code} - {thesis_name} deleted successfully'
+        }, status=200)
+        
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+
+
+# ------------ Seminar Views ---------------#
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def admin_view_all_seminars(request):
+    """Returns all seminars with required fields as JSON data."""
+
+    seminars = Seminar.objects.all()
+
+    seminars_data = [
+        {
+            "id": s.id,
+            "code": s.code,
+            "name": s.name,
+            "discipline": s.discipline.name,
+            "discipline_acronym": s.discipline.acronym,
+            "programme_type": s.programme_type,
+            "programme_type_display": s.get_programme_type_display(),
+            "credits": s.credit,
+            "working_seminar": s.working_seminar
+        }
+        for s in seminars
+    ]
+
+    return JsonResponse({'seminars': seminars_data})
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def add_seminar(request):
+    """Add a new seminar"""
+
+    try:
+        data = request.data
+
+        required_fields = ['code', 'name', 'credit', 'discipline', 'programme_type']
+        for field in required_fields:
+            if field not in data:
+                return JsonResponse({'error': f'{field} is required'}, status=400)
+
+        discipline = get_object_or_404(Discipline, id=data['discipline'])
+
+        seminar = Seminar.objects.create(
+            code=data['code'],
+            name=data['name'],
+            credit=data['credit'],
+            discipline=discipline,
+            programme_type=data['programme_type'],
+            working_seminar=data.get('working_seminar', True)
+        )
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Seminar added successfully',
+            'seminar_id': seminar.id
+        }, status=201)
+
+    except IntegrityError:
+        return JsonResponse({
+            'error': 'A seminar with this code already exists for this discipline'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+
+
+@api_view(['DELETE'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def admin_delete_seminar(request, seminar_id):
+    """Delete a seminar"""
+
+    try:
+        s = get_object_or_404(Seminar, id=seminar_id)
+        s_code = s.code
+        s_name = s.name
+
+        s.delete()
+
+        return JsonResponse({
+            'success': True,
+            'message': f'Seminar {s_code} - {s_name} deleted successfully'
+        }, status=200)
+
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+
+
+@csrf_exempt
+@api_view(['GET', 'PUT'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def update_thesis(request, thesis_id):
+    """Get thesis details for editing (GET) or update an existing thesis (PUT)."""
+    thesis = get_object_or_404(Thesis, id=thesis_id)
+
+    if request.method == 'GET':
+        data = {
+            'id': thesis.id,
+            'code': thesis.code,
+            'name': thesis.name,
+            'credit': thesis.credit,
+            'discipline': thesis.discipline.id,
+            'discipline_name': thesis.discipline.name,
+            'discipline_acronym': thesis.discipline.acronym,
+            'programme_type': thesis.programme_type,
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
+    elif request.method == 'PUT':
+        try:
+            data = json.loads(request.body)
+            discipline = get_object_or_404(Discipline, id=data.get('discipline'))
+
+            thesis.code = data.get('code', thesis.code)
+            thesis.name = data.get('name', thesis.name)
+            thesis.credit = data.get('credit', thesis.credit)
+            thesis.discipline = discipline
+            thesis.programme_type = data.get('programme_type', thesis.programme_type)
+            thesis.save()
+
+            return JsonResponse({
+                'success': True,
+                'message': f'Thesis {thesis.code} - {thesis.name} updated successfully',
+                'thesis_id': thesis.id,
+            }, status=200)
+
+        except IntegrityError:
+            return JsonResponse({
+                'error': 'A thesis with this code already exists for this discipline'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'error': str(e)
+            }, status=500)
+
+
+@csrf_exempt
+@api_view(['GET', 'PUT'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def update_seminar(request, seminar_id):
+    """Get seminar details for editing (GET) or update an existing seminar (PUT)."""
+    s = get_object_or_404(Seminar, id=seminar_id)
+
+    if request.method == 'GET':
+        data = {
+            'id': s.id,
+            'code': s.code,
+            'name': s.name,
+            'credit': s.credit,
+            'discipline': s.discipline.id,
+            'discipline_name': s.discipline.name,
+            'discipline_acronym': s.discipline.acronym,
+            'programme_type': s.programme_type,
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
+    elif request.method == 'PUT':
+        try:
+            data = json.loads(request.body)
+            discipline = get_object_or_404(Discipline, id=data.get('discipline'))
+
+            s.code = data.get('code', s.code)
+            s.name = data.get('name', s.name)
+            s.credit = data.get('credit', s.credit)
+            s.discipline = discipline
+            s.programme_type = data.get('programme_type', s.programme_type)
+            s.save()
+
+            return JsonResponse({
+                'success': True,
+                'message': f'Seminar {s.code} - {s.name} updated successfully',
+                'seminar_id': s.id,
+            }, status=200)
+
+        except IntegrityError:
+            return JsonResponse({
+                'error': 'A seminar with this code already exists for this discipline'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'error': str(e)
+            }, status=500)
+
+
+@csrf_exempt
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def add_thesis_slot(request):
+    """Add a new thesis slot to a semester."""
+    try:
+        data = json.loads(request.body)
+
+        thesis_slot = ThesisSlot.objects.create(
+            semester_id=data['semester'],
+            name=data['name'],
+            thesis_slot_info=data.get('thesis_slot_info', ''),
+            duration=data.get('duration', 1),
+            min_registration_limit=data.get('min_registration_limit', 0),
+            max_registration_limit=data.get('max_registration_limit', 1000)
+        )
+
+        if 'theses' in data and data['theses']:
+            thesis_slot.theses.set(data['theses'])
+
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Thesis slot created successfully',
+            'id': thesis_slot.id
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
+
+
+@csrf_exempt
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def add_seminar_slot(request):
+    """Add a new seminar slot to a semester."""
+    try:
+        data = json.loads(request.body)
+
+        seminar_slot = SeminarSlot.objects.create(
+            semester_id=data['semester'],
+            name=data['name'],
+            seminar_slot_info=data.get('seminar_slot_info', ''),
+            duration=data.get('duration', 1),
+            min_registration_limit=data.get('min_registration_limit', 0),
+            max_registration_limit=data.get('max_registration_limit', 1000)
+        )
+
+        if 'seminars' in data and data['seminars']:
+            seminar_slot.seminars.set(data['seminars'])
+
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Seminar slot created successfully',
+            'id': seminar_slot.id
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
+
+
+def admin_view_a_thesis_slot(request, thesis_slot_id):
+    """API to view a thesis slot"""
+    thesis_slot = get_object_or_404(ThesisSlot, id=thesis_slot_id)
+
+    return JsonResponse({
+        'thesis_slot': {
+            'id': thesis_slot.id,
+            'name': thesis_slot.name,
+            'thesis_slot_info': thesis_slot.thesis_slot_info,
+            'duration': thesis_slot.duration,
+            'min_registration_limit': thesis_slot.min_registration_limit,
+            'max_registration_limit': thesis_slot.max_registration_limit,
+            'theses': [
+                {
+                    'id': t.id,
+                    'code': t.code,
+                    'name': t.name,
+                    'credit': t.credit,
+                } for t in thesis_slot.theses.all()
+            ],
+            'curriculum': {
+                'id': thesis_slot.semester.curriculum.id,
+                'name': thesis_slot.semester.curriculum.name,
+                'version': thesis_slot.semester.curriculum.version,
+                'semester_no': thesis_slot.semester.semester_no,
+            }
+        },
+    })
+
+
+def admin_view_a_seminar_slot(request, seminar_slot_id):
+    """API to view a seminar slot"""
+    seminar_slot = get_object_or_404(SeminarSlot, id=seminar_slot_id)
+
+    return JsonResponse({
+        'seminar_slot': {
+            'id': seminar_slot.id,
+            'name': seminar_slot.name,
+            'seminar_slot_info': seminar_slot.seminar_slot_info,
+            'duration': seminar_slot.duration,
+            'min_registration_limit': seminar_slot.min_registration_limit,
+            'max_registration_limit': seminar_slot.max_registration_limit,
+            'seminars': [
+                {
+                    'id': s.id,
+                    'code': s.code,
+                    'name': s.name,
+                    'credit': s.credit,
+                } for s in seminar_slot.seminars.all()
+            ],
+            'curriculum': {
+                'id': seminar_slot.semester.curriculum.id,
+                'name': seminar_slot.semester.curriculum.name,
+                'version': seminar_slot.semester.curriculum.version,
+                'semester_no': seminar_slot.semester.semester_no,
+            }
+        },
+    })
+
+
+def delete_thesis_slot(request, thesis_slot_id):
+    """Delete a thesis slot"""
+    thesis_slot = get_object_or_404(ThesisSlot, id=thesis_slot_id)
+    thesis_slot.delete()
+    return JsonResponse({'status': 'success', 'message': 'Thesis slot deleted successfully'})
+
+
+def delete_seminar_slot(request, seminar_slot_id):
+    """Delete a seminar slot"""
+    seminar_slot = get_object_or_404(SeminarSlot, id=seminar_slot_id)
+    seminar_slot.delete()
+    return JsonResponse({'status': 'success', 'message': 'Seminar slot deleted successfully'})
+
+
+def edit_thesis_slot_form(request, thesis_slot_id):
+    """GET returns existing thesis slot data; PUT updates it."""
+    thesis_slot = get_object_or_404(ThesisSlot, id=thesis_slot_id)
+    curriculum_id = thesis_slot.semester.curriculum.id
+
+    if request.method == 'GET':
+        data = {
+            'id': thesis_slot.id,
+            'semester': thesis_slot.semester.id,
+            'name': thesis_slot.name,
+            'thesis_slot_info': thesis_slot.thesis_slot_info,
+            'theses': [t.id for t in thesis_slot.theses.all()],
+            'duration': thesis_slot.duration,
+            'min_registration_limit': thesis_slot.min_registration_limit,
+            'max_registration_limit': thesis_slot.max_registration_limit,
+            'curriculum_id': curriculum_id,
+        }
+        return JsonResponse({'status': 'success', 'thesis_slot': data})
+
+    elif request.method == 'PUT':
+        try:
+            data = json.loads(request.body)
+            form = ThesisSlotForm(data, instance=thesis_slot)
+            if form.is_valid():
+                form.save()
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Thesis slot updated successfully',
+                })
+            else:
+                return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+
+
+def edit_seminar_slot_form(request, seminar_slot_id):
+    """GET returns existing seminar slot data; PUT updates it."""
+    seminar_slot = get_object_or_404(SeminarSlot, id=seminar_slot_id)
+    curriculum_id = seminar_slot.semester.curriculum.id
+
+    if request.method == 'GET':
+        data = {
+            'id': seminar_slot.id,
+            'semester': seminar_slot.semester.id,
+            'name': seminar_slot.name,
+            'seminar_slot_info': seminar_slot.seminar_slot_info,
+            'seminars': [s.id for s in seminar_slot.seminars.all()],
+            'duration': seminar_slot.duration,
+            'min_registration_limit': seminar_slot.min_registration_limit,
+            'max_registration_limit': seminar_slot.max_registration_limit,
+            'curriculum_id': curriculum_id,
+        }
+        return JsonResponse({'status': 'success', 'seminar_slot': data})
+
+    elif request.method == 'PUT':
+        try:
+            data = json.loads(request.body)
+            form = SeminarSlotForm(data, instance=seminar_slot)
+            if form.is_valid():
+                form.save()
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Seminar slot updated successfully',
+                })
+            else:
+                return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+
+
+# ------------ Teaching Credit Views ---------------#
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def admin_view_all_teaching_credits(request):
+    """Returns all teaching credits with required fields as JSON data."""
+
+    teaching_credits = TeachingCredit.objects.all()
+
+    teaching_credits_data = [
+        {
+            "id": tc.id,
+            "code": tc.code,
+            "name": tc.name,
+            "discipline": tc.discipline.name,
+            "discipline_acronym": tc.discipline.acronym,
+            "programme_type": tc.programme_type,
+            "programme_type_display": tc.get_programme_type_display(),
+            "credits": tc.credit,
+            "working_teaching_credit": tc.working_teaching_credit
+        }
+        for tc in teaching_credits
+    ]
+
+    return JsonResponse({'teaching_credits': teaching_credits_data})
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def add_teaching_credit(request):
+    """Add a new teaching credit"""
+
+    try:
+        data = request.data
+
+        required_fields = ['code', 'name', 'credit', 'discipline', 'programme_type']
+        for field in required_fields:
+            if field not in data:
+                return JsonResponse({'error': f'{field} is required'}, status=400)
+
+        discipline = get_object_or_404(Discipline, id=data['discipline'])
+
+        teaching_credit = TeachingCredit.objects.create(
+            code=data['code'],
+            name=data['name'],
+            credit=data['credit'],
+            discipline=discipline,
+            programme_type=data['programme_type'],
+            working_teaching_credit=data.get('working_teaching_credit', True)
+        )
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Teaching Credit added successfully',
+            'teaching_credit_id': teaching_credit.id
+        }, status=201)
+
+    except IntegrityError:
+        return JsonResponse({
+            'error': 'A teaching credit with this code already exists for this discipline'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+
+
+@api_view(['DELETE'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def admin_delete_teaching_credit(request, teaching_credit_id):
+    """Delete a teaching credit"""
+
+    try:
+        tc = get_object_or_404(TeachingCredit, id=teaching_credit_id)
+        tc_code = tc.code
+        tc_name = tc.name
+
+        tc.delete()
+
+        return JsonResponse({
+            'success': True,
+            'message': f'Teaching Credit {tc_code} - {tc_name} deleted successfully'
+        }, status=200)
+
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+
+
+@csrf_exempt
+@api_view(['GET', 'PUT'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def update_teaching_credit(request, teaching_credit_id):
+    """Get teaching credit details for editing (GET) or update an existing teaching credit (PUT)."""
+    tc = get_object_or_404(TeachingCredit, id=teaching_credit_id)
+
+    if request.method == 'GET':
+        data = {
+            'id': tc.id,
+            'code': tc.code,
+            'name': tc.name,
+            'credit': tc.credit,
+            'discipline': tc.discipline.id,
+            'discipline_name': tc.discipline.name,
+            'discipline_acronym': tc.discipline.acronym,
+            'programme_type': tc.programme_type,
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
+    elif request.method == 'PUT':
+        try:
+            data = json.loads(request.body)
+            discipline = get_object_or_404(Discipline, id=data.get('discipline'))
+
+            tc.code = data.get('code', tc.code)
+            tc.name = data.get('name', tc.name)
+            tc.credit = data.get('credit', tc.credit)
+            tc.discipline = discipline
+            tc.programme_type = data.get('programme_type', tc.programme_type)
+            tc.save()
+
+            return JsonResponse({
+                'success': True,
+                'message': f'Teaching Credit {tc.code} - {tc.name} updated successfully',
+                'teaching_credit_id': tc.id,
+            }, status=200)
+
+        except IntegrityError:
+            return JsonResponse({
+                'error': 'A teaching credit with this code already exists for this discipline'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'error': str(e)
+            }, status=500)
+
+
+@csrf_exempt
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def add_teaching_credit_slot(request):
+    """Add a new teaching credit slot to a semester."""
+    try:
+        data = json.loads(request.body)
+
+        tc_slot = TeachingCreditSlot.objects.create(
+            semester_id=data['semester'],
+            name=data['name'],
+            teaching_credit_slot_info=data.get('teaching_credit_slot_info', ''),
+            duration=data.get('duration', 1),
+            min_registration_limit=data.get('min_registration_limit', 0),
+            max_registration_limit=data.get('max_registration_limit', 1000)
+        )
+
+        if 'teaching_credits' in data and data['teaching_credits']:
+            tc_slot.teaching_credits.set(data['teaching_credits'])
+
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Teaching credit slot created successfully',
+            'id': tc_slot.id
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
+
+
+def admin_view_a_teaching_credit_slot(request, tc_slot_id):
+    """API to view a teaching credit slot"""
+    tc_slot = get_object_or_404(TeachingCreditSlot, id=tc_slot_id)
+
+    return JsonResponse({
+        'teaching_credit_slot': {
+            'id': tc_slot.id,
+            'name': tc_slot.name,
+            'teaching_credit_slot_info': tc_slot.teaching_credit_slot_info,
+            'duration': tc_slot.duration,
+            'min_registration_limit': tc_slot.min_registration_limit,
+            'max_registration_limit': tc_slot.max_registration_limit,
+            'teaching_credits': [
+                {
+                    'id': tc.id,
+                    'code': tc.code,
+                    'name': tc.name,
+                    'credit': tc.credit,
+                } for tc in tc_slot.teaching_credits.all()
+            ],
+            'curriculum': {
+                'id': tc_slot.semester.curriculum.id,
+                'name': tc_slot.semester.curriculum.name,
+                'version': tc_slot.semester.curriculum.version,
+                'semester_no': tc_slot.semester.semester_no,
+            }
+        },
+    })
+
+
+def delete_teaching_credit_slot(request, tc_slot_id):
+    """Delete a teaching credit slot"""
+    tc_slot = get_object_or_404(TeachingCreditSlot, id=tc_slot_id)
+    tc_slot.delete()
+    return JsonResponse({'status': 'success', 'message': 'Teaching credit slot deleted successfully'})
+
+
+def edit_teaching_credit_slot_form(request, tc_slot_id):
+    """GET returns existing teaching credit slot data; PUT updates it."""
+    tc_slot = get_object_or_404(TeachingCreditSlot, id=tc_slot_id)
+    curriculum_id = tc_slot.semester.curriculum.id
+
+    if request.method == 'GET':
+        data = {
+            'id': tc_slot.id,
+            'semester': tc_slot.semester.id,
+            'name': tc_slot.name,
+            'teaching_credit_slot_info': tc_slot.teaching_credit_slot_info,
+            'teaching_credits': [tc.id for tc in tc_slot.teaching_credits.all()],
+            'duration': tc_slot.duration,
+            'min_registration_limit': tc_slot.min_registration_limit,
+            'max_registration_limit': tc_slot.max_registration_limit,
+            'curriculum_id': curriculum_id,
+        }
+        return JsonResponse({'status': 'success', 'teaching_credit_slot': data})
+
+    elif request.method == 'PUT':
+        try:
+            data = json.loads(request.body)
+            form = TeachingCreditSlotForm(data, instance=tc_slot)
+            if form.is_valid():
+                form.save()
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Teaching credit slot updated successfully',
+                })
+            else:
+                return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)

@@ -1,0 +1,18 @@
+REVIEW RECEIVED - THANK YOU!
+============================
+
+Dear {{ prof_name }},
+
+Thank you for submitting your comprehensive review of the PhD thesis:
+
+"{{ thesis_title }}"
+
+Your expert feedback and insights are invaluable to the academic process and will significantly contribute to the quality and rigor of this research work.
+
+✓ Your review has been successfully submitted and recorded.
+
+We deeply appreciate the time and effort you have dedicated to this evaluation. Your contribution helps maintain the high standards of academic excellence.
+
+With sincere gratitude,
+Thesis Committee
+PDPM IIITDM Jabalpur

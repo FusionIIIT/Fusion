@@ -1,0 +1,201 @@
+workflows:
+  - id: WF01
+    source_section: End-to-End Placement Workflow
+    name: End-to-End Placement Workflow
+    description: Placement season progresses from job publication through student application, selection, offer, and finalization.
+    steps:
+      - Company or TPO publishes a job
+      - Student applies and company reviews applications
+      - Interviews and selection decisions are recorded
+      - Offer is released and placement records are finalized
+    scenarios:
+      end_to_end:
+        _test_id: WF01_E2E_01
+        _wf_id: WF01
+        _scenario: End-to-End
+        _expected_result: Published job moves through application and offer stages to a completed placement outcome.
+      negative:
+        _test_id: WF01_NEG_01
+        _wf_id: WF01
+        _scenario: Negative
+        _expected_result: Workflow halts safely when the student cannot complete the application path.
+
+  - id: WF02
+    source_section: Student Application Workflow
+    name: Student Application Workflow
+    description: Student completes the placement profile, browses jobs, passes eligibility checks, and submits an application.
+    steps:
+      - Complete placement profile
+      - Retrieve profile summary
+      - Submit application for an eligible job
+    scenarios:
+      end_to_end:
+        _test_id: WF02_E2E_01
+        _wf_id: WF02
+        _scenario: End-to-End
+        _expected_result: Completed profile enables successful job application.
+      negative:
+        _test_id: WF02_NEG_01
+        _wf_id: WF02
+        _scenario: Negative
+        _expected_result: Incomplete profile blocks job application.
+
+  - id: WF03
+    source_section: TPO Job Posting Management Workflow
+    name: TPO Job Posting Management Workflow
+    description: TPO reviews job details, validates the posting, and publishes it to eligible students.
+    steps:
+      - Review job details and company information
+      - Validate compensation and content standards
+      - Approve and publish the job posting
+    scenarios:
+      end_to_end:
+        _test_id: WF03_E2E_01
+        _wf_id: WF03
+        _scenario: End-to-End
+        _expected_result: Valid posting is approved and becomes visible to students.
+      negative:
+        _test_id: WF03_NEG_01
+        _wf_id: WF03
+        _scenario: Negative
+        _expected_result: Invalid posting is rejected before publication.
+
+  - id: WF04
+    source_section: Interview Scheduling Workflow
+    name: Interview Scheduling Workflow
+    description: TPO creates interview schedules after shortlisting and ensures students can track upcoming rounds.
+    steps:
+      - Create or update application shortlist state
+      - Schedule interview round for an application
+      - Student views interview schedule in application timeline
+    scenarios:
+      end_to_end:
+        _test_id: WF04_E2E_01
+        _wf_id: WF04
+        _scenario: End-to-End
+        _expected_result: Interview is scheduled successfully and appears in the tracked application timeline.
+      negative:
+        _test_id: WF04_NEG_01
+        _wf_id: WF04
+        _scenario: Negative
+        _expected_result: Conflicting or invalid interview schedule request is rejected.
+
+  - id: WF05
+    source_section: Offer Management Workflow
+    name: Offer Release To Offer Dashboard Visibility
+    description: After an application is processed and an offer is released, the student can see it on the offer dashboard.
+    steps:
+      - Student applies for a schedule
+      - TPO updates application status to offer released
+      - Student views my offers
+    scenarios:
+      end_to_end:
+        _test_id: WF05_E2E_01
+        _wf_id: WF05
+        _scenario: End-to-End
+        _expected_result: Released offer becomes visible on the student offer dashboard.
+      negative:
+        _test_id: WF05_NEG_01
+        _wf_id: WF05
+        _scenario: Negative
+        _expected_result: Offer dashboard stays empty when no offer has been released.
+
+  - id: WF06
+    source_section: Company Registration Workflow
+    name: Company Registration Workflow
+    description: Company details are submitted, validated, and added to the placement system for later recruiting activity.
+    steps:
+      - Submit company registration details
+      - Validate registration payload
+      - Persist company record for placement usage
+    scenarios:
+      end_to_end:
+        _test_id: WF06_E2E_01
+        _wf_id: WF06
+        _scenario: End-to-End
+        _expected_result: Company registration is stored successfully and can be retrieved later.
+      negative:
+        _test_id: WF06_NEG_01
+        _wf_id: WF06
+        _scenario: Negative
+        _expected_result: Invalid company registration request is rejected safely.
+
+  - id: WF07
+    source_section: Alumni Engagement Workflow
+    name: Alumni Registration And Verification Workflow
+    description: Alumni submit registration data, wait for review, and then access alumni capabilities after approval.
+    steps:
+      - Alumni submits profile and verification details
+      - TPO reviews verification queue and approves profile
+      - Approved alumni updates or accesses alumni features
+    scenarios:
+      end_to_end:
+        _test_id: WF07_E2E_01
+        _wf_id: WF07
+        _scenario: End-to-End
+        _expected_result: Alumni profile is submitted, approved, and becomes accessible.
+      negative:
+        _test_id: WF07_NEG_01
+        _wf_id: WF07
+        _scenario: Negative
+        _expected_result: Pending or rejected alumni profile cannot access restricted alumni capabilities.
+
+  - id: WF08
+    source_section: Notification Management Workflow
+    name: Notification Management Workflow
+    description: Authorized placement users send notifications to all students or a specific recipient and the request is validated.
+    steps:
+      - Compose placement notification
+      - Select recipients or all-students target
+      - Submit the notification request
+    scenarios:
+      end_to_end:
+        _test_id: WF08_E2E_01
+        _wf_id: WF08
+        _scenario: End-to-End
+        _expected_result: Valid notification request is accepted and logged as sent.
+      negative:
+        _test_id: WF08_NEG_01
+        _wf_id: WF08
+        _scenario: Negative
+        _expected_result: Notification request with an invalid recipient is rejected.
+
+  - id: WF09
+    source_section: Load Balancing Workflow
+    name: Placement Access Under Load Workflow
+    description: Placement browsing and reporting continue to function under expected operational load and access patterns.
+    steps:
+      - User accesses placement listing or analytics endpoint
+      - System processes the request under normal operating conditions
+      - Response is returned in a usable form
+    scenarios:
+      end_to_end:
+        _test_id: WF09_E2E_01
+        _wf_id: WF09
+        _scenario: End-to-End
+        _expected_result: Core placement endpoint responds successfully for a normal request.
+      negative:
+        _test_id: WF09_NEG_01
+        _wf_id: WF09
+        _scenario: Negative
+        _expected_result: Degraded or invalid request path fails in a controlled way.
+
+  - id: WF10
+    source_section: Backup and Recovery Workflow
+    name: Reporting And Recovery Visibility Workflow
+    description: Historical placement data remains queryable through reports and statistics after normal operational changes.
+    steps:
+      - Create or retain placement records
+      - Request reports or statistics
+      - Validate accessible recovered or retained data view
+    scenarios:
+      end_to_end:
+        _test_id: WF10_E2E_01
+        _wf_id: WF10
+        _scenario: End-to-End
+        _expected_result: Reporting endpoints return retained placement information successfully.
+      negative:
+        _test_id: WF10_NEG_01
+        _wf_id: WF10
+        _scenario: Negative
+        _expected_result: Missing or invalid report request path is handled without breaking the workflow.

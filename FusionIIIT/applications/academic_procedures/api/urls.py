@@ -133,4 +133,249 @@ urlpatterns = [
 
     # pg TA
     url(r'^ta/stipends/$',             views.ta_stipends),
+    
+    # ========================================================================
+    # PhD-SPECIFIC URLS (Added for PhD student management)
+    # ========================================================================
+
+    # PhD Thesis Registration endpoints
+
+    # Student endpoints
+    url(r'^stu/thesis/$', views.student_thesis_api, name='student-thesis'),
+    url(r'^stu/thesis/download/$', views.student_download_pdf_api, name='student-thesis-download'),
+
+    # Faculty list for dropdowns
+    url(r'^faculty/$', views.faculty_list_api, name='faculty-list'),
+
+    # Supervisor endpoints
+    url(r'^supervisor/dashboard/$', views.supervisor_thesis_topic_dashboard, name='supervisor-dashboard'),
+    url(r'^supervisor/thesis/(?P<pk>\d+)/review/$', views.supervisor_review_api, name='supervisor-thesis-review'),
+
+    # HOD endpoints
+    url(r'^hod/dashboard/$', views.hod_dashboard, name='hod-dashboard'),
+    url(r'^hod/thesis/(?P<pk>\d+)/review/$', views.hod_review_api, name='hod-thesis-review'),
+
+    # Dean endpoints
+    url(r'^dean/dashboard/$', views.dean_dashboard, name='dean-dashboard'),
+    url(r'^dean/thesis/(?P<pk>\d+)/review/$', views.dean_review_api, name='dean-thesis-review'),
+    url(r'^dean/thesis/(?P<pk>\d+)/generate/$', views.dean_generate_pdf_api, name='dean-thesis-generate'),
+
+    # PhD Seminar endpoints
+
+    # Student
+    url(r'^seminar-reports/$', views.list_reports),
+    url(r'^seminar-reports/create/(?P<thesis_pk>\d+)/$', views.create_report),
+    url(r'^seminar-reports/(?P<pk>\d+)/$', views.detail_report),
+
+    # RPC
+    url(r'^seminar-reports/list/$', views.rpc_seminar_list),
+    url(r'^seminar-reports/(?P<pk>\d+)/rpc-detail/$', views.rpc_detail),
+    url(r'^seminar-reports/(?P<pk>\d+)/rpc-consent/$', views.rpc_consent),
+    url(r'^seminar-reports/(?P<pk>\d+)/rpc-finalize/$', views.rpc_finalize),
+
+    # ========================================================================
+    # Thesis Slot Semester-Level Registration (Enrollment)
+    # ========================================================================
+    # Student
+    url(r'^stu/thesis-enrollment/$', views.student_thesis_enrollment_api, name='student-thesis-enrollment'),
+    # Acad Admin
+    url(r'^acadadmin/thesis-enrollments/$', views.admin_thesis_enrollment_list, name='admin-thesis-enrollment-list'),
+    url(r'^acadadmin/thesis-enrollments/verify/$', views.admin_verify_enrollments, name='admin-verify-enrollments'),
+    url(r'^acadadmin/thesis-enrollments/reject/$', views.admin_reject_enrollments, name='admin-reject-enrollments'),
+
+    # ========================================================================
+    # Progress Seminar Slot Semester-Level Registration (Enrollment)
+    # ========================================================================
+    # Student
+    url(r'^stu/progress-seminar-enrollment/$', views.student_progress_seminar_enrollment_api,
+        name='student-progress-seminar-enrollment'),
+    # Acad Admin
+    url(r'^acadadmin/progress-seminar-enrollments/$', views.admin_progress_seminar_enrollment_list,
+        name='admin-progress-seminar-enrollment-list'),
+    url(r'^acadadmin/progress-seminar-enrollments/verify/$', views.admin_verify_progress_seminar_enrollments,
+        name='admin-verify-progress-seminar-enrollments'),
+    url(r'^acadadmin/progress-seminar-enrollments/reject/$', views.admin_reject_progress_seminar_enrollments,
+        name='admin-reject-progress-seminar-enrollments'),
+
+    # ========================================================================
+    # Teaching Credit Slot Semester-Level Registration (Enrollment)
+    # ========================================================================
+    # Student
+    url(r'^stu/teaching-credit-enrollment/$', views.student_teaching_credit_enrollment_api,
+        name='student-teaching-credit-enrollment'),
+    # Acad Admin
+    url(r'^acadadmin/teaching-credit-enrollments/$', views.admin_teaching_credit_enrollment_list,
+        name='admin-teaching-credit-enrollment-list'),
+    url(r'^acadadmin/teaching-credit-enrollments/verify/$', views.admin_verify_teaching_credit_enrollments,
+        name='admin-verify-teaching-credit-enrollments'),
+    url(r'^acadadmin/teaching-credit-enrollments/reject/$', views.admin_reject_teaching_credit_enrollments,
+        name='admin-reject-teaching-credit-enrollments'),
+
+    # ========================================================================
+    # PhD Course (Coursework) Registration — standalone workflow, independent
+    # of the UG/PG backlog add-course flow (add_course / CourseAddRequest)
+    # ========================================================================
+    # Student
+    url(r'^stu/phd/status/$', views.phd_student_status, name='phd-student-status'),
+    url(r'^stu/phd/course-slots/$', views.phd_course_slots, name='phd-course-slots'),
+    url(r'^stu/phd/course-slots/courses/$', views.phd_course_slot_courses, name='phd-course-slot-courses'),
+    url(r'^stu/phd/course-request/$', views.phd_submit_course_request, name='phd-submit-course-request'),
+    url(r'^stu/phd/my-course-requests/$', views.phd_my_course_requests, name='phd-my-course-requests'),
+    # Acad Admin
+    url(r'^acadadmin/phd/course-requests/$', views.phd_admin_list_requests, name='phd-admin-list-requests'),
+    url(r'^acadadmin/phd/course-requests/process/$', views.phd_admin_process_requests, name='phd-admin-process-requests'),
+
+    # PhD Thesis Evaluation (block-based S/X grades)
+    # Supervisor — all blocks for a student are graded and submitted together
+    url(r'^supervisor/thesis-grades/$',          views.supervisor_thesis_grades,       name='supervisor-thesis-grades'),
+    # All blocks comprehensive upload
+    url(r'^supervisor/thesis-grades-all-template/$', views.supervisor_download_all_thesis_grades_template, name='supervisor-thesis-grades-all-template'),
+    url(r'^supervisor/thesis-grades-all/upload/$', views.supervisor_upload_all_thesis_grades, name='supervisor-thesis-grades-all-upload'),
+    url(r'^supervisor/thesis-grades-all/bulk-submit/$', views.supervisor_bulk_submit_all_thesis_grades, name='supervisor-thesis-grades-all-bulk-submit'),
+    # Acad Admin
+    url(r'^acadadmin/thesis-grades/$',           views.admin_thesis_grades_list,       name='admin-thesis-grades-list'),
+    url(r'^acadadmin/thesis-grades/verify/$',    views.admin_verify_thesis_grades,     name='admin-thesis-grades-verify'),
+    url(r'^acadadmin/thesis-grades/announce/$',  views.admin_announce_thesis_grades,   name='admin-thesis-grades-announce'),
+
+    # PhD Thesis Submission
+
+    # Student
+    url(r'^thesis/submit/$', views.thesis_submit, name='thesis_submit'),
+
+    # Supervisor
+    url(r'^thesis/supervisor-dashboard/$', views.supervisor_dashboard, name='supervisor_dashboard'),
+    url(r'^thesis/submission-detail/(?P<submission_id>\d+)/$', views.supervisor_submission_detail, name='supervisor_submission_detail'),
+    url(r'^thesis/supervisor-assign/$', views.supervisor_assign, name='supervisor_assign'),
+
+    # Dean (panel approval + invitation dispatch)
+    url(r'^thesis/dean-dashboard/$', views.dean_panel_dashboard, name='dean_panel_dashboard'),
+    url(r'^thesis/dean-panel-approve/$', views.dean_panel_approve, name='dean_panel_approve'),
+    url(r'^thesis/dean-send-invitations/$', views.dean_send_invitations, name='dean_send_invitations'),
+
+    # Director
+    url(r'^thesis/director-dashboard/$', views.director_dashboard, name='director_dashboard'),
+    url(r'^thesis/director-approve/$', views.director_approve, name='director_approve'),
+
+    # Professor Invitation (External reviewers)
+    url(r'^invitation/(?P<token>[0-9a-f-]+)/(?P<action>accept|reject)/$',
+        views.invitation_action, name='invitation_action'),
+
+    # Review Form (External reviewers)
+    url(r'^review/(?P<token>[0-9a-f-]+)/$', views.review_detail, name='review_detail'),
+
+    # ========================================================================
+    # PhD Comprehensive Examination
+    # ========================================================================
+
+    # Student
+    url(r'^stu/comprehensive-exam/$', views.student_comprehensive_exam_api, name='student-comprehensive-exam'),
+    url(r'^stu/comprehensive-exam/attempt/(?P<attempt_pk>\d+)/opt-subjects/$',
+        views.student_opt_subjects_api, name='student-comprehensive-exam-opt-subjects'),
+
+    # Supervisor
+    url(r'^supervisor/comprehensive-exam/dashboard/$',
+        views.supervisor_comprehensive_exam_dashboard, name='supervisor-comprehensive-exam-dashboard'),
+    url(r'^supervisor/comprehensive-exam/student-info/(?P<roll_no>[^/]+)/$',
+        views.supervisor_student_academic_info, name='supervisor-comprehensive-exam-student-info'),
+    url(r'^supervisor/comprehensive-exam/propose/$',
+        views.supervisor_propose_comprehensive_exam, name='supervisor-comprehensive-exam-propose'),
+    url(r'^supervisor/comprehensive-exam/(?P<pk>\d+)/$',
+        views.supervisor_comprehensive_exam_detail, name='supervisor-comprehensive-exam-detail'),
+    url(r'^supervisor/comprehensive-exam/(?P<pk>\d+)/resubmit/$',
+        views.supervisor_resubmit_proposal, name='supervisor-comprehensive-exam-resubmit'),
+    url(r'^supervisor/comprehensive-exam/(?P<pk>\d+)/float-subjects/$',
+        views.supervisor_float_subjects, name='supervisor-comprehensive-exam-float-subjects'),
+    url(r'^supervisor/comprehensive-exam/attempt/(?P<attempt_pk>\d+)/confirm-subjects/$',
+        views.supervisor_confirm_opted_subjects, name='supervisor-comprehensive-exam-confirm-subjects'),
+    url(r'^courses/dropdown/$', views.list_courses_for_dropdown, name='list-courses-dropdown'),
+
+    # Academic Office (acadadmin)
+    url(r'^acadadmin/comprehensive-exam/$',
+        views.academic_office_comprehensive_exam_list, name='academic-office-comprehensive-exam-list'),
+    url(r'^acadadmin/comprehensive-exam/(?P<pk>\d+)/verify/$',
+        views.academic_office_verify_comprehensive_exam, name='academic-office-comprehensive-exam-verify'),
+
+    # Convener (Dean Academic stands in for DPGC/PGCS for now)
+    url(r'^dean/comprehensive-exam/dashboard/$',
+        views.convener_comprehensive_exam_dashboard, name='convener-comprehensive-exam-dashboard'),
+    url(r'^dean/comprehensive-exam/(?P<pk>\d+)/approve-committee/$',
+        views.convener_approve_committee, name='convener-comprehensive-exam-approve-committee'),
+    url(r'^dean/comprehensive-exam/attempt/(?P<attempt_pk>\d+)/report/$',
+        views.convener_submit_result, name='convener-comprehensive-exam-report'),
+
+    # HOD (as discipline coordinator)
+    url(r'^hod/comprehensive-exam/dashboard/$',
+        views.hod_comprehensive_exam_dashboard, name='hod-comprehensive-exam-dashboard'),
+    url(r'^hod/comprehensive-exam/attempt/(?P<attempt_pk>\d+)/review-subjects/$',
+        views.hod_review_subjects, name='hod-comprehensive-exam-review-subjects'),
+
+    # ========================================================================
+    # PhD Open Seminar
+    # ========================================================================
+
+    # Shared
+    url(r'^supervisor/open-seminar/eligibility/(?P<roll_no>[^/]+)/$',
+        views.open_seminar_eligibility_preview, name='open-seminar-eligibility-preview'),
+
+    # Student
+    url(r'^stu/open-seminar/$', views.student_open_seminar_api, name='student-open-seminar'),
+
+    # Supervisor
+    url(r'^supervisor/open-seminar/dashboard/$',
+        views.supervisor_open_seminar_dashboard, name='supervisor-open-seminar-dashboard'),
+    url(r'^supervisor/open-seminar/propose/$',
+        views.supervisor_propose_open_seminar, name='supervisor-open-seminar-propose'),
+    url(r'^supervisor/open-seminar/(?P<pk>\d+)/$',
+        views.supervisor_open_seminar_detail, name='supervisor-open-seminar-detail'),
+    url(r'^supervisor/open-seminar/(?P<pk>\d+)/resubmit/$',
+        views.supervisor_resubmit_open_seminar, name='supervisor-open-seminar-resubmit'),
+    url(r'^supervisor/open-seminar/(?P<pk>\d+)/retry/$',
+        views.supervisor_retry_open_seminar, name='supervisor-open-seminar-retry'),
+
+    # Convener (Dean Academic stands in for DPGC/PGCS for now)
+    url(r'^dean/open-seminar/dashboard/$',
+        views.convener_open_seminar_dashboard, name='convener-open-seminar-dashboard'),
+    url(r'^dean/open-seminar/attempt/(?P<attempt_pk>\d+)/approve-committee/$',
+        views.convener_approve_open_seminar_committee, name='convener-open-seminar-approve-committee'),
+    url(r'^dean/open-seminar/attempt/(?P<attempt_pk>\d+)/report/$',
+        views.convener_submit_open_seminar_report, name='convener-open-seminar-report'),
+
+    # Dean Nominee (ad-hoc faculty appointment)
+    url(r'^faculty/open-seminar-nominee/dashboard/$',
+        views.dean_nominee_open_seminar_dashboard, name='dean-nominee-open-seminar-dashboard'),
+    url(r'^faculty/open-seminar-nominee/attempt/(?P<attempt_pk>\d+)/report/$',
+        views.dean_nominee_submit_open_seminar_report, name='dean-nominee-open-seminar-report'),
+
+    # ========================================================================
+    # PhD Teaching Credit
+    # ========================================================================
+
+    # Student
+    url(r'^stu/teaching-credit/$', views.student_teaching_credit_api, name='student-teaching-credit'),
+    url(r'^stu/teaching-credit/propose/$',
+        views.student_propose_teaching_credit, name='student-teaching-credit-propose'),
+    url(r'^stu/teaching-credit/(?P<pk>\d+)/$',
+        views.student_teaching_credit_detail, name='student-teaching-credit-detail'),
+    url(r'^stu/teaching-credit/(?P<pk>\d+)/resubmit/$',
+        views.student_resubmit_teaching_credit, name='student-teaching-credit-resubmit'),
+    url(r'^stu/teaching-credit/evaluation-targets/$',
+        views.student_teaching_credit_evaluation_targets, name='student-teaching-credit-evaluation-targets'),
+    url(r'^stu/teaching-credit/(?P<pk>\d+)/evaluate/$',
+        views.student_submit_teaching_credit_evaluation, name='student-teaching-credit-evaluate'),
+
+    # HOD
+    url(r'^hod/teaching-credit/dashboard/$',
+        views.hod_teaching_credit_dashboard, name='hod-teaching-credit-dashboard'),
+    url(r'^hod/teaching-credit/(?P<pk>\d+)/decide/$',
+        views.hod_decide_teaching_credit, name='hod-teaching-credit-decide'),
+    url(r'^hod/teaching-credit/(?P<pk>\d+)/complete/$',
+        views.hod_complete_teaching_credit, name='hod-teaching-credit-complete'),
+
+    # Supervisor (read-only)
+    url(r'^supervisor/teaching-credit/$',
+        views.supervisor_teaching_credit_list, name='supervisor-teaching-credit-list'),
+
+    # Academic Office (read-only)
+    url(r'^acadadmin/teaching-credit/$',
+        views.academic_office_teaching_credit_list, name='academic-office-teaching-credit-list'),
 ]
