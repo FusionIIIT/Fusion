@@ -241,11 +241,13 @@ urlpatterns = [
 
     # Student
     url(r'^thesis/submit/$', views.thesis_submit, name='thesis_submit'),
+    url(r'^thesis/submission-status/$', views.thesis_submission_status, name='thesis_submission_status'),
 
     # Supervisor
     url(r'^thesis/supervisor-dashboard/$', views.supervisor_dashboard, name='supervisor_dashboard'),
     url(r'^thesis/submission-detail/(?P<submission_id>\d+)/$', views.supervisor_submission_detail, name='supervisor_submission_detail'),
     url(r'^thesis/supervisor-assign/$', views.supervisor_assign, name='supervisor_assign'),
+    url(r'^thesis/supervisor-review-reports/$', views.supervisor_review_reports, name='supervisor_review_reports'),
 
     # Dean (panel approval + invitation dispatch)
     url(r'^thesis/dean-dashboard/$', views.dean_panel_dashboard, name='dean_panel_dashboard'),
@@ -263,14 +265,15 @@ urlpatterns = [
     # Review Form (External reviewers)
     url(r'^review/(?P<token>[0-9a-f-]+)/$', views.review_detail, name='review_detail'),
 
+    # Acadadmin (examiner honorarium)
+    url(r'^thesis/examiner-honorarium/$', views.examiner_honorarium_list, name='examiner_honorarium_list'),
+
     # ========================================================================
     # PhD Comprehensive Examination
     # ========================================================================
 
     # Student
     url(r'^stu/comprehensive-exam/$', views.student_comprehensive_exam_api, name='student-comprehensive-exam'),
-    url(r'^stu/comprehensive-exam/attempt/(?P<attempt_pk>\d+)/opt-subjects/$',
-        views.student_opt_subjects_api, name='student-comprehensive-exam-opt-subjects'),
 
     # Supervisor
     url(r'^supervisor/comprehensive-exam/dashboard/$',
@@ -283,10 +286,8 @@ urlpatterns = [
         views.supervisor_comprehensive_exam_detail, name='supervisor-comprehensive-exam-detail'),
     url(r'^supervisor/comprehensive-exam/(?P<pk>\d+)/resubmit/$',
         views.supervisor_resubmit_proposal, name='supervisor-comprehensive-exam-resubmit'),
-    url(r'^supervisor/comprehensive-exam/(?P<pk>\d+)/float-subjects/$',
-        views.supervisor_float_subjects, name='supervisor-comprehensive-exam-float-subjects'),
-    url(r'^supervisor/comprehensive-exam/attempt/(?P<attempt_pk>\d+)/confirm-subjects/$',
-        views.supervisor_confirm_opted_subjects, name='supervisor-comprehensive-exam-confirm-subjects'),
+    url(r'^supervisor/comprehensive-exam/attempt/(?P<attempt_pk>\d+)/set-exam-date/$',
+        views.supervisor_set_exam_date, name='supervisor-comprehensive-exam-set-exam-date'),
     url(r'^courses/dropdown/$', views.list_courses_for_dropdown, name='list-courses-dropdown'),
 
     # Academic Office (acadadmin)
@@ -295,19 +296,33 @@ urlpatterns = [
     url(r'^acadadmin/comprehensive-exam/(?P<pk>\d+)/verify/$',
         views.academic_office_verify_comprehensive_exam, name='academic-office-comprehensive-exam-verify'),
 
-    # Convener (Dean Academic stands in for DPGC/PGCS for now)
-    url(r'^dean/comprehensive-exam/dashboard/$',
-        views.convener_comprehensive_exam_dashboard, name='convener-comprehensive-exam-dashboard'),
-    url(r'^dean/comprehensive-exam/(?P<pk>\d+)/approve-committee/$',
-        views.convener_approve_committee, name='convener-comprehensive-exam-approve-committee'),
-    url(r'^dean/comprehensive-exam/attempt/(?P<attempt_pk>\d+)/report/$',
-        views.convener_submit_result, name='convener-comprehensive-exam-report'),
+    # Convener DPGC (HOD of the student's department stands in)
+    url(r'^hod/comprehensive-exam/dpgc-dashboard/$',
+        views.hod_dpgc_comprehensive_exam_dashboard, name='hod-dpgc-comprehensive-exam-dashboard'),
+    url(r'^hod/comprehensive-exam/(?P<pk>\d+)/dpgc-approve/$',
+        views.hod_dpgc_approve_comprehensive_exam, name='hod-dpgc-comprehensive-exam-approve'),
 
-    # HOD (as discipline coordinator)
-    url(r'^hod/comprehensive-exam/dashboard/$',
-        views.hod_comprehensive_exam_dashboard, name='hod-comprehensive-exam-dashboard'),
-    url(r'^hod/comprehensive-exam/attempt/(?P<attempt_pk>\d+)/review-subjects/$',
-        views.hod_review_subjects, name='hod-comprehensive-exam-review-subjects'),
+    # RPC (the student's existing committee, fetched live)
+    url(r'^faculty/comprehensive-exam/rpc/$',
+        views.rpc_comprehensive_exam_list, name='rpc-comprehensive-exam-list'),
+    url(r'^faculty/comprehensive-exam/rpc/(?P<attempt_pk>\d+)/$',
+        views.rpc_comprehensive_exam_detail, name='rpc-comprehensive-exam-detail'),
+    url(r'^faculty/comprehensive-exam/rpc/(?P<attempt_pk>\d+)/consent/$',
+        views.rpc_comprehensive_exam_consent, name='rpc-comprehensive-exam-consent'),
+    url(r'^faculty/comprehensive-exam/rpc/(?P<attempt_pk>\d+)/finalize/$',
+        views.rpc_comprehensive_exam_finalize, name='rpc-comprehensive-exam-finalize'),
+
+    # Convener PGCS (HOD of the student's department stands in)
+    url(r'^hod/comprehensive-exam/pgcs-dashboard/$',
+        views.hod_pgcs_comprehensive_exam_dashboard, name='hod-pgcs-comprehensive-exam-dashboard'),
+    url(r'^hod/comprehensive-exam/attempt/(?P<attempt_pk>\d+)/pgcs-review/$',
+        views.hod_pgcs_review_comprehensive_exam, name='hod-pgcs-comprehensive-exam-review'),
+
+    # Dean Academic (forward-only final approval)
+    url(r'^dean/comprehensive-exam/dashboard/$',
+        views.dean_comprehensive_exam_dashboard, name='dean-comprehensive-exam-dashboard'),
+    url(r'^dean/comprehensive-exam/attempt/(?P<attempt_pk>\d+)/approve/$',
+        views.dean_approve_comprehensive_exam, name='dean-comprehensive-exam-approve'),
 
     # ========================================================================
     # PhD Open Seminar
@@ -329,16 +344,38 @@ urlpatterns = [
         views.supervisor_open_seminar_detail, name='supervisor-open-seminar-detail'),
     url(r'^supervisor/open-seminar/(?P<pk>\d+)/resubmit/$',
         views.supervisor_resubmit_open_seminar, name='supervisor-open-seminar-resubmit'),
-    url(r'^supervisor/open-seminar/(?P<pk>\d+)/retry/$',
-        views.supervisor_retry_open_seminar, name='supervisor-open-seminar-retry'),
+    url(r'^supervisor/open-seminar/attempt/(?P<attempt_pk>\d+)/set-seminar-date/$',
+        views.supervisor_set_seminar_date, name='supervisor-open-seminar-set-seminar-date'),
 
-    # Convener (Dean Academic stands in for DPGC/PGCS for now)
+    # Convener DPGC, early review (HOD of the student's department stands in)
+    url(r'^hod/open-seminar/dpgc-dashboard/$',
+        views.hod_dpgc_open_seminar_dashboard, name='hod-dpgc-open-seminar-dashboard'),
+    url(r'^hod/open-seminar/(?P<pk>\d+)/dpgc-review/$',
+        views.hod_dpgc_review_open_seminar, name='hod-dpgc-open-seminar-review'),
+
+    # RPC (the student's existing committee, fetched live)
+    url(r'^faculty/open-seminar/rpc/$',
+        views.rpc_open_seminar_list, name='rpc-open-seminar-list'),
+    url(r'^faculty/open-seminar/rpc/(?P<attempt_pk>\d+)/$',
+        views.rpc_open_seminar_detail, name='rpc-open-seminar-detail'),
+    url(r'^faculty/open-seminar/rpc/(?P<attempt_pk>\d+)/consent/$',
+        views.rpc_open_seminar_consent, name='rpc-open-seminar-consent'),
+    url(r'^faculty/open-seminar/rpc/(?P<attempt_pk>\d+)/finalize/$',
+        views.rpc_open_seminar_finalize, name='rpc-open-seminar-finalize'),
+
+    # Convener DPGC, second review (HOD of the student's department stands in)
+    url(r'^hod/open-seminar/review-dashboard/$',
+        views.hod_review_open_seminar_dashboard, name='hod-review-open-seminar-dashboard'),
+    url(r'^hod/open-seminar/attempt/(?P<attempt_pk>\d+)/review/$',
+        views.hod_review_open_seminar, name='hod-review-open-seminar'),
+
+    # Dean Academic (appoints Dean Nominee early; forward-only final approval)
     url(r'^dean/open-seminar/dashboard/$',
-        views.convener_open_seminar_dashboard, name='convener-open-seminar-dashboard'),
-    url(r'^dean/open-seminar/attempt/(?P<attempt_pk>\d+)/approve-committee/$',
-        views.convener_approve_open_seminar_committee, name='convener-open-seminar-approve-committee'),
-    url(r'^dean/open-seminar/attempt/(?P<attempt_pk>\d+)/report/$',
-        views.convener_submit_open_seminar_report, name='convener-open-seminar-report'),
+        views.dean_open_seminar_dashboard, name='dean-open-seminar-dashboard'),
+    url(r'^dean/open-seminar/(?P<pk>\d+)/appoint-nominee/$',
+        views.dean_appoint_nominee_open_seminar, name='dean-open-seminar-appoint-nominee'),
+    url(r'^dean/open-seminar/attempt/(?P<attempt_pk>\d+)/approve/$',
+        views.dean_approve_open_seminar, name='dean-open-seminar-approve'),
 
     # Dean Nominee (ad-hoc faculty appointment)
     url(r'^faculty/open-seminar-nominee/dashboard/$',
