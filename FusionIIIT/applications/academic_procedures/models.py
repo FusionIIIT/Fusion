@@ -1762,11 +1762,14 @@ class PhDCourseRegistrationRequest(models.Model):
 # ===========================================================================
 
 class ComprehensiveExam(models.Model):
-    """PhD Comprehensive Examination eligibility, committee & convener approval.
+    """PhD Comprehensive Examination eligibility & DPGC approval.
 
-    One record per student. The written/oral exam itself — subjects, dates,
-    result — is tracked per-attempt in ComprehensiveExamAttempt, since a
-    student may retake the whole cycle up to MAX_ATTEMPTS times.
+    One record per student. The exam itself — RPC review, dates, result — is
+    tracked per-attempt in ComprehensiveExamAttempt, since a student may
+    retake it up to MAX_ATTEMPTS times. There is no separate examination
+    committee here: the student's existing RPC (Progress Seminar committee,
+    CommitteeMember via their ThesisTopic) doubles as the examination
+    committee and is read live, never proposed/stored here.
     """
     ENTRY_QUALIFICATION_CHOICES = [
         ('masters', 'ME/M.Tech/M.Des/M.Phil (16 credits required)'),
@@ -1775,9 +1778,9 @@ class ComprehensiveExam(models.Model):
     STATUS_CHOICES = [
         ('academic_office_pending', 'Pending Academic Office Verification'),
         ('academic_office_rejected', 'Rejected by Academic Office'),
-        ('convener_pending', 'Pending Convener Approval'),
-        ('convener_rejected', 'Rejected by Convener'),
-        ('in_progress', 'Committee Approved — In Progress'),
+        ('dpgc_pending', 'Pending Convener (DPGC) Approval'),
+        ('dpgc_rejected', 'Rejected by Convener (DPGC)'),
+        ('in_progress', 'Approved by DPGC — In Progress'),
         ('passed', 'Passed'),
         ('failed_final', 'Failed — Attempts Exhausted'),
     ]
@@ -1789,6 +1792,10 @@ class ComprehensiveExam(models.Model):
     co_supervisor = models.ForeignKey(Faculty, related_name='comprehensive_exams_cosupervised', on_delete=models.CASCADE, null=True, blank=True)
 
     possible_thesis_title = models.CharField(max_length=300, blank=True)
+    proposed_exam_date = models.DateField(
+        null=True, blank=True,
+        help_text="Set by the supervisor at proposal time; seeds attempt 1's exam_date once DPGC approves.",
+    )
 
     entry_qualification = models.CharField(max_length=10, choices=ENTRY_QUALIFICATION_CHOICES)
     credits_completed = models.PositiveIntegerField(default=0)
@@ -1806,13 +1813,14 @@ class ComprehensiveExam(models.Model):
     )
     academic_office_verified_at = models.DateTimeField(null=True, blank=True)
 
-    # Convener approval — Dean Academic stands in for the DPGC/PGCS convener for now.
-    convener_remarks = models.TextField(blank=True)
-    convener_by = models.ForeignKey(
+    # Convener (DPGC) approval — HOD of the student's department stands in for
+    # the DPGC convener.
+    dpgc_remarks = models.TextField(blank=True)
+    dpgc_by = models.ForeignKey(
         'auth.User', null=True, blank=True,
-        on_delete=models.SET_NULL, related_name='comprehensive_exams_convened',
+        on_delete=models.SET_NULL, related_name='comprehensive_exams_dpgc_reviewed',
     )
-    convener_at = models.DateTimeField(null=True, blank=True)
+    dpgc_at = models.DateTimeField(null=True, blank=True)
 
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='academic_office_pending')
     current_attempt_number = models.PositiveSmallIntegerField(default=1)
@@ -1827,31 +1835,20 @@ class ComprehensiveExam(models.Model):
         return f"Comprehensive Exam — {self.student.id.user.get_full_name()}"
 
 
-class ComprehensiveExamCommitteeMember(models.Model):
-    """Examination committee for a comprehensive exam (≤5 members); persists across attempts."""
-    exam = models.ForeignKey(ComprehensiveExam, related_name='committee', on_delete=models.CASCADE)
-    member = models.ForeignKey(Faculty, on_delete=models.CASCADE)
-
-    class Meta:
-        unique_together = ('exam', 'member')
-
-    def __str__(self):
-        return f"{self.member} on {self.exam}"
-
-
 class ComprehensiveExamAttempt(models.Model):
-    """One attempt (max ComprehensiveExam.MAX_ATTEMPTS) of the exam: subjects, dates, result.
+    """One attempt (max ComprehensiveExam.MAX_ATTEMPTS) of the exam: RPC
+    review, dates, result.
 
-    HOD reviews the floated subjects acting as the discipline coordinator; the
-    supervisor confirms the student's opted subjects before the exam proceeds.
+    The RPC (the student's existing committee) collectively records the
+    result + qualitative comments, each member individually consenting —
+    mirroring ProgressSeminarEntry/ProgressSeminarConsent. Convener (PGCS,
+    also HOD) then reviews the RPC's finalized result before forwarding to
+    Dean Academic for final approval.
     """
     STATUS_CHOICES = [
-        ('subjects_floated', 'Subjects Floated, Pending HOD Approval'),
-        ('hod_rejected', 'Subjects Rejected by HOD'),
-        ('subjects_ready', 'Subjects Approved, Pending Student Selection'),
-        ('subjects_opted', 'Subjects Opted, Pending Supervisor Confirmation'),
-        ('confirmation_rejected', 'Supervisor Rejected Opted Subjects'),
-        ('result_pending', 'Confirmed — Awaiting Result'),
+        ('rpc_pending', 'Pending RPC Consensus'),
+        ('pgcs_pending', 'RPC Finalized — Pending Convener (PGCS) Review'),
+        ('dean_pending', 'Approved by PGCS — Pending Dean Academic'),
         ('passed', 'Passed'),
         ('failed', 'Failed'),
     ]
@@ -1859,21 +1856,12 @@ class ComprehensiveExamAttempt(models.Model):
 
     exam = models.ForeignKey(ComprehensiveExam, related_name='attempts', on_delete=models.CASCADE)
     attempt_number = models.PositiveSmallIntegerField()
-    status = models.CharField(max_length=25, choices=STATUS_CHOICES, default='subjects_floated')
+    status = models.CharField(max_length=25, choices=STATUS_CHOICES, default='rpc_pending')
 
-    written_exam_date = models.DateField(null=True, blank=True)
-    oral_exam_date = models.DateField(null=True, blank=True)
+    exam_date = models.DateField(null=True, blank=True, help_text="Settable by the supervisor or any RPC member; may be updated again when RPC finalizes the report.")
 
-    hod_remarks = models.TextField(blank=True)
-    hod_reviewed_by = models.ForeignKey(
-        'auth.User', null=True, blank=True,
-        on_delete=models.SET_NULL, related_name='comprehensive_attempts_hod_reviewed',
-    )
-    hod_reviewed_at = models.DateTimeField(null=True, blank=True)
-
-    supervisor_confirmation_remarks = models.TextField(blank=True)
-
-    # Result — mirrors the official "Comprehensive Examination Report" form.
+    # Result — mirrors the official "Comprehensive Examination Report" form;
+    # filled collectively by the RPC (shared panel, like Progress Seminar).
     result = models.CharField(max_length=10, choices=RESULT_CHOICES, null=True, blank=True)
     fundamentals_comment = models.TextField(blank=True)
     problem_identification_comment = models.TextField(blank=True)
@@ -1885,8 +1873,24 @@ class ComprehensiveExamAttempt(models.Model):
     reported_by = models.ForeignKey(
         'auth.User', null=True, blank=True,
         on_delete=models.SET_NULL, related_name='comprehensive_attempts_reported',
+        help_text="Whichever RPC member finalized the panel (moved rpc_pending -> pgcs_pending).",
     )
     reported_at = models.DateTimeField(null=True, blank=True)
+
+    # Convener (PGCS) review — HOD of the student's department stands in.
+    pgcs_remarks = models.TextField(blank=True)
+    pgcs_reviewed_by = models.ForeignKey(
+        'auth.User', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='comprehensive_attempts_pgcs_reviewed',
+    )
+    pgcs_reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    # Dean Academic — forward-only final approval, no remarks/rejection.
+    dean_approved_by = models.ForeignKey(
+        'auth.User', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='comprehensive_attempts_dean_approved',
+    )
+    dean_approved_at = models.DateTimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -1898,14 +1902,27 @@ class ComprehensiveExamAttempt(models.Model):
         return f"Attempt {self.attempt_number} — {self.exam}"
 
 
-class FloatedSubject(models.Model):
-    """A subject floated for the written exam of a given attempt (≤6); student opts ≤2."""
-    attempt = models.ForeignKey(ComprehensiveExamAttempt, related_name='subjects', on_delete=models.CASCADE)
-    subject_name = models.CharField(max_length=200)
-    selected_by_student = models.BooleanField(default=False)
+class ComprehensiveExamConsent(models.Model):
+    """RPC member consent for a comprehensive exam attempt's shared result panel."""
+    attempt = models.ForeignKey(ComprehensiveExamAttempt, related_name='consents', on_delete=models.CASCADE)
+    member = models.ForeignKey(Faculty, on_delete=models.CASCADE)
+    consented = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return f"{self.subject_name} ({'opted' if self.selected_by_student else 'floated'})"
+    class Meta:
+        unique_together = ('attempt', 'member')
+
+
+class ComprehensiveExamRPCComment(models.Model):
+    """RPC member's personal comment on a comprehensive exam attempt."""
+    attempt = models.ForeignKey(ComprehensiveExamAttempt, related_name='rpc_comments', on_delete=models.CASCADE)
+    member = models.ForeignKey(Faculty, on_delete=models.CASCADE)
+    text = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('attempt', 'member')
+        ordering = ['-timestamp']
 
 
 # ===========================================================================
@@ -1915,12 +1932,21 @@ class FloatedSubject(models.Model):
 class OpenSeminar(models.Model):
     """PhD Open Seminar — parent record, one per student.
 
-    Unlike ComprehensiveExam, retries have no attempt cap and each retry
-    constitutes a brand-new committee (see OpenSeminarAttempt), since
-    eligibility/credits can change between attempts.
+    Holds the one-time gate: eligibility snapshot + Convener (DPGC, HOD of
+    the student's department) review + Dean Academic approval (which
+    appoints the Dean Nominee). This only happens once per student -- unlike
+    ComprehensiveExam, retries skip straight back to RPC review, not through
+    this gate again. There is no separate examination committee here: the
+    student's existing RPC (Progress Seminar committee, CommitteeMember via
+    their ThesisTopic) doubles as the examination committee and is read
+    live, never proposed/stored here.
     """
     STATUS_CHOICES = [
-        ('in_progress', 'In Progress'),
+        ('hod_pending', 'Pending Convener (DPGC) Review'),
+        ('hod_rejected', 'Rejected by Convener (DPGC)'),
+        ('dean_pending', 'Pending Dean Academic Approval'),
+        ('dean_rejected', 'Rejected by Dean Academic'),
+        ('in_progress', 'Approved — In Progress'),
         ('satisfactory', 'Satisfactory'),
     ]
 
@@ -1929,25 +1955,70 @@ class OpenSeminar(models.Model):
     co_supervisor = models.ForeignKey(Faculty, related_name='open_seminars_cosupervised', on_delete=models.CASCADE, null=True, blank=True)
 
     possible_thesis_title = models.CharField(max_length=300, blank=True)
+    proposed_date = models.DateField(
+        null=True, blank=True,
+        help_text="Set by the supervisor at proposal time; seeds attempt 1's seminar_date once Dean approves.",
+    )
 
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='in_progress')
+    # Eligibility snapshot -- computed once at proposal, not re-verified per
+    # attempt (moved here from the attempt, since this gate is one-time).
+    # course_work/progress_seminar/thesis_research are computed server-side
+    # from the student's own records; teaching_credits has no numeric source
+    # anywhere in Fusion and stays manual.
+    course_work_credits = models.PositiveIntegerField(default=0)
+    progress_seminar_credits = models.PositiveIntegerField(default=0)
+    thesis_research_credits = models.PositiveIntegerField(default=0)
+    teaching_credits = models.PositiveIntegerField(default=0)
+    semesters_completed = models.PositiveIntegerField(default=0)
+    rpc_recommended_open_seminar = models.BooleanField(default=False)
+    first_draft_sent_to_dean = models.BooleanField(default=False)
+
+    # Convener (DPGC) early review -- HOD of the student's department stands in.
+    hod_remarks = models.TextField(blank=True)
+    hod_by = models.ForeignKey(
+        'auth.User', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='open_seminars_hod_reviewed',
+    )
+    hod_at = models.DateTimeField(null=True, blank=True)
+
+    # Dean Academic early approval -- appoints the Dean Nominee (on attempt 1).
+    dean_remarks = models.TextField(blank=True)
+    dean_by = models.ForeignKey(
+        'auth.User', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='open_seminars_dean_approved',
+    )
+    dean_at = models.DateTimeField(null=True, blank=True)
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='hod_pending')
     current_attempt_number = models.PositiveSmallIntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def total_credits(self):
+        return (
+            self.course_work_credits + self.progress_seminar_credits
+            + self.thesis_research_credits + self.teaching_credits
+        )
 
     def __str__(self):
         return f"Open Seminar — {self.student.id.user.get_full_name()}"
 
 
 class OpenSeminarAttempt(models.Model):
-    """One attempt (unlimited) of the Open Seminar: fresh committee + Dean
-    Nominee each time, credit breakdown snapshot, committee verdict, and the
-    Dean Nominee's separate confidential report.
+    """One attempt (unlimited) of the Open Seminar: RPC review, verdict, and
+    (attempt 1 only) the Dean Nominee's separate confidential report.
+
+    The RPC (the student's existing committee) collectively records the
+    result + comments, each member individually consenting — mirroring
+    ProgressSeminarEntry/ProgressSeminarConsent and ComprehensiveExamAttempt.
+    Convener (DPGC) then reviews the finalized result before forwarding to
+    Dean Academic for final approval.
     """
     STATUS_CHOICES = [
-        ('convener_pending', 'Pending Convener Approval'),
-        ('convener_rejected', 'Rejected by Convener'),
-        ('result_pending', 'Committee Approved — Awaiting Result'),
+        ('rpc_pending', 'Pending RPC Consensus'),
+        ('hod_review_pending', 'RPC Finalized — Pending Convener (DPGC) Review'),
+        ('dean_pending', 'Approved by Convener — Pending Dean Academic'),
         ('satisfactory', 'Satisfactory'),
         ('not_satisfactory', 'Not Satisfactory'),
     ]
@@ -1958,52 +2029,50 @@ class OpenSeminarAttempt(models.Model):
 
     open_seminar = models.ForeignKey(OpenSeminar, related_name='attempts', on_delete=models.CASCADE)
     attempt_number = models.PositiveSmallIntegerField()
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='convener_pending')
+    status = models.CharField(max_length=25, choices=STATUS_CHOICES, default='rpc_pending')
 
-    proposed_date = models.DateField(null=True, blank=True)
-
-    # Credit breakdown -- course_work/progress_seminar/thesis_research are
-    # computed server-side from the student's own records; teaching_credits
-    # has no numeric source anywhere in Fusion and stays manual.
-    course_work_credits = models.PositiveIntegerField(default=0)
-    progress_seminar_credits = models.PositiveIntegerField(default=0)
-    thesis_research_credits = models.PositiveIntegerField(default=0)
-    teaching_credits = models.PositiveIntegerField(default=0)
-    semesters_completed = models.PositiveIntegerField(default=0)
-
-    # Eligibility snapshot -- rpc_recommended is read from the student's latest
-    # rpc_approved ProgressSeminarEntry.rec_open; first_draft_sent has no data source.
-    rpc_recommended_open_seminar = models.BooleanField(default=False)
-    first_draft_sent_to_dean = models.BooleanField(default=False)
-
-    # Convener (Dean Academic stands in for DPGC/PGCS for now) approval
-    convener_remarks = models.TextField(blank=True)
-    convener_by = models.ForeignKey(
-        'auth.User', null=True, blank=True,
-        on_delete=models.SET_NULL, related_name='open_seminar_attempts_convened',
-    )
-    convener_at = models.DateTimeField(null=True, blank=True)
-
-    # Dean Nominee -- ad-hoc faculty appointment, made by the Convener at
-    # approval time; submits their own confidential report independently.
-    dean_nominee = models.ForeignKey(
-        Faculty, null=True, blank=True,
-        on_delete=models.SET_NULL, related_name='open_seminar_nominations',
+    seminar_date = models.DateField(
+        null=True, blank=True,
+        help_text="Settable by the supervisor or any RPC member; may be updated again when RPC finalizes.",
     )
 
-    # Committee's joint verdict -- the authoritative pass/fail result.
+    # Committee's joint verdict -- filled collectively by the RPC (shared
+    # panel, like Progress Seminar / Comprehensive Exam).
     result = models.CharField(max_length=20, choices=RESULT_CHOICES, null=True, blank=True)
     committee_comments = models.TextField(blank=True)
     reported_by = models.ForeignKey(
         'auth.User', null=True, blank=True,
         on_delete=models.SET_NULL, related_name='open_seminar_attempts_reported',
+        help_text="Whichever RPC member finalized the panel (moved rpc_pending -> hod_review_pending).",
     )
     reported_at = models.DateTimeField(null=True, blank=True)
 
-    # Dean Nominee's own confidential report -- mirrors "Report of Dean
-    # Nominee" form. Kept out of any dict/serializer shown to
-    # student/supervisor/committee; only Convener/Dean Academic and the
-    # nominee themselves should ever see these fields.
+    # Convener (DPGC) review, post-RPC -- HOD of the student's department stands in.
+    hod_review_remarks = models.TextField(blank=True)
+    hod_reviewed_by = models.ForeignKey(
+        'auth.User', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='open_seminar_attempts_hod_reviewed',
+    )
+    hod_reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    # Dean Academic final approval -- forward-only, no remarks/rejection.
+    dean_approved_by = models.ForeignKey(
+        'auth.User', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='open_seminar_attempts_dean_approved',
+    )
+    dean_approved_at = models.DateTimeField(null=True, blank=True)
+
+    # Dean Nominee -- ad-hoc faculty appointment, made once by the Dean at
+    # OpenSeminar's early-approval step (attempt 1 only; retries skip that
+    # gate and never get a new nominee). Submits their own confidential
+    # report independently -- mirrors "Report of Dean Nominee" form. Kept
+    # out of any dict/serializer shown to student/supervisor/committee; only
+    # Convener/Dean Academic and the nominee themselves should ever see
+    # the dn_* fields.
+    dean_nominee = models.ForeignKey(
+        Faculty, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='open_seminar_nominations',
+    )
     dn_quality = models.CharField(max_length=20, choices=QUALITY_CHOICES, blank=True)
     dn_quantity = models.CharField(max_length=10, choices=RATING_3WAY, blank=True)
     dn_publications = models.CharField(max_length=10, choices=RATING_3WAY, blank=True)
@@ -2017,27 +2086,31 @@ class OpenSeminarAttempt(models.Model):
         unique_together = ('open_seminar', 'attempt_number')
         ordering = ['open_seminar', 'attempt_number']
 
-    @property
-    def total_credits(self):
-        return (
-            self.course_work_credits + self.progress_seminar_credits
-            + self.thesis_research_credits + self.teaching_credits
-        )
-
     def __str__(self):
         return f"Open Seminar Attempt {self.attempt_number} — {self.open_seminar}"
 
 
-class OpenSeminarCommitteeMember(models.Model):
-    """Open Seminar committee member (≤5); fresh per attempt."""
-    attempt = models.ForeignKey(OpenSeminarAttempt, related_name='committee', on_delete=models.CASCADE)
+class OpenSeminarConsent(models.Model):
+    """RPC member consent for an open seminar attempt's shared result panel."""
+    attempt = models.ForeignKey(OpenSeminarAttempt, related_name='consents', on_delete=models.CASCADE)
     member = models.ForeignKey(Faculty, on_delete=models.CASCADE)
+    consented = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ('attempt', 'member')
 
-    def __str__(self):
-        return f"{self.member} on {self.attempt}"
+
+class OpenSeminarRPCComment(models.Model):
+    """RPC member's personal comment on an open seminar attempt."""
+    attempt = models.ForeignKey(OpenSeminarAttempt, related_name='rpc_comments', on_delete=models.CASCADE)
+    member = models.ForeignKey(Faculty, on_delete=models.CASCADE)
+    text = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('attempt', 'member')
+        ordering = ['-timestamp']
 
 
 # ===========================================================================
