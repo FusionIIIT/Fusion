@@ -444,9 +444,9 @@ def download_template(request):
                 student_id__in=student_ids_with_programme
             )
 
-        # Optional section scope (course "allotted in sections"); electives ignore it.
+        # Sections apply only to UG (PG/PhD have no sections); electives ignore it.
         section = (request.data.get('section') or '').strip() or None
-        if section:
+        if section and (programme_type or '').strip().upper() == 'UG':
             course_info_query = course_info_query.filter(student_id__section=section)
 
         course_info = course_info_query.order_by("student_id_id")
@@ -1713,7 +1713,10 @@ class UploadGradesProfAPI(APIView):
             # OFFERINGS: acadadmin may grade any offering of this course; faculty
             # only the offering(s) they are assigned to teach. An optional
             # `section` narrows this to a single section (electives have none).
+            # Sections apply only to UG; ignore any section for PG/PhD.
             section = (request.data.get("section") or "").strip() or None
+            if (programme_type or "").strip().upper() != "UG":
+                section = None
 
             all_offerings = list(CourseInstructor.objects.filter(
                 course_id_id=course_id,
@@ -1742,8 +1745,8 @@ class UploadGradesProfAPI(APIView):
             my_offering_ids = {o.id for o in my_offerings}
             my_sections = {o.section_label for o in my_offerings}
             # A no-section (elective) offering owns all registrants; named-section
-            # offerings scope the roster to students in those sections.
-            if None not in my_sections:
+            # offerings scope the roster to students in those sections (UG only).
+            if (programme_type or "").strip().upper() == "UG" and None not in my_sections:
                 regs = regs.filter(student_id__section__in=my_sections)
                 if not regs.exists():
                     return Response(
@@ -3003,9 +3006,9 @@ class PreviewGradesAPI(APIView):
             
             registrations = registrations.filter(student_id__in=student_ids_with_programme)
 
-        # Optional section scope (course "allotted in sections"); electives ignore it.
+        # Sections apply only to UG (PG/PhD have no sections); electives ignore it.
         section = (request.data.get("section") or "").strip() or None
-        if section:
+        if section and (programme_type or "").strip().upper() == "UG":
             registrations = registrations.filter(student_id__section=section)
 
         # Build a set of registered roll numbers for fast lookup.
