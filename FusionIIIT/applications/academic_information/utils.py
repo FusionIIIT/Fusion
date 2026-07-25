@@ -50,7 +50,12 @@ def random_algo(batch,sem,year,course_slot, programme_type) :
     for course in unique_course :
         max_seats[course] = Course.objects.get(id=course).max_seats
         total_seats+=max_seats[course]
-        seats_alloted[course] = 0
+        seats_alloted[course] = FinalRegistration.objects.filter(
+            course_id_id=course,
+            semester_id__semester_no=sem,
+            student_id__batch=batch,
+            student_id__batch_id__curriculum__programme__category=programme_type,
+        ).count()
         present_priority[course] = []
         next_priority[course] = []
 
@@ -86,8 +91,11 @@ def random_algo(batch,sem,year,course_slot, programme_type) :
                         seats_alloted[course] += 1
                         rem-=1
                     else :
-                        next = InitialRegistration.objects.get(Q(student_id__id__id = random_student_selected[0]) & Q( course_slot_id__name = course_slot ) & Q(semester_id__semester_no = sem) & Q(student_id__batch = batch) & Q(priority=p_priority+1) & Q(student_id__batch_id__curriculum__programme__category=programme_type))
-                        next_priority[next.course_id.id].append([next.student_id.id.id,next.course_slot_id.id])
+                        next = InitialRegistration.objects.filter(Q(student_id__id__id = random_student_selected[0]) & Q( course_slot_id__name = course_slot ) & Q(semester_id__semester_no = sem) & Q(student_id__batch = batch) & Q(priority=p_priority+1) & Q(student_id__batch_id__curriculum__programme__category=programme_type)).first()
+                        if next is not None :
+                            next_priority[next.course_id.id].append([next.student_id.id.id,next.course_slot_id.id])
+                        else :
+                            rem-=1
             p_priority+=1
             present_priority = next_priority
             next_priority = {course : [] for course in unique_course}
