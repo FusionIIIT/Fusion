@@ -10,11 +10,72 @@ from applications.programme_curriculum.models import(Course,CourseSlot,Batch,Sem
 from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.core import serializers
-from django.db.models import Q
+from django.db.models import Q, Count
 import datetime
 import random
 from django.db import transaction
 time = timezone.now()
+
+
+def validate_course_slots(batch, sem, programme_type, skip_course_ids=None):
+    """
+    Finds courses registered under a CourseSlot that does not list them.
+
+    random_algo pools students by slot *name* across curricula, so a course in
+    one curriculum's slot but absent from another's gets allotted into a slot
+    that does not contain it. Empty list means allocation is safe to proceed.
+    """
+    skip_course_ids = {int(c) for c in (skip_course_ids or [])}
+
+    pairs = (InitialRegistration.objects
+             .filter(Q(semester_id__semester_no=sem)
+                     & Q(student_id__batch=batch)
+                     & Q(student_id__batch_id__curriculum__programme__category=programme_type))
+             .exclude(course_id__isnull=True)
+             .exclude(course_slot_id__isnull=True)
+             .values('course_id', 'course_slot_id')
+             .annotate(students=Count('id')))
+    pairs = [p for p in pairs if p['course_id'] not in skip_course_ids]
+    if not pairs:
+        return []
+
+    slot_ids = {p['course_slot_id'] for p in pairs}
+    valid = set(CourseSlot.courses.through.objects
+                .filter(courseslot_id__in=slot_ids)
+                .values_list('courseslot_id', 'course_id'))
+
+    offending = [p for p in pairs if (p['course_slot_id'], p['course_id']) not in valid]
+    if not offending:
+        return []
+
+    courses = {c.id: c for c in Course.objects.filter(
+        id__in={p['course_id'] for p in offending})}
+    slots = {s.id: s for s in CourseSlot.objects
+             .filter(id__in={p['course_slot_id'] for p in offending})
+             .select_related('semester', 'semester__curriculum')}
+
+    problems = {}
+    for p in offending:
+        course, slot = courses[p['course_id']], slots[p['course_slot_id']]
+        entry = problems.setdefault((course.id, slot.name), {
+            'course_id': course.id,
+            'course_code': course.code,
+            'course_name': course.name,
+            'slot_name': slot.name,
+            'slot_type': slot.type,
+            'missing_from': [],
+            'students': 0,
+        })
+        entry['missing_from'].append({
+            'slot_id': slot.id,
+            'semester_no': slot.semester.semester_no,
+            'curriculum_id': slot.semester.curriculum_id,
+            'curriculum_name': str(slot.semester.curriculum.name),
+            'students': p['students'],
+        })
+        entry['students'] += p['students']
+
+    return sorted(problems.values(), key=lambda e: -e['students'])
 def check_for_registration_complete(batch, sem, year, programme_type):
     date = datetime.date.today()
     try:
@@ -40,7 +101,10 @@ def check_for_registration_complete(batch, sem, year, programme_type):
         return {"status": -3, "message": f"Internal Server Error: {str(e)}"}
 
 @transaction.atomic
-def random_algo(batch,sem,year,course_slot, programme_type) :
+def random_algo(batch,sem,year,course_slot, programme_type, skip_course_ids=None) :
+    # zero seats makes the "slot full" branch below push these students to
+    # their next priority, so skipping reuses the existing fall-through
+    skip_course_ids = {int(c) for c in (skip_course_ids or [])}
     unique_course = InitialRegistration.objects.filter(Q(semester_id__semester_no = sem) & Q( course_slot_id__name = course_slot ) & Q(student_id__batch = batch) & Q(student_id__batch_id__curriculum__programme__category=programme_type)).values_list('course_id',flat=True).distinct()
     max_seats={}
     seats_alloted = {}
@@ -48,8 +112,11 @@ def random_algo(batch,sem,year,course_slot, programme_type) :
     next_priority = {}
     total_seats = 0
     for course in unique_course :
-        max_seats[course] = Course.objects.get(id=course).max_seats
-        total_seats+=max_seats[course]
+        if course in skip_course_ids :
+            max_seats[course] = 0
+        else :
+            max_seats[course] = Course.objects.get(id=course).max_seats
+            total_seats+=max_seats[course]
         seats_alloted[course] = FinalRegistration.objects.filter(
             course_id_id=course,
             semester_id__semester_no=sem,
@@ -108,12 +175,23 @@ def allocate(request):
     sem = request.POST.get('sem')
     year = request.POST.get('year')
     programme_type = request.POST.get('programme_type')
+    skip_course_ids = {int(c) for c in (request.POST.get('skip_course_ids') or [])}
+
+    # write nothing until every mis-slotted course is added or skipped
+    problems = validate_course_slots(batch, sem, programme_type, skip_course_ids)
+    if problems:
+        return JsonResponse({
+            'status': 0,
+            'message': "Some registered courses are missing from their course slot.",
+            'needs_action': problems,
+        }, status=409)
 
     unique_course_slot = InitialRegistration.objects.filter(
         Q(semester_id__semester_no=sem) & Q(student_id__batch=batch) & Q(student_id__batch_id__curriculum__programme__category=programme_type)
     ).values('course_slot_id').distinct()
 
     unique_course_name = []
+    skipped_students = 0
 
     try:
         with transaction.atomic():
@@ -143,6 +221,11 @@ def allocate(request):
                             student_id_id=student_id
                         ).values_list('course_id', flat=True).first()
 
+                        # no alternative in a single-choice slot
+                        if course_id in skip_course_ids:
+                            skipped_students += 1
+                            continue
+
                         course = Course.objects.get(id=course_id)
 
                         prev_registration_id = InitialRegistration.objects.filter(
@@ -167,15 +250,21 @@ def allocate(request):
 
                 elif course_slot_object.type == "Open Elective":
                     if course_slot_object.name not in unique_course_name:
-                        stat = random_algo(batch, sem, year, course_slot_object.name, programme_type)
+                        stat = random_algo(batch, sem, year, course_slot_object.name,
+                                           programme_type, skip_course_ids)
                         unique_course_name.append(course_slot_object.name)
                         if stat == -1:
                             raise Exception(f"Seats not enough for course_slot {course_slot_object.name}")
 
-        return JsonResponse({'status': 1, 'message': "Course allocation successful"})
+        message = "Course allocation successful"
+        if skip_course_ids:
+            message += (f" ({len(skip_course_ids)} course(s) skipped"
+                        f"; {skipped_students} student(s) left without a course in a single-choice slot)")
+        return JsonResponse({'status': 1, 'message': message,
+                             'skipped_course_ids': sorted(skip_course_ids)})
 
-    except:
-        return JsonResponse({'status': -1, 'message': "Seats not enough for some course_slot"})
+    except Exception as e:
+        return JsonResponse({'status': -1, 'message': str(e) or "Allocation failed"})
 
 def view_alloted_course(request) : 
     batch = request.POST.get('batch')
