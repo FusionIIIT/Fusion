@@ -337,7 +337,8 @@ def start_allocation_api(request):
         return JsonResponse({"error": "Invalid JSON format"}, status=400)
 
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+        logger.exception("start_allocation_api failed")
+        return JsonResponse({"error": f"{type(e).__name__}: {e}"}, status=500)
 
 
 @api_view(['POST'])
