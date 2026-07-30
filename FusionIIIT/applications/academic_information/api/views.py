@@ -32,7 +32,7 @@ from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
 from applications.academic_procedures.api.views import role_required
 from django.core.cache import cache
-from django.db import connection
+from django.db import connection, transaction
 
 logger = logging.getLogger(__name__)
 
@@ -318,8 +318,18 @@ def start_allocation_api(request):
         batch = int(batch)
         semester = int(semester)
 
+        skip_course_ids = data.get("skip_course_ids") or []
+        if not isinstance(skip_course_ids, list):
+            return JsonResponse({"error": "skip_course_ids must be a list"}, status=400)
+        try:
+            skip_course_ids = [int(c) for c in skip_course_ids]
+        except (TypeError, ValueError):
+            return JsonResponse({"error": "skip_course_ids must be course ids"}, status=400)
+
         mock_request = type('MockRequest', (), {})()
-        mock_request.POST = {'batch': batch, 'sem': semester, 'year': year, 'programme_type': programme_type}
+        mock_request.POST = {'batch': batch, 'sem': semester, 'year': year,
+                             'programme_type': programme_type,
+                             'skip_course_ids': skip_course_ids}
 
         return allocate(mock_request)
 
@@ -328,6 +338,50 @@ def start_allocation_api(request):
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
+def add_course_to_slots_api(request):
+    """Adds one course to the CourseSlot rows it was flagged as missing from."""
+    course_id = request.data.get('course_id')
+    slot_ids = request.data.get('slot_ids') or []
+
+    if not course_id or not slot_ids:
+        return Response({'status': -1, 'message': 'course_id and slot_ids are required'},
+                        status=status.HTTP_400_BAD_REQUEST)
+    if not isinstance(slot_ids, list):
+        return Response({'status': -1, 'message': 'slot_ids must be a list'},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        course = Courses.objects.get(id=int(course_id))
+    except (Courses.DoesNotExist, TypeError, ValueError):
+        return Response({'status': -1, 'message': 'No such course'},
+                        status=status.HTTP_404_NOT_FOUND)
+
+    slots = CourseSlot.objects.filter(id__in=[int(s) for s in slot_ids])
+    found = {s.id for s in slots}
+    missing = [s for s in slot_ids if int(s) not in found]
+    if missing:
+        return Response({'status': -1, 'message': f'Unknown course slot(s): {missing}'},
+                        status=status.HTTP_404_NOT_FOUND)
+
+    added = []
+    with transaction.atomic():
+        for slot in slots:
+            if not slot.courses.filter(id=course.id).exists():
+                slot.courses.add(course)
+                added.append({'slot_id': slot.id, 'slot_name': slot.name})
+
+    return Response({
+        'status': 1,
+        'message': f'{course.code} added to {len(added)} slot(s)',
+        'course_code': course.code,
+        'added': added,
+    }, status=status.HTTP_200_OK)
 
 
 def _semester_type(sem):
