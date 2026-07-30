@@ -106,33 +106,54 @@ def random_algo(batch,sem,year,course_slot, programme_type, skip_course_ids=None
     # their next priority, so skipping reuses the existing fall-through
     skip_course_ids = {int(c) for c in (skip_course_ids or [])}
     unique_course = InitialRegistration.objects.filter(Q(semester_id__semester_no = sem) & Q( course_slot_id__name = course_slot ) & Q(student_id__batch = batch) & Q(student_id__batch_id__curriculum__programme__category=programme_type)).values_list('course_id',flat=True).distinct()
+    slot_filter = (Q(semester_id__semester_no = sem) & Q( course_slot_id__name = course_slot ) & Q(student_id__batch = batch) & Q(student_id__batch_id__curriculum__programme__category=programme_type))
     max_seats={}
     seats_alloted = {}
     present_priority = {}
     next_priority = {}
     total_seats = 0
+
+    # every per-course lookup below used to be one query per course inside the loop
+    course_caps = dict(Course.objects.filter(id__in=unique_course).values_list('id', 'max_seats'))
+    already_alloted = dict(FinalRegistration.objects.filter(
+        course_id_id__in=unique_course,
+        semester_id__semester_no=sem,
+        student_id__batch=batch,
+        student_id__batch_id__curriculum__programme__category=programme_type,
+    ).values('course_id_id').annotate(n=Count('id')).values_list('course_id_id', 'n'))
+
     for course in unique_course :
         if course in skip_course_ids :
             max_seats[course] = 0
         else :
-            max_seats[course] = Course.objects.get(id=course).max_seats
+            max_seats[course] = course_caps.get(course, 0)
             total_seats+=max_seats[course]
-        seats_alloted[course] = FinalRegistration.objects.filter(
-            course_id_id=course,
-            semester_id__semester_no=sem,
-            student_id__batch=batch,
-            student_id__batch_id__curriculum__programme__category=programme_type,
-        ).count()
+        seats_alloted[course] = already_alloted.get(course, 0)
         present_priority[course] = []
         next_priority[course] = []
 
-    priority_1 = InitialRegistration.objects.filter(Q(semester_id__semester_no = sem) & Q( course_slot_id__name = course_slot ) & Q(student_id__batch = batch) & Q(priority=1) & Q(student_id__batch_id__curriculum__programme__category=programme_type))
+    priority_1 = InitialRegistration.objects.filter(slot_filter & Q(priority=1))
     rem=len(priority_1)
     if rem > total_seats :
         return -1
-    
+
     for p in priority_1 :
-        present_priority[p.course_id.id].append([p.student_id.id.id,p.course_slot_id.id])   
+        present_priority[p.course_id_id].append([p.student_id_id,p.course_slot_id_id])
+
+    # the fall-through lookup was one query per bumped student
+    choice_by_priority = {}
+    for stud_id, prio, c_id, cs_id in InitialRegistration.objects.filter(slot_filter).values_list(
+            'student_id_id', 'priority', 'course_id_id', 'course_slot_id_id') :
+        choice_by_priority.setdefault((stud_id, prio), (c_id, cs_id))
+
+    student_curriculum = dict(Student.objects.filter(
+        id__in={s for lst in present_priority.values() for s, _ in lst}
+    ).values_list('id_id', 'batch_id__curriculum_id'))
+    semester_by_curriculum = dict(Semester.objects.filter(
+        semester_no=sem, curriculum_id__in=set(student_curriculum.values())
+    ).values_list('curriculum_id', 'id'))
+
+    to_create = []
     with transaction.atomic() :
         p_priority = 1
         while rem > 0 :
@@ -143,29 +164,27 @@ def random_algo(batch,sem,year,course_slot, programme_type, skip_course_ids=None
                     present_priority[course].remove(random_student_selected)
 
                     if seats_alloted[course] < max_seats[course] :
-                        stud = Student.objects.get(id__id = random_student_selected[0])
-                        curriculum_object = Student.objects.get(id__id = random_student_selected[0]).batch_id.curriculum
-                        course_object = Course.objects.get(id=course)
-                        course_slot_object = CourseSlot.objects.get(id = random_student_selected[1])
-                        semester_object = Semester.objects.get(Q(semester_no = sem) & Q(curriculum = curriculum_object))
-                        FinalRegistration.objects.create(
-                            student_id = stud,
+                        to_create.append(FinalRegistration(
+                            student_id_id = random_student_selected[0],
                             verified=False,
-                            semester_id = semester_object,
-                            course_id = course_object,
-                            course_slot_id = course_slot_object
-                        )
+                            semester_id_id = semester_by_curriculum[
+                                student_curriculum[random_student_selected[0]]],
+                            course_id_id = course,
+                            course_slot_id_id = random_student_selected[1]
+                        ))
                         seats_alloted[course] += 1
                         rem-=1
                     else :
-                        next = InitialRegistration.objects.filter(Q(student_id__id__id = random_student_selected[0]) & Q( course_slot_id__name = course_slot ) & Q(semester_id__semester_no = sem) & Q(student_id__batch = batch) & Q(priority=p_priority+1) & Q(student_id__batch_id__curriculum__programme__category=programme_type)).first()
-                        if next is not None :
-                            next_priority[next.course_id.id].append([next.student_id.id.id,next.course_slot_id.id])
+                        next = choice_by_priority.get((random_student_selected[0], p_priority+1))
+                        if next is not None and next[0] in next_priority :
+                            next_priority[next[0]].append([random_student_selected[0],next[1]])
                         else :
                             rem-=1
             p_priority+=1
             present_priority = next_priority
             next_priority = {course : [] for course in unique_course}
+
+        FinalRegistration.objects.bulk_create(to_create)
 
     return 1
 
@@ -199,52 +218,38 @@ def allocate(request):
                 course_slot_object = CourseSlot.objects.get(id=entry['course_slot_id'])
 
                 if course_slot_object.type != "Open Elective":
-                    students = InitialRegistration.objects.filter(
+                    # one row per student for this slot, instead of five queries each
+                    registrations = list(InitialRegistration.objects.filter(
                         Q(semester_id__semester_no=sem) &
                         Q(course_slot_id=course_slot_object) &
                         Q(student_id__batch=batch) & Q(student_id__batch_id__curriculum__programme__category=programme_type)
-                    ).values_list('student_id', flat=True)
+                    ).values_list('student_id_id', 'course_id_id', 'registration_type',
+                                  'old_course_registration_id'))
 
-                    for student_id in students:
-                        student = Student.objects.get(id=student_id)
-                        semester = Semester.objects.get(
-                            semester_no=sem, curriculum=student.batch_id.curriculum
-                        )
+                    curriculum_by_student = dict(Student.objects.filter(
+                        id__in={r[0] for r in registrations}
+                    ).values_list('id_id', 'batch_id__curriculum_id'))
+                    semester_by_curriculum = dict(Semester.objects.filter(
+                        semester_no=sem, curriculum_id__in=set(curriculum_by_student.values())
+                    ).values_list('curriculum_id', 'id'))
 
-                        regis = InitialRegistration.objects.filter(
-                            course_slot_id_id=course_slot_object,
-                            student_id_id=student_id
-                        ).values_list('registration_type', flat=True).first()
-
-                        course_id = InitialRegistration.objects.filter(
-                            course_slot_id_id=course_slot_object,
-                            student_id_id=student_id
-                        ).values_list('course_id', flat=True).first()
-
+                    slot_rows = []
+                    for student_id, course_id, regis, prev_registration_id in registrations:
                         # no alternative in a single-choice slot
                         if course_id in skip_course_ids:
                             skipped_students += 1
                             continue
 
-                        course = Course.objects.get(id=course_id)
-
-                        prev_registration_id = InitialRegistration.objects.filter(
-                            course_slot_id_id=course_slot_object,
-                            student_id_id=student_id
-                        ).values_list('old_course_registration', flat=True).first()
-                        if (prev_registration_id):
-                            prev_registration_id = course_registration.objects.get(id=prev_registration_id)
-
-                        FinalRegistration.objects.create(
-                            student_id=student,
+                        slot_rows.append(FinalRegistration(
+                            student_id_id=student_id,
                             verified=False,
-                            semester_id=semester,
-                            course_id=course,
+                            semester_id_id=semester_by_curriculum[curriculum_by_student[student_id]],
+                            course_id_id=course_id,
                             course_slot_id=course_slot_object,
                             registration_type=regis,
-                            old_course_registration=prev_registration_id
-                        )
-                        print(f"{course}")
+                            old_course_registration_id=prev_registration_id
+                        ))
+                    FinalRegistration.objects.bulk_create(slot_rows)
 
                     unique_course_name.append(course_slot_object.name)
 
