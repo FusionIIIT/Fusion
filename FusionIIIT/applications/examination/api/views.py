@@ -396,6 +396,24 @@ def download_template(request):
         if not user_holds_any_role(request.user, allowed_roles):
             return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
 
+        # Faculty may only pull rosters for courses they teach; acadadmin/Dean: any.
+        if not user_holds_any_role(request.user, ["acadadmin", "Dean Academic"]):
+            try:
+                owns_year, _ = parse_academic_year(session_year, semester_type)
+            except Exception:
+                owns_year = None
+            owns = CourseInstructor.objects.filter(
+                course_id_id=course,
+                instructor_id_id=request.user.username,
+                year=owns_year,
+                semester_type=semester_type,
+            ).exists()
+            if not owns:
+                return Response(
+                    {"error": "Access denied: you are not assigned to teach this course this term."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
         User = get_user_model()
 
         # Filter course_registration records using course, session (academic year), and semester_type.
@@ -425,7 +443,12 @@ def download_template(request):
             course_info_query = course_info_query.filter(
                 student_id__in=student_ids_with_programme
             )
-        
+
+        # Sections apply only to UG (PG/PhD have no sections); electives ignore it.
+        section = (request.data.get('section') or '').strip() or None
+        if section and (programme_type or '').strip().upper() == 'UG':
+            course_info_query = course_info_query.filter(student_id__section=section)
+
         course_info = course_info_query.order_by("student_id_id")
 
         if not course_info.exists():
@@ -560,244 +583,10 @@ def check_course_students(request):
         return Response({'error': f'An unexpected error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 
-class SubmitGradesView(APIView):
-    """
-    API to retrieve course information for a given academic year session and semester type.
-
-    If both academic_year (formatted as "YYYY-YY") and semester_type are provided in the request,
-    the API filters courses from course_registration records based on:
-      - session: must equal the provided academic_year, and
-      - semester_type: must match the provided semester type.
-
-    Otherwise, if academic_year is not provided, it returns available sessions.
-    """
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        designation = request.data.get("Role")
-        academic_year = request.data.get("academic_year")
-        semester_type = request.data.get("semester_type")
-
-        # Only allow access to 'acadadmin'
-        if not user_holds_role(request.user, "acadadmin"):
-            return Response(
-                {"success": False, "error": "Access denied."},
-                status=status.HTTP_403_FORBIDDEN
-            )
-
-        # If both academic_year and semester_type are provided, filter courses.
-        if academic_year and semester_type:
-            # Use academic_year to match the session field.
-            unique_course_ids = course_registration.objects.filter(
-                session=academic_year,
-                semester_type=semester_type
-            ).values("course_id").distinct()
-
-            courses_info = Courses.objects.filter(
-                id__in=unique_course_ids.values_list("course_id", flat=True)
-            ).order_by("code")
-
-            return Response(
-                {"courses": list(courses_info.values())},
-                status=status.HTTP_200_OK
-            )
-
-        # If academic_year is not provided, return available sessions.
-        sessions = course_registration.objects.values("session").distinct()
-        return Response(
-            {"sessions": list(sessions)},
-            status=status.HTTP_200_OK
-        )
-
-
-class UploadGradesAPI(APIView):
-    permission_classes = [IsAuthenticated]
-    parser_classes = [MultiPartParser, FormParser]
-
-    def post(self, request):
-        # Validate the role (only allow "acadadmin" in this example).
-        des = request.data.get("Role")
-        if not user_holds_role(request.user, "acadadmin"):
-            return Response(
-                {"success": False, "error": "Access denied."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        csv_file = request.FILES.get("csv_file")
-        if not csv_file:
-            return Response(
-                {"error": "No file provided. Please upload a CSV file."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        if not csv_file.name.endswith(".csv"):
-            return Response(
-                {"error": "Invalid file format. Please upload a CSV file."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Extract course_id, academic_year, and semester_type from the request.
-        course_id = request.data.get("course_id")
-        academic_year = request.data.get("academic_year")
-        semester_type = request.data.get("semester_type")
-        if not course_id or not academic_year or not semester_type:
-            return Response(
-                {"error": "Course ID, Academic Year, and Semester Type are required."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        try:
-            # Parse academic_year to determine working_year and session.
-            working_year, session = parse_academic_year(academic_year, semester_type)
-
-            # Fetch the course.
-            courses_info = Courses.objects.get(id=course_id)
-
-            # Check if any student is registered for this course, working_year, and semester_type.
-            registrations = course_registration.objects.filter(
-                course_id=courses_info,
-                session = academic_year,
-                semester_type=semester_type
-            )
-            if not registrations.exists():
-                message = "NO STUDENTS REGISTERED IN THIS COURSE FOR THE SELECTED SEMESTER."
-                return Response(
-                    {"error": message,},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            # Check if grades already exist and cannot be resubmitted.
-            existing_grades = Student_grades.objects.filter(
-                course_id=courses_info.id, academic_year = academic_year, semester_type = semester_type
-            )
-            if existing_grades.exists() and not existing_grades.first().reSubmit:
-                message = "THIS COURSE HAS ALREADY BEEN SUBMITTED."
-                return Response(
-                    {"error": message},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            # Parse the CSV file."20"
-            decoded_file = csv_file.read().decode("utf-8").splitlines()
-            reader = csv.DictReader(decoded_file)
-            required_columns = ["roll_no", "grade", "remarks"]
-            if not all(column in reader.fieldnames for column in required_columns):
-                return Response(
-                    {
-                        "error": "CSV file must contain the following columns: roll_no, grade, remarks."
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            errors = []  # To track errors for each CSV row.
-            allowed_list = ", ".join(sorted(ALLOWED_GRADES))
-            # Wrap the upload process in an atomic transaction.
-            with transaction.atomic():
-                for index, row in enumerate(reader, start=1):
-                    roll_no = row.get("roll_no")
-                    grade = (row.get("grade") or "").strip()
-                    remarks = row.get("remarks", "")
-                    semester = row.get("semester", None)
-
-                    # Validate student existence.
-                    try:
-                        stud = Student.objects.get(id_id=roll_no)
-                    except Student.DoesNotExist:
-                        errors.append(f"Row {index}: Student with roll_no {roll_no} does not exist.")
-                        continue
-
-                    # Check that the student is registered for the course.
-                    registration_exists = course_registration.objects.filter(
-                        student_id=stud,
-                        course_id=courses_info,
-                        semester_type=semester_type,
-                        session = academic_year
-                    ).exists()
-                    if not registration_exists:
-                        errors.append(
-                            f"Row {index}: Student with roll_no {roll_no} is not registered for this course in the selected semester."
-                        )
-                        continue
-
-
-                    if not is_valid_grade(grade, courses_info.code):
-                        errors.append(
-                            f"Row {index}: Invalid grade '{grade}' for roll_no {roll_no}. "
-                            f"Allowed grades are: {allowed_list}."
-                        )
-                        continue
-
-                    # Determine the semester for the grade (use the provided value or fall back to student's current semester).
-                    semester = semester or stud.curr_semester_no
-                    batch = stud.batch
-                    reSubmit = False
-
-                    # Create or update the grade record.
-                    try:
-                        Student_grades.objects.update_or_create(
-                            roll_no=roll_no,
-                            course_id_id=course_id,
-                            year=working_year,  # stored as academic year string
-                            semester=semester,
-                            batch=batch,
-                            academic_year = academic_year,
-                            semester_type = semester_type,
-                            defaults={
-                                'grade': grade,
-                                'remarks': remarks,
-                                'reSubmit': reSubmit,
-                                'academic_year': session,        
-                                'semester_type': semester_type,
-                            }
-                        )
-                    except Exception as create_err:
-                        errors.append(
-                            f"Row {index}: Error creating/updating grade for student with roll_no {roll_no} - {str(create_err)}"
-                        )
-                        continue
-
-                # If errors were encountered in any row, rollback and return error summary.
-                if errors:
-                    error_summary = "\n".join(f"- {msg}" for msg in errors)
-                    raise Exception(error_summary)
-
-            return Response(
-                {"message": "Grades uploaded successfully."},
-                status=status.HTTP_200_OK,
-            )
-
-        except Courses.DoesNotExist:
-            return Response(
-                {"error": "Invalid course ID."}, status=status.HTTP_400_BAD_REQUEST
-            )
-        except Exception as e:
-            return Response(
-                {"error": f"An error occurred: {str(e)}"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        
-"""
-API to fetch courses with unverified grades along with unique academic years.
-
-- Only users with the role of 'acadadmin' can access this endpoint.
-- Retrieves courses where at least one student's grades are unverified.
-- Fetches the academic years associated with unverified grades.
-
-Expected Request:
-Headers:
-    Authorization: Token <your_auth_token>
-
-Body (JSON):
-    {
-        "Role": "acadadmin"
-    }
-
-Response:
-    200 OK - {
-        "courses_info": [{"id": 1, "course_name": "Data Structures", ...}],
-        "unique_year_ids": [{"year": "2024"}, {"year": "2025"}]
-    }
-    403 Forbidden - {"success": false, "error": "Access denied."}
-"""
+# NOTE: SubmitGradesView + UploadGradesAPI (acadadmin proxy grade submission,
+# no per-instructor ownership check) were removed in the sectioning refactor.
+# Grades are submitted only by the assigned faculty per section via
+# UploadGradesProfAPI; acadadmin/Dean verify & moderate.
 
 class UpdateGradesAPI(APIView):
     permission_classes = [IsAuthenticated]
@@ -990,6 +779,10 @@ class ModerateStudentGradesAPI(APIView):
         grades = request.data.get("grades", [])
         remarks=request.data.get("remarks",[])
         allow_resubmission = request.data.get("allow_resubmission", "NO")
+        # Term context (optional but recommended): disambiguates a student's grade
+        # row when the same course+semester recurs across academic years.
+        academic_year = request.data.get("academic_year")
+        semester_type = request.data.get("semester_type")
 
        
         if (
@@ -1026,17 +819,27 @@ class ModerateStudentGradesAPI(APIView):
                 student_ids, semester_ids, course_ids, grades, remarks
             ):
                 grade = (grade or "").strip()
-                try:
-                    grade_of_student = Student_grades.objects.get(
-                        course_id=course_id, roll_no=student_id, semester=semester_id
-                    )
+                lookup = {"course_id": course_id, "roll_no": student_id, "semester": semester_id}
+                if academic_year:
+                    lookup["academic_year"] = academic_year
+                if semester_type:
+                    lookup["semester_type"] = semester_type
+                # Use filter().first() rather than get(): a student can have grade
+                # rows for the same course+semester across academic years, which
+                # would make get() raise MultipleObjectsReturned. academic_year +
+                # semester_type disambiguate; ordering keeps the fallback deterministic.
+                grade_of_student = (Student_grades.objects
+                                    .filter(**lookup)
+                                    .order_by("-year", "-id")
+                                    .first())
+                if grade_of_student:
                     grade_of_student.remarks = remark
                     grade_of_student.grade = grade
                     grade_of_student.verified = True
                     if allow_resubmission.upper() == "YES":
                         grade_of_student.reSubmit = True
                     grade_of_student.save()
-                except Student_grades.DoesNotExist:
+                else:
                     hidden_grades.objects.create(
                         course_id=course_id,
                         student_id=student_id,
@@ -1727,7 +1530,7 @@ class SubmitGradesProfAPI(APIView):
         academic_year = request.data.get("academic_year")
         semester_type = request.data.get("semester_type")
         programme_type = request.data.get("programme_type")
-        
+        is_acadadmin = role == "acadadmin" and user_holds_role(request.user, "acadadmin")
         if not user_holds_any_role(request.user, ["Associate Professor", "Professor", "Assistant Professor", "acadadmin"]):
             return Response(
                 {"success": False, "error": "Access denied."},
@@ -1739,11 +1542,14 @@ class SubmitGradesProfAPI(APIView):
                 {"success": False, "error": "Academic year and semester type are required."},
                 status=400,
             )
-        
-        working_year, _ = parse_academic_year(academic_year=academic_year, semester_type=semester_type)
+        ci_year = course_instructor_year(academic_year, semester_type)
 
-        acting_as_acadadmin = role == "acadadmin" and user_holds_role(request.user, "acadadmin")
-        if acting_as_acadadmin:
+        # acadadmin can grade any course offered this term, including those with
+        # no assigned faculty (e.g. project/BTP); list those by registration.
+        # Faculty see only the offerings they are assigned to teach.
+        from collections import defaultdict
+        section_map = defaultdict(set)
+        if is_acadadmin:
             course_ids = (
                 course_registration.objects
                 .filter(session=academic_year, semester_type=semester_type)
@@ -1751,10 +1557,14 @@ class SubmitGradesProfAPI(APIView):
                 .distinct()
             )
             courses_query = Courses.objects.filter(id__in=course_ids)
+            offerings_qs = CourseInstructor.objects.filter(year=ci_year, semester_type=semester_type)
         else:
+            instructor_id = request.user.username
+            offerings_qs = CourseInstructor.objects.filter(
+                instructor_id_id=instructor_id, year=ci_year, semester_type=semester_type
+            )
             unique_course_ids = (
-                CourseInstructor.objects
-                .filter(instructor_id_id=request.user.username, year=course_instructor_year(academic_year, semester_type), semester_type=semester_type)
+                offerings_qs
                 .values("course_id_id")
                 .distinct()
                 .annotate(course_id_int=Cast("course_id_id", IntegerField()))
@@ -1762,6 +1572,15 @@ class SubmitGradesProfAPI(APIView):
             courses_query = Courses.objects.filter(
                 id__in=unique_course_ids.values_list("course_id_int", flat=True)
             )
+
+        # Map course -> its section labels (only section-allotted courses have any;
+        # electives/interdisciplinary have none).
+        for o in offerings_qs:
+            if o.section_label:
+                try:
+                    section_map[int(o.course_id_id)].add(o.section_label)
+                except (TypeError, ValueError):
+                    pass
         
         student_ids_with_programme = None
         if programme_type:
@@ -1806,6 +1625,7 @@ class SubmitGradesProfAPI(APIView):
             course['student_count'] = course_registrations.count()
             course['has_students'] = course['student_count'] > 0
             course['programme_type'] = programme_type
+            course['sections'] = sorted(section_map.get(course['id'], set()))
             courses_data.append(course)
 
         return Response(
@@ -1832,6 +1652,7 @@ class UploadGradesProfAPI(APIView):
         try:
             # 1) ROLE CHECK
             role = request.data.get("Role")
+            is_acadadmin = role == "acadadmin" and user_holds_role(request.user, "acadadmin")
             if not user_holds_any_role(request.user, ["Associate Professor", "Professor", "Assistant Professor", "acadadmin"]):
                 return Response({"error": "Access denied."},
                                 status=status.HTTP_403_FORBIDDEN)
@@ -1889,7 +1710,51 @@ class UploadGradesProfAPI(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            from applications.academic_information.models import Student
+            # OFFERINGS: acadadmin may grade any offering of this course; faculty
+            # only the offering(s) they are assigned to teach. An optional
+            # `section` narrows this to a single section (electives have none).
+            # Sections apply only to UG; ignore any section for PG/PhD.
+            section = (request.data.get("section") or "").strip() or None
+            if (programme_type or "").strip().upper() != "UG":
+                section = None
+
+            all_offerings = list(CourseInstructor.objects.filter(
+                course_id_id=course_id,
+                year=course_instructor_year(academic_year, semester_type),
+                semester_type=semester_type,
+            ))
+            if is_acadadmin:
+                my_offerings = all_offerings
+            else:
+                my_offerings = [o for o in all_offerings
+                                if str(o.instructor_id_id) == str(request.user.username)]
+                if not my_offerings:
+                    return Response(
+                        {"error": "Access denied: you are not assigned to teach this course this term."},
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+
+            if section:
+                my_offerings = [o for o in my_offerings if o.section_label == section]
+                if not my_offerings:
+                    return Response(
+                        {"error": f"No section '{section}' offering you can grade for this course."},
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+
+            my_offering_ids = {o.id for o in my_offerings}
+            my_sections = {o.section_label for o in my_offerings}
+            # A no-section (elective) offering owns all registrants; named-section
+            # offerings scope the roster to students in those sections (UG only).
+            if (programme_type or "").strip().upper() == "UG" and None not in my_sections:
+                regs = regs.filter(student_id__section__in=my_sections)
+                if not regs.exists():
+                    return Response(
+                        {"error": "No students are registered in the selected section for this course."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+            from applications.academic_information.models import Student, resolve_offering
             ug_programmes = ['B.Tech', 'B.Des']
             pg_programmes = ['M.Tech', 'M.Des', 'PhD']
 
@@ -1979,17 +1844,7 @@ class UploadGradesProfAPI(APIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
 
-            # 8) INSTRUCTOR‐OWNERSHIP CHECK (acadadmin may submit for any course)
-            acting_as_acadadmin = role == "acadadmin" and user_holds_role(request.user, "acadadmin")
-            if not acting_as_acadadmin and not CourseInstructor.objects.filter(
-                course_id_id=course_id,
-                instructor_id_id=request.user.username,
-                year=course_instructor_year(academic_year, semester_type)
-            ).exists():
-                return Response(
-                    {"error": "Access denied: you are not assigned as instructor for this course."},
-                    status=status.HTTP_403_FORBIDDEN
-                )
+            # (Instructor ownership + section scoping already resolved above.)
 
             # 9) PARSE CSV HEADER
             decoded = csv_file.read().decode("utf-8").splitlines()
@@ -2004,21 +1859,14 @@ class UploadGradesProfAPI(APIView):
             # 10) ATOMIC PROCESSING
             errors = []
             with transaction.atomic():
-                # ─── Reset reSubmit flags for this course/year/semester/programme ───
+                # Reset reSubmit only for this submission's roster (already scoped
+                # to the section + programme above), never course-wide.
                 reset_query = Student_grades.objects.filter(
                     course_id_id=course_id,
                     academic_year=academic_year,
-                    semester_type=semester_type
+                    semester_type=semester_type,
+                    roll_no__in=[reg.student_id_id for reg in regs],
                 )
-                
-                if programme_type:
-                    if programme_type.upper() == 'UG':
-                        ug_rolls = [reg.student_id_id for reg in regs]
-                        reset_query = reset_query.filter(roll_no__in=ug_rolls)
-                    elif programme_type.upper() == 'PG':
-                        pg_rolls = [reg.student_id_id for reg in regs]
-                        reset_query = reset_query.filter(roll_no__in=pg_rolls)
-                
                 reset_query.update(reSubmit=False)
 
                 # ─── Process each CSV row ───
@@ -2047,7 +1895,25 @@ class UploadGradesProfAPI(APIView):
                             f"Row {idx}: Student {roll_no} not registered for this course/semester."
                         )
                         continue
-                    
+
+                    # Bind each grade to the student's own section offering.
+                    stud_offering = resolve_offering(stud, course, course_instructor_year(academic_year, semester_type), semester_type)
+                    if is_acadadmin:
+                        # acadadmin may grade any student; if a section was chosen,
+                        # accept only students of that section.
+                        if section and (stud.section or None) != section:
+                            errors.append(
+                                f"Row {idx}: Student {roll_no} is not in section {section}."
+                            )
+                            continue
+                    else:
+                        # Faculty may only grade students in a section they teach.
+                        if stud_offering is None or stud_offering.id not in my_offering_ids:
+                            errors.append(
+                                f"Row {idx}: Student {roll_no} is not in a section you are assigned to teach."
+                            )
+                            continue
+
                     # Check if student belongs to the specified programme type
                     if programme_type:
                         student_programme = stud.programme
@@ -2089,6 +1955,7 @@ class UploadGradesProfAPI(APIView):
                                 "grade": grade,
                                 "remarks": remarks,
                                 "reSubmit": reSubmit,
+                                "course_instructor": stud_offering,
                             }
                         )
                     except Exception as exc:
@@ -3088,6 +2955,24 @@ class PreviewGradesAPI(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # Faculty may only preview grades for courses they teach; acadadmin/Dean: any.
+        if not user_holds_any_role(request.user, ["acadadmin", "Dean Academic"]):
+            try:
+                owns_year, _ = parse_academic_year(academic_year, semester_type)
+            except Exception:
+                owns_year = None
+            owns = CourseInstructor.objects.filter(
+                course_id_id=course_id,
+                instructor_id_id=request.user.username,
+                year=owns_year,
+                semester_type=semester_type,
+            ).exists()
+            if not owns:
+                return Response(
+                    {"error": "Access denied: you are not assigned to teach this course this term."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
         # Extract the starting working year from academic_year.
         try:
             working_year = int(academic_year.split("-")[0])
@@ -3120,7 +3005,12 @@ class PreviewGradesAPI(APIView):
             ).values_list('id', flat=True)
             
             registrations = registrations.filter(student_id__in=student_ids_with_programme)
-        
+
+        # Sections apply only to UG (PG/PhD have no sections); electives ignore it.
+        section = (request.data.get("section") or "").strip() or None
+        if section and (programme_type or "").strip().upper() == "UG":
+            registrations = registrations.filter(student_id__section=section)
+
         # Build a set of registered roll numbers for fast lookup.
         registered_rollnos = set()
         for reg in registrations.select_related("student_id"):
@@ -3550,17 +3440,20 @@ class GradeStatusAPI(APIView):
             # Fetch courses with select_related for better performance
             courses = Courses.objects.filter(id__in=course_ids).order_by('code')
             
-            # Bulk fetch all instructors to avoid N+1 queries
-            instructors_map = {}
-            instructors = CourseInstructor.objects.filter(
+            # All offerings for the term. A course can have several — one
+            # CourseInstructor row per section, each with its own faculty — so we
+            # group them per course instead of keeping a single instructor.
+            from collections import defaultdict
+            instructors = list(CourseInstructor.objects.filter(
                 course_id__in=course_ids,
                 year=course_instructor_year(academic_year, semester_type),
                 semester_type=semester_type
-            ).select_related()
-            
-            for instructor in instructors:
-                instructors_map[instructor.course_id_id] = instructor
-            
+            ))
+            offerings_by_course = defaultdict(list)
+            for inst in instructors:
+                offerings_by_course[inst.course_id_id].append(inst)
+            offering_ids = [inst.id for inst in instructors]
+
             # Bulk fetch professor names to avoid individual User queries
             instructor_ids = [inst.instructor_id_id for inst in instructors]
             users_map = {}
@@ -3588,6 +3481,24 @@ class GradeStatusAPI(APIView):
                     verified=True
                 ).values_list('course_id', flat=True).distinct()
             )
+
+            # Per-offering (per-section) status via the grade's course_instructor FK,
+            # so each section's submission/verification is reported separately.
+            submitted_offerings = set(
+                Student_grades.objects.filter(
+                    course_instructor_id__in=offering_ids,
+                    academic_year=academic_year,
+                    semester_type=semester_type,
+                ).values_list('course_instructor_id', flat=True).distinct()
+            )
+            verified_offerings = set(
+                Student_grades.objects.filter(
+                    course_instructor_id__in=offering_ids,
+                    academic_year=academic_year,
+                    semester_type=semester_type,
+                    verified=True,
+                ).values_list('course_instructor_id', flat=True).distinct()
+            )
             
             # Bulk fetch authentication records
             auth_records_map = {}
@@ -3602,40 +3513,60 @@ class GradeStatusAPI(APIView):
             # Build response data efficiently
             grade_status_list = []
             
-            for course in courses:
-                # Get instructor information from pre-fetched data
-                instructor = instructors_map.get(course.id)
-                professor_name = "Not Assigned"
-                
-                if instructor:
-                    professor_name = users_map.get(
-                        instructor.instructor_id_id, 
-                        instructor.instructor_id_id
-                    )
-                
-                # Determine status from pre-fetched sets
-                submitted = "Submitted" if course.id in submitted_courses else "Not Submitted"
-                verified = "Verified" if course.id in verified_courses else "Not Verified"
-                
-                # Check validation status
-                validated = "Not Validated"
-                if course.id in verified_courses:  # Only check if verified
-                    auth_record = auth_records_map.get(course.id)
-                    if (auth_record and auth_record.authenticator_1 and 
+            def _validated(course_id, is_verified):
+                if not is_verified:
+                    return "Not Validated"
+                auth_record = auth_records_map.get(course_id)
+                if (auth_record and auth_record.authenticator_1 and
                         auth_record.authenticator_2 and auth_record.authenticator_3):
-                        validated = "Validated"
-                
-                grade_status_list.append({
-                    "course_code": course.code,
-                    "course_name": course.name,
-                    "course_id": course.id,
-                    "professor_name": professor_name,
-                    "submitted": submitted,
-                    "verified": verified,
-                    "validated": validated,
-                    "credits": course.credit,
-                    "version": course.version
-                })
+                    return "Validated"
+                return "Not Validated"
+
+            for course in courses:
+                offs = offerings_by_course.get(course.id, [])
+                if offs:
+                    # Fall back to course-level status only when no offering has
+                    # bound grades (legacy rows without an offering FK).
+                    course_has_bound = any(
+                        off.id in submitted_offerings or off.id in verified_offerings
+                        for off in offs
+                    )
+                    for off in offs:
+                        professor_name = users_map.get(off.instructor_id_id, off.instructor_id_id)
+                        if course_has_bound:
+                            is_sub = off.id in submitted_offerings
+                            is_ver = off.id in verified_offerings
+                        else:
+                            is_sub = course.id in submitted_courses
+                            is_ver = course.id in verified_courses
+                        grade_status_list.append({
+                            "course_code": course.code,
+                            "course_name": course.name,
+                            "course_id": course.id,
+                            "section_label": off.section_label or "—",
+                            "professor_name": professor_name,
+                            "submitted": "Submitted" if is_sub else "Not Submitted",
+                            "verified": "Verified" if is_ver else "Not Verified",
+                            "validated": _validated(course.id, is_ver),
+                            "credits": course.credit,
+                            "version": course.version,
+                        })
+                else:
+                    # No offering assigned — single course-level row (existing behaviour).
+                    is_sub = course.id in submitted_courses
+                    is_ver = course.id in verified_courses
+                    grade_status_list.append({
+                        "course_code": course.code,
+                        "course_name": course.name,
+                        "course_id": course.id,
+                        "section_label": None,
+                        "professor_name": "Not Assigned",
+                        "submitted": "Submitted" if is_sub else "Not Submitted",
+                        "verified": "Verified" if is_ver else "Not Verified",
+                        "validated": _validated(course.id, is_ver),
+                        "credits": course.credit,
+                        "version": course.version,
+                    })
                 
             return Response({
                 "success": True,

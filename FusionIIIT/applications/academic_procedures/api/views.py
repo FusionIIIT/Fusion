@@ -1122,6 +1122,7 @@ def verify_registration(request):
         # final_register_list = FinalRegistration.objects.all().filter(student_id = student, verified = False)
         
         with transaction.atomic():
+            from applications.academic_information.models import resolve_offering
             ver_reg = []
             for obj in final_register_list:
                 _work_year = datetime.datetime.now().year
@@ -1131,6 +1132,9 @@ def verify_registration(request):
                     _session = f"{_work_year}-{str(_work_year + 1)[-2:]}"
                 else:
                     _session = f"{_work_year - 1}-{str(_work_year)[-2:]}"
+                # Bind this registration to the offering (course+section+faculty)
+                # the student belongs to, so grades are attributable per instructor.
+                offering = resolve_offering(student, obj.course_id, _work_year, _sem_type)
                 p = course_registration(
                     course_id=obj.course_id,
                     student_id=student,
@@ -1140,12 +1144,13 @@ def verify_registration(request):
                     registration_type=obj.registration_type,
                     session=_session,
                     semester_type=_sem_type,
+                    course_instructor=offering,
                     )
                 # ver_reg.append(p)
                 p.save()
                 if (obj.old_course_registration):
                     course_replacement.objects.create(new_course_registration=p, old_course_registration=obj.old_course_registration)
-                o = FinalRegistration.objects.filter(id= obj.id).update(verified = True)
+                o = FinalRegistration.objects.filter(id= obj.id).update(verified = True, course_instructor = offering)
             # course_registration.objects.bulk_create(ver_reg)
             academics_module_notif(request.user, student.id.user, 'registration_approved')
             
@@ -1946,6 +1951,8 @@ def academic_procedures_faculty_api(request):
                 "version": course.course_id.version,
                 "semester_type": course.semester_type,
                 "academic_year": course.academic_year,
+                # This offering's section (A-F), or "" for old/single-offering courses.
+                "section": course.section_label or "",
             })
 
         return Response({"assigned_courses": response_data})
@@ -5264,28 +5271,34 @@ def student_questions(request):
         semester_id__semester_no=semester_no,
     ).select_related("course_id")
 
+    from applications.academic_information.models import resolve_offering
+
     courses = []
     for reg in registrations:
         course = reg.course_id
         academic_year, _ = parse_academic_year(reg.session, reg.semester_type)
-        instructor_entry = CourseInstructor.objects.filter(
-            course_id=course,
-            semester_type=reg.semester_type,
-            year = academic_year
-            
-        ).first()
+        # The student's own section instructor, else any offering (no-section courses).
+        instructor_entry = resolve_offering(student, course, academic_year, reg.semester_type) or \
+            CourseInstructor.objects.filter(
+                course_id=course,
+                semester_type=reg.semester_type,
+                year=academic_year,
+            ).first()
 
-        instructor_id = instructor_entry.id if instructor_entry else None
+        # No instructor -> nothing to give feedback on; skip.
+        if not instructor_entry:
+            continue
+
         instructor_name = (
-            f"{instructor_entry.instructor_id.id.user.first_name} {instructor_entry.instructor_id.id.user.last_name}"
-            if instructor_entry else ""
-        )
+            f"{instructor_entry.instructor_id.id.user.first_name} "
+            f"{instructor_entry.instructor_id.id.user.last_name}"
+        ).strip()
 
         courses.append({
             "course_id": course.id,
             "code": course.code,
             "name": course.name,
-            "instructor_id": instructor_id,
+            "instructor_id": instructor_entry.id,
             "instructor_name": instructor_name,
         })
 
@@ -5320,16 +5333,35 @@ def student_submit(request):
     if FeedbackFilled.objects.filter(student=student, semester_no = semester_no).exists():
         return Response({"detail":"Already filled."}, status=status.HTTP_409_CONFLICT)
 
+    from applications.academic_information.models import resolve_offering
     with transaction.atomic():
         for r in data["responses"]:
 
             reg = course_registration.objects.get(student_id =student, course_id_id = r["course_id"], semester_id__semester_no = student.curr_semester_no)
+            # Attribute to the offering the student was shown (their section's, else first).
+            academic_year, _ = parse_academic_year(reg.session, reg.semester_type)
+            offering = resolve_offering(student, reg.course_id, academic_year, reg.semester_type) or \
+                CourseInstructor.objects.filter(
+                    course_id=reg.course_id,
+                    year=academic_year,
+                    semester_type=reg.semester_type,
+                ).first()
+            # Trust the server for question/section; only accept an option that
+            # actually belongs to the question.
+            question = FeedbackQuestion.objects.filter(id=r.get("question_id")).first()
+            if not question:
+                continue
+            option = None
+            if r.get("option_id"):
+                option = FeedbackOption.objects.filter(
+                    id=r["option_id"], question=question).first()
             FeedbackResponse.objects.create(
-                question_id   = r["question_id"],
-                option_id     = r.get("option_id"),
+                question      = question,
+                option        = option,
                 text_answer   = r.get("text_answer",""),
                 course_id     = r["course_id"],
-                section       = r["section"],
+                course_instructor = offering,
+                section       = question.section,
                 session       = reg.session,
                 semester_type = reg.semester_type,
             )
@@ -5448,6 +5480,12 @@ def admin_course_list(request):
         semester_type=semt,
     ).select_related("course").distinct()
 
+    academic_year, _ = parse_academic_year(sess, semt)
+
+    def _instr_name(offering):
+        u = offering.instructor_id.id.user
+        return f"{u.first_name} {u.last_name}".strip()
+
     seen = set()
     courses = []
     for reg in regs:
@@ -5455,11 +5493,51 @@ def admin_course_list(request):
         if c.id in seen:
             continue
         seen.add(c.id)
-        courses.append({
-            "course_id": c.id,
-            "code":      c.code,
-            "name":      c.name,
-        })
+
+        offerings = list(CourseInstructor.objects.filter(
+            course_id=c, year=academic_year, semester_type=semt,
+        ).select_related("instructor_id__id__user"))
+
+        sectioned = len(offerings) > 1 and any(o.section_label for o in offerings)
+
+        if sectioned:
+            # One row per section offering.
+            for o in offerings:
+                courses.append({
+                    "course_id": c.id,
+                    "code":      c.code,
+                    "name":      c.name,
+                    "instructor": _instr_name(o),
+                    "section":    o.section_label or "",
+                    "course_instructor_id": o.id,
+                })
+            # Surface responses not tied to an offering so the split doesn't hide them.
+            if FeedbackResponse.objects.filter(
+                course=c, session=sess, semester_type=semt,
+                course_instructor__isnull=True,
+            ).exists():
+                courses.append({
+                    "course_id": c.id,
+                    "code":      c.code,
+                    "name":      c.name,
+                    "instructor": "Section not recorded",
+                    "section":    "",
+                    "course_instructor_id": "none",
+                })
+        else:
+            names = []
+            for o in offerings:
+                nm = _instr_name(o)
+                if nm and nm not in names:
+                    names.append(nm)
+            courses.append({
+                "course_id": c.id,
+                "code":      c.code,
+                "name":      c.name,
+                "instructor": ", ".join(names),
+                "section":    "",
+                "course_instructor_id": None,
+            })
 
     return Response(courses)
 
@@ -5491,6 +5569,7 @@ def admin_all_stats(request):
     sess = request.query_params.get("session")
     semt = request.query_params.get("semester_type")
     cid  = request.query_params.get("course_id")
+    course_instructor = request.query_params.get("course_instructor")
     if not sess or not semt or not cid:
         return Response(
             {"detail":"Provide 'session', 'semester_type', and 'course_id'."},
@@ -5505,6 +5584,11 @@ def admin_all_stats(request):
             session=sess,
             semester_type=semt,
         )
+        # "none" = responses with no offering recorded.
+        if course_instructor == "none":
+            base = base.filter(course_instructor__isnull=True)
+        elif course_instructor:
+            base = base.filter(course_instructor_id=course_instructor)
         counts = {
             o.text: base.filter(option=o).count()
             for o in FeedbackOption.objects.filter(question=q)
@@ -5531,10 +5615,15 @@ def admin_all_stats(request):
             "comments":    item["comments"],
         })
 
+    # Fixed display order: course-related sections first, lab-related last.
+    section_order = ["contents", "instructor", "attendance", "tutorial", "lab"]
+    def _sec_rank(s):
+        return section_order.index(s) if s in section_order else len(section_order)
+
     response = {
         "sections": [
             {"section": sec, "questions": qs}
-            for sec, qs in grouped.items()
+            for sec, qs in sorted(grouped.items(), key=lambda kv: _sec_rank(kv[0]))
         ]
     }
 

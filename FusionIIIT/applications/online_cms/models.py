@@ -284,6 +284,10 @@ class Student_grades(models.Model):
         choices=SEMESTER_TYPE_CHOICES,
         null=True
     )
+    # The offering (course+section+faculty) that produced this grade. Grade
+    # submission is scoped to the offering's instructor, and this disambiguates
+    # section-wise rows for the same course. Nullable for pre-feature rows.
+    course_instructor = models.ForeignKey(CourseInstructor, null=True, blank=True, on_delete=models.SET_NULL)
     def __str__(self):
         return '{} - {}'.format(self.pk, self.course_id)
 

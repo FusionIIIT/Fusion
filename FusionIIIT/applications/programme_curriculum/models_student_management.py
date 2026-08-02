@@ -185,6 +185,7 @@ class StudentBatchUpload(models.Model):
     # Academic information
     branch = models.CharField(max_length=200, help_text="Discipline/Branch")
     specialization = models.CharField(max_length=200, blank=True, null=True, help_text="Specialization")
+    section = models.CharField(max_length=2, blank=True, null=True, help_text="B.Tech section (A-F), auto-derived at save from discipline + roll-number parity")
     date_of_birth = models.DateField(blank=True, null=True)
     ai_rank = models.IntegerField(blank=True, null=True, help_text="JEE AI Rank", db_column='jee_rank')
     category_rank = models.IntegerField(blank=True, null=True, help_text="Category Rank")
@@ -349,7 +350,8 @@ class StudentBatchUpload(models.Model):
         # Clean branch name
         if self.branch:
             self.branch = self.clean_branch_name(self.branch)
-        
+
+        # Section is assigned manually in Academics > Section Assignment, not auto-derived here.
         super().save(*args, **kwargs)
     
     def create_user_account(self, password=None):
@@ -632,10 +634,11 @@ def create_student_profiles_automatically(students_list):
             
             if student.user and student.roll_number:
                 from applications.academic_information.models import Student as AcademicStudent
-                
+
                 try:
                     extra_info = ExtraInfo.objects.get(id=student.roll_number)
-                    
+
+                    # Section left blank at onboarding; assigned later in Section Assignment.
                     academic_student, created = AcademicStudent.objects.get_or_create(
                         id=extra_info,
                         defaults={
@@ -647,7 +650,7 @@ def create_student_profiles_automatically(students_list):
                             'mother_name': student.mother_name or '',
                             'hall_no': 0,
                             'room_no': '',
-                            'specialization': ''
+                            'specialization': '',
                         }
                     )
                         
