@@ -288,6 +288,30 @@ def add_course(request):
 
         current_year = datetime.datetime.now().year
         session, semester_type = generate_current_session(current_year, student.curr_semester_no)
+        working_year = parse_academic_year(academic_year=session, semester_type=semester_type)[0]
+
+        # Resolve the offering (section) to register into. Prefer the student's own
+        # section; if that section doesn't run the course, they must pick one of the
+        # running sections (course_instructor id) — a cross-section backlog/improvement.
+        from applications.academic_information.models import resolve_offering
+        offering = resolve_offering(student, course, working_year, semester_type)
+        ci_id = request.data.get('course_instructor_id')
+        if ci_id:
+            offering = CourseInstructor.objects.filter(
+                id=ci_id, course_id=course, year=working_year, semester_type=semester_type,
+            ).first()
+            if not offering:
+                return Response({
+                    'error': 'Selected section is not running this course this semester.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+        elif offering is None:
+            running = CourseInstructor.objects.filter(
+                course_id=course, year=working_year, semester_type=semester_type,
+            ).exists()
+            if running:
+                return Response({
+                    'error': 'This course is not running in your section. Please select a section to register in.'
+                }, status=status.HTTP_400_BAD_REQUEST)
 
         old_course_reg = course_registration.objects.filter(
             student_id=student,
@@ -316,6 +340,7 @@ def add_course(request):
                 academic_year=session,
                 semester_type=semester_type,
                 old_course_registration=old_course_reg,
+                course_instructor=offering,
                 status='Pending'
             )
         except Exception as create_error:
@@ -500,17 +525,40 @@ def get_student_add_courses(request):
                 name__startswith='BL'
             )
         
+        # Current term, to find where each course is actually running this sem.
+        cur_year = datetime.datetime.now().year
+        session, sem_type = generate_current_session(cur_year, current_sem_no)
+        working_year = parse_academic_year(academic_year=session, semester_type=sem_type)[0]
+        student_section = student.section or ''
+
         courses_list = []
-        
+
         for slot in bl_slots:
             courses = slot.courses.all()
-            
+
             for course in courses:
                 already_registered = course_registration.objects.filter(
                     course_id=course,
                     student_id=student
                 ).exists()
-                
+
+                # Sections where this course is running this term. If the student's
+                # own section isn't among them, they pick one of these (backlog/improvement).
+                offerings = CourseInstructor.objects.filter(
+                    course_id=course, year=working_year, semester_type=sem_type,
+                ).select_related('instructor_id__id__user')
+                sections = []
+                own_section_running = False
+                for o in offerings:
+                    u = o.instructor_id.id.user
+                    sections.append({
+                        'course_instructor_id': o.id,
+                        'section': o.section_label or '',
+                        'instructor': f"{u.first_name} {u.last_name}".strip(),
+                    })
+                    if student_section and o.section_label == student_section:
+                        own_section_running = True
+
                 courses_list.append({
                     'id': course.id,
                     'code': course.code,
@@ -518,9 +566,12 @@ def get_student_add_courses(request):
                     'credit': course.credit,
                     'slot': slot.name,
                     'slot_id': slot.id,
-                    'already_registered': already_registered
+                    'already_registered': already_registered,
+                    'sections': sections,
+                    'own_section_running': own_section_running,
+                    'student_section': student_section,
                 })
-        
+
         return Response(courses_list, status=status.HTTP_200_OK)
         
     except Exception as e:
@@ -1904,6 +1955,43 @@ def acad_add_course(request):
     reg_type = data["registration_type"]
     old_id   = data.get("old_course")
     sem_type = data["semester_type"]
+    working_year = parse_academic_year(academic_year=session, semester_type=sem_type)[0]
+
+    # Resolve the offering (section). Prefer the chosen section, else the student's
+    # own. Registering into a section other than the student's own is only allowed
+    # for Backlog/Improvement.
+    from applications.academic_information.models import resolve_offering
+    ci_id = data.get("course_instructor_id")
+    if ci_id:
+        offering = CourseInstructor.objects.filter(
+            id=ci_id, course_id=course, year=working_year, semester_type=sem_type,
+        ).first()
+        if not offering:
+            return Response({"error": "Selected section is not running this course this semester."},
+                            status=status.HTTP_400_BAD_REQUEST)
+    else:
+        offering = resolve_offering(student, course, working_year, sem_type)
+
+    # A sectioned course can't be registered without a chosen section.
+    if offering is None:
+        sectioned = CourseInstructor.objects.filter(
+            course_id=course, year=working_year, semester_type=sem_type,
+        ).exclude(section_label__isnull=True).exclude(section_label="").exists()
+        if sectioned:
+            return Response(
+                {"error": "This course runs in sections — select a section to register in."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    student_section = getattr(student, "section", None)
+    if (offering is not None and offering.section_label
+            and offering.section_label != student_section
+            and reg_type not in ("Backlog", "Improvement")):
+        return Response(
+            {"error": "Registering into another section is only allowed as Backlog/Improvement."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     with transaction.atomic():
         cr = course_registration.objects.create(
             student_id       = student,
@@ -1913,7 +2001,8 @@ def acad_add_course(request):
             session          = session,
             registration_type= reg_type,
             semester_type = sem_type,
-            working_year = parse_academic_year(academic_year=session, semester_type=sem_type)[0]
+            working_year = working_year,
+            course_instructor = offering,
         )
         if old_id:
             old = course_registration.objects.filter(id=old_id).first()
@@ -3662,9 +3751,31 @@ def get_add_course_courses(request):
     # ensure the slot exists (404 if not)
     slot = get_object_or_404(CourseSlot, id=slot_id)
 
-    # via the M2M relationship .courses
-    courses = slot.courses.all().values("id", "code", "name", "credit")
-    return Response(list(courses), status=status.HTTP_200_OK)
+    # When the term is supplied, include the sections each course is running in
+    # (so the admin can pick a section for a cross-section backlog/improvement).
+    academic_year = request.query_params.get("academic_year")
+    semester_type = request.query_params.get("semester_type")
+    working_year = None
+    if academic_year and semester_type:
+        try:
+            working_year = parse_academic_year(academic_year=academic_year, semester_type=semester_type)[0]
+        except Exception:
+            working_year = None
+
+    result = []
+    for c in slot.courses.all():
+        entry = {"id": c.id, "code": c.code, "name": c.name, "credit": c.credit}
+        if working_year is not None:
+            offerings = CourseInstructor.objects.filter(
+                course_id=c, year=working_year, semester_type=semester_type,
+            ).select_related("instructor_id__id__user")
+            entry["sections"] = [{
+                "course_instructor_id": o.id,
+                "section": o.section_label or "",
+                "instructor": f"{o.instructor_id.id.user.first_name} {o.instructor_id.id.user.last_name}".strip(),
+            } for o in offerings]
+        result.append(entry)
+    return Response(result, status=status.HTTP_200_OK)
 
 
 def roman_to_int(s):
@@ -5061,7 +5172,9 @@ def approve_add_requests(request):
                         session=add_request.academic_year,
                         semester_type=add_request.semester_type,
                         working_year=datetime.datetime.now().year,
-                        registration_type=registration_type
+                        registration_type=registration_type,
+                        # Section chosen at request time (cross-section backlog/improvement).
+                        course_instructor=add_request.course_instructor,
                     )
                     reg.save()
 

@@ -727,7 +727,7 @@ def generate_xlsheet_api(request):
                 c.code as course_code,
                 c.name as course_name,
                 s.programme,
-                s.section as section
+                COALESCE(ci.section_label, s.section) as section
             FROM course_registration cr
             INNER JOIN globals_extrainfo ei ON cr.student_id_id = ei.id
             INNER JOIN auth_user u ON ei.user_id = u.id
@@ -735,6 +735,7 @@ def generate_xlsheet_api(request):
             LEFT JOIN programme_curriculum_batch b ON s.batch_id_id = b.id
             LEFT JOIN programme_curriculum_discipline d ON b.discipline_id = d.id
             INNER JOIN programme_curriculum_course c ON cr.course_id_id = c.id
+            LEFT JOIN programme_curriculum_courseinstructor ci ON cr.course_instructor_id = ci.id
             WHERE cr.session = %s
                 AND cr.semester_type = %s
                 AND cr.course_id_id = %s
@@ -760,9 +761,9 @@ def generate_xlsheet_api(request):
                     sql += " AND s.programme = %s"
                     params.append(programme_type)
 
-            # Section filter (A-F): scope the roll list to one section's students.
+            # Section = the course offering's section (course_instructor), else home section.
             if section:
-                sql += " AND s.section = %s"
+                sql += " AND COALESCE(ci.section_label, s.section) = %s"
                 params.append(section)
 
             sql += " ORDER BY u.username"

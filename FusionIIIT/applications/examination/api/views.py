@@ -444,10 +444,14 @@ def download_template(request):
                 student_id__in=student_ids_with_programme
             )
 
-        # Sections apply only to UG (PG/PhD have no sections); electives ignore it.
+        # Scope by the offering each registration is bound to (course_instructor),
+        # falling back to the student's home section only for pre-sectioning rows.
         section = (request.data.get('section') or '').strip() or None
         if section and (programme_type or '').strip().upper() == 'UG':
-            course_info_query = course_info_query.filter(student_id__section=section)
+            course_info_query = course_info_query.filter(
+                Q(course_instructor__section_label=section)
+                | (Q(course_instructor__section_label__isnull=True) & Q(student_id__section=section))
+            )
 
         course_info = course_info_query.order_by("student_id_id")
 
@@ -1745,9 +1749,13 @@ class UploadGradesProfAPI(APIView):
             my_offering_ids = {o.id for o in my_offerings}
             my_sections = {o.section_label for o in my_offerings}
             # A no-section (elective) offering owns all registrants; named-section
-            # offerings scope the roster to students in those sections (UG only).
+            # offerings scope the roster to the bound offering, falling back to the
+            # student's home section only for pre-sectioning rows (UG only).
             if (programme_type or "").strip().upper() == "UG" and None not in my_sections:
-                regs = regs.filter(student_id__section__in=my_sections)
+                regs = regs.filter(
+                    Q(course_instructor_id__in=my_offering_ids)
+                    | (Q(course_instructor__isnull=True) & Q(student_id__section__in=my_sections))
+                )
                 if not regs.exists():
                     return Response(
                         {"error": "No students are registered in the selected section for this course."},
@@ -3006,10 +3014,14 @@ class PreviewGradesAPI(APIView):
             
             registrations = registrations.filter(student_id__in=student_ids_with_programme)
 
-        # Sections apply only to UG (PG/PhD have no sections); electives ignore it.
+        # Scope by the offering each registration is bound to (course_instructor),
+        # falling back to the student's home section only for pre-sectioning rows.
         section = (request.data.get("section") or "").strip() or None
         if section and (programme_type or "").strip().upper() == "UG":
-            registrations = registrations.filter(student_id__section=section)
+            registrations = registrations.filter(
+                Q(course_instructor__section_label=section)
+                | (Q(course_instructor__section_label__isnull=True) & Q(student_id__section=section))
+            )
 
         # Build a set of registered roll numbers for fast lookup.
         registered_rollnos = set()
