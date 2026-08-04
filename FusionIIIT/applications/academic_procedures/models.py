@@ -1,4 +1,5 @@
 import datetime
+from decimal import Decimal
 
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
@@ -1435,6 +1436,42 @@ class ExaminerBankDetails(models.Model):
         return f"{self.prof_name} - {self.submission.thesis.research_theme} ({self.status})"
 
 
+def upload_pg_synopsis(instance, filename):
+    """Upload path for a PG thesis synopsis.
+
+    Extension is hardcoded rather than taken from the client-supplied
+    filename -- both are validated as PDF in the view, but deriving the
+    stored extension from user input would let a renamed file (e.g.
+    "x.html") get served back with a browser-inferred content type,
+    opening a stored-XSS path when a supervisor/examiner opens the link.
+    """
+    return f"pg_thesis/synopsis/{instance.file_token}.pdf"
+
+
+def upload_pg_report(instance, filename):
+    """Upload path for a PG thesis report. See upload_pg_synopsis."""
+    return f"pg_thesis/report/{instance.file_token}.pdf"
+
+
+class PGThesisSubmission(models.Model):
+    """PG (M.Tech/M.Des) final thesis submission -- synopsis + full report.
+
+    Deliberately separate from ThesisSubmission: PhD's Dean Panel / Director /
+    foreign-examiner workflow doesn't apply to PG. This simpler model just
+    holds the uploaded documents that the supervisor (SupervisorThesisDecimalScores)
+    and the batch's accepted examiner (ThesisExaminerPanel) reference while
+    scoring the student's decimal-mode ThesisEvaluation.
+    """
+    thesis        = models.OneToOneField(ThesisTopic, on_delete=models.CASCADE, related_name='pg_submission')
+    file_token    = models.UUIDField(default=uuid.uuid4, unique=True, editable=False, db_index=True)
+    synopsis      = models.FileField(upload_to=upload_pg_synopsis)
+    thesis_report = models.FileField(upload_to=upload_pg_report)
+    submitted_at  = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"PG thesis submission — {self.thesis.student} ({self.submitted_at:%Y-%m-%d})"
+
+
 # ===========================================================================
 # Thesis Slot & Progress Seminar Semester-Level Registration
 # ===========================================================================
@@ -1565,9 +1602,16 @@ class ThesisEvaluation(models.Model):
         help_text='Sequential block index starting at 1 (max = registration.credits ÷ 3)',
     )
 
-    # Grade — null until supervisor submits
+    # Grade — null until supervisor submits. Blocks mode (PhD, PG sem 2/3)
+    # uses `grade`; decimal mode (PG's final thesis semester) uses
+    # `numeric_grade` instead, computed from ThesisEvaluationScore once both
+    # the supervisor and examiner scores are in. A row only ever populates one.
     grade         = models.CharField(
         max_length=1, choices=GRADE_CHOICES, null=True, blank=True,
+    )
+    numeric_grade = models.DecimalField(
+        max_digits=4, decimal_places=1, null=True, blank=True,
+        help_text='Decimal-mode final grade: average of supervisor_score and examiner_score',
     )
     submitted_by  = models.ForeignKey(
         Faculty, null=True, blank=True,
@@ -1602,7 +1646,113 @@ class ThesisEvaluation(models.Model):
 
     @property
     def total_blocks(self):
+        if self.registration.thesis_slot.evaluation_type == 'decimal':
+            return 1
         return self.registration.credits // 3
+
+
+class ThesisExaminerPanel(models.Model):
+    """A batch-wide (i.e. per-specialization, not per-student) examiner panel
+    for PG's decimal-graded final thesis semester -- mirrors the real paper
+    form, which is one sheet of 4 examiners per specialization. HOD nominates
+    4 Indian examiner candidates for the whole batch; Dean ranks and invites
+    them; whichever candidate accepts first examines every student in that
+    batch. Multiple specialization batches within the same discipline+year
+    (e.g. CSE's "AI & ML" and "Data Science") each get their own independent
+    panel -- the HOD nomination screen and Dean ranking screen just group
+    those panels together for convenience (see hod_examiner_panel_dashboard /
+    dean_examiner_panel_dashboard), they don't merge the underlying process.
+    """
+    STATUS_CHOICES = [
+        ('hod_pending',   'Awaiting HOD Nomination'),
+        ('dean_pending',  'Awaiting Dean Ranking'),
+        ('invited',       'Invitations Sent'),
+        ('accepted',      'Examiner Confirmed'),
+        ('all_declined',  'All Candidates Declined'),
+    ]
+
+    batch             = models.OneToOneField(Batch, on_delete=models.CASCADE, related_name='thesis_examiner_panel')
+    status            = models.CharField(max_length=20, choices=STATUS_CHOICES, default='hod_pending')
+    hod_submitted_by  = models.ForeignKey(Faculty, null=True, blank=True,
+                                          on_delete=models.SET_NULL, related_name='thesis_panels_nominated')
+    hod_submitted_at  = models.DateTimeField(null=True, blank=True)
+    dean_reviewed_by  = models.ForeignKey('auth.User', null=True, blank=True,
+                                          on_delete=models.SET_NULL, related_name='thesis_panels_ranked')
+    dean_invited_at   = models.DateTimeField(null=True, blank=True)
+    accepted_candidate = models.OneToOneField(
+        'ThesisExaminerCandidate', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='+',
+    )
+    created_at        = models.DateTimeField(auto_now_add=True)
+    updated_at        = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Examiner panel — {self.batch} [{self.status}]"
+
+
+class ThesisExaminerCandidate(models.Model):
+    """One HOD-nominated examiner candidate within a ThesisExaminerPanel.
+    Same token-based accept/decline pattern as ReviewInvitation, minus the
+    Indian/foreign split -- PG examiners are Indian-only.
+    """
+    STATUS_CHOICES = [
+        ('pending',  'Not Yet Invited'),
+        ('invited',  'Invited'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Declined'),
+        ('expired',  'Expired'),
+    ]
+
+    panel        = models.ForeignKey(ThesisExaminerPanel, on_delete=models.CASCADE, related_name='candidates')
+    name         = models.CharField(max_length=255)
+    position     = models.CharField(max_length=255, blank=True)
+    address      = models.TextField(blank=True)
+    phone        = models.CharField(max_length=20, blank=True)
+    fax          = models.CharField(max_length=20, blank=True)
+    email        = models.EmailField()
+    priority     = models.PositiveSmallIntegerField(default=0)
+    token        = models.UUIDField(default=uuid.uuid4, unique=True, editable=False, db_index=True)
+    status       = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    last_sent    = models.DateTimeField(null=True, blank=True)
+    expires_at   = models.DateTimeField(null=True, blank=True)
+    created_at   = models.DateTimeField(auto_now_add=True)
+    updated_at   = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('panel', 'priority')
+        ordering = ['panel', 'priority']
+
+    def is_expired(self):
+        return bool(self.expires_at and timezone.now() >= self.expires_at)
+
+    def is_finalized(self):
+        """Unlike ReviewInvitation.is_finalized() (which excludes 'accepted',
+        since an accepted PhD reviewer still has more steps ahead), 'accepted'
+        counts as finalized here on purpose: an examiner candidate who has
+        accepted shouldn't be able to accept/reject again. Don't assume parity
+        between the two if refactoring to share logic."""
+        return self.status in ('accepted', 'rejected', 'expired')
+
+    def __str__(self):
+        return f"{self.name} — {self.panel.batch} [{self.status}]"
+
+
+class ThesisEvaluationScore(models.Model):
+    """Raw supervisor/examiner input scores (out of 100) for a decimal-mode
+    ThesisEvaluation. ThesisEvaluation.numeric_grade holds the averaged
+    result once both scores are in; this table only ever holds rows for
+    decimal-mode evaluations, so nothing here is sparse.
+    """
+    evaluation           = models.OneToOneField(ThesisEvaluation, on_delete=models.CASCADE, related_name='score_inputs')
+    supervisor_score     = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True)
+    supervisor_scored_at = models.DateTimeField(null=True, blank=True)
+    examiner_candidate   = models.ForeignKey(ThesisExaminerCandidate, null=True, blank=True,
+                                             on_delete=models.SET_NULL, related_name='scores_given')
+    examiner_score       = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True)
+    examiner_scored_at   = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Scores for {self.evaluation} (sup={self.supervisor_score}, exam={self.examiner_score})"
 
 
 class ProgressSeminarEvaluation(models.Model):
@@ -1691,6 +1841,44 @@ def resolve_progress_seminar_credit(student, semester):
     return entry.credit if entry and entry.credit else DEFAULT_PROGRESS_SEMINAR_CREDIT
 
 
+DEFAULT_TEACHING_CREDIT = 0
+# Mirrors DEFAULT_PROGRESS_SEMINAR_CREDIT's reasoning: 0, not a guess, so a
+# missing/unlinked TeachingCreditRegistration under-counts rather than
+# fabricates a plausible-looking credit value.
+
+
+def resolve_teaching_credit_catalog_entry(student, semester):
+    """Resolve the programme_curriculum.TeachingCredit catalog row (code/name/credit)
+    that applies to a student's teaching credit in a given semester, via their
+    TeachingCreditRegistration -> TeachingCreditSlot -> teaching_credits M2M,
+    preferring the student's own discipline when a slot serves more than one.
+    Returns None if no registration/catalog match exists.
+
+    This is the single source of truth for "how many credits is one semester of
+    teaching credit worth" -- do not hardcode that number elsewhere; call this instead."""
+    if not semester:
+        return None
+    reg = TeachingCreditRegistration.objects.filter(
+        student=student, semester=semester
+    ).select_related('teaching_credit_slot').prefetch_related(
+        'teaching_credit_slot__teaching_credits'
+    ).first()
+    if not reg or not reg.teaching_credit_slot:
+        return None
+    discipline = getattr(getattr(student, 'batch_id', None), 'discipline', None)
+    manager = reg.teaching_credit_slot.teaching_credits
+    entry = (manager.filter(discipline=discipline).first() if discipline else None) or manager.first()
+    return entry
+
+
+def resolve_teaching_credit_credit(student, semester):
+    """Credit value for one semester of teaching credit, sourced from the catalog
+    via resolve_teaching_credit_catalog_entry(), falling back to
+    DEFAULT_TEACHING_CREDIT only when no catalog entry can be found."""
+    entry = resolve_teaching_credit_catalog_entry(student, semester)
+    return entry.credit if entry and entry.credit else DEFAULT_TEACHING_CREDIT
+
+
 # ===========================================================================
 # PhD Course (Coursework) Registration
 # ===========================================================================
@@ -1768,6 +1956,7 @@ class ComprehensiveExam(models.Model):
     ]
 
     MAX_ATTEMPTS = 2
+    MIN_CPI = Decimal('7.00')
 
     student = models.OneToOneField(Student, on_delete=models.CASCADE, related_name='comprehensive_exam')
     supervisor = models.ForeignKey(Faculty, related_name='comprehensive_exams_supervised', on_delete=models.CASCADE)
@@ -1953,7 +2142,7 @@ class OpenSeminar(models.Model):
     teaching_credits = models.PositiveIntegerField(default=0)
     semesters_completed = models.PositiveIntegerField(default=0)
     rpc_recommended_open_seminar = models.BooleanField(default=False)
-    first_draft_sent_to_dean = models.BooleanField(default=False)
+    first_draft_document = models.FileField(upload_to='open_seminar_first_drafts/', null=True, blank=True)
 
     # Convener (DPGC) early review -- HOD of the student's department stands in.
     hod_remarks = models.TextField(blank=True)

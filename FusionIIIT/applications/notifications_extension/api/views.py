@@ -1,4 +1,15 @@
 # views.py
+#
+# NOTE (as of 2026-07-31): this file's views are not called by the Fusion React
+# frontend - see `applications/notifications_extension/apps.py` for details.
+# `NotificationsList`/`Delete`/`MarkAsRead` duplicate functionality already live at
+# `applications/globals/api/views.py` (`notification`/`delete_notification`/
+# `NotificationRead`/`NotificationUnread`), which is what the frontend actually uses -
+# note that implementation differs in ways that matter (soft- vs hard-delete, response
+# shape, and this file has no mark-as-unread endpoint). The per-module notification-
+# sending views below (e.g. `LeaveModuleNotificationAPIView`) are also unreferenced by
+# the frontend; those modules send notifications by calling `notification/views.py`
+# helper functions directly instead of through this REST layer.
 from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
 from rest_framework.response import Response

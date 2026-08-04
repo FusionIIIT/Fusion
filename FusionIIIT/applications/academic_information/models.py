@@ -1,6 +1,7 @@
 from django.db import models
+from django.contrib.auth.models import User
 
-from applications.globals.models import ExtraInfo, Faculty
+from applications.globals.models import ExtraInfo, Faculty, Designation, DepartmentInfo
 
 from applications.programme_curriculum.models import Batch
 
@@ -196,10 +197,23 @@ class Meeting(models.Model):
 
 
 class Calendar(models.Model):
-    
+
+    AUDIENCE_CHOICES = (
+        ('all', 'Everyone'),
+        ('role', 'Specific Role'),
+        ('batch', 'Specific Batch'),
+        ('department', 'Specific Department'),
+        ('individual', 'Specific Individuals'),
+    )
+
     from_date = models.DateField()
     to_date = models.DateField()
     description = models.CharField(max_length=40)
+    audience_type = models.CharField(max_length=20, choices=AUDIENCE_CHOICES, default='all')
+    target_role = models.ForeignKey(Designation, null=True, blank=True, on_delete=models.SET_NULL)
+    target_department = models.ForeignKey(DepartmentInfo, null=True, blank=True, on_delete=models.SET_NULL)
+    target_batch = models.ForeignKey(Batch, null=True, blank=True, on_delete=models.SET_NULL)
+    target_users = models.ManyToManyField(User, blank=True, related_name='targeted_calendar_events')
 
     class Meta:
         db_table = 'Calendar'

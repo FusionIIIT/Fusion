@@ -2,7 +2,7 @@ from applications.academic_information.models import (Calendar, Student,Curricul
                                                       Student_attendance)
 from ..academic_procedures.models import (BranchChange, CoursesMtech, FinalRegistrations, InitialRegistration, StudentRegistrationChecks,
                      Register, Thesis, FinalRegistration, ThesisTopicProcess,
-                     Constants, FeePayments, TeachingCreditRegistration, SemesterMarks, 
+                     Constants, FeePayments, TeachingCreditRegistration, SemesterMarks,
                      MarkSubmissionCheck, Dues,AssistantshipClaim, MTechGraduateSeminarReport,
                      PhDProgressExamination,CourseRequested, course_registration, MessDue, Assistantship_status , backlog_course,)
 

@@ -425,8 +425,9 @@ def authority_processing(request, leave_request):
         leave_request.status = 'forwarded'
         leave_request.save()
         leave_module_notif(request.user, leave_request.leave.applicant, 'leave_forwarded')
-        officer = leave.applicant.leave_admins.officer.designees.first().user
-        leave_module_notif(leave_request.leave.applicant, officer, 'leave_request')
+        officer_designation = leave.applicant.leave_admins.officer
+        officer = officer_designation.designees.first().user
+        leave_module_notif(leave_request.leave.applicant, officer, 'leave_request', role=officer_designation.name)
         LeaveRequest.objects.create(
             leave=leave,
             requested_from=officer,
@@ -500,8 +501,9 @@ def process_staff_faculty_application(request):
                         leave=rep_request.leave,
                         permission='intermediary'
                     )"""
-                    authority = rep_request.leave.applicant.leave_admins.authority.designees.first().user
-                    leave_module_notif(rep_request.leave.applicant, authority, 'leave_request')
+                    authority_designation = rep_request.leave.applicant.leave_admins.authority
+                    authority = authority_designation.designees.first().user
+                    leave_module_notif(rep_request.leave.applicant, authority, 'leave_request', role=authority_designation.name)
                     LeaveRequest.objects.create(
                         leave=rep_request.leave,
                         requested_from=authority,

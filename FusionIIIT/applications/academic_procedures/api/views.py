@@ -11,7 +11,7 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, redirect
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.db.models import Prefetch
 from django.db.models.functions import Concat,ExtractYear,ExtractMonth,ExtractDay,Cast
 from django.db.models import Max,Value,IntegerField,CharField,F,Sum, Case, When, Count
@@ -36,7 +36,9 @@ from rest_framework.decorators import (
 from rest_framework.parsers    import MultiPartParser, FormParser
 
 from applications.globals.models import Faculty, HoldsDesignation, Designation, ExtraInfo
-from applications.programme_curriculum.models import ( CourseInstructor, CourseSlot, Course as Courses, Batch, Semester)
+from applications.globals.decorators import role_required
+from notifications.signals import notify
+from applications.programme_curriculum.models import ( CourseInstructor, CourseSlot, Course as Courses, Batch, Discipline, Semester)
 # from applications.programme_curriculum.models import Course
 
 from applications.academic_procedures.models import ( MTechGraduateSeminarReport, PhDProgressExamination, Student, Curriculum , ThesisTopicProcess, InitialRegistrations,
@@ -118,37 +120,6 @@ def generate_next_session(current_year, next_semester) :
     return session, semester_type
 
 
-def role_required(allowed_roles):
-    """
-    Decorator factory that accepts a list of allowed role names.
-    Accepts multiple HoldsDesignation records per user.
-    """
-    allowed_lower = {role.lower() for role in allowed_roles}
-
-    def decorator(view_func):
-        @wraps(view_func)
-        def _wrapped_view(request, *args, **kwargs):
-            # Fetch all designations for this user
-            user_roles = (
-                HoldsDesignation.objects
-                .select_related('designation')
-                .filter(user=request.user)
-                .values_list('designation__name', flat=True)  # or whichever field holds the string
-            )
-
-            # Normalize to lowercase for comparison
-            user_roles_lower = {r.lower() for r in user_roles}
-
-            # Check intersection
-            if not (user_roles_lower & allowed_lower):
-                return Response(
-                    {"error": "Permission denied: one of %s required" % allowed_roles},
-                    status=status.HTTP_403_FORBIDDEN
-                )
-
-            return view_func(request, *args, **kwargs)
-        return _wrapped_view
-    return decorator
 
 
 
@@ -1150,7 +1121,7 @@ def verify_registration(request):
                 o = FinalRegistration.objects.filter(id= obj.id).update(verified = True)
             # course_registration.objects.bulk_create(ver_reg)
             academics_module_notif(request.user, student.id.user, 'registration_approved')
-            
+
             Student.objects.filter(id = student_id).update(curr_semester_no = sem_no)
             return JsonResponse({'status': 'success', 'message': 'Successfully Accepted'})
          
@@ -2544,7 +2515,7 @@ def submit_preregistration(request):
             old_course_registration_id = prev_registration_id,
             timestamp=timezone.now()
         )
-    
+
     # Optionally, update the StudentRegistrationChecks record to mark pre-registration as complete.
     reg_check, created = StudentRegistrationChecks.objects.get_or_create(
         student_id=student, semester_id_id=next_semester.id,
@@ -5954,11 +5925,16 @@ def apply_demotion(request):
 
 def thesis_to_dict(t):
     """Serialize a ThesisTopic instance for JSON responses."""
+    try:
+        programme_category = t.student.batch_id.curriculum.programme.category
+    except AttributeError:
+        programme_category = None
     return {
         "id": t.id,
         "student_roll": t.student.id.id,
         "student_name": t.student.id.user.get_full_name(),
         "student_discipline": t.student.specialization,
+        "programme_category": programme_category,
         "category": t.category,
         "broad_area": t.broad_area,
         "research_theme": t.research_theme,
@@ -6032,17 +6008,57 @@ def student_thesis_api(request):
     if not thesis:
         thesis = ThesisTopic(student=student)
 
+    supervisor_id = data['supervisor_id']
+    co_supervisor_id = data.get('co_supervisor_id')
+
+    if co_supervisor_id and co_supervisor_id == supervisor_id:
+        return JsonResponse({"error": "Co-supervisor must be different from supervisor"}, status=400)
+
+    try:
+        supervisor = Faculty.objects.get(pk=supervisor_id)
+    except Faculty.DoesNotExist:
+        return JsonResponse({"error": "Invalid supervisor"}, status=400)
+    if not supervisor.id.user.is_active:
+        return JsonResponse({"error": "Selected supervisor is not an active faculty member"}, status=400)
+
+    if co_supervisor_id:
+        try:
+            co_supervisor = Faculty.objects.get(pk=co_supervisor_id)
+        except Faculty.DoesNotExist:
+            return JsonResponse({"error": "Invalid co-supervisor"}, status=400)
+        if not co_supervisor.id.user.is_active:
+            return JsonResponse({"error": "Selected co-supervisor is not an active faculty member"}, status=400)
+
     thesis.category            = data['category']
     thesis.broad_area          = data['broad_area']
     thesis.research_theme      = data['research_theme']
-    thesis.supervisor_id       = data['supervisor_id']
-    thesis.co_supervisor_id    = data.get('co_supervisor_id')
+    thesis.supervisor_id       = supervisor_id
+    thesis.co_supervisor_id    = co_supervisor_id
     thesis.external_name       = data.get('external_name', '')
     thesis.external_email      = data.get('external_email', '')
     thesis.external_discipline = data.get('external_discipline', '')
     thesis.external_institution= data.get('external_institution', '')
     thesis.status              = 'supervisor_pending'
+    # Any edit invalidates consents already given (e.g. supervisor consented
+    # while co-supervisor consent is still pending) -- otherwise a changed
+    # supervisor/topic could ride through on a stale consent.
+    thesis.supervisor_consented    = False
+    thesis.co_supervisor_consented = False
     thesis.save()
+
+    _thesis_notify(
+        sender=user,
+        recipient=supervisor.id.user,
+        verb='New thesis topic proposal awaiting your review',
+        description=f"{student.id.user.get_full_name()} has submitted a thesis topic proposal for your review.",
+    )
+    if co_supervisor_id:
+        _thesis_notify(
+            sender=user,
+            recipient=co_supervisor.id.user,
+            verb='New thesis topic proposal awaiting your review',
+            description=f"{student.id.user.get_full_name()} has submitted a thesis topic proposal naming you as co-supervisor.",
+        )
 
     return JsonResponse(thesis_to_dict(thesis), status=201)
 
@@ -6236,8 +6252,13 @@ def supervisor_review_api(request, pk):
 
     data = request.data
 
-    if 'research_theme' in data:
+    if 'research_theme' in data and data['research_theme'] != thesis.research_theme:
         thesis.research_theme = data['research_theme']
+        # Content changed -- any consent already given (e.g. supervisor
+        # consented while co-supervisor's is still pending) no longer
+        # reflects what's being approved, so it must be re-given.
+        thesis.supervisor_consented    = False
+        thesis.co_supervisor_consented = False
 
     if is_co and not is_sup:
         if thesis.co_supervisor_consented:
@@ -6245,6 +6266,13 @@ def supervisor_review_api(request, pk):
         if data.get('co_supervisor_consented'):
             thesis.co_supervisor_consented = True
             thesis.save()
+            _thesis_notify(
+                sender=request.user,
+                recipient=thesis.supervisor.id.user,
+                verb='Co-supervisor has consented to the thesis topic',
+                description=f"{thesis.co_supervisor.id.user.get_full_name()} has consented to "
+                            f"{thesis.student.id.user.get_full_name()}'s thesis topic.",
+            )
             return JsonResponse({"message": "Co-Supervisor consent recorded."}, status=200)
         return JsonResponse({"error": "Invalid consent payload."}, status=400)
 
@@ -6252,6 +6280,11 @@ def supervisor_review_api(request, pk):
 
         if not (thesis.supervisor_consented and
                 (not thesis.co_supervisor or thesis.co_supervisor_consented)):
+
+            # Committee/PG-load edits change what's being approved -- a
+            # co-supervisor consent already given against the old values
+            # must not silently carry over.
+            thesis.co_supervisor_consented = False
 
             thesis.pg_single  = data.get('pg_single', thesis.pg_single)
             thesis.pg_shared  = data.get('pg_shared', thesis.pg_shared)
@@ -6294,6 +6327,17 @@ def supervisor_review_api(request, pk):
                 )
             thesis.status = 'hod_pending'
             thesis.save()
+            student_discipline = (
+                thesis.student.batch_id.discipline.acronym
+                if thesis.student.batch_id and thesis.student.batch_id.discipline else None
+            )
+            _thesis_notify(
+                sender=request.user,
+                recipient=_hod_users_for_discipline(student_discipline),
+                verb='Thesis topic pending your review',
+                description=f"{thesis.student.id.user.get_full_name()}'s thesis topic has been "
+                            f"forwarded by the supervisor and co-supervisor for your review.",
+            )
             return JsonResponse(
                 {"message": "Forwarded to HOD successfully.", "status": thesis.status},
                 status=200
@@ -6334,6 +6378,72 @@ def is_hod_of_discipline(user, discipline_acronym):
         working=user,
         designation__name=f"HOD ({discipline_acronym})"
     ).exists()
+
+
+def _users_holding_designation(designation_name):
+    """Users currently acting in the given designation (via HoldsDesignation.working
+    -- the field documented as the correct one for permissions/current-holder lookups,
+    covering officiating/temporary holders too, not just the permanent one)."""
+    return User.objects.filter(
+        current_designation__designation__name=designation_name
+    ).distinct()
+
+
+def _hod_users_for_discipline(discipline_acronym):
+    """Users currently acting as HOD for one specific discipline acronym (e.g. 'CSE')."""
+    if not discipline_acronym:
+        return User.objects.none()
+    return _users_holding_designation(f"HOD ({discipline_acronym})")
+
+
+def _dean_academic_users():
+    return _users_holding_designation('Dean Academic')
+
+
+def _notify(sender, recipient, verb, description='', module=''):
+    """Thin wrapper around notify.send for PhD workflow notifications.
+    `recipient` may be a single User, None, or a queryset/list of Users --
+    falsy/empty recipients are silently skipped rather than erroring."""
+    if recipient is None:
+        return
+    if hasattr(recipient, 'exists') and not recipient.exists():
+        return
+    notify.send(
+        sender=sender,
+        recipient=recipient,
+        verb=verb,
+        description=description,
+        url='',
+        module=module,
+    )
+
+
+def _thesis_notify(sender, recipient, verb, description=''):
+    _notify(sender, recipient, verb, description, module='Thesis Topic')
+
+
+def _comprehensive_exam_notify(sender, recipient, verb, description=''):
+    _notify(sender, recipient, verb, description, module='Comprehensive Exam')
+
+
+def _open_seminar_notify(sender, recipient, verb, description=''):
+    _notify(sender, recipient, verb, description, module='Open Seminar')
+
+
+def _teaching_credit_notify(sender, recipient, verb, description=''):
+    _notify(sender, recipient, verb, description, module='Teaching Credit')
+
+
+def _progress_seminar_notify(sender, recipient, verb, description=''):
+    _notify(sender, recipient, verb, description, module='Progress Seminar')
+
+
+def _phd_course_registration_notify(sender, recipient, verb, description=''):
+    _notify(sender, recipient, verb, description, module='PhD Course Registration')
+
+
+def _academic_office_users():
+    return _users_holding_designation('acadadmin')
 
 
 # 4. HOD endpoints
@@ -6402,21 +6512,45 @@ def hod_review_api(request, pk):
         return JsonResponse(data, status=200)
 
     # POST
-    if not is_hod or thesis.status not in ['hod_pending','hod_rejected','dean_pending']:
+    if not is_hod or thesis.status not in ['hod_pending','hod_rejected','dean_pending','dean_rejected']:
         return JsonResponse({"error":"Forbidden or invalid stage"}, status=403)
 
     d = request.data
     if d.get('approve'):
         thesis.status      = 'hod_approved'
         thesis.hod_remarks = ''
+        thesis.save()
+        _thesis_notify(
+            sender=user,
+            recipient=_dean_academic_users(),
+            verb='Thesis topic pending your final approval',
+            description=f"{thesis.student.id.user.get_full_name()}'s thesis topic has been "
+                        f"approved by the HOD and is awaiting your final approval.",
+        )
+        for recipient in filter(None, [thesis.student.id.user, thesis.supervisor.id.user]):
+            _thesis_notify(
+                sender=user,
+                recipient=recipient,
+                verb='Thesis topic approved by HOD',
+                description=f"{thesis.student.id.user.get_full_name()}'s thesis topic has been "
+                            f"approved by the HOD and forwarded to Dean Academic.",
+            )
     else:
         thesis.status      = 'hod_rejected'
         thesis.hod_remarks = d.get('remarks','')
         thesis.supervisor_consented    = False
         thesis.co_supervisor_consented = False
         thesis.dean_remarks            = ''
+        thesis.save()
+        for recipient in filter(None, [thesis.supervisor.id.user, thesis.student.id.user]):
+            _thesis_notify(
+                sender=user,
+                recipient=recipient,
+                verb='Thesis topic rejected by HOD',
+                description=f"The HOD rejected {thesis.student.id.user.get_full_name()}'s thesis "
+                            f"topic. Remarks: {thesis.hod_remarks or '—'}",
+            )
 
-    thesis.save()
     return JsonResponse({"status":thesis.status}, status=200)
 
 
@@ -6424,6 +6558,7 @@ def hod_review_api(request, pk):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@role_required(['Dean Academic'])
 def dean_dashboard(request):
     """
     GET /dean/dashboard/ → {pending, approved}
@@ -6441,9 +6576,9 @@ def dean_dashboard(request):
 
 @api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
+@role_required(['Dean Academic'])
 def dean_review_api(request, pk):
     thesis = get_object_or_404(ThesisTopic, pk=pk)
-    # Assume user is Dean
     if request.method == 'GET':
         data = thesis_to_dict(thesis)
         return JsonResponse(data, status=200)
@@ -6453,19 +6588,51 @@ def dean_review_api(request, pk):
         return JsonResponse({"error":"Forbidden or invalid stage"}, status=403)
 
     d = request.data
+    student_discipline = (
+        thesis.student.batch_id.discipline.acronym
+        if thesis.student.batch_id and thesis.student.batch_id.discipline else None
+    )
+
     if d.get('approve'):
         thesis.status       = 'dean_approved'
         thesis.dean_remarks = ''
+        thesis.save()
+        recipients = [thesis.student.id.user, thesis.supervisor.id.user]
+        if thesis.co_supervisor:
+            recipients.append(thesis.co_supervisor.id.user)
+        for recipient in recipients:
+            _thesis_notify(
+                sender=request.user,
+                recipient=recipient,
+                verb='Thesis topic approved by Dean Academic',
+                description=f"{thesis.student.id.user.get_full_name()}'s thesis topic has "
+                            f"received final approval from Dean Academic.",
+            )
+        _thesis_notify(
+            sender=request.user,
+            recipient=_hod_users_for_discipline(student_discipline),
+            verb='Thesis topic approved by Dean Academic',
+            description=f"{thesis.student.id.user.get_full_name()}'s thesis topic has "
+                        f"received final approval from Dean Academic.",
+        )
     else:
-        thesis.status       = 'hod_pending'
+        thesis.status       = 'dean_rejected'
         thesis.dean_remarks = d.get('remarks','')
+        thesis.save()
+        _thesis_notify(
+            sender=request.user,
+            recipient=_hod_users_for_discipline(student_discipline),
+            verb='Thesis topic rejected by Dean Academic',
+            description=f"Dean Academic rejected {thesis.student.id.user.get_full_name()}'s "
+                        f"thesis topic. Remarks: {thesis.dean_remarks or '—'}",
+        )
 
-    thesis.save()
     return JsonResponse({"status":thesis.status}, status=200)
 
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+@role_required(['Dean Academic'])
 def dean_generate_pdf_api(request, pk):
     thesis = get_object_or_404(ThesisTopic, pk=pk)
     if thesis.status != 'dean_approved':
@@ -6675,6 +6842,12 @@ def create_report(request, thesis_pk):
     if thesis.status != 'dean_approved':
         return JsonResponse({"error":"Thesis not Dean-approved."}, status=403)
 
+    if thesis.seminars.filter(status='rpc_pending').exists():
+        return JsonResponse(
+            {"error": "A previous seminar report is still awaiting RPC consent."},
+            status=403,
+        )
+
     # versioning
     last = thesis.seminars.order_by('-version').first()
     version = (last.version + 1) if last else 1
@@ -6687,6 +6860,14 @@ def create_report(request, thesis_pk):
         )
     except Semester.DoesNotExist:
         semester = None
+
+    if semester is None or not ProgressSeminarRegistration.objects.filter(
+        student=student, semester=semester, status='verified',
+    ).exists():
+        return JsonResponse(
+            {"error": "No verified Progress Seminar registration for the current semester."},
+            status=403,
+        )
 
     seminar = ProgressSeminarEntry.objects.create(
         thesis=thesis,
@@ -6703,6 +6884,14 @@ def create_report(request, thesis_pk):
         pub_published_or_accepted  = int(request.data.get('pub_published_or_accepted', 0) or 0),
         pub_presented_unpublished  = int(request.data.get('pub_presented_unpublished', 0) or 0),
         pub_submitted_under_review = int(request.data.get('pub_submitted_under_review', 0) or 0),
+    )
+
+    _progress_seminar_notify(
+        sender=request.user,
+        recipient=_rpc_committee_users(student),
+        verb='Progress Seminar report pending your consent',
+        description=f"{student.id.user.get_full_name()} has submitted a Progress Seminar "
+                    f"report (version {version}) awaiting RPC consent.",
     )
 
     return JsonResponse({
@@ -6814,6 +7003,7 @@ def rpc_detail(request, pk):
         "rollNumber":   roll_number,
         "discipline":   discipline,
         "thesisTitle":  thesis_title,
+        "programme_category": _student_programme_category(seminar.thesis.student),
         "id": seminar.id,
         "version": seminar.version,
         "semester_no": seminar.semester.semester_no if seminar.semester else None,
@@ -6886,14 +7076,28 @@ def rpc_finalize(request, pk):
     if not CommitteeMember.objects.filter(thesis=seminar.thesis, member=faculty).exists():
         return JsonResponse({"error": "Not on committee."}, status=403)
 
-    total = CommitteeMember.objects.filter(thesis=seminar.thesis).count()
-    yes = ProgressSeminarConsent.objects.filter(seminar=seminar, consented=True).count()
+    current_committee_ids = CommitteeMember.objects.filter(thesis=seminar.thesis).values_list('member_id', flat=True)
+    total = len(current_committee_ids)
+    yes = ProgressSeminarConsent.objects.filter(
+        seminar=seminar, consented=True, member_id__in=current_committee_ids,
+    ).count()
 
-    if yes < total:
+    if total == 0 or yes < total:
         return JsonResponse({"error": "Not all consents recorded."}, status=400)
 
     seminar.status = 'rpc_approved'
     seminar.save()
+
+    thesis = seminar.thesis
+    for recipient in [thesis.student.id.user, thesis.supervisor.id.user]:
+        _progress_seminar_notify(
+            sender=request.user,
+            recipient=recipient,
+            verb='Progress Seminar report approved',
+            description=f"The RPC has approved {thesis.student.id.user.get_full_name()}'s "
+                        f"Progress Seminar report (version {seminar.version}).",
+        )
+
     return JsonResponse({"message": "Seminar approved."})
 
 
@@ -6917,9 +7121,19 @@ def thesis_submit(request):
         student = Student.objects.get(id=user_details)
     except Student.DoesNotExist:
         return Response({'error': 'Student record not found.'}, 404)
+    if _student_programme_category(student) != 'PHD':
+        return Response(
+            {'error': 'This final thesis submission workflow is for PhD students only.'},
+            status=403,
+        )
     thesis = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
     if thesis is None:
         return Response({'error': 'No thesis found for given submission.'}, 400)
+    if not OpenSeminar.objects.filter(student=student, status='satisfactory').exists():
+        return Response(
+            {'error': 'Open Seminar must be completed satisfactorily before final thesis submission.'},
+            status=403,
+        )
     syn   = request.FILES.get('synopsis')
     rpt   = request.FILES.get('thesis_report')
     if not all([syn, rpt]):
@@ -7651,12 +7865,13 @@ from applications.academic_procedures.models import (
     ProgressSeminarConsent, ProgressSeminarComment,
     ThesisRegistration, ProgressSeminarRegistration, TeachingCreditRegistration,
     ThesisEvaluation, ProgressSeminarEvaluation,
+    ThesisExaminerPanel, ThesisExaminerCandidate, ThesisEvaluationScore, PGThesisSubmission,
     ComprehensiveExam, ComprehensiveExamAttempt,
     ComprehensiveExamConsent, ComprehensiveExamRPCComment,
     OpenSeminar, OpenSeminarAttempt,
     OpenSeminarConsent, OpenSeminarRPCComment,
     TeachingCreditAllocation, TeachingCreditEvaluationResponse,
-    resolve_progress_seminar_credit,
+    resolve_progress_seminar_credit, resolve_teaching_credit_credit,
 )
 from applications.programme_curriculum.models import (
     ThesisSlot, SeminarSlot as ProgressSeminarSlot, TeachingCreditSlot,
@@ -7678,6 +7893,16 @@ def _resolve_discipline_matched_entry(manager, student):
 
 def _catalog_entry_to_dict(entry):
     return {'id': entry.id, 'code': entry.code, 'name': entry.name, 'credit': entry.credit} if entry else None
+
+
+def _student_programme_category(student):
+    """'PG', 'PHD', or None -- used to let admin screens that merge PG/PhD
+    requests together (semester numbering overlaps between the two) filter
+    by category."""
+    try:
+        return student.batch_id.curriculum.programme.category
+    except AttributeError:
+        return None
 
 
 def _thesis_reg_to_dict(reg):
@@ -7711,6 +7936,7 @@ def _thesis_reg_to_dict(reg):
             'name': reg.student.id.user.get_full_name(),
         },
         'semester_no': reg.semester.semester_no,
+        'programme_category': _student_programme_category(reg.student),
     }
 
 
@@ -7911,19 +8137,29 @@ def admin_verify_enrollments(request):
         return JsonResponse({'error': 'No registration IDs provided'}, status=400)
 
     now = _dt.datetime.now(_dt.timezone.utc)
-    regs = ThesisRegistration.objects.filter(id__in=ids, status='pending')
+    regs = ThesisRegistration.objects.filter(id__in=ids, status='pending').select_related('thesis_slot')
     count = 0
     for reg in regs:
         reg.status = 'verified'
         reg.verified_on = now
         reg.save(update_fields=['status', 'verified_on'])
-        # Auto-create evaluation blocks: one per 3 credits
-        total_blocks = reg.credits // 3
-        for blk in range(1, total_blocks + 1):
-            ThesisEvaluation.objects.get_or_create(
+        if reg.thesis_slot.evaluation_type == 'decimal':
+            # Single overall score (PG's final thesis semester) -- no block
+            # split, average of supervisor_score/examiner_score lands in
+            # numeric_grade once ThesisEvaluationScore has both.
+            evaluation, _created = ThesisEvaluation.objects.get_or_create(
                 registration=reg,
-                block_number=blk,
+                block_number=1,
             )
+            ThesisEvaluationScore.objects.get_or_create(evaluation=evaluation)
+        else:
+            # Block-wise S/X (PhD, or PG sem 2/3): one block per 3 credits.
+            total_blocks = reg.credits // 3
+            for blk in range(1, total_blocks + 1):
+                ThesisEvaluation.objects.get_or_create(
+                    registration=reg,
+                    block_number=blk,
+                )
         count += 1
     return JsonResponse({'verified_count': count}, status=200)
 
@@ -7947,6 +8183,594 @@ def admin_reject_enrollments(request):
         remarks=remarks,
     )
     return JsonResponse({'rejected_count': updated}, status=200)
+
+
+# ===========================================================================
+# PG Decimal Thesis Grading -- Supervisor Score + Batch-Wide Examiner Panel
+#
+# Applies only to ThesisRegistrations whose thesis_slot.evaluation_type is
+# 'decimal' (PG's final thesis semester). Flow: supervisor scores each
+# student out of 100 (this is the "forward to HOD" step) -> once every
+# student in the batch has a supervisor score, HOD nominates 4 Indian
+# examiner candidates for the WHOLE BATCH -> Dean ranks them and invites the
+# top candidate -> whoever accepts first examines every student in the
+# batch -> each student's numeric_grade = round((supervisor+examiner)/2, 1).
+# ===========================================================================
+
+from applications.academic_procedures.utils import (
+    send_examiner_panel_invitation_email,
+    send_examiner_panel_scoring_email,
+    advance_examiner_panel_invitation,
+)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
+def pg_thesis_submit(request):
+    """
+    POST /stu/pg-thesis-submit/
+    PG student uploads synopsis + full thesis report. Deliberately separate
+    from thesis_submit (PhD's Dean Panel/Director/foreign-examiner workflow
+    doesn't apply here) -- the supervisor and the batch's accepted examiner
+    reference these files directly while scoring, no approval chain of its
+    own. One submission per ThesisTopic, final -- once submitted it cannot
+    be changed.
+    """
+    user = request.user
+    try:
+        student = Student.objects.get(id=user.extrainfo)
+    except Student.DoesNotExist:
+        return Response({'error': 'Student record not found.'}, status=404)
+    if _student_programme_category(student) != 'PG':
+        return Response(
+            {'error': 'This thesis submission workflow is for PG students only.'},
+            status=403,
+        )
+    thesis = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
+    if thesis is None:
+        return Response({'error': 'No thesis found for given submission.'}, status=400)
+
+    if PGThesisSubmission.objects.filter(thesis=thesis).exists():
+        return Response({'error': 'Thesis has already been submitted and cannot be changed.'}, status=400)
+
+    syn = request.FILES.get('synopsis')
+    rpt = request.FILES.get('thesis_report')
+    if not syn or not rpt:
+        return Response({'error': 'Missing fields'}, status=400)
+    if syn.size > 5 * 1024 * 1024:
+        return Response({'error': 'File too large'}, status=400)
+    if rpt.size > 25 * 1024 * 1024:
+        return Response({'error': 'File too large'}, status=400)
+    # Client-declared content type is untrustworthy on its own, but combined
+    # with the hardcoded .pdf extension in upload_pg_synopsis/upload_pg_report
+    # it keeps a renamed non-PDF file from ever being stored/served as
+    # something a browser would render (stored XSS via file upload).
+    if syn.content_type != 'application/pdf' or rpt.content_type != 'application/pdf':
+        return Response({'error': 'Both files must be PDFs'}, status=400)
+
+    sub = PGThesisSubmission.objects.create(thesis=thesis, synopsis=syn, thesis_report=rpt)
+
+    return Response({'submission_id': sub.id}, status=201)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def pg_thesis_submission_status(request):
+    """
+    GET /stu/pg-thesis-submission-status/
+    Returns the requesting student's own PG thesis submission (if any).
+    """
+    user = request.user
+    try:
+        student = Student.objects.get(id=user.extrainfo)
+    except Student.DoesNotExist:
+        return Response({'error': 'Student record not found.'}, status=404)
+
+    thesis = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
+    if thesis is None:
+        return Response({'submission': None}, status=200)
+
+    sub = PGThesisSubmission.objects.filter(thesis=thesis).first()
+    if sub is None:
+        return Response({'submission': None}, status=200)
+
+    return Response({
+        'submission': {
+            'id': sub.id,
+            'submitted_at': sub.submitted_at.isoformat(),
+            'synopsis_url': sub.synopsis.url if sub.synopsis else None,
+            'thesis_report_url': sub.thesis_report.url if sub.thesis_report else None,
+        },
+    }, status=200)
+
+
+def _maybe_finalize_numeric_grade(evaluation):
+    """If both supervisor and examiner scores are in, compute and store the
+    averaged numeric_grade on the ThesisEvaluation."""
+    score_inputs = getattr(evaluation, 'score_inputs', None)
+    if score_inputs is None:
+        return
+    if score_inputs.supervisor_score is not None and score_inputs.examiner_score is not None:
+        avg = (score_inputs.supervisor_score + score_inputs.examiner_score) / 2
+        evaluation.numeric_grade = round(avg, 1)
+        evaluation.save(update_fields=['numeric_grade'])
+
+
+def _thesis_examiner_candidate_to_dict(c):
+    return {
+        'id': c.id,
+        'name': c.name,
+        'position': c.position,
+        'address': c.address,
+        'phone': c.phone,
+        'fax': c.fax,
+        'email': c.email,
+        'priority': c.priority,
+        'status': c.status,
+        'last_sent': c.last_sent.isoformat() if c.last_sent else None,
+        'expires_at': c.expires_at.isoformat() if c.expires_at else None,
+    }
+
+
+def _thesis_examiner_panel_to_dict(panel):
+    batch = panel.batch
+    return {
+        'id': panel.id,
+        'batch_id': batch.id,
+        'batch_name': str(batch),
+        'discipline_acronym': batch.discipline.acronym if batch.discipline else None,
+        'year': batch.year,
+        'group_name': f"{batch.discipline.acronym} {batch.year}" if batch.discipline else str(batch.year),
+        'status': panel.status,
+        'hod_submitted_at': panel.hod_submitted_at.isoformat() if panel.hod_submitted_at else None,
+        'dean_invited_at': panel.dean_invited_at.isoformat() if panel.dean_invited_at else None,
+        'candidates': [_thesis_examiner_candidate_to_dict(c) for c in panel.candidates.all().order_by('priority')],
+        'accepted_candidate': (
+            _thesis_examiner_candidate_to_dict(panel.accepted_candidate)
+            if panel.accepted_candidate else None
+        ),
+    }
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def supervisor_thesis_decimal_scores(request):
+    """
+    GET  /academic-procedures/api/supervisor/thesis-decimal-scores/
+         Lists the requesting supervisor's decimal-mode ThesisEvaluations.
+    POST /academic-procedures/api/supervisor/thesis-decimal-scores/
+         Body: { "evaluation_id": <id>, "score": <0-100> }
+         Records the supervisor's score -- this is the "forward to HOD" step.
+    """
+    user = request.user
+    try:
+        faculty = Faculty.objects.get(id=user.extrainfo)
+    except Faculty.DoesNotExist:
+        return JsonResponse({'error': 'Faculty record not found'}, status=404)
+
+    if request.method == 'GET':
+        evaluations = ThesisEvaluation.objects.filter(
+            registration__thesis_topic__supervisor=faculty,
+            registration__thesis_slot__evaluation_type='decimal',
+        ).select_related(
+            'registration__student__id__user', 'registration__semester',
+            'registration__thesis_topic', 'registration__thesis_topic__pg_submission', 'score_inputs',
+        )
+        data = []
+        for ev in evaluations:
+            score_inputs = getattr(ev, 'score_inputs', None)
+            submission = getattr(ev.registration.thesis_topic, 'pg_submission', None)
+            data.append({
+                'evaluation_id': ev.id,
+                'student_name': ev.registration.student.id.user.get_full_name(),
+                'student_roll': ev.registration.student.id.id,
+                'semester_no': ev.registration.semester.semester_no,
+                'credits': ev.registration.credits,
+                'supervisor_score': score_inputs.supervisor_score if score_inputs else None,
+                'examiner_score': score_inputs.examiner_score if score_inputs else None,
+                'numeric_grade': ev.numeric_grade,
+                'synopsis_url': submission.synopsis.url if submission and submission.synopsis else None,
+                'thesis_report_url': submission.thesis_report.url if submission and submission.thesis_report else None,
+            })
+        return JsonResponse({'evaluations': data}, status=200)
+
+    # POST
+    evaluation_id = request.data.get('evaluation_id')
+    try:
+        score = round(float(request.data.get('score')), 1)
+    except (TypeError, ValueError):
+        return JsonResponse({'error': 'Invalid score'}, status=400)
+    if not (0 <= score <= 100):
+        return JsonResponse({'error': 'Score must be between 0 and 100'}, status=400)
+
+    evaluation = get_object_or_404(
+        ThesisEvaluation, id=evaluation_id,
+        registration__thesis_topic__supervisor=faculty,
+        registration__thesis_slot__evaluation_type='decimal',
+    )
+    if evaluation.numeric_grade is not None:
+        return JsonResponse({'error': 'This evaluation has already been finalized'}, status=403)
+    if not PGThesisSubmission.objects.filter(thesis=evaluation.registration.thesis_topic).exists():
+        return JsonResponse(
+            {'error': 'Student must submit their thesis and synopsis before scoring'}, status=400
+        )
+    score_inputs, _created = ThesisEvaluationScore.objects.get_or_create(evaluation=evaluation)
+    score_inputs.supervisor_score = score
+    score_inputs.supervisor_scored_at = timezone.now()
+    score_inputs.save(update_fields=['supervisor_score', 'supervisor_scored_at'])
+    _maybe_finalize_numeric_grade(evaluation)
+    return JsonResponse({'detail': 'Score recorded'}, status=200)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def hod_examiner_panel_dashboard(request):
+    """
+    GET /hod/thesis-examiner-panels/
+    Lists (discipline, year) groups (in HOD's disciplines) with verified
+    decimal-mode thesis registrations -- e.g. CSE's "AI & ML" and "Data
+    Science" specialization batches admitted the same year are grouped
+    together for display -- each showing its own per-batch breakdown
+    (supervisor-forwarded completion, existing panel status). The grouping
+    is a UI convenience only: each specialization batch still gets its own
+    independent ThesisExaminerPanel (own 4 examiners, own Dean ranking, own
+    accepted examiner), matching the paper form (one sheet per
+    specialization). Grouping just lets HOD nominate all of them in one sitting.
+    """
+    hod_disciplines = get_hod_disciplines(request.user)
+    if not hod_disciplines:
+        return JsonResponse({'groups': []}, status=200)
+
+    regs = ThesisRegistration.objects.filter(
+        status='verified',
+        thesis_slot__evaluation_type='decimal',
+        student__batch_id__discipline__acronym__in=hod_disciplines,
+    ).select_related(
+        'student__batch_id__discipline', 'student__id__user', 'thesis_topic',
+        'thesis_topic__supervisor__id__user', 'thesis_topic__co_supervisor__id__user',
+    )
+
+    evaluations_by_reg_id = {
+        ev.registration_id: ev
+        for ev in ThesisEvaluation.objects.filter(registration__in=regs).select_related('score_inputs')
+    }
+
+    batches = {}
+    for reg in regs:
+        batch = reg.student.batch_id
+        entry = batches.setdefault(batch.id, {
+            'batch_id': batch.id, 'batch_name': str(batch.name),
+            'discipline_id': batch.discipline_id, 'discipline_acronym': batch.discipline.acronym,
+            'year': batch.year, 'total': 0, 'forwarded': 0, 'students': [],
+        })
+        entry['total'] += 1
+        evaluation = evaluations_by_reg_id.get(reg.id)
+        if evaluation and getattr(evaluation, 'score_inputs', None) and evaluation.score_inputs.supervisor_score is not None:
+            entry['forwarded'] += 1
+
+        supervisors = []
+        if reg.thesis_topic:
+            if reg.thesis_topic.supervisor:
+                supervisors.append(reg.thesis_topic.supervisor.id.user.get_full_name())
+            if reg.thesis_topic.co_supervisor:
+                supervisors.append(reg.thesis_topic.co_supervisor.id.user.get_full_name())
+        entry['students'].append({
+            'roll_no': reg.student.id.id,
+            'name': reg.student.id.user.get_full_name(),
+            'supervisors': ' and '.join(supervisors) or None,
+            'thesis_title': reg.thesis_topic.research_theme if reg.thesis_topic else None,
+        })
+
+    panels_by_batch_id = {
+        p.batch_id: p
+        for p in ThesisExaminerPanel.objects.filter(batch_id__in=batches.keys())
+    }
+    for entry in batches.values():
+        panel = panels_by_batch_id.get(entry['batch_id'])
+        entry['ready_for_panel'] = entry['total'] > 0 and entry['forwarded'] == entry['total']
+        entry['panel_status'] = panel.status if panel else None
+        entry['panel_id'] = panel.id if panel else None
+
+    groups = {}
+    for entry in batches.values():
+        key = (entry['discipline_id'], entry['year'])
+        group = groups.setdefault(key, {
+            'discipline_id': entry['discipline_id'],
+            'discipline_acronym': entry['discipline_acronym'],
+            'year': entry['year'],
+            'group_name': f"{entry['discipline_acronym']} {entry['year']}",
+            'batches': [],
+        })
+        group['batches'].append(entry)
+
+    return JsonResponse({'groups': list(groups.values())}, status=200)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def hod_submit_examiner_panel(request):
+    """
+    POST /hod/thesis-examiner-panels/submit/
+    Body: { "discipline_id": <id>, "year": <int>, "batches": [
+        { "batch_id": <id>, "candidates": [ {name, position, address, phone, fax, email} x4 ] },
+        ...
+    ] }
+    Every specialization batch in this discipline+year that's ready for
+    nomination (fully supervisor-scored, no panel yet) must be included and
+    is submitted together in one action -- but each batch still gets its own
+    independent ThesisExaminerPanel (own 4 examiners, own Dean ranking, own
+    accepted examiner), matching the paper form (one sheet per specialization).
+    """
+    user = request.user
+    try:
+        faculty = Faculty.objects.get(id=user.extrainfo)
+    except Faculty.DoesNotExist:
+        return JsonResponse({'error': 'Faculty record not found'}, status=404)
+
+    discipline_id = request.data.get('discipline_id')
+    discipline = get_object_or_404(Discipline, id=discipline_id)
+    try:
+        year = int(request.data.get('year'))
+    except (TypeError, ValueError):
+        return JsonResponse({'error': 'Invalid year'}, status=400)
+
+    hod_disciplines = get_hod_disciplines(user)
+    if discipline.acronym not in hod_disciplines:
+        return JsonResponse({'error': "You are not HOD of this discipline"}, status=403)
+
+    batches_data = request.data.get('batches', [])
+    if not batches_data:
+        return JsonResponse({'error': 'No batches provided'}, status=400)
+    for b in batches_data:
+        if len(b.get('candidates', [])) != 4:
+            return JsonResponse(
+                {'error': 'Exactly 4 examiner candidates are required for each specialization'}, status=400
+            )
+
+    regs = ThesisRegistration.objects.filter(
+        status='verified', thesis_slot__evaluation_type='decimal',
+        student__batch_id__discipline=discipline, student__batch_id__year=year,
+    ).select_related('student__batch_id')
+
+    evaluations_by_reg_id = {
+        ev.registration_id: ev
+        for ev in ThesisEvaluation.objects.filter(registration__in=regs).select_related('score_inputs')
+    }
+
+    batch_totals = defaultdict(lambda: {'total': 0, 'forwarded': 0})
+    for reg in regs:
+        bid = reg.student.batch_id_id
+        batch_totals[bid]['total'] += 1
+        evaluation = evaluations_by_reg_id.get(reg.id)
+        if evaluation and getattr(evaluation, 'score_inputs', None) and evaluation.score_inputs.supervisor_score is not None:
+            batch_totals[bid]['forwarded'] += 1
+
+    batches_with_panels = set(
+        ThesisExaminerPanel.objects.filter(batch_id__in=batch_totals.keys()).values_list('batch_id', flat=True)
+    )
+    ready_batch_ids = {
+        bid for bid, t in batch_totals.items()
+        if t['total'] > 0 and t['total'] == t['forwarded']
+        and bid not in batches_with_panels
+    }
+    submitted_batch_ids = {b.get('batch_id') for b in batches_data}
+    if submitted_batch_ids != ready_batch_ids:
+        return JsonResponse(
+            {'error': "Submission must include exactly the specialization batches ready for "
+                      "nomination in this discipline/year -- no partial submission"},
+            status=400,
+        )
+
+    created_panel_ids = []
+    try:
+        with transaction.atomic():
+            for b in batches_data:
+                batch = get_object_or_404(Batch, id=b['batch_id'])
+                panel = ThesisExaminerPanel.objects.create(batch=batch)
+                for idx, c in enumerate(b['candidates'], start=1):
+                    ThesisExaminerCandidate.objects.create(
+                        panel=panel,
+                        name=c.get('name', ''),
+                        position=c.get('position', ''),
+                        address=c.get('address', ''),
+                        phone=c.get('phone', ''),
+                        fax=c.get('fax', ''),
+                        email=c.get('email', ''),
+                        priority=idx,
+                    )
+                panel.hod_submitted_by = faculty
+                panel.hod_submitted_at = timezone.now()
+                panel.status = 'dean_pending'
+                panel.save(update_fields=['hod_submitted_by', 'hod_submitted_at', 'status'])
+                created_panel_ids.append(panel.id)
+    except IntegrityError:
+        # One of these batches already got a panel from a concurrent
+        # submission between the readiness check above and this insert --
+        # the whole atomic block rolled back, so nothing was half-created.
+        return JsonResponse(
+            {'error': 'One of these specializations was already submitted by another request. Refresh and try again.'},
+            status=409,
+        )
+
+    for dean_user in _dean_academic_users():
+        academics_module_notif(
+            request.user, dean_user,
+            f'Thesis examiner panels pending your ranking ({discipline.acronym} {year})',
+        )
+
+    return JsonResponse(
+        {'detail': 'Examiner panels submitted to Dean', 'panel_ids': created_panel_ids}, status=200
+    )
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@role_required(['Dean Academic'])
+def dean_examiner_panel_dashboard(request):
+    """GET /dean/thesis-examiner-panels/ -- panels awaiting Dean action.
+    Each panel is one specialization batch's independent process; the
+    frontend groups them by discipline+year (see each panel's group_name)
+    so Dean can rank every specialization in a discipline+year on one screen.
+    """
+    panels = ThesisExaminerPanel.objects.exclude(status='hod_pending') \
+        .select_related('batch__discipline').prefetch_related('candidates')
+    return JsonResponse({'panels': [_thesis_examiner_panel_to_dict(p) for p in panels]}, status=200)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@role_required(['Dean Academic'])
+def dean_rank_and_invite_examiner_panel(request):
+    """
+    POST /dean/thesis-examiner-panels/rank-and-invite/
+    Body: { "panel_id": <id>, "ranked_candidate_ids": [id1, id2, id3, id4] }
+    Sets the Dean's priority order (1-4) and immediately invites the
+    top-ranked candidate (no Director step for PG).
+    """
+    panel_id = request.data.get('panel_id')
+    ranked_ids = request.data.get('ranked_candidate_ids', [])
+    panel = get_object_or_404(ThesisExaminerPanel, id=panel_id)
+
+    if panel.status != 'dean_pending':
+        return JsonResponse({'error': 'This panel is not awaiting Dean ranking'}, status=400)
+
+    candidates = list(panel.candidates.all())
+    if sorted(c.id for c in candidates) != sorted(ranked_ids):
+        return JsonResponse(
+            {'error': "ranked_candidate_ids must include exactly this panel's candidates"}, status=400
+        )
+
+    with transaction.atomic():
+        # Two-phase: reassigning priorities to a new permutation in place can
+        # momentarily collide with a not-yet-updated row's current value --
+        # (panel, priority) is a unique constraint enforced immediately, not
+        # deferred, and priority also has a DB-level CHECK (priority >= 0) so
+        # negative placeholders aren't an option -- move everything out of
+        # the 1-4 range first, then set the real values.
+        for offset, cid in enumerate(ranked_ids, start=1):
+            ThesisExaminerCandidate.objects.filter(id=cid, panel=panel).update(priority=1000 + offset)
+        for idx, cid in enumerate(ranked_ids, start=1):
+            ThesisExaminerCandidate.objects.filter(id=cid, panel=panel).update(priority=idx)
+
+        panel.dean_reviewed_by = request.user
+        panel.dean_invited_at = timezone.now()
+        panel.status = 'invited'
+        panel.save(update_fields=['dean_reviewed_by', 'dean_invited_at', 'status'])
+
+    top_candidate = panel.candidates.order_by('priority').first()
+    top_candidate.status = 'invited'
+    top_candidate.last_sent = timezone.now()
+    top_candidate.expires_at = timezone.now() + datetime.timedelta(days=INVITATION_TIMEOUT_DAYS)
+    top_candidate.save(update_fields=['status', 'last_sent', 'expires_at'])
+    try:
+        send_examiner_panel_invitation_email(top_candidate)
+    except Exception:
+        logger.exception(f"Failed to send examiner panel invitation to {top_candidate.email}")
+
+    return JsonResponse({'detail': 'Ranked and invitation sent'}, status=200)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def examiner_panel_invitation_action(request, token, action):
+    """GET, token-authenticated -- external examiner has no Fusion account."""
+    candidate = get_object_or_404(ThesisExaminerCandidate, token=token)
+    if candidate.is_expired() or candidate.is_finalized():
+        return Response({'error': 'Invalid/expired'}, status=403)
+    if action == 'accept':
+        if candidate.status != 'invited':
+            return Response({'error': 'This invitation has not been sent yet'}, status=403)
+        candidate.status = 'accepted'
+        candidate.save(update_fields=['status'])
+        panel = candidate.panel
+        panel.accepted_candidate = candidate
+        panel.status = 'accepted'
+        panel.save(update_fields=['accepted_candidate', 'status'])
+        try:
+            send_examiner_panel_scoring_email(candidate)
+        except Exception:
+            logger.exception(f"Failed to send examiner scoring email for token {candidate.token}")
+        return Response({'detail': 'Accepted'}, status=200)
+    if action == 'reject':
+        candidate.status = 'rejected'
+        candidate.save(update_fields=['status'])
+        advance_examiner_panel_invitation(candidate.panel)
+        return Response({'detail': 'Rejected'}, status=200)
+    return Response({'error': 'Unknown action'}, status=400)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def examiner_panel_batch_detail(request, token):
+    """List every student in the panel's batch needing an examiner score."""
+    candidate = get_object_or_404(ThesisExaminerCandidate, token=token)
+    if candidate.status != 'accepted':
+        return Response({'error': 'This invitation has not been accepted'}, status=403)
+
+    regs = ThesisRegistration.objects.filter(
+        status='verified', thesis_slot__evaluation_type='decimal',
+        student__batch_id=candidate.panel.batch,
+    ).select_related('student__id__user', 'thesis_topic', 'thesis_topic__pg_submission')
+
+    evaluations_by_reg_id = {
+        ev.registration_id: ev
+        for ev in ThesisEvaluation.objects.filter(registration__in=regs).select_related('score_inputs')
+    }
+
+    students = []
+    for reg in regs:
+        evaluation = evaluations_by_reg_id.get(reg.id)
+        score_inputs = getattr(evaluation, 'score_inputs', None) if evaluation else None
+        submission = getattr(reg.thesis_topic, 'pg_submission', None) if reg.thesis_topic else None
+        students.append({
+            'evaluation_id': evaluation.id if evaluation else None,
+            'student_name': reg.student.id.user.get_full_name(),
+            'student_roll': reg.student.id.id,
+            'credits': reg.credits,
+            'examiner_score': score_inputs.examiner_score if score_inputs else None,
+            'synopsis_url': submission.synopsis.url if submission and submission.synopsis else None,
+            'thesis_report_url': submission.thesis_report.url if submission and submission.thesis_report else None,
+        })
+
+    return Response({
+        'batch_name': str(candidate.panel.batch),
+        'examiner_name': candidate.name,
+        'students': students,
+    }, status=200)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def examiner_panel_submit_score(request, token):
+    """Body: { "evaluation_id": <id>, "score": <0-100> }"""
+    candidate = get_object_or_404(ThesisExaminerCandidate, token=token)
+    if candidate.status != 'accepted':
+        return Response({'error': 'This invitation has not been accepted'}, status=403)
+
+    evaluation_id = request.data.get('evaluation_id')
+    try:
+        score = round(float(request.data.get('score')), 1)
+    except (TypeError, ValueError):
+        return Response({'error': 'Invalid score'}, status=400)
+    if not (0 <= score <= 100):
+        return Response({'error': 'Score must be between 0 and 100'}, status=400)
+
+    evaluation = get_object_or_404(
+        ThesisEvaluation, id=evaluation_id,
+        registration__student__batch_id=candidate.panel.batch,
+        registration__thesis_slot__evaluation_type='decimal',
+    )
+    if evaluation.numeric_grade is not None:
+        return Response({'error': 'This evaluation has already been finalized'}, status=403)
+    score_inputs, _created = ThesisEvaluationScore.objects.get_or_create(evaluation=evaluation)
+    score_inputs.examiner_candidate = candidate
+    score_inputs.examiner_score = score
+    score_inputs.examiner_scored_at = timezone.now()
+    score_inputs.save(update_fields=['examiner_candidate', 'examiner_score', 'examiner_scored_at'])
+    _maybe_finalize_numeric_grade(evaluation)
+
+    return Response({'detail': 'Score recorded'}, status=200)
 
 
 # ===========================================================================
@@ -7985,6 +8809,7 @@ def _progress_seminar_reg_to_dict(reg):
             'name': reg.student.id.user.get_full_name(),
         },
         'semester_no': reg.semester.semester_no,
+        'programme_category': _student_programme_category(reg.student),
     }
 
 
@@ -8152,6 +8977,12 @@ def admin_verify_progress_seminar_enrollments(request):
         reg.save(update_fields=['status'])
         ProgressSeminarEvaluation.objects.get_or_create(registration=reg)
         count += 1
+        _progress_seminar_notify(
+            sender=request.user,
+            recipient=reg.student.id.user,
+            verb='Progress Seminar registration verified',
+            description="Your Progress Seminar registration for this semester has been verified.",
+        )
     return JsonResponse({'verified_count': count}, status=200)
 
 
@@ -8169,10 +9000,17 @@ def admin_reject_progress_seminar_enrollments(request):
     if not ids:
         return JsonResponse({'error': 'No registration IDs provided'}, status=400)
 
-    updated = ProgressSeminarRegistration.objects.filter(id__in=ids, status='pending').update(
-        status='rejected',
-        remarks=remarks,
-    )
+    pending_qs = ProgressSeminarRegistration.objects.filter(id__in=ids, status='pending')
+    to_notify = list(pending_qs.select_related('student__id__user'))
+    updated = pending_qs.update(status='rejected', remarks=remarks)
+    for reg in to_notify:
+        _progress_seminar_notify(
+            sender=request.user,
+            recipient=reg.student.id.user,
+            verb='Progress Seminar registration rejected',
+            description=f"Your Progress Seminar registration for this semester was rejected. "
+                        f"Remarks: {remarks or '—'}",
+        )
     return JsonResponse({'rejected_count': updated}, status=200)
 
 
@@ -8214,6 +9052,7 @@ def _teaching_credit_enrollment_to_dict(reg):
             'name': reg.student.id.user.get_full_name(),
         },
         'semester_no': reg.semester.semester_no,
+        'programme_category': _student_programme_category(reg.student),
     }
 
 
@@ -8408,17 +9247,27 @@ def admin_reject_teaching_credit_enrollments(request):
 # ===========================================================================
 
 def _is_phd_student(student):
-    """True if `student` is enrolled in a PhD programme.
+    """True if `student` is enrolled in a PhD or PG (M.Tech/M.Des) programme --
+    the two categories that use this lightweight self-submit-and-verify
+    registration flow instead of the UG-style pre-registration/allocation/
+    final-registration pipeline.
     programme is stored inconsistently across seeded data ('PhD' vs 'Ph.D'),
-    so normalize it; also fall back to the batch name (e.g. 'PhD (Odd)')."""
+    so normalize it; also fall back to the batch name (e.g. 'PhD (Odd)').
+    PG detection falls back to the curriculum's Programme.category since PG
+    students don't have an equivalent programme/batch-name shorthand."""
     programme_norm = (student.programme or '').upper().replace('.', '')
     batch_name = student.batch_id.name if student.batch_id else ''
-    return programme_norm == 'PHD' or batch_name.upper().startswith('PHD')
+    if programme_norm == 'PHD' or batch_name.upper().startswith('PHD'):
+        return True
+    try:
+        return student.batch_id.curriculum.programme.category == 'PG'
+    except AttributeError:
+        return False
 
 
 def _resolve_phd_student(request):
     """Returns (student, error_response). error_response is a JsonResponse
-    if the requester isn't a valid PhD student, else None."""
+    if the requester isn't a valid PhD/PG student, else None."""
     try:
         student = Student.objects.select_related('batch_id__curriculum').get(
             id__user=request.user
@@ -8428,7 +9277,7 @@ def _resolve_phd_student(request):
 
     if not _is_phd_student(student):
         return None, JsonResponse(
-            {'error': 'This section is for PhD students only'}, status=403
+            {'error': 'This section is for PhD/PG students only'}, status=403
         )
 
     if not student.batch_id or not student.batch_id.curriculum:
@@ -8577,6 +9426,15 @@ def phd_submit_course_request(request):
             'processed_by': None,
         },
     )
+
+    _phd_course_registration_notify(
+        sender=request.user,
+        recipient=_academic_office_users(),
+        verb='PhD course registration request pending approval',
+        description=f"{student.id.user.get_full_name()} has requested registration in "
+                    f"{course.code} - {course.name} ({slot.name}).",
+    )
+
     return JsonResponse({
         'id': req.id,
         'slot': slot.name,
@@ -8614,6 +9472,7 @@ def phd_my_course_requests(request):
         'remarks': r.remarks,
         'requested_at': r.requested_at.isoformat(),
         'processed_at': r.processed_at.isoformat() if r.processed_at else None,
+        'programme_category': _student_programme_category(r.student),
     } for r in qs]
 
     return JsonResponse({'requests': data}, status=200)
@@ -8664,6 +9523,7 @@ def phd_admin_list_requests(request):
         'remarks': r.remarks,
         'requested_at': r.requested_at.isoformat(),
         'processed_at': r.processed_at.isoformat() if r.processed_at else None,
+        'programme_category': _student_programme_category(r.student),
     } for r in qs]
 
     return JsonResponse({'requests': data}, status=200)
@@ -8715,6 +9575,13 @@ def phd_admin_process_requests(request):
             req.processed_at = now
             req.processed_by = admin_extrainfo
             req.save(update_fields=['status', 'remarks', 'processed_at', 'processed_by'])
+            _phd_course_registration_notify(
+                sender=request.user,
+                recipient=req.student.id.user,
+                verb='PhD course registration request rejected',
+                description=f"Your registration request for {req.course.code} was rejected. "
+                            f"Remarks: {remarks or '—'}",
+            )
             results.append({'id': req_id, 'status': 'rejected'})
             continue
 
@@ -8731,24 +9598,60 @@ def phd_admin_process_requests(request):
             req.processed_at = now
             req.processed_by = admin_extrainfo
             req.save(update_fields=['status', 'remarks', 'processed_at', 'processed_by'])
+            _phd_course_registration_notify(
+                sender=request.user,
+                recipient=req.student.id.user,
+                verb='PhD course registration request rejected',
+                description=f"Your registration request for {req.course.code} was rejected: "
+                            f"already registered for this course.",
+            )
             results.append({'id': req_id, 'status': 'error', 'detail': 'Already registered'})
             continue
 
-        course_registration.objects.create(
-            student_id=req.student,
-            course_id=req.course,
-            course_slot_id=req.course_slot,
-            semester_id=req.semester,
-            session=req.academic_year,
-            semester_type=req.semester_type,
-            working_year=datetime.datetime.now().year,
-            registration_type='Regular',
-        )
+        try:
+            # Nested atomic block (savepoint): a unique-constraint collision
+            # here (e.g. two different course_slot requests for the same
+            # actual course approved concurrently) must only roll back this
+            # one item, not the whole batch's already-applied results.
+            with transaction.atomic():
+                course_registration.objects.create(
+                    student_id=req.student,
+                    course_id=req.course,
+                    course_slot_id=req.course_slot,
+                    semester_id=req.semester,
+                    session=req.academic_year,
+                    semester_type=req.semester_type,
+                    working_year=datetime.datetime.now().year,
+                    registration_type='Regular',
+                )
+        except IntegrityError:
+            req.status = 'Rejected'
+            req.remarks = 'Already registered for this course'
+            req.processed_at = now
+            req.processed_by = admin_extrainfo
+            req.save(update_fields=['status', 'remarks', 'processed_at', 'processed_by'])
+            _phd_course_registration_notify(
+                sender=request.user,
+                recipient=req.student.id.user,
+                verb='PhD course registration request rejected',
+                description=f"Your registration request for {req.course.code} was rejected: "
+                            f"already registered for this course.",
+            )
+            results.append({'id': req_id, 'status': 'error', 'detail': 'Already registered'})
+            continue
+
         req.status = 'Approved'
         req.remarks = remarks
         req.processed_at = now
         req.processed_by = admin_extrainfo
         req.save(update_fields=['status', 'remarks', 'processed_at', 'processed_by'])
+        _phd_course_registration_notify(
+            sender=request.user,
+            recipient=req.student.id.user,
+            verb='PhD course registration request approved',
+            description=f"Your registration request for {req.course.code} - "
+                        f"{req.course.name} has been approved.",
+        )
         results.append({'id': req_id, 'status': 'approved'})
 
     return JsonResponse({'results': results}, status=200)
@@ -8762,18 +9665,32 @@ def _eval_to_dict(ev):
     """Serialize a ThesisEvaluation block to a plain dict."""
     reg = ev.registration
     catalog_thesis = reg.thesis_slot.theses.first()
+    evaluation_type = reg.thesis_slot.evaluation_type
+    is_decimal = evaluation_type == 'decimal'
+
+    score_inputs = getattr(ev, 'score_inputs', None) if is_decimal else None
+    submission = None
+    if is_decimal and reg.thesis_topic:
+        submission = PGThesisSubmission.objects.filter(thesis=reg.thesis_topic).first()
+
     return {
-        'id':           ev.id,
-        'block_number': ev.block_number,
-        'total_blocks': reg.credits // 3,
-        'grade':        ev.grade,
-        'remarks':      ev.remarks,
-        'submitted_by': ev.submitted_by.id.user.get_full_name() if ev.submitted_by else None,
-        'submitted_at': ev.submitted_at.isoformat() if ev.submitted_at else None,
-        'verified':     ev.verified,
-        'verified_at':  ev.verified_at.isoformat() if ev.verified_at else None,
-        'announced':    ev.announced,
-        'announced_at': ev.announced_at.isoformat() if ev.announced_at else None,
+        'id':             ev.id,
+        'block_number':   ev.block_number,
+        'total_blocks':   ev.total_blocks,
+        'evaluation_type': evaluation_type,
+        'grade':          ev.grade,
+        'numeric_grade':  ev.numeric_grade,
+        'supervisor_score': score_inputs.supervisor_score if score_inputs else None,
+        'examiner_score': score_inputs.examiner_score if score_inputs else None,
+        'synopsis_url':   submission.synopsis.url if submission and submission.synopsis else None,
+        'thesis_report_url': submission.thesis_report.url if submission and submission.thesis_report else None,
+        'remarks':        ev.remarks,
+        'submitted_by':   ev.submitted_by.id.user.get_full_name() if ev.submitted_by else None,
+        'submitted_at':   ev.submitted_at.isoformat() if ev.submitted_at else None,
+        'verified':       ev.verified,
+        'verified_at':    ev.verified_at.isoformat() if ev.verified_at else None,
+        'announced':      ev.announced,
+        'announced_at':   ev.announced_at.isoformat() if ev.announced_at else None,
         'registration': {
             'id':           reg.id,
             'credits':      reg.credits,
@@ -8782,6 +9699,7 @@ def _eval_to_dict(ev):
             'thesis_slot':  reg.thesis_slot.name,
             'thesis_code':  catalog_thesis.code if catalog_thesis else reg.thesis_slot.name,
             'thesis_title': reg.thesis_topic.research_theme if reg.thesis_topic else None,
+            'programme_category': _student_programme_category(reg.student),
             'student': {
                 'id':   reg.student.id.id,
                 'name': reg.student.id.user.get_full_name(),
@@ -8813,6 +9731,7 @@ def supervisor_thesis_grades(request):
         'registration__thesis_slot',
         'registration__thesis_topic',
         'submitted_by__id__user',
+        'score_inputs',
     ).filter(
         registration__status='verified',
         registration__thesis_topic__supervisor=faculty,
@@ -8823,11 +9742,16 @@ def supervisor_thesis_grades(request):
     if sem_no:
         qs = qs.filter(registration__semester__semester_no=sem_no)
 
+    # "Graded" means different things per evaluation_type: blocks_sx uses
+    # `grade`, decimal uses the supervisor's raw score on ThesisEvaluationScore
+    # (numeric_grade itself only appears once the examiner also scores).
     graded_param = request.GET.get('graded')
+    not_graded_q = Q(registration__thesis_slot__evaluation_type='decimal', score_inputs__supervisor_score__isnull=True) | \
+        Q(registration__thesis_slot__evaluation_type='blocks_sx', grade__isnull=True)
     if graded_param == 'false':
-        qs = qs.filter(grade__isnull=True)
+        qs = qs.filter(not_graded_q)
     elif graded_param == 'true':
-        qs = qs.exclude(grade__isnull=True)
+        qs = qs.exclude(not_graded_q)
 
     return JsonResponse({'evaluations': [_eval_to_dict(ev) for ev in qs]}, status=200)
 
@@ -8843,6 +9767,10 @@ def admin_thesis_grades_list(request):
                    verified = verified but not announced
                    announced = announced
                    ungraded = no grade yet
+
+    Decimal-mode (PG final-thesis semester) evaluations never appear here --
+    they skip admin verification entirely and go straight to the HOD/examiner
+    panel flow once the supervisor scores them.
     """
     qs = ThesisEvaluation.objects.select_related(
         'registration__student__id__user',
@@ -8850,6 +9778,8 @@ def admin_thesis_grades_list(request):
         'registration__thesis_slot',
         'submitted_by__id__user',
         'verified_by',
+    ).exclude(
+        registration__thesis_slot__evaluation_type='decimal',
     ).order_by('registration__semester__semester_no', 'registration__student__id__user__last_name', 'block_number')
 
     sem_no = request.GET.get('semester')
@@ -8941,6 +9871,8 @@ def supervisor_download_all_thesis_grades_template(request):
             registration__thesis_topic__supervisor=faculty,
             registration__status='verified',
             grade__isnull=True
+        ).exclude(
+            registration__thesis_slot__evaluation_type='decimal',
         ).order_by('registration__student__id__id', 'block_number')
 
         if not evals.exists():
@@ -9066,6 +9998,8 @@ def supervisor_upload_all_thesis_grades(request):
         registration__thesis_topic__supervisor=faculty,
         registration__status='verified',
         grade__isnull=True
+    ).exclude(
+        registration__thesis_slot__evaluation_type='decimal',
     )
 
     # Create lookup: {roll_no: {block_num: eval_id}}
@@ -9167,7 +10101,7 @@ def supervisor_bulk_submit_all_thesis_grades(request):
     # Batch fetch all evaluations
     eval_ids = [sub.get('evaluation_id') for sub in submissions if sub.get('evaluation_id')]
     evaluations_dict = ThesisEvaluation.objects.select_related(
-        'registration__thesis_topic'
+        'registration__thesis_topic', 'registration__thesis_slot',
     ).filter(id__in=eval_ids).in_bulk(field_name='id')
 
     success_count = 0
@@ -9197,6 +10131,10 @@ def supervisor_bulk_submit_all_thesis_grades(request):
             # Verify ownership and permissions
             if evaluation.registration.thesis_topic.supervisor != faculty:
                 errors.append({'index': idx, 'evaluation_id': eval_id, 'error': 'Not authorized for this evaluation'})
+                continue
+
+            if evaluation.registration.thesis_slot.evaluation_type == 'decimal':
+                errors.append({'index': idx, 'evaluation_id': eval_id, 'error': 'This is a decimal-mode thesis and cannot take an S/X grade'})
                 continue
 
             # Update evaluation
@@ -9256,6 +10194,24 @@ def _exam_rpc_committee(student):
     )
 
 
+def _rpc_committee_users(student):
+    """Users for the student's live RPC committee -- for notifying committee members."""
+    return User.objects.filter(
+        pk__in=_exam_rpc_committee(student).values_list('member__id__user', flat=True)
+    ).distinct()
+
+
+def _is_thesis_supervisor_or_co(faculty, student):
+    """Whether `faculty` is the supervisor/co-supervisor on the student's
+    most recent ThesisTopic -- used to gate Comprehensive Exam / Open
+    Seminar proposal so an unrelated faculty member can't self-assign as
+    supervisor for someone else's student."""
+    thesis_topic = ThesisTopic.objects.filter(student=student).order_by('-created_at').first()
+    if not thesis_topic:
+        return False
+    return faculty.pk in (thesis_topic.supervisor_id, thesis_topic.co_supervisor_id)
+
+
 def _comprehensive_exam_attempt_to_dict(a):
     return {
         'id': a.id,
@@ -9273,7 +10229,10 @@ def _comprehensive_exam_attempt_to_dict(a):
         'pgcs_remarks': a.pgcs_remarks,
         'pgcs_reviewed_at': a.pgcs_reviewed_at.isoformat() if a.pgcs_reviewed_at else None,
         'dean_approved_at': a.dean_approved_at.isoformat() if a.dean_approved_at else None,
-        'consented_count': a.consents.filter(consented=True).count(),
+        'consented_count': a.consents.filter(
+            consented=True,
+            member_id__in=_exam_rpc_committee(a.exam.student).values_list('member_id', flat=True),
+        ).count(),
         'committee_size': _exam_rpc_committee(a.exam.student).count(),
     }
 
@@ -9446,6 +10405,9 @@ def supervisor_propose_comprehensive_exam(request):
     except Student.DoesNotExist:
         return JsonResponse({'error': 'Student not found'}, status=404)
 
+    if not _is_thesis_supervisor_or_co(faculty, student):
+        return JsonResponse({'error': 'You are not this student\'s supervisor or co-supervisor'}, status=403)
+
     if ComprehensiveExam.objects.filter(student=student).exists():
         return JsonResponse({'error': 'Comprehensive exam already exists for this student'}, status=400)
 
@@ -9462,6 +10424,14 @@ def supervisor_propose_comprehensive_exam(request):
         entry_qualification=entry_qualification,
         credits_completed=_student_completed_credits(student),
         current_cpi=student.cpi,
+    )
+
+    _comprehensive_exam_notify(
+        sender=request.user,
+        recipient=_academic_office_users(),
+        verb='Comprehensive Exam proposal pending verification',
+        description=f"{student.id.user.get_full_name()}'s Comprehensive Exam proposal is "
+                    f"awaiting Academic Office eligibility verification.",
     )
 
     return JsonResponse(comprehensive_exam_to_dict(exam), status=201)
@@ -9601,11 +10571,45 @@ def academic_office_verify_comprehensive_exam(request, pk):
                 'error': 'All three eligibility checks (credits, CPI, Research Methodology) '
                          'must be confirmed before approving.',
             }, status=400)
+        if exam.credits_completed < exam.required_credits:
+            return JsonResponse({
+                'error': f'Credits completed ({exam.credits_completed}) is below the '
+                         f'{exam.required_credits} required for this entry qualification.',
+            }, status=400)
+        if exam.current_cpi is None or exam.current_cpi < ComprehensiveExam.MIN_CPI:
+            return JsonResponse({
+                'error': f'Current CPI ({exam.current_cpi}) is below the required minimum '
+                         f'of {ComprehensiveExam.MIN_CPI}.',
+            }, status=400)
         exam.status = 'dpgc_pending'
+        exam.save()
+        student = exam.student
+        acronym = student.batch_id.discipline.acronym if student.batch_id and student.batch_id.discipline else None
+        _comprehensive_exam_notify(
+            sender=request.user,
+            recipient=_hod_users_for_discipline(acronym),
+            verb='Comprehensive Exam pending your (DPGC) approval',
+            description=f"{student.id.user.get_full_name()}'s Comprehensive Exam has been "
+                        f"verified by Academic Office and is awaiting Convener (DPGC) approval.",
+        )
+        _comprehensive_exam_notify(
+            sender=request.user,
+            recipient=exam.supervisor.id.user,
+            verb='Comprehensive Exam verified by Academic Office',
+            description=f"{student.id.user.get_full_name()}'s Comprehensive Exam has been "
+                        f"verified by Academic Office and forwarded to Convener (DPGC).",
+        )
     else:
         exam.status = 'academic_office_rejected'
+        exam.save()
+        _comprehensive_exam_notify(
+            sender=request.user,
+            recipient=exam.supervisor.id.user,
+            verb='Comprehensive Exam rejected by Academic Office',
+            description=f"Academic Office rejected {exam.student.id.user.get_full_name()}'s "
+                        f"Comprehensive Exam proposal. Remarks: {exam.academic_office_remarks or '—'}",
+        )
 
-    exam.save()
     return JsonResponse(comprehensive_exam_to_dict(exam), status=200)
 
 
@@ -9676,9 +10680,30 @@ def hod_dpgc_approve_comprehensive_exam(request, pk):
             exam=exam, attempt_number=exam.current_attempt_number,
             defaults={'exam_date': exam.proposed_exam_date},
         )
+        _comprehensive_exam_notify(
+            sender=request.user,
+            recipient=_rpc_committee_users(student),
+            verb='Comprehensive Exam pending your review',
+            description=f"{student.id.user.get_full_name()}'s Comprehensive Exam has been "
+                        f"approved by Convener (DPGC) and is awaiting RPC review.",
+        )
+        _comprehensive_exam_notify(
+            sender=request.user,
+            recipient=exam.supervisor.id.user,
+            verb='Comprehensive Exam approved by Convener (DPGC)',
+            description=f"{student.id.user.get_full_name()}'s Comprehensive Exam has been "
+                        f"approved by Convener (DPGC) and forwarded to the RPC.",
+        )
     else:
         exam.status = 'dpgc_rejected'
         exam.save()
+        _comprehensive_exam_notify(
+            sender=request.user,
+            recipient=exam.supervisor.id.user,
+            verb='Comprehensive Exam rejected by Convener (DPGC)',
+            description=f"Convener (DPGC) rejected {student.id.user.get_full_name()}'s "
+                        f"Comprehensive Exam. Remarks: {exam.dpgc_remarks or '—'}",
+        )
 
     return JsonResponse(comprehensive_exam_to_dict(exam), status=200)
 
@@ -9809,6 +10834,12 @@ def rpc_comprehensive_exam_consent(request, attempt_pk):
         field in data and getattr(attempt, field) != data[field]
         for field in panel_fields
     )
+    if data.get('exam_date'):
+        old_exam_date = attempt.exam_date.isoformat() if attempt.exam_date else None
+        if data['exam_date'] != old_exam_date:
+            changed = True
+    if request.FILES.get('milestone_plan'):
+        changed = True
     if changed:
         ComprehensiveExamConsent.objects.filter(attempt=attempt).update(consented=False)
 
@@ -9849,8 +10880,11 @@ def rpc_comprehensive_exam_finalize(request, attempt_pk):
     if not attempt.result:
         return JsonResponse({'error': 'Record a result before finalizing'}, status=400)
 
-    total = _exam_rpc_committee(attempt.exam.student).count()
-    yes = ComprehensiveExamConsent.objects.filter(attempt=attempt, consented=True).count()
+    current_committee_ids = _exam_rpc_committee(attempt.exam.student).values_list('member_id', flat=True)
+    total = len(current_committee_ids)
+    yes = ComprehensiveExamConsent.objects.filter(
+        attempt=attempt, consented=True, member_id__in=current_committee_ids,
+    ).count()
     if total == 0 or yes < total:
         return JsonResponse({'error': 'Not all RPC members have consented'}, status=400)
 
@@ -9864,6 +10898,24 @@ def rpc_comprehensive_exam_finalize(request, attempt_pk):
     attempt.pgcs_reviewed_at = None
     attempt.pgcs_remarks = ''
     attempt.save()
+
+    exam = attempt.exam
+    student = exam.student
+    acronym = student.batch_id.discipline.acronym if student.batch_id and student.batch_id.discipline else None
+    _comprehensive_exam_notify(
+        sender=request.user,
+        recipient=_hod_users_for_discipline(acronym),
+        verb='Comprehensive Exam pending your (PGCS) review',
+        description=f"The RPC has finalized {student.id.user.get_full_name()}'s Comprehensive "
+                    f"Exam (attempt {attempt.attempt_number}); awaiting Convener (PGCS) review.",
+    )
+    _comprehensive_exam_notify(
+        sender=request.user,
+        recipient=exam.supervisor.id.user,
+        verb='Comprehensive Exam RPC review finalized',
+        description=f"The RPC has finalized {student.id.user.get_full_name()}'s Comprehensive "
+                    f"Exam (attempt {attempt.attempt_number}); forwarded to Convener (PGCS).",
+    )
 
     return JsonResponse(comprehensive_exam_to_dict(attempt.exam), status=200)
 
@@ -9931,11 +10983,32 @@ def hod_pgcs_review_comprehensive_exam(request, attempt_pk):
         attempt.pgcs_remarks = ''
         attempt.status = 'dean_pending'
         attempt.save()
+        _comprehensive_exam_notify(
+            sender=request.user,
+            recipient=_dean_academic_users(),
+            verb='Comprehensive Exam pending your final approval',
+            description=f"{student.id.user.get_full_name()}'s Comprehensive Exam has been "
+                        f"approved by Convener (PGCS) and is awaiting your final approval.",
+        )
+        _comprehensive_exam_notify(
+            sender=request.user,
+            recipient=attempt.exam.supervisor.id.user,
+            verb='Comprehensive Exam approved by Convener (PGCS)',
+            description=f"{student.id.user.get_full_name()}'s Comprehensive Exam has been "
+                        f"approved by Convener (PGCS) and forwarded to Dean Academic.",
+        )
     else:
         attempt.pgcs_remarks = data.get('remarks', '')
         attempt.status = 'rpc_pending'
         attempt.save()
         ComprehensiveExamConsent.objects.filter(attempt=attempt).update(consented=False)
+        _comprehensive_exam_notify(
+            sender=request.user,
+            recipient=_rpc_committee_users(student),
+            verb='Comprehensive Exam sent back by Convener (PGCS)',
+            description=f"Convener (PGCS) sent {student.id.user.get_full_name()}'s Comprehensive "
+                        f"Exam back to the RPC for fresh consensus. Remarks: {attempt.pgcs_remarks or '—'}",
+        )
 
     return JsonResponse(comprehensive_exam_to_dict(attempt.exam), status=200)
 
@@ -9977,13 +11050,33 @@ def dean_approve_comprehensive_exam(request, attempt_pk):
     if attempt.result == 'passed':
         exam.status = 'passed'
         exam.save()
+        result_desc = "passed the Comprehensive Exam."
     elif exam.current_attempt_number < ComprehensiveExam.MAX_ATTEMPTS:
         exam.current_attempt_number += 1
         exam.save()
         ComprehensiveExamAttempt.objects.get_or_create(exam=exam, attempt_number=exam.current_attempt_number)
+        result_desc = (f"not cleared attempt {attempt.attempt_number} of the Comprehensive Exam. "
+                       f"A new attempt has been created, starting at RPC review.")
     else:
         exam.status = 'failed_final'
         exam.save()
+        result_desc = "failed the Comprehensive Exam with all attempts exhausted."
+
+    student = exam.student
+    acronym = student.batch_id.discipline.acronym if student.batch_id and student.batch_id.discipline else None
+    for recipient in [student.id.user, exam.supervisor.id.user]:
+        _comprehensive_exam_notify(
+            sender=request.user,
+            recipient=recipient,
+            verb='Comprehensive Exam result declared',
+            description=f"{student.id.user.get_full_name()} has {result_desc}",
+        )
+    _comprehensive_exam_notify(
+        sender=request.user,
+        recipient=_hod_users_for_discipline(acronym),
+        verb='Comprehensive Exam result declared',
+        description=f"{student.id.user.get_full_name()} has {result_desc}",
+    )
 
     return JsonResponse(comprehensive_exam_to_dict(exam), status=200)
 
@@ -10033,10 +11126,11 @@ def _compute_open_seminar_eligibility(student):
     Comprehensive Exam; progress_seminar_credits sums each of the student's
     rpc_approved ProgressSeminarEntry records at its own catalog credit value (see
     resolve_progress_seminar_credit -- do not hardcode this number, it varies by the
-    Seminar catalog row); thesis_research_credits sums verified ThesisRegistration
-    credits; rpc_recommended_open_seminar reads the latest approved seminar's
-    rec_open field. teaching_credits has no numeric source anywhere in Fusion and
-    stays manual (not included here).
+    Seminar catalog row); thesis_research_credits sums graded-and-announced
+    ThesisEvaluation blocks; teaching_credits sums each satisfactorily-completed
+    TeachingCreditAllocation semester at its own catalog credit value (see
+    resolve_teaching_credit_credit); rpc_recommended_open_seminar reads the
+    latest approved seminar's rec_open field.
     """
     course_work_credits = _student_completed_credits(student)
 
@@ -10052,14 +11146,29 @@ def _compute_open_seminar_eligibility(student):
         if latest_approved:
             rpc_recommended_open_seminar = (latest_approved.rec_open == 'Yes')
 
-    thesis_research_credits = ThesisRegistration.objects.filter(
-        student=student, status='verified'
-    ).aggregate(total=Sum('credits'))['total'] or 0
+    # Registered credits (ThesisRegistration.credits) are just what the student
+    # signed up for -- actual earned credit only counts once a block is graded
+    # Satisfactory and the result announced (each block = 3 credits).
+    thesis_research_credits = ThesisEvaluation.objects.filter(
+        registration__student=student, grade='S', announced=True,
+    ).count() * 3
+
+    # Registering for teaching credit (TeachingCreditRegistration) or being
+    # allocated a course (TeachingCreditAllocation) isn't earning the credit --
+    # only a semester marked 'completed'/'satisfactory' counts, at that
+    # semester's own catalog credit value.
+    teaching_credits = sum(
+        resolve_teaching_credit_credit(student, alloc.semester)
+        for alloc in TeachingCreditAllocation.objects.filter(
+            student=student, status='completed', result='satisfactory',
+        )
+    )
 
     return {
         'course_work_credits': course_work_credits,
         'progress_seminar_credits': progress_seminar_credits,
         'thesis_research_credits': thesis_research_credits,
+        'teaching_credits': teaching_credits,
         'semesters_completed': student.curr_semester_no or 0,
         'rpc_recommended_open_seminar': rpc_recommended_open_seminar,
     }
@@ -10082,7 +11191,10 @@ def _open_seminar_attempt_to_dict(a, include_confidential=False):
             if a.dean_nominee else None
         ),
         'dn_submitted_at': a.dn_submitted_at.isoformat() if a.dn_submitted_at else None,
-        'consented_count': a.consents.filter(consented=True).count(),
+        'consented_count': a.consents.filter(
+            consented=True,
+            member_id__in=_exam_rpc_committee(a.open_seminar.student).values_list('member_id', flat=True),
+        ).count(),
         'committee_size': _exam_rpc_committee(a.open_seminar.student).count(),
         'rpc_comments': [
             {
@@ -10139,7 +11251,7 @@ def open_seminar_to_dict(seminar, include_confidential=False):
         'total_credits': seminar.total_credits,
         'semesters_completed': seminar.semesters_completed,
         'rpc_recommended_open_seminar': seminar.rpc_recommended_open_seminar,
-        'first_draft_sent_to_dean': seminar.first_draft_sent_to_dean,
+        'first_draft_document_url': seminar.first_draft_document.url if seminar.first_draft_document else None,
         'hod_remarks': seminar.hod_remarks,
         'dean_remarks': seminar.dean_remarks,
         'status': seminar.status,
@@ -10217,8 +11329,8 @@ def supervisor_propose_open_seminar(request):
     """
     POST /supervisor/open-seminar/propose/
     Body: { roll_no, possible_thesis_title, co_supervisor_id, proposed_date,
-            teaching_credits, first_draft_sent_to_dean }
-    course_work/progress_seminar/thesis_research credits, semesters_completed,
+            first_draft_document (file) }
+    course_work/progress_seminar/thesis_research/teaching credits, semesters_completed,
     and rpc_recommended_open_seminar are computed server-side. No committee
     is proposed -- the student's existing RPC (see _exam_rpc_committee)
     doubles as the examination committee.
@@ -10238,19 +11350,42 @@ def supervisor_propose_open_seminar(request):
     except Student.DoesNotExist:
         return JsonResponse({'error': 'Student not found'}, status=404)
 
+    if not _is_thesis_supervisor_or_co(faculty, student):
+        return JsonResponse({'error': 'You are not this student\'s supervisor or co-supervisor'}, status=403)
+
     if OpenSeminar.objects.filter(student=student).exists():
         return JsonResponse({'error': 'Open Seminar already exists for this student'}, status=400)
 
+    if not ComprehensiveExam.objects.filter(student=student, status='passed').exists():
+        return JsonResponse(
+            {'error': 'Comprehensive Examination must be passed before proposing Open Seminar.'},
+            status=403,
+        )
+
     eligibility = _compute_open_seminar_eligibility(student)
+    if not eligibility['rpc_recommended_open_seminar']:
+        return JsonResponse(
+            {'error': 'The RPC has not recommended this student for Open Seminar yet.'},
+            status=403,
+        )
+
     seminar = OpenSeminar.objects.create(
         student=student,
         supervisor=faculty,
         co_supervisor_id=data.get('co_supervisor_id') or None,
         possible_thesis_title=data.get('possible_thesis_title', ''),
         proposed_date=data.get('proposed_date') or None,
-        teaching_credits=int(data.get('teaching_credits', 0) or 0),
-        first_draft_sent_to_dean=bool(data.get('first_draft_sent_to_dean', False)),
+        first_draft_document=request.FILES.get('first_draft_document'),
         **eligibility,
+    )
+
+    acronym = student.batch_id.discipline.acronym if student.batch_id and student.batch_id.discipline else None
+    _open_seminar_notify(
+        sender=request.user,
+        recipient=_hod_users_for_discipline(acronym),
+        verb='Open Seminar constitution pending your review',
+        description=f"{student.id.user.get_full_name()}'s Open Seminar has been proposed and "
+                    f"is awaiting Convener (DPGC) review.",
     )
 
     return JsonResponse(open_seminar_to_dict(seminar), status=201)
@@ -10287,13 +11422,17 @@ def supervisor_resubmit_open_seminar(request, pk):
         seminar.co_supervisor_id = data['co_supervisor_id'] or None
     if 'proposed_date' in data:
         seminar.proposed_date = data['proposed_date'] or None
-    if 'teaching_credits' in data:
-        seminar.teaching_credits = int(data['teaching_credits'] or 0)
-    if 'first_draft_sent_to_dean' in data:
-        seminar.first_draft_sent_to_dean = bool(data['first_draft_sent_to_dean'])
+    if request.FILES.get('first_draft_document'):
+        seminar.first_draft_document = request.FILES['first_draft_document']
 
     # Re-derive from the student's own records rather than trusting client input.
-    for field, value in _compute_open_seminar_eligibility(seminar.student).items():
+    eligibility = _compute_open_seminar_eligibility(seminar.student)
+    if not eligibility['rpc_recommended_open_seminar']:
+        return JsonResponse(
+            {'error': 'The RPC has not recommended this student for Open Seminar yet.'},
+            status=403,
+        )
+    for field, value in eligibility.items():
         setattr(seminar, field, value)
 
     seminar.status = 'hod_pending'
@@ -10389,6 +11528,30 @@ def hod_dpgc_review_open_seminar(request, pk):
     seminar.status = 'dean_pending' if data.get('approve') else 'hod_rejected'
     seminar.save()
 
+    if data.get('approve'):
+        _open_seminar_notify(
+            sender=request.user,
+            recipient=_dean_academic_users(),
+            verb='Open Seminar pending nominee appointment',
+            description=f"{student.id.user.get_full_name()}'s Open Seminar has been approved by "
+                        f"Convener (DPGC) and needs a Dean Nominee appointed.",
+        )
+        _open_seminar_notify(
+            sender=request.user,
+            recipient=seminar.supervisor.id.user,
+            verb='Open Seminar approved by Convener (DPGC)',
+            description=f"{student.id.user.get_full_name()}'s Open Seminar has been approved by "
+                        f"Convener (DPGC) and forwarded to Dean Academic.",
+        )
+    else:
+        _open_seminar_notify(
+            sender=request.user,
+            recipient=seminar.supervisor.id.user,
+            verb='Open Seminar rejected by Convener (DPGC)',
+            description=f"Convener (DPGC) rejected {student.id.user.get_full_name()}'s Open "
+                        f"Seminar. Remarks: {seminar.hod_remarks or '—'}",
+        )
+
     return JsonResponse(open_seminar_to_dict(seminar), status=200)
 
 
@@ -10439,15 +11602,57 @@ def dean_appoint_nominee_open_seminar(request, pk):
         dean_nominee_id = data.get('dean_nominee_id')
         if not dean_nominee_id:
             return JsonResponse({'error': 'A Dean Nominee must be appointed to approve.'}, status=400)
+
+        conflicted_ids = {seminar.supervisor_id}
+        if seminar.co_supervisor_id:
+            conflicted_ids.add(seminar.co_supervisor_id)
+        conflicted_ids.update(_exam_rpc_committee(seminar.student).values_list('member_id', flat=True))
+        if dean_nominee_id in conflicted_ids:
+            return JsonResponse({
+                'error': 'The Dean Nominee must be independent of the student\'s supervisor, '
+                         'co-supervisor, and RPC committee.',
+            }, status=400)
+
         seminar.status = 'in_progress'
         seminar.save()
         OpenSeminarAttempt.objects.get_or_create(
             open_seminar=seminar, attempt_number=seminar.current_attempt_number,
             defaults={'seminar_date': seminar.proposed_date, 'dean_nominee_id': dean_nominee_id},
         )
+        student = seminar.student
+        nominee = Faculty.objects.filter(pk=dean_nominee_id).select_related('id__user').first()
+        if nominee:
+            _open_seminar_notify(
+                sender=request.user,
+                recipient=nominee.id.user,
+                verb='You have been appointed Dean Nominee',
+                description=f"You have been appointed Dean Nominee for "
+                            f"{student.id.user.get_full_name()}'s Open Seminar.",
+            )
+        _open_seminar_notify(
+            sender=request.user,
+            recipient=_rpc_committee_users(student),
+            verb='Open Seminar pending your review',
+            description=f"{student.id.user.get_full_name()}'s Open Seminar has been approved by "
+                        f"Dean Academic and is awaiting RPC review.",
+        )
+        _open_seminar_notify(
+            sender=request.user,
+            recipient=seminar.supervisor.id.user,
+            verb='Open Seminar approved by Dean Academic',
+            description=f"{student.id.user.get_full_name()}'s Open Seminar has been approved by "
+                        f"Dean Academic and forwarded to the RPC.",
+        )
     else:
         seminar.status = 'dean_rejected'
         seminar.save()
+        _open_seminar_notify(
+            sender=request.user,
+            recipient=seminar.supervisor.id.user,
+            verb='Open Seminar rejected by Dean Academic',
+            description=f"Dean Academic rejected {seminar.student.id.user.get_full_name()}'s "
+                        f"Open Seminar. Remarks: {seminar.dean_remarks or '—'}",
+        )
 
     return JsonResponse(open_seminar_to_dict(seminar), status=200)
 
@@ -10473,11 +11678,30 @@ def dean_approve_open_seminar(request, attempt_pk):
     if attempt.result == 'satisfactory':
         seminar.status = 'satisfactory'
         seminar.save()
+        result_desc = "completed the Open Seminar satisfactorily."
     else:
         next_number = seminar.current_attempt_number + 1
         seminar.current_attempt_number = next_number
         seminar.save()
         OpenSeminarAttempt.objects.get_or_create(open_seminar=seminar, attempt_number=next_number)
+        result_desc = (f"not cleared attempt {attempt.attempt_number} of the Open Seminar. "
+                       f"A new attempt has been created, starting at RPC review.")
+
+    student = seminar.student
+    acronym = student.batch_id.discipline.acronym if student.batch_id and student.batch_id.discipline else None
+    for recipient in [student.id.user, seminar.supervisor.id.user]:
+        _open_seminar_notify(
+            sender=request.user,
+            recipient=recipient,
+            verb='Open Seminar result declared',
+            description=f"{student.id.user.get_full_name()} has {result_desc}",
+        )
+    _open_seminar_notify(
+        sender=request.user,
+        recipient=_hod_users_for_discipline(acronym),
+        verb='Open Seminar result declared',
+        description=f"{student.id.user.get_full_name()} has {result_desc}",
+    )
 
     return JsonResponse(open_seminar_to_dict(seminar), status=200)
 
@@ -10635,8 +11859,11 @@ def rpc_open_seminar_finalize(request, attempt_pk):
     if not attempt.result:
         return JsonResponse({'error': 'Record a result before finalizing'}, status=400)
 
-    total = _exam_rpc_committee(attempt.open_seminar.student).count()
-    yes = OpenSeminarConsent.objects.filter(attempt=attempt, consented=True).count()
+    current_committee_ids = _exam_rpc_committee(attempt.open_seminar.student).values_list('member_id', flat=True)
+    total = len(current_committee_ids)
+    yes = OpenSeminarConsent.objects.filter(
+        attempt=attempt, consented=True, member_id__in=current_committee_ids,
+    ).count()
     if total == 0 or yes < total:
         return JsonResponse({'error': 'Not all RPC members have consented'}, status=400)
 
@@ -10650,6 +11877,24 @@ def rpc_open_seminar_finalize(request, attempt_pk):
     attempt.hod_reviewed_at = None
     attempt.hod_review_remarks = ''
     attempt.save()
+
+    seminar = attempt.open_seminar
+    student = seminar.student
+    acronym = student.batch_id.discipline.acronym if student.batch_id and student.batch_id.discipline else None
+    _open_seminar_notify(
+        sender=request.user,
+        recipient=_hod_users_for_discipline(acronym),
+        verb='Open Seminar pending your (post-RPC) review',
+        description=f"The RPC has finalized {student.id.user.get_full_name()}'s Open Seminar "
+                    f"(attempt {attempt.attempt_number}); awaiting Convener (DPGC) review.",
+    )
+    _open_seminar_notify(
+        sender=request.user,
+        recipient=seminar.supervisor.id.user,
+        verb='Open Seminar RPC review finalized',
+        description=f"The RPC has finalized {student.id.user.get_full_name()}'s Open Seminar "
+                    f"(attempt {attempt.attempt_number}); forwarded to Convener (DPGC).",
+    )
 
     return JsonResponse(open_seminar_to_dict(attempt.open_seminar), status=200)
 
@@ -10717,11 +11962,32 @@ def hod_review_open_seminar(request, attempt_pk):
         attempt.hod_review_remarks = ''
         attempt.status = 'dean_pending'
         attempt.save()
+        _open_seminar_notify(
+            sender=request.user,
+            recipient=_dean_academic_users(),
+            verb='Open Seminar pending your final approval',
+            description=f"{student.id.user.get_full_name()}'s Open Seminar has been approved by "
+                        f"Convener (DPGC) and is awaiting your final approval.",
+        )
+        _open_seminar_notify(
+            sender=request.user,
+            recipient=attempt.open_seminar.supervisor.id.user,
+            verb='Open Seminar approved by Convener (DPGC)',
+            description=f"{student.id.user.get_full_name()}'s Open Seminar has been approved by "
+                        f"Convener (DPGC) and forwarded to Dean Academic.",
+        )
     else:
         attempt.hod_review_remarks = data.get('remarks', '')
         attempt.status = 'rpc_pending'
         attempt.save()
         OpenSeminarConsent.objects.filter(attempt=attempt).update(consented=False)
+        _open_seminar_notify(
+            sender=request.user,
+            recipient=_rpc_committee_users(student),
+            verb='Open Seminar sent back by Convener (DPGC)',
+            description=f"Convener (DPGC) sent {student.id.user.get_full_name()}'s Open Seminar "
+                        f"back to the RPC for fresh consensus. Remarks: {attempt.hod_review_remarks or '—'}",
+        )
 
     return JsonResponse(open_seminar_to_dict(attempt.open_seminar), status=200)
 
@@ -10774,6 +12040,9 @@ def dean_nominee_submit_open_seminar_report(request, attempt_pk):
 
     if attempt.dean_nominee_id != faculty.pk:
         return JsonResponse({'error': 'Not authorized'}, status=403)
+
+    if attempt.dn_submitted_at:
+        return JsonResponse({'error': 'Report already submitted'}, status=403)
 
     data = request.data
     attempt.dn_quality = data.get('quality', '')
@@ -10927,6 +12196,16 @@ def student_propose_teaching_credit(request):
         choice_3_id=data.get('choice_3') or None,
         choice_4_id=data.get('choice_4') or None,
     )
+
+    acronym = student.batch_id.discipline.acronym if student.batch_id and student.batch_id.discipline else None
+    _teaching_credit_notify(
+        sender=request.user,
+        recipient=_hod_users_for_discipline(acronym),
+        verb='Teaching Credit registration pending allocation',
+        description=f"{student.id.user.get_full_name()} has submitted teaching credit course "
+                    f"choices for your allocation.",
+    )
+
     return JsonResponse(teaching_credit_to_dict(reg), status=201)
 
 
@@ -10935,6 +12214,14 @@ def student_propose_teaching_credit(request):
 def student_teaching_credit_detail(request, pk):
     """GET /stu/teaching-credit/<pk>/ -> full detail (also used to prefill a resubmission)."""
     reg = get_object_or_404(TeachingCreditAllocation, pk=pk)
+    try:
+        student = Student.objects.get(id=request.user.extrainfo)
+    except Student.DoesNotExist:
+        return JsonResponse({'error': 'Student record not found'}, status=404)
+
+    if reg.student_id != student.pk:
+        return JsonResponse({'error': 'Not authorized'}, status=403)
+
     return JsonResponse(teaching_credit_to_dict(reg), status=200)
 
 
@@ -10968,6 +12255,15 @@ def student_resubmit_teaching_credit(request, pk):
     reg.status = 'pending'
     reg.hod_remarks = ''
     reg.save()
+
+    acronym = student.batch_id.discipline.acronym if student.batch_id and student.batch_id.discipline else None
+    _teaching_credit_notify(
+        sender=request.user,
+        recipient=_hod_users_for_discipline(acronym),
+        verb='Teaching Credit registration resubmitted',
+        description=f"{student.id.user.get_full_name()} has resubmitted teaching credit course "
+                    f"choices for your allocation.",
+    )
 
     return JsonResponse(teaching_credit_to_dict(reg), status=200)
 
@@ -11109,11 +12405,26 @@ def hod_decide_teaching_credit(request, pk):
         reg.allocated_course_id = allocated_course_id
         reg.hod_remarks = ''
         reg.status = 'allocated'
+        reg.save()
+        _teaching_credit_notify(
+            sender=user,
+            recipient=reg.student.id.user,
+            verb='Teaching Credit course allocated',
+            description=f"You have been allocated {reg.allocated_course.code} - "
+                        f"{reg.allocated_course.name} for teaching credit.",
+        )
     else:
         reg.hod_remarks = data.get('remarks', '')
         reg.status = 'sent_back'
+        reg.save()
+        _teaching_credit_notify(
+            sender=user,
+            recipient=reg.student.id.user,
+            verb='Teaching Credit registration sent back',
+            description=f"Your teaching credit choices were sent back by the HOD. "
+                        f"Remarks: {reg.hod_remarks or '—'}",
+        )
 
-    reg.save()
     return JsonResponse(teaching_credit_to_dict(reg), status=200)
 
 
@@ -11135,11 +12446,25 @@ def hod_complete_teaching_credit(request, pk):
     if result not in ('satisfactory', 'not_satisfactory'):
         return JsonResponse({'error': 'result must be satisfactory or not_satisfactory'}, status=400)
 
+    if not reg.evaluations.exists():
+        return JsonResponse(
+            {'error': 'At least one student evaluation is required before completing this registration.'},
+            status=400,
+        )
+
     reg.result = result
     reg.status = 'completed'
     reg.completed_by = user
     reg.completed_at = timezone.now()
     reg.save()
+
+    _teaching_credit_notify(
+        sender=user,
+        recipient=reg.student.id.user,
+        verb='Teaching Credit result declared',
+        description=f"Your teaching credit registration has been marked "
+                    f"{'satisfactory' if result == 'satisfactory' else 'not satisfactory'} by the HOD.",
+    )
 
     return JsonResponse(teaching_credit_to_dict(reg, include_evaluations=True), status=200)
 

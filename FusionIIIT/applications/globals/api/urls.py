@@ -24,10 +24,18 @@ urlpatterns = [
     re_path(r'^profile_delete/(?P<id>[0-9]+)/', views.profile_delete, name='delete-profile-api'),
 
     # Notification endpoints
+    # unread-count must be listed before the bare 'notification/' pattern below,
+    # since that pattern has no end anchor and would otherwise swallow this route too.
+    re_path(r'^notification/unread-count/', views.unread_notification_count, name='notification-unread-count'),
     re_path(r'^notification/', views.notification, name='notification'),
     re_path(r'^notificationread', views.NotificationRead, name='notifications-read'),
     re_path(r'^notificationdelete', views.delete_notification, name='notifications-delete'),
     re_path(r'^notificationunread', views.NotificationUnread, name='notifications-unread'),
+
+    # Announcement endpoints
+    re_path(r'^announcements/create/', views.create_announcement, name='create-announcement'),
+    re_path(r'^announcements/audience-options/', views.announcement_audience_options, name='announcement-audience-options'),
+    re_path(r'^announcements/search-users/', views.search_users, name='announcement-search-users'),
 
     # Course management proxy
     re_path(r'^admin_delete_course/(?P<course_id>\d+)/', views.admin_delete_course_proxy, name='admin_delete_course_proxy')

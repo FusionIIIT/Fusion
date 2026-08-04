@@ -1,4 +1,8 @@
 # urls.py
+#
+# NOTE (as of 2026-07-31): none of these routes are called by the Fusion React
+# frontend - see `applications/notifications_extension/apps.py` for details. The
+# frontend's Notifications tab uses `applications/globals/api/urls.py` instead.
 from django.urls import path
 from .views import (
     LeaveModuleNotificationAPIView,

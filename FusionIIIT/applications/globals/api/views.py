@@ -8,6 +8,7 @@ from applications.programme_curriculum.models import (
 )
 from django.shortcuts import get_object_or_404
 from django.db import transaction
+from django.db.models import Q
 
 import hashlib
 import hmac
@@ -29,9 +30,12 @@ from django.http import JsonResponse
 
 from . import serializers
 from applications.globals.models import (ExtraInfo, HoldsDesignation, ModuleAccess,
-                                         Designation, PasswordResetOTP)
+                                         Designation, DepartmentInfo, PasswordResetOTP,
+                                         Announcement)
 from .utils import get_and_authenticate_user
 from notifications.models import Notification
+from notifications.signals import notify
+from applications.globals.decorators import role_required
 _security_log = logging.getLogger("fusion.security")
 
 User = get_user_model()
@@ -113,17 +117,59 @@ def auth_view(request):
     
     return Response(data=resp,status=status.HTTP_200_OK)
 
+def _notification_role_matches(notification, active_role):
+    """
+    A notification is visible unless its data payload carries a 'role' tag
+    that doesn't match the viewer's currently active role. Untagged
+    notifications (the vast majority) are always visible. This must be a
+    plain Python check, not a queryset filter: Notification.data is a
+    jsonfield.fields.JSONField (not django.db.models.JSONField), and
+    data__role=... style ORM lookups are unreliable on this package version.
+    """
+    data = notification.data
+    if not isinstance(data, dict):
+        return True
+    tagged_role = data.get('role')
+    if not tagged_role:
+        return True
+    if not active_role:
+        return False
+    return tagged_role.lower() == active_role.lower()
+
+
+def _visible_notifications(user, queryset=None):
+    """
+    Filters `queryset` (default: all of `user`'s notifications) down to the
+    ones visible under the role-tag rule. Callers that only need a subset
+    (e.g. unread ones) should pass a pre-filtered queryset so the cheap,
+    DB-level boolean filters run before this Python-side role check.
+    """
+    active_role = getattr(getattr(user, 'extrainfo', None), 'last_selected_role', None)
+    qs = user.notifications.all() if queryset is None else queryset
+    return [
+        n for n in qs
+        if _notification_role_matches(n, active_role)
+    ]
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def notification(request):
-    notifications=serializers.NotificationSerializer(request.user.notifications.all(),many=True).data
+    notifications=serializers.NotificationSerializer(_visible_notifications(request.user),many=True).data
 
     resp={
-        'notifications':notifications, 
+        'notifications':notifications,
     }
 
     return Response(data=resp,status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def unread_notification_count(request):
+    unread_qs = request.user.notifications.filter(unread=True, deleted=False)
+    count = len(_visible_notifications(request.user, unread_qs))
+    return Response(data={'count': count}, status=status.HTTP_200_OK)
 
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
@@ -397,6 +443,88 @@ def delete_notification(request):
             {'error': 'Failed to mark the notification as deleted.'},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+
+def resolve_audience_recipients(obj):
+    """
+    Resolves recipient Users for anything carrying the shared audience_type/
+    target_role/target_department/target_batch/target_users fields (currently
+    Announcement and Calendar).
+    """
+    if obj.audience_type == 'all':
+        return User.objects.all()
+    if obj.audience_type == 'role':
+        return User.objects.filter(
+            current_designation__designation=obj.target_role).distinct()
+    if obj.audience_type == 'department':
+        return User.objects.filter(extrainfo__department=obj.target_department)
+    if obj.audience_type == 'batch':
+        return User.objects.filter(extrainfo__student__batch_id=obj.target_batch)
+    if obj.audience_type == 'individual':
+        return obj.target_users.all()
+    return User.objects.none()
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
+def create_announcement(request):
+    serializer = serializers.AnnouncementSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    announcement = serializer.save(created_by=request.user.extrainfo)
+
+    recipients = resolve_audience_recipients(announcement)
+    notify.send(
+        sender=request.user,
+        recipient=recipients,
+        verb=announcement.title,
+        description=announcement.message,
+        url='',
+        module='Announcement',
+        flag='announcement',
+        role=announcement.target_role.name if announcement.audience_type == 'role' else None,
+    )
+
+    return Response(serializers.AnnouncementSerializer(announcement).data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
+def announcement_audience_options(request):
+    roles = serializers.DesignationSerializer(Designation.objects.all(), many=True).data
+    departments = serializers.DepartmentInfoSerializer(DepartmentInfo.objects.all(), many=True).data
+    return Response({'roles': roles, 'departments': departments}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
+def search_users(request):
+    query = request.query_params.get('q', '').strip()
+    if not query:
+        return Response([], status=status.HTTP_200_OK)
+
+    users = User.objects.filter(
+        Q(username__icontains=query)
+        | Q(first_name__icontains=query)
+        | Q(last_name__icontains=query)
+        | Q(extrainfo__id__icontains=query)
+    ).distinct()[:20]
+
+    results = [
+        {
+            'id': user.id,
+            'label': f"{user.first_name} {user.last_name} ({user.username})".strip(),
+        }
+        for user in users
+    ]
+    return Response(results, status=status.HTTP_200_OK)
 
 
 @api_view(['DELETE'])

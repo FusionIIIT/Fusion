@@ -393,7 +393,7 @@ def add_mess_meeting_invitation(request):
     invitation_obj.save()
     message = "Mess Committee meeting on " + date_today + " at " + time + ".\n Venue: " + venue + ".\n  Agenda: " + agenda
     for invi in members_mess:
-        central_mess_notif(request.user, invi.user, 'meeting_invitation', message)
+        central_mess_notif(request.user, invi.user, 'meeting_invitation', message, role=invi.designation.name)
 
     data = {
             'status': 1,

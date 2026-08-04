@@ -30,7 +30,9 @@ from rest_framework.generics import ListCreateAPIView
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
-from applications.academic_procedures.api.views import role_required
+from applications.globals.decorators import role_required
+from applications.globals.api.views import resolve_audience_recipients
+from notifications.signals import notify
 from django.core.cache import cache
 from django.db import connection
 
@@ -1183,10 +1185,28 @@ def list_calendar(request):
 @authentication_classes([TokenAuthentication])
 @role_required(['acadadmin'])
 def add_calendar(request):
-    Calendar.objects.create(
+    audience_type = request.data.get('audience_type', 'all')
+    calendar_event = Calendar.objects.create(
         description=request.data.get('description'),
         from_date=request.data.get('from_date'),
         to_date=request.data.get('to_date'),
+        audience_type=audience_type,
+        target_role_id=request.data.get('target_role'),
+        target_department_id=request.data.get('target_department'),
+        target_batch_id=request.data.get('target_batch'),
+    )
+    if audience_type == 'individual':
+        calendar_event.target_users.set(request.data.get('target_users', []))
+
+    recipients = resolve_audience_recipients(calendar_event)
+    notify.send(
+        sender=request.user,
+        recipient=recipients,
+        verb=calendar_event.description,
+        description=f"{calendar_event.from_date} to {calendar_event.to_date}",
+        url='',
+        module='Academic Calendar',
+        role=calendar_event.target_role.name if audience_type == 'role' and calendar_event.target_role else None,
     )
     return Response({'message': 'Created successfully!'})
 

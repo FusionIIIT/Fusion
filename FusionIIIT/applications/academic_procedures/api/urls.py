@@ -184,6 +184,34 @@ urlpatterns = [
     url(r'^acadadmin/thesis-enrollments/reject/$', views.admin_reject_enrollments, name='admin-reject-enrollments'),
 
     # ========================================================================
+    # PG Decimal Thesis Grading -- Supervisor Score + Batch-Wide Examiner Panel
+    # ========================================================================
+    # Student (thesis + synopsis submission -- separate from PhD's thesis_submit)
+    url(r'^stu/pg-thesis-submit/$', views.pg_thesis_submit, name='pg-thesis-submit'),
+    url(r'^stu/pg-thesis-submission-status/$', views.pg_thesis_submission_status,
+        name='pg-thesis-submission-status'),
+    # Supervisor
+    url(r'^supervisor/thesis-decimal-scores/$', views.supervisor_thesis_decimal_scores,
+        name='supervisor-thesis-decimal-scores'),
+    # HOD
+    url(r'^hod/thesis-examiner-panels/$', views.hod_examiner_panel_dashboard,
+        name='hod-thesis-examiner-panel-dashboard'),
+    url(r'^hod/thesis-examiner-panels/submit/$', views.hod_submit_examiner_panel,
+        name='hod-submit-thesis-examiner-panel'),
+    # Dean
+    url(r'^dean/thesis-examiner-panels/$', views.dean_examiner_panel_dashboard,
+        name='dean-thesis-examiner-panel-dashboard'),
+    url(r'^dean/thesis-examiner-panels/rank-and-invite/$', views.dean_rank_and_invite_examiner_panel,
+        name='dean-rank-and-invite-examiner-panel'),
+    # External examiner (token-authenticated, no Fusion account)
+    url(r'^thesis-examiner-panel/(?P<token>[0-9a-f-]+)/(?P<action>accept|reject)/$',
+        views.examiner_panel_invitation_action, name='examiner-panel-invitation-action'),
+    url(r'^thesis-examiner-panel/(?P<token>[0-9a-f-]+)/detail/$',
+        views.examiner_panel_batch_detail, name='examiner-panel-batch-detail'),
+    url(r'^thesis-examiner-panel/(?P<token>[0-9a-f-]+)/score/$',
+        views.examiner_panel_submit_score, name='examiner-panel-submit-score'),
+
+    # ========================================================================
     # Progress Seminar Slot Semester-Level Registration (Enrollment)
     # ========================================================================
     # Student

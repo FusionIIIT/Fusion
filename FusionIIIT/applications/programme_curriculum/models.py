@@ -345,7 +345,12 @@ class CourseSlot(models.Model):
 
 class ThesisSlot(models.Model):
     """Store thesis slot details for a semester"""
-    
+
+    EVALUATION_TYPE_CHOICES = [
+        ('blocks_sx', 'Block-wise S/X (one grade per 3 credits)'),
+        ('decimal', 'Single decimal score (supervisor + examiner average)'),
+    ]
+
     semester = models.ForeignKey(
         Semester, null=False, on_delete=models.CASCADE)
     name = models.CharField(max_length=100, null=False, blank=False)
@@ -354,6 +359,10 @@ class ThesisSlot(models.Model):
     duration = models.PositiveIntegerField(default=1)
     min_registration_limit = models.PositiveIntegerField(default=0)
     max_registration_limit = models.PositiveIntegerField(default=1000)
+    # Default 'blocks_sx' covers PhD (all semesters) and PG (sem 2/3) unchanged;
+    # PG's final thesis semester is marked 'decimal' by the curriculum admin.
+    evaluation_type = models.CharField(
+        max_length=20, choices=EVALUATION_TYPE_CHOICES, default='blocks_sx')
 
     def __str__(self):
         return str(Semester.__str__(self.semester) + ", " + self.name)

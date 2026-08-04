@@ -882,21 +882,23 @@ def forward_request(request,id):
             project= projects.objects.get(project_id= filez.src_object_id )
             receiver_instance= project.project_investigator_id
             receiver_designation= getDesignation(receiver_instance.username)
+            role_tag = None
         else:
             receiver_instance= HoldsDesignation.objects.get(designation__name=receiver_designation).user
+            role_tag = receiver_designation
         attachment= request.FILES.get('attachment')
         receiver= receiver_instance.username
 
         filex= forward_file(
             file_id= fileid,
             receiver= receiver,
-            receiver_designation=receiver_designation, 
+            receiver_designation=receiver_designation,
             file_extra_JSON= { "message": "Request forwarded."},
             remarks= remarks,
-            file_attachment= attachment, 
+            file_attachment= attachment,
         )
         if(receiver_designation == 'Professor' or receiver_designation == 'Assistant Professor' or receiver_designation == 'rspc_admin'):
-            research_procedures_notif(request.user, receiver_instance, "Request update")
+            research_procedures_notif(request.user, receiver_instance, "Request update", role=role_tag)
         messages.success(request,"Request forwarded successfully") 
 
 

@@ -1,0 +1,21 @@
+THESIS SCORING FORM
+====================
+
+Dear {{ prof_name }},
+
+Thank you for accepting to examine the theses of the batch:
+
+"{{ batch_name }}"
+
+Please score each student's thesis (out of 100) using the secure link below:
+
+{{ scoring_url }}
+
+NOTE:
+- This link is unique to you and should not be shared
+- You can save this email and return to score remaining students later
+- Your evaluation is valuable and greatly appreciated
+
+Thank you for your valuable contribution,
+Thesis Committee
+PDPM IIITDM Jabalpur

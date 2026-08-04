@@ -162,7 +162,7 @@ def holdingMeeting(request):
             success_msg="Meeting created successfully. Waiting for Suprintendent for the MOM"
             Dean = HoldsDesignation.objects.get(designation=Designation.objects.filter(name='Dean_s')).working
             Superintendent = HoldsDesignation.objects.filter(designation__name='Junior Superintendent').first()
-            office_module_DeanS_notif(request.user, Dean, 'meeting_booked')
+            office_module_DeanS_notif(request.user, Dean, 'meeting_booked', role='Dean_s')
             office_module_DeanS_notif(request.user, Superintendent, 'meeting_booked')
     return render(request, 'officeModule/officeOfDeanStudents/officeOfDeanStudents.html', getUniversalContext(request, page=1, success_msg=success_msg, err_msg=err_msg, flag_dean_s=True))
 
@@ -190,7 +190,7 @@ def meetingMinutes(request):
         success_msg="MOM uploaded successfully"
         Dean = HoldsDesignation.objects.get(designation=Designation.objects.filter(name='Dean_s')).working
         Superintendent = HoldsDesignation.objects.filter(designation__name='Junior Superintendent').first()
-        office_module_DeanS_notif(request.user, Dean, 'MOM_submitted')
+        office_module_DeanS_notif(request.user, Dean, 'MOM_submitted', role='Dean_s')
         office_module_DeanS_notif(request.user, Superintendent, 'MOM_submitted')
         # office_module_DeanS_notif(request.user, 'gymkhana', 'meeting_booked')
     return render(request, 'officeModule/officeOfDeanStudents/officeOfDeanStudents.html', getUniversalContext(request,page=6, success_msg=success_msg, err_msg=err_msg, flag_superintendent=True))
@@ -421,7 +421,7 @@ def budgetApproval(request):
             office_module_DeanS_notif(request.user, request.user, 'budget_approved')
             Dean = HoldsDesignation.objects.get(designation=Designation.objects.filter(name='Dean_s')).working
             Superintendent = HoldsDesignation.objects.filter(designation__name='Junior Superintendent').first()
-            office_module_DeanS_notif(request.user, Dean, 'budget_approved')
+            office_module_DeanS_notif(request.user, Dean, 'budget_approved', role='Dean_s')
             office_module_DeanS_notif(request.user, Superintendent, 'budget_approved')
             # office_module_DeanS_notif(request.user, Co, 'budget_approved')
     return render(request, 'officeModule/officeOfDeanStudents/officeOfDeanStudents.html', getUniversalContext(request, page=2, success_msg=success_msg,err_msg=err_msg,  flag_dean_s=True))
@@ -473,7 +473,7 @@ def clubApproval(request):
         success_msg = "Club Approved successfully"
         office_module_DeanS_notif(request.user, request.user, 'club_approved')
         Dean = HoldsDesignation.objects.get(designation=Designation.objects.filter(name='Dean_s')).working
-        office_module_DeanS_notif(request.user, Dean, 'club_approved')
+        office_module_DeanS_notif(request.user, Dean, 'club_approved', role='Dean_s')
         # office_module_DeanS_notif(request.user, 'gymkhana', 'club_approved')
     return render(request, 'officeModule/officeOfDeanStudents/officeOfDeanStudents.html', getUniversalContext(request, page=5,success_msg=success_msg,  flag_dean_s=True))
 

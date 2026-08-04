@@ -125,21 +125,26 @@ def _phd_catalog_entry(slot, relation_name, student):
 
 
 def _phd_extra_records(student, semester_no, require_announced=False):
-    """PhD-only records for a student's Thesis / Progress Seminar / Teaching Credit
+    """PhD/PG records for a student's Thesis / Progress Seminar / Teaching Credit
     activity in one semester -- one record per registration/allocation (multiple
     Thesis evaluation blocks collapse into a single record with a concatenated grade,
     e.g. 'SXS', matching how the institute's own Thesis catalog entry names the whole
     course). Each record carries both a single display row and the individual
     per-block (credit, grade) items needed for correct SPI/CPI credit-earned math.
 
-    Returns [] for non-PhD students, or once nothing has been graded/submitted yet
+    Returns [] for UG students, or once nothing has been graded/submitted yet
     (Progress Seminar has no grading pipeline today, so it will always be empty for
     now). require_announced=True additionally requires Thesis/Progress Seminar grades
     to have been officially announced (not just submitted) -- use this for
     student-facing views, matching the existing convention in
     student_thesis_enrollment_api. Teaching Credit has no separate announce step, so
-    its result is shown as soon as it's final either way."""
-    if student.programme not in PROGRAMME_TYPE_BUCKETS['PHD']:
+    its result is shown as soon as it's final either way.
+
+    PG (M.Tech/M.Des) students use this same ThesisRegistration/ThesisEvaluation
+    pipeline for their sem 2/3 block-graded thesis (see academic_procedures.models.
+    ThesisEvaluation's docstring), so the eligibility check covers both buckets --
+    not just PHD, despite this helper's PhD-era name."""
+    if student.programme not in PROGRAMME_TYPE_BUCKETS['PHD'] + PROGRAMME_TYPE_BUCKETS['PG']:
         return []
 
     records = []
@@ -4486,9 +4491,9 @@ def _build_grade_validation_semesters(student):
     def _is_summer_key(key):
         return bool(key[1] and "summer" in str(key[1]).lower())
 
-    # ── Merge in PhD Thesis / Progress Seminar / Teaching Credit rows ──────────
+    # ── Merge in PhD/PG Thesis / Progress Seminar / Teaching Credit rows ───────
     key_to_phd_rows = {}
-    if student.programme in PROGRAMME_TYPE_BUCKETS['PHD']:
+    if student.programme in PROGRAMME_TYPE_BUCKETS['PHD'] + PROGRAMME_TYPE_BUCKETS['PG']:
         phd_semester_nos = set()
         for qs, field in (
             (ThesisRegistration.objects.filter(student=student), 'semester__semester_no'),

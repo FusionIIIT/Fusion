@@ -5,7 +5,7 @@ from rest_framework import serializers
 from notifications.models import Notification
 
 from applications.globals.models import (ExtraInfo, HoldsDesignation, DepartmentInfo,
-                                        Designation)
+                                        Designation, Announcement)
 
 from applications.placement_cell.api.serializers import (SkillSerializer, HasSerializer,
                                                         EducationSerializer, CourseSerializer, ExperienceSerializer,
@@ -69,3 +69,31 @@ class HoldsDesignationSerializer(serializers.ModelSerializer):
     class Meta:
         model = HoldsDesignation
         fields = ('user','designation','held_at')
+
+class AnnouncementSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Announcement
+        fields = ('id', 'title', 'message', 'audience_type', 'target_role',
+                'target_department', 'target_batch', 'target_users', 'created_at')
+        extra_kwargs = {
+            'target_role': {'required': False, 'allow_null': True},
+            'target_department': {'required': False, 'allow_null': True},
+            'target_batch': {'required': False, 'allow_null': True},
+            'target_users': {'required': False},
+        }
+
+    def validate(self, attrs):
+        audience_type = attrs.get('audience_type')
+        required_field = {
+            'role': 'target_role',
+            'department': 'target_department',
+            'batch': 'target_batch',
+        }.get(audience_type)
+        if required_field and not attrs.get(required_field):
+            raise serializers.ValidationError(
+                {required_field: f"This field is required when audience_type is '{audience_type}'."})
+        if audience_type == 'individual' and not attrs.get('target_users'):
+            raise serializers.ValidationError(
+                {'target_users': "This field is required when audience_type is 'individual'."})
+        return attrs
