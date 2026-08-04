@@ -435,9 +435,19 @@ class CourseInstructor(models.Model):
         choices=SEMESTER_TYPE_CHOICES,
         null=True
     )
+    # Which B.Tech section (A-F) this offering teaches. A course taught to
+    # multiple sections has one CourseInstructor row per section, each with its
+    # own instructor. Left blank for a single-offering course (e.g. an
+    # interdisciplinary elective taught as one class by one dedicated faculty).
+    section_label = models.CharField(
+        max_length=4, null=True, blank=True,
+        help_text="Section (A-F) this offering teaches; blank for a single-offering elective.",
+    )
 
     class Meta:
-        unique_together = ('course_id', 'instructor_id', 'year', 'semester_type')
+        # One owning faculty per (course, term, section). instructor_id is
+        # deliberately NOT in the key: a section must have exactly one owner.
+        unique_together = ('course_id', 'year', 'semester_type', 'section_label')
 
     @property
     def academic_year(self):

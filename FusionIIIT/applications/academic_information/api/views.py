@@ -34,7 +34,7 @@ from applications.globals.decorators import role_required
 from applications.globals.api.views import resolve_audience_recipients
 from notifications.signals import notify
 from django.core.cache import cache
-from django.db import connection
+from django.db import connection, transaction
 
 logger = logging.getLogger(__name__)
 
@@ -320,8 +320,18 @@ def start_allocation_api(request):
         batch = int(batch)
         semester = int(semester)
 
+        skip_course_ids = data.get("skip_course_ids") or []
+        if not isinstance(skip_course_ids, list):
+            return JsonResponse({"error": "skip_course_ids must be a list"}, status=400)
+        try:
+            skip_course_ids = [int(c) for c in skip_course_ids]
+        except (TypeError, ValueError):
+            return JsonResponse({"error": "skip_course_ids must be course ids"}, status=400)
+
         mock_request = type('MockRequest', (), {})()
-        mock_request.POST = {'batch': batch, 'sem': semester, 'year': year, 'programme_type': programme_type}
+        mock_request.POST = {'batch': batch, 'sem': semester, 'year': year,
+                             'programme_type': programme_type,
+                             'skip_course_ids': skip_course_ids}
 
         return allocate(mock_request)
 
@@ -329,7 +339,52 @@ def start_allocation_api(request):
         return JsonResponse({"error": "Invalid JSON format"}, status=400)
 
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+        logger.exception("start_allocation_api failed")
+        return JsonResponse({"error": f"{type(e).__name__}: {e}"}, status=500)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
+def add_course_to_slots_api(request):
+    """Adds one course to the CourseSlot rows it was flagged as missing from."""
+    course_id = request.data.get('course_id')
+    slot_ids = request.data.get('slot_ids') or []
+
+    if not course_id or not slot_ids:
+        return Response({'status': -1, 'message': 'course_id and slot_ids are required'},
+                        status=status.HTTP_400_BAD_REQUEST)
+    if not isinstance(slot_ids, list):
+        return Response({'status': -1, 'message': 'slot_ids must be a list'},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        course = Courses.objects.get(id=int(course_id))
+    except (Courses.DoesNotExist, TypeError, ValueError):
+        return Response({'status': -1, 'message': 'No such course'},
+                        status=status.HTTP_404_NOT_FOUND)
+
+    slots = CourseSlot.objects.filter(id__in=[int(s) for s in slot_ids])
+    found = {s.id for s in slots}
+    missing = [s for s in slot_ids if int(s) not in found]
+    if missing:
+        return Response({'status': -1, 'message': f'Unknown course slot(s): {missing}'},
+                        status=status.HTTP_404_NOT_FOUND)
+
+    added = []
+    with transaction.atomic():
+        for slot in slots:
+            if not slot.courses.filter(id=course.id).exists():
+                slot.courses.add(course)
+                added.append({'slot_id': slot.id, 'slot_name': slot.name})
+
+    return Response({
+        'status': 1,
+        'message': f'{course.code} added to {len(added)} slot(s)',
+        'course_code': course.code,
+        'added': added,
+    }, status=status.HTTP_200_OK)
 
 
 def _semester_type(sem):
@@ -644,6 +699,7 @@ def generate_xlsheet_api(request):
         semester_type = request.data.get('semester_type')
         list_type = request.data.get('list_type', '').strip()
         programme_type = request.data.get('programme_type', '').strip()
+        section = (request.data.get('section') or '').strip().upper()
         preview_only = request.data.get('preview_only', False)
 
         if not list_type:
@@ -655,7 +711,7 @@ def generate_xlsheet_api(request):
             return Response({
                 'error': 'Missing required parameters: course, academic_year, semester_type'
             }, status=status.HTTP_400_BAD_REQUEST)
-        cache_key = f"student_list_{course_id}_{academic_year.replace('-', '_')}_{semester_type.replace(' ', '_')}_{(list_type or 'all').replace(' ', '_')}_{(programme_type or 'all').replace(' ', '_')}"
+        cache_key = f"student_list_{course_id}_{academic_year.replace('-', '_')}_{semester_type.replace(' ', '_')}_{(list_type or 'all').replace(' ', '_')}_{(programme_type or 'all').replace(' ', '_')}_{section or 'allsec'}"
         
         cached_data = cache.get(cache_key)
         if cached_data and not preview_only:
@@ -672,7 +728,8 @@ def generate_xlsheet_api(request):
                 cr.registration_type,
                 c.code as course_code,
                 c.name as course_name,
-                s.programme
+                s.programme,
+                COALESCE(ci.section_label, s.section) as section
             FROM course_registration cr
             INNER JOIN globals_extrainfo ei ON cr.student_id_id = ei.id
             INNER JOIN auth_user u ON ei.user_id = u.id
@@ -680,6 +737,7 @@ def generate_xlsheet_api(request):
             LEFT JOIN programme_curriculum_batch b ON s.batch_id_id = b.id
             LEFT JOIN programme_curriculum_discipline d ON b.discipline_id = d.id
             INNER JOIN programme_curriculum_course c ON cr.course_id_id = c.id
+            LEFT JOIN programme_curriculum_courseinstructor ci ON cr.course_instructor_id = ci.id
             WHERE cr.session = %s
                 AND cr.semester_type = %s
                 AND cr.course_id_id = %s
@@ -706,7 +764,12 @@ def generate_xlsheet_api(request):
                 else:
                     sql += " AND s.programme = %s"
                     params.append(programme_type)
-            
+
+            # Section = the course offering's section (course_instructor), else home section.
+            if section:
+                sql += " AND COALESCE(ci.section_label, s.section) = %s"
+                params.append(section)
+
             sql += " ORDER BY u.username"
             try:
                 with connection.cursor() as cursor:
@@ -724,6 +787,7 @@ def generate_xlsheet_api(request):
                             'last_name': data['last_name'],
                             'full_name': data['full_name'],
                             'discipline': data['discipline'],
+                            'section': data.get('section') or '',
                             'email': data['email'],
                             'registration_type': data['registration_type'],
                             'programme': data.get('programme', '')
@@ -767,7 +831,10 @@ def generate_xlsheet_api(request):
                 list_type_display += " (PG Only)"
             else:
                 list_type_display += f" ({programme_type} Only)"
-        
+
+        if section:
+            list_type_display += f" — Section {section}"
+
         processing_time = time.time() - start_time
         if preview_only:
             preview_students = students[:350] if len(students) > 350 else students
@@ -794,7 +861,7 @@ def generate_xlsheet_api(request):
         ws = wb.active
         ws.title = "Student List"
         
-        column_widths = [8, 15, 30, 15, 35, 18, 15]
+        column_widths = [8, 15, 30, 15, 10, 35, 18, 15]
         for i, width in enumerate(column_widths, 1):
             ws.column_dimensions[chr(64 + i)].width = width
         
@@ -827,7 +894,9 @@ def generate_xlsheet_api(request):
             year_int = int(year_parts[0])
         
         instructor_name = "TBA"
-        course_instructor = CourseInstructor.objects.filter(course_id=course_id, year=year_int, semester_type=semester_type).first()
+        _ci_qs = CourseInstructor.objects.filter(course_id=course_id, year=year_int, semester_type=semester_type)
+        # When a section is selected, show that section's faculty; else the first offering.
+        course_instructor = (_ci_qs.filter(section_label=section).first() if section else None) or _ci_qs.first()
         if course_instructor:
             instructor_name = f"{course_instructor.instructor_id.id.user.first_name} {course_instructor.instructor_id.id.user.last_name}".strip()
         
@@ -844,7 +913,7 @@ def generate_xlsheet_api(request):
         for row in range(3, 7):
             ws[f'A{row}'].alignment = Alignment(horizontal="left", vertical="center")
 
-        headers = ['Sl. No', 'Roll No', 'Name', 'Discipline', 'Email', 'Reg. Type', 'Signature']
+        headers = ['Sl. No', 'Roll No', 'Name', 'Discipline', 'Section', 'Email', 'Reg. Type', 'Signature']
         for col, header in enumerate(headers, 1):
             cell = ws.cell(row=8, column=col, value=header)
             cell.font = header_font
@@ -857,6 +926,7 @@ def generate_xlsheet_api(request):
                 student['roll_no'],
                 student['full_name'],
                 student['discipline'],
+                student.get('section', '') or '—',
                 student['email'],
                 student['registration_type'],
                 ''  # Signature
@@ -866,7 +936,7 @@ def generate_xlsheet_api(request):
         # Add borders only to the student list table section (header + data rows).
         last_table_row = ws.max_row
         for row in range(8, last_table_row + 1):
-            for col in range(1, 8):
+            for col in range(1, 9):
                 ws.cell(row=row, column=col).border = thin_border
 
         from io import BytesIO
@@ -894,6 +964,8 @@ def generate_xlsheet_api(request):
             else:
                 filename_suffix += f"_{programme_type.replace(' ', '_')}"
         
+        if section:
+            filename_suffix += f"_Section_{section}"
         filename = f"{course_info['code']}_{filename_suffix}_CourseList.xlsx"
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         
@@ -1320,7 +1392,14 @@ def available_courses(request):
     
     course_ids = regs.values_list('course_id', flat=True).distinct()
     courses = Courses.objects.filter(id__in=course_ids)
-    
+
+    # Per-course sections = distinct Student.section of its enrolled students (empty => UI hides filter).
+    from collections import defaultdict
+    section_map = defaultdict(set)
+    for cid, sec in regs.values_list('course_id', 'student_id__section'):
+        if sec:
+            section_map[cid].add(sec)
+
     data = []
     # Calculate correct year based on semester type
     year_parts = year.split('-')
@@ -1334,12 +1413,13 @@ def available_courses(request):
         course_instructor = CourseInstructor.objects.filter(course_id=c, year=year_int, semester_type=sem).first()
         if course_instructor:
             instructor_name = f"{course_instructor.instructor_id.id.user.first_name} {course_instructor.instructor_id.id.user.last_name}".strip()
-        
+
         data.append({
             "id": c.id,
             "code": c.code,
             "name": c.name,
-            "instructor": instructor_name
+            "instructor": instructor_name,
+            "sections": sorted(section_map.get(c.id, set())),
         })
     return Response(data)
 
@@ -1510,3 +1590,83 @@ def export_all_courses_zip(request):
     return response
 
     return Response(data)
+
+
+# Section assignment (Academics > Section Assignment): acadadmin sets Student.section manually.
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
+def section_batches(request):
+    """Running batches, for the Batch and Discipline dropdowns."""
+    batches = (Batch.objects.filter(running_batch=True)
+               .select_related('discipline')
+               .order_by('-year', 'name'))
+    result = []
+    for b in batches:
+        disc = b.discipline
+        result.append({
+            'id': b.id,
+            'year': b.year,
+            'name': b.name,
+            'discipline_name': disc.name if disc else '',
+            'discipline_acronym': disc.acronym if disc else '',
+            'label': f"{b.name} {disc.acronym if disc else ''} {b.year}".strip(),
+        })
+    return Response(result)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
+def section_students(request):
+    """Students of one batch (?batch_id=) with their assigned section, by roll no."""
+    batch_id = request.query_params.get('batch_id')
+    if not batch_id:
+        return Response({'detail': 'batch_id required.'},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    students = (Student.objects
+                .filter(batch_id__id=batch_id)
+                .select_related('id', 'id__user')
+                .order_by('id_id'))
+
+    result = []
+    for idx, st in enumerate(students, start=1):
+        user = getattr(st.id, 'user', None)
+        full_name = ''
+        if user:
+            full_name = (f"{user.first_name} {user.last_name}").strip() or user.username
+        result.append({
+            'sno': idx,
+            'roll_no': st.id_id,
+            'name': full_name,
+            'section': st.section or '',
+        })
+    return Response(result)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
+def assign_section(request):
+    """Bulk-set section for {"roll_numbers": [...], "section": "A"}; empty section clears it."""
+    roll_numbers = request.data.get('roll_numbers') or []
+    section = (request.data.get('section') or '').strip().upper()
+
+    if not roll_numbers:
+        return Response({'detail': 'roll_numbers required.'},
+                        status=status.HTTP_400_BAD_REQUEST)
+    if section and (len(section) > 2 or not section.isalpha()):
+        return Response({'detail': 'section must be one or two letters.'},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    updated = (Student.objects
+               .filter(id_id__in=roll_numbers)
+               .update(section=section or None))
+    return Response({'detail': f'Section updated for {updated} student(s).',
+                     'updated': updated,
+                     'section': section or None})
