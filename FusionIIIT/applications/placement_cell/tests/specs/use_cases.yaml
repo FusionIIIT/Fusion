@@ -1,0 +1,506 @@
+use_cases:
+  - id: UC01
+    source_id: PC-UC-S001
+    name: Profile Management
+    endpoint: /placement/api/profile/
+    method: GET, PUT
+    description: Students create and update their comprehensive placement profile including personal, academic, and skills details.
+    scenarios:
+      happy_path:
+        _test_id: UC01_HP_01
+        _uc_id: UC01
+        _scenario: Happy Path
+        _expected_result: Student saves a valid placement profile and sees an updated profile summary.
+      alternate_path:
+        _test_id: UC01_AP_01
+        _uc_id: UC01
+        _scenario: Alternate Path
+        _expected_result: Student retrieves profile completeness, eligibility summary, documents, and audit history.
+      exception_path:
+        _test_id: UC01_EP_01
+        _uc_id: UC01
+        _scenario: Exception Path
+        _expected_result: Invalid profile details are rejected with field-level validation errors.
+
+  - id: UC02
+    source_id: PC-UC-S002
+    name: Browse and Search Jobs
+    endpoint: /placement/api/placement/
+    method: GET
+    description: Students browse available job postings and search for opportunities based on preferences and eligibility.
+    scenarios:
+      happy_path:
+        _test_id: UC02_HP_01
+        _uc_id: UC02
+        _scenario: Happy Path
+        _expected_result: Student sees active upcoming job opportunities.
+      alternate_path:
+        _test_id: UC02_AP_01
+        _uc_id: UC02
+        _scenario: Alternate Path
+        _expected_result: Filtered search returns only matching placements.
+      exception_path:
+        _test_id: UC02_EP_01
+        _uc_id: UC02
+        _scenario: Exception Path
+        _expected_result: No active jobs results in an empty list with no server error.
+
+  - id: UC03
+    source_id: PC-UC-S003
+    name: Apply for Jobs
+    endpoint: /placement/api/apply-for-placement/
+    method: POST
+    description: Students submit applications for eligible job postings with required information and supporting profile data.
+    scenarios:
+      happy_path:
+        _test_id: UC03_HP_01
+        _uc_id: UC03
+        _scenario: Happy Path
+        _expected_result: Eligible student with a complete profile submits an application successfully.
+      alternate_path:
+        _test_id: UC03_AP_01
+        _uc_id: UC03
+        _scenario: Alternate Path
+        _expected_result: Ineligible student is blocked with eligibility reasons.
+      exception_path:
+        _test_id: UC03_EP_01
+        _uc_id: UC03
+        _scenario: Exception Path
+        _expected_result: Duplicate application attempt is rejected with a conflict response.
+
+  - id: UC04
+    source_id: PC-UC-S004
+    name: Track Application Status
+    endpoint: /placement/api/my-applications/
+    method: GET
+    description: Students monitor the status and progress of submitted applications.
+    scenarios:
+      happy_path:
+        _test_id: UC04_HP_01
+        _uc_id: UC04
+        _scenario: Happy Path
+        _expected_result: Student sees a list of submitted applications with current statuses.
+      alternate_path:
+        _test_id: UC04_AP_01
+        _uc_id: UC04
+        _scenario: Alternate Path
+        _expected_result: Student sees interview rounds, next interview details, and offer references for an application.
+      exception_path:
+        _test_id: UC04_EP_01
+        _uc_id: UC04
+        _scenario: Exception Path
+        _expected_result: Student with no applications receives an empty applications list.
+
+  - id: UC05
+    source_id: PC-UC-S005
+    name: Manage Job Offers
+    endpoint: /placement/api/my-offers/
+    method: GET, POST
+    description: Students review, accept, or reject job offers received from companies.
+    scenarios:
+      happy_path:
+        _test_id: UC05_HP_01
+        _uc_id: UC05
+        _scenario: Happy Path
+        _expected_result: Student views active offers and can accept an eligible pending offer.
+      alternate_path:
+        _test_id: UC05_AP_01
+        _uc_id: UC05
+        _scenario: Alternate Path
+        _expected_result: Student rejects an offer and the response is recorded successfully.
+      exception_path:
+        _test_id: UC05_EP_01
+        _uc_id: UC05
+        _scenario: Exception Path
+        _expected_result: Expired or already-responded offers are blocked with an appropriate error.
+
+  - id: UC06
+    source_id: PC-UC-S006
+    name: Generate Resume
+    endpoint: /placement/api/generate-cv/
+    method: POST
+    description: Students generate formatted resumes using profile information stored in the placement module.
+    scenarios:
+      happy_path:
+        _test_id: UC06_HP_01
+        _uc_id: UC06
+        _scenario: Happy Path
+        _expected_result: Student generates and downloads a resume successfully.
+      alternate_path:
+        _test_id: UC06_AP_01
+        _uc_id: UC06
+        _scenario: Alternate Path
+        _expected_result: Resume is generated using the latest available profile, education, and project data.
+      exception_path:
+        _test_id: UC06_EP_01
+        _uc_id: UC06
+        _scenario: Exception Path
+        _expected_result: Resume generation fails gracefully when required data is incomplete or missing.
+
+  - id: UC07
+    source_id: PC-UC-S007
+    name: View Placement Statistics
+    endpoint: /placement/api/statistics/
+    method: GET
+    description: Students access placement statistics and trends for their batch and department.
+    scenarios:
+      happy_path:
+        _test_id: UC07_HP_01
+        _uc_id: UC07
+        _scenario: Happy Path
+        _expected_result: Student views placement statistics dashboard data successfully.
+      alternate_path:
+        _test_id: UC07_AP_01
+        _uc_id: UC07
+        _scenario: Alternate Path
+        _expected_result: Student filters statistics by company, year, or department and sees updated results.
+      exception_path:
+        _test_id: UC07_EP_01
+        _uc_id: UC07
+        _scenario: Exception Path
+        _expected_result: When no statistics match the filters, the API returns an empty dataset without failing.
+
+  - id: UC08
+    source_id: PC-UC-S008
+    name: Withdraw Application
+    endpoint: /placement/api/apply-for-placement/{schedule_id}/
+    method: DELETE
+    description: Students withdraw submitted applications before the recruitment process is completed.
+    scenarios:
+      happy_path:
+        _test_id: UC08_HP_01
+        _uc_id: UC08
+        _scenario: Happy Path
+        _expected_result: Student withdraws an active application successfully.
+      alternate_path:
+        _test_id: UC08_AP_01
+        _uc_id: UC08
+        _scenario: Alternate Path
+        _expected_result: Withdrawal also updates related invitation status and sends notifications.
+      exception_path:
+        _test_id: UC08_EP_01
+        _uc_id: UC08
+        _scenario: Exception Path
+        _expected_result: Already withdrawn applications cannot be withdrawn again.
+
+  - id: UC09
+    source_id: PC-UC-T001
+    name: Manage Job Postings
+    endpoint: /placement/api/placement/
+    method: GET, POST, PUT
+    description: TPO reviews, approves, creates, updates, and publishes job postings.
+    scenarios:
+      happy_path:
+        _test_id: UC09_HP_01
+        _uc_id: UC09
+        _scenario: Happy Path
+        _expected_result: TPO creates a valid job posting and it becomes visible to eligible students.
+      alternate_path:
+        _test_id: UC09_AP_01
+        _uc_id: UC09
+        _scenario: Alternate Path
+        _expected_result: TPO updates an existing job posting details successfully.
+      exception_path:
+        _test_id: UC09_EP_01
+        _uc_id: UC09
+        _scenario: Exception Path
+        _expected_result: Invalid schedule data such as past placement date is rejected.
+
+  - id: UC10
+    source_id: PC-UC-T002
+    name: Schedule Interviews
+    endpoint: /placement/api/application-detail/{application_id}/interview/
+    method: GET, POST
+    description: TPO coordinates interview schedules for shortlisted students and companies.
+    scenarios:
+      happy_path:
+        _test_id: UC10_HP_01
+        _uc_id: UC10
+        _scenario: Happy Path
+        _expected_result: TPO schedules an interview for an application successfully.
+      alternate_path:
+        _test_id: UC10_AP_01
+        _uc_id: UC10
+        _scenario: Alternate Path
+        _expected_result: Student and stakeholders can view the scheduled interview timeline.
+      exception_path:
+        _test_id: UC10_EP_01
+        _uc_id: UC10
+        _scenario: Exception Path
+        _expected_result: Conflicting or invalid interview timings are rejected.
+
+  - id: UC11
+    source_id: PC-UC-T003
+    name: Generate Placement Reports
+    endpoint: /placement/api/reports/
+    method: GET
+    description: TPO generates placement reports and analytics across company, batch, branch, and detailed views.
+    scenarios:
+      happy_path:
+        _test_id: UC11_HP_01
+        _uc_id: UC11
+        _scenario: Happy Path
+        _expected_result: TPO retrieves a placement report payload successfully.
+      alternate_path:
+        _test_id: UC11_AP_01
+        _uc_id: UC11
+        _scenario: Alternate Path
+        _expected_result: TPO applies report filters and receives a narrowed dataset.
+      exception_path:
+        _test_id: UC11_EP_01
+        _uc_id: UC11
+        _scenario: Exception Path
+        _expected_result: Non-TPO users are denied access to report APIs.
+
+  - id: UC12
+    source_id: PC-UC-C001
+    name: Oversight Dashboard Access
+    endpoint: /placement/api/reports/
+    method: GET
+    description: Placement chairman accesses consolidated oversight data for placement activities.
+    scenarios:
+      happy_path:
+        _test_id: UC12_HP_01
+        _uc_id: UC12
+        _scenario: Happy Path
+        _expected_result: Chairman accesses placement reports and dashboard-level summaries successfully.
+      alternate_path:
+        _test_id: UC12_AP_01
+        _uc_id: UC12
+        _scenario: Alternate Path
+        _expected_result: Chairman reviews filtered reports for a specific company, year, or department.
+      exception_path:
+        _test_id: UC12_EP_01
+        _uc_id: UC12
+        _scenario: Exception Path
+        _expected_result: Unauthorized users cannot access chairman-level oversight data.
+
+  - id: UC13
+    source_id: PC-UC-C002
+    name: Make Official Announcements
+    endpoint: /placement/api/send-notification/
+    method: POST
+    description: Chairman publishes official announcements and major placement updates to stakeholders.
+    scenarios:
+      happy_path:
+        _test_id: UC13_HP_01
+        _uc_id: UC13
+        _scenario: Happy Path
+        _expected_result: Chairman sends an announcement to all target recipients successfully.
+      alternate_path:
+        _test_id: UC13_AP_01
+        _uc_id: UC13
+        _scenario: Alternate Path
+        _expected_result: Chairman sends a targeted notification to a specific user or role group.
+      exception_path:
+        _test_id: UC13_EP_01
+        _uc_id: UC13
+        _scenario: Exception Path
+        _expected_result: Invalid recipient selection returns a not-found or validation error.
+
+  - id: UC14
+    source_id: PC-UC-R001
+    name: Company Registration
+    endpoint: /placement/api/registration/
+    method: GET, POST
+    description: Companies register on the platform and create a company profile for placement activities.
+    scenarios:
+      happy_path:
+        _test_id: UC14_HP_01
+        _uc_id: UC14
+        _scenario: Happy Path
+        _expected_result: Company submits registration details successfully.
+      alternate_path:
+        _test_id: UC14_AP_01
+        _uc_id: UC14
+        _scenario: Alternate Path
+        _expected_result: Authorized user retrieves the company directory or registration listing.
+      exception_path:
+        _test_id: UC14_EP_01
+        _uc_id: UC14
+        _scenario: Exception Path
+        _expected_result: Invalid or incomplete registration payload is rejected.
+
+  - id: UC15
+    source_id: PC-UC-R002
+    name: Post Job Opportunities
+    endpoint: /placement/api/placement/
+    method: POST
+    description: Companies create and submit job postings with detailed eligibility criteria and schedules.
+    scenarios:
+      happy_path:
+        _test_id: UC15_HP_01
+        _uc_id: UC15
+        _scenario: Happy Path
+        _expected_result: Company or authorized staff submits a valid job opportunity successfully.
+      alternate_path:
+        _test_id: UC15_AP_01
+        _uc_id: UC15
+        _scenario: Alternate Path
+        _expected_result: Job posting includes company linkage, filters, and optional attachment metadata.
+      exception_path:
+        _test_id: UC15_EP_01
+        _uc_id: UC15
+        _scenario: Exception Path
+        _expected_result: Posting with invalid schedule or malformed fields is rejected.
+
+  - id: UC16
+    source_id: PC-UC-R003
+    name: Review Applications
+    endpoint: /placement/api/student-applications/{identifier}/
+    method: GET, PUT
+    description: Companies review student applications, shortlist candidates, and update application status.
+    scenarios:
+      happy_path:
+        _test_id: UC16_HP_01
+        _uc_id: UC16
+        _scenario: Happy Path
+        _expected_result: Reviewer fetches submitted applications for a job and updates application status successfully.
+      alternate_path:
+        _test_id: UC16_AP_01
+        _uc_id: UC16
+        _scenario: Alternate Path
+        _expected_result: Reviewer accesses detailed application information including resume and interview history.
+      exception_path:
+        _test_id: UC16_EP_01
+        _uc_id: UC16
+        _scenario: Exception Path
+        _expected_result: Invalid application identifier or unauthorized review request is rejected.
+
+  - id: UC17
+    source_id: PC-UC-A001
+    name: Alumni Registration and Verification
+    endpoint: /placement/api/alumni/profile/
+    method: GET, POST, PUT
+    description: Alumni register on the platform, upload verification data, and await approval for alumni features.
+    scenarios:
+      happy_path:
+        _test_id: UC17_HP_01
+        _uc_id: UC17
+        _scenario: Happy Path
+        _expected_result: Alumni submits a new profile for verification successfully.
+      alternate_path:
+        _test_id: UC17_AP_01
+        _uc_id: UC17
+        _scenario: Alternate Path
+        _expected_result: Approved alumni updates profile details and mentorship preferences successfully.
+      exception_path:
+        _test_id: UC17_EP_01
+        _uc_id: UC17
+        _scenario: Exception Path
+        _expected_result: Unapproved alumni attempting restricted updates receive a pending-approval error.
+
+  - id: UC18
+    source_id: PC-UC-S009
+    name: Receive Notifications
+    endpoint: /placement/api/notification-preferences/
+    method: GET, PUT
+    description: Students receive and manage notification preferences for placement activities and updates.
+    scenarios:
+      happy_path:
+        _test_id: UC18_HP_01
+        _uc_id: UC18
+        _scenario: Happy Path
+        _expected_result: Student views current notification preferences successfully.
+      alternate_path:
+        _test_id: UC18_AP_01
+        _uc_id: UC18
+        _scenario: Alternate Path
+        _expected_result: Student updates portal, email, and SMS notification preferences successfully.
+      exception_path:
+        _test_id: UC18_EP_01
+        _uc_id: UC18
+        _scenario: Exception Path
+        _expected_result: Unauthorized access to notification preferences is denied.
+
+  - id: UC19
+    source_id: PC-UC-T004
+    name: Generate Placement Reports
+    endpoint: /placement/api/report-schedules/
+    method: GET, POST, PUT
+    description: TPO manages scheduled placement reports and recurring report generation settings.
+    scenarios:
+      happy_path:
+        _test_id: UC19_HP_01
+        _uc_id: UC19
+        _scenario: Happy Path
+        _expected_result: TPO creates a scheduled report successfully.
+      alternate_path:
+        _test_id: UC19_AP_01
+        _uc_id: UC19
+        _scenario: Alternate Path
+        _expected_result: TPO updates report schedule configuration and notification targets successfully.
+      exception_path:
+        _test_id: UC19_EP_01
+        _uc_id: UC19
+        _scenario: Exception Path
+        _expected_result: Non-admin users cannot manage report schedules.
+
+  - id: UC20
+    source_id: PC-UC-T005
+    name: Manage Company Relations
+    endpoint: /placement/api/registration/
+    method: GET, POST
+    description: TPO manages company records and tracks recruiting organizations in the placement system.
+    scenarios:
+      happy_path:
+        _test_id: UC20_HP_01
+        _uc_id: UC20
+        _scenario: Happy Path
+        _expected_result: TPO registers or maintains company information successfully.
+      alternate_path:
+        _test_id: UC20_AP_01
+        _uc_id: UC20
+        _scenario: Alternate Path
+        _expected_result: TPO reviews available company entries and uses them while creating schedules.
+      exception_path:
+        _test_id: UC20_EP_01
+        _uc_id: UC20
+        _scenario: Exception Path
+        _expected_result: Invalid company information is rejected by registration validation rules.
+
+  - id: UC21
+    source_id: PC-UC-T006
+    name: Send Notifications
+    endpoint: /placement/api/send-notification/
+    method: POST
+    description: TPO sends targeted notifications to students, companies, or other placement stakeholders.
+    scenarios:
+      happy_path:
+        _test_id: UC21_HP_01
+        _uc_id: UC21
+        _scenario: Happy Path
+        _expected_result: TPO sends a notification to all students successfully.
+      alternate_path:
+        _test_id: UC21_AP_01
+        _uc_id: UC21
+        _scenario: Alternate Path
+        _expected_result: TPO sends a notification to a specific recipient successfully.
+      exception_path:
+        _test_id: UC21_EP_01
+        _uc_id: UC21
+        _scenario: Exception Path
+        _expected_result: Notification request with an unknown recipient fails with a descriptive error.
+
+  - id: UC22
+    source_id: PC-UC-T007
+    name: Manage Student Eligibility Override
+    endpoint: /placement/api/placement-appeals/
+    method: GET, POST, PUT
+    description: TPO handles student eligibility exceptions, appeals, and override-style review decisions.
+    scenarios:
+      happy_path:
+        _test_id: UC22_HP_01
+        _uc_id: UC22
+        _scenario: Happy Path
+        _expected_result: TPO reviews a student appeal and records a decision successfully.
+      alternate_path:
+        _test_id: UC22_AP_01
+        _uc_id: UC22
+        _scenario: Alternate Path
+        _expected_result: Student submits an eligibility-related appeal with supporting notes successfully.
+      exception_path:
+        _test_id: UC22_EP_01
+        _uc_id: UC22
+        _scenario: Exception Path
+        _expected_result: Invalid or unauthorized appeal actions are rejected.

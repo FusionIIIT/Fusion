@@ -625,6 +625,7 @@ def download_template(request):
 
         # Scope by the offering each registration is bound to (course_instructor),
         # falling back to the student's home section only for pre-sectioning rows.
+        # Sections apply only to UG (PG/PhD have no sections); electives ignore it.
         section = (request.data.get('section') or '').strip() or None
         if section and (programme_type or '').strip().upper() == 'UG':
             course_info_query = course_info_query.filter(

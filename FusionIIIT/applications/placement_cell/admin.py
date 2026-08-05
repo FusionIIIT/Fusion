@@ -82,7 +82,7 @@ class StudentRecordAdmin(admin.ModelAdmin):
 
 
 class ChairmanVisitAdmin(admin.ModelAdmin):
-    list_display = ('company_name', 'location', 'visiting_date', 'timestamp')
+    list_display = ('company_name', 'location', 'visiting_date', 'start_date', 'end_date', 'timestamp')
 
 
 class PlacementScheduleAdmin(admin.ModelAdmin):

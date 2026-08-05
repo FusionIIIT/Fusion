@@ -4431,7 +4431,7 @@ def create_course_audit_log(course, user, action, old_data=None, new_data=None,
         admin_override=admin_override,
         reason=reason
     )
-    
+
     return audit_log
 
 
