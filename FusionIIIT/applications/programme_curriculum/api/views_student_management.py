@@ -25,6 +25,7 @@ from rest_framework import status
 
 from applications.academic_information.models import Student as AcademicStudent
 from applications.globals.models import ExtraInfo, Designation, HoldsDesignation
+from applications.globals.access import IsAcadAdminOrDean, require_designation
 from django.contrib.auth.models import User
 from applications.programme_curriculum.models import (
     Programme, Curriculum, Batch, Discipline
@@ -484,6 +485,7 @@ def get_display_branch_name(discipline):
 
 @csrf_exempt
 @require_http_methods(["POST"])
+@require_designation("acadadmin", "Dean Academic")
 def process_excel_upload(request):
     try:
         if 'file' not in request.FILES:
@@ -790,6 +792,7 @@ def check_student_duplicate(student, duplicate_check_fields, programme_type='ug'
 
 @csrf_exempt
 @require_http_methods(["POST"])
+@require_designation("acadadmin", "Dean Academic")
 def save_students_batch(request):
     try:
         data = json.loads(request.body)
@@ -1218,6 +1221,7 @@ def get_allocation_summary(students, programme_type):
 
 @csrf_exempt
 @require_http_methods(["POST"])
+@require_designation("acadadmin", "Dean Academic")
 def add_single_student(request):
     try:
         data = json.loads(request.body)
@@ -1446,6 +1450,7 @@ def add_single_student(request):
 
 @csrf_exempt
 @require_http_methods(["PUT"])
+@require_designation("acadadmin", "Dean Academic")
 def set_total_seats(request):
     try:
         data = json.loads(request.body)
@@ -1493,6 +1498,7 @@ def set_total_seats(request):
 # STUDENT STATUS MANAGEMENT
 # =============================================================================
 
+@require_designation("acadadmin", "Dean Academic")
 @csrf_exempt
 @require_http_methods(["PUT", "POST", "OPTIONS"])
 def update_student_status(request):
@@ -2336,6 +2342,7 @@ def update_student_status(request):
 # EXPORT FUNCTIONALITY
 # =============================================================================
 
+@require_designation("acadadmin", "Dean Academic")
 @csrf_exempt
 @require_http_methods(["GET"])
 def export_students(request, programme_type):
@@ -2424,6 +2431,7 @@ def export_students(request, programme_type):
 # UPLOAD HISTORY
 # =============================================================================
 
+@require_designation("acadadmin", "Dean Academic")
 @csrf_exempt
 @require_http_methods(["GET"])
 def upload_history(request):
@@ -2453,6 +2461,7 @@ def upload_history(request):
 # STUDENT LISTING
 # =============================================================================
 
+@require_designation("acadadmin", "Dean Academic")
 @csrf_exempt
 @require_http_methods(["GET"])
 def list_students(request):
@@ -2570,6 +2579,7 @@ def list_students(request):
 
 @csrf_exempt
 @require_http_methods(["POST"])
+@require_designation("acadadmin", "Dean Academic")
 def create_batch(request):
     """
     Create new batch
@@ -2721,6 +2731,7 @@ def create_batch(request):
             'message': f'Failed to create batch: {str(e)}'
         }, status=500)
 
+@require_designation("acadadmin", "Dean Academic")
 @csrf_exempt
 @require_http_methods(["PUT"])
 def update_batch(request, batch_id):
@@ -2790,6 +2801,7 @@ def update_batch(request, batch_id):
         }, status=500)
 
 
+@require_designation("acadadmin", "Dean Academic")
 @csrf_exempt
 @require_http_methods(["GET"])
 def list_batches_with_status(request):
@@ -2827,6 +2839,7 @@ def list_batches_with_status(request):
 # STUDENT STATUS CRUD
 # =============================================================================
 
+@require_designation("acadadmin", "Dean Academic")
 @csrf_exempt
 @require_http_methods(["PUT"])
 def update_student_status_crud(request, student_id):
@@ -2898,6 +2911,7 @@ def update_student_status_crud(request, student_id):
 # PASSWORD MANAGEMENT
 # =============================================================================
 
+@require_designation("acadadmin", "Dean Academic")
 @csrf_exempt
 @require_http_methods(["POST"])
 def auto_generate_passwords_for_batch(request):
@@ -3402,6 +3416,7 @@ def create_or_update_main_student_record(student_data, batch_obj, batch_year):
 # INDIVIDUAL STUDENT CRUD OPERATIONS
 # =============================================================================
 
+@require_designation("acadadmin", "Dean Academic")
 @csrf_exempt
 @require_http_methods(["GET"])
 def get_student(request, student_id):
@@ -3518,6 +3533,7 @@ def get_student(request, student_id):
         }, status=500)
 
 
+@require_designation("acadadmin", "Dean Academic")
 @csrf_exempt
 @require_http_methods(["PUT", "POST"])
 def update_student(request, student_id):
@@ -3825,6 +3841,7 @@ def update_student(request, student_id):
         }, status=500)
 
 
+@require_designation("acadadmin", "Dean Academic")
 @csrf_exempt
 @require_http_methods(["DELETE", "POST"])
 def delete_student(request, student_id):
@@ -3982,6 +3999,7 @@ def delete_student(request, student_id):
 # BULK STATUS UPDATE FUNCTIONALITY  
 # =============================================================================
 
+@require_designation("acadadmin", "Dean Academic")
 @csrf_exempt
 @require_http_methods(["POST"])
 def bulk_update_student_status(request):
@@ -4261,6 +4279,7 @@ def check_transfer_status(request):
 
 @csrf_exempt
 @require_http_methods(["GET"])
+@require_designation("acadadmin", "Dean Academic")
 def get_batch_students(request, batch_id):
     """
     Get students for a specific batch - ONLY from StudentBatchUpload table
@@ -4333,6 +4352,17 @@ def get_batch_students(request, batch_id):
                 discipline_filters |= Q(branch__icontains=typo_name)
             students = students.filter(discipline_filters).order_by('roll_number')
 
+        # Read-only mirror of the assigned Student.section, keyed by roll number.
+        roll_numbers = [s.roll_number for s in students if s.roll_number]
+        assigned_sections = {}
+        if roll_numbers:
+            from applications.academic_information.models import Student as AcademicStudent
+            assigned_sections = dict(
+                AcademicStudent.objects
+                .filter(id_id__in=roll_numbers)
+                .values_list('id_id', 'section')
+            )
+
         upload_students = []
         for student in students:
             upload_students.append({
@@ -4368,6 +4398,7 @@ def get_batch_students(request, batch_id):
                 'state': getattr(student, 'state', ''),
 
                 'branch': student.branch,
+                'section': assigned_sections.get(student.roll_number) or '',
                 'specialization': getattr(student, 'specialization', ''),
                 'ai_rank': getattr(student, 'ai_rank', None),
                 'category_rank': getattr(student, 'category_rank', None),
@@ -4507,7 +4538,7 @@ def get_batch_students(request, batch_id):
 # =============================================================================
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAcadAdminOrDean])
 def admin_batches_unified(request):
     """
     UNIFIED API for both 'Batches' tab and 'Upcoming Batches' tab
@@ -4666,6 +4697,7 @@ def admin_batches_unified(request):
         }, status=500)
 
 
+@require_designation("acadadmin", "Dean Academic")
 @csrf_exempt
 @require_http_methods(["GET"])
 def sync_batch_data(request):
@@ -4733,6 +4765,7 @@ def sync_batch_data(request):
         }, status=500)
 
 
+@require_designation("acadadmin", "Dean Academic")
 @csrf_exempt
 @require_http_methods(["POST"])
 def validate_batch_prerequisites(request):
@@ -4810,6 +4843,7 @@ def validate_batch_prerequisites(request):
 # BATCH CURRICULUM STATUS CHECK
 # =============================================================================
 
+@require_designation("acadadmin", "Dean Academic")
 @csrf_exempt
 @require_http_methods(["GET"])
 def check_batches_curriculum_status(request):
@@ -4881,6 +4915,7 @@ def check_batches_curriculum_status(request):
         }, status=500)
 
 
+@require_designation("acadadmin", "Dean Academic")
 @csrf_exempt
 @require_http_methods(["GET"])
 def validate_student_upload_prerequisites(request):
@@ -4974,6 +5009,7 @@ def validate_student_upload_prerequisites(request):
 # CURRICULUM REDUNDANCY CLEANUP UTILITIES
 # =============================================================================
 
+@require_designation("acadadmin", "Dean Academic")
 @csrf_exempt
 @require_http_methods(["GET"])
 def find_duplicate_curriculums(request):
@@ -5036,6 +5072,7 @@ def find_duplicate_curriculums(request):
         }, status=500)
 
 
+@require_designation("acadadmin", "Dean Academic")
 @csrf_exempt
 @require_http_methods(["POST"])
 def consolidate_duplicate_curriculums(request):
@@ -5108,6 +5145,7 @@ def consolidate_duplicate_curriculums(request):
 # BATCH REDUNDANCY CLEANUP UTILITIES
 # =============================================================================
 
+@require_designation("acadadmin", "Dean Academic")
 @csrf_exempt
 @require_http_methods(["GET"])
 def find_duplicate_batches(request):
@@ -5183,6 +5221,7 @@ def find_duplicate_batches(request):
         }, status=500)
 
 
+@require_designation("acadadmin", "Dean Academic")
 @csrf_exempt
 @require_http_methods(["POST"])
 def consolidate_duplicate_batches(request):
@@ -5269,6 +5308,7 @@ def consolidate_duplicate_batches(request):
         }, status=500)
 
 
+@require_designation("acadadmin", "Dean Academic")
 @csrf_exempt
 @require_http_methods(["POST"])
 def fix_stuck_reported_students(request):
@@ -5428,6 +5468,7 @@ def transfer_student_to_academic_system(student):
         }
 
 
+@require_designation("acadadmin", "Dean Academic")
 @csrf_exempt
 @require_http_methods(["POST"])
 def sync_batches_to_configuration(request):

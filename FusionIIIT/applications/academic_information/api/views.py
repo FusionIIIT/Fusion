@@ -3,6 +3,7 @@ import json
 import io
 import logging
 import time
+import zipfile
 import pandas as pd
 from io import BytesIO
 from xlsxwriter.workbook import Workbook
@@ -23,7 +24,7 @@ from rest_framework.response import Response
 from applications.globals.models import User,ExtraInfo
 from applications.academic_information.models import Student, Course, Curriculum, Curriculum_Instructor, Student_attendance, Meeting, Calendar, Holiday, Grades, Spi, Timetable, Exam_timetable
 from applications.programme_curriculum.models import Course as Courses, CourseSlot, Batch, Semester, CourseInstructor
-from applications.academic_procedures.models import InitialRegistration, Assignment, StipendRequest
+from applications.academic_procedures.models import InitialRegistration, FinalRegistration, Assignment, StipendRequest
 from . import serializers
 from rest_framework.generics import ListCreateAPIView
 from django.views.decorators.csrf import csrf_exempt
@@ -31,7 +32,7 @@ from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
 from applications.academic_procedures.api.views import role_required
 from django.core.cache import cache
-from django.db import connection
+from django.db import connection, transaction
 
 logger = logging.getLogger(__name__)
 
@@ -317,8 +318,18 @@ def start_allocation_api(request):
         batch = int(batch)
         semester = int(semester)
 
+        skip_course_ids = data.get("skip_course_ids") or []
+        if not isinstance(skip_course_ids, list):
+            return JsonResponse({"error": "skip_course_ids must be a list"}, status=400)
+        try:
+            skip_course_ids = [int(c) for c in skip_course_ids]
+        except (TypeError, ValueError):
+            return JsonResponse({"error": "skip_course_ids must be course ids"}, status=400)
+
         mock_request = type('MockRequest', (), {})()
-        mock_request.POST = {'batch': batch, 'sem': semester, 'year': year, 'programme_type': programme_type}
+        mock_request.POST = {'batch': batch, 'sem': semester, 'year': year,
+                             'programme_type': programme_type,
+                             'skip_course_ids': skip_course_ids}
 
         return allocate(mock_request)
 
@@ -326,7 +337,328 @@ def start_allocation_api(request):
         return JsonResponse({"error": "Invalid JSON format"}, status=400)
 
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+        logger.exception("start_allocation_api failed")
+        return JsonResponse({"error": f"{type(e).__name__}: {e}"}, status=500)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
+def add_course_to_slots_api(request):
+    """Adds one course to the CourseSlot rows it was flagged as missing from."""
+    course_id = request.data.get('course_id')
+    slot_ids = request.data.get('slot_ids') or []
+
+    if not course_id or not slot_ids:
+        return Response({'status': -1, 'message': 'course_id and slot_ids are required'},
+                        status=status.HTTP_400_BAD_REQUEST)
+    if not isinstance(slot_ids, list):
+        return Response({'status': -1, 'message': 'slot_ids must be a list'},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        course = Courses.objects.get(id=int(course_id))
+    except (Courses.DoesNotExist, TypeError, ValueError):
+        return Response({'status': -1, 'message': 'No such course'},
+                        status=status.HTTP_404_NOT_FOUND)
+
+    slots = CourseSlot.objects.filter(id__in=[int(s) for s in slot_ids])
+    found = {s.id for s in slots}
+    missing = [s for s in slot_ids if int(s) not in found]
+    if missing:
+        return Response({'status': -1, 'message': f'Unknown course slot(s): {missing}'},
+                        status=status.HTTP_404_NOT_FOUND)
+
+    added = []
+    with transaction.atomic():
+        for slot in slots:
+            if not slot.courses.filter(id=course.id).exists():
+                slot.courses.add(course)
+                added.append({'slot_id': slot.id, 'slot_name': slot.name})
+
+    return Response({
+        'status': 1,
+        'message': f'{course.code} added to {len(added)} slot(s)',
+        'course_code': course.code,
+        'added': added,
+    }, status=status.HTTP_200_OK)
+
+
+def _semester_type(sem):
+    return "Even Semester" if int(sem) % 2 == 0 else "Odd Semester"
+
+
+def _academic_year_label(year, sem_type):
+    y = int(year)
+    if sem_type == "Even Semester":
+        return f"{y - 1}-{str(y)[2:]}"
+    return f"{y}-{str(y + 1)[2:]}"
+
+
+def _get_instructor_name(course_id, year_int, sem_type):
+    ci = CourseInstructor.objects.filter(
+        course_id=course_id, year=year_int, semester_type=sem_type
+    ).select_related('instructor_id__id__user').first()
+    if ci:
+        return f"{ci.instructor_id.id.user.first_name} {ci.instructor_id.id.user.last_name}".strip() or "TBA"
+    return "TBA"
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
+def get_allocation_results(request):
+    batch = request.data.get('batch')
+    sem = request.data.get('sem')
+    year = request.data.get('year')
+    programme_type = request.data.get('programme_type', 'UG')
+
+    if not batch or not sem:
+        return Response({"status": -1, "message": "batch and sem are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        batch = int(batch)
+        sem = int(sem)
+        year_int = int(year) if year else None
+    except (ValueError, TypeError):
+        return Response({"status": -1, "message": "Invalid batch, sem, or year"}, status=status.HTTP_400_BAD_REQUEST)
+
+    sem_type = _semester_type(sem)
+    academic_year = _academic_year_label(year_int, sem_type) if year_int else ""
+
+    filters = Q(semester_id__semester_no=sem) & Q(student_id__batch=batch)
+    if programme_type:
+        filters &= Q(student_id__batch_id__curriculum__programme__category=programme_type)
+
+    registrations = FinalRegistration.objects.filter(filters).select_related(
+        'student_id__id__user',
+        'student_id__batch_id__discipline',
+        'course_id',
+    ).order_by('student_id__id__id')
+
+    student_map = {}
+    course_map = {}
+
+    for reg in registrations:
+        s = reg.student_id
+        sid = s.id.id
+        full_name = f"{s.id.user.first_name} {s.id.user.last_name}".strip() or s.id.user.username
+        email = s.id.user.email or ""
+        try:
+            discipline = s.batch_id.discipline.acronym if s.batch_id and s.batch_id.discipline else "General"
+        except Exception:
+            discipline = "General"
+
+        c = reg.course_id
+        cid = c.id
+
+        if sid not in student_map:
+            student_map[sid] = {"student_id": sid, "student_name": full_name, "batch": s.batch, "courses": []}
+        student_map[sid]["courses"].append({
+            "id": cid, "code": c.code, "name": c.name,
+        })
+
+        if cid not in course_map:
+            instructor = _get_instructor_name(cid, year_int, sem_type) if year_int else "TBA"
+            course_map[cid] = {
+                "course_db_id": cid,
+                "course_code": c.code,
+                "course_name": c.name,
+                "instructor": instructor,
+                "students": [],
+            }
+        course_map[cid]["students"].append({
+            "roll_no": sid,
+            "full_name": full_name,
+            "discipline": discipline,
+            "email": email,
+            "registration_type": reg.registration_type,
+        })
+
+    return Response({
+        "status": 1,
+        "semester_type": sem_type,
+        "academic_year": academic_year,
+        "programme_type": programme_type,
+        "student_wise": list(student_map.values()),
+        "course_wise": list(course_map.values()),
+    })
+
+
+def _build_allocation_excel(course, students, sem_type, academic_year, programme_type, instructor):
+    from openpyxl import Workbook as OXWorkbook
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+
+    wb = OXWorkbook()
+    ws = wb.active
+    ws.title = "Student List"
+
+    for i, w in enumerate([8, 15, 30, 15, 35, 18, 15], 1):
+        ws.column_dimensions[chr(64 + i)].width = w
+
+    header_font = Font(bold=True, color="FFFFFF")
+    header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+    thin = Side(style="thin")
+    thin_border = Border(left=thin, right=thin, top=thin, bottom=thin)
+
+    ws.merge_cells('A1:G1')
+    ws['A1'] = "PDPM INDIAN INSTITUTE OF INFORMATION TECHNOLOGY, DESIGN AND MANUFACTURING JABALPUR"
+    ws['A1'].font = Font(bold=True, size=9)
+    ws['A1'].alignment = Alignment(horizontal="center")
+
+    ws.merge_cells('A2:G2')
+    ws['A2'] = f"{sem_type.upper()}, {academic_year}"
+    ws['A2'].font = Font(bold=True, size=12)
+    ws['A2'].alignment = Alignment(horizontal="center")
+
+    for row_num, text in enumerate([
+        f"Course No: {course.code}",
+        f"Course Title: {course.name}",
+        f"Instructor: {instructor}",
+        f"List Type: All Enrolled Students ({programme_type} Only)",
+    ], start=3):
+        ws.merge_cells(f'A{row_num}:G{row_num}')
+        ws[f'A{row_num}'] = text
+        ws[f'A{row_num}'].alignment = Alignment(horizontal="left", vertical="center")
+
+    headers = ['Sl. No', 'Roll No', 'Name', 'Discipline', 'Email', 'Reg. Type', 'Signature']
+    for col, hdr in enumerate(headers, 1):
+        cell = ws.cell(row=8, column=col, value=hdr)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal="center")
+
+    for idx, stu in enumerate(students, 1):
+        ws.append([idx, stu['roll_no'], stu['full_name'], stu['discipline'], stu['email'], stu['registration_type'], ''])
+
+    for row in range(8, ws.max_row + 1):
+        for col in range(1, 8):
+            ws.cell(row=row, column=col).border = thin_border
+
+    buf = BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return buf
+
+
+def _fetch_course_students(batch, sem, course_db_id, programme_type):
+    filters = (
+        Q(semester_id__semester_no=sem)
+        & Q(student_id__batch=batch)
+        & Q(course_id=course_db_id)
+    )
+    if programme_type:
+        filters &= Q(student_id__batch_id__curriculum__programme__category=programme_type)
+
+    regs = FinalRegistration.objects.filter(filters).select_related(
+        'student_id__id__user', 'student_id__batch_id__discipline', 'course_id'
+    ).order_by('student_id__id__id')
+
+    students = []
+    for reg in regs:
+        s = reg.student_id
+        try:
+            discipline = s.batch_id.discipline.acronym if s.batch_id and s.batch_id.discipline else "General"
+        except Exception:
+            discipline = "General"
+        students.append({
+            "roll_no": s.id.id,
+            "full_name": f"{s.id.user.first_name} {s.id.user.last_name}".strip() or s.id.user.username,
+            "discipline": discipline,
+            "email": s.id.user.email or "",
+            "registration_type": reg.registration_type,
+        })
+    return regs, students
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
+def export_allocation_course(request):
+    batch = request.data.get('batch')
+    sem = request.data.get('sem')
+    year = request.data.get('year')
+    programme_type = request.data.get('programme_type', 'UG')
+    course_db_id = request.data.get('course_db_id')
+
+    if not all([batch, sem, course_db_id]):
+        return Response({"error": "batch, sem, and course_db_id are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        batch = int(batch)
+        sem = int(sem)
+        year_int = int(year) if year else None
+        course_db_id = int(course_db_id)
+    except (ValueError, TypeError):
+        return Response({"error": "Invalid parameters"}, status=status.HTTP_400_BAD_REQUEST)
+
+    sem_type = _semester_type(sem)
+    academic_year = _academic_year_label(year_int, sem_type) if year_int else str(year_int)
+
+    regs, students = _fetch_course_students(batch, sem, course_db_id, programme_type)
+    if not regs.exists():
+        return Response({"error": "No allocation data found"}, status=status.HTTP_404_NOT_FOUND)
+
+    course = regs.first().course_id
+    instructor = _get_instructor_name(course_db_id, year_int, sem_type) if year_int else "TBA"
+
+    buf = _build_allocation_excel(course, students, sem_type, academic_year, programme_type, instructor)
+    filename = f"{batch}_Sem{sem}_{course.code}.xlsx"
+    response = HttpResponse(buf.getvalue(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
+def export_all_allocation_courses(request):
+    import zipfile
+
+    batch = request.data.get('batch')
+    sem = request.data.get('sem')
+    year = request.data.get('year')
+    programme_type = request.data.get('programme_type', 'UG')
+
+    if not all([batch, sem]):
+        return Response({"error": "batch and sem are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        batch = int(batch)
+        sem = int(sem)
+        year_int = int(year) if year else None
+    except (ValueError, TypeError):
+        return Response({"error": "Invalid parameters"}, status=status.HTTP_400_BAD_REQUEST)
+
+    sem_type = _semester_type(sem)
+    academic_year = _academic_year_label(year_int, sem_type) if year_int else str(year_int)
+
+    filters = Q(semester_id__semester_no=sem) & Q(student_id__batch=batch)
+    if programme_type:
+        filters &= Q(student_id__batch_id__curriculum__programme__category=programme_type)
+
+    course_ids = FinalRegistration.objects.filter(filters).values_list('course_id', flat=True).distinct()
+
+    zip_buf = BytesIO()
+    with zipfile.ZipFile(zip_buf, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for cid in course_ids:
+            regs, students = _fetch_course_students(batch, sem, cid, programme_type)
+            if not regs.exists():
+                continue
+            course = regs.first().course_id
+            instructor = _get_instructor_name(cid, year_int, sem_type) if year_int else "TBA"
+            xl_buf = _build_allocation_excel(course, students, sem_type, academic_year, programme_type, instructor)
+            zf.writestr(f"{batch}_Sem{sem}_{course.code}.xlsx", xl_buf.getvalue())
+
+    zip_buf.seek(0)
+    zip_filename = f"{batch}_Sem{sem}_AllCourses.zip"
+    response = HttpResponse(zip_buf.getvalue(), content_type='application/zip')
+    response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
+    return response
 
 
 def parse_academic_year(academic_year, semester_type):
@@ -365,6 +697,7 @@ def generate_xlsheet_api(request):
         semester_type = request.data.get('semester_type')
         list_type = request.data.get('list_type', '').strip()
         programme_type = request.data.get('programme_type', '').strip()
+        section = (request.data.get('section') or '').strip().upper()
         preview_only = request.data.get('preview_only', False)
 
         if not list_type:
@@ -376,7 +709,7 @@ def generate_xlsheet_api(request):
             return Response({
                 'error': 'Missing required parameters: course, academic_year, semester_type'
             }, status=status.HTTP_400_BAD_REQUEST)
-        cache_key = f"student_list_{course_id}_{academic_year.replace('-', '_')}_{semester_type.replace(' ', '_')}_{(list_type or 'all').replace(' ', '_')}_{(programme_type or 'all').replace(' ', '_')}"
+        cache_key = f"student_list_{course_id}_{academic_year.replace('-', '_')}_{semester_type.replace(' ', '_')}_{(list_type or 'all').replace(' ', '_')}_{(programme_type or 'all').replace(' ', '_')}_{section or 'allsec'}"
         
         cached_data = cache.get(cache_key)
         if cached_data and not preview_only:
@@ -393,7 +726,8 @@ def generate_xlsheet_api(request):
                 cr.registration_type,
                 c.code as course_code,
                 c.name as course_name,
-                s.programme
+                s.programme,
+                COALESCE(ci.section_label, s.section) as section
             FROM course_registration cr
             INNER JOIN globals_extrainfo ei ON cr.student_id_id = ei.id
             INNER JOIN auth_user u ON ei.user_id = u.id
@@ -401,11 +735,12 @@ def generate_xlsheet_api(request):
             LEFT JOIN programme_curriculum_batch b ON s.batch_id_id = b.id
             LEFT JOIN programme_curriculum_discipline d ON b.discipline_id = d.id
             INNER JOIN programme_curriculum_course c ON cr.course_id_id = c.id
-            WHERE cr.session = %s 
-                AND cr.semester_type = %s 
+            LEFT JOIN programme_curriculum_courseinstructor ci ON cr.course_instructor_id = ci.id
+            WHERE cr.session = %s
+                AND cr.semester_type = %s
                 AND cr.course_id_id = %s
             """
-            
+
             params = [academic_year, semester_type, course_id]
             
             # Add list_type filter if specified
@@ -427,7 +762,12 @@ def generate_xlsheet_api(request):
                 else:
                     sql += " AND s.programme = %s"
                     params.append(programme_type)
-            
+
+            # Section = the course offering's section (course_instructor), else home section.
+            if section:
+                sql += " AND COALESCE(ci.section_label, s.section) = %s"
+                params.append(section)
+
             sql += " ORDER BY u.username"
             try:
                 with connection.cursor() as cursor:
@@ -445,6 +785,7 @@ def generate_xlsheet_api(request):
                             'last_name': data['last_name'],
                             'full_name': data['full_name'],
                             'discipline': data['discipline'],
+                            'section': data.get('section') or '',
                             'email': data['email'],
                             'registration_type': data['registration_type'],
                             'programme': data.get('programme', '')
@@ -488,7 +829,10 @@ def generate_xlsheet_api(request):
                 list_type_display += " (PG Only)"
             else:
                 list_type_display += f" ({programme_type} Only)"
-        
+
+        if section:
+            list_type_display += f" — Section {section}"
+
         processing_time = time.time() - start_time
         if preview_only:
             preview_students = students[:350] if len(students) > 350 else students
@@ -515,7 +859,7 @@ def generate_xlsheet_api(request):
         ws = wb.active
         ws.title = "Student List"
         
-        column_widths = [8, 15, 30, 15, 35, 18, 15]
+        column_widths = [8, 15, 30, 15, 10, 35, 18, 15]
         for i, width in enumerate(column_widths, 1):
             ws.column_dimensions[chr(64 + i)].width = width
         
@@ -548,7 +892,9 @@ def generate_xlsheet_api(request):
             year_int = int(year_parts[0])
         
         instructor_name = "TBA"
-        course_instructor = CourseInstructor.objects.filter(course_id=course_id, year=year_int, semester_type=semester_type).first()
+        _ci_qs = CourseInstructor.objects.filter(course_id=course_id, year=year_int, semester_type=semester_type)
+        # When a section is selected, show that section's faculty; else the first offering.
+        course_instructor = (_ci_qs.filter(section_label=section).first() if section else None) or _ci_qs.first()
         if course_instructor:
             instructor_name = f"{course_instructor.instructor_id.id.user.first_name} {course_instructor.instructor_id.id.user.last_name}".strip()
         
@@ -565,7 +911,7 @@ def generate_xlsheet_api(request):
         for row in range(3, 7):
             ws[f'A{row}'].alignment = Alignment(horizontal="left", vertical="center")
 
-        headers = ['Sl. No', 'Roll No', 'Name', 'Discipline', 'Email', 'Reg. Type', 'Signature']
+        headers = ['Sl. No', 'Roll No', 'Name', 'Discipline', 'Section', 'Email', 'Reg. Type', 'Signature']
         for col, header in enumerate(headers, 1):
             cell = ws.cell(row=8, column=col, value=header)
             cell.font = header_font
@@ -578,6 +924,7 @@ def generate_xlsheet_api(request):
                 student['roll_no'],
                 student['full_name'],
                 student['discipline'],
+                student.get('section', '') or '—',
                 student['email'],
                 student['registration_type'],
                 ''  # Signature
@@ -587,7 +934,7 @@ def generate_xlsheet_api(request):
         # Add borders only to the student list table section (header + data rows).
         last_table_row = ws.max_row
         for row in range(8, last_table_row + 1):
-            for col in range(1, 8):
+            for col in range(1, 9):
                 ws.cell(row=row, column=col).border = thin_border
 
         from io import BytesIO
@@ -615,6 +962,8 @@ def generate_xlsheet_api(request):
             else:
                 filename_suffix += f"_{programme_type.replace(' ', '_')}"
         
+        if section:
+            filename_suffix += f"_Section_{section}"
         filename = f"{course_info['code']}_{filename_suffix}_CourseList.xlsx"
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         
@@ -1023,7 +1372,14 @@ def available_courses(request):
     
     course_ids = regs.values_list('course_id', flat=True).distinct()
     courses = Courses.objects.filter(id__in=course_ids)
-    
+
+    # Per-course sections = distinct Student.section of its enrolled students (empty => UI hides filter).
+    from collections import defaultdict
+    section_map = defaultdict(set)
+    for cid, sec in regs.values_list('course_id', 'student_id__section'):
+        if sec:
+            section_map[cid].add(sec)
+
     data = []
     # Calculate correct year based on semester type
     year_parts = year.split('-')
@@ -1037,12 +1393,260 @@ def available_courses(request):
         course_instructor = CourseInstructor.objects.filter(course_id=c, year=year_int, semester_type=sem).first()
         if course_instructor:
             instructor_name = f"{course_instructor.instructor_id.id.user.first_name} {course_instructor.instructor_id.id.user.last_name}".strip()
-        
+
         data.append({
-            "id": c.id, 
-            "code": c.code, 
+            "id": c.id,
+            "code": c.code,
             "name": c.name,
-            "instructor": instructor_name
+            "instructor": instructor_name,
+            "sections": sorted(section_map.get(c.id, set())),
         })
-    
     return Response(data)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin', 'Associate Professor', 'Professor', 'Assistant Professor', 'Dean Academic'])
+def export_all_courses_zip(request):
+    """
+    POST /aims/api/export-all-courses-zip/
+    Exports all courses matching the given filters as individual Excel sheets packaged into a ZIP.
+    Body: { academic_year, semester_type, programme_type (opt), list_type (opt) }
+    """
+    from openpyxl import Workbook as OpenpyxlWorkbook
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+
+    academic_year = request.data.get('academic_year')
+    semester_type = request.data.get('semester_type')
+    programme_type = request.data.get('programme_type', '').strip() or None
+    list_type = request.data.get('list_type', '').strip() or None
+
+    if not academic_year or not semester_type:
+        return Response({'error': 'academic_year and semester_type are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Determine integer year for instructor lookup
+    year_parts = academic_year.split('-')
+    year_int = int(year_parts[0]) + 1 if semester_type == 'Even Semester' else int(year_parts[0])
+
+    # Build base query for course_registration
+    regs = course_registration.objects.filter(session=academic_year, semester_type=semester_type)
+    if programme_type:
+        prog_map = {'UG': ['B.Tech', 'B.Des'], 'PG': ['M.Tech', 'M.Des', 'PhD']}
+        if programme_type.upper() in prog_map:
+            stu_ids = Student.objects.filter(programme__in=prog_map[programme_type.upper()]).values_list('id', flat=True)
+            regs = regs.filter(student_id__in=stu_ids)
+
+    course_ids = regs.values_list('course_id', flat=True).distinct()
+    courses = Courses.objects.filter(id__in=course_ids).order_by('code')
+
+    if not courses.exists():
+        return Response({'error': 'No courses found for the given filters'}, status=status.HTTP_404_NOT_FOUND)
+
+    # Shared styles
+    header_font  = Font(bold=True, color='FFFFFF')
+    header_fill  = PatternFill(start_color='366092', end_color='366092', fill_type='solid')
+    center_align = Alignment(horizontal='center', vertical='center')
+    left_align   = Alignment(horizontal='left', vertical='center')
+    thin = Side(style='thin')
+    thin_border  = Border(left=thin, right=thin, top=thin, bottom=thin)
+
+    col_widths = [8, 15, 30, 15, 35, 18, 15]
+
+    # List-type display label
+    if not list_type:
+        list_type_display = 'All Enrolled Students'
+    elif list_type.lower() == 'backlog_improvement':
+        list_type_display = 'Backlog & Improvement Students'
+    else:
+        list_type_display = f'{list_type} Students'
+    if programme_type:
+        list_type_display += f' ({programme_type.upper()} Only)'
+
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for course_obj in courses:
+            sql = """
+                SELECT DISTINCT
+                    u.username as roll_no,
+                    CONCAT(u.first_name, ' ', u.last_name) as full_name,
+                    COALESCE(d.acronym, 'General') as discipline,
+                    u.email,
+                    cr.registration_type
+                FROM course_registration cr
+                INNER JOIN globals_extrainfo ei ON cr.student_id_id = ei.id
+                INNER JOIN auth_user u ON ei.user_id = u.id
+                LEFT JOIN academic_information_student s ON ei.id = s.id_id
+                LEFT JOIN programme_curriculum_batch b ON s.batch_id_id = b.id
+                LEFT JOIN programme_curriculum_discipline d ON b.discipline_id = d.id
+                WHERE cr.session = %s AND cr.semester_type = %s AND cr.course_id_id = %s
+            """
+            params = [academic_year, semester_type, course_obj.id]
+
+            if list_type:
+                if list_type.lower() == 'backlog_improvement':
+                    sql += " AND cr.registration_type IN ('Backlog', 'Improvement')"
+                else:
+                    sql += ' AND cr.registration_type = %s'
+                    params.append(list_type)
+
+            if programme_type:
+                pt = programme_type.upper()
+                if pt == 'UG':
+                    sql += " AND s.programme IN ('B.Tech', 'B.Des')"
+                elif pt == 'PG':
+                    sql += " AND s.programme IN ('M.Tech', 'M.Des', 'PhD')"
+
+            sql += ' ORDER BY u.username'
+
+            with connection.cursor() as cursor:
+                cursor.execute(sql, params)
+                cols = [c[0] for c in cursor.description]
+                students = [dict(zip(cols, row)) for row in cursor.fetchall()]
+
+            # Instructor
+            instructor_name = 'TBA'
+            ci = CourseInstructor.objects.filter(course_id=course_obj, year=year_int, semester_type=semester_type).first()
+            if ci:
+                instructor_name = f'{ci.instructor_id.id.user.first_name} {ci.instructor_id.id.user.last_name}'.strip()
+
+            # Build workbook
+            wb = OpenpyxlWorkbook()
+            ws = wb.active
+            ws.title = 'Student List'
+
+            for i, w in enumerate(col_widths, 1):
+                ws.column_dimensions[chr(64 + i)].width = w
+
+            ws.merge_cells('A1:G1')
+            ws['A1'] = 'PDPM INDIAN INSTITUTE OF INFORMATION TECHNOLOGY, DESIGN AND MANUFACTURING JABALPUR'
+            ws['A1'].font = Font(bold=True, size=9)
+            ws['A1'].alignment = center_align
+
+            ws.merge_cells('A2:G2')
+            ws['A2'] = f'{semester_type.upper()}, {academic_year}'
+            ws['A2'].font = Font(bold=True, size=12)
+            ws['A2'].alignment = center_align
+
+            ws.merge_cells('A3:G3')
+            ws['A3'] = f'Course No: {course_obj.code}'
+            ws.merge_cells('A4:G4')
+            ws['A4'] = f'Course Title: {course_obj.name}'
+            ws.merge_cells('A5:G5')
+            ws['A5'] = f'Instructor: {instructor_name}'
+            ws.merge_cells('A6:G6')
+            ws['A6'] = f'List Type: {list_type_display}'
+
+            for row in range(3, 7):
+                ws[f'A{row}'].alignment = left_align
+
+            headers = ['Sl. No', 'Roll No', 'Name', 'Discipline', 'Email', 'Reg. Type', 'Signature']
+            for col, hdr in enumerate(headers, 1):
+                cell = ws.cell(row=8, column=col, value=hdr)
+                cell.font = header_font
+                cell.fill = header_fill
+                cell.alignment = center_align
+
+            for idx, stu in enumerate(students, 1):
+                ws.append([idx, stu['roll_no'], stu['full_name'], stu['discipline'], stu['email'], stu['registration_type'], ''])
+
+            last_row = ws.max_row
+            for r in range(8, last_row + 1):
+                for c in range(1, 8):
+                    ws.cell(row=r, column=c).border = thin_border
+
+            # Save workbook into ZIP
+            xls_buf = BytesIO()
+            wb.save(xls_buf)
+            xls_buf.seek(0)
+            safe_name = course_obj.name.replace('/', '-').replace('\\', '-')
+            filename = f'{course_obj.code}_{safe_name}.xlsx'
+            zf.writestr(filename, xls_buf.getvalue())
+
+    zip_buffer.seek(0)
+    zip_filename = f'{academic_year.replace("-", "_")}_{semester_type.replace(" ", "_")}_All_Courses.zip'
+    response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+    response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
+    return response
+
+    return Response(data)
+
+
+# Section assignment (Academics > Section Assignment): acadadmin sets Student.section manually.
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
+def section_batches(request):
+    """Running batches, for the Batch and Discipline dropdowns."""
+    batches = (Batch.objects.filter(running_batch=True)
+               .select_related('discipline')
+               .order_by('-year', 'name'))
+    result = []
+    for b in batches:
+        disc = b.discipline
+        result.append({
+            'id': b.id,
+            'year': b.year,
+            'name': b.name,
+            'discipline_name': disc.name if disc else '',
+            'discipline_acronym': disc.acronym if disc else '',
+            'label': f"{b.name} {disc.acronym if disc else ''} {b.year}".strip(),
+        })
+    return Response(result)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
+def section_students(request):
+    """Students of one batch (?batch_id=) with their assigned section, by roll no."""
+    batch_id = request.query_params.get('batch_id')
+    if not batch_id:
+        return Response({'detail': 'batch_id required.'},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    students = (Student.objects
+                .filter(batch_id__id=batch_id)
+                .select_related('id', 'id__user')
+                .order_by('id_id'))
+
+    result = []
+    for idx, st in enumerate(students, start=1):
+        user = getattr(st.id, 'user', None)
+        full_name = ''
+        if user:
+            full_name = (f"{user.first_name} {user.last_name}").strip() or user.username
+        result.append({
+            'sno': idx,
+            'roll_no': st.id_id,
+            'name': full_name,
+            'section': st.section or '',
+        })
+    return Response(result)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
+def assign_section(request):
+    """Bulk-set section for {"roll_numbers": [...], "section": "A"}; empty section clears it."""
+    roll_numbers = request.data.get('roll_numbers') or []
+    section = (request.data.get('section') or '').strip().upper()
+
+    if not roll_numbers:
+        return Response({'detail': 'roll_numbers required.'},
+                        status=status.HTTP_400_BAD_REQUEST)
+    if section and (len(section) > 2 or not section.isalpha()):
+        return Response({'detail': 'section must be one or two letters.'},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    updated = (Student.objects
+               .filter(id_id__in=roll_numbers)
+               .update(section=section or None))
+    return Response({'detail': f'Section updated for {updated} student(s).',
+                     'updated': updated,
+                     'section': section or None})

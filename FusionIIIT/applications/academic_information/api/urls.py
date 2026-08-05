@@ -20,8 +20,13 @@ urlpatterns = [
     # url(r'^delete-calendar',views.delete_calendar,name='calendar-delete-api'),
     url(r'^check-allocation$', views.check_allocation_api, name='check-allocation-api'),
     url(r'^start-allocation$', views.start_allocation_api, name='start-allocation-api'),
+    url(r'^add-course-to-slots$', views.add_course_to_slots_api, name='add-course-to-slots-api'),
+    url(r'^allocation-results$', views.get_allocation_results, name='allocation-results-api'),
+    url(r'^allocation-results/export$', views.export_allocation_course, name='allocation-results-export-api'),
+    url(r'^allocation-results/export-all$', views.export_all_allocation_courses, name='allocation-results-export-all-api'),
     url(r'^generatexlsheet$', views.generate_xlsheet_api, name='generate-xlsheet-api'),
     url(r'^available-courses/$', views.available_courses, name='available_courses'),
+    url(r'^export-all-courses-zip/$', views.export_all_courses_zip, name='export-all-courses-zip'),
     url(r'^generate_preregistration_report',views.generate_preregistration_report, name = "generate_preregistration_report"),
     url(r'^calendar/$',        views.list_calendar,   name='list_calendar'),
     url(r'^calendar/add/$',    views.add_calendar,    name='add_calendar'),
@@ -30,6 +35,11 @@ urlpatterns = [
     url(r'^calendar/clear/$',  views.clear_calendar,  name='clear_calendar'),
     url(r'^calendar/export/$', views.export_calendar, name='export_calendar'),
     url(r'^calendar/import/$', views.import_calendar, name='import_calendar'),
+
+    # Section assignment (Academics > Section Assignment)
+    url(r'^section/batches/$',  views.section_batches,  name='section_batches'),
+    url(r'^section/students/$', views.section_students, name='section_students'),
+    url(r'^section/assign/$',   views.assign_section,   name='assign_section'),
 
 
     # url(r'^holiday',views.holiday_api,name='holiday-get-api'),

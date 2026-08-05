@@ -71,6 +71,88 @@ class Constants:
         ('Management Science', 'Management Science'),
     )
 
+    # B.Tech section labels. CSE is split into A/B by roll-number parity; every
+    # other discipline maps to a single section. See compute_section() below.
+    SECTION_CHOICES = (
+        ('A', 'A'),
+        ('B', 'B'),
+        ('C', 'C'),
+        ('D', 'D'),
+        ('E', 'E'),
+        ('F', 'F'),
+    )
+
+
+def compute_section(discipline_name, roll_no, programme=None):
+    """Return the section (A-F) for an undergraduate student, else None.
+
+    Section is a pure function of (discipline, roll-number parity):
+      - CSE  -> 'A' if the roll number is odd, else 'B'
+      - ECE  -> 'C',  Mechanical -> 'D',  Design -> 'E',  Smart Manufacturing -> 'F'
+
+    Sections apply only to undergraduate programmes (B.Tech / B.Des); when
+    ``programme`` is given and is not one of those, returns None (an M.Tech
+    "CSE" student must not get A/B). When ``programme`` is None the check is
+    skipped (caller is assumed to have already scoped to UG students).
+
+    Because it is fully derived, it must be (re)computed wherever a student's
+    discipline is set or changed (onboarding, branch change). Accepts both the
+    canonical Discipline name ("Computer Science and Engineering") and short
+    acronyms ("CSE"). Returns None for unknown disciplines.
+    """
+    if not discipline_name:
+        return None
+    if programme is not None and str(programme).strip().upper() not in ('B.TECH', 'B.DES'):
+        return None
+    import re
+    name = str(discipline_name).strip().lower()
+    match = re.search(r'(\d+)\s*$', str(roll_no or ''))
+
+    if 'computer science' in name or name == 'cse':
+        if not match:
+            return None
+        return 'A' if int(match.group(1)) % 2 == 1 else 'B'
+    if 'electronic' in name or name == 'ece':
+        return 'C'
+    if 'mechanical' in name or name in ('me', 'mech'):
+        return 'D'
+    if 'design' in name:
+        return 'E'
+    if 'smart manufacturing' in name or name in ('sm', 'smart'):
+        return 'F'
+    return None
+
+
+def resolve_offering(student, course, year, semester_type):
+    """Return the CourseInstructor (offering) a student belongs to for a course
+    in a given term, or None if it cannot be determined unambiguously.
+
+    Resolution order:
+      1. Core: the offering whose section_label matches the student's section.
+      2. Elective / single-offering: the offering with no section (NULL).
+      3. If exactly one offering exists for the term, use it.
+    ``year`` must be the CourseInstructor working year (== course_registration
+    working_year for both Odd and Even semesters).
+    """
+    from applications.programme_curriculum.models import CourseInstructor
+    qs = CourseInstructor.objects.filter(
+        course_id=course, year=year, semester_type=semester_type,
+    )
+    section = getattr(student, 'section', None)
+    if section:
+        match = qs.filter(section_label=section).first()
+        if match:
+            return match
+    # Elective / single-offering: exactly one no-section offering. If more than
+    # one exists (legacy team-taught rows), it is ambiguous -> return None rather
+    # than guess an instructor, so it can be relabelled deliberately.
+    nulls = list(qs.filter(section_label__isnull=True)[:2])
+    if len(nulls) == 1:
+        return nulls[0]
+    if not nulls and qs.count() == 1:
+        return qs.first()
+    return None
+
 
 class Student(models.Model):
     '''
@@ -106,6 +188,10 @@ class Student(models.Model):
     room_no = models.CharField(max_length=10, blank=True, null=True)
     specialization = models.CharField(max_length=40,choices=Constants.MTechSpecialization, null=True, default='')
     curr_semester_no = models.IntegerField(default=1)
+    # B.Tech section (A-F). Derived from discipline + roll parity via
+    # compute_section(); (re)set at onboarding and on branch change. Null for
+    # non-B.Tech students and disciplines without a section mapping.
+    section = models.CharField(max_length=2, choices=Constants.SECTION_CHOICES, null=True, blank=True)
 
     def __str__(self):
         username = str(self.id.user.username)

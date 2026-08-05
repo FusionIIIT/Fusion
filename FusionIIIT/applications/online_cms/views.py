@@ -1525,6 +1525,7 @@ def add_questions_to_practice_contest(request, course_code, practice_contest_id)
             )
         return redirect('/ocms/' + course_code + '/edit_quiz/' + quiz_id)
 
+@login_required(login_url='/accounts/login')
 def add_practice_question(request, course_code, practice_contest_code):
     user = request.user
     extrainfo = ExtraInfo.objects.select_related().get(user=user)

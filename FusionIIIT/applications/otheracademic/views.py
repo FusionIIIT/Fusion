@@ -115,6 +115,7 @@ def leave_form_submit(request):
         return HttpResponseRedirect('/otheracademic/leaveform')
 
 
+@login_required(login_url='/accounts/login')
 def leaveApproveForm(request):
     """
     View function for accessing the leave approval form.
@@ -134,6 +135,7 @@ def leaveApproveForm(request):
         return HttpResponse("Not available for you or You are not a HOD.")
 
 
+@login_required(login_url='/accounts/login')
 def leaveStatus(request):
     """
     View function for accessing the leave status page for the student.
@@ -146,6 +148,7 @@ def leaveStatus(request):
     return render(request, 'otheracademic/leaveStatus.html', {'form_data': form_data, 'roll_no' : roll_no})
 
 
+@login_required(login_url='/accounts/login')
 def leaveStatus_Dip(request):
     """
     View function for track the record of leave applied.
@@ -182,6 +185,7 @@ def approve_leave(request, leave_id):
     return redirect('/otheracademic/leaveApproveForm')
 
 
+@login_required(login_url='/accounts/login')
 def reject_leave(request, leave_id):
     """
     View function for rejecting a leave request.
@@ -223,6 +227,7 @@ def leavePG(request):
         return HttpResponse("NOT AVAILABLE")
 
 
+@login_required(login_url='/accounts/login')
 def leavePgSubmit(request):
     """
     View function for submitting a leave form by postgraduate students.
@@ -295,6 +300,7 @@ def leavePgSubmit(request):
         return HttpResponseRedirect('/otheracademic/leavePG')
 
 
+@login_required(login_url='/accounts/login')
 def leaveApproveTA(request):
     """
     View function for accessing the leave approval page for TA supervisors.
@@ -310,6 +316,7 @@ def leaveApproveTA(request):
     return render(request, 'otheracademic/leaveApproveTA.html', {'form_data': form_data,'roll_no' : roll_no})
 
 
+@login_required(login_url='/accounts/login')
 def approve_leave_ta(request, leave_id):
     """
     View function for approving a leave request by TA supervisor.
@@ -352,6 +359,7 @@ def approve_leave_ta(request, leave_id):
     return redirect('/otheracademic/leaveApproveTA')  # Redirect to appropriate page after approval
 
 
+@login_required(login_url='/accounts/login')
 def reject_leave_ta(request, leave_id):
     """
     View function for rejecting a leave request by TA supervisor.
@@ -369,6 +377,7 @@ def reject_leave_ta(request, leave_id):
 
     return redirect('/otheracademic/leaveApproveTA')  # Redirect to appropriate page after rejection
 
+@login_required(login_url='/accounts/login')
 def leaveApproveThesis(request):
     """
     View function for accessing the leave approval page for TA supervisors.
@@ -384,6 +393,7 @@ def leaveApproveThesis(request):
     return render(request, 'otheracademic/leaveApproveThesis.html', {'form_data': form_data, 'roll_no' : roll_no})
 
 
+@login_required(login_url='/accounts/login')
 def approve_leave_thesis(request, leave_id):
     """
     View function for approving a leave request by TA supervisor.
@@ -425,6 +435,7 @@ def approve_leave_thesis(request, leave_id):
     return redirect('/otheracademic/leaveApproveThesis')  # Redirect to appropriate page after approval
 
 
+@login_required(login_url='/accounts/login')
 def reject_leave_thesis(request, leave_id):
     """
     View function for rejecting a leave request by TA supervisor.
@@ -440,6 +451,7 @@ def reject_leave_thesis(request, leave_id):
     return redirect('/otheracademic/leaveApproveThesis')  # Redirect to appropriate page after rejection
 
 
+@login_required(login_url='/accounts/login')
 def leaveApproveHOD(request):
     """
     View function for accessing the leave approval page for HOD.
@@ -458,6 +470,7 @@ def leaveApproveHOD(request):
     else:
         return HttpResponse("Not Avaible For You...OR You are not the HOD")
 
+@login_required(login_url='/accounts/login')
 def approve_leave_hod(request, leave_id):
     """
     View function for approving a leave request by HOD.
@@ -476,6 +489,7 @@ def approve_leave_hod(request, leave_id):
     return redirect('/otheracademic/leaveApproveHOD')  # Redirect to appropriate page after approval
 
 
+@login_required(login_url='/accounts/login')
 def reject_leave_hod(request, leave_id):
     """
     View function for rejecting a leave request by HOD.
@@ -491,6 +505,7 @@ def reject_leave_hod(request, leave_id):
     return redirect('/otheracademic/leaveApproveHOD')  # Redirect to appropriate page after rejection
 
 
+@login_required(login_url='/accounts/login')
 def leaveStatusPG(request):
     """
     View function for accessing the leave status page for postgraduate students.
@@ -503,6 +518,7 @@ def leaveStatusPG(request):
     return render(request, 'otheracademic/leaveStatusPG.html', {'form_data': form_data, 'roll_no': roll_no})
 
 
+@login_required(login_url='/accounts/login')
 def leaveStatusPG_Dip(request):
     """
     View function for accessing the leave  logged data of PG .
@@ -523,6 +539,7 @@ def leaveStatusPG_Dip(request):
 
 
 
+@login_required(login_url='/accounts/login')
 def graduateseminar(request):
     """
     This function is used to log the graduate seminar form and show the status.
@@ -535,6 +552,7 @@ def graduateseminar(request):
     else :
         return HttpResponse("Not Available for You")
 
+@login_required(login_url='/accounts/login')
 def graduate_form_submit(request):
     if request.method == 'POST':
         # Extract data from the request
@@ -553,12 +571,14 @@ def graduate_form_submit(request):
         graduate.save()
         return redirect('/otheracademic/graduateseminar')
 
+@login_required(login_url='/accounts/login')
 def graduate_status(request):
 
     form_data = GraduateSeminarFormTable.objects.all()
     roll_no = request.user.username
     return render(request, 'otheracademic/graduateSeminarStatus.html',{'form_data' : form_data, 'roll_no' : roll_no })
 
+@login_required(login_url='/accounts/login')
 def graduateSeminarStatus_Dip(request):
     receiver_value = User.objects.get(username=request.user.username)
     receiver_value_designation= HoldsDesignation.objects.filter(user=receiver_value)
@@ -581,6 +601,7 @@ def graduateSeminarStatus_Dip(request):
 
 
 
+@login_required(login_url='/accounts/login')
 def bonafide(request):
     """
     This function is used for solve the problem of Bonafied.In this Student apply for the bonafide .
@@ -596,6 +617,7 @@ def bonafide(request):
 
 
 
+@login_required(login_url='/accounts/login')
 def bonafide_form_submit(request):
     """
     Bonafide form submitted to acadadmin
@@ -633,6 +655,7 @@ def bonafide_form_submit(request):
         return HttpResponseRedirect('/otheracademic/bonafide')
 
 
+@login_required(login_url='/accounts/login')
 def bonafideApproveForm(request):
 
     """
@@ -647,6 +670,7 @@ def bonafideApproveForm(request):
     else:
         return HttpResponse("Not available For You")
 
+@login_required(login_url='/accounts/login')
 def approve_bonafide(request, leave_id):
 
     """
@@ -661,6 +685,7 @@ def approve_bonafide(request, leave_id):
     otheracademic_notif(request.user,bonafide_aceptor, 'bonafide_accept', 1, 'student', message)
     return redirect('/otheracademic/bonafideApproveForm')  # Redirect to appropriate page after approval
 
+@login_required(login_url='/accounts/login')
 def reject_bonafide(request, leave_id):
     """
     Reject Bonafide Form
@@ -673,6 +698,7 @@ def reject_bonafide(request, leave_id):
     otheracademic_notif(request.user,bonafide_aceptor, 'bonafide_accept', 1, 'student', message)
     return redirect('/otheracademic/bonafideApproveForm')  # Redirect to appropriate page after rejection
 
+@login_required(login_url='/accounts/login')
 def bonafideStatus(request):
     """
     Bonafide Status shown to student with option of download
@@ -688,6 +714,7 @@ def bonafideStatus(request):
 
 
 
+@login_required(login_url='/accounts/login')
 def upload_file(request, entry_id):
 
     """
@@ -709,6 +736,7 @@ def upload_file(request, entry_id):
 
 
 
+@login_required(login_url='/accounts/login')
 def nodues(request):
     """
     No Dues Form where student can apply for no dues
@@ -716,10 +744,12 @@ def nodues(request):
     return render(request,'otheracademic/noduesverification.html')
 
 
+@login_required(login_url='/accounts/login')
 def PG_page(request):
     return render(request,'otheracademic/PG_page.html')
 
 
+@login_required(login_url='/accounts/login')
 def nodues_status(request):
     form_data = NoDues.objects.all()
     roll_no = request.user.username
@@ -727,11 +757,13 @@ def nodues_status(request):
     return render(request, 'otheracademic/nodues_status.html',{'form_data' : form_data, 'roll_no' : roll_no })
 
 
+@login_required(login_url='/accounts/login')
 def noduesStatus_acad(request):
     form_data = NoDues.objects.all()
     return render(request, 'otheracademic/noduesStatus_acad.html',{'form_data' : form_data })
 
 
+@login_required(login_url='/accounts/login')
 def nodues_apply(request):
     form_data = NoDues.objects.all()
     roll_no = request.user.username
@@ -739,6 +771,7 @@ def nodues_apply(request):
 
 
 
+@login_required(login_url='/accounts/login')
 def update_dues_status(request):
     if request.method == 'POST':
         roll_no = request.POST.get('roll_no')
@@ -1090,6 +1123,7 @@ def submit_nodues_form(request):
 
 
 
+@login_required(login_url='/accounts/login')
 def approve_BTP(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.btp_supervisor_clear= True
@@ -1104,6 +1138,7 @@ def approve_BTP(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/BTP_nodues')  # Red 
 
+@login_required(login_url='/accounts/login')
 def approve_BTP_not(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.btp_supervisor_clear= True
@@ -1113,6 +1148,7 @@ def approve_BTP_not(request, no_dues_id):
     
 
 
+@login_required(login_url='/accounts/login')
 def reject_BTP(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.btp_supervisor_clear= False
@@ -1127,6 +1163,7 @@ def reject_BTP(request, no_dues_id):
 
 
 
+@login_required(login_url='/accounts/login')
 def approve_bank(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.bank_clear= True
@@ -1137,6 +1174,7 @@ def approve_bank(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/Bank_nodues')  # Red   
 
+@login_required(login_url='/accounts/login')
 def approve_bank_not(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.bank_clear= True
@@ -1146,6 +1184,7 @@ def approve_bank_not(request, no_dues_id):
     
 
 
+@login_required(login_url='/accounts/login')
 def reject_bank(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.bank_clear= False
@@ -1157,6 +1196,7 @@ def reject_bank(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/Bank_nodues')  # Red    
 
+@login_required(login_url='/accounts/login')
 def approve_CSE(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.cc_clear= True
@@ -1167,6 +1207,7 @@ def approve_CSE(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/CSE_nodues')  # Red    
 
+@login_required(login_url='/accounts/login')
 def approve_CSE_not(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.cc_clear= True
@@ -1176,6 +1217,7 @@ def approve_CSE_not(request, no_dues_id):
     
 
 
+@login_required(login_url='/accounts/login')
 def reject_CSE(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.cc_clear= False
@@ -1186,6 +1228,7 @@ def reject_CSE(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/CSE_nodues')  # Red  
 
+@login_required(login_url='/accounts/login')
 def approve_design_project(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.design_project_clear= True
@@ -1196,6 +1239,7 @@ def approve_design_project(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/Design_nodues')  # Red    
 
+@login_required(login_url='/accounts/login')
 def approve_design_project_not(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.design_project_clear= True
@@ -1205,6 +1249,7 @@ def approve_design_project_not(request, no_dues_id):
     
 
 
+@login_required(login_url='/accounts/login')
 def reject_design_project(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.design_project_clear= False
@@ -1215,6 +1260,7 @@ def reject_design_project(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/Design_nodues')  # Red      
 
+@login_required(login_url='/accounts/login')
 def approve_design_studio(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.design_studio_clear= True
@@ -1225,6 +1271,7 @@ def approve_design_studio(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/Design_nodues')  # Red  
 
+@login_required(login_url='/accounts/login')
 def approve_design_studio_not(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.design_studio_clear= True
@@ -1232,6 +1279,7 @@ def approve_design_studio_not(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/Design_nodues_not')  # Red  
 
+@login_required(login_url='/accounts/login')
 def reject_design_studio(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.design_studio_clear= False
@@ -1244,6 +1292,7 @@ def reject_design_studio(request, no_dues_id):
     
  
 
+@login_required(login_url='/accounts/login')
 def approve_icard(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.icard_dsa_clear= True
@@ -1254,6 +1303,7 @@ def approve_icard(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/dsa_nodues')  # Red   
 
+@login_required(login_url='/accounts/login')
 def approve_icard_not(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.icard_dsa_clear= True
@@ -1263,6 +1313,7 @@ def approve_icard_not(request, no_dues_id):
     
 
 
+@login_required(login_url='/accounts/login')
 def reject_icard(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.icard_dsa_clear= False
@@ -1273,6 +1324,7 @@ def reject_icard(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/dsa_nodues')  # Red    
 
+@login_required(login_url='/accounts/login')
 def approve_placement(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.placement_cell_clear= True
@@ -1283,6 +1335,7 @@ def approve_placement(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/dsa_nodues')  # Red  
 
+@login_required(login_url='/accounts/login')
 def approve_placement_not(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.placement_cell_clear= True
@@ -1292,6 +1345,7 @@ def approve_placement_not(request, no_dues_id):
     
 
 
+@login_required(login_url='/accounts/login')
 def reject_placement(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.placement_cell_clear= False
@@ -1302,6 +1356,7 @@ def reject_placement(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/dsa_nodues')  # Red    
 
+@login_required(login_url='/accounts/login')
 def approve_account(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.account_clear= True
@@ -1312,6 +1367,7 @@ def approve_account(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/Bank_nodues')  # Red 
 
+@login_required(login_url='/accounts/login')
 def approve_account_not(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.account_clear= True
@@ -1321,6 +1377,7 @@ def approve_account_not(request, no_dues_id):
     
 
 
+@login_required(login_url='/accounts/login')
 def reject_account(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.account_clear= False
@@ -1331,6 +1388,7 @@ def reject_account(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/Bank_nodues')  # Red    
 
+@login_required(login_url='/accounts/login')
 def approve_alumni(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.alumni_clear= True
@@ -1341,6 +1399,7 @@ def approve_alumni(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/dsa_nodues')  # Realumni
 
+@login_required(login_url='/accounts/login')
 def approve_alumni_not(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.alumni_clear= True
@@ -1350,6 +1409,7 @@ def approve_alumni_not(request, no_dues_id):
     
 
 
+@login_required(login_url='/accounts/login')
 def reject_alumni(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.alumni_clear= False
@@ -1360,6 +1420,7 @@ def reject_alumni(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/dsa_nodues')  # Red   
 
+@login_required(login_url='/accounts/login')
 def approve_gym(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.student_gymkhana_clear= True
@@ -1370,6 +1431,7 @@ def approve_gym(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/dsa_nodues')  # Red   
 
+@login_required(login_url='/accounts/login')
 def approve_gym_not(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.student_gymkhana_clear= True
@@ -1379,6 +1441,7 @@ def approve_gym_not(request, no_dues_id):
     
 
 
+@login_required(login_url='/accounts/login')
 def reject_gym(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.student_gymkhana_clear= False
@@ -1389,6 +1452,7 @@ def reject_gym(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/dsa_nodues')  # Red     
 
+@login_required(login_url='/accounts/login')
 def approve_discipline(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.discipline_office_clear= True
@@ -1399,6 +1463,7 @@ def approve_discipline(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/discipline_nodues')  # Red   
 
+@login_required(login_url='/accounts/login')
 def approve_discipline_not(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.discipline_office_clear= True
@@ -1408,6 +1473,7 @@ def approve_discipline_not(request, no_dues_id):
     
 
 
+@login_required(login_url='/accounts/login')
 def reject_discipline(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.discipline_office_clear= False
@@ -1418,6 +1484,7 @@ def reject_discipline(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/dsa_nodues')  # Red    
 
+@login_required(login_url='/accounts/login')
 def approve_signal(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.signal_processing_lab_clear= True
@@ -1428,6 +1495,7 @@ def approve_signal(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/Ece_nodues')  # Realumni
 
+@login_required(login_url='/accounts/login')
 def approve_signal_not(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.signal_processing_lab_clear= True
@@ -1437,6 +1505,7 @@ def approve_signal_not(request, no_dues_id):
     
 
 
+@login_required(login_url='/accounts/login')
 def reject_signal(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.signal_processing_lab_clear= False
@@ -1448,6 +1517,7 @@ def reject_signal(request, no_dues_id):
     return redirect('/otheracademic/Ece_nodues')  # Red  
 
 
+@login_required(login_url='/accounts/login')
 def approve_vlsi(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.vlsi_clear= True
@@ -1458,6 +1528,7 @@ def approve_vlsi(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/Ece_nodues')  # Realumni
 
+@login_required(login_url='/accounts/login')
 def approve_vlsi_not(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.vlsi_clear= True
@@ -1467,6 +1538,7 @@ def approve_vlsi_not(request, no_dues_id):
     
 
 
+@login_required(login_url='/accounts/login')
 def reject_vlsi(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.vlsi_clear= False
@@ -1477,6 +1549,7 @@ def reject_vlsi(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/Ece_nodues')  # Red  
 
+@login_required(login_url='/accounts/login')
 def approve_ece(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.ece_clear= True
@@ -1487,6 +1560,7 @@ def approve_ece(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/Ece_nodues')  # Realumni
 
+@login_required(login_url='/accounts/login')
 def approve_ece_not(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.ece_clear= True
@@ -1496,6 +1570,7 @@ def approve_ece_not(request, no_dues_id):
     
 
 
+@login_required(login_url='/accounts/login')
 def reject_ece(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.ece_clear= False
@@ -1507,6 +1582,7 @@ def reject_ece(request, no_dues_id):
     return redirect('/otheracademic/Ece_nodues')  # Red  
 
 
+@login_required(login_url='/accounts/login')
 def approve_hostel(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.hostel_clear= True
@@ -1517,6 +1593,7 @@ def approve_hostel(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/hostel_nodues')  # Realumni
 
+@login_required(login_url='/accounts/login')
 def approve_hostel_not(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.hostel_clear= True
@@ -1526,6 +1603,7 @@ def approve_hostel_not(request, no_dues_id):
     
 
 
+@login_required(login_url='/accounts/login')
 def reject_hostel(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.hostel_clear= False
@@ -1538,6 +1616,7 @@ def reject_hostel(request, no_dues_id):
 
 
 
+@login_required(login_url='/accounts/login')
 def approve_library(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.library_clear= True
@@ -1548,6 +1627,7 @@ def approve_library(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/library_nodues')  # Realumni
 
+@login_required(login_url='/accounts/login')
 def approve_library_not(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.library_clear= True
@@ -1557,6 +1637,7 @@ def approve_library_not(request, no_dues_id):
     
 
 
+@login_required(login_url='/accounts/login')
 def reject_library(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.library_clear= False
@@ -1568,6 +1649,7 @@ def reject_library(request, no_dues_id):
     return redirect('/otheracademic/library_nodues')  # Red  
 
 
+@login_required(login_url='/accounts/login')
 def approve_workshop(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.workshop_clear= True
@@ -1578,6 +1660,7 @@ def approve_workshop(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/ME_nodues')  # Realumni
 
+@login_required(login_url='/accounts/login')
 def approve_workshop_not(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.workshop_clear= True
@@ -1587,6 +1670,7 @@ def approve_workshop_not(request, no_dues_id):
     
 
 
+@login_required(login_url='/accounts/login')
 def reject_workshop(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.workshop_clear= False
@@ -1598,6 +1682,7 @@ def reject_workshop(request, no_dues_id):
     return redirect('/otheracademic/ME_nodues')  # Red  
 
 
+@login_required(login_url='/accounts/login')
 def approve_mecha(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.mechatronics_lab_clear= True
@@ -1608,6 +1693,7 @@ def approve_mecha(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/ME_nodues')  # Realumni
 
+@login_required(login_url='/accounts/login')
 def approve_mecha_not(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.mechatronics_lab_clear= True
@@ -1617,6 +1703,7 @@ def approve_mecha_not(request, no_dues_id):
     
 
 
+@login_required(login_url='/accounts/login')
 def reject_mecha(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.mechatronics_lab_clear= False
@@ -1628,6 +1715,7 @@ def reject_mecha(request, no_dues_id):
     return redirect('/otheracademic/ME_nodues')  # Red  
 
 
+@login_required(login_url='/accounts/login')
 def approve_mess(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.mess_clear= True
@@ -1638,6 +1726,7 @@ def approve_mess(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/mess_nodues')  # Realumni
 
+@login_required(login_url='/accounts/login')
 def approve_mess_not(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.mess_clear= True
@@ -1647,6 +1736,7 @@ def approve_mess_not(request, no_dues_id):
     
 
 
+@login_required(login_url='/accounts/login')
 def reject_mess(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.mess_clear= False
@@ -1657,6 +1747,7 @@ def reject_mess(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/mess_nodues')  # Red  
 
+@login_required(login_url='/accounts/login')
 def approve_physics(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.physics_lab_clear= True
@@ -1667,6 +1758,7 @@ def approve_physics(request, no_dues_id):
     leave_entry.save()
     return redirect('/otheracademic/Physics_nodues')  # Realumni
 
+@login_required(login_url='/accounts/login')
 def approve_physics_not(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.physics_lab_clear= True
@@ -1676,6 +1768,7 @@ def approve_physics_not(request, no_dues_id):
     
 
 
+@login_required(login_url='/accounts/login')
 def reject_physics(request, no_dues_id):
     leave_entry = NoDues.objects.get(id=no_dues_id)
     leave_entry.physics_lab_clear= False
@@ -1687,6 +1780,7 @@ def reject_physics(request, no_dues_id):
     return redirect('/otheracademic/Physics_nodues')  # Red  
 
 
+@login_required(login_url='/accounts/login')
 def Bank_nodues(request):
     inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
     leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
@@ -1695,6 +1789,7 @@ def Bank_nodues(request):
     # form_data=NoDues.objects.all()
     return render(request,'otheracademic/Bank_nodues.html',{'form_data': form_data})
 
+@login_required(login_url='/accounts/login')
 def Bank_nodues_not(request):
     inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
     leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
@@ -1702,6 +1797,7 @@ def Bank_nodues_not(request):
     form_data = NoDues.objects.filter(id__in=leave_ids)
     return render(request,'otheracademic/Bank_nodues_not.html',{'form_data': form_data})
 
+@login_required(login_url='/accounts/login')
 def BTP_nodues(request):
     inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
     leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
@@ -1709,6 +1805,7 @@ def BTP_nodues(request):
     form_data = NoDues.objects.filter(id__in=leave_ids)
     return render(request,'otheracademic/BTP_nodues.html',{'form_data': form_data})
 
+@login_required(login_url='/accounts/login')
 def BTP_nodues_not(request):
     inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
     leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
@@ -1716,6 +1813,7 @@ def BTP_nodues_not(request):
     form_data = NoDues.objects.filter(id__in=leave_ids)
     return render(request,'otheracademic/BTP_nodues_not.html',{'form_data': form_data})
 
+@login_required(login_url='/accounts/login')
 def CSE_nodues(request):
     inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
     leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
@@ -1723,6 +1821,7 @@ def CSE_nodues(request):
     form_data = NoDues.objects.filter(id__in=leave_ids)
     return render(request,'otheracademic/CSE_nodues.html',{'form_data': form_data})
 
+@login_required(login_url='/accounts/login')
 def CSE_nodues_not(request):
     inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
     leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
@@ -1731,6 +1830,7 @@ def CSE_nodues_not(request):
     return render(request,'otheracademic/CSE_nodues_not.html',{'form_data': form_data})
 
 
+@login_required(login_url='/accounts/login')
 def Design_nodues(request):
     inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
     leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
@@ -1738,6 +1838,7 @@ def Design_nodues(request):
     form_data = NoDues.objects.filter(id__in=leave_ids)
     return render(request,'otheracademic/Design_nodues.html',{'form_data': form_data})
 
+@login_required(login_url='/accounts/login')
 def Design_nodues_not(request):
     inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
     leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
@@ -1746,6 +1847,7 @@ def Design_nodues_not(request):
     return render(request,'otheracademic/Design_nodues_not.html',{'form_data': form_data})
 
 
+@login_required(login_url='/accounts/login')
 def dsa_nodues(request):
     inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
     leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
@@ -1753,6 +1855,7 @@ def dsa_nodues(request):
     form_data = NoDues.objects.filter(id__in=leave_ids)
     return render(request,'otheracademic/dsa_nodues.html',{'form_data': form_data})
 
+@login_required(login_url='/accounts/login')
 def dsa_nodues_not(request):
     inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
     leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
@@ -1761,6 +1864,7 @@ def dsa_nodues_not(request):
     return render(request,'otheracademic/dsa_nodues_not.html',{'form_data': form_data})
 
 
+@login_required(login_url='/accounts/login')
 def Ece_nodues(request):
     inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
     leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
@@ -1768,6 +1872,7 @@ def Ece_nodues(request):
     form_data = NoDues.objects.filter(id__in=leave_ids)
     return render(request,'otheracademic/Ece_nodues.html',{'form_data': form_data})
 
+@login_required(login_url='/accounts/login')
 def Ece_nodues_not(request):
     inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
     leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
@@ -1776,6 +1881,7 @@ def Ece_nodues_not(request):
     return render(request,'otheracademic/Ece_nodues_not.html',{'form_data': form_data})
 
 
+@login_required(login_url='/accounts/login')
 def hostel_nodues(request):
     inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
     leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
@@ -1783,6 +1889,7 @@ def hostel_nodues(request):
     form_data = NoDues.objects.filter(id__in=leave_ids)
     return render(request,'otheracademic/hostel_nodues.html',{'form_data': form_data})
 
+@login_required(login_url='/accounts/login')
 def hostel_nodues_not(request):
     inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
     leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
@@ -1791,6 +1898,7 @@ def hostel_nodues_not(request):
     return render(request,'otheracademic/hostel_nodues_not.html',{'form_data': form_data})
 
 
+@login_required(login_url='/accounts/login')
 def ME_nodues(request):
     inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
     leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
@@ -1798,6 +1906,7 @@ def ME_nodues(request):
     form_data = NoDues.objects.filter(id__in=leave_ids)
     return render(request,'otheracademic/ME_nodues.html',{'form_data': form_data})
 
+@login_required(login_url='/accounts/login')
 def ME_nodues_not(request):
     inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
     leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
@@ -1806,6 +1915,7 @@ def ME_nodues_not(request):
     return render(request,'otheracademic/ME_nodues_not.html',{'form_data': form_data})
 
 
+@login_required(login_url='/accounts/login')
 def mess_nodues(request):
     inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
     leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
@@ -1813,6 +1923,7 @@ def mess_nodues(request):
     form_data = NoDues.objects.filter(id__in=leave_ids)
     return render(request,'otheracademic/mess_nodues.html',{'form_data': form_data})
 
+@login_required(login_url='/accounts/login')
 def mess_nodues_not(request): 
     inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
     leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
@@ -1821,6 +1932,7 @@ def mess_nodues_not(request):
     return render(request,'otheracademic/mess_nodues_not.html',{'form_data': form_data})
 
 
+@login_required(login_url='/accounts/login')
 def Physics_nodues(request): 
     inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
     leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
@@ -1828,6 +1940,7 @@ def Physics_nodues(request):
     form_data = NoDues.objects.filter(id__in=leave_ids)
     return render(request,'otheracademic/Physics_nodues.html',{'form_data': form_data})
 
+@login_required(login_url='/accounts/login')
 def Physics_nodues_not(request): 
     inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
     leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
@@ -1835,6 +1948,7 @@ def Physics_nodues_not(request):
     form_data = NoDues.objects.filter(id__in=leave_ids)
     return render(request,'otheracademic/Physics_nodues_not.html',{'form_data': form_data})
 
+@login_required(login_url='/accounts/login')
 def discipline_nodues(request): 
     inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
     leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
@@ -1842,6 +1956,7 @@ def discipline_nodues(request):
     form_data = NoDues.objects.filter(id__in=leave_ids)
     return render(request,'otheracademic/Discipline_nodues.html',{'form_data': form_data})
 
+@login_required(login_url='/accounts/login')
 def discipline_nodues_not(request):
     inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
     leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
@@ -1849,6 +1964,7 @@ def discipline_nodues_not(request):
     form_data = NoDues.objects.filter(id__in=leave_ids)
     return render(request,'otheracademic/Discipline_nodues_not.html',{'form_data': form_data})
 
+@login_required(login_url='/accounts/login')
 def library_nodues(request): 
     inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
     leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
@@ -1856,6 +1972,7 @@ def library_nodues(request):
     form_data = NoDues.objects.filter(id__in=leave_ids)
     return render(request,'otheracademic/library_nodues.html',{'form_data': form_data})
 
+@login_required(login_url='/accounts/login')
 def library_nodues_not(request): 
     inbox=view_inbox(username=request.user.username,designation="student",src_module="otheracademic")
     leave_ids=[msg ['src_object_id'] for msg in inbox if  msg['subject']=='no_dues']
@@ -1869,6 +1986,7 @@ def library_nodues_not(request):
 
 
 
+@login_required(login_url='/accounts/login')
 def noduesStatus_acad(request):
     if(request.user.username == "acadadmin"):
         form_data = NoDues.objects.all()
@@ -1876,11 +1994,13 @@ def noduesStatus_acad(request):
     else :
         return HttpResponse("Not Available for you.")
 
+@login_required(login_url='/accounts/login')
 def nodues_apply(request):
     return render(request,'otheracademic/nodues_apply.html')
 
 
 
+@login_required(login_url='/accounts/login')
 def update_dues_status(request):
     if request.method == 'POST':
         roll_no = request.POST.get('roll_no')
@@ -2003,6 +2123,7 @@ def assistantship_form_submission(request):
 
 
 
+@login_required(login_url='/accounts/login')
 def assistantship_form_approval(request):
     # Retrieve data from the database
     inbox = view_inbox(username=request.user.username, designation="student", src_module="otheracademic")
@@ -2017,6 +2138,7 @@ def assistantship_form_approval(request):
     roll_no = request.user.username
     return render(request, 'otheracademic/assistantship_approval.html', {'form_data': form_data, 'roll_no' : roll_no})
      
+@login_required(login_url='/accounts/login')
 def assistantship_thesis(request):
     # Retrieve data from the database
     inbox = view_inbox(username=request.user.username, designation="student", src_module="otheracademic")
@@ -2029,6 +2151,7 @@ def assistantship_thesis(request):
     return render(request, 'otheracademic/thesis_supervisor_approve.html', {'form_data': form_data, 'roll_no' : roll_no})
 
 
+@login_required(login_url='/accounts/login')
 def assistantship_hod(request):
     # Retrieve data from the database
     inbox = view_inbox(username=request.user.username, designation="student", src_module="otheracademic")
@@ -2043,12 +2166,14 @@ def assistantship_hod(request):
 
 
      
+@login_required(login_url='/accounts/login')
 def assistantship_status(request):
     form_data = AssistantshipClaimFormStatusUpd.objects.all()
     roll_no = request.user.username
     return render(request, 'otheracademic/assistantship_status.html', { 'form_data' : form_data, 'roll_no' : roll_no})
 
 
+@login_required(login_url='/accounts/login')
 def assistantship_log(request):
     user=get_object_or_404(User,username=request.user.username)
     if(user.extrainfo.department.name == 'Academics'):
@@ -2057,6 +2182,7 @@ def assistantship_log(request):
     else:
         return HttpResponse("Not Avalable For You.")
 
+@login_required(login_url='/accounts/login')
 def find_id_from_inbox(inbox_data, src_obj_id):
     for item in inbox_data:
         if item.get('src_object_id') == src_obj_id:
@@ -2065,6 +2191,7 @@ def find_id_from_inbox(inbox_data, src_obj_id):
 
 
 
+@login_required(login_url='/accounts/login')
 def assistanship_ta_approve(request, ass_id):
     # Obtain inbox data
     inbox = view_inbox(username=request.user.username, designation="student", src_module="otheracademic")
@@ -2102,6 +2229,7 @@ def assistanship_ta_approve(request, ass_id):
 
 
 
+@login_required(login_url='/accounts/login')
 def assistanship_ta_reject(request, ass_id):
     leave_entry = AssistantshipClaimFormStatusUpd.objects.get(id = ass_id)
     leave_entry.TA_rejected = True
@@ -2112,6 +2240,7 @@ def assistanship_ta_reject(request, ass_id):
     messages.success(request, "Successfully rejected.")
     return redirect('/otheracademic/approveform')
 
+@login_required(login_url='/accounts/login')
 def assistanship_thesis_approve(request, ass_id):
    
     leave_entry = get_object_or_404(AssistantshipClaimFormStatusUpd, id=ass_id)
@@ -2148,6 +2277,7 @@ def assistanship_thesis_approve(request, ass_id):
 
 
 
+@login_required(login_url='/accounts/login')
 def assistanship_thesis_reject(request, ass_id):
     leave_entry = AssistantshipClaimFormStatusUpd.objects.get(id = ass_id)
     leave_entry.Ths_rejected = True
@@ -2159,6 +2289,7 @@ def assistanship_thesis_reject(request, ass_id):
     return redirect('/otheracademic/assitantship/thesis_approveform')
 
 
+@login_required(login_url='/accounts/login')
 def assistanship_hod_approve(request, ass_id):
     
     inbox = view_inbox(username=request.user.username, designation="student", src_module="otheracademic")
@@ -2193,6 +2324,7 @@ def assistanship_hod_approve(request, ass_id):
 
 
 
+@login_required(login_url='/accounts/login')
 def assistanship_hod_reject(request, ass_id):
     leave_entry = AssistantshipClaimFormStatusUpd.objects.get(id = ass_id)
     leave_entry.HOD_rejected = True
@@ -2205,6 +2337,7 @@ def assistanship_hod_reject(request, ass_id):
     return redirect('/otheracademic/assitantship/hod_approveform')
 
 
+@login_required(login_url='/accounts/login')
 def assistantship_acad_approveform(request):
     inbox = view_inbox(username=request.user.username, designation="student", src_module="otheracademic")
     print(inbox)
@@ -2219,6 +2352,7 @@ def assistantship_acad_approveform(request):
         return HttpResponse("Not Avalable For You.")
 
 
+@login_required(login_url='/accounts/login')
 def assistanship_acad_approve(request, ass_id):
     # Obtain inbox data
     inbox = view_inbox(username=request.user.username, designation="student", src_module="otheracademic")
@@ -2256,6 +2390,7 @@ def assistanship_acad_approve(request, ass_id):
 
 
 
+@login_required(login_url='/accounts/login')
 def assistanship_acad_reject(request, ass_id):
     leave_entry = AssistantshipClaimFormStatusUpd.objects.get(id = ass_id)
     leave_entry.Acad_rejected = True
@@ -2269,18 +2404,23 @@ def assistanship_acad_reject(request, ass_id):
 
 
 
+@login_required(login_url='/accounts/login')
 def othersPage(request):
     return render(request, 'otheracademic/othersPage.html')
 
+@login_required(login_url='/accounts/login')
 def othersLeave(request):
     return render(request, 'otheracademic/othersLeave.html')
 
+@login_required(login_url='/accounts/login')
 def othersNoDues(request):
     return render(request, 'otheracademic/othersNoDues.html')
 
+@login_required(login_url='/accounts/login')
 def othersAssistantship(request):
     return render(request, 'otheracademic/othersAssistantship.html')
 
+@login_required(login_url='/accounts/login')
 def othersGraduate(request):
     return render(request, 'otheracademic/othersGraduate.html')
 

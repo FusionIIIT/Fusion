@@ -1,6 +1,9 @@
 from django.urls import re_path
 
 from . import views
+from .token_auth_patch import apply_token_expiry_patch
+
+apply_token_expiry_patch()
 
 urlpatterns = [
     re_path(r'^auth/login/', views.login, name='login-api'),

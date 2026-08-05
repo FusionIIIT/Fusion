@@ -600,6 +600,14 @@ class course_registration(models.Model):
     semester_id = models.ForeignKey(Semester, on_delete=models.CASCADE)
     course_id = models.ForeignKey(Courses, on_delete=models.CASCADE)
     course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True, on_delete=models.SET_NULL)
+    # The offering (programme_curriculum.CourseInstructor = course+section+faculty)
+    # this registration is bound to. Set at allotment from the student's section;
+    # this is what per-instructor grade submission scopes on. Nullable for
+    # rows created before the sectioning feature.
+    course_instructor = models.ForeignKey(
+        'programme_curriculum.CourseInstructor', null=True, blank=True,
+        on_delete=models.SET_NULL,
+    )
     REGISTRATION_TYPE_CHOICES = [
         ('Audit', 'Audit'),
         ('Improvement', 'Improvement'),
@@ -693,6 +701,12 @@ class FinalRegistration(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     verified = models.BooleanField(default=False)
     course_slot_id = models.ForeignKey(CourseSlot, null=True, blank=True,on_delete=models.SET_NULL)
+    # Offering this student is bound to (course+section+faculty), set at allotment.
+    # Carried onto course_registration at verification. Nullable for pre-feature rows.
+    course_instructor = models.ForeignKey(
+        'programme_curriculum.CourseInstructor', null=True, blank=True,
+        on_delete=models.SET_NULL,
+    )
     old_course_registration=models.ForeignKey(course_registration, null=True, on_delete=models.CASCADE)
     REGISTRATION_TYPE_CHOICES = [
         ('Audit', 'Audit'),
@@ -1023,6 +1037,13 @@ class CourseAddRequest(models.Model):
         on_delete=models.SET_NULL,
         help_text="Reference to the previous course registration being replaced (for backlog/improvement)"
     )
+    # The running section (offering) the student chose when the course isn't run
+    # in their own section; applied as course_instructor on approval.
+    course_instructor = models.ForeignKey(
+        'programme_curriculum.CourseInstructor',
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+    )
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
@@ -1085,6 +1106,10 @@ class FeedbackResponse(models.Model):
     option        = models.ForeignKey(FeedbackOption, on_delete=models.CASCADE, null=True, blank=True)
     text_answer   = models.TextField(blank=True)
     course        = models.ForeignKey(Courses, on_delete=models.CASCADE)
+    # Offering this feedback is about (null for no-section / legacy responses).
+    course_instructor = models.ForeignKey(
+        'programme_curriculum.CourseInstructor', null=True, blank=True,
+        on_delete=models.SET_NULL)
     section       = models.CharField(max_length=20, choices=FeedbackQuestion.SECTION_CHOICES)
     session       = models.CharField(max_length=9)
     semester_type = models.CharField(max_length=20, choices=SEMESTER_CHOICES)

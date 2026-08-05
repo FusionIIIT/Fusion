@@ -52,6 +52,7 @@ def programme_curriculum(request):
 
 
 
+@login_required(login_url='/accounts/login')
 def view_all_programmes(request):
     """
     This function is used to display all the programmes offered by the institute.
@@ -81,6 +82,7 @@ def view_all_programmes(request):
     return render(request, url, {'ug': ug, 'pg': pg, 'phd': phd,'notifications': notifs,})
 
 
+@login_required(login_url='/accounts/login')
 def view_curriculums_of_a_programme(request, programme_id):
     """
     This function is used to Display Curriculum of a specific Programmes.
@@ -119,6 +121,7 @@ def view_curriculums_of_a_programme(request, programme_id):
     return render(request,url, {'program': program, 'past_curriculums': past_curriculums, 'working_curriculums': working_curriculums, 'curriculumfilter': curriculumfilter,'notifications': notifs,})
 
 
+@login_required(login_url='/accounts/login')
 def view_all_working_curriculums(request):
     
     """ views all the working curriculums offered by the institute """
@@ -141,6 +144,7 @@ def view_all_working_curriculums(request):
     curriculums = curriculumfilter.qs
     return render(request,url+'view_all_working_curriculums.html',{'curriculums':curriculums, 'curriculumfilter': curriculumfilter,'notifications': notifs,})
 
+@login_required(login_url='/accounts/login')
 def view_semesters_of_a_curriculum(request, curriculum_id):
     """
     This function is used to Display all Semester of a Curriculum.
@@ -196,6 +200,7 @@ def view_semesters_of_a_curriculum(request, curriculum_id):
     return render(request, url+'view_semesters_of_a_curriculum.html', {'curriculum': curriculum, 'semesters': semesters, 'semester_slots': transpose_semester_slots, 'semester_credits': semester_credits,'notifications': notifs,})
 
 
+@login_required(login_url='/accounts/login')
 def view_a_semester_of_a_curriculum(request, semester_id):
     """ views a specfic semester of a specfic curriculum """
     url='programme_curriculum/'
@@ -216,6 +221,7 @@ def view_a_semester_of_a_curriculum(request, semester_id):
     return render(request, url+'view_a_semester_of_a_curriculum.html', {'semester': semester, 'course_slots': course_slots,'notifications': notifs,})
 
 
+@login_required(login_url='/accounts/login')
 def view_a_courseslot(request, courseslot_id):
     """ view a course slot """
     url='programme_curriculum/'
@@ -233,6 +239,7 @@ def view_a_courseslot(request, courseslot_id):
     return render(request, url+'view_a_courseslot.html', {'course_slot': course_slot,'notifications': notifs,})
 
 
+@login_required(login_url='/accounts/login')
 def view_all_courses(request):
     """ views all the course slots of a specfic semester """
     url='programme_curriculum/'
@@ -255,6 +262,7 @@ def view_all_courses(request):
     return render(request, url+'view_all_courses.html', {'courses': courses, 'coursefilter': coursefilter,'notifications': notifs,})
 
 
+@login_required(login_url='/accounts/login')
 def view_a_course(request, course_id):
     """ views the details of a Course """
     url='programme_curriculum/'
@@ -272,6 +280,7 @@ def view_a_course(request, course_id):
     return render(request, url+'view_a_course.html', {'course': course,'notifications': notifs,})
 
 
+@login_required(login_url='/accounts/login')
 def view_all_discplines(request):
     """ views the details of a Course """
     url='programme_curriculum/'
@@ -290,6 +299,7 @@ def view_all_discplines(request):
     return render(request, url+'view_all_disciplines.html', {'disciplines': disciplines,'notifications': notifs,})
 
 
+@login_required(login_url='/accounts/login')
 def view_all_batches(request):
     """ views the details of a Course """
     url='programme_curriculum/'
@@ -347,6 +357,7 @@ def admin_view_all_programmes(request):
     return render(request, 'programme_curriculum/acad_admin/admin_view_all_programmes.html', {'ug': ug, 'pg': pg, "phd": phd})
 
 
+@login_required(login_url='/accounts/login')
 def admin_view_curriculums_of_a_programme(request, programme_id):
     """
     This function is used to Display Curriculum of a specific Programmes.
@@ -382,6 +393,7 @@ def admin_view_curriculums_of_a_programme(request, programme_id):
     return render(request,'programme_curriculum/acad_admin/admin_view_curriculums_of_a_programme.html', {'program': program, 'past_curriculums': past_curriculums, 'working_curriculums': working_curriculums, 'curriculumfilter': curriculumfilter})
 
 
+@login_required(login_url='/accounts/login')
 def admin_view_all_working_curriculums(request):
     """ views all the working curriculums offered by the institute """
 
@@ -403,6 +415,7 @@ def admin_view_all_working_curriculums(request):
     return render(request,'programme_curriculum/acad_admin/admin_view_all_working_curriculums.html',{'curriculums':curriculums, 'curriculumfilter': curriculumfilter})
 
 
+@login_required(login_url='/accounts/login')
 def admin_view_semesters_of_a_curriculum(request, curriculum_id):
     """ gets all the semesters of a specfic curriculum """
 
@@ -448,6 +461,7 @@ def admin_view_semesters_of_a_curriculum(request, curriculum_id):
     return render(request, 'programme_curriculum/acad_admin/admin_view_semesters_of_a_curriculum.html', {'curriculum': curriculum, 'semesters': semesters, 'semester_slots': transpose_semester_slots, 'semester_credits': semester_credits, 'all_batches':all_batches})
 
 
+@login_required(login_url='/accounts/login')
 def admin_view_a_semester_of_a_curriculum(request, semester_id):
     """
     This function is used to Display all Semester of a Curriculum.
@@ -474,6 +488,7 @@ def admin_view_a_semester_of_a_curriculum(request, semester_id):
     return render(request, 'programme_curriculum/acad_admin/admin_view_a_semester_of_a_curriculum.html', {'semester': semester, 'course_slots': course_slots})
 
 
+@login_required(login_url='/accounts/login')
 def admin_view_a_courseslot(request, courseslot_id):
     """ view a course slot """
 
@@ -494,6 +509,7 @@ def admin_view_a_courseslot(request, courseslot_id):
     return render(request, 'programme_curriculum/acad_admin/admin_view_a_courseslot.html', {'course_slot': course_slot})
 
 
+@login_required(login_url='/accounts/login')
 def admin_view_all_courses(request):
     """ views all the course slots of a specfic semester """
 
@@ -516,6 +532,7 @@ def admin_view_all_courses(request):
     return render(request, 'programme_curriculum/acad_admin/admin_view_all_courses.html', {'courses': courses, 'coursefilter': coursefilter})
 
 
+@login_required(login_url='/accounts/login')
 def admin_view_a_course(request, course_id):
     """ views the details of a Course """
 
@@ -532,6 +549,7 @@ def admin_view_a_course(request, course_id):
     return render(request, 'programme_curriculum/acad_admin/admin_view_a_course.html', {'course': course})
 
 
+@login_required(login_url='/accounts/login')
 def admin_view_all_discplines(request):
     """ views the details of a Course """
 
@@ -548,6 +566,7 @@ def admin_view_all_discplines(request):
     return render(request, 'programme_curriculum/acad_admin/admin_view_all_disciplines.html', {'disciplines': disciplines})
 
 
+@login_required(login_url='/accounts/login')
 def admin_view_all_batches(request):
     """ views the details of a Course """
 
@@ -576,6 +595,7 @@ def admin_view_all_batches(request):
 
 
 
+@login_required(login_url='/accounts/login')
 def add_discipline_form(request):
 
     user_details = ExtraInfo.objects.get(user = request.user)
@@ -599,6 +619,7 @@ def add_discipline_form(request):
     return render(request, 'programme_curriculum/acad_admin/add_discipline_form.html',{'form':form})
 
 
+@login_required(login_url='/accounts/login')
 def edit_discipline_form(request, discipline_id):
 
     user_details = ExtraInfo.objects.get(user = request.user)
@@ -624,6 +645,7 @@ def edit_discipline_form(request, discipline_id):
 
 
 
+@login_required(login_url='/accounts/login')
 def add_programme_form(request):
 
     user_details = ExtraInfo.objects.get(user = request.user)
@@ -650,6 +672,7 @@ def add_programme_form(request):
 
 
 
+@login_required(login_url='/accounts/login')
 def edit_programme_form(request, programme_id):
 
     user_details = ExtraInfo.objects.get(user = request.user)
@@ -674,6 +697,7 @@ def edit_programme_form(request, programme_id):
     return render(request, 'programme_curriculum/acad_admin/add_programme_form.html',{'form':form, 'submitbutton': submitbutton})
 
 
+@login_required(login_url='/accounts/login')
 def add_curriculum_form(request):
     """
     This function is used to add Curriculum and Semester into Curriculum and Semester table.
@@ -770,6 +794,7 @@ def edit_curriculum_form(request, curriculum_id):
     return render(request, 'programme_curriculum/acad_admin/add_curriculum_form.html',{'form':form,  'submitbutton': submitbutton})
 
 
+@login_required(login_url='/accounts/login')
 def add_course_form(request):
 
     user_details = ExtraInfo.objects.get(user = request.user)
@@ -796,6 +821,7 @@ def add_course_form(request):
 
     return render(request,'programme_curriculum/acad_admin/course_form.html',{'form':form,'submitbutton': submitbutton})
 
+@login_required(login_url='/accounts/login')
 def update_course_form(request, course_id):
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
     if request.session['currentDesignationSelected']== "student":
@@ -854,6 +880,7 @@ def update_course_form(request, course_id):
                     
     return render(request,'programme_curriculum/acad_admin/course_form.html',{'course':course, 'form':form, 'submitbutton': submitbutton,'version_error':version_error})
 
+@login_required(login_url='/accounts/login')
 def add_courseslot_form(request):
     
     user_details = ExtraInfo.objects.get(user = request.user)
@@ -881,6 +908,7 @@ def add_courseslot_form(request):
     return render(request, 'programme_curriculum/acad_admin/add_courseslot_form.html',{'form':form, 'submitbutton': submitbutton, 'curriculum_id': curriculum_id})
 
 
+@login_required(login_url='/accounts/login')
 def edit_courseslot_form(request, courseslot_id):
     
     user_details = ExtraInfo.objects.get(user = request.user)
@@ -906,6 +934,7 @@ def edit_courseslot_form(request, courseslot_id):
 
     return render(request,'programme_curriculum/acad_admin/add_courseslot_form.html',{'courseslot':courseslot, 'form':form, 'submitbutton':submitbutton, 'curriculum_id': curriculum_id})
 
+@login_required(login_url='/accounts/login')
 def delete_courseslot(request, courseslot_id):
     
     user_details = ExtraInfo.objects.get(user = request.user)
@@ -931,6 +960,7 @@ def delete_courseslot(request, courseslot_id):
 
 
 # views.py
+@login_required(login_url='/accounts/login')
 def add_batch_form(request):
     user_details = ExtraInfo.objects.get(user=request.user)
     des = HoldsDesignation.objects.all().filter(user=request.user).first()
@@ -957,6 +987,7 @@ def add_batch_form(request):
     return render(request, 'programme_curriculum/acad_admin/add_batch_form.html', {'form': form, 'submitbutton': submitbutton})
 
 
+@login_required(login_url='/accounts/login')
 def edit_batch_form(request, batch_id):
     
     user_details = ExtraInfo.objects.get(user = request.user)
@@ -985,6 +1016,7 @@ def edit_batch_form(request, batch_id):
     return render(request,'programme_curriculum/acad_admin/add_batch_form.html',{'batch':batch, 'form':form, 'submitbutton':submitbutton})
 
 
+@login_required(login_url='/accounts/login')
 def instigate_semester(request, semester_id):
     """
     This function is used to add the semester information.
@@ -1027,6 +1059,7 @@ def instigate_semester(request, semester_id):
     return render(request,'programme_curriculum/acad_admin/instigate_semester_form.html',{'semester':semester, 'form':form, 'submitbutton':submitbutton, 'curriculum_id':curriculum_id})
 
 
+@login_required(login_url='/accounts/login')
 def replicate_curriculum(request, curriculum_id):
     """
     This function is used to replicate the previous curriculum into a new curriculum.
@@ -1132,6 +1165,7 @@ def faculty_view_all_courses(request):
     return render(request, 'programme_curriculum/faculty/faculty_view_all_courses.html', {'courses': courses, 'coursefilter': coursefilter,'notifications': notifs,})
 
 
+@login_required(login_url='/accounts/login')
 def faculty_view_a_course(request, course_id):
     """ views the details of a Course """
 
@@ -1150,6 +1184,7 @@ def faculty_view_a_course(request, course_id):
     return render(request, 'programme_curriculum/faculty/faculty_view_a_course.html', {'course': course,'notifications': notifs,})
 
 
+@login_required(login_url='/accounts/login')
 def view_a_course_proposal_form(request,CourseProposal_id):
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
@@ -1170,6 +1205,7 @@ def view_a_course_proposal_form(request,CourseProposal_id):
     return render(request, 'programme_curriculum/faculty/view_a_course_proposal.html', {'proposal': proposalform,'notifications': notifs,})
 
 
+@login_required(login_url='/accounts/login')
 def new_course_proposal_file(request):
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
     if request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor":
@@ -1199,6 +1235,7 @@ def new_course_proposal_file(request):
 
 
 
+@login_required(login_url='/accounts/login')
 def filetracking(request,proposal_id):
 
 
@@ -1246,6 +1283,7 @@ def filetracking(request,proposal_id):
 
 
 
+@login_required(login_url='/accounts/login')
 def inward_files(request):
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).last()
@@ -1276,6 +1314,7 @@ def inward_files(request):
 
 
 
+@login_required(login_url='/accounts/login')
 def outward_files(request):
     user_details = ExtraInfo.objects.get(user = request.user)
     des = HoldsDesignation.objects.all().filter(user = request.user).last()
@@ -1306,6 +1345,7 @@ def outward_files(request):
     
     return render(request, 'programme_curriculum/faculty/outward_course_forms.html',{'courseProposals': courseProposal,'design':request.session['currentDesignationSelected'],'data':data,'notifications': notifs,})
 
+@login_required(login_url='/accounts/login')
 def update_course_proposal_file(request, course_id):
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
     if request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor":
@@ -1364,6 +1404,7 @@ def update_course_proposal_file(request, course_id):
 
 
 
+@login_required(login_url='/accounts/login')
 def forward_course_forms(request,ProposalId):
     de= ProposalId
     des = HoldsDesignation.objects.all().filter(user = request.user).first()
@@ -1488,6 +1529,7 @@ def forward_course_forms(request,ProposalId):
     return render(request,'programme_curriculum/faculty/forward.html',{'form':form,'receive_date':file.receive_date,'proposal':file2,'submitbutton': submitbutton,'id':Proposal_D})
 
 
+@login_required(login_url='/accounts/login')
 def view_inward_files(request,ProposalId):
     
     if request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor" or request.session['currentDesignationSelected'] == "Dean Academic":
@@ -1519,6 +1561,7 @@ def view_inward_files(request,ProposalId):
 
     return render(request,'programme_curriculum/faculty/view_file.html',{'form':form,'receive_date':file.receive_date,'proposal':file2,'trackings':courseProposal,'file_info':file_data,'file_sucess':file_data2})
 
+@login_required(login_url='/accounts/login')
 def reject_form(request,ProposalId):
     
     if request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor" or request.session['currentDesignationSelected'] == "Dean Academic":
@@ -1548,6 +1591,7 @@ def reject_form(request,ProposalId):
     return HttpResponseRedirect('/programme_curriculum/inward_files/')
 
 
+@login_required(login_url='/accounts/login')
 def tracking_unarchive(request,ProposalId):
     if request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor" or request.session['currentDesignationSelected'] == "Dean Academic":
         pass
@@ -1574,6 +1618,7 @@ def tracking_unarchive(request,ProposalId):
     
     
     
+@login_required(login_url='/accounts/login')
 def tracking_archive(request,ProposalId):
     
     if request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor" or request.session['currentDesignationSelected'] == "Dean Academic":
@@ -1598,6 +1643,7 @@ def tracking_archive(request,ProposalId):
         messages.success(request, "File Archived")
         return HttpResponseRedirect('/programme_curriculum/inward_files/')
     
+@login_required(login_url='/accounts/login')
 def file_archive(request,FileId):
     if request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor" or request.session['currentDesignationSelected'] == "Dean Academic":
         pass
@@ -1613,6 +1659,7 @@ def file_archive(request,FileId):
     file.save()
     return HttpResponseRedirect('/programme_curriculum/view_course_proposal_forms/')
 
+@login_required(login_url='/accounts/login')
 def file_unarchive(request,FileId):
     if request.session['currentDesignationSelected'] == "Associate Professor" or request.session['currentDesignationSelected'] == "Professor" or request.session['currentDesignationSelected'] == "Assistant Professor" or request.session['currentDesignationSelected'] == "Dean Academic":
         pass

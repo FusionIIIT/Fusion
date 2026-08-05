@@ -417,9 +417,23 @@ class CourseInstructorForm(forms.ModelForm):
         label="Select Semester Type",
         widget=forms.Select(attrs={'class': 'ui fluid search selection dropdown'})
     )
+    section_label = forms.ChoiceField(
+        choices=[('', 'No section (single-offering / elective)')] + [(s, s) for s in ['A', 'B', 'C', 'D', 'E', 'F']],
+        required=False,
+        label="Section",
+        widget=forms.Select(attrs={'class': 'ui fluid search selection dropdown'})
+    )
+
+    def clean_section_label(self):
+        # Normalise blank -> None so a single-offering elective stays NULL
+        # (one elective offering per course/term is enforced in the view); a
+        # letter A-F identifies a core section owned by exactly one faculty.
+        value = (self.cleaned_data.get('section_label') or '').strip().upper()
+        return value or None
+
     class Meta:
         model = CourseInstructor
-        fields = ['course_id', 'instructor_id', 'year', 'semester_type']
+        fields = ['course_id', 'instructor_id', 'year', 'semester_type', 'section_label']
 
     # def __init__(self, *args, **kwargs):
     #     super().__init__(*args, **kwargs)

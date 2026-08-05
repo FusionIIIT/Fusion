@@ -71,6 +71,7 @@ def user_check(request):
         return False
 
 
+@login_required(login_url='/accounts/login')
 def get_context(request):
     """
     This function gets basic gata from database to send to template
@@ -1580,6 +1581,7 @@ def float_course_submit(request):
 
 # # ---------------------senator------------------
 # @csrf_exempt
+@login_required(login_url='/accounts/login')
 def senator(request):
 #     """
 #     to add a new student senator
@@ -1635,6 +1637,7 @@ def senator(request):
 #         return HttpResponseRedirect('/aims/')
 
 # @csrf_exempt
+@login_required(login_url='/accounts/login')
 def deleteSenator(request, pk):
 #     """
 #     to remove a senator from the position
@@ -1662,6 +1665,7 @@ def deleteSenator(request, pk):
 
 # # ##########covenors and coconvenors##################
 # @csrf_exempt
+@login_required(login_url='/accounts/login')
 def add_convenor(request):
 #     """
 #     to add a new student convenor/coconvenor
@@ -1709,6 +1713,7 @@ def add_convenor(request):
 #         return JsonResponse(data)
 
 # @csrf_exempt
+@login_required(login_url='/accounts/login')
 def deleteConvenor(request, pk):
 #     """
 #     to remove a convenor/coconvenor from the position
@@ -1744,6 +1749,7 @@ def deleteConvenor(request, pk):
 
 # # ##########Senate meeting Minute##################
 # @csrf_exempt
+@login_required(login_url='/accounts/login')
 def addMinute(request):
 #     """
 #     to add a new senate meeting minute object to the database.
@@ -1780,6 +1786,7 @@ def addMinute(request):
 #         return render(request, "ais/ais.html", {})
 
 
+@login_required(login_url='/accounts/login')
 def deleteMinute(request):
 #     """
 #     to delete an existing senate meeting minute object from the database.
@@ -1803,6 +1810,7 @@ def deleteMinute(request):
 
 # # ##########Student basic profile##################
 # @csrf_exempt
+@login_required(login_url='/accounts/login')
 def add_basic_profile(request):
 #     """
 #     It adds the basic profile information like username,password, name,
@@ -1853,6 +1861,7 @@ def add_basic_profile(request):
 
 
 # @csrf_exempt
+@login_required(login_url='/accounts/login')
 def delete_basic_profile(request, pk):
 #     """
 #     Deletes the student from the database
@@ -1884,6 +1893,7 @@ def delete_basic_profile(request, pk):
 
 # '''
 
+@login_required(login_url='/accounts/login')
 def delete_advanced_profile(request):
 #     """
 #     to delete the advance information of the student
@@ -1929,6 +1939,7 @@ def delete_advanced_profile(request):
 #     return HttpResponse("Data Deleted Successfully")
 
 
+@login_required(login_url='/accounts/login')
 def add_advanced_profile(request):
 #     """
 #     It adds the advance profile information like hall no, room no,
@@ -1994,6 +2005,7 @@ def add_advanced_profile(request):
 
 
 
+@login_required(login_url='/accounts/login')
 def add_optional(request):
 #     """
 #     acadmic admin to update the additional courses
@@ -2021,6 +2033,7 @@ def add_optional(request):
 #         return HttpResponseRedirect('/academic-procedures/')
 
 
+@login_required(login_url='/accounts/login')
 def min_cred(request):
 #     """
 #     to set minimum credit for a current semester that a student must take
@@ -2046,6 +2059,7 @@ def min_cred(request):
 #         return HttpResponse("Worked")
 
 
+@login_required(login_url='/accounts/login')
 def view_course(request):
 #     if request.method == "POST":
 #         programme=request.POST['programme']
@@ -2069,6 +2083,7 @@ def view_course(request):
     
 
 
+@login_required(login_url='/accounts/login')
 def delete_grade(request):
 #     """
 #     It deletes the grade of the student
@@ -2155,6 +2170,7 @@ def verify_grade(request):
     return HttpResponseRedirect('/aims/')
 
 
+@login_required(login_url='/accounts/login')
 def confirm_grades(request):
     # if user_check(request):
     #     return HttpResponseRedirect('/academic-procedures/')
