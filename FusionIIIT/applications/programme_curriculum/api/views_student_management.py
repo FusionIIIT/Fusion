@@ -3035,6 +3035,17 @@ def get_available_curriculums_for_batch(batch_obj):
     
     return []
 
+def get_batch_category(batch_name):
+    """
+    Infer a batch's programme category (UG/PG/PHD) from its BATCH_NAMES value,
+    e.g. 'B.Tech' -> UG, 'M.Tech AI & ML' -> PG, 'PhD (Odd)' -> PHD.
+    """
+    if batch_name.startswith('B.'):
+        return 'UG'
+    if batch_name.startswith('PhD'):
+        return 'PHD'
+    return 'PG'
+
 def get_batch_curriculum_display(batch_obj):
     """
     Get curriculum display information for a batch
@@ -3755,7 +3766,13 @@ def update_student(request, student_id):
                             setattr(student, field, None)
                 except (ValueError, TypeError):
                     setattr(student, field, None)
-        
+
+        # income is a DecimalField; an empty string (sent when the field is left
+        # blank in the edit form) fails Django's decimal validation on save(),
+        # unlike the rank_fields above which already normalize '' to None.
+        if 'income' in data:
+            student.income = _safe_decimal_conversion(data.get('income'))
+
         # Update timestamp if field exists
         if hasattr(student, 'updated_at'):
             student.updated_at = timezone.now()
@@ -4722,30 +4739,40 @@ def sync_batch_data(request):
         
         sync_results = []
         
+        # Only B.Tech/B.Des batches match these historical UG cohort sizes -
+        # applying them to PG/PhD batches (much smaller cohorts) would wildly
+        # overstate available seats, so the fallback below is UG-only.
+        ug_default_seats = {
+            'CSE': 300,
+            'ECE': 120,
+            'ME': 80,
+            'SM': 80,
+            'Des.': 80,
+        }
+
         for batch in all_batches:
             # Use centralized filled seats calculation function
             actual_filled = calculate_batch_filled_seats(batch)
+            batch_category = get_batch_category(batch.name)
 
             if hasattr(batch, 'total_seats') and batch.total_seats:
                 available_seats = max(0, batch.total_seats - actual_filled)
             else:
-
-                default_seats = {
-                    'CSE': 300,
-                    'ECE': 120, 
-                    'ME': 80,
-                    'SM': 80,
-                    'Des.': 80,
-                }
-                batch.total_seats = default_seats.get(batch.discipline.acronym, 100)
+                if batch_category == 'UG':
+                    batch.total_seats = ug_default_seats.get(batch.discipline.acronym, 100)
+                else:
+                    # No discipline-specific PG/PhD seat data exists yet;
+                    # fall back to the Batch model's own generic default.
+                    batch.total_seats = Batch._meta.get_field('total_seats').default
                 batch.save()
                 available_seats = max(0, batch.total_seats - actual_filled)
 
             curriculum_display = get_batch_curriculum_display(batch)
-            
+
             sync_results.append({
                 'batch_id': batch.id,
                 'name': batch.name,
+                'category': batch_category,
                 'discipline': batch.discipline.acronym,
                 'discipline_name': batch.discipline.name,
                 'year': batch.year,

@@ -386,3 +386,37 @@ class PasswordResetOTP(models.Model):
 
     def __str__(self):
         return f"OTP record for {self.username}"
+
+
+class Announcement(models.Model):
+    """
+    Current Purpose : An acadadmin-composed announcement targeted at a specific
+    audience. On creation, recipients are resolved and fanned out via the
+    existing django-notifications-hq notify.send(..., flag="announcement")
+    pipeline, so delivery/read-state reuses the Notification model as-is.
+    """
+    AUDIENCE_CHOICES = (
+        ('all', 'Everyone'),
+        ('role', 'Specific Role'),
+        ('batch', 'Specific Batch'),
+        ('department', 'Specific Department'),
+        ('individual', 'Specific Individuals'),
+    )
+
+    created_by = models.ForeignKey(
+        ExtraInfo, null=True, blank=True, on_delete=models.SET_NULL, related_name='announcements_created')
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    audience_type = models.CharField(max_length=20, choices=AUDIENCE_CHOICES)
+    target_role = models.ForeignKey(
+        Designation, null=True, blank=True, on_delete=models.SET_NULL)
+    target_department = models.ForeignKey(
+        DepartmentInfo, null=True, blank=True, on_delete=models.SET_NULL)
+    target_batch = models.ForeignKey(
+        'programme_curriculum.Batch', null=True, blank=True, on_delete=models.SET_NULL)
+    target_users = models.ManyToManyField(
+        User, blank=True, related_name='targeted_announcements')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title

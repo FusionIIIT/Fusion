@@ -569,6 +569,8 @@ def Admin_view_all_working_curriculums(request):
             'version': str(curriculum.version),  # Convert Decimal to string for JSON compatibility
             'batch': [str(batch) for batch in unique_batches],  # Include both primary and multi-curriculum batches
             'semesters': curriculum.no_of_semester,
+            'category': curriculum.programme.category,
+            'programme_name': curriculum.programme.name,
         })
 
     # Return the data as JSON response
@@ -3373,6 +3375,7 @@ def semester_details(request):
     data = {
         "curriculum_name": curriculum_name,
         "curriculum_version": curriculum_version,
+        "category": curriculum.programme.category,
         "semesters": semester_list,
     }
 
@@ -4743,7 +4746,8 @@ def add_thesis_slot(request):
             thesis_slot_info=data.get('thesis_slot_info', ''),
             duration=data.get('duration', 1),
             min_registration_limit=data.get('min_registration_limit', 0),
-            max_registration_limit=data.get('max_registration_limit', 1000)
+            max_registration_limit=data.get('max_registration_limit', 1000),
+            evaluation_type=data.get('evaluation_type', 'blocks_sx'),
         )
 
         if 'theses' in data and data['theses']:
@@ -4808,6 +4812,7 @@ def admin_view_a_thesis_slot(request, thesis_slot_id):
             'duration': thesis_slot.duration,
             'min_registration_limit': thesis_slot.min_registration_limit,
             'max_registration_limit': thesis_slot.max_registration_limit,
+            'evaluation_type': thesis_slot.evaluation_type,
             'theses': [
                 {
                     'id': t.id,
@@ -4885,6 +4890,7 @@ def edit_thesis_slot_form(request, thesis_slot_id):
             'duration': thesis_slot.duration,
             'min_registration_limit': thesis_slot.min_registration_limit,
             'max_registration_limit': thesis_slot.max_registration_limit,
+            'evaluation_type': thesis_slot.evaluation_type,
             'curriculum_id': curriculum_id,
         }
         return JsonResponse({'status': 'success', 'thesis_slot': data})

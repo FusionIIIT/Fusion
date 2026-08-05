@@ -844,7 +844,7 @@ def compounder_view_handler(request):
         medical_relief_instance = medical_relief.objects.get(file_id=request.POST['file_id'])        
         medical_relief_instance.compounder_forward_flag = True
         medical_relief_instance.save()        
-        healthcare_center_notif(request.user,user.user,'rel_approve','')      
+        healthcare_center_notif(request.user,user.user,'rel_approve','',role=acc_admin_des_id.name)
         data = {'status': 1}
         return JsonResponse(data)
     elif 'comp_announce' in request.POST:

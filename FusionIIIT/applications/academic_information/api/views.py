@@ -30,9 +30,11 @@ from rest_framework.generics import ListCreateAPIView
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
-from applications.academic_procedures.api.views import role_required
+from applications.globals.decorators import role_required
+from applications.globals.api.views import resolve_audience_recipients
+from notifications.signals import notify
 from django.core.cache import cache
-from django.db import connection
+from django.db import connection, transaction
 
 logger = logging.getLogger(__name__)
 
@@ -318,8 +320,18 @@ def start_allocation_api(request):
         batch = int(batch)
         semester = int(semester)
 
+        skip_course_ids = data.get("skip_course_ids") or []
+        if not isinstance(skip_course_ids, list):
+            return JsonResponse({"error": "skip_course_ids must be a list"}, status=400)
+        try:
+            skip_course_ids = [int(c) for c in skip_course_ids]
+        except (TypeError, ValueError):
+            return JsonResponse({"error": "skip_course_ids must be course ids"}, status=400)
+
         mock_request = type('MockRequest', (), {})()
-        mock_request.POST = {'batch': batch, 'sem': semester, 'year': year, 'programme_type': programme_type}
+        mock_request.POST = {'batch': batch, 'sem': semester, 'year': year,
+                             'programme_type': programme_type,
+                             'skip_course_ids': skip_course_ids}
 
         return allocate(mock_request)
 
@@ -327,7 +339,52 @@ def start_allocation_api(request):
         return JsonResponse({"error": "Invalid JSON format"}, status=400)
 
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+        logger.exception("start_allocation_api failed")
+        return JsonResponse({"error": f"{type(e).__name__}: {e}"}, status=500)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@role_required(['acadadmin'])
+def add_course_to_slots_api(request):
+    """Adds one course to the CourseSlot rows it was flagged as missing from."""
+    course_id = request.data.get('course_id')
+    slot_ids = request.data.get('slot_ids') or []
+
+    if not course_id or not slot_ids:
+        return Response({'status': -1, 'message': 'course_id and slot_ids are required'},
+                        status=status.HTTP_400_BAD_REQUEST)
+    if not isinstance(slot_ids, list):
+        return Response({'status': -1, 'message': 'slot_ids must be a list'},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        course = Courses.objects.get(id=int(course_id))
+    except (Courses.DoesNotExist, TypeError, ValueError):
+        return Response({'status': -1, 'message': 'No such course'},
+                        status=status.HTTP_404_NOT_FOUND)
+
+    slots = CourseSlot.objects.filter(id__in=[int(s) for s in slot_ids])
+    found = {s.id for s in slots}
+    missing = [s for s in slot_ids if int(s) not in found]
+    if missing:
+        return Response({'status': -1, 'message': f'Unknown course slot(s): {missing}'},
+                        status=status.HTTP_404_NOT_FOUND)
+
+    added = []
+    with transaction.atomic():
+        for slot in slots:
+            if not slot.courses.filter(id=course.id).exists():
+                slot.courses.add(course)
+                added.append({'slot_id': slot.id, 'slot_name': slot.name})
+
+    return Response({
+        'status': 1,
+        'message': f'{course.code} added to {len(added)} slot(s)',
+        'course_code': course.code,
+        'added': added,
+    }, status=status.HTTP_200_OK)
 
 
 def _semester_type(sem):
@@ -672,7 +729,7 @@ def generate_xlsheet_api(request):
                 c.code as course_code,
                 c.name as course_name,
                 s.programme,
-                s.section as section
+                COALESCE(ci.section_label, s.section) as section
             FROM course_registration cr
             INNER JOIN globals_extrainfo ei ON cr.student_id_id = ei.id
             INNER JOIN auth_user u ON ei.user_id = u.id
@@ -680,6 +737,7 @@ def generate_xlsheet_api(request):
             LEFT JOIN programme_curriculum_batch b ON s.batch_id_id = b.id
             LEFT JOIN programme_curriculum_discipline d ON b.discipline_id = d.id
             INNER JOIN programme_curriculum_course c ON cr.course_id_id = c.id
+            LEFT JOIN programme_curriculum_courseinstructor ci ON cr.course_instructor_id = ci.id
             WHERE cr.session = %s
                 AND cr.semester_type = %s
                 AND cr.course_id_id = %s
@@ -707,9 +765,9 @@ def generate_xlsheet_api(request):
                     sql += " AND s.programme = %s"
                     params.append(programme_type)
 
-            # Section filter (A-F): scope the roll list to one section's students.
+            # Section = the course offering's section (course_instructor), else home section.
             if section:
-                sql += " AND s.section = %s"
+                sql += " AND COALESCE(ci.section_label, s.section) = %s"
                 params.append(section)
 
             sql += " ORDER BY u.username"
@@ -1199,10 +1257,28 @@ def list_calendar(request):
 @authentication_classes([TokenAuthentication])
 @role_required(['acadadmin'])
 def add_calendar(request):
-    Calendar.objects.create(
+    audience_type = request.data.get('audience_type', 'all')
+    calendar_event = Calendar.objects.create(
         description=request.data.get('description'),
         from_date=request.data.get('from_date'),
         to_date=request.data.get('to_date'),
+        audience_type=audience_type,
+        target_role_id=request.data.get('target_role'),
+        target_department_id=request.data.get('target_department'),
+        target_batch_id=request.data.get('target_batch'),
+    )
+    if audience_type == 'individual':
+        calendar_event.target_users.set(request.data.get('target_users', []))
+
+    recipients = resolve_audience_recipients(calendar_event)
+    notify.send(
+        sender=request.user,
+        recipient=recipients,
+        verb=calendar_event.description,
+        description=f"{calendar_event.from_date} to {calendar_event.to_date}",
+        url='',
+        module='Academic Calendar',
+        role=calendar_event.target_role.name if audience_type == 'role' and calendar_event.target_role else None,
     )
     return Response({'message': 'Created successfully!'})
 

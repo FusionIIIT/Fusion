@@ -4,7 +4,7 @@ from notifications.signals import notify
 # Create your views here.
 
 
-def leave_module_notif(sender, recipient, type, date=None):
+def leave_module_notif(sender, recipient, type, date=None, role=None):
     url = 'leave:leave'
     module = 'Leave Module'
     sender = sender
@@ -34,7 +34,7 @@ def leave_module_notif(sender, recipient, type, date=None):
         verb = "Your replacement has been cancelled for "+date
 
     notify.send(sender=sender, recipient=recipient,
-                url=url, module=module, verb=verb)
+                url=url, module=module, verb=verb, role=role)
 
 
 def placement_cell_notif(sender, recipient, type):
@@ -70,7 +70,7 @@ def office_module_notif(sender, recipient):
                 url=url, module=module, verb=verb)
 
 
-def central_mess_notif(sender, recipient, type, message=None):
+def central_mess_notif(sender, recipient, type, message=None, role=None):
     url = 'mess:mess'
     module = 'Central Mess'
     sender = sender
@@ -92,8 +92,8 @@ def central_mess_notif(sender, recipient, type, message=None):
     elif type == 'added_committee':
         verb = "You have been added to the mess committee. "
 
-    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
-    
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb, role=role)
+
 def placement_cellNotif(sender, recipient, type):
     url = 'placement:placement'
     module = 'Placement Cell'
@@ -103,7 +103,7 @@ def placement_cellNotif(sender, recipient, type):
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
-def visitors_hostel_notif(sender, recipient, type):
+def visitors_hostel_notif(sender, recipient, type, role=None):
     url='visitorhostel:visitorhostel'
     module="Visitor's Hostel"
     sender = sender
@@ -122,9 +122,9 @@ def visitors_hostel_notif(sender, recipient, type):
     elif type =='booking_rejected':
         verb='Your Booking Request has been rejected '
 
-    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb, role=role)
 
-def healthcare_center_notif(sender, recipient, type, message):
+def healthcare_center_notif(sender, recipient, type, message, role=None):
     url='healthcenter:healthcenter'
     module='Healthcare Center'
     sender = sender
@@ -154,7 +154,7 @@ def healthcare_center_notif(sender, recipient, type, message):
         verb = "You have a new medical relief approval request"
     elif type == 'rel_approved':
         verb = 'Your medical relief request has been approved' 
-    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb, flag=flag)
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb, flag=flag, role=role)
 
 def file_tracking_notif(sender, recipient, title):
     url = 'filetracking:inward'
@@ -199,7 +199,7 @@ def scholarship_portal_notif(sender, recipient, type):
                 url=url, module=module, verb=verb)
 
 
-def complaint_system_notif(sender, recipient, type, complaint_id, student, message):
+def complaint_system_notif(sender, recipient, type, complaint_id, student, message, role=None):
     if (student == 0):
         url = ('complaint:detail')
     else:
@@ -211,10 +211,10 @@ def complaint_system_notif(sender, recipient, type, complaint_id, student, messa
     description = complaint_id
 
     notify.send(sender=sender, recipient=recipient, url=url,
-                module=module, verb=verb, description=description)
+                module=module, verb=verb, description=description, role=role)
 
 
-def office_dean_PnD_notif(sender, recipient, type):
+def office_dean_PnD_notif(sender, recipient, type, role=None):
     url = 'office_module:officeOfDeanPnD'
     module = 'Office of Dean PnD Module'
     sender = sender
@@ -237,10 +237,10 @@ def office_dean_PnD_notif(sender, recipient, type):
     elif type == 'assignment_rejected':
         verb = "Assignment has been rejected."
     notify.send(sender=sender, recipient=recipient,
-                url=url, module=module, verb=verb)
+                url=url, module=module, verb=verb, role=role)
 
 
-def office_module_DeanS_notif(sender, recipient, type):
+def office_module_DeanS_notif(sender, recipient, type, role=None):
     url = 'office_module:officeOfDeanStudents'
     module = 'Office Module'
     sender = sender
@@ -271,7 +271,7 @@ def office_module_DeanS_notif(sender, recipient, type):
         verb = "Budget has been alloted by Junior Superintendent"
 
     notify.send(sender=sender, recipient=recipient,
-                url=url, module=module, verb=verb)
+                url=url, module=module, verb=verb, role=role)
 
 
 def gymkhana_voting(sender, recipient, type, title, desc):
@@ -438,7 +438,7 @@ def office_module_DeanRSPC_notif(sender, recipient, type):
                 url=url, module=module, verb=verb)
 
 
-def research_procedures_notif(sender, recipient, type):
+def research_procedures_notif(sender, recipient, type, role=None):
     url = 'research_procedures:patent_registration'
     module = 'Research Procedures'
     sender = sender
@@ -456,7 +456,7 @@ def research_procedures_notif(sender, recipient, type):
     elif type == "created":
         verb = "A new Patent has been Created"
 
-    notify.send(sender=sender,recipient=recipient,url=url,module=module,verb=verb)
+    notify.send(sender=sender,recipient=recipient,url=url,module=module,verb=verb,role=role)
 
 def hostel_notifications(sender, recipient, type):
     url = 'hostelmanagement:hostel_view'

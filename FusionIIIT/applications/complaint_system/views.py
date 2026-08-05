@@ -409,7 +409,7 @@ def user(request):
         # This is to allow the student
         student = 0
         message = "A New Complaint has been lodged"
-        complaint_system_notif(request.user, caretaker_name.user,'lodge_comp_alert',obj1.id,student,message)
+        complaint_system_notif(request.user, caretaker_name.user,'lodge_comp_alert',obj1.id,student,message,role=dsgn)
         # complaint_system_notif(request.user, secincharge_name.staff_id.user,'lodge_comp_alert',obj1.id,1,message)
 
         messages.success(request,message)
@@ -698,7 +698,7 @@ def caretaker(request):
         # This is to allow the student
         student = 1
         message = "A New Complaint has been lodged"
-        complaint_system_notif(request.user, caretaker_name.user,'lodge_comp_alert',obj1.id,student,message)
+        complaint_system_notif(request.user, caretaker_name.user,'lodge_comp_alert',obj1.id,student,message,role=dsgn)
 
         # return render(request, "complaintModule/complaint_user.html",
         #               {'history': history, 'comp_id': comp_id })
@@ -1120,7 +1120,7 @@ def supervisor(request):
         # This is to allow the student
         student = 1
         message = "A New Complaint has been lodged"
-        complaint_system_notif(request.user, caretaker_name.user,'lodge_comp_alert',obj1.id,student,message)
+        complaint_system_notif(request.user, caretaker_name.user,'lodge_comp_alert',obj1.id,student,message,role=dsgn)
 
         # return render(request, "complaintModule/complaint_user.html",
         #               {'history': history, 'comp_id': comp_id })
@@ -1550,7 +1550,7 @@ def supervisorlodge(request):
         # This is to allow the student
         student = 1
         message = "A New Complaint has been lodged"
-        complaint_system_notif(request.user, caretaker_name.user,'lodge_comp_alert',obj1.id,student,message)
+        complaint_system_notif(request.user, caretaker_name.user,'lodge_comp_alert',obj1.id,student,message,role=dsgn)
 
         # return render(request, "complaintModule/complaint_user.html",
         #               {'history': history, 'comp_id': comp_id })
@@ -1777,7 +1777,7 @@ def caretakerlodge(request):
         # This is to allow the student
         student = 1
         message = "A New Complaint has been lodged"
-        complaint_system_notif(request.user, caretaker_name.user,'lodge_comp_alert',obj1.id,student,message)
+        complaint_system_notif(request.user, caretaker_name.user,'lodge_comp_alert',obj1.id,student,message,role=dsgn)
 
         # return render(request, "complaintModule/complaint_user.html",
         #               {'history': history, 'comp_id': comp_id })

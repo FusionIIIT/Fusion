@@ -125,21 +125,26 @@ def _phd_catalog_entry(slot, relation_name, student):
 
 
 def _phd_extra_records(student, semester_no, require_announced=False):
-    """PhD-only records for a student's Thesis / Progress Seminar / Teaching Credit
+    """PhD/PG records for a student's Thesis / Progress Seminar / Teaching Credit
     activity in one semester -- one record per registration/allocation (multiple
     Thesis evaluation blocks collapse into a single record with a concatenated grade,
     e.g. 'SXS', matching how the institute's own Thesis catalog entry names the whole
     course). Each record carries both a single display row and the individual
     per-block (credit, grade) items needed for correct SPI/CPI credit-earned math.
 
-    Returns [] for non-PhD students, or once nothing has been graded/submitted yet
+    Returns [] for UG students, or once nothing has been graded/submitted yet
     (Progress Seminar has no grading pipeline today, so it will always be empty for
     now). require_announced=True additionally requires Thesis/Progress Seminar grades
     to have been officially announced (not just submitted) -- use this for
     student-facing views, matching the existing convention in
     student_thesis_enrollment_api. Teaching Credit has no separate announce step, so
-    its result is shown as soon as it's final either way."""
-    if student.programme not in PROGRAMME_TYPE_BUCKETS['PHD']:
+    its result is shown as soon as it's final either way.
+
+    PG (M.Tech/M.Des) students use this same ThesisRegistration/ThesisEvaluation
+    pipeline for their sem 2/3 block-graded thesis (see academic_procedures.models.
+    ThesisEvaluation's docstring), so the eligibility check covers both buckets --
+    not just PHD, despite this helper's PhD-era name."""
+    if student.programme not in PROGRAMME_TYPE_BUCKETS['PHD'] + PROGRAMME_TYPE_BUCKETS['PG']:
         return []
 
     records = []
@@ -618,10 +623,15 @@ def download_template(request):
                 student_id__in=student_ids_with_programme
             )
 
+        # Scope by the offering each registration is bound to (course_instructor),
+        # falling back to the student's home section only for pre-sectioning rows.
         # Sections apply only to UG (PG/PhD have no sections); electives ignore it.
         section = (request.data.get('section') or '').strip() or None
         if section and (programme_type or '').strip().upper() == 'UG':
-            course_info_query = course_info_query.filter(student_id__section=section)
+            course_info_query = course_info_query.filter(
+                Q(course_instructor__section_label=section)
+                | (Q(course_instructor__section_label__isnull=True) & Q(student_id__section=section))
+            )
 
         course_info = course_info_query.order_by("student_id_id")
 
@@ -1910,9 +1920,13 @@ class UploadGradesProfAPI(APIView):
             my_offering_ids = {o.id for o in my_offerings}
             my_sections = {o.section_label for o in my_offerings}
             # A no-section (elective) offering owns all registrants; named-section
-            # offerings scope the roster to students in those sections (UG only).
+            # offerings scope the roster to the bound offering, falling back to the
+            # student's home section only for pre-sectioning rows (UG only).
             if (programme_type or "").strip().upper() == "UG" and None not in my_sections:
-                regs = regs.filter(student_id__section__in=my_sections)
+                regs = regs.filter(
+                    Q(course_instructor_id__in=my_offering_ids)
+                    | (Q(course_instructor__isnull=True) & Q(student_id__section__in=my_sections))
+                )
                 if not regs.exists():
                     return Response(
                         {"error": "No students are registered in the selected section for this course."},
@@ -1920,46 +1934,56 @@ class UploadGradesProfAPI(APIView):
                     )
 
             from applications.academic_information.models import Student, resolve_offering
-            bucket_student_ids = {
-                bucket: Student.objects.filter(programme__in=programmes).values_list('id', flat=True)
-                for bucket, programmes in PROGRAMME_TYPE_BUCKETS.items()
-            }
-            present_buckets = [
-                bucket for bucket, ids in bucket_student_ids.items()
-                if regs.filter(student_id__in=ids).exists()
-            ]
+            ug_programmes = ['B.Tech', 'B.Des']
+            pg_programmes = ['M.Tech', 'M.Des', 'PhD']
+
+            ug_student_ids = Student.objects.filter(programme__in=ug_programmes).values_list('id', flat=True)
+            pg_student_ids = Student.objects.filter(programme__in=pg_programmes).values_list('id', flat=True)
+
+            course_has_ug = regs.filter(student_id__in=ug_student_ids).exists()
+            course_has_pg = regs.filter(student_id__in=pg_student_ids).exists()
 
             if programme_type:
-                bucket = programme_type.upper()
-                if bucket not in PROGRAMME_TYPE_BUCKETS:
+                if programme_type.upper() == 'UG':
+                    if not course_has_ug:
+                        return Response(
+                            {"error": "No UG students registered in this course."},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                    regs = regs.filter(student_id__in=ug_student_ids)
+                elif programme_type.upper() == 'PG':
+                    if not course_has_pg:
+                        return Response(
+                            {"error": "No PG students registered in this course."},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                    regs = regs.filter(student_id__in=pg_student_ids)
+                else:
                     return Response(
-                        {"error": "Invalid programme_type. Must be 'UG', 'PG', or 'PHD'."},
+                        {"error": "Invalid programme_type. Must be 'UG' or 'PG'."},
                         status=status.HTTP_400_BAD_REQUEST
                     )
-                if bucket not in present_buckets:
-                    return Response(
-                        {"error": f"No {bucket} students registered in this course."},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-                programme_type = bucket
-                regs = regs.filter(student_id__in=bucket_student_ids[bucket])
             else:
-                if len(present_buckets) > 1:
+                if course_has_ug and course_has_pg:
                     return Response(
                         {
-                            "error": f"This course has students from multiple programme types ({', '.join(present_buckets)}). Please specify programme_type.",
+                            "error": "This course has both UG and PG students. Please specify programme_type as 'UG' or 'PG'.",
                             "course_info": {
                                 "course_code": course.code,
                                 "course_name": course.name,
-                                "programme_types_present": present_buckets,
+                                "has_ug": course_has_ug,
+                                "has_pg": course_has_pg,
                                 "total_registrations": regs.count()
                             }
                         },
                         status=status.HTTP_400_BAD_REQUEST
                     )
-                elif len(present_buckets) == 1:
-                    programme_type = present_buckets[0]
-                    regs = regs.filter(student_id__in=bucket_student_ids[programme_type])
+                elif course_has_ug and not course_has_pg:
+                    programme_type = 'UG'
+                    regs = regs.filter(student_id__in=ug_student_ids)
+                elif course_has_pg and not course_has_ug:
+                    programme_type = 'PG'
+                    regs = regs.filter(student_id__in=pg_student_ids)
 
             existing_query = Student_grades.objects.filter(
                 course_id=course_id,
@@ -1968,16 +1992,29 @@ class UploadGradesProfAPI(APIView):
             )
             
             if programme_type:
-                bucket_student_rolls = [reg.student_id_id for reg in regs]
-                existing_bucket_grades = existing_query.filter(roll_no__in=bucket_student_rolls)
+                if programme_type.upper() == 'UG':
+                    ug_student_rolls = [reg.student_id_id for reg in regs]
+                    existing_ug_grades = existing_query.filter(roll_no__in=ug_student_rolls)
 
-                if existing_bucket_grades.exists():
-                    non_resubmit_bucket = existing_bucket_grades.filter(reSubmit=False)
-                    if non_resubmit_bucket.exists():
-                        return Response(
-                            {"error": f"THIS COURSE HAS ALREADY BEEN SUBMITTED FOR {programme_type} STUDENTS."},
-                            status=status.HTTP_400_BAD_REQUEST
-                        )
+                    if existing_ug_grades.exists():
+                        non_resubmit_ug = existing_ug_grades.filter(reSubmit=False)
+                        if non_resubmit_ug.exists():
+                            return Response(
+                                {"error": "THIS COURSE HAS ALREADY BEEN SUBMITTED FOR UG STUDENTS."},
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
+                            
+                elif programme_type.upper() == 'PG':
+                    pg_student_rolls = [reg.student_id_id for reg in regs]
+                    existing_pg_grades = existing_query.filter(roll_no__in=pg_student_rolls)
+
+                    if existing_pg_grades.exists():
+                        non_resubmit_pg = existing_pg_grades.filter(reSubmit=False)
+                        if non_resubmit_pg.exists():
+                            return Response(
+                                {"error": "THIS COURSE HAS ALREADY BEEN SUBMITTED FOR PG STUDENTS."},
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
             else:
                 existing = existing_query.first()
                 if existing and not existing.reSubmit:
@@ -2059,9 +2096,14 @@ class UploadGradesProfAPI(APIView):
                     # Check if student belongs to the specified programme type
                     if programme_type:
                         student_programme = stud.programme
-                        if student_programme not in PROGRAMME_TYPE_BUCKETS[programme_type]:
+                        if programme_type.upper() == 'UG' and student_programme not in ug_programmes:
                             errors.append(
-                                f"Row {idx}: Student {roll_no} is not a {programme_type} student (programme: {student_programme})."
+                                f"Row {idx}: Student {roll_no} is not a UG student (programme: {student_programme})."
+                            )
+                            continue
+                        elif programme_type.upper() == 'PG' and student_programme not in pg_programmes:
+                            errors.append(
+                                f"Row {idx}: Student {roll_no} is not a PG student (programme: {student_programme})."
                             )
                             continue
 
@@ -3136,10 +3178,14 @@ class PreviewGradesAPI(APIView):
 
             registrations = registrations.filter(student_id__in=student_ids_with_programme)
 
-        # Sections apply only to UG (PG/PhD have no sections); electives ignore it.
+        # Scope by the offering each registration is bound to (course_instructor),
+        # falling back to the student's home section only for pre-sectioning rows.
         section = (request.data.get("section") or "").strip() or None
         if section and (programme_type or "").strip().upper() == "UG":
-            registrations = registrations.filter(student_id__section=section)
+            registrations = registrations.filter(
+                Q(course_instructor__section_label=section)
+                | (Q(course_instructor__section_label__isnull=True) & Q(student_id__section=section))
+            )
 
         # Build a set of registered roll numbers for fast lookup.
         registered_rollnos = set()
@@ -4421,9 +4467,9 @@ def _build_grade_validation_semesters(student):
     def _is_summer_key(key):
         return bool(key[1] and "summer" in str(key[1]).lower())
 
-    # ── Merge in PhD Thesis / Progress Seminar / Teaching Credit rows ──────────
+    # ── Merge in PhD/PG Thesis / Progress Seminar / Teaching Credit rows ───────
     key_to_phd_rows = {}
-    if student.programme in PROGRAMME_TYPE_BUCKETS['PHD']:
+    if student.programme in PROGRAMME_TYPE_BUCKETS['PHD'] + PROGRAMME_TYPE_BUCKETS['PG']:
         phd_semester_nos = set()
         for qs, field in (
             (ThesisRegistration.objects.filter(student=student), 'semester__semester_no'),

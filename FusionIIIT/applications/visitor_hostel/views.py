@@ -601,7 +601,7 @@ def cancel_booking_request(request):
         # to notify the VhIncharge about a new cancelltaion request
 
         visitors_hostel_notif(
-            request.user, incharge_name.user, 'cancellation_request_placed')
+            request.user, incharge_name.user, 'cancellation_request_placed', role=incharge_name.designation.name)
         return HttpResponseRedirect('/visitorhostel/')
     else:
         return HttpResponseRedirect('/visitorhostel/')
@@ -997,7 +997,7 @@ def forward_booking(request):
 
         # notify incharge about forwarded booking
         visitors_hostel_notif(
-            request.user, incharge_name.user, 'booking_forwarded')
+            request.user, incharge_name.user, 'booking_forwarded', role=incharge_name.designation.name)
         return HttpResponseRedirect('/visitorhostel/')
     else:
         return HttpResponseRedirect('/visitorhostel/')
