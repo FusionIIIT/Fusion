@@ -3,7 +3,7 @@ from django.db.models import fields
 from django.forms import ModelForm, widgets
 from django.forms import Form, ValidationError
 from django.forms.models import ModelChoiceField
-from .models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot, PROGRAMME_CATEGORY_CHOICES,NewProposalFile,Proposal_Tracking, CourseInstructor
+from .models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot, PROGRAMME_CATEGORY_CHOICES,NewProposalFile,Proposal_Tracking, CourseInstructor, Thesis, Seminar, ThesisSlot, SeminarSlot, TeachingCredit, TeachingCreditSlot
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
 from applications.globals.models import (DepartmentInfo, Designation,ExtraInfo, Faculty, HoldsDesignation)
@@ -456,3 +456,93 @@ class CourseInstructorForm(forms.ModelForm):
     #     user_id = cleaned_data.get('receive_id')
     #     if user_id:
     #         self.fields['receive_design'].queryset = HoldsDesignation.objects.select_related('designation').filter(user_id=user_id)
+
+
+class ThesisForm(ModelForm):
+    class Meta:
+        model = Thesis
+        fields = '__all__'
+        widgets = {
+            'code': forms.TextInput(attrs={'placeholder': 'Thesis Code (e.g., CS799)', 'max_length': 10}),
+            'name': forms.TextInput(attrs={'placeholder': 'Thesis Name', 'max_length': 100}),
+            'credit': forms.NumberInput(attrs={'placeholder': 'Credits'}),
+            'discipline': forms.Select(attrs={'class': 'ui fluid search selection dropdown'}),
+            'programme_type': forms.Select(attrs={'class': 'ui fluid search selection dropdown'}),
+            'working_thesis': forms.CheckboxInput(attrs={'class': 'ui checkbox'}),
+        }
+
+
+class SeminarForm(ModelForm):
+    class Meta:
+        model = Seminar
+        fields = '__all__'
+        widgets = {
+            'code': forms.TextInput(attrs={'placeholder': 'Seminar Code (e.g., CS898)', 'max_length': 10}),
+            'name': forms.TextInput(attrs={'placeholder': 'Seminar Name', 'max_length': 100}),
+            'credit': forms.NumberInput(attrs={'placeholder': 'Credits'}),
+            'discipline': forms.Select(attrs={'class': 'ui fluid search selection dropdown'}),
+            'programme_type': forms.Select(attrs={'class': 'ui fluid search selection dropdown'}),
+            'working_seminar': forms.CheckboxInput(attrs={'class': 'ui checkbox'}),
+        }
+
+
+class ThesisSlotForm(ModelForm):
+    class Meta:
+        model = ThesisSlot
+        fields = '__all__'
+        widgets = {
+            'semester': forms.Select(attrs={'class': 'ui fluid search selection dropdown'}),
+            'name': forms.TextInput(attrs={'placeholder': 'Name/Code', 'max_length': 100}),
+            'type': forms.Select(attrs={'class': 'ui fluid search selection dropdown'}),
+            'thesis_slot_info': forms.Textarea(attrs={'placeholder': 'Enter Information about this Thesis Slot'}),
+            'theses': forms.SelectMultiple(attrs={'class': 'ui fluid search selection dropdown'}),
+            'duration': forms.NumberInput(attrs={'placeholder': 'Semester Duration'}),
+            'min_registration_limit': forms.NumberInput(attrs={'placeholder': 'Min Reg limit'}),
+            'max_registration_limit': forms.NumberInput(attrs={'placeholder': 'Max Reg limit'}),
+        }
+
+
+class SeminarSlotForm(ModelForm):
+    class Meta:
+        model = SeminarSlot
+        fields = '__all__'
+        widgets = {
+            'semester': forms.Select(attrs={'class': 'ui fluid search selection dropdown'}),
+            'name': forms.TextInput(attrs={'placeholder': 'Name/Code', 'max_length': 100}),
+            'type': forms.Select(attrs={'class': 'ui fluid search selection dropdown'}),
+            'seminar_slot_info': forms.Textarea(attrs={'placeholder': 'Enter Information about this Seminar Slot'}),
+            'seminars': forms.SelectMultiple(attrs={'class': 'ui fluid search selection dropdown'}),
+            'duration': forms.NumberInput(attrs={'placeholder': 'Semester Duration'}),
+            'min_registration_limit': forms.NumberInput(attrs={'placeholder': 'Min Reg limit'}),
+            'max_registration_limit': forms.NumberInput(attrs={'placeholder': 'Max Reg limit'}),
+        }
+
+
+class TeachingCreditForm(ModelForm):
+    class Meta:
+        model = TeachingCredit
+        fields = '__all__'
+        widgets = {
+            'code': forms.TextInput(attrs={'placeholder': 'Teaching Credit Code (e.g., CS897)', 'max_length': 10}),
+            'name': forms.TextInput(attrs={'placeholder': 'Teaching Credit Name', 'max_length': 100}),
+            'credit': forms.NumberInput(attrs={'placeholder': 'Credits'}),
+            'discipline': forms.Select(attrs={'class': 'ui fluid search selection dropdown'}),
+            'programme_type': forms.Select(attrs={'class': 'ui fluid search selection dropdown'}),
+            'working_teaching_credit': forms.CheckboxInput(attrs={'class': 'ui checkbox'}),
+        }
+
+
+class TeachingCreditSlotForm(ModelForm):
+    class Meta:
+        model = TeachingCreditSlot
+        fields = '__all__'
+        widgets = {
+            'semester': forms.Select(attrs={'class': 'ui fluid search selection dropdown'}),
+            'name': forms.TextInput(attrs={'placeholder': 'Name/Code', 'max_length': 100}),
+            'type': forms.Select(attrs={'class': 'ui fluid search selection dropdown'}),
+            'teaching_credit_slot_info': forms.Textarea(attrs={'placeholder': 'Enter Information about this Teaching Credit Slot'}),
+            'teaching_credits': forms.SelectMultiple(attrs={'class': 'ui fluid search selection dropdown'}),
+            'duration': forms.NumberInput(attrs={'placeholder': 'Semester Duration'}),
+            'min_registration_limit': forms.NumberInput(attrs={'placeholder': 'Min Reg limit'}),
+            'max_registration_limit': forms.NumberInput(attrs={'placeholder': 'Max Reg limit'}),
+        }

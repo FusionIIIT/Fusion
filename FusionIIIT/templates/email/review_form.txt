@@ -1,0 +1,21 @@
+THESIS REVIEW FORM
+==================
+
+Dear {{ prof_name }},
+
+Thank you for accepting to review the PhD thesis:
+
+"{{ thesis_title }}"
+
+Please submit your review using the secure link below:
+
+{{ review_url }}
+
+IMPORTANT NOTES:
+- This link is unique to you and should not be shared
+- You can save this email and return to complete the review later
+- Your feedback is valuable and greatly appreciated
+
+Thank you for your valuable contribution,
+Thesis Committee
+PDPM IIITDM Jabalpur

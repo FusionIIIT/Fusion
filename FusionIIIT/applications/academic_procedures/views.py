@@ -38,7 +38,7 @@ from applications.globals.models import (DepartmentInfo, Designation,
 from applications.programme_curriculum.models import Course as Courses
 from .models import (BranchChange, CoursesMtech, InitialRegistration, StudentRegistrationChecks,
                      Register, Thesis, FinalRegistration, ThesisTopicProcess,
-                     Constants, FeePayments, TeachingCreditRegistration, SemesterMarks, 
+                     Constants, FeePayments, SemesterMarks,
                      MarkSubmissionCheck, Dues,AssistantshipClaim, MTechGraduateSeminarReport,
                      PhDProgressExamination,CourseRequested, course_registration, course_replacement, MessDue, Assistantship_status , backlog_course)
 from notification.views import academics_module_notif
@@ -2956,42 +2956,6 @@ def get_registration_courses(courses):
         if not flag:
             x.append([temp])
     return x
-
-
-@require_designation("acadadmin", "Dean Academic")
-def teaching_credit_register(request) :
-    if request.method == 'POST':
-        try:
-            roll = request.POST.get('roll')
-            course1 = request.POST.get('course1')
-
-
-            roll = str(roll)
-
-            student_id = get_object_or_404(User, username=request.POST.get('roll'))
-            student_id = ExtraInfo.objects.all().select_related('user','department').filter(user=student_id).first()
-            student_id = Student.objects.all().select_related('id','id__user','id__department').filter(id=student_id.id).first()
-
-            course1 = Curriculum.objects.select_related().get(curriculum_id = request.POST.get('course1'))
-            course2 = Curriculum.objects.select_related().get(curriculum_id = request.POST.get('course2'))
-            course3 = Curriculum.objects.select_related().get(curriculum_id = request.POST.get('course3'))
-            course4 = Curriculum.objects.select_related().get(curriculum_id = request.POST.get('course4'))
-
-            p = TeachingCreditRegistration(
-                student_id = student_id,
-                curr_1 = course1,
-                curr_2 = course2,
-                curr_3 = course3,
-                curr_4 = course4
-                )
-            p.save()
-
-            messages.info(request, ' Successful')
-            return HttpResponseRedirect('/academic-procedures/main')
-        except Exception as e:
-            return HttpResponseRedirect('/academic-procedures/main')
-    else:
-        return HttpResponseRedirect('/academic-procedures/main')
 
 
 

@@ -36,7 +36,7 @@ from applications.programme_curriculum.models_password_email import PasswordEmai
 
 try:
     from applications.programme_curriculum.models_student_management import (
-        StudentBatchUpload, BatchConfiguration, StudentStatusLog
+        StudentBatchUpload, BatchConfiguration, StudentStatusLog, PhdStudentBatchUpload
     )
 except ImportError:
     from django.db import models
@@ -170,6 +170,90 @@ def _safe_int_conversion(value):
         pass
     return None
 
+def _safe_decimal_conversion(value):
+    """Convert a value to Decimal, returning None for empty/invalid values."""
+    if value is None or value == '' or value == 'null':
+        return None
+    try:
+        from decimal import Decimal, InvalidOperation
+        clean = str(value).replace(',', '').strip()
+        if not clean or clean.lower() == 'nan':
+            return None
+        return Decimal(clean)
+    except Exception:
+        return None
+
+def normalize_category(value, is_phd=False):
+    """Normalize Excel/frontend category values to DB codes.
+    UG/PG model uses 'GEN-EWS' and 'OBC-NCL'; PhD model uses 'EWS' and 'OBC'.
+    """
+    if not value:
+        return ''
+    v = str(value).strip()
+    # Base mapping (UG/PG codes)
+    mapping = {
+        'general': 'GEN',
+        'general ews': 'GEN-EWS',
+        'general-ews': 'GEN-EWS',
+        'gen-ews': 'GEN-EWS',
+        'economically weaker section': 'GEN-EWS',
+        'ews': 'GEN-EWS',
+        'obc-ncl': 'OBC-NCL',
+        'other backward class': 'OBC-NCL',
+        'other backward class (non-creamy layer)': 'OBC-NCL',
+        'obc': 'OBC-NCL',
+        'sc': 'SC',
+        'scheduled caste': 'SC',
+        'st': 'ST',
+        'scheduled tribe': 'ST',
+        'gen': 'GEN',
+    }
+    normalized = mapping.get(v.lower(), v)
+    # PhD choices only have 'GEN', 'OBC', 'SC', 'ST', 'EWS' — re-map the compound codes
+    if is_phd:
+        phd_remap = {
+            'GEN-EWS': 'EWS',
+            'OBC-NCL': 'OBC',
+        }
+        normalized = phd_remap.get(normalized, normalized)
+    return normalized[:10]  # safety truncation to respect max_length=10
+
+
+def normalize_gender(value):
+    """Normalize Excel gender values to model choices: 'Male', 'Female', 'Other'."""
+    if not value:
+        return ''
+    v = str(value).strip().lower()
+    if v in ('male', 'm'):
+        return 'Male'
+    if v in ('female', 'f'):
+        return 'Female'
+    return 'Other'
+
+
+def normalize_yes_no(value, default='NO'):
+    """Normalize Excel YES/NO values to DB choices 'YES' / 'NO'."""
+    if not value:
+        return default
+    v = str(value).strip().lower()
+    if v in ('yes', 'y', '1', 'true'):
+        return 'YES'
+    if v in ('no', 'n', '0', 'false'):
+        return 'NO'
+    return str(value).strip()
+
+
+def to_academic_category(value):
+    """Map any raw/batch-model category value to the narrower AcademicStudent choices.
+    AcademicStudent.category only accepts: GEN, SC, ST, OBC
+    Batch models may hold: GEN-EWS, OBC-NCL, EWS — these must be remapped.
+    """
+    normalized = normalize_category(value or '')
+    remap = {'GEN-EWS': 'GEN', 'OBC-NCL': 'OBC', 'EWS': 'GEN'}
+    result = remap.get(normalized, normalized)
+    return result or 'GEN'
+
+
 def parse_date_flexible(date_value):
     if date_value is None or date_value == '':
         return None
@@ -218,18 +302,33 @@ def get_academic_year_from_batch_year(batch_year):
 
 def calculate_batch_filled_seats(batch):
     """
-    Calculate filled seats for a batch using curriculum-based counting only.
+    Calculate filled seats for a batch.
+    - PhD batches: count PhdStudentBatchUpload rows matching year + semester + discipline.
+    - UG/PG batches: count AcademicStudent records enrolled in this batch.
     """
     try:
-        from applications.academic_information.models import Student
-        if batch.curriculum:
-            curriculum_count = Student.objects.filter(
-                batch_id=batch
-            ).count()
-            return curriculum_count
+        if 'PhD' in (batch.name or ''):
+            from applications.programme_curriculum.models_student_management import PhdStudentBatchUpload
+            qs = PhdStudentBatchUpload.objects.filter(year=batch.year)
+            if 'Odd' in batch.name:
+                qs = qs.filter(admission_semester__iexact='Odd')
+            elif 'Even' in batch.name:
+                qs = qs.filter(admission_semester__iexact='Even')
+            if batch.discipline:
+                # Try full name first; fall back to acronym only if name gives 0.
+                # Avoids cross-matches for batches sharing the same acronym (NS-).
+                name_qs = qs.filter(discipline__icontains=batch.discipline.name)
+                if name_qs.exists():
+                    qs = name_qs
+                else:
+                    qs = qs.filter(discipline__icontains=batch.discipline.acronym)
+            return qs.count()
         else:
-            return 0
-                    
+            from applications.academic_information.models import Student
+            if batch.curriculum:
+                return Student.objects.filter(batch_id=batch).count()
+            else:
+                return 0
     except Exception as e:
         return 0
 
@@ -326,28 +425,45 @@ def validate_batch_curriculum_requirements(batch_year, academic_year, action_con
     
     return None
 
-def calculate_current_semester(academic_year, current_date=None):
+def calculate_current_semester(academic_year, current_date=None, admission_semester=None):
+    """
+    Calculate the current semester number for a student.
+
+    Convention: batch year = academic year start (e.g. 2025 = academic year 2025-26).
+
+    Odd-semester (UG/PG/PhD Odd)  — first semester starts August  of batch_year.
+    Even-semester (PhD Even)       — first semester starts January of batch_year + 1.
+
+    Examples with batch_year=2025:
+      Odd:  Aug 2025→Sem1, Jan 2026→Sem2, Aug 2026→Sem3 ...
+      Even: Jan 2026→Sem1, Aug 2026→Sem2, Jan 2027→Sem3 ...
+    """
     if current_date is None:
         current_date = timezone.now().date()
-    
+
     current_year = current_date.year
     current_month = current_date.month
-    
-    years_completed = 0
-    
-    if current_month >= 8:
-        years_completed = current_year - academic_year
-        semester_in_year = 1
+
+    is_even_phd = admission_semester and str(admission_semester).strip().lower() == 'even'
+
+    if is_even_phd:
+        # Even PhD: effective start = January of (batch_year + 1)
+        eff_year = academic_year + 1
+        if current_month >= 8:   # Aug–Dec → even numbered semester for them
+            total_semester = (current_year - eff_year) * 2 + 2
+        else:                    # Jan–Jul → odd numbered semester for them
+            total_semester = (current_year - eff_year) * 2 + 1
     else:
-        years_completed = current_year - academic_year - 1
-        if current_month <= 5:
+        # Odd-semester (UG/PG/PhD Odd): effective start = August of batch_year
+        if current_month >= 8:   # Aug–Dec → Odd semester in progress
+            years_completed = current_year - academic_year
+            semester_in_year = 1
+        else:                    # Jan–Jul → Even semester in progress
+            years_completed = current_year - academic_year - 1
             semester_in_year = 2
-        else:
-            semester_in_year = 2
-    
-    total_semester = (years_completed * 2) + semester_in_year
-    total_semester = max(1, min(total_semester, 8))
-    
+        total_semester = (years_completed * 2) + semester_in_year
+
+    total_semester = max(1, min(total_semester, 12))
     return total_semester
 
 @csrf_exempt
@@ -451,7 +567,14 @@ def process_excel_upload(request):
             'admission_mode': ['admission mode', 'admission type'],
             'admission_mode_remarks': ['admission mode remarks', 'admission type remarks'],
             'income_group': ['income group', 'family income group'],
-            'income': ['income', 'family income', 'annual income']
+            'income': ['income', 'family income', 'annual income'],
+            # PhD-specific columns
+            'application_no': ['application no.', 'application no', 'application number', 'phd application no', 'phd app no'],
+            'gate_qualified': ['gate qualaified', 'gate qualified', 'gate qualification'],
+            'gate_stream': ['gate stream'],
+            'gate_rank': ['gate rank'],
+            'admission_type': ['admission type'],
+            'admission_semester': ['admission semester', 'semester of admission'],
         }
 
         df.columns = df.columns.str.lower().str.strip()
@@ -564,7 +687,15 @@ def process_excel_upload(request):
                         'Admission Mode': student_data.get('admission_mode', ''),
                         'Admission Mode Remarks': student_data.get('admission_mode_remarks', ''),
                         'Income Group': student_data.get('income_group', ''),
-                        'Income': student_data.get('income', '')
+                        'Income': student_data.get('income', ''),
+                        # PhD-specific fields
+                        'Application No.': student_data.get('application_no', ''),
+                        'Admission Type': student_data.get('admission_type', ''),
+                        'GATE Qualaified': student_data.get('gate_qualified', ''),
+                        'GATE Qualified': student_data.get('gate_qualified', ''),
+                        'GATE Stream': student_data.get('gate_stream', ''),
+                        'GATE Rank': student_data.get('gate_rank', ''),
+                        'Admission Semester': student_data.get('admission_semester', ''),
                     }         
                     valid_students.append(cleaned_data)
                     
@@ -595,9 +726,12 @@ def process_excel_upload(request):
 # STUDENT BATCH OPERATIONS
 # =============================================================================
 
-@csrf_exempt
-@require_http_methods(["POST"])
-def check_student_duplicate(student, duplicate_check_fields):
+def check_student_duplicate(student, duplicate_check_fields, programme_type='ug'):
+    """
+    Check for duplicate students.
+    For PhD students, checks PhdStudentBatchUpload.
+    For UG/PG students, checks StudentBatchUpload.
+    """
 
     field_mapping = {
         'jeeAppNo': 'jee_app_no',
@@ -608,6 +742,8 @@ def check_student_duplicate(student, duplicate_check_fields):
         'mobile': 'mobile_number'
     }
     
+    is_phd = (programme_type == 'phd')
+
     try:
         for field in duplicate_check_fields:
             backend_field = field_mapping.get(field, field.lower())
@@ -617,17 +753,24 @@ def check_student_duplicate(student, duplicate_check_fields):
                 continue
 
             if backend_field == 'jee_app_no':
-                existing = StudentBatchUpload.objects.filter(jee_app_no=student_value).first()
-                if existing:
-                    return True, f"JEE Application Number {student_value} already exists for {existing.name}"
+                if not is_phd:  # PhD students don't have JEE app numbers
+                    existing = StudentBatchUpload.objects.filter(jee_app_no=student_value).first()
+                    if existing:
+                        return True, f"JEE Application Number {student_value} already exists for {existing.name}"
                     
             elif backend_field == 'roll_number':
-                existing = StudentBatchUpload.objects.filter(roll_number=student_value).first()
+                if is_phd:
+                    existing = PhdStudentBatchUpload.objects.filter(roll_number=student_value).first()
+                else:
+                    existing = StudentBatchUpload.objects.filter(roll_number=student_value).first()
                 if existing:
                     return True, f"Roll Number {student_value} already exists for {existing.name}"
                     
             elif backend_field == 'institute_email':
-                existing = StudentBatchUpload.objects.filter(institute_email=student_value).first()
+                if is_phd:
+                    existing = PhdStudentBatchUpload.objects.filter(institute_email=student_value).first()
+                else:
+                    existing = StudentBatchUpload.objects.filter(institute_email=student_value).first()
                 if existing:
                     return True, f"Institute Email {student_value} already exists for {existing.name}"
                     
@@ -655,6 +798,7 @@ def save_students_batch(request):
         data = json.loads(request.body)
         students = data.get('students', [])
         programme_type = data.get('programme_type', 'ug')
+        phd_semester = data.get('phd_semester', None)  # Get PhD semester (odd/even)
         year_result = validate_and_normalize_year(data.get('academic_year'))
         if isinstance(year_result, JsonResponse):
             return year_result
@@ -690,7 +834,7 @@ def save_students_batch(request):
             duplicate_students = []
             
             for student in students:
-                is_duplicate, duplicate_info = check_student_duplicate(student, duplicate_check_fields)
+                is_duplicate, duplicate_info = check_student_duplicate(student, duplicate_check_fields, programme_type)
                 
                 if is_duplicate:
                     skipped_duplicates += 1
@@ -735,8 +879,20 @@ def save_students_batch(request):
                     discipline_name = student_data.get('Discipline') or student_data.get('branch', '')
                     specialization = student_data.get('Specialization') or student_data.get('specialization', '')
                     
+                    # Debug PhD semester
+                    if programme_type == 'phd':
+                        print(f"DEBUG: programme_type={programme_type}, phd_semester={phd_semester}, type={type(phd_semester)}")
+                    
+                    # For PhD students, use semester-specific batch names
+                    if programme_type == 'phd' and phd_semester:
+                        if phd_semester.lower() == 'odd':
+                            batch_name = 'PhD (Odd)'
+                        elif phd_semester.lower() == 'even':
+                            batch_name = 'PhD (Even)'
+                        else:
+                            batch_name = get_batch_name_from_discipline(discipline_name, programme_type)
                     # For M.Tech students, use specialization-specific batch names
-                    if programme_type == 'pg' and specialization:
+                    elif programme_type == 'pg' and specialization:
                         if 'design' in discipline_name.lower():
                             batch_name = 'M.Des'
                         elif specialization == 'Mechatronics':
@@ -762,6 +918,10 @@ def save_students_batch(request):
                     else:
                         discipline_obj = get_or_create_discipline(discipline_name)
                     
+                    # Debug logging for PhD batch matching
+                    if programme_type == 'phd':
+                        print(f"DEBUG PhD: batch_name={batch_name}, discipline={discipline_obj.name}, year={batch_year}")
+                    
                     try:
                         batch_obj = Batch.objects.get(
                             name=batch_name, 
@@ -769,7 +929,14 @@ def save_students_batch(request):
                             year=batch_year,
                             running_batch=True
                         )
+                        if programme_type == 'phd':
+                            print(f"DEBUG PhD: Found batch {batch_obj.id}")
                     except Batch.DoesNotExist:
+                        if programme_type == 'phd':
+                            print(f"DEBUG PhD: Batch not found! Looking for alternatives...")
+                            all_phd_batches = Batch.objects.filter(name__icontains='phd', year=batch_year, running_batch=True)
+                            print(f"DEBUG PhD: Available PhD batches: {[(b.id, b.name, b.discipline.name) for b in all_phd_batches]}")
+                        
                         name_year_matches = Batch.objects.filter(name=batch_name, year=batch_year, running_batch=True)
                         discipline_year_matches = Batch.objects.filter(discipline=discipline_obj, year=batch_year, running_batch=True)
                         existing_batches = Batch.objects.filter(year=batch_year, running_batch=True)
@@ -787,21 +954,25 @@ def save_students_batch(request):
                         continue
 
                     student_name = student_data.get('Name') or student_data.get('name', 'Unknown')
-                    
-                    student_upload = StudentBatchUpload.objects.create(
-                        # Core identification - handle both field name formats
-                        jee_app_no=student_data.get('JEE App. No./CCMT Roll. No.') or student_data.get('JEE App. No / CCMT Roll No') or student_data.get('Jee Main Application Number') or student_data.get('jee_app_no') or student_data.get('jeeAppNo') or None,
-                        roll_number=student_data.get('Institute Roll Number') or student_data.get('rollNumber', ''),
-                        institute_email=student_data.get('Institute Email ID') or student_data.get('instituteEmail', ''),
-                        
-                        name=student_data.get('Name') or student_data.get('name', ''),
-                        father_name=student_data.get("Father's Name") or student_data.get('fname', ''),
-                        mother_name=student_data.get("Mother's Name") or student_data.get('mname', ''),
-                        gender=student_data.get('Gender') or student_data.get('gender', ''),
-                        category=student_data.get('Category') or student_data.get('category', ''),
-                        pwd=student_data.get('PWD') or student_data.get('pwd', 'NO'),
-                        minority=student_data.get('Minority') or student_data.get('minority', ''),
 
+                    # Normalise admission_semester from the phd_semester param or data
+                    _adm_sem_raw = (
+                        phd_semester if phd_semester else
+                        student_data.get('Admission Semester') or
+                        student_data.get('admission_semester') or
+                        student_data.get('admissionSemester', '') or ''
+                    )
+                    _adm_sem = _adm_sem_raw.strip().capitalize() if _adm_sem_raw else ''
+
+                    # Common kwargs shared by both PhD and UG/PG models
+                    _common = dict(
+                        roll_number=student_data.get('Institute Roll Number') or student_data.get('rollNumber', ''),
+                        name=student_data.get('Name') or student_data.get('name', ''),
+                        institute_email=student_data.get('Institute Email ID') or student_data.get('instituteEmail', ''),
+                        gender=normalize_gender(student_data.get('Gender') or student_data.get('gender', '')),
+                        category=normalize_category(student_data.get('Category') or student_data.get('category', ''), is_phd=(programme_type == 'phd')),
+                        pwd=normalize_yes_no(student_data.get('PWD') or student_data.get('pwd', ''), default='NO'),
+                        minority=student_data.get('Minority') or student_data.get('minority', ''),
                         phone_number=sanitize_phone_number(student_data.get('Mobile No') or student_data.get('phoneNumber', '')),
                         personal_email=student_data.get('Alternate Email ID') or student_data.get('email', '') or student_data.get('alternateEmail', '') or student_data.get('personalEmail', '') or student_data.get('personal_email', ''),
                         parent_email=student_data.get('Parent Email') or student_data.get('parentEmail', '') or student_data.get('parent_email', ''),
@@ -816,29 +987,48 @@ def save_students_batch(request):
                         admission_mode=student_data.get('Admission Mode') or student_data.get('admissionMode', ''),
                         admission_mode_remarks=student_data.get('Admission Mode Remarks') or student_data.get('admissionModeRemarks', ''),
                         income_group=student_data.get('Income Group') or student_data.get('incomeGroup', ''),
-                        income=student_data.get('Income') or student_data.get('income', None),
-
-                        branch=student_data.get('Discipline') or student_data.get('branch', ''),
-                        specialization=student_data.get('Specialization') or student_data.get('specialization', ''),
-                        date_of_birth=dob,
-                        ai_rank=_safe_int_conversion(sanitize_rank_value(student_data.get('AI rank') or student_data.get('jeeRank'))),
-                        category_rank=_safe_int_conversion(sanitize_rank_value(student_data.get('Category Rank') or student_data.get('categoryRank'))),
-
+                        income=_safe_decimal_conversion(student_data.get('Income') or student_data.get('income') or None),
+                        father_name=student_data.get("Father's Name") or student_data.get('fname', ''),
+                        mother_name=student_data.get("Mother's Name") or student_data.get('mname', ''),
                         father_occupation=student_data.get("Father's Occupation") or student_data.get('fatherOccupation', ''),
                         father_mobile=sanitize_phone_number(student_data.get('Father Mobile Number') or student_data.get('fatherMobile', '')),
                         mother_occupation=student_data.get("Mother's Occupation") or student_data.get('motherOccupation', ''),
                         mother_mobile=sanitize_phone_number(student_data.get('Mother Mobile Number') or student_data.get('motherMobile', '')),
-
-                        allotted_category=student_data.get('allottedcat') or student_data.get('allottedCategory', ''),
-                        allotted_gender=student_data.get('Allotted Gender') or student_data.get('allottedGender', ''),
-
+                        date_of_birth=dob,
                         year=batch_year,
-                        academic_year=academic_year,  # Use the normalized academic year
-                        programme_type=programme_type,
+                        academic_year=academic_year,
                         reported_status='NOT_REPORTED',
-                        source='excel_upload',  # Track that this came from Excel upload
-                        uploaded_by=request.user if request.user.is_authenticated else None
+                        source='excel_upload',
+                        uploaded_by=request.user if request.user.is_authenticated else None,
                     )
+
+                    if programme_type == 'phd':
+                        student_upload = PhdStudentBatchUpload.objects.create(
+                            discipline=discipline_name,
+                            application_no=student_data.get('Application No.') or student_data.get('applicationNo') or None,
+                            admission_type=student_data.get('Admission Type') or student_data.get('admissionType', ''),
+                            gate_qualified=normalize_yes_no(student_data.get('GATE Qualified') or student_data.get('GATE Qualaified') or student_data.get('gateQualified', ''), default='NO'),
+                            gate_stream=student_data.get('GATE Stream') or student_data.get('gateStream', ''),
+                            gate_rank=_safe_int_conversion(sanitize_rank_value(student_data.get('GATE Rank') or student_data.get('gateRank'))),
+                            category_rank=_safe_int_conversion(sanitize_rank_value(student_data.get('Category Rank') or student_data.get('categoryRank'))),
+                            allotted_category=student_data.get('allottedcat') or student_data.get('allottedCategory', ''),
+                            allotted_gender=student_data.get('Allotted Gender') or student_data.get('allottedGender', ''),
+                            admission_semester=_adm_sem,
+                            **_common
+                        )
+                    else:
+                        student_upload = StudentBatchUpload.objects.create(
+                            jee_app_no=student_data.get('JEE App. No./CCMT Roll. No.') or student_data.get('JEE App. No / CCMT Roll No') or student_data.get('Jee Main Application Number') or student_data.get('jee_app_no') or student_data.get('jeeAppNo') or None,
+                            branch=student_data.get('Discipline') or student_data.get('branch', ''),
+                            specialization=student_data.get('Specialization') or student_data.get('specialization', ''),
+                            ai_rank=_safe_int_conversion(sanitize_rank_value(student_data.get('AI rank') or student_data.get('jeeRank'))),
+                            category_rank=_safe_int_conversion(sanitize_rank_value(student_data.get('Category Rank') or student_data.get('categoryRank'))),
+                            allotted_category=student_data.get('allottedcat') or student_data.get('allottedCategory', ''),
+                            allotted_gender=student_data.get('Allotted Gender') or student_data.get('allottedGender', ''),
+                            admission_semester=_adm_sem,
+                            programme_type=programme_type,
+                            **_common
+                        )
                     
                     # AUTOMATIC USER ACCOUNT CREATION with HASHED PASSWORD
                     if student_upload.roll_number:
@@ -867,7 +1057,8 @@ def save_students_batch(request):
 
         total_processed = successful_uploads + failed_uploads + validation_errors + skipped_invalid
         response_data = {
-            'success': True,
+            'success': successful_uploads > 0,
+            'error_detail': errors[0] if errors and successful_uploads == 0 else None,
             'data': {
                 'successful_uploads': successful_uploads,
                 'failed_uploads': failed_uploads,
@@ -1035,6 +1226,7 @@ def add_single_student(request):
     try:
         data = json.loads(request.body)
         programme_type = data.get('programme_type', 'ug')
+        phd_semester = data.get('phd_semester', None)  # Get PhD semester (odd/even)
         
         year_result = validate_and_normalize_year(data.get('academic_year'))
         if isinstance(year_result, JsonResponse):
@@ -1075,6 +1267,13 @@ def add_single_student(request):
             'admissionMode': 'admission_mode',
             'admissionModeRemarks': 'admission_mode_remarks',
             'incomeGroup': 'income_group',
+            # PhD-specific field name mappings
+            'applicationNo': 'application_no',
+            'admissionType': 'admission_type',
+            'gateQualified': 'gate_qualified',
+            'gateStream': 'gate_stream',
+            'gateRank': 'gate_rank',
+            'admissionSemester': 'admission_semester',
         }
 
         mapped_data = {}
@@ -1087,7 +1286,13 @@ def add_single_student(request):
 
         data = mapped_data
 
-        required_fields = ['name', 'father_name', 'mother_name', 'branch', 'gender', 'category', 'pwd', 'address']
+        # Required fields differ by programme type:
+        # PhD does not require father/mother names or address (adult graduate admissions)
+        if programme_type == 'phd':
+            required_fields = ['name', 'branch', 'gender', 'category', 'pwd']
+        else:
+            required_fields = ['name', 'father_name', 'mother_name', 'branch', 'gender', 'category', 'pwd', 'address']
+
         missing_fields = [field for field in required_fields if not data.get(field)]
         
         if missing_fields:
@@ -1105,77 +1310,126 @@ def add_single_student(request):
             }, status=400)
         
         student_data = processed_students[0]
+        dob = parse_date_flexible(data.get('date_of_birth'))
 
-        jee_app_no = data.get('jee_app_no')
-        if jee_app_no:
-            existing_student = StudentBatchUpload.objects.filter(jee_app_no=jee_app_no).first()
-            if existing_student:
+        # Build shared kwargs used by both PhD and UG/PG models
+        _shared_kwargs = dict(
+            name=student_data.get('name') or data.get('name', ''),
+            roll_number=student_data.get('roll_number') or data.get('rollNumber', '') or data.get('roll_number', ''),
+            institute_email=student_data.get('institute_email') or data.get('instituteEmail', '') or data.get('institute_email', ''),
+            father_name=data.get('father_name', ''),
+            mother_name=data.get('mother_name', ''),
+            gender=normalize_gender(data.get('gender', '')),
+            category=normalize_category(data.get('category', ''), is_phd=(programme_type == 'phd')),
+            pwd=normalize_yes_no(data.get('pwd', ''), default='NO'),
+            minority=data.get('minority', ''),
+            date_of_birth=dob or None,
+            phone_number=sanitize_phone_number(data.get('phone_number', '') or data.get('MobileNo', '')),
+            personal_email=data.get('personal_email', '') or data.get('email', '') or data.get('alternateEmail', ''),
+            parent_email=data.get('parent_email', '') or data.get('parentEmail', ''),
+            address=data.get('address', '') or student_data.get('address', ''),
+            state=data.get('state', ''),
+            country=data.get('country', 'India'),
+            nationality=data.get('nationality', 'Indian'),
+            blood_group=data.get('blood_group', ''),
+            blood_group_remarks=data.get('blood_group_remarks', ''),
+            pwd_category=data.get('pwd_category', ''),
+            pwd_category_remarks=data.get('pwd_category_remarks', ''),
+            income_group=data.get('income_group', ''),
+            income=_safe_decimal_conversion(data.get('income') or None),
+            father_occupation=data.get('father_occupation', ''),
+            father_mobile=sanitize_phone_number(data.get('father_mobile', '')),
+            mother_occupation=data.get('mother_occupation', ''),
+            mother_mobile=sanitize_phone_number(data.get('mother_mobile', '')),
+            allotted_category=data.get('allotted_category', ''),
+            allotted_gender=data.get('allotted_gender', ''),
+            year=batch_year,
+            academic_year=academic_year,
+            reported_status='NOT_REPORTED',
+            allocation_status='ALLOCATED',
+            source='manual_entry',
+        )
+
+        if programme_type == 'phd':
+            # --- PhD path: save to PhdStudentBatchUpload ---
+            application_no = data.get('application_no') or None
+            if application_no:
+                existing_phd = PhdStudentBatchUpload.objects.filter(application_no=application_no).first()
+                if existing_phd:
+                    return JsonResponse({
+                        'success': False,
+                        'message': f'Student with Application Number {application_no} already exists (Roll Number: {existing_phd.roll_number})'
+                    }, status=400)
+
+            phd_semester_val = ''
+            if phd_semester:
+                phd_semester_val = phd_semester.strip().capitalize()
+            elif data.get('admission_semester'):
+                phd_semester_val = str(data['admission_semester']).strip().capitalize()
+
+            if phd_semester_val not in ['Odd', 'Even']:
                 return JsonResponse({
                     'success': False,
-                    'message': f'Student with JEE Application Number {jee_app_no} already exists (Roll Number: {existing_student.roll_number})'
+                    'message': 'PhD semester (Odd or Even) is required for manual student entry',
+                    'validation_error': 'missing_phd_semester'
                 }, status=400)
 
-        dob = parse_date_flexible(data.get('date_of_birth'))
-        
-        # Save to database with ALL Excel-equivalent fields for complete synchronization
-        with transaction.atomic():
+            with transaction.atomic():
+                student = PhdStudentBatchUpload.objects.create(
+                    discipline=student_data.get('branch') or data.get('discipline', ''),
+                    application_no=application_no,
+                    admission_type=data.get('admission_type', ''),
+                    gate_qualified=normalize_yes_no(data.get('gate_qualified', ''), default='NO'),
+                    gate_stream=data.get('gate_stream', ''),
+                    gate_rank=_safe_int_conversion(sanitize_rank_value(data.get('gate_rank'))),
+                    admission_semester=phd_semester_val,
+                    admission_mode=data.get('admission_mode', ''),
+                    admission_mode_remarks=data.get('admission_mode_remarks', ''),
+                    **_shared_kwargs
+                )
+                # Auto-create user account (consistent with Excel upload path)
+                if student.roll_number:
+                    try:
+                        student.create_user_account()
+                    except Exception:
+                        pass
+        else:
+            # --- UG / PG path: save to StudentBatchUpload ---
+            jee_app_no = data.get('jee_app_no')
+            if jee_app_no:
+                existing_student = StudentBatchUpload.objects.filter(jee_app_no=jee_app_no).first()
+                if existing_student:
+                    return JsonResponse({
+                        'success': False,
+                        'message': f'Student with JEE Application Number {jee_app_no} already exists (Roll Number: {existing_student.roll_number})'
+                    }, status=400)
+
+            with transaction.atomic():
                 student = StudentBatchUpload.objects.create(
-                    name=student_data.get('name'),
-                    jee_app_no=student_data.get('jee_app_no'),
-                    roll_number=student_data.get('roll_number'),
-                    institute_email=student_data.get('institute_email'),
-
-                    father_name=student_data.get('father_name'),
-                    mother_name=student_data.get('mother_name'),
-                    gender=student_data.get('gender'),
-                    category=student_data.get('category'),
-                    pwd=student_data.get('pwd'),
-                    minority=data.get('minority', ''),
-                    date_of_birth=dob or data.get('date_of_birth'),
-
-                    phone_number=sanitize_phone_number(data.get('phone_number', '') or data.get('MobileNo', '')),
-                    personal_email=data.get('personal_email', '') or data.get('email', '') or data.get('alternateEmail', '') or data.get('Alternate Email ID', ''),
-                    parent_email=data.get('parent_email', '') or data.get('parentEmail', ''),
-                    address=student_data.get('address'),
-                    state=data.get('state', '') or data.get('State', ''),
-                    country=data.get('country', 'India'),
-                    nationality=data.get('nationality', 'Indian'),
-                    blood_group=data.get('blood_group', '') or data.get('bloodGroup', ''),
-                    blood_group_remarks=data.get('blood_group_remarks', '') or data.get('bloodGroupRemarks', ''),
-                    pwd_category=data.get('pwd_category', '') or data.get('pwdCategory', ''),
-                    pwd_category_remarks=data.get('pwd_category_remarks', '') or data.get('pwdCategoryRemarks', ''),
-                    admission_mode=data.get('admission_mode', '') or data.get('admissionMode', ''),
-                    admission_mode_remarks=data.get('admission_mode_remarks', '') or data.get('admissionModeRemarks', ''),
-                    income_group=data.get('income_group', '') or data.get('incomeGroup', ''),
-                    income=data.get('income', None),
-
-                    father_occupation=data.get('father_occupation', '') or data.get("Father's Occupation", ''),
-                    father_mobile=sanitize_phone_number(data.get('father_mobile', '') or data.get('Father Mobile Number', '')),
-                    mother_occupation=data.get('mother_occupation', '') or data.get("Mother's Occupation", ''),
-                    mother_mobile=sanitize_phone_number(data.get('mother_mobile', '') or data.get('Mother Mobile Number', '')),
-
+                    jee_app_no=jee_app_no or None,
                     branch=student_data.get('branch'),
                     specialization=data.get('specialization', ''),
-                    ai_rank=sanitize_rank_value(data.get('ai_rank') or data.get('AI rank')),
-                    category_rank=sanitize_rank_value(data.get('category_rank') or data.get('Category Rank')),
-
-                    allotted_category=data.get('allotted_category', '') or data.get('allottedcat', ''),
-                    allotted_gender=data.get('allotted_gender', '') or data.get('allottedGender', ''),
-
-                    year=batch_year, 
+                    ai_rank=_safe_int_conversion(sanitize_rank_value(data.get('ai_rank') or data.get('AI rank'))),
+                    category_rank=_safe_int_conversion(sanitize_rank_value(data.get('category_rank') or data.get('Category Rank'))),
+                    admission_mode=data.get('admission_mode', ''),
+                    admission_mode_remarks=data.get('admission_mode_remarks', ''),
+                    admission_semester=str(data.get('admission_semester', '') or '').strip().capitalize(),
                     programme_type=programme_type,
-                    reported_status='NOT_REPORTED',
-                    academic_year=academic_year,
-                    allocation_status='ALLOCATED',
-                    source='manual_entry'
+                    **_shared_kwargs
                 )
+                # Auto-create user account (consistent with Excel upload path)
+                if student.roll_number:
+                    try:
+                        student.create_user_account()
+                    except Exception:
+                        pass
         
         return JsonResponse({
             'success': True,
             'data': {
                 'student_id': student.id,
-                'roll_number': student.roll_number or student_data.get('roll_number'),
-                'institute_email': student.institute_email or student_data.get('institute_email'),
+                'roll_number': student.roll_number,
+                'institute_email': student.institute_email,
                 'name': student.name,
                 'personal_email': student.personal_email,
                 'parent_email': student.parent_email,
@@ -1271,6 +1525,7 @@ def update_student_status(request):
         
         student_id = data.get('studentId')
         reported_status = data.get('reportedStatus')
+        programme_type_hint = (data.get('programmeType') or data.get('programme_type') or '').lower()
         
         if not student_id or not reported_status:
             return JsonResponse({
@@ -1285,13 +1540,30 @@ def update_student_status(request):
                 'message': 'Invalid reportedStatus. Must be REPORTED, NOT_REPORTED, or PENDING'
             }, status=400)
         
-        try:
-            student = StudentBatchUpload.objects.get(id=student_id)
-        except StudentBatchUpload.DoesNotExist:
-            return JsonResponse({
-                'success': False,
-                'message': 'Student not found'
-            }, status=404)
+        is_phd_student = False
+        # If caller explicitly indicates a PhD student, skip the UG/PG table lookup to
+        # avoid collisions between StudentBatchUpload.id and PhdStudentBatchUpload.id.
+        if programme_type_hint == 'phd':
+            try:
+                student = PhdStudentBatchUpload.objects.get(id=student_id)
+                is_phd_student = True
+            except PhdStudentBatchUpload.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Student not found'
+                }, status=404)
+        else:
+            try:
+                student = StudentBatchUpload.objects.get(id=student_id)
+            except StudentBatchUpload.DoesNotExist:
+                try:
+                    student = PhdStudentBatchUpload.objects.get(id=student_id)
+                    is_phd_student = True
+                except PhdStudentBatchUpload.DoesNotExist:
+                    return JsonResponse({
+                        'success': False,
+                        'message': 'Student not found'
+                    }, status=404)
         
         old_status = student.reported_status
         student.reported_status = reported_status
@@ -1356,10 +1628,21 @@ def update_student_status(request):
                             dept_name = 'Design'  # Exact database name
                             discipline_name = 'Design'
                             discipline_acronym = 'Des.'  # Use existing acronym
+                        elif 'NATURAL SCIENCE' in branch_upper or 'NS-' in branch_upper:
+                            dept_name = 'Natural Science'
+                            discipline_name = branch_field  # Keep exact name for Discipline lookup
+                        elif 'LIBERAL ARTS' in branch_upper or 'LA-' in branch_upper:
+                            dept_name = 'Natural Science'  # Closest available dept; no dedicated LA dept
+                            discipline_name = branch_field  # Keep exact name for Discipline lookup
                         else:
-                            # Default fallback
-                            dept_name = 'CSE'
-                            discipline_name = 'Computer Science and Engineering'
+                            if is_phd_student:
+                                # For any unrecognised PhD discipline, keep the exact string for Discipline lookup
+                                dept_name = 'Natural Science'
+                                discipline_name = branch_field
+                            else:
+                                # Default fallback for UG/PG
+                                dept_name = 'CSE'
+                                discipline_name = 'Computer Science and Engineering'
 
                         try:
                             department = DepartmentInfo.objects.get(name=dept_name)
@@ -1453,16 +1736,32 @@ def update_student_status(request):
                                     dept_name = 'Design'  # Exact database name
                                     discipline_name = 'Design'
                                     discipline_acronym = 'Des.'  # Use existing acronym
+                                elif 'NATURAL SCIENCE' in branch_upper or 'NS-' in branch_upper:
+                                    dept_name = 'Natural Science'
+                                    discipline_name = branch_field
+                                elif 'LIBERAL ARTS' in branch_upper or 'LA-' in branch_upper:
+                                    dept_name = 'Natural Science'
+                                    discipline_name = branch_field
                                 else:
-                                    dept_name = 'CSE'
-                                    discipline_name = 'Computer Science and Engineering'
-                                
-                                if dept_name == 'Design':
+                                    if is_phd_student:
+                                        dept_name = 'Natural Science'
+                                        discipline_name = branch_field
+                                    else:
+                                        dept_name = 'CSE'
+                                        discipline_name = 'Computer Science and Engineering'
+
+                                if is_phd_student:
+                                    # PhD: PhdStudentBatchUpload.discipline stores the exact Discipline.name,
+                                    # so a direct lookup is the most reliable path.
+                                    discipline = Discipline.objects.filter(name__iexact=branch_field).first()
+                                    if not discipline:
+                                        discipline = Discipline.objects.filter(name=branch_field).first()
+                                elif dept_name == 'Design':
                                     discipline = Discipline.objects.filter(
                                         acronym='Des.',
                                         name='Design'
                                     ).first()
-                                    
+
                                     if not discipline:
                                         discipline = Discipline.objects.filter(name__icontains='design').first()
                                 else:
@@ -1470,7 +1769,7 @@ def update_student_status(request):
                                         acronym=dept_name,
                                         name__exact=discipline_name
                                     ).first()
-                                
+
                                 if not discipline:
                                     disciplines = Discipline.objects.filter(acronym=dept_name).order_by('name')
                                     discipline = disciplines.first()
@@ -1583,8 +1882,30 @@ def update_student_status(request):
                             batch_obj = None
                             batch_created = False
                             
+                            # For PhD students, match batch by admission_semester (Odd or Even)
+                            if programme_category == 'PhD' and student.admission_semester:
+                                if student.admission_semester.strip().lower() in ['odd', 'even']:
+                                    semester_capitalized = student.admission_semester.strip().capitalize()
+                                    batch_name = f'PhD ({semester_capitalized})'
+                                    batch_obj = Batch.objects.filter(
+                                        name=batch_name,
+                                        year=student.year,
+                                        discipline=discipline,
+                                        running_batch=True
+                                    ).first()
+                                    
+                                    if not batch_obj:
+                                        return JsonResponse({
+                                            'success': False,
+                                            'message': f'No batch found for {batch_name} {discipline.name} Year-{student.year}. Please create the required batch first.',
+                                            'error_code': 'BATCH_NOT_FOUND',
+                                            'required_batch': batch_name,
+                                            'discipline': discipline.name,
+                                            'year': student.year
+                                        }, status=400)
+                            
                             # For PG students with specialization, only use existing batches
-                            if programme_category == 'PG' and student.specialization and student_specific_curriculum:
+                            elif programme_category == 'PG' and student.specialization and student_specific_curriculum:
                                 if student.specialization == 'Design':
                                     batch_obj = Batch.objects.filter(
                                         name=programme_name,  # M.Des
@@ -1686,7 +2007,10 @@ def update_student_status(request):
 
                         transfer_message_addition = transfer_message_addition if 'transfer_message_addition' in locals() else ""
 
-                        current_semester = calculate_current_semester(int(student.year))
+                        # For PhD students, pass admission_semester so Even-semester
+                        # admits get the correct (+1) offset in semester calculation.
+                        _admission_sem = getattr(student, 'admission_semester', None)
+                        current_semester = calculate_current_semester(int(student.year), admission_semester=_admission_sem)
 
                         # USE EXISTING BATCH (NO AUTOMATIC BATCH CREATION)
                         final_batch = batch_obj
@@ -1709,7 +2033,7 @@ def update_student_status(request):
                                 'batch': student.year,  
                                 'father_name': student.father_name or '',  
                                 'mother_name': student.mother_name or '', 
-                                'category': student.category or '',  
+                                'category': to_academic_category(student.category),  
                                 'cpi': 0.0,  
                                 'curr_semester_no': current_semester,  
                                 'hall_no': 0,  
@@ -1725,7 +2049,7 @@ def update_student_status(request):
                             academic_student.batch = student.year 
                             academic_student.father_name = student.father_name or ''  
                             academic_student.mother_name = student.mother_name or '' 
-                            academic_student.category = student.category or ''  
+                            academic_student.category = to_academic_category(student.category)  
                             academic_student.curr_semester_no = current_semester 
                             from applications.academic_information.models import Constants
                             valid_choices = [choice[0] for choice in Constants.MTechSpecialization]
@@ -2711,6 +3035,17 @@ def get_available_curriculums_for_batch(batch_obj):
     
     return []
 
+def get_batch_category(batch_name):
+    """
+    Infer a batch's programme category (UG/PG/PHD) from its BATCH_NAMES value,
+    e.g. 'B.Tech' -> UG, 'M.Tech AI & ML' -> PG, 'PhD (Odd)' -> PHD.
+    """
+    if batch_name.startswith('B.'):
+        return 'UG'
+    if batch_name.startswith('PhD'):
+        return 'PHD'
+    return 'PG'
+
 def get_batch_curriculum_display(batch_obj):
     """
     Get curriculum display information for a batch
@@ -2975,10 +3310,17 @@ def get_or_create_discipline(discipline_name):
     normalized_name = discipline_name.strip()
     discipline_lower = normalized_name.lower()
 
+    # Mapping of variations to canonical names
     discipline_mapping = {
         'computer science and engineering': 'Computer Science and Engineering',
-        'electronics and communication engineering': 'Electronics and Communication Engineering', 
+        'cse': 'Computer Science and Engineering',
+        'computer science': 'Computer Science and Engineering',
+        'electronics and communication engineering': 'Electronics and Communication Engineering',
+        'ece': 'Electronics and Communication Engineering', 
+        'electronics and communication': 'Electronics and Communication Engineering',
         'mechanical engineering': 'Mechanical Engineering',
+        'me': 'Mechanical Engineering',
+        'mechanical': 'Mechanical Engineering',
         'smart manufacturing': 'Smart Manufacturing',
         'design': 'Design',
         'mechatronics': 'Mechatronics'
@@ -3061,16 +3403,12 @@ def create_or_update_main_student_record(student_data, batch_obj, batch_year):
                 extra_info.date_of_birth = dob
                 extra_info.save()
 
-        category_mapping = {
-            'General': 'GEN',
-            'GEN': 'GEN',
-            'OBC': 'OBC', 
-            'SC': 'SC',
-            'ST': 'ST'
-        }
-        category = category_mapping.get(student_data.get('Category', 'GEN'), 'GEN')
+        # Normalize raw Excel category to AcademicStudent valid choices (GEN, SC, ST, OBC)
+        category = to_academic_category(student_data.get('Category') or student_data.get('category', ''))
 
-        current_semester = calculate_current_semester(batch_year)
+        # Pass admission_semester for PhD Even-semester admits
+        _admission_sem = student_data.get('admission_semester') or student_data.get('Admission Semester')
+        current_semester = calculate_current_semester(batch_year, admission_semester=_admission_sem)
 
         academic_student, created = AcademicStudent.objects.get_or_create(
             id=extra_info,
@@ -3221,9 +3559,30 @@ def update_student(request, student_id):
     Update a student by ID
     """
     try:
-        student = StudentBatchUpload.objects.get(id=student_id)
         data = json.loads(request.body)
-        old_discipline = student.branch
+        programme_type_hint = (data.get('programmeType') or data.get('programme_type') or '').lower()
+
+        is_phd = False
+        if programme_type_hint == 'phd':
+            try:
+                student = PhdStudentBatchUpload.objects.get(id=student_id)
+                is_phd = True
+            except PhdStudentBatchUpload.DoesNotExist:
+                return JsonResponse({'success': False,
+                    'message': f'PhD Student with ID {student_id} not found'}, status=404)
+        else:
+            try:
+                student = StudentBatchUpload.objects.get(id=student_id)
+            except StudentBatchUpload.DoesNotExist:
+                # Fallback: check PhdStudentBatchUpload (in case programmeType was not sent)
+                try:
+                    student = PhdStudentBatchUpload.objects.get(id=student_id)
+                    is_phd = True
+                except PhdStudentBatchUpload.DoesNotExist:
+                    return JsonResponse({'success': False,
+                        'message': f'Student with ID {student_id} not found'}, status=404)
+
+        old_discipline = student.discipline if is_phd else student.branch
         discipline_changed = False
 
         field_mapping = {
@@ -3291,22 +3650,26 @@ def update_student(request, student_id):
         roll_number = data.get('rollNumber') or data.get('roll_number')
         institute_email = data.get('instituteEmail') or data.get('institute_email')
 
+        # Use the correct model and field for uniqueness checks
+        _dup_model = PhdStudentBatchUpload if is_phd else StudentBatchUpload
+        _app_field = 'application_no' if is_phd else 'jee_app_no'
+
         if jee_app_no and jee_app_no != student.jee_app_no:
-            if StudentBatchUpload.objects.filter(jee_app_no=jee_app_no).exclude(id=student_id).exists():
+            if _dup_model.objects.filter(**{_app_field: jee_app_no}).exclude(id=student_id).exists():
                 return JsonResponse({
                     'success': False,
-                    'message': f'JEE Application Number {jee_app_no} already exists for another student'
+                    'message': f'Application Number {jee_app_no} already exists for another student'
                 }, status=400)
 
         if roll_number and roll_number != student.roll_number:
-            if StudentBatchUpload.objects.filter(roll_number=roll_number).exclude(id=student_id).exists():
+            if _dup_model.objects.filter(roll_number=roll_number).exclude(id=student_id).exists():
                 return JsonResponse({
                     'success': False,
                     'message': f'Roll Number {roll_number} already exists for another student'
                 }, status=400)
 
         if institute_email and institute_email != student.institute_email:
-            if StudentBatchUpload.objects.filter(institute_email=institute_email).exclude(id=student_id).exists():
+            if _dup_model.objects.filter(institute_email=institute_email).exclude(id=student_id).exists():
                 return JsonResponse({
                     'success': False,
                     'message': f'Institute Email {institute_email} already exists for another student'
@@ -3315,8 +3678,13 @@ def update_student(request, student_id):
         for frontend_field, backend_field in field_mapping.items():
             if frontend_field in data:
                 value = data[frontend_field]
-                if hasattr(student, backend_field):
-                    setattr(student, backend_field, value)
+                # For PhD: jee_app_no is a read-only compat property; write to application_no
+                actual_field = 'application_no' if (is_phd and backend_field == 'jee_app_no') else backend_field
+                if hasattr(student, actual_field):
+                    try:
+                        setattr(student, actual_field, value)
+                    except AttributeError:
+                        pass
 
         direct_fields = [
             'name', 'gender', 'category', 'pwd', 'minority', 'address', 'state', 'branch', 'specialization',
@@ -3327,9 +3695,25 @@ def update_student(request, student_id):
         
         for field in direct_fields:
             if field in data:
+                # For PhD: 'branch' and 'specialization' are read-only compat properties.
+                # Map 'branch' → 'discipline'; skip 'specialization'.
+                if is_phd and field == 'specialization':
+                    continue
+                actual_field = 'discipline' if (is_phd and field == 'branch') else field
                 if field == 'branch' and data[field] != old_discipline:
                     discipline_changed = True
-                setattr(student, field, data[field])
+                value = data[field]
+                # Normalize choice fields to match DB expectations
+                if field == 'gender':
+                    value = normalize_gender(value)
+                elif field == 'category':
+                    value = normalize_category(value, is_phd=is_phd)
+                elif field == 'pwd':
+                    value = normalize_yes_no(value, default='NO')
+                try:
+                    setattr(student, actual_field, value)
+                except AttributeError:
+                    pass
 
         dob_value = data.get('dob') or data.get('dateOfBirth') or data.get('date_of_birth')
         if dob_value:
@@ -3345,7 +3729,7 @@ def update_student(request, student_id):
                 pass
 
         jee_rank_value = data.get('jeeRank') or data.get('aiRank') or data.get('ai_rank')
-        if jee_rank_value:
+        if jee_rank_value and not is_phd:  # PhD uses gate_rank, not ai_rank
             try:
                 sanitized_rank = sanitize_rank_value(jee_rank_value)
                 student.ai_rank = int(sanitized_rank.replace(',', '')) if sanitized_rank.replace(',', '').isdigit() else None
@@ -3382,7 +3766,13 @@ def update_student(request, student_id):
                             setattr(student, field, None)
                 except (ValueError, TypeError):
                     setattr(student, field, None)
-        
+
+        # income is a DecimalField; an empty string (sent when the field is left
+        # blank in the edit form) fails Django's decimal validation on save(),
+        # unlike the rank_fields above which already normalize '' to None.
+        if 'income' in data:
+            student.income = _safe_decimal_conversion(data.get('income'))
+
         # Update timestamp if field exists
         if hasattr(student, 'updated_at'):
             student.updated_at = timezone.now()
@@ -3495,7 +3885,26 @@ def delete_student(request, student_id):
         from django.contrib.auth.models import User
         from django.db import transaction
 
-        student = StudentBatchUpload.objects.get(id=student_id)
+        is_phd = False
+        programme_type_hint = request.GET.get('programme_type', '').lower()
+        if programme_type_hint == 'phd':
+            try:
+                student = PhdStudentBatchUpload.objects.get(id=student_id)
+                is_phd = True
+            except PhdStudentBatchUpload.DoesNotExist:
+                return JsonResponse({'success': False,
+                    'message': f'PhD Student with ID {student_id} not found'}, status=404)
+        else:
+            try:
+                student = StudentBatchUpload.objects.get(id=student_id)
+            except StudentBatchUpload.DoesNotExist:
+                # Fallback: also check PhdStudentBatchUpload
+                try:
+                    student = PhdStudentBatchUpload.objects.get(id=student_id)
+                    is_phd = True
+                except PhdStudentBatchUpload.DoesNotExist:
+                    return JsonResponse({'success': False,
+                        'message': f'Student with ID {student_id} not found'}, status=404)
         student_name = student.name
         student_roll = student.roll_number
 
@@ -3917,26 +4326,35 @@ def get_batch_students(request, batch_id):
         specialization = request.GET.get('specialization')
         discipline = request.GET.get('discipline')
 
-        students = StudentBatchUpload.objects.filter(
-            year=batch.year,
-            programme_type=programme_type
-        )
-        
-        # Apply disciplinary filtering based on programme type
-        if programme_type == 'pg':
+        if programme_type == 'phd':
+            # Primary store: PhdStudentBatchUpload
+            phd_qs = PhdStudentBatchUpload.objects.filter(year=batch.year)
+            if 'Odd' in batch.name:
+                phd_qs = phd_qs.filter(admission_semester__iexact='Odd')
+            elif 'Even' in batch.name:
+                phd_qs = phd_qs.filter(admission_semester__iexact='Even')
+            if batch.discipline:
+                # Try full discipline name first; fall back to acronym.
+                # This handles Excel uploads that store short codes ('ECE', 'ME')
+                # while avoiding cross-matches for batches with shared acronyms
+                # (e.g. NS- is used by both NS-MATHS and NS-PHSYICS).
+                name_qs = phd_qs.filter(discipline__icontains=batch.discipline.name)
+                if name_qs.exists():
+                    phd_qs = name_qs
+                else:
+                    phd_qs = phd_qs.filter(discipline__icontains=batch.discipline.acronym)
+            students = sorted(list(phd_qs), key=lambda s: s.roll_number or '')
+        elif programme_type == 'pg':
+            students = StudentBatchUpload.objects.filter(year=batch.year, programme_type=programme_type)
             if specialization:
                 students = students.filter(specialization__icontains=specialization)
             else:
-
                 discipline_name = batch.discipline.name
                 discipline_filters = Q()
-
                 discipline_filters |= Q(branch__icontains=discipline_name)
-
                 if 'Engineering' in discipline_name:
                     typo_name = discipline_name.replace('Engineering', 'Enginnering')
                     discipline_filters |= Q(branch__icontains=typo_name)
-
                 if 'Computer Science' in discipline_name:
                     discipline_filters |= Q(branch__icontains='CSE')
                     discipline_filters |= Q(branch__icontains='Computer Science')
@@ -3946,21 +4364,17 @@ def get_batch_students(request, batch_id):
                 elif 'Mechanical' in discipline_name:
                     discipline_filters |= Q(branch__icontains='ME')
                     discipline_filters |= Q(branch__icontains='Mechanical')
-                
                 students = students.filter(discipline_filters)
+            students = students.order_by('roll_number')
         else:
+            students = StudentBatchUpload.objects.filter(year=batch.year, programme_type=programme_type)
             discipline_name = batch.discipline.name
             discipline_filters = Q()
-            
             discipline_filters |= Q(branch__icontains=discipline_name)
-
             if 'Engineering' in discipline_name:
                 typo_name = discipline_name.replace('Engineering', 'Enginnering')
                 discipline_filters |= Q(branch__icontains=typo_name)
-            
-            students = students.filter(discipline_filters)
-        
-        students = students.order_by('roll_number')
+            students = students.filter(discipline_filters).order_by('roll_number')
 
         # Read-only mirror of the assigned Student.section, keyed by roll number.
         roll_numbers = [s.roll_number for s in students if s.roll_number]
@@ -3980,7 +4394,20 @@ def get_batch_students(request, batch_id):
                 'name': student.name,
                 'roll_number': student.roll_number,
                 'institute_email': student.institute_email,
-                'jee_app_no': student.jee_app_no,
+                'jee_app_no': getattr(student, 'jee_app_no', None),
+
+                # PhD-specific fields (safe getattr; empty/None for UG/PG students)
+                'application_no':     getattr(student, 'application_no', ''),
+                'admission_type':     getattr(student, 'admission_type', ''),
+                'gate_qualified':     getattr(student, 'gate_qualified', ''),
+                'gateQualified':      getattr(student, 'gate_qualified', ''),
+                'gate_stream':        getattr(student, 'gate_stream', ''),
+                'gateStream':         getattr(student, 'gate_stream', ''),
+                'gate_rank':          getattr(student, 'gate_rank', None),
+                'gateRank':           getattr(student, 'gate_rank', None),
+                'admission_semester': getattr(student, 'admission_semester', ''),
+                'admissionSemester':  getattr(student, 'admission_semester', ''),
+                'discipline':         getattr(student, 'discipline', ''),
 
                 'father_name': student.father_name,
                 'mother_name': getattr(student, 'mother_name', ''),
@@ -4190,7 +4617,17 @@ def admin_batches_unified(request):
                     students = StudentBatchUpload.objects.filter(
                         year=batch.year,
                         branch__icontains=batch.discipline.name
-                    ).order_by('roll_number')
+                    )
+                    
+                    # For PhD batches, also filter by admission_semester (case-insensitive)
+                    programme_type = 'phd' if batch.name.upper().startswith('PHD') else 'pg' if batch.name.startswith('M.') else 'ug'
+                    if programme_type == 'phd':
+                        if 'Odd' in batch.name:
+                            students = students.filter(admission_semester__iexact='Odd')
+                        elif 'Even' in batch.name:
+                            students = students.filter(admission_semester__iexact='Even')
+                    
+                    students = students.order_by('roll_number')
                     
                     for student in students:
                         students_data.append({
@@ -4302,30 +4739,40 @@ def sync_batch_data(request):
         
         sync_results = []
         
+        # Only B.Tech/B.Des batches match these historical UG cohort sizes -
+        # applying them to PG/PhD batches (much smaller cohorts) would wildly
+        # overstate available seats, so the fallback below is UG-only.
+        ug_default_seats = {
+            'CSE': 300,
+            'ECE': 120,
+            'ME': 80,
+            'SM': 80,
+            'Des.': 80,
+        }
+
         for batch in all_batches:
             # Use centralized filled seats calculation function
             actual_filled = calculate_batch_filled_seats(batch)
+            batch_category = get_batch_category(batch.name)
 
             if hasattr(batch, 'total_seats') and batch.total_seats:
                 available_seats = max(0, batch.total_seats - actual_filled)
             else:
-
-                default_seats = {
-                    'CSE': 300,
-                    'ECE': 120, 
-                    'ME': 80,
-                    'SM': 80,
-                    'Des.': 80,
-                }
-                batch.total_seats = default_seats.get(batch.discipline.acronym, 100)
+                if batch_category == 'UG':
+                    batch.total_seats = ug_default_seats.get(batch.discipline.acronym, 100)
+                else:
+                    # No discipline-specific PG/PhD seat data exists yet;
+                    # fall back to the Batch model's own generic default.
+                    batch.total_seats = Batch._meta.get_field('total_seats').default
                 batch.save()
                 available_seats = max(0, batch.total_seats - actual_filled)
 
             curriculum_display = get_batch_curriculum_display(batch)
-            
+
             sync_results.append({
                 'batch_id': batch.id,
                 'name': batch.name,
+                'category': batch_category,
                 'discipline': batch.discipline.acronym,
                 'discipline_name': batch.discipline.name,
                 'year': batch.year,
@@ -4364,24 +4811,36 @@ def validate_batch_prerequisites(request):
     try:
         data = json.loads(request.body)
         academic_year = data.get('academic_year')  # e.g., 2025
+        requested_disciplines = data.get('disciplines') or []
         
         if not academic_year:
             return JsonResponse({
                 'success': False,
                 'message': 'Academic year is required'
             }, status=400)
+
+        if isinstance(requested_disciplines, str):
+            requested_disciplines = [requested_disciplines]
+
+        requested_disciplines = [
+            str(discipline).strip()
+            for discipline in requested_disciplines
+            if str(discipline).strip()
+        ]
         
         from applications.programme_curriculum.models import Batch, Discipline
 
-        required_disciplines = ['Computer Science and Engineering', 'Electronics and Communication Engineering', 
-                               'Mechanical Engineering', 'Smart Manufacturing', 'Design']
+        default_required_disciplines = ['Computer Science and Engineering', 'Electronics and Communication Engineering', 
+                                        'Mechanical Engineering', 'Smart Manufacturing', 'Design']
+
+        required_disciplines = requested_disciplines or default_required_disciplines
         
         missing_batches = []
         existing_batches = []
         
         for discipline_name in required_disciplines:
             try:
-                discipline = Discipline.objects.filter(name=discipline_name).first()
+                discipline = Discipline.objects.filter(name__iexact=discipline_name).first()
                 if discipline:
                     batch = Batch.objects.filter(
                         year=academic_year,
@@ -4404,6 +4863,12 @@ def validate_batch_prerequisites(request):
                             'acronym': discipline.acronym,
                             'action_required': f'Create {discipline.acronym} batch for year {academic_year}'
                         })
+                else:
+                    missing_batches.append({
+                        'discipline': discipline_name,
+                        'acronym': discipline_name,
+                        'action_required': f'Create {discipline_name} batch for year {academic_year}'
+                    })
             except Exception as e:
                 pass
 
@@ -5023,7 +5488,7 @@ def transfer_student_to_academic_system(student):
             current_semester=calculate_current_semester(student.academic_year),
             current_year=student.academic_year,
             cpi=0.0,
-            category=student.category or 'General',
+            category=to_academic_category(student.category),
             father_name=student.father_name or '',
             mother_name=student.mother_name or '',
             hall_no=0,

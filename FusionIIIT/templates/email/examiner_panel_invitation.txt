@@ -1,0 +1,24 @@
+THESIS EXAMINER INVITATION
+==========================
+
+Dear {{ prof_name }},
+
+You are invited to serve as the external examiner for the M.Tech thesis
+evaluations of the following batch:
+
+"{{ batch_name }}"
+
+Please respond to this invitation by clicking one of the links below:
+
+Accept: {{ accept_url }}
+Decline: {{ reject_url }}
+
+IMPORTANT INFORMATION:
+- This invitation expires on {{ expires_at }}
+- These links are unique to you - please do not share them
+- If accepted, you will evaluate every student in this batch
+- If you did not expect this invitation, please ignore this email
+
+Thank you for your consideration,
+Thesis Committee
+PDPM IIITDM Jabalpur

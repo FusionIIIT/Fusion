@@ -159,7 +159,7 @@ def officeOfDeanPnD(request):
         # Send notifications to all concerned users
         office_dean_PnD_notif(request.user, requisition.userid.user, 'request_accepted')
         office_dean_PnD_notif(request.user, request.user, 'assignment_created')
-        office_dean_PnD_notif(request.user, receive.working, 'assignment_received')
+        office_dean_PnD_notif(request.user, receive.working, 'assignment_received', role=receive.designation.name)
 
         # Create tracking row to send the file to Assistant Engg.
         Tracking.objects.create(
@@ -380,7 +380,7 @@ def action(request):
         print(vars(track))
         track.is_read = True
         track.save()
-        office_dean_PnD_notif(request.user,sent_hold_design.working, 'assignment_received')
+        office_dean_PnD_notif(request.user,sent_hold_design.working, 'assignment_received', role=sent_design.name)
         """
         elif 'Revert' in request.POST:
             Tracking.objects.create(

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from applications.programme_curriculum.models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot, CourseInstructor
+from applications.programme_curriculum.models import Programme, Discipline, Curriculum, Semester, Course, Batch, CourseSlot, CourseInstructor, Thesis, Seminar, TeachingCredit
 from applications.programme_curriculum.models_student_management import StudentBatchUpload
 
 # this is for Programme model ....
@@ -100,6 +100,32 @@ class CourseSerializer(serializers.ModelSerializer):
         model = Course
         fields = "__all__"
 
+
+class ThesisSerializer(serializers.ModelSerializer):
+    discipline_name = serializers.CharField(source='discipline.name', read_only=True)
+    programme_type_display = serializers.CharField(source='get_programme_type_display', read_only=True)
+    
+    class Meta:
+        model = Thesis
+        fields = "__all__"
+
+
+class SeminarSerializer(serializers.ModelSerializer):
+    discipline_name = serializers.CharField(source='discipline.name', read_only=True)
+    programme_type_display = serializers.CharField(source='get_programme_type_display', read_only=True)
+
+    class Meta:
+        model = Seminar
+        fields = "__all__"
+
+
+class TeachingCreditSerializer(serializers.ModelSerializer):
+    discipline_name = serializers.CharField(source='discipline.name', read_only=True)
+    programme_type_display = serializers.CharField(source='get_programme_type_display', read_only=True)
+
+    class Meta:
+        model = TeachingCredit
+        fields = "__all__"
 
 
 # this is for Batch model ...
